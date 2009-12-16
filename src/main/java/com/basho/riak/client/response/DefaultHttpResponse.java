@@ -1,3 +1,18 @@
+/*
+This file is provided to you under the Apache License,
+Version 2.0 (the "License"); you may not use this file
+except in compliance with the License.  You may obtain
+a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.  
+*/
 package com.basho.riak.client.response;
 
 import java.io.IOException;
@@ -8,9 +23,9 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 
 import com.basho.riak.client.util.ClientUtils;
 
-public class BasicResponse implements HttpResponse {
+public class DefaultHttpResponse implements HttpResponse {
 
-    public BasicResponse(String bucket, String key, int status, Map<String, String> headers, String body, HttpMethod httpMethod) {
+    public DefaultHttpResponse(String bucket, String key, int status, Map<String, String> headers, String body, HttpMethod httpMethod) {
         this.bucket = bucket;
         this.key = key;
         this.statusCode = status;
@@ -55,10 +70,10 @@ public class BasicResponse implements HttpResponse {
         return statusCode >= 400; 
     }
 
-    public static BasicResponse fromHttpMethod(String bucket, String key, final HttpMethod httpMethod) throws IOException {
+    public static DefaultHttpResponse fromHttpMethod(String bucket, String key, final HttpMethod httpMethod) throws IOException {
         int status = httpMethod.getStatusCode();
         Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
         String body = httpMethod.getResponseBodyAsString();
-        return new BasicResponse(bucket, key, status, headers, body, httpMethod);
+        return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
     }
 }

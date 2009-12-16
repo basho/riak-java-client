@@ -1,3 +1,18 @@
+/*
+This file is provided to you under the Apache License,
+Version 2.0 (the "License"); you may not use this file
+except in compliance with the License.  You may obtain
+a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.  
+*/
 package com.basho.riak.client.jiak;
 
 import java.io.ByteArrayInputStream;
@@ -62,6 +77,44 @@ public class JiakObject implements RiakObject {
         this.vtag = vtag;
     }
 
+    public void copyData(RiakObject object) {
+        if (object == null)
+            return;
+
+        if (object.getValue() != null) {
+            try {
+                this.value = new JSONObject(object.getValue());
+            } catch (JSONException e) {
+                try {
+                    this.value = new JSONObject().put("v", JSONObject.quote(object.getValue()));
+                } catch (JSONException unreached) { 
+                    throw new IllegalStateException(unreached);
+                }
+            }
+        } else {
+            this.value = new JSONObject();
+        }
+        if (object.getLinks() != null) {
+            this.links = new JSONArray(object.getLinks());
+        } else {
+            this.links = new JSONArray();
+        }
+        if (object.getUsermeta() != null) {
+            this.usermeta = new JSONObject(object.getUsermeta());
+        } else {
+            this.usermeta = new JSONObject();
+        }
+        this.vclock = object.getVclock();
+        this.lastmod = object.getLastmod();
+        this.vtag = object.getVtag();
+    }
+
+    public void updateMeta(String vclock, String lastmod, String vtag) {
+        this.vclock = vclock;
+        this.lastmod = lastmod;
+        this.vtag = vtag;
+    }
+    
     public String getBucket() { 
         return bucket; 
     } 

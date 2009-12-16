@@ -1,7 +1,23 @@
+/*
+This file is provided to you under the Apache License,
+Version 2.0 (the "License"); you may not use this file
+except in compliance with the License.  You may obtain
+a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.  
+*/
 package com.basho.riak.client.raw;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,13 +29,17 @@ import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.util.Constants;
 import com.basho.riak.client.util.LinkHeader;
 
-public class RawFetchResponse implements HttpResponse, FetchResponse {
+public class RawFetchResponse implements FetchResponse {
 
     private HttpResponse impl;
 
-    public RawObject getObject() { return this.object; }
     public boolean hasObject() { return this.object != null; }
+    public RawObject getObject() { return this.object; }
     private RawObject object;
+
+    public boolean hasSiblings() { return this.siblings.size() > 0; }
+    public Collection<RawObject> getSiblings() { return Collections.unmodifiableCollection(siblings); }
+    private Collection<RawObject> siblings = new ArrayList<RawObject>(); 
 
     public RawFetchResponse(HttpResponse r) {
         Map<String, String> headers = r.getHttpHeaders();
