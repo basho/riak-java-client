@@ -77,6 +77,9 @@ public class ObjectClient {
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
             throw new RiakResponseException(r, r.getBody());
         
+        if (!r.hasObject())
+            throw new RiakResponseException(r, "Failed to parse metadata");
+        
         return r.getObject();
     }
     public RiakObject fetchMeta(String bucket, String key) throws RiakException, RiakResponseException {
@@ -91,6 +94,9 @@ public class ObjectClient {
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
             throw new RiakResponseException(r, r.getBody());
+
+        if (!r.hasObject())
+            throw new RiakResponseException(r, "Failed to parse object");
         
         return r.getObject();
     }
@@ -121,6 +127,9 @@ public class ObjectClient {
 
         if (r.getStatusCode() != 200)
             throw new RiakResponseException(r, r.getBody());
+
+        if (!r.hasSteps())
+            throw new RiakResponseException(r, "Failed to parse walk results");
 
         return r.getSteps();
     }

@@ -20,5 +20,7 @@ import java.util.List;
 import com.basho.riak.client.RiakObject;
 
 public interface WalkResponse extends HttpResponse {
+    public boolean hasSteps();
+
     public List<? extends List<? extends RiakObject>> getSteps();
 }

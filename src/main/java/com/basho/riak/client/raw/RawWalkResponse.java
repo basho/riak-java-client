@@ -28,6 +28,7 @@ public class RawWalkResponse implements WalkResponse {
 
     private HttpResponse impl;
     
+    public boolean hasSteps() { return this.steps != null; }
     public List<? extends List<RawObject>> getSteps() { return steps; }
     private List<? extends List<RawObject>> steps;
 
