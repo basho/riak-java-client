@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
+
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakLink;
@@ -28,6 +30,7 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.ClientUtils;
@@ -60,7 +63,12 @@ public class RawClient implements RiakClient {
     }
 
     public BucketResponse listBucket(String bucket, RequestMeta meta) {
-        return helper.listBucket(bucket, meta);
+        HttpResponse r = helper.listBucket(bucket, meta);
+        try {
+            return new RawBucketResponse(r);
+        } catch (JSONException e) {
+            throw new RiakResponseException(r, e);
+        }
     }
     public BucketResponse listBucket(String bucket) {
         return listBucket(bucket, null);
@@ -105,6 +113,16 @@ public class RawClient implements RiakClient {
     }
 
     public RawFetchResponse fetch(String bucket, String key, RequestMeta meta) {
+        if (meta == null) { 
+            meta = new RequestMeta();
+        }
+        
+        String accept = meta.getQueryParam(Constants.HDR_ACCEPT); 
+        if (accept == null) {
+            meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        } else {
+            meta.put(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        }
         return new RawFetchResponse(helper.fetch(bucket, key, meta));
     }
     public RawFetchResponse fetch(String bucket, String key) {

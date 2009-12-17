@@ -26,18 +26,21 @@ public interface Constants {
 
     public static int DEFAULT_STREAM_BUFFER_SIZE = 4096;
 
-    public static String JIAK_BUCKET = "bucket";
-    public static String JIAK_KEY = "key";
-    public static String JIAK_KEYS = "keys";
-    public static String JIAK_LAST_MODIFIED = "lastmod";
-    public static String JIAK_LINKS = "links";
-    public static String JIAK_SCHEMA = "schema";
-    public static String JIAK_VALUE = "object";
-    public static String JIAK_VCLOCK = "vclock";
-    public static String JIAK_VTAG = "vtag";
-    public static String JIAK_USERMETA = "usermeta";
-    public static String JIAK_WALK_RESULTS = "results";
+    public static String JIAK_FL_BUCKET = "bucket";
+    public static String JIAK_FL_KEY = "key";
+    public static String JIAK_FL_KEYS = "keys";
+    public static String JIAK_FL_LAST_MODIFIED = "lastmod";
+    public static String JIAK_FL_LINKS = "links";
+    public static String JIAK_FL_SCHEMA = "schema";
+    public static String JIAK_FL_VALUE = "object";
+    public static String JIAK_FL_VCLOCK = "vclock";
+    public static String JIAK_FL_VTAG = "vtag";
+    public static String JIAK_FL_USERMETA = "usermeta";
+    public static String JIAK_FL_WALK_RESULTS = "results";
     
+    public static String RAW_FL_PROPS = "props";
+    public static String RAW_FL_KEYS = "keys";
+
     public static String RAW_LINK_TAG = "riaktag";
     
     public static String HDR_ACCEPT = "accept";
@@ -48,6 +51,7 @@ public interface Constants {
     public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
     public static String HDR_VCLOCK = "x-riak-vclock";
     
+    public static String CTYPE_ANY = "*/*";
     public static String CTYPE_JSON = "application/json";
     public static String CTYPE_OCTET_STREAM = "application/octet-stream";
     public static String CTYPE_MULTIPART_MIXED = "multipart/mixed";

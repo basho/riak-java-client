@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.HttpMethod;
 
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.WalkResponse;
+import com.basho.riak.client.util.Constants;
 
 public class RawWalkResponse implements WalkResponse {
 
@@ -34,7 +35,8 @@ public class RawWalkResponse implements WalkResponse {
 
     public RawWalkResponse(HttpResponse r) {
         this.impl = r;
-        this.steps = parseSteps(r.getBody());
+        if (r.isSuccess())
+            this.steps = parseSteps(r.getHttpHeaders().get(Constants.HDR_CONTENT_TYPE), r.getBody());
     }
 
     public String getBody() { return impl.getBody(); }
@@ -46,8 +48,35 @@ public class RawWalkResponse implements WalkResponse {
     public boolean isError() { return impl.isError(); }
     public boolean isSuccess() { return impl.isSuccess(); }
 
-    private static List<? extends List<RawObject>> parseSteps(String body) {
+    private static List<? extends List<RawObject>> parseSteps(String contentType, String body) {
         List<? extends List<RawObject>> steps = new ArrayList<ArrayList<RawObject>>();
+        List<String> parts = parseMultipart(contentType, body);
+        
+        for (String part : parts) {
+        }
+        
         return steps;
+    }
+    
+    private static List<String> parseMultipart(String contentType, String body) {
+        List<String> parts = new ArrayList<String>();
+        String boundary = getBoundary(contentType);
+
+        if (boundary == null)
+            return parts;
+        
+        return parts;
+    }
+    
+    private static String getBoundary(String contentType) {
+        if (contentType == null)
+            return null;
+    
+        int start = contentType.toLowerCase().indexOf("boundary=");
+        if (start > -1) {
+            return "--" + contentType.substring(start + 9);
+        }
+
+        return null;
     }
 }

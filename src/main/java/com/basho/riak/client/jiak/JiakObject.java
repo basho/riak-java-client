@@ -45,14 +45,14 @@ public class JiakObject implements RiakObject {
     private JSONObject usermeta;
 
     public JiakObject(JSONObject object) throws JSONException {
-        this(object.getString(Constants.JIAK_BUCKET),
-                object.getString(Constants.JIAK_KEY),
-                object.optJSONObject(Constants.JIAK_VALUE),
-                object.optJSONArray(Constants.JIAK_LINKS),
-                object.optJSONObject(Constants.JIAK_USERMETA),
-                object.optString(Constants.JIAK_VCLOCK),
-                object.optString(Constants.JIAK_LAST_MODIFIED),
-                object.optString(Constants.JIAK_VTAG));
+        this(object.getString(Constants.JIAK_FL_BUCKET),
+                object.getString(Constants.JIAK_FL_KEY),
+                object.optJSONObject(Constants.JIAK_FL_VALUE),
+                object.optJSONArray(Constants.JIAK_FL_LINKS),
+                object.optJSONObject(Constants.JIAK_FL_USERMETA),
+                object.optString(Constants.JIAK_FL_VCLOCK),
+                object.optString(Constants.JIAK_FL_LAST_MODIFIED),
+                object.optString(Constants.JIAK_FL_VTAG));
     }
     public JiakObject(String bucket, String key) {
         this(bucket, key, new JSONObject(), new JSONArray(), null, null, null, null);

@@ -16,8 +16,8 @@ under the License.
 package com.basho.riak.client.jiak;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -35,13 +35,28 @@ public class JiakFetchResponse implements FetchResponse {
     public boolean hasObject() { return this.object != null; }
     private JiakObject object;
 
-    public boolean hasSiblings() { return this.siblings.size() > 0; }
-    public Collection<JiakObject> getSiblings() { return Collections.unmodifiableCollection(siblings); }
-    private Collection<JiakObject> siblings = new ArrayList<JiakObject>(); 
-
     public JiakFetchResponse(HttpResponse r) throws JSONException {
         this.impl = r;
-        this.object = new JiakObject(new JSONObject(r.getBody()));
+        if (r.isSuccess())
+            this.object = new JiakObject(new JSONObject(r.getBody()));
+    }
+
+    /**
+     * Returns false since Jiak interface doesn't support siblings
+     * 
+     * @return false
+     */
+    public boolean hasSiblings() {
+        return false; 
+    }
+    
+    /**
+     * @return The {@link JiakObject} if there is one or an empty list
+     */
+    public Collection<JiakObject> getSiblings() {
+        return hasObject() ?
+                Arrays.asList(getObject()) :
+                new ArrayList<JiakObject>();
     }
 
     public String getBody() { return impl.getBody(); }

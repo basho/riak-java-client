@@ -38,7 +38,8 @@ public class JiakWalkResponse implements WalkResponse {
 
     public JiakWalkResponse(HttpResponse r) throws JSONException {
         this.impl = r;
-        this.steps = parseSteps(r.getBody());
+        if (r.isSuccess())
+            this.steps = parseSteps(r.getBody());
     }
 
     public String getBody() { return impl.getBody(); }
@@ -52,7 +53,7 @@ public class JiakWalkResponse implements WalkResponse {
 
     private static List<? extends List<JiakObject>> parseSteps(String body) throws JSONException {
         List<List<JiakObject>> steps = new ArrayList<List<JiakObject>>();
-        final JSONArray jsonResults = new JSONObject(body).getJSONArray(Constants.JIAK_WALK_RESULTS);
+        final JSONArray jsonResults = new JSONObject(body).getJSONArray(Constants.JIAK_FL_WALK_RESULTS);
         for (int i = 0; i < jsonResults.length(); ++i) {
             final ArrayList<JiakObject> step = new ArrayList<JiakObject>();
             final JSONArray jsonStep = jsonResults.getJSONArray(i);

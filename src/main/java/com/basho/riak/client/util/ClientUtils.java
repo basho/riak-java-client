@@ -1,17 +1,17 @@
 /*
-This file is provided to you under the Apache License,
-Version 2.0 (the "License"); you may not use this file
-except in compliance with the License.  You may obtain
-a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.  
+ * This file is provided to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package com.basho.riak.client.util;
 
@@ -20,7 +20,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.Header;
@@ -29,33 +32,36 @@ import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.basho.riak.client.RiakConfig;
 
 public class ClientUtils {
 
-    private static String URL_PATH_MASK = "^(?:[A-Za-z0-9+-\\.]+://)?[^/]*"; 
-    
+    private static String URL_PATH_MASK = "^(?:[A-Za-z0-9+-\\.]+://)?[^/]*";
+
     public static HttpClient newHttpClient(final RiakConfig config) {
-        
+
         HttpClient http = config.getHttpClient();
         HttpConnectionManager m;
-        
+
         if (http == null) {
             m = new MultiThreadedHttpConnectionManager();
             http = new HttpClient(m);
         } else {
             m = http.getHttpConnectionManager();
         }
-            
+
         HttpConnectionManagerParams mp = m.getParams();
-        if (config.getMaxConnections() != null)
-            mp.setIntParameter(
-                    HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, config.getMaxConnections());
+        if (config.getMaxConnections() != null) {
+            mp.setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, config.getMaxConnections());
+        }
 
         HttpClientParams cp = http.getParams();
-        if (config.getTimeout() != null)
+        if (config.getTimeout() != null) {
             cp.setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, config.getTimeout());
+        }
 
         return http;
     }
@@ -64,16 +70,14 @@ public class ClientUtils {
         return config.getUrl() + "/" + urlEncode(bucket);
     }
 
-    public static String makeURI(final RiakConfig config, final String bucket,
-            final String key) {
+    public static String makeURI(final RiakConfig config, final String bucket, final String key) {
         return makeURI(config, bucket) + "/" + urlEncode(key);
     }
 
-    public static String makeURI(final RiakConfig config, final String bucket,
-            final String key, final String extra) {
+    public static String makeURI(final RiakConfig config, final String bucket, final String key, final String extra) {
         return makeURI(config, bucket, key) + "/" + extra;
     }
-    
+
     public static String getPathFromUrl(String url) {
         return url.replaceFirst(URL_PATH_MASK, "");
     }
@@ -86,12 +90,19 @@ public class ClientUtils {
         }
     }
 
+    public static String unquoteString(String s) {
+        if (s.startsWith("\"") && s.endsWith("\""))
+            s = s.substring(1, s.length() - 1);
+        return s.replaceAll("\\\\(.)", "$1");
+    }
+
     public static void copy(final InputStream in, final OutputStream out) throws IOException {
         final byte[] buffer = new byte[1024];
         while (true) {
             final int readCount = in.read(buffer);
-            if (readCount == -1)
+            if (readCount == -1) {
                 break;
+            }
             out.write(buffer, 0, readCount);
         }
     }
@@ -102,5 +113,32 @@ public class ClientUtils {
             m.put(header.getName().toLowerCase(), header.getValue());
         }
         return m;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, String> jsonObjectAsMap(JSONObject json) {
+        if (json == null)
+            return null;
+
+        Map<String, String> m = new HashMap<String, String>();
+        for (Iterator iter = json.keys(); iter.hasNext();) {
+            Object obj = iter.next();
+            if (obj != null) {
+                String key = obj.toString();
+                m.put(key, json.optString(key));
+            }
+        }
+        return m;
+    }
+
+    public static List<String> jsonArrayAsList(JSONArray json) {
+        if (json == null)
+            return null;
+
+        List<String> l = new ArrayList<String>();
+        for (int i = 0; i < json.length(); i++) {
+            l.add(json.optString(i));
+        }
+        return l;
     }
 }

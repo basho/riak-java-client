@@ -32,13 +32,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.basho.riak.client.RiakConfig;
-import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
-import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.DefaultHttpResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakIOException;
 import com.basho.riak.client.response.StreamHandler;
 
 public class ClientHelper {
@@ -70,8 +69,8 @@ public class ClientHelper {
             schema.put("read_mask", readMask);
             schema.put("write_mask", writeMask);
             schemaReqBody.put("schema", schema);
-        } catch (JSONException e) {
-            throw new IllegalStateException(e);
+        } catch (JSONException unreached) {
+            throw new IllegalStateException("should not happen", unreached);
         }
 
         meta.put(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
@@ -86,13 +85,13 @@ public class ClientHelper {
         return setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
     }
     
-    public BucketResponse listBucket(String bucket, RequestMeta meta) {
+    public HttpResponse listBucket(String bucket, RequestMeta meta) {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket));
         get.setRequestHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
         get.setRequestHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
-        return new BucketResponse(executeMethod(bucket, null, get, meta));
+        return executeMethod(bucket, null, get, meta);
     }
-    public BucketResponse listBucket(String bucket) {
+    public HttpResponse listBucket(String bucket) {
         return listBucket(bucket, null);
     }
 
@@ -158,6 +157,9 @@ public class ClientHelper {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
         try {
             int status = httpClient.executeMethod(get);
+            if (handler == null)
+                return true;
+            
             return handler.process(
                     bucket, key, 
                     status, 
@@ -207,7 +209,7 @@ public class ClientHelper {
             httpClient.executeMethod(httpMethod);
             return DefaultHttpResponse.fromHttpMethod(bucket, key, httpMethod);
         } catch (IOException e) {
-            throw new RiakException(e);
+            throw new RiakIOException(e);
         } finally {
             httpMethod.releaseConnection();
         }

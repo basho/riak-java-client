@@ -67,7 +67,7 @@ public class LinkHeader {
                 for (String param : splitParams(params)) {
                     String[] parts = param.split("=", 1);
                     if (parts.length > 1) {
-                        parsedLink.put(parts[0].toLowerCase(), unquoteString(parts[1]));
+                        parsedLink.put(parts[0].toLowerCase(), ClientUtils.unquoteString(parts[1]));
                     } else {
                         parsedLink.put(parts[0].toLowerCase(), null);
                     }
@@ -77,12 +77,6 @@ public class LinkHeader {
         }
         
         return out;
-    }
-
-    private static String unquoteString(String s) {
-        if (s.startsWith("\"") && s.endsWith("\""))
-            s = s.substring(1, s.length() - 1);
-        return s.replaceAll("\\(.)", "$1");
     }
     
     private static List<String> splitParams(String s) {

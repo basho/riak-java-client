@@ -32,12 +32,13 @@ public class JiakStoreResponse implements StoreResponse {
 
     public JiakStoreResponse(HttpResponse r) throws JSONException {
         this.impl = r;
-        this.object = new JSONObject(r.getBody());
+        if (r.isSuccess())
+            this.object = new JSONObject(r.getBody());
     }
 
-    public String getVclock() { return object.optString(Constants.JIAK_VCLOCK); }
-    public String getLastmod() { return object.optString(Constants.JIAK_LAST_MODIFIED); }
-    public String getVtag() { return object.optString(Constants.JIAK_VTAG); }
+    public String getVclock() { return object.optString(Constants.JIAK_FL_VCLOCK); }
+    public String getLastmod() { return object.optString(Constants.JIAK_FL_LAST_MODIFIED); }
+    public String getVtag() { return object.optString(Constants.JIAK_FL_VTAG); }
 
     public String getBody() { return impl.getBody(); }
     public String getBucket() { return impl.getBucket(); }

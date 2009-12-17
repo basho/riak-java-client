@@ -1,12 +1,11 @@
-package com.basho.riak.client.object;
+package com.basho.riak.client.response;
 
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
 
-import com.basho.riak.client.response.HttpResponse;
 
-public class RiakResponseException extends Exception implements HttpResponse {
+public class RiakResponseException extends RuntimeException implements HttpResponse {
 
     private static final long serialVersionUID = 2853253336513247178L;
     private HttpResponse response = null;
