@@ -181,6 +181,10 @@ public class JiakObject implements RiakObject {
         }
     }
 
+    /**
+     * @return An unmodifiable list of the links in this object. Use
+     *         getLinksAsJSON() to add or remove links
+     */
     public Collection<RiakLink> getLinks() {
         List<RiakLink> links = new ArrayList<RiakLink>();
         if (links != null && this.links.length() > 0) {
@@ -193,9 +197,19 @@ public class JiakObject implements RiakObject {
                 } catch (JSONException e) {}
             }
         }
-        return links;
+        return Collections.unmodifiableList(links);
     }
 
+    /**
+     * Use this method to get the object's links and modify them. A link in Jiak
+     * consists of an array with three elements: the target bucket, target key,
+     * and link tag. For example, to add a link:
+     * 
+     * object.getLinksAsJSON().put(new String[] {"bucket", "key", "tag"});
+     * 
+     * @return A modifiable {@link JSONArray} representing the links of this
+     *         object
+     */
     public JSONArray getLinksAsJSON() {
         return links;
     }
@@ -207,6 +221,10 @@ public class JiakObject implements RiakObject {
         this.links = links;
     }
 
+    /**
+     * @return An unmodifiable map of user-defined metadata in this object. Use
+     *         getUsermetaAsJSON() to modify the metadata
+     */
     @SuppressWarnings("unchecked")
     public Map<String, String> getUsermeta() {
         if (usermeta == null)
@@ -226,6 +244,9 @@ public class JiakObject implements RiakObject {
     }
 
     public void setUsermeta(JSONObject usermeta) {
+        if (usermeta == null)
+            usermeta = new JSONObject();
+        
         this.usermeta = usermeta;
     }
 

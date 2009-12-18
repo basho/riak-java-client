@@ -106,7 +106,7 @@ A connected RawClient or JiakClient enables the manipulation of Riak objects and
 
 ## Store Objects ##
 
-First create the object type corresponding to the interface being used and fill in any metadata and value.  Then, store the object and check the server response.
+First create the object type corresponding to the interface being used and fill in any metadata and value.  Then, store the object and check the server response. The response contains the updated vclock, last modified date, and vtag of the object, if it was returned by the server.
 
 Using the Raw interface:
 
@@ -135,13 +135,13 @@ With Plain (connected to Raw):
     } catch (RiakPlainResponseException e) {
     }
 
-The request `w` and `dw` values can be specified using a RequestMeta object:
+The request `w` and `dw` values (number of write or durable write responses required for success) can be specified using a RequestMeta object:
 
     client.store(robj, RequestMeta.writeParams(2 /* w-value */, 2 /* dw-value */));
 
 ## Fetch Objects ##
 
-Simply request the object by bucket and key.
+Simply request the object by bucket and key. The response contains the requested object.
 
 With Raw:
 
@@ -163,7 +163,7 @@ With Plain:
     } catch (RiakPlainResponseException e) {
     }
 
-The request `r` value can be specified using a RequestMeta object:
+The request `r` value (number of servers responding to a read request required for success) can be specified using a RequestMeta object:
 
     client.fetch("bucket", "key", RequestMeta.readParams(2 /* r-value */));
 
@@ -175,15 +175,95 @@ This works identically to fetching an object, except that the object's value wil
 
 ## Modify Objects ##
 
+To ensure that no conflicts are created when modifying an object, first fetch it, then update and store it.
+
+With Raw:
+
+    RawFetchResponse r = raw.fetch("bucket", "key");
+    if (r.isSuccess()) {
+        RawObject o = r.getObject();
+        o.setValue("foo");
+        raw.store(o);
+    }
+
 ## Delete Objects ##
+
+Simply execute the delete method.  The `dw` value can be optionally specified as before with a RequestMeta object.
+
+    client.delete("bucket", "key", RequestMeta.writeParams(null /* no w value */, 2 /* dw value */));
 
 ## Handling Conflicts and Siblings ##
 
+The Raw interface is able to return conflicting versions of the same objects known as siblings. This functionality does not exist in Jiak, so JiakFetchResponse.hasSiblings() always returns false.
+
+With Raw:
+
+    // ensure the that allow_mult bucket property is set to true, or Riak will not return siblings.
+    RawFetchResponse r = raw.fetch("bucket", "key");
+    if (r.isSuccess() && r.hasSiblings())
+        Collection<RawObject> siblings = r.getSiblings();
+
 ## Streaming Objects ##
+
+To get and process an object as a stream, implement a StreamHandler and use the stream() method. The input stream of the HTTP response is given to the handler.
+
+    client.stream("bucket", "key", new MyStreamHandler(), RequestMeta.readParams(1 /* r value */));
 
 ## Buckets Keys and Schema ##
 
+The bucket schema and a list the keys of all the objects in the bucket can be read using the listBucket() method and written using the setBucketSchema() method.  The bucket schema is presented as a JSONObject and contains different fields when using the Raw interface and Jiak.  For example, the Raw interface has the `allow_mult` property which allows Riak to return conflicting versions of the same object to the client.  On the other hand, Jiak contains structured data, and you can specify read and write masks for specific fields in the value.  See the Riak documentation for more information.
+
+With Raw:
+
+    RawBucketResponse r = raw.listBucket("bucket");
+    if (r.isSuccess()) {
+        RawBucketInfo info = r.getBucketInfo();
+        List<String> keys = info.getKeys();         // list of all object keys in this bucket
+        
+        // Update the schema and put
+        info.setAllowMult(true);
+        raw.setBucketSchema(info.getSchema());
+    }
+
+With Jiak:
+
+    JiakBucketResponse r = jiak.listBucket("bucket");
+    if (r.isSuccess()) {
+        JiakBucketInfo info = r.getBucketInfo();
+        List<String> keys = info.getKeys();         // list of all object keys in this bucket
+    
+        // Update the schema and put
+        info.setSchema(Arrays.asList("name", "address") /* allowed fields */, null, null, Arrays.asList("name") /* required fields */);
+        raw.setBucketSchema(info.getSchema());
+    }
+
 ## Links and Link Walking ##
+
+Links can be stored with each object. A link consists of the target object's bucket and key and a tag to identify the link.
+
+With Raw:
+
+    RawObject o = new RawObject("bucket", "key");
+    o.getLinks.add(new RiakLink("bucket", "target-object", "link-tag"));
+
+With Jiak, the links must be modified in JSON format, since a link is expressed as a 3 element JSON array:
+
+    JiakObject o = new JiakObject("bucket", "key");
+    o.getLinksAsJSON().put(new String[] {"bucket", "target-object", "link-tag"});
+
+Link walking is performed by calling walk() with a walk specification (see the Riak documentation and JavaDocs for RiakWalkSpec).  A list of lists of objects is returned.  Each list of objects represents all the objects returned in a single step of the walk.
+
+With Raw:
+
+    RawWalkResponse r = raw.walk("bucket", "key", "bucket,_,1");
+    if (r.isSuccess()) {
+        List<? extends List<RawObject>> steps = r.getSteps();
+        for (List<RawObject> step : steps) {
+            for (RawObject o : step) {
+                // process the object
+            }
+        }
+    }
 
 # HTTP Request/Response Information #
 
@@ -203,3 +283,21 @@ All of the operations above also return results the implement the HttpResponse i
 
 # Exception Handling #
 
+RawClient and JiakClient will usually throw the unchecked exceptions RiakIOException and RiakResponseException if there is an error talking to the server or if the server returns a response that can't be parsed.  However, a RiakExceptionHandler can be installed in the client to prevent them from throwing the exceptions. Instead, they are passed to the exception handler.  This allows a user, for example, to consolidate processing for these exceptional cases in a single class and avoid inline try/catch blocks.
+
+    RawClient c = new RawClient("");
+    c.setExceptionHandler(new RiakExceptionHandler() {
+
+        public void handle(RiakResponseException e) {
+            // Log and ignore malformed responses. The operation in progress
+            // will return null.
+            LOG.warn("Received malformed server response", e);
+        }
+
+        public void handle(RiakIOException e) {
+            // Signal that we are experiencing connection problems
+            App.setConnectionStatus(Status.DOWN);
+        }
+    });
+    
+    

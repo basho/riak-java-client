@@ -136,10 +136,12 @@ public class RequestMeta {
     public String getQueryParams() {
         StringBuilder qp = new StringBuilder();
         for (String param : queryParams.keySet()) {
-            if (qp.length() > 0) {
-                qp.append("&");
+            if (queryParams.get(param) != null) {
+                if (qp.length() > 0) {
+                    qp.append("&");
+                }
+                qp.append(param).append("=").append(queryParams.get(param));
             }
-            qp.append(param).append("=").append(queryParams.get(param));
         }
         return qp.toString();
     }
