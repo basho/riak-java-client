@@ -16,16 +16,24 @@ package com.basho.riak.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.json.JSONArray;
 
 import com.basho.riak.client.jiak.JiakClient;
 import com.basho.riak.client.jiak.JiakFetchResponse;
 import com.basho.riak.client.jiak.JiakObject;
 import com.basho.riak.client.jiak.JiakWalkResponse;
+import com.basho.riak.client.plain.PlainClient;
+import com.basho.riak.client.plain.RiakPlainIOException;
+import com.basho.riak.client.plain.RiakPlainResponseException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RawFetchResponse;
 import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.raw.RawWalkResponse;
+import com.basho.riak.client.request.RequestMeta;
 
 public class RiakClientExample {
 
@@ -39,6 +47,14 @@ public class RiakClientExample {
         testJiak(url + "/jiak");
         testRaw(url + "/raw");
         System.out.println("all tests passed");
+        
+        PlainClient c = PlainClient.connectToJiak("");
+        try {
+            RequestMeta.writeParams(2 /* w */, 2 /* dw */);
+            c.fetch("", "");
+        } catch (RiakPlainIOException e) {
+        } catch (RiakPlainResponseException e) {
+        }
     }
 
     public static void testJiak(String url) {
@@ -137,6 +153,13 @@ public class RiakClientExample {
             } catch (Exception e) {}
         }
         raw.store(jLeaf3);
+        RiakConfig config = new RiakConfig("http://localhost:8098/raw");
+        MultiThreadedHttpConnectionManager m = new MultiThreadedHttpConnectionManager();
+        m.getParams().setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, 50);
+        HttpClient http = new HttpClient(m);
+        http.getParams().setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, 2000);
+        config.setHttpClient(new HttpClient());
+        
     }
 
     private static void assertTrue(boolean assertion) {

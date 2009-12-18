@@ -4,11 +4,11 @@
 
 This client for Java connects to Riak using Commons HttpClient. It provides:
 
-- **HttpClient** provides functionality such as connection pooling, timeouts, and retries. The implementation bundled with Riak built on top of HttpURLConnection lacks these features.
+- **HttpClient** provided functionality such as connection pooling, timeouts, and retries missing in the Riak-bundled implementation, which is built on HttpURLConnection.
 - **Jiak** and **Raw** interface support.
-- **HTTP response data** directly to the client rather than via exceptions. While this slightly couples the domain model with the underlying HTTP model, it gives the benefit of allowing the full suite of HTTP to be used in possibly unforseen ways without requiring modifications to the client library. In reality, clients also need to and do understand that each operation in the client in fact translates to an HTTP operation.  In any case, **PlainClient** provides the more traditional interface with domain objects and exceptions.
+- **HTTP response data** directly to the client rather than via exceptions. While this slightly couples the domain model with the underlying HTTP model, it gives the benefit of allowing the full suite of HTTP to be used (in possibly unforseen ways) without requiring modifications to the client library. In reality, clients also need to and do understand that each operation in fact translates to an HTTP operation.  In any case, **PlainClient** provides the more traditional interface with domain objects and checked exceptions if desired.
 - **Stream handling** for GET requests.
-- **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location allowing the client to avoid the need to wrap each operation in try/catch blocks.
+- **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location. This means the client does not need to wrap each operation in try/catch blocks.
 
 
 # Raw interface quick start #
@@ -68,3 +68,138 @@ Update it:
     riak.store(o);
 
 *Note: Jiak does not return sibling objects.*
+
+
+# Connecting #
+
+Connect to a running Riak server by specifying the base URL of the Jiak or Raw interface:
+    
+    JiakClient jiak = new JiakClient("http://localhost:8098/jiak");
+    RawClient raw = new RawClient("http://localhost:8098/raw");
+    
+HttpClient parameters can be provided using a RiakConfig object:
+
+    RiakConfig config = new RiakConfig("http://localhost:8098/raw");
+    config.setTimeout(2000);        // 2 second connection timeout
+    config.setMaxConnections(50);   // 50 concurrent connections
+    RawClient raw = new RawClient(config);
+    
+The HttpClient instance itself can also be given:
+
+    MultiThreadedHttpConnectionManager m = new MultiThreadedHttpConnectionManager();
+    m.getParams().setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, 50);
+    HttpClient http = new HttpClient(m);
+    http.getParams().setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, 2000);
+    RiakConfig config = new RiakConfig("http://localhost:8098/raw");
+    config.setHttpClient(http);
+    RawClient raw = new RawClient(config);
+
+As an alternate to JiakClient and RawClient, the PlainClient interface can be used, which hides HTTP response information:
+
+    PlainClient plain = PlainClient.connectToJiak("http://localhost:8098/jiak");
+    PlainClient plain = PlainClient.connectToRaw("http://localhost:8098/raw");
+    PlainClient plain = PlainClient.connectToRaw(new RiakConfig("http://localhost:8098/raw"));
+
+# Operations #
+
+A connected RawClient or JiakClient enables the manipulation of Riak objects and buckets.
+
+## Store Objects ##
+
+First create the object type corresponding to the interface being used and fill in any metadata and value.  Then, store the object and check the server response.
+
+Using the Raw interface:
+
+    // An object for the Raw interface
+    RawObject robj = new RawObject("bucket", "key", "value");
+    robj.getUsermeta().put("custom-max-age", "60");
+    robj.setContentType("text/plain");
+    
+    RawStoreResponse rresp = raw.store(robj);
+    if (rresp.isSuccess()) robj.updateMeta(rresp);
+
+With Jiak:
+
+    // An object for the Jiak interface
+    JiakObject jobj = new JiakObject("bucket", "key", "value");
+    jobj.setUsermeta(new JSONObject().put("custom-max-age", "60"));
+
+    JiakStoreResponse jresp = jiak.store(jobj);
+    if (jresp.isSuccess()) robj.updateMeta(jresp);
+
+With Plain (connected to Raw):
+
+    try {
+        plain.store(new RawObject("a", "b"));
+    } catch (RiakPlainIOException e) {
+    } catch (RiakPlainResponseException e) {
+    }
+
+The request `w` and `dw` values can be specified using a RequestMeta object:
+
+    client.store(robj, RequestMeta.writeParams(2 /* w-value */, 2 /* dw-value */));
+
+## Fetch Objects ##
+
+Simply request the object by bucket and key.
+
+With Raw:
+
+    RawFetchResponse r = raw.fetch("bucket", "key");
+    if (r.isSuccess())
+        RawObject o = r.getObject();
+
+With Jiak:
+
+    JiakFetchResponse r = jiak.fetch("bucket", "key");
+    if (j.isSuccess())
+        JiakObject o = r.getObject();
+        
+With Plain:
+
+    try {
+        RiakObject r = plain.fetch("bucket", "key");
+    } catch (RiakPlainIOException e) {
+    } catch (RiakPlainResponseException e) {
+    }
+
+The request `r` value can be specified using a RequestMeta object:
+
+    client.fetch("bucket", "key", RequestMeta.readParams(2 /* r-value */));
+
+## Fetch Object Metadata ##
+
+This works identically to fetching an object, except that the object's value will not necessarily be populated.
+
+    client.fetchMeta("bucket", "key", RequestMeta.readParams(2 /* r-value */));
+
+## Modify Objects ##
+
+## Delete Objects ##
+
+## Handling Conflicts and Siblings ##
+
+## Streaming Objects ##
+
+## Buckets Keys and Schema ##
+
+## Links and Link Walking ##
+
+# HTTP Request/Response Information #
+
+All of the above operations can also be called with a RequestMeta object to specify extra HTTP headers and query parameters:
+
+    RequestMeta meta = new RequestMeta();
+    meta.putHeader("X-Custom-Header", "value");
+    meta.addHeader("custom-query-param", "param");
+    
+    client.fetch("bucket", "key", meta);
+
+All of the operations above also return results the implement the HttpResponse interface, which exposes the HTTP status code, headers, body, and original HttpMethod used for the request. The entity stream, however is closed, so the stream() function should be used to stream objects.
+
+    HttpResponse r = client.fetch("bucket", "key");
+    Map<String, String> httpHeaders = r.getHttpHeaders();
+    String httpBody = r.getBody();
+
+# Exception Handling #
+

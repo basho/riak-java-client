@@ -1,5 +1,7 @@
 package com.basho.riak.client.response;
 
+import java.io.IOException;
+
 /**
  * Thrown when an error occurs during communication with the Riak server.
  */
@@ -11,7 +13,7 @@ public class RiakIOException extends RuntimeException {
         super();
     }
 
-    public RiakIOException(String message, Throwable cause) {
+    public RiakIOException(String message, IOException cause) {
         super(message, cause);
     }
 

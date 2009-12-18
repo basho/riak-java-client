@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 
+import com.basho.riak.client.response.StoreResponse;
+
 /**
  * A Riak object
  */
@@ -35,14 +37,11 @@ public interface RiakObject {
      * Update the object's metadata. This usually happens when Riak returns
      * updated metadata from a store operation.
      * 
-     * @param vclock
-     *            The updated vclock
-     * @param lastmod
-     *            The updated last modified date
-     * @param vtag
-     *            The updated vtag
+     * @param response
+     *            Response from a store operation containing an updated vclock,
+     *            last modified date, and vtag
      */
-    public void updateMeta(String vclock, String lastmod, String vtag);
+    public void updateMeta(StoreResponse response);
 
     /**
      * @return The object's bucket

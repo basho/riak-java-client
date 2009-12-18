@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -123,10 +125,12 @@ public class JiakObject implements RiakObject {
         vtag = object.getVtag();
     }
 
-    public void updateMeta(String vclock, String lastmod, String vtag) {
-        this.vclock = vclock;
-        this.lastmod = lastmod;
-        this.vtag = vtag;
+    public void updateMeta(StoreResponse response) {
+        if (response == null)
+            return;
+        vclock = response.getVclock();
+        lastmod = response.getLastmod();
+        vtag = response.getVtag();
     }
 
     public String getBucket() {
@@ -214,14 +218,14 @@ public class JiakObject implements RiakObject {
             usermeta.put(key, this.usermeta.optString(key));
         }
 
-        return usermeta;
+        return Collections.unmodifiableMap(usermeta);
     }
 
     public JSONObject getUsermetaAsJSON() {
         return usermeta;
     }
 
-    public void setUserMeta(JSONObject usermeta) {
+    public void setUsermeta(JSONObject usermeta) {
         this.usermeta = usermeta;
     }
 

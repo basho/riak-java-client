@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -106,10 +107,12 @@ public class RawObject implements RiakObject {
         vtag = object.getVtag();
     }
 
-    public void updateMeta(String vclock, String lastmod, String vtag) {
-        this.vclock = vclock;
-        this.lastmod = lastmod;
-        this.vtag = vtag;
+    public void updateMeta(StoreResponse response) {
+        if (response == null)
+            return;
+        vclock = response.getVclock();
+        lastmod = response.getLastmod();
+        vtag = response.getVtag();
     }
 
     public String getBucket() {

@@ -198,8 +198,6 @@ public interface RiakClient {
      * 
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseException
-     *             If the Riak server returns a malformed response.
      */
     public HttpResponse delete(String bucket, String key, RequestMeta meta);
 
