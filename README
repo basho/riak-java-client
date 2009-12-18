@@ -80,18 +80,23 @@ Connect to a running Riak server by specifying the base URL of the Jiak or Raw i
 HttpClient parameters can be provided using a RiakConfig object:
 
     RiakConfig config = new RiakConfig("http://localhost:8098/raw");
+    
     config.setTimeout(2000);        // 2 second connection timeout
     config.setMaxConnections(50);   // 50 concurrent connections
+    
     RawClient raw = new RawClient(config);
     
 The HttpClient instance itself can also be given:
 
     MultiThreadedHttpConnectionManager m = new MultiThreadedHttpConnectionManager();
     m.getParams().setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, 50);
+    
     HttpClient http = new HttpClient(m);
     http.getParams().setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, 2000);
+    
     RiakConfig config = new RiakConfig("http://localhost:8098/raw");
     config.setHttpClient(http);
+    
     RawClient raw = new RawClient(config);
 
 As an alternate to JiakClient and RawClient, the PlainClient interface can be used, which hides HTTP response information:
@@ -137,7 +142,7 @@ With Plain (connected to Raw):
 
 The request `w` and `dw` values (number of write or durable write responses required for success) can be specified using a RequestMeta object:
 
-    client.store(robj, RequestMeta.writeParams(2 /* w-value */, 2 /* dw-value */));
+    client.store(obj, RequestMeta.writeParams(2 /* w-value */, 2 /* dw-value */));
 
 ## Fetch Objects ##
 
