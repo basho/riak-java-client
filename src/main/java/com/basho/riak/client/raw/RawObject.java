@@ -24,7 +24,8 @@ import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.Constants;
 
 /**
- * Implementation of RiakObject which interprets objects retrieved from Riak's Raw interface.
+ * Implementation of RiakObject which interprets objects retrieved from Riak's
+ * Raw interface.
  */
 public class RawObject implements RiakObject {
 
@@ -40,6 +41,15 @@ public class RawObject implements RiakObject {
     private InputStream valueStream = null;
     private long valueStreamLength = -1;
 
+    /**
+     * Create an empty Raw object. The content type defaults to
+     * application/octet-stream.
+     * 
+     * @param bucket
+     *            The object's bucket
+     * @param key
+     *            The object's key
+     */
     public RawObject(String bucket, String key) {
         this(bucket, key, null, new ArrayList<RiakLink>(), new HashMap<String, String>(), Constants.CTYPE_OCTET_STREAM,
              null, null, null);

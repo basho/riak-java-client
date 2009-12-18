@@ -104,7 +104,7 @@ public class RawUtils {
                 String location = headers.get(Constants.HDR_LOCATION);
                 String partBucket = bucket;
                 String partKey = key;
-                
+
                 if (location != null) {
                     String[] locationParts = location.split("/");
                     if (locationParts.length >= 2) {
@@ -112,7 +112,7 @@ public class RawUtils {
                         partKey = locationParts[locationParts.length - 1];
                     }
                 }
-                
+
                 RawObject o = new RawObject(partBucket, partKey, docBody, links, usermeta,
                                             headers.get(Constants.HDR_CONTENT_TYPE), vclock,
                                             headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));

@@ -1,17 +1,15 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.util;
 
@@ -30,7 +28,7 @@ public interface Constants {
     public static String JIAK_FL_SCHEMA_ALLOWED_FIELDS = "allowed_fields";
     public static String JIAK_FL_SCHEMA_KEYS = "keys";
     public static String JIAK_FL_SCHEMA_READ_MASK = "read_mask";
-    public static String JIAK_FL_SCHEMA_REQUIRED_FIELDS ="required_fields";
+    public static String JIAK_FL_SCHEMA_REQUIRED_FIELDS = "required_fields";
     public static String JIAK_FL_SCHEMA_WRITE_MASK = "write_mask";
     public static String JIAK_FL_VALUE = "object";
     public static String JIAK_FL_VCLOCK = "vclock";
@@ -70,7 +68,7 @@ public interface Constants {
     public static String CTYPE_MULTIPART_MIXED = "multipart/mixed";
     public static String CTYPE_TEXT = "text/plain";
 
-    // Default r, w, and dw values to use when not specified 
+    // Default r, w, and dw values to use when not specified
     public static Integer DEFAULT_R = 2;
     public static Integer DEFAULT_W = null;
     public static Integer DEFAULT_DW = null;
@@ -80,7 +78,7 @@ public interface Constants {
     public static String QP_R = "r";
     public static String QP_W = "w";
     public static String QP_DW = "dw";
-    
+
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";
     public static String HTTP_GET_METHOD = "GET";

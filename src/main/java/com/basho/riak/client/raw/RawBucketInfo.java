@@ -9,8 +9,8 @@ import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.util.Constants;
 
 /**
- * Adds utility methods to RiakBucketInfo to set the bucket schema properties
- * specific to the Riak Raw interface
+ * Adds convenience methods to RiakBucketInfo to set the bucket schema
+ * properties specific to the Riak Raw interface
  */
 public class RawBucketInfo extends RiakBucketInfo {
 
@@ -72,7 +72,7 @@ public class RawBucketInfo extends RiakBucketInfo {
     }
 
     /**
-     * Number of replicas per object in this bucket. 
+     * Number of replicas per object in this bucket.
      */
     public void setNVal(int n) {
         try {

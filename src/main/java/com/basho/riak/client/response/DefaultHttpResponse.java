@@ -70,10 +70,8 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public boolean isSuccess() {
         return (status >= 200 && status < 300) ||
-            (status == 404 && Constants.HTTP_DELETE_METHOD.equals(httpMethod.getName())) ||
-            (status == 304 && 
-                    (Constants.HTTP_HEAD_METHOD.equals(httpMethod.getName()) || 
-                    Constants.HTTP_GET_METHOD.equals(httpMethod.getName())));
+               (status == 404 && Constants.HTTP_DELETE_METHOD.equals(httpMethod.getName())) ||
+               (status == 304 && (Constants.HTTP_HEAD_METHOD.equals(httpMethod.getName()) || Constants.HTTP_GET_METHOD.equals(httpMethod.getName())));
     }
 
     public boolean isError() {

@@ -30,6 +30,9 @@ import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Implementation of the {@link RiakClient} that connects to the Jiak interface.
+ */
 public class JiakClient implements RiakClient {
 
     private ClientHelper helper;
@@ -70,6 +73,9 @@ public class JiakClient implements RiakClient {
         return listBucket(bucket, null);
     }
 
+    // Jiak stores the object value and metadata all in the message body. Ask
+    // Jiak to return the object that was just stored so we can get the updated
+    // metadata.
     public JiakStoreResponse store(RiakObject object, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();

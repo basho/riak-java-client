@@ -10,15 +10,23 @@ import org.json.JSONObject;
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Adds convenience methods to RiakBucketInfo to set the bucket schema
+ * properties specific to the Riak Jiak interface
+ */
 public class JiakBucketInfo extends RiakBucketInfo {
 
     public JiakBucketInfo(JSONObject schema, Collection<String> keys) {
         super(schema, keys);
     }
 
+    /**
+     * Set the various fields and masks for objects the bucket. See Jiak
+     * documentation for more information.
+     */
     public void setSchema(List<String> allowedFields, List<String> writeMask, List<String> readMask,
                           List<String> requiredFields) {
-        
+
         JSONObject schema = getSchema();
 
         try {

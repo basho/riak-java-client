@@ -40,8 +40,8 @@ public class RawFetchResponse implements FetchResponse {
 
     /**
      * On a 2xx response, parse the HTTP response from the Raw interface into a
-     * {@link RiakObject}. On a 300 response, parse the multipart/mixed HTTP
-     * body into a list of sibling {@link RiakObject}s.
+     * {@link RawObject}. On a 300 response, parse the multipart/mixed HTTP body
+     * into a list of sibling {@link RawObject}s.
      */
     public RawFetchResponse(HttpResponse r) {
         Map<String, String> headers = r.getHttpHeaders();

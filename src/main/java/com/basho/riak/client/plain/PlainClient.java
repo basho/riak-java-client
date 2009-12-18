@@ -1,4 +1,4 @@
-package com.basho.riak.client.object;
+package com.basho.riak.client.plain;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,39 +23,39 @@ import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
 
 /**
- * An adapter from the {@link RiakClient} to a slightly different interface
- * which returns objects without HTTP specific information and throws exceptions
- * on unsuccessful responses.
+ * An adapter from {@link RiakClient} to a slightly less HTTP, more
+ * Java-centric, interface. Objects are returned without HTTP specific
+ * information and exceptions are thrown on unsuccessful responses.
  */
-public class ObjectClient {
+public class PlainClient {
 
     private RiakClient impl;
 
     /** Connect to the Jiak interface using the given configuration. */
-    public static ObjectClient connectToJiak(RiakConfig config) {
-        return new ObjectClient(new JiakClient(config));
+    public static PlainClient connectToJiak(RiakConfig config) {
+        return new PlainClient(new JiakClient(config));
     }
 
     /** Connect to the Jiak interface using the given URL. */
-    public static ObjectClient connectToJiak(String url) {
-        return new ObjectClient(new JiakClient(url));
+    public static PlainClient connectToJiak(String url) {
+        return new PlainClient(new JiakClient(url));
     }
 
     /** Connect to the Raw interface using the given configuration. */
-    public static ObjectClient connectToRaw(RiakConfig config) {
-        return new ObjectClient(new RawClient(config));
+    public static PlainClient connectToRaw(RiakConfig config) {
+        return new PlainClient(new RawClient(config));
     }
 
     /** Connect to the Jiak interface using the given URL. */
-    public static ObjectClient connectToRaw(String url) {
-        return new ObjectClient(new RawClient(url));
+    public static PlainClient connectToRaw(String url) {
+        return new PlainClient(new RawClient(url));
     }
 
     /**
      * Object client wraps an existing {@link RiakClient} and adapts its
      * interface
      */
-    public ObjectClient(RiakClient riakClient) {
+    public PlainClient(RiakClient riakClient) {
         impl = riakClient;
     }
 

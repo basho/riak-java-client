@@ -132,7 +132,7 @@ public class Multipart {
             this.body = body;
         }
 
-        /** 
+        /**
          * @return Headers defined in the part
          */
         public Map<String, String> getHeaders() {

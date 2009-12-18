@@ -33,7 +33,7 @@ public class RawBucketResponse implements BucketResponse {
     public RawBucketResponse(HttpResponse r) throws JSONException {
         impl = r;
 
-        if (r.isSuccess()) {
+        if (r.isSuccess() && (r.getBody() != null)) {
             JSONObject json = new JSONObject(r.getBody());
             JSONObject props = json.optJSONObject(Constants.RAW_FL_SCHEMA);
             JSONArray jsonKeys = json.optJSONArray(Constants.RAW_FL_KEYS);

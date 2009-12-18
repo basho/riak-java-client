@@ -22,7 +22,8 @@ public interface StoreResponse extends HttpResponse {
     public String getVclock();
 
     /**
-     * @return the object's last modified date or null if Riak didn't return one.
+     * @return the object's last modified date or null if Riak didn't return
+     *         one.
      */
     public String getLastmod();
 
