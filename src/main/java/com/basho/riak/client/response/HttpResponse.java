@@ -57,8 +57,9 @@ public interface HttpResponse {
     public HttpMethod getHttpMethod();
 
     /**
-     * @return Whether the HTTP request returned a 2xx or 404 in case of DELETE
-     *         response
+     * @return Whether the HTTP response is considered a success. Generally this
+     *         translates to a 2xx for any request, a 304 for GET and HEAD
+     *         requests, or 404 for DELETE requests.
      */
     public boolean isSuccess();
 

@@ -22,30 +22,48 @@ import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
 
+/**
+ * An adapter from the {@link RiakClient} to a slightly different interface
+ * which returns objects without HTTP specific information and throws exceptions
+ * on unsuccessful responses.
+ */
 public class ObjectClient {
 
     private RiakClient impl;
 
+    /** Connect to the Jiak interface using the given configuration. */
     public static ObjectClient connectToJiak(RiakConfig config) {
         return new ObjectClient(new JiakClient(config));
     }
 
+    /** Connect to the Jiak interface using the given URL. */
     public static ObjectClient connectToJiak(String url) {
         return new ObjectClient(new JiakClient(url));
     }
 
+    /** Connect to the Raw interface using the given configuration. */
     public static ObjectClient connectToRaw(RiakConfig config) {
         return new ObjectClient(new RawClient(config));
     }
 
+    /** Connect to the Jiak interface using the given URL. */
     public static ObjectClient connectToRaw(String url) {
         return new ObjectClient(new RawClient(url));
     }
 
+    /**
+     * Object client wraps an existing {@link RiakClient} and adapts its
+     * interface
+     */
     public ObjectClient(RiakClient riakClient) {
         impl = riakClient;
     }
 
+    /**
+     * See {@link RiakClient}.setBucketSchema(). In addition, throws
+     * {@link RiakResponseException} if the server does not successfully update
+     * the bucket schema.
+     */
     public void setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) throws RiakIOException,
             RiakResponseException {
         HttpResponse r = impl.setBucketSchema(bucket, schema, meta);
@@ -57,6 +75,11 @@ public class ObjectClient {
         setBucketSchema(bucket, schema, null);
     }
 
+    /**
+     * See {@link RiakClient}.listBucket(). In addition, throws
+     * {@link RiakResponseException} if the server does not return the bucket
+     * information
+     */
     public RiakBucketInfo listBucket(String bucket, RequestMeta meta) throws RiakIOException, RiakResponseException {
         BucketResponse r = impl.listBucket(bucket, meta);
 
@@ -70,6 +93,11 @@ public class ObjectClient {
         return listBucket(bucket, null);
     }
 
+    /**
+     * See {@link RiakClient}.store(). In addition, throws
+     * {@link RiakResponseException} if the server does not succesfully store
+     * the object.
+     */
     public void store(RiakObject object, RequestMeta meta) throws RiakIOException, RiakResponseException {
         StoreResponse r = impl.store(object, meta);
 
@@ -83,6 +111,14 @@ public class ObjectClient {
         store(object, null);
     }
 
+    /**
+     * See {@link RiakClient}.fetchMeta(). In addition:
+     * 
+     * 1. Returns null if object doesn't exist.
+     * 
+     * 2. Throws {@link RiakResponseException} if the server does not return the
+     * metadata.
+     */
     public RiakObject fetchMeta(String bucket, String key, RequestMeta meta) throws RiakIOException,
             RiakResponseException {
         FetchResponse r = impl.fetchMeta(bucket, key, meta);
@@ -93,7 +129,7 @@ public class ObjectClient {
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
             throw new RiakResponseException(r, r.getBody());
 
-        if (!r.hasObject())
+        if (r.getStatusCode() == 200 && !r.hasObject())
             throw new RiakResponseException(r, "Failed to parse metadata");
 
         return r.getObject();
@@ -103,6 +139,14 @@ public class ObjectClient {
         return fetchMeta(bucket, key, null);
     }
 
+    /**
+     * See {@link RiakClient}.fetch(). In addition:
+     * 
+     * 1. Returns null if object doesn't exist.
+     * 
+     * 2. Throws {@link RiakResponseException} if the server does not return the
+     * object.
+     */
     public RiakObject fetch(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
         FetchResponse r = impl.fetch(bucket, key, meta);
 
@@ -112,7 +156,7 @@ public class ObjectClient {
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
             throw new RiakResponseException(r, r.getBody());
 
-        if (!r.hasObject())
+        if (r.getStatusCode() == 200 && !r.hasObject())
             throw new RiakResponseException(r, "Failed to parse object");
 
         return r.getObject();
@@ -126,6 +170,11 @@ public class ObjectClient {
         return impl.stream(bucket, key, handler, meta);
     }
 
+    /**
+     * See {@link RiakClient}.delete(). In addition, throws
+     * {@link RiakResponseException} if the object was not deleted. Succeeds if
+     * object did not previously exist.
+     */
     public void delete(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
         HttpResponse r = impl.delete(bucket, key, meta);
 
@@ -137,6 +186,11 @@ public class ObjectClient {
         delete(bucket, key, null);
     }
 
+    /**
+     * See {@link RiakClient}.walk(). In addition, throws
+     * {@link RiakResponseException} if the links could not be walked or the
+     * result steps were not returned. Returns null if the object doesn't exist.
+     */
     public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec, RequestMeta meta)
             throws RiakIOException, RiakResponseException {
         WalkResponse r = impl.walk(bucket, key, walkSpec, meta);

@@ -17,9 +17,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.DeleteMethod;
 
 import com.basho.riak.client.util.ClientUtils;
+import com.basho.riak.client.util.Constants;
 
 /**
  * Simple implementation of HttpResponse interface. Simply stores and returns
@@ -69,7 +69,11 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     public boolean isSuccess() {
-        return (status >= 200 && status < 300) || (status == 404 && (httpMethod instanceof DeleteMethod));
+        return (status >= 200 && status < 300) ||
+            (status == 404 && Constants.HTTP_DELETE_METHOD.equals(httpMethod.getName())) ||
+            (status == 304 && 
+                    (Constants.HTTP_HEAD_METHOD.equals(httpMethod.getName()) || 
+                    Constants.HTTP_GET_METHOD.equals(httpMethod.getName())));
     }
 
     public boolean isError() {

@@ -80,4 +80,10 @@ public interface Constants {
     public static String QP_R = "r";
     public static String QP_W = "w";
     public static String QP_DW = "dw";
+    
+    // HTTP method names
+    public static String HTTP_HEAD_METHOD = "HEAD";
+    public static String HTTP_GET_METHOD = "GET";
+    public static String HTTP_PUT_METHOD = "PUT";
+    public static String HTTP_DELETE_METHOD = "DELETE";
 }

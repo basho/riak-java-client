@@ -38,6 +38,11 @@ public class RawFetchResponse implements FetchResponse {
     private RawObject object;
     private List<RawObject> siblings = new ArrayList<RawObject>();
 
+    /**
+     * On a 2xx response, parse the HTTP response from the Raw interface into a
+     * {@link RiakObject}. On a 300 response, parse the multipart/mixed HTTP
+     * body into a list of sibling {@link RiakObject}s.
+     */
     public RawFetchResponse(HttpResponse r) {
         Map<String, String> headers = r.getHttpHeaders();
         Collection<RiakLink> links = RawUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));

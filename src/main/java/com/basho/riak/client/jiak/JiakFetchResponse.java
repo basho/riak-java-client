@@ -43,7 +43,7 @@ public class JiakFetchResponse implements FetchResponse {
 
     public JiakFetchResponse(HttpResponse r) throws JSONException {
         impl = r;
-        if (r.isSuccess()) {
+        if (r.isSuccess() && r.getBody() != null && r.getBody().length() > 0) {
             object = new JiakObject(new JSONObject(r.getBody()));
         }
     }
