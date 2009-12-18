@@ -1,17 +1,15 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.raw;
 
@@ -29,27 +27,16 @@ import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Decorates an HttpResponse to interpret fetch and fetchMeta responses from
+ * Riak's Raw interface which returns object metadata in HTTP headers and value
+ * in the body.
+ */
 public class RawFetchResponse implements FetchResponse {
 
     private HttpResponse impl;
     private RawObject object;
     private List<RawObject> siblings = new ArrayList<RawObject>();
-
-    public boolean hasObject() {
-        return object != null;
-    }
-
-    public RawObject getObject() {
-        return object;
-    }
-
-    public boolean hasSiblings() {
-        return siblings.size() > 0;
-    }
-
-    public Collection<RawObject> getSiblings() {
-        return Collections.unmodifiableCollection(siblings);
-    }
 
     public RawFetchResponse(HttpResponse r) {
         Map<String, String> headers = r.getHttpHeaders();
@@ -73,6 +60,22 @@ public class RawFetchResponse implements FetchResponse {
                                    headers.get(Constants.HDR_CONTENT_TYPE), headers.get(Constants.HDR_VCLOCK),
                                    headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
         }
+    }
+
+    public boolean hasObject() {
+        return object != null;
+    }
+
+    public RawObject getObject() {
+        return object;
+    }
+
+    public boolean hasSiblings() {
+        return siblings.size() > 0;
+    }
+
+    public Collection<RawObject> getSiblings() {
+        return Collections.unmodifiableCollection(siblings);
     }
 
     public String getBody() {

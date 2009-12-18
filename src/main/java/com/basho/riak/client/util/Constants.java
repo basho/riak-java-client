@@ -51,6 +51,7 @@ public interface Constants {
     public static String HDR_ETAG = "etag";
     public static String HDR_LAST_MODIFIED = "last-modified";
     public static String HDR_LINK = "link";
+    public static String HDR_LOCATION = "location";
     public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
     public static String HDR_VCLOCK = "x-riak-vclock";
 

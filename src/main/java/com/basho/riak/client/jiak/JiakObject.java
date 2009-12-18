@@ -32,6 +32,9 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Implementation of RiakObject which interprets objects retrieved from Riak's Jiak interface.
+ */
 public class JiakObject implements RiakObject {
 
     private String bucket;
