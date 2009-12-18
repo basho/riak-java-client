@@ -14,12 +14,9 @@
 package com.basho.riak.client.jiak;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
@@ -45,46 +42,19 @@ public class JiakClient implements RiakClient {
         helper = new ClientHelper(new RiakConfig(url));
     }
 
-    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta) {
-        return helper.setBucketSchema(bucket, Constants.JIAK_FL_SCHEMA, schema, meta);
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) {
+        if (schema != null) {
+            try {
+                schema = new JSONObject().put(Constants.JIAK_FL_SCHEMA, schema);
+            } catch (JSONException unreached) {
+                throw new IllegalStateException("wrapping valid json should be valid", unreached);
+            }
+        }
+        return helper.setBucketSchema(bucket, schema, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema) {
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema) {
         return setBucketSchema(bucket, schema, null);
-    }
-
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields, RequestMeta meta) {
-
-        Map<String, Object> schema = new HashMap<String, Object>();
-
-        if (allowedFields == null) {
-            schema.put(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS, "*");
-        } else {
-            schema.put(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS, allowedFields);
-        }
-        if (requiredFields == null) {
-            schema.put(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS, new ArrayList<String>());
-        } else {
-            schema.put(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS, requiredFields);
-        }
-        if (writeMask == null) {
-            schema.put(Constants.JIAK_FL_SCHEMA_WRITE_MASK, "*");
-        } else {
-            schema.put(Constants.JIAK_FL_SCHEMA_WRITE_MASK, writeMask);
-        }
-        if (readMask == null) {
-            schema.put(Constants.JIAK_FL_SCHEMA_READ_MASK, "*");
-        } else {
-            schema.put(Constants.JIAK_FL_SCHEMA_READ_MASK, readMask);
-        }
-
-        return setBucketSchema(bucket, schema, meta);
-    }
-
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields) {
-        return setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
     }
 
     public BucketResponse listBucket(String bucket, RequestMeta meta) {

@@ -14,7 +14,8 @@
 package com.basho.riak.client;
 
 import java.io.IOException;
-import java.util.Map;
+
+import org.json.JSONObject;
 
 import com.basho.riak.client.jiak.JiakClient;
 import com.basho.riak.client.raw.RawClient;
@@ -43,10 +44,10 @@ public interface RiakClient {
      * @param bucket
      *            The bucket name.
      * @param schema
-     *            The bucket schema to use for the bucket. Refer to the
-     *            documentation for a specific Riak interface (i.e. Jiak, Raw)
-     *            for a list of the recognized schema properties and the format
-     *            of their values.
+     *            The schema to use for the bucket. Refer to the documentation
+     *            for a specific Riak interface (i.e. Jiak, Raw) for a list of
+     *            the recognized schema properties and the format of their
+     *            values.
      * @param meta
      *            Extra metadata to attach to the request such as HTTP headers
      *            and query parameters.
@@ -59,9 +60,9 @@ public interface RiakClient {
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
      */
-    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta);
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta);
 
-    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema);
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema);
 
     /**
      * Return the schema and keys for a Riak bucket.

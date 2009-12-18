@@ -24,7 +24,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PutMethod;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.basho.riak.client.RiakClient;
@@ -55,44 +54,25 @@ public class ClientHelper {
 
     /**
      * See {@link RiakClient}
-     * 
-     * @param bucket
-     *            Same as RiakClient.setBucketSchema()
-     * @param schemaKey
-     *            The JSON key which holds the schema or null to send the schema
-     *            without an enclosing key
-     * @param schema
-     *            Same as RiakClient.setBucketSchema()
-     * @param meta
-     *            Same as RiakClient.setBucketSchema()
      */
-    public HttpResponse setBucketSchema(String bucket, String schemaKey, Map<String, Object> schema, RequestMeta meta) {
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) {
+        if (schema == null) {
+            schema = new JSONObject();
+        }
         if (meta == null) {
             meta = new RequestMeta();
         }
 
         meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
-        JSONObject json;
-        try {
-            JSONObject props = new JSONObject(schema);
-            if (schemaKey != null) {
-                json = new JSONObject().put(schemaKey, props);
-            } else {
-                json = props;
-            }
-        } catch (JSONException e) {
-            throw new IllegalArgumentException("Cannot serialize provided schema into JSON", e);
-        }
-
         PutMethod put = new PutMethod(ClientUtils.makeURI(config, bucket));
-        put.setRequestEntity(new ByteArrayRequestEntity(json.toString().getBytes(), Constants.CTYPE_JSON));
+        put.setRequestEntity(new ByteArrayRequestEntity(schema.toString().getBytes(), Constants.CTYPE_JSON));
 
         return executeMethod(bucket, null, put, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, String schemaKey, Map<String, Object> schema) {
-        return setBucketSchema(bucket, schemaKey, schema, null);
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema) {
+        return setBucketSchema(bucket, schema, null);
     }
 
     /**

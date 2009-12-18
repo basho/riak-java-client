@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.basho.riak.client.jiak.JiakClient;
 import com.basho.riak.client.jiak.JiakFetchResponse;

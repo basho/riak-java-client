@@ -39,8 +39,16 @@ public interface Constants {
     public static String JIAK_FL_WALK_RESULTS = "results";
 
     // JSON fields used by Raw
-    public static String RAW_FL_PROPS = "props";
     public static String RAW_FL_KEYS = "keys";
+    public static String RAW_FL_SCHEMA = "props";
+    public static String RAW_FL_SCHEMA_ALLOW_MULT = "allow_mult";
+    public static String RAW_FL_SCHEMA_CHASHFUN = "chash_keyfun";
+    public static String RAW_FL_SCHEMA_CHASHFUN_MOD = "mod";
+    public static String RAW_FL_SCHEMA_CHASHFUN_FUN = "fun";
+    public static String RAW_FL_SCHEMA_LINKFUN = "linkfun";
+    public static String RAW_FL_SCHEMA_LINKFUN_MOD = "mod";
+    public static String RAW_FL_SCHEMA_LINKFUN_FUN = "fun";
+    public static String RAW_FL_SCHEMA_NVAL = "n_val";
 
     // Header directives used by Raw
     public static String RAW_LINK_TAG = "riaktag";

@@ -1,17 +1,15 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.raw;
 
@@ -20,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
@@ -35,6 +34,10 @@ import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Implementation of the {@link RiakClient} that connects to the Riak Raw
+ * interface.
+ */
 public class RawClient implements RiakClient {
 
     private ClientHelper helper;
@@ -50,11 +53,18 @@ public class RawClient implements RiakClient {
         riakBasePath = ClientUtils.getPathFromUrl(url);
     }
 
-    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta) {
-        return helper.setBucketSchema(bucket, Constants.RAW_FL_PROPS, schema, meta);
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) {
+        if (schema != null) {
+            try {
+                schema = new JSONObject().put(Constants.RAW_FL_SCHEMA, schema);
+            } catch (JSONException unreached) {
+                throw new IllegalStateException("wrapping valid json should be valid", unreached);
+            }
+        }
+        return helper.setBucketSchema(bucket, schema, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema) {
+    public HttpResponse setBucketSchema(String bucket, JSONObject schema) {
         return setBucketSchema(bucket, schema, null);
     }
 
@@ -71,6 +81,8 @@ public class RawClient implements RiakClient {
         return listBucket(bucket, null);
     }
 
+    // Sends the object's link, user-defined metadata and vclock as HTTP headers
+    // and the value as the body
     public RawStoreResponse store(RiakObject object, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
@@ -82,14 +94,18 @@ public class RawClient implements RiakClient {
 
         if (links != null) {
             for (RiakLink link : links) {
-                linkHeader.append("<").append(riakBasePath).append("/").append(link.getBucket()).append("/").append(
-                                                                                                                    link.getKey()).append(
-                                                                                                                                          ">; ").append(
-                                                                                                                                                        Constants.RAW_LINK_TAG).append(
-                                                                                                                                                                                       "=\"").append(
-                                                                                                                                                                                                     link.getTag()).append(
-                                                                                                                                                                                                                           "\"").append(
-                                                                                                                                                                                                                                        ",");
+                linkHeader.append("<");
+                linkHeader.append(riakBasePath);
+                linkHeader.append("/");
+                linkHeader.append(link.getBucket());
+                linkHeader.append("/");
+                linkHeader.append(link.getKey());
+                linkHeader.append(">; ");
+                linkHeader.append(Constants.RAW_LINK_TAG);
+                linkHeader.append("=\"");
+                linkHeader.append(link.getTag());
+                linkHeader.append("\"");
+                linkHeader.append(",");
             }
         }
         if (linkHeader.length() > 0) {
@@ -119,6 +135,7 @@ public class RawClient implements RiakClient {
         return fetchMeta(bucket, key, null);
     }
 
+    // Fetches the object or all sibling objects if there are multiple
     public RawFetchResponse fetch(String bucket, String key, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();

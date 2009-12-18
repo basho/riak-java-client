@@ -32,6 +32,9 @@ public class RawStoreResponse implements StoreResponse {
     private String lastmod = null;
     private String vtag = null;
 
+    /**
+     * On a 2xx response, parses the HTTP headers into updated object metadata.
+     */
     public RawStoreResponse(HttpResponse r) {
 
         impl = r;

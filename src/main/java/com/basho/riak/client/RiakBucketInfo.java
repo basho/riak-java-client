@@ -2,8 +2,8 @@ package com.basho.riak.client;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.json.JSONObject;
 
 /**
  * Represents the metadata stored in a bucket including its schema (whose fields
@@ -11,50 +11,31 @@ import java.util.Map;
  */
 public class RiakBucketInfo {
 
-    private Map<String, Object> schema;
+    private JSONObject schema;
     private Collection<String> keys;
 
     /**
      * Returns the list of properties in the schema and their values. The
-     * properties available is interface dependent. In general, the values are
-     * JSON and can be parsed by the client into a JSONObject or JSONArray for
-     * further inspection.
+     * properties available is interface dependent.
      * 
      * @return The properties composing this bucket's schema.
      */
-    public Map<String, ? extends Object> getSchema() {
+    public JSONObject getSchema() {
         return schema;
     }
 
     /**
-     * Set a specific property in the schema. In general schema values need to
-     * be valid JSON to be accepted by Riak. Remember to quote string values.
-     * 
-     * @param property
-     *            Schema property to set
-     * @param value
-     *            Value of the property; should be valid JSON. Remember to quote
-     *            strings.
-     */
-    public void setSchema(String property, Object value) {
-        schema.put(property, value);
-    }
-
-    /**
-     * Returns the list of properties in the schema. The properties available is
-     * interface dependent.
-     * 
-     * @return The properties in this bucket's schema.
+     * @return The object keys in this bucket.
      */
     public Collection<String> getKeys() {
         return keys;
     }
 
-    public RiakBucketInfo(Map<String, ? extends Object> schema, Collection<String> keys) {
+    public RiakBucketInfo(JSONObject schema, Collection<String> keys) {
         if (schema != null) {
-            this.schema = new HashMap<String, Object>(schema);
+            this.schema = schema;
         } else {
-            this.schema = new HashMap<String, Object>();
+            this.schema = new JSONObject();
         }
         if (keys != null) {
             this.keys = keys;

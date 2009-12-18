@@ -32,17 +32,13 @@ import com.basho.riak.client.util.Multipart;
 public class RawWalkResponse implements WalkResponse {
 
     private HttpResponse impl = null;
-
-    public boolean hasSteps() {
-        return steps.size() > 0;
-    }
-
-    public List<? extends List<RawObject>> getSteps() {
-        return steps;
-    }
-
     private List<? extends List<RawObject>> steps = new ArrayList<List<RawObject>>();
 
+    /**
+     * On a 2xx response, parses the HTTP body into a list of steps. Each step
+     * contains a list of objects returned in that step. The HTTP body is a
+     * multipart/mixed message with multipart/mixed subparts
+     */
     public RawWalkResponse(HttpResponse r) {
         if (r == null)
             return;
@@ -51,6 +47,14 @@ public class RawWalkResponse implements WalkResponse {
         if (r.isSuccess()) {
             steps = parseSteps(r);
         }
+    }
+
+    public boolean hasSteps() {
+        return steps.size() > 0;
+    }
+
+    public List<? extends List<RawObject>> getSteps() {
+        return steps;
     }
 
     public String getBody() {
@@ -85,6 +89,15 @@ public class RawWalkResponse implements WalkResponse {
         return impl.isSuccess();
     }
 
+    /**
+     * Parse a multipart/mixed message with multipart/mixed subparts into a list
+     * of lists.
+     * 
+     * @param r
+     *            HTTP response from the Riak Raw interface
+     * @return A list of lists of {@link RawObject}s represented by the
+     *         response.
+     */
     private static List<? extends List<RawObject>> parseSteps(HttpResponse r) {
         String bucket = r.getBucket();
         String key = r.getKey();
