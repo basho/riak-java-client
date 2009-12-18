@@ -25,6 +25,7 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
@@ -62,10 +63,12 @@ public class JiakClient implements RiakClient {
 
     public BucketResponse listBucket(String bucket, RequestMeta meta) {
         HttpResponse r = helper.listBucket(bucket, meta);
+        if (r == null)
+            return null;
         try {
             return new JiakBucketResponse(r);
         } catch (JSONException e) {
-            throw new RiakResponseException(r, e);
+            return helper.toss(new RiakResponseException(r, e));
         }
     }
 
@@ -84,10 +87,12 @@ public class JiakClient implements RiakClient {
         meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         meta.addQueryParam(Constants.QP_RETURN_BODY, "true");
         HttpResponse r = helper.store(object, meta);
+        if (r == null)
+            return null;
         try {
             return new JiakStoreResponse(r);
         } catch (JSONException e) {
-            throw new RiakResponseException(r, e);
+            return helper.toss(new RiakResponseException(r, e));
         }
     }
 
@@ -110,10 +115,12 @@ public class JiakClient implements RiakClient {
         }
         meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         HttpResponse r = helper.fetch(bucket, key, meta);
+        if (r == null)
+            return null;
         try {
             return new JiakFetchResponse(r);
         } catch (JSONException e) {
-            throw new RiakResponseException(r, e);
+            return helper.toss(new RiakResponseException(r, e));
         }
     }
 
@@ -139,10 +146,12 @@ public class JiakClient implements RiakClient {
         }
         meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
+        if (r == null)
+            return null;
         try {
             return new JiakWalkResponse(r);
         } catch (JSONException e) {
-            throw new RiakResponseException(r, e);
+            return helper.toss(new RiakResponseException(r, e));
         }
     }
 
@@ -152,5 +161,19 @@ public class JiakClient implements RiakClient {
 
     public JiakWalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
         return walk(bucket, key, walkSpec.toString(), null);
+    }
+
+    /** @return the installed exception handler or null if not installed */
+    public RiakExceptionHandler getExceptionHandler() {
+        return helper.getExceptionHandler();
+    }
+
+    /**
+     * Install an exception handler. If an exception handler is provided, then
+     * the Riak client will hand exceptions to the handler rather than throwing
+     * them.
+     */
+    public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
+        helper.setExceptionHandler(exceptionHandler);
     }
 }

@@ -28,6 +28,7 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
@@ -70,10 +71,13 @@ public class RawClient implements RiakClient {
 
     public BucketResponse listBucket(String bucket, RequestMeta meta) {
         HttpResponse r = helper.listBucket(bucket, meta);
+        if (r == null)
+            return null;
         try {
             return new RawBucketResponse(r);
         } catch (JSONException e) {
-            throw new RiakResponseException(r, e);
+            helper.toss(new RiakResponseException(r, e));
+            return null;
         }
     }
 
@@ -120,7 +124,11 @@ public class RawClient implements RiakClient {
             meta.putHeader(Constants.HDR_VCLOCK, vclock);
         }
 
-        return new RawStoreResponse(helper.store(object, meta));
+        HttpResponse r = helper.store(object, meta);
+        if (r == null)
+            return null;
+
+        return new RawStoreResponse(r);
     }
 
     public RawStoreResponse store(RiakObject object) {
@@ -128,7 +136,11 @@ public class RawClient implements RiakClient {
     }
 
     public RawFetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
-        return new RawFetchResponse(helper.fetchMeta(bucket, key, meta));
+        try {
+            return new RawFetchResponse(helper.fetchMeta(bucket, key, meta));
+        } catch (RiakResponseException e) {
+            return helper.toss(e);
+        }
     }
 
     public RawFetchResponse fetchMeta(String bucket, String key) {
@@ -147,7 +159,17 @@ public class RawClient implements RiakClient {
         } else {
             meta.putHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
         }
-        return new RawFetchResponse(helper.fetch(bucket, key, meta));
+
+        HttpResponse r = helper.fetch(bucket, key, meta);
+        if (r == null)
+            return null;
+
+        try {
+            return new RawFetchResponse(r);
+        } catch (RiakResponseException e) {
+            return helper.toss(e);
+        }
+
     }
 
     public RawFetchResponse fetch(String bucket, String key) {
@@ -171,7 +193,16 @@ public class RawClient implements RiakClient {
             meta = new RequestMeta();
         }
         meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_MULTIPART_MIXED);
-        return new RawWalkResponse(helper.walk(bucket, key, walkSpec, meta));
+
+        HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
+        if (r == null)
+            return null;
+
+        try {
+            return new RawWalkResponse(r);
+        } catch (RiakResponseException e) {
+            return helper.toss(e);
+        }
     }
 
     public RawWalkResponse walk(String bucket, String key, String walkSpec) {
@@ -180,5 +211,19 @@ public class RawClient implements RiakClient {
 
     public RawWalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
         return walk(bucket, key, walkSpec.toString(), null);
+    }
+    
+    /** @return the installed exception handler or null if not installed */
+    public RiakExceptionHandler getExceptionHandler() {
+        return helper.getExceptionHandler();
+    }
+
+    /**
+     * Install an exception handler. If an exception handler is provided, then
+     * the Riak client will hand exceptions to the handler rather than throwing
+     * them.
+     */
+    public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
+        helper.setExceptionHandler(exceptionHandler);
     }
 }

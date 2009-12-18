@@ -102,7 +102,7 @@ public class JiakObject implements RiakObject {
                 try {
                     value = new JSONObject().put("v", JSONObject.quote(object.getValue()));
                 } catch (JSONException unreached) {
-                    throw new IllegalStateException(unreached);
+                    throw new IllegalStateException("can always add quoted string to json", unreached);
                 }
             }
         } else {
@@ -154,10 +154,19 @@ public class JiakObject implements RiakObject {
         value = object;
     }
 
+    /**
+     * @return the value associated with this key in this object's value (not
+     *         metadata)
+     */
     public Object get(String key) {
         return value.opt(key);
     }
 
+    /**
+     * @return set the value of some key in this object's value (not metadata)
+     * @throws IllegalArgumentException
+     *             if <code>value</code> cannot be added to valid JSON
+     */
     public void set(String key, Object value) {
         if (value != null) {
             try {
@@ -273,7 +282,7 @@ public class JiakObject implements RiakObject {
                 o.put("object", getValueAsJSON());
             }
         } catch (JSONException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("can always add non null strings and json objects to json", e);
         }
         return o;
     }

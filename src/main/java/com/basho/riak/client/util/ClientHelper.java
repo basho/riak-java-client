@@ -33,7 +33,9 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.DefaultHttpResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakIOException;
+import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.StreamHandler;
 
 /**
@@ -46,6 +48,7 @@ public class ClientHelper {
 
     private RiakConfig config;
     private HttpClient httpClient;
+    private RiakExceptionHandler exceptionHandler = null;
 
     public ClientHelper(RiakConfig config) {
         this.config = config;
@@ -211,10 +214,43 @@ public class ClientHelper {
         return walk(bucket, key, walkSpec.toString(), null);
     }
 
+    /** @return the installed exception handler or null if not installed */
+    public RiakExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
+    }
+
+    /**
+     * Install an exception handler. If an exception handler is provided, then
+     * the Riak client will hand exceptions to the handler rather than throwing
+     * them.
+     */
+    public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
+    }
+
+    /**
+     * Hands exception <code>e</code> to installed exception handler if there is
+     * one or throw it.
+     */
+    public <T> T toss(RiakIOException e) {
+        if (exceptionHandler != null) {
+            exceptionHandler.handle(e);
+            return null;
+        } else
+            throw e;
+    }
+    public <T> T toss(RiakResponseException e) {
+        if (exceptionHandler != null) {
+            exceptionHandler.handle(e);
+            return null;
+        } else
+            throw e;
+    }
+
     /**
      * @return The config used to construct the HttpClient connecting to Riak.
      */
-    protected RiakConfig getConfig() {
+    RiakConfig getConfig() {
         return config;
     }
 
@@ -239,7 +275,7 @@ public class ClientHelper {
      *             If an error occurs during communication with the Riak server
      *             (i.e. HttpClient threw an IOException)
      */
-    protected HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
+     HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
 
         if (meta != null) {
             Map<String, String> headers = meta.getHeaders();
@@ -252,7 +288,8 @@ public class ClientHelper {
             httpClient.executeMethod(httpMethod);
             return DefaultHttpResponse.fromHttpMethod(bucket, key, httpMethod);
         } catch (IOException e) {
-            throw new RiakIOException(e);
+            toss(new RiakIOException(e));
+            return null;
         } finally {
             httpMethod.releaseConnection();
         }

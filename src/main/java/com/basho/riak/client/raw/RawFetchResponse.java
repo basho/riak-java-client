@@ -42,8 +42,12 @@ public class RawFetchResponse implements FetchResponse {
      * On a 2xx response, parse the HTTP response from the Raw interface into a
      * {@link RawObject}. On a 300 response, parse the multipart/mixed HTTP body
      * into a list of sibling {@link RawObject}s.
+     * 
+     * @throws RiakResponseException
+     *             If the server returns a 300 without a proper multipart/mixed
+     *             body
      */
-    public RawFetchResponse(HttpResponse r) {
+    public RawFetchResponse(HttpResponse r) throws RiakResponseException {
         Map<String, String> headers = r.getHttpHeaders();
         Collection<RiakLink> links = RawUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
         Map<String, String> usermeta = RawUtils.parseUsermeta(headers);

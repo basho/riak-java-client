@@ -39,7 +39,7 @@ public class RawWalkResponse implements WalkResponse {
      * contains a list of objects returned in that step. The HTTP body is a
      * multipart/mixed message with multipart/mixed subparts
      */
-    public RawWalkResponse(HttpResponse r) {
+    public RawWalkResponse(HttpResponse r) throws RiakResponseException {
         if (r == null)
             return;
 
@@ -97,8 +97,11 @@ public class RawWalkResponse implements WalkResponse {
      *            HTTP response from the Riak Raw interface
      * @return A list of lists of {@link RawObject}s represented by the
      *         response.
+     * @throws RiakResponseException
+     *             If one of the parts of the body doesn't contain a proper
+     *             multipart/mixed message
      */
-    private static List<? extends List<RawObject>> parseSteps(HttpResponse r) {
+    private static List<? extends List<RawObject>> parseSteps(HttpResponse r) throws RiakResponseException {
         String bucket = r.getBucket();
         String key = r.getKey();
         List<List<RawObject>> parsedSteps = new ArrayList<List<RawObject>>();
