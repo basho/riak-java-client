@@ -15,7 +15,8 @@ import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
- * Decorates an HttpResponse to interpret listBucket response from Riak's Raw interface
+ * Decorates an HttpResponse to interpret listBucket response from Riak's Raw
+ * interface which returns a JSON object with the keys "props" and "keys".
  */
 public class RawBucketResponse implements BucketResponse {
 
