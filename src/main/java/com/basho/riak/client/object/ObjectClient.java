@@ -2,6 +2,7 @@ package com.basho.riak.client.object;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
@@ -44,18 +45,16 @@ public class ObjectClient {
         impl = riakClient;
     }
 
-    public void setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                List<String> readMask, List<String> requiredFields, RequestMeta meta)
-            throws RiakIOException, RiakResponseException {
-        HttpResponse r = impl.setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, meta);
+    public void setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta) throws RiakIOException,
+            RiakResponseException {
+        HttpResponse r = impl.setBucketSchema(bucket, schema, meta);
         if (r.getStatusCode() != 204)
             throw new RiakResponseException(r, r.getBody());
     }
 
-    public void setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                List<String> readMask, List<String> requiredFields) throws RiakIOException,
+    public void setBucketSchema(String bucket, Map<String, Object> schema) throws RiakIOException,
             RiakResponseException {
-        setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
+        setBucketSchema(bucket, schema, null);
     }
 
     public RiakBucketInfo listBucket(String bucket, RequestMeta meta) throws RiakIOException, RiakResponseException {

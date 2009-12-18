@@ -25,7 +25,7 @@ public class JiakBucketResponse implements BucketResponse {
         if (r.isSuccess()) {
             JSONObject json = new JSONObject(r.getBody());
             JSONObject jsonSchema = json.optJSONObject(Constants.JIAK_FL_SCHEMA);
-            JSONArray jsonKeys = json.optJSONArray(Constants.JIAK_FL_KEYS);
+            JSONArray jsonKeys = json.optJSONArray(Constants.JIAK_FL_SCHEMA_KEYS);
 
             Map<String, String> schema = ClientUtils.jsonObjectAsMap(jsonSchema);
             Collection<String> keys = ClientUtils.jsonArrayAsList(jsonKeys);

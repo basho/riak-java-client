@@ -1,23 +1,19 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.util;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -31,6 +27,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
@@ -40,6 +37,12 @@ import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakIOException;
 import com.basho.riak.client.response.StreamHandler;
 
+/**
+ * This class performs the actual HTTP requests underlying the operations in the
+ * RiakClient interface and returns the resulting HTTP responses. It is up to
+ * actual implementations of RiakClient to interpret the responses and translate
+ * them into the appropriate format.
+ */
 public class ClientHelper {
 
     private RiakConfig config;
@@ -50,47 +53,51 @@ public class ClientHelper {
         httpClient = ClientUtils.newHttpClient(config);
     }
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields, RequestMeta meta) {
-
+    /**
+     * See {@link RiakClient}
+     * 
+     * @param bucket
+     *            Same as RiakClient.setBucketSchema()
+     * @param schemaKey
+     *            The JSON key which holds the schema or null to send the schema
+     *            without an enclosing key
+     * @param schema
+     *            Same as RiakClient.setBucketSchema()
+     * @param meta
+     *            Same as RiakClient.setBucketSchema()
+     */
+    public HttpResponse setBucketSchema(String bucket, String schemaKey, Map<String, Object> schema, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        if (requiredFields == null) {
-            requiredFields = new ArrayList<String>();
-        }
-        if (writeMask == null) {
-            writeMask = new ArrayList<String>(allowedFields);
-        }
-        if (readMask == null) {
-            readMask = new ArrayList<String>(allowedFields);
-        }
 
-        final JSONObject schema = new JSONObject();
-        final JSONObject schemaReqBody = new JSONObject();
-
-        try {
-            schema.put("allowed_fields", allowedFields);
-            schema.put("required_fields", requiredFields);
-            schema.put("read_mask", readMask);
-            schema.put("write_mask", writeMask);
-            schemaReqBody.put("schema", schema);
-        } catch (JSONException unreached) {
-            throw new IllegalStateException("should not happen", unreached);
-        }
-
-        meta.put(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
         meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
+        JSONObject json;
+        try {
+            JSONObject props = new JSONObject(schema);
+            if (schemaKey != null) {
+                json = new JSONObject().put(schemaKey, props);
+            } else {
+                json = props;
+            }
+        } catch (JSONException e) {
+            throw new IllegalArgumentException("Cannot serialize provided schema into JSON", e);
+        }
+
         PutMethod put = new PutMethod(ClientUtils.makeURI(config, bucket));
+        put.setRequestEntity(new ByteArrayRequestEntity(json.toString().getBytes(), Constants.CTYPE_JSON));
+
         return executeMethod(bucket, null, put, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields) {
-        return setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
+    public HttpResponse setBucketSchema(String bucket, String schemaKey, Map<String, Object> schema) {
+        return setBucketSchema(bucket, schemaKey, schema, null);
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public HttpResponse listBucket(String bucket, RequestMeta meta) {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket));
         get.setRequestHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
@@ -102,6 +109,9 @@ public class ClientHelper {
         return listBucket(bucket, null);
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public HttpResponse store(RiakObject object, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
@@ -130,6 +140,9 @@ public class ClientHelper {
         return store(object, null);
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public HttpResponse fetchMeta(String bucket, String key, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
@@ -145,6 +158,9 @@ public class ClientHelper {
         return fetchMeta(bucket, key, null);
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public HttpResponse fetch(String bucket, String key, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
@@ -160,6 +176,9 @@ public class ClientHelper {
         return fetch(bucket, key, null);
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
         if (meta == null) {
             meta = new RequestMeta();
@@ -180,6 +199,9 @@ public class ClientHelper {
         }
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public HttpResponse delete(String bucket, String key, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
@@ -193,6 +215,9 @@ public class ClientHelper {
         return delete(bucket, key, null);
     }
 
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
     public HttpResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, walkSpec));
         return executeMethod(bucket, key, get, meta);
@@ -206,10 +231,34 @@ public class ClientHelper {
         return walk(bucket, key, walkSpec.toString(), null);
     }
 
+    /**
+     * @return The config used to construct the HttpClient connecting to Riak.
+     */
     protected RiakConfig getConfig() {
         return config;
     }
 
+    /**
+     * Perform and HTTP request and return the resulting response using the
+     * internal HttpClient.
+     * 
+     * @param bucket
+     *            Bucket of the object receiving the request.
+     * @param key
+     *            Key of the object receiving the request or null if the request
+     *            is for a bucket.
+     * @param httpMethod
+     *            The HTTP request to perform; must not be null.
+     * @param meta
+     *            Extra HTTP headers to attach to the request. Query parameters
+     *            are ignored; they should have already been used to construct
+     *            <code>httpMethod</code> and query parameters.
+     * @return The HTTP response returned by Riak from executing
+     *         <code>httpMethod</code>
+     * @throws RiakIOException
+     *             If an error occurs during communication with the Riak server
+     *             (i.e. HttpClient threw an IOException)
+     */
     protected HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
 
         if (meta != null) {

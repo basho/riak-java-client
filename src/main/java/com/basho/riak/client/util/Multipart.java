@@ -5,19 +5,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents a multipart entity as described here:
+ * 
+ * http://tools.ietf.org/html/rfc2046#section-5.1
+ */
 public class Multipart {
 
     private static String HEADER_DELIM = "\n\n";
 
     /**
-     * Parses a multipart message or a multipart subpart of a
-     * multipart message.
+     * Parses a multipart message or a multipart subpart of a multipart message.
      * 
-     * Note: a multipart message and multipart subpart can be parsed
-     * identically because a message begins with a blank line,
-     * which is seen as an empty header section. This is because
-     * the first boundary includes a preceding new line
-     * (http://tools.ietf.org/html/rfc2046#section-5.1.1)
+     * Note: a multipart message and multipart subpart can be parsed identically
+     * because a message begins with a blank line, which is seen as an empty
+     * header section. This is because the first boundary includes a preceding
+     * new line (http://tools.ietf.org/html/rfc2046#section-5.1.1)
      * 
      * @return
      */
@@ -37,15 +40,14 @@ public class Multipart {
         int pos = body.indexOf(boundary);
         if (pos != -1) {
             while (pos < body.length()) {
-                int start = pos + boundarySize; // first char of part
-                int end = body.indexOf(boundary, start); // last char of part +
-                                                         // 1
-                int headerEnd = body.indexOf(HEADER_DELIM, pos); // end of
-                                                                 // header
-                                                                 // section + 1
-                int bodyStart = headerEnd + HEADER_DELIM.length(); // start of
-                                                                   // body
-                                                                   // section
+                // first char of part
+                int start = pos + boundarySize;
+                // last char of part + 1
+                int end = body.indexOf(boundary, start);
+                // end of header section + 1
+                int headerEnd = body.indexOf(HEADER_DELIM, pos);
+                // start of body section
+                int bodyStart = headerEnd + HEADER_DELIM.length();
 
                 // check for end boundary, which is (boundary + "--")
                 if (body.substring(start).startsWith("--")) {
@@ -72,6 +74,15 @@ public class Multipart {
         return parts;
     }
 
+    /**
+     * Parse a block of header lines as defined here:
+     * 
+     * http://tools.ietf.org/html/rfc822#section-3.2
+     * 
+     * @param s
+     *            The header blob
+     * @return Map of header names to values
+     */
     private static Map<String, String> parseHeaders(String s) {
         // "unfold" header lines (http://tools.ietf.org/html/rfc822#section-3.1)
         s.replaceAll("\n\\s+", " ");
@@ -79,6 +90,7 @@ public class Multipart {
         String[] headers = s.split("\n");
         Map<String, String> parsedHeaders = new HashMap<String, String>();
         for (String header : headers) {
+            // Split header line into name and value
             String[] nv = header.split("\\s*:\\s*", 2);
             if (nv.length > 1) {
                 parsedHeaders.put(nv[0].trim().toLowerCase(), nv[1].trim());
@@ -87,6 +99,14 @@ public class Multipart {
         return parsedHeaders;
     }
 
+    /**
+     * Given a content type value, get the "boundary" parameter
+     * 
+     * @param contentType
+     *            Content type value with boundary parameter. Should be of the
+     *            form "type/subtype; boundary=foobar; param=value"
+     * @return
+     */
     private static String getBoundary(String contentType) {
         String[] params = contentType.split("\\s*;\\s*");
         for (String param : params) {
@@ -99,6 +119,9 @@ public class Multipart {
         return "";
     }
 
+    /**
+     * A single part of a multipart entity
+     */
     public static class Part {
         private Map<String, String> headers;
         private String body;
@@ -109,10 +132,16 @@ public class Multipart {
             this.body = body;
         }
 
+        /** 
+         * @return Headers defined in the part
+         */
         public Map<String, String> getHeaders() {
             return headers;
         }
 
+        /**
+         * @return Body of this part
+         */
         public String getBody() {
             return body;
         }

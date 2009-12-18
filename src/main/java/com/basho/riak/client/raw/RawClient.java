@@ -17,7 +17,6 @@ package com.basho.riak.client.raw;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -51,14 +50,12 @@ public class RawClient implements RiakClient {
         riakBasePath = ClientUtils.getPathFromUrl(url);
     }
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields, RequestMeta meta) {
-        return helper.setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, meta);
+    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta) {
+        return helper.setBucketSchema(bucket, Constants.RAW_FL_PROPS, schema, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields) {
-        return setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
+    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema) {
+        return setBucketSchema(bucket, schema, null);
     }
 
     public BucketResponse listBucket(String bucket, RequestMeta meta) {

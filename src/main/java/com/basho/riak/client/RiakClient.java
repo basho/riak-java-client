@@ -1,23 +1,23 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 
+import com.basho.riak.client.jiak.JiakClient;
+import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
@@ -42,32 +42,26 @@ public interface RiakClient {
      * 
      * @param bucket
      *            The bucket name.
-     * @param allowedFields
-     *            The complete list of field names allowed in a document.
-     * @param writeMask
-     *            The list of writable fields, or null. If null, the write mask
-     *            is set to the value of <code>allowedFields</code>.
-     * @param readMask
-     *            The list of readable fields, or null. If null, the read mask
-     *            is set to the value of <code>allowedFields</code>.
-     * @param requiredFields
-     *            The list of fields that must be present when creating or
-     *            updating a document. If null, <code>requiredFields</code> is
-     *            set to an empty list.
+     * @param schema
+     *            The bucket schema to use for the bucket. Refer to the
+     *            documentation for a specific Riak interface (i.e. Jiak, Raw)
+     *            for a list of the recognized schema properties and the format
+     *            of their values.
      * @param meta
      *            Extra metadata to attach to the request such as HTTP headers
      *            and query parameters.
      * 
      * @return {@link HttpResponse} containing HTTP response information.
      * 
+     * @throws IllegalArgumentException
+     *             If the provided schema values cannot be serialized to send to
+     *             Riak.
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
      */
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields, RequestMeta meta);
+    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta);
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
-                                        List<String> readMask, List<String> requiredFields);
+    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema);
 
     /**
      * Return the schema and keys for a Riak bucket.
@@ -100,10 +94,9 @@ public interface RiakClient {
      *            values for the request, HTTP headers, and other query
      *            parameters. See RequestMeta.writeParams().
      * 
-     * @return {@link StoreResponse} containing HTTP response information and
-     *         a {@link RiakObject} with any updated information
-     *         returned by the server such as the vclock, last modified
-     *         date, and stored value.
+     * @return {@link StoreResponse} containing HTTP response information and a
+     *         {@link RiakObject} with any updated information returned by the
+     *         server such as the vclock, last modified date, and stored value.
      * 
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
@@ -123,12 +116,12 @@ public interface RiakClient {
      * @param key
      *            The key of the {@link RiakObject} to fetch.
      * @param meta
-     *            Extra metadata to attach to the request such as an r-
-     *            value for the request, HTTP headers, and other query
-     *            parameters. See RequestMeta.readParams().
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
      * 
-     * @return {@link FetchResponse} containing HTTP response information and
-     *         a {@link RiakObject} containing only metadata and no value.
+     * @return {@link FetchResponse} containing HTTP response information and a
+     *         {@link RiakObject} containing only metadata and no value.
      * 
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
@@ -148,12 +141,12 @@ public interface RiakClient {
      * @param key
      *            The key of the {@link RiakObject} to fetch.
      * @param meta
-     *            Extra metadata to attach to the request such as an r-
-     *            value for the request, HTTP headers, and other query
-     *            parameters. See RequestMeta.readParams().
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
      * 
-     * @return {@link FetchResponse} containing HTTP response information and
-     *         a {@link RiakObject}.
+     * @return {@link FetchResponse} containing HTTP response information and a
+     *         {@link RiakObject}.
      * 
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
@@ -175,9 +168,9 @@ public interface RiakClient {
      * @param handler
      *            A {@link StreamHandler} to process the Riak response.
      * @param meta
-     *            Extra metadata to attach to the request such as an r-
-     *            value for the request, HTTP headers, and other query
-     *            parameters. See RequestMeta.readParams().
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
      * 
      * @return Result from the handler.process() or true if handler is null.
      * 
@@ -196,9 +189,9 @@ public interface RiakClient {
      * @param key
      *            The key of the object
      * @param meta
-     *            Extra metadata to attach to the request such as an r-
-     *            value for the request, HTTP headers, and other query
-     *            parameters. See RequestMeta.readParams().
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
      * 
      * @return {@link HttpResponse} containing HTTP response information.
      * 
@@ -225,9 +218,9 @@ public interface RiakClient {
      *            <code>tag-spec "_"</code> matches all tags.
      *            <code>accumulateFlag</code> is either the String "1" or "0".
      * 
-     * @return {@link WalkResponse} containing HTTP response information and
-     *         a <code>List</code> of <code>Lists</code>, where each
-     *         sub-list corresponds to a <code>walkSpec</code> element that had
+     * @return {@link WalkResponse} containing HTTP response information and a
+     *         <code>List</code> of <code>Lists</code>, where each sub-list
+     *         corresponds to a <code>walkSpec</code> element that had
      *         <code>accumulateFlag</code> equal to 1.
      * 
      * @throws RiakIOException

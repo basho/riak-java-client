@@ -1,22 +1,23 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.jiak;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 
@@ -44,9 +45,41 @@ public class JiakClient implements RiakClient {
         helper = new ClientHelper(new RiakConfig(url));
     }
 
+    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema, RequestMeta meta) {
+        return helper.setBucketSchema(bucket, Constants.JIAK_FL_SCHEMA, schema, meta);
+    }
+
+    public HttpResponse setBucketSchema(String bucket, Map<String, Object> schema) {
+        return setBucketSchema(bucket, schema, null);
+    }
+
     public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
                                         List<String> readMask, List<String> requiredFields, RequestMeta meta) {
-        return helper.setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, meta);
+
+        Map<String, Object> schema = new HashMap<String, Object>();
+
+        if (allowedFields == null) {
+            schema.put(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS, "*");
+        } else {
+            schema.put(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS, allowedFields);
+        }
+        if (requiredFields == null) {
+            schema.put(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS, new ArrayList<String>());
+        } else {
+            schema.put(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS, requiredFields);
+        }
+        if (writeMask == null) {
+            schema.put(Constants.JIAK_FL_SCHEMA_WRITE_MASK, "*");
+        } else {
+            schema.put(Constants.JIAK_FL_SCHEMA_WRITE_MASK, writeMask);
+        }
+        if (readMask == null) {
+            schema.put(Constants.JIAK_FL_SCHEMA_READ_MASK, "*");
+        } else {
+            schema.put(Constants.JIAK_FL_SCHEMA_READ_MASK, readMask);
+        }
+
+        return setBucketSchema(bucket, schema, meta);
     }
 
     public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
