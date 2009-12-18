@@ -22,21 +22,26 @@ import java.util.Map;
 import org.apache.commons.httpclient.HttpMethod;
 
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.util.Multipart;
 
 public class RawWalkResponse implements WalkResponse {
 
-    private HttpResponse impl;
+    private HttpResponse impl = null;
     
-    public boolean hasSteps() { return this.steps != null; }
+    public boolean hasSteps() { return this.steps.size() > 0; }
     public List<? extends List<RawObject>> getSteps() { return steps; }
-    private List<? extends List<RawObject>> steps;
+    private List<? extends List<RawObject>> steps = new ArrayList<List<RawObject>>();
 
     public RawWalkResponse(HttpResponse r) {
+        if (r == null)
+            return;
+
         this.impl = r;
         if (r.isSuccess())
-            this.steps = parseSteps(r.getHttpHeaders().get(Constants.HDR_CONTENT_TYPE), r.getBody());
+            this.steps = parseSteps(r);
     }
 
     public String getBody() { return impl.getBody(); }
@@ -48,35 +53,22 @@ public class RawWalkResponse implements WalkResponse {
     public boolean isError() { return impl.isError(); }
     public boolean isSuccess() { return impl.isSuccess(); }
 
-    private static List<? extends List<RawObject>> parseSteps(String contentType, String body) {
-        List<? extends List<RawObject>> steps = new ArrayList<ArrayList<RawObject>>();
-        List<String> parts = parseMultipart(contentType, body);
+    private static List<? extends List<RawObject>> parseSteps(HttpResponse r) {
+        String bucket = r.getBucket();
+        String key = r.getKey();
+        List<List<RawObject>> parsedSteps = new ArrayList<List<RawObject>>();
+        List<Multipart.Part> parts = Multipart.parse(r.getHttpHeaders(), r.getBody());
         
-        for (String part : parts) {
+        for (Multipart.Part part : parts) {
+            Map<String, String> partHeaders = part.getHeaders();
+            String contentType = partHeaders.get(Constants.HDR_CONTENT_TYPE);
+
+            if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
+                throw new RiakResponseException(r, "multipart/mixed content expected when object has siblings");
+
+            parsedSteps.add(RawUtils.parseMultipart(bucket, key, partHeaders, part.getBody()));
         }
         
-        return steps;
-    }
-    
-    private static List<String> parseMultipart(String contentType, String body) {
-        List<String> parts = new ArrayList<String>();
-        String boundary = getBoundary(contentType);
-
-        if (boundary == null)
-            return parts;
-        
-        return parts;
-    }
-    
-    private static String getBoundary(String contentType) {
-        if (contentType == null)
-            return null;
-    
-        int start = contentType.toLowerCase().indexOf("boundary=");
-        if (start > -1) {
-            return "--" + contentType.substring(start + 9);
-        }
-
-        return null;
+        return parsedSteps;
     }
 }

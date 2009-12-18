@@ -24,20 +24,25 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 
 public class JiakWalkResponse implements WalkResponse {
 
-    private HttpResponse impl;
+    private HttpResponse impl = null;
     
-    public boolean hasSteps() { return this.steps != null; }
+    public boolean hasSteps() { return this.steps.size() > 0; }
     public List<? extends List<JiakObject>> getSteps() { return steps; }
-    private List<? extends List<JiakObject>> steps;
+    private List<? extends List<JiakObject>> steps = new ArrayList<List<JiakObject>>();
 
     public JiakWalkResponse(HttpResponse r) throws JSONException {
+        if (r == null)
+            return;
+
         this.impl = r;
+        
         if (r.isSuccess())
             this.steps = parseSteps(r.getBody());
     }

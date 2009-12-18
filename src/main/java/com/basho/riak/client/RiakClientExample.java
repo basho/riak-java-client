@@ -29,6 +29,7 @@ import com.basho.riak.client.raw.RawFetchResponse;
 import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.raw.RawWalkResponse;
 
+
 public class RiakClientExample {
 
     public static void main(String[] args) {

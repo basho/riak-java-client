@@ -27,7 +27,7 @@ import com.basho.riak.client.util.Constants;
 
 
 public class RawObject implements RiakObject {
-
+    
     public RawObject(String bucket, String key) {
         this(bucket, key, null, new ArrayList<RiakLink>(), new HashMap<String, String>(), Constants.CTYPE_OCTET_STREAM, null, null, null);
     }
