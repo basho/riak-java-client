@@ -18,7 +18,9 @@ import java.util.ArrayList;
 
 import com.basho.riak.client.util.ClientUtils;
 
-/*
+/**
+ * Taken from Jiak client in Riak source 12/1/09.
+ * 
  * RiakWalkSpecStep is the internal representation of a RiakWalkSpec
  * segment. It should not be used directly.
  */

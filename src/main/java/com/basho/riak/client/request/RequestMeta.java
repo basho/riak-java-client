@@ -1,17 +1,15 @@
 /*
- * This file is provided to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain
- * a copy of the License at
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.request;
 
@@ -23,16 +21,43 @@ import java.util.Map;
 
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Extra headers and query parameters to send with a Riak operation.
+ */
 public class RequestMeta {
 
     private Map<String, String> queryParams = new LinkedHashMap<String, String>();
+    private Map<String, String> headers = new HashMap<String, String>();
 
+    /**
+     * Use the given r parameter for fetchMeta, fetch, or stream operations
+     * 
+     * @param r
+     *            r- parameter for fetchMeta, fetch, or stream: the number of
+     *            successful read response required for a successful overall
+     *            response
+     * @return A {@link RequestMeta} object with the appropriate query
+     *         parameters
+     */
     public static RequestMeta readParams(int r) {
         RequestMeta meta = new RequestMeta();
         meta.addQueryParam(Constants.QP_R, Integer.toString(r));
         return meta;
     }
 
+    /**
+     * Use the given w and dw params for store or delete operations.
+     * 
+     * @param w
+     *            w- parameter for store and delete: the number of successful
+     *            write responses required for a successful store operation
+     * @param dw
+     *            dw- parameter for store and delete: The number of successful
+     *            durable write responses required for a successful store
+     *            operation
+     * @return A {@link RequestMeta} object with the appropriate query
+     *         parameters
+     */
     public static RequestMeta writeParams(Integer w, Integer dw) {
         RequestMeta meta = new RequestMeta();
         if (w != null) {
@@ -44,28 +69,70 @@ public class RequestMeta {
         return meta;
     }
 
-    public void put(String key, String value) {
+    /**
+     * Add the specified HTTP header
+     * 
+     * @param key
+     *            header name
+     * @param value
+     *            header value
+     */
+    public void putHeader(String key, String value) {
         headers.put(key, value);
     }
 
-    public String get(String key) {
+    /**
+     * Return the value for the HTTP header or null if not set
+     * 
+     * @param key
+     *            header name
+     * @return value of header or null if not set
+     */
+    public String getHeader(String key) {
         return headers.get(key);
     }
 
-    private Map<String, String> headers = new HashMap<String, String>();
-
-    public boolean contains(String key) {
+    /**
+     * @param key
+     *            header name
+     * @return whether the HTTP header has been set
+     */
+    public boolean hasHeader(String key) {
         return headers.containsKey(key);
     }
 
-    public Map<String, String> getHttpHeaders() {
+    /**
+     * @return An unmodifiable map of HTTP header names to values
+     */
+    public Map<String, String> getHeaders() {
         return Collections.unmodifiableMap(headers);
     }
 
+    /**
+     * @param param
+     *            query parameter name
+     * @return query parameter value or null if not set
+     */
     public String getQueryParam(String param) {
         return queryParams.get(param);
     }
 
+    /**
+     * Add the given query parameter to the request
+     * 
+     * @param param
+     *            query parameter name
+     * @param value
+     *            query parameter value
+     */
+    public void addQueryParam(String param, String value) {
+        queryParams.put(param, value);
+    }
+
+    /**
+     * @return A string containing all the specified query parameters in this
+     *         {@link RequestMeta}
+     */
     public String getQueryParams() {
         StringBuilder qp = new StringBuilder();
         for (String param : queryParams.keySet()) {
@@ -75,9 +142,5 @@ public class RequestMeta {
             qp.append(param).append("=").append(queryParams.get(param));
         }
         return qp.toString();
-    }
-
-    public void addQueryParam(String param, String value) {
-        queryParams.put(param, value);
     }
 }

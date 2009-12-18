@@ -93,15 +93,15 @@ public class RawClient implements RiakClient {
             }
         }
         if (linkHeader.length() > 0) {
-            meta.put(Constants.HDR_LINK, linkHeader.toString());
+            meta.putHeader(Constants.HDR_LINK, linkHeader.toString());
         }
         if (usermeta != null) {
             for (String name : usermeta.keySet()) {
-                meta.put(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
+                meta.putHeader(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
             }
         }
         if (vclock != null) {
-            meta.put(Constants.HDR_VCLOCK, vclock);
+            meta.putHeader(Constants.HDR_VCLOCK, vclock);
         }
 
         return new RawStoreResponse(helper.store(object, meta));
@@ -126,9 +126,9 @@ public class RawClient implements RiakClient {
 
         String accept = meta.getQueryParam(Constants.HDR_ACCEPT);
         if (accept == null) {
-            meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+            meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
         } else {
-            meta.put(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
+            meta.putHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
         }
         return new RawFetchResponse(helper.fetch(bucket, key, meta));
     }
@@ -153,7 +153,7 @@ public class RawClient implements RiakClient {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_MULTIPART_MIXED);
+        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_MULTIPART_MIXED);
         return new RawWalkResponse(helper.walk(bucket, key, walkSpec, meta));
     }
 

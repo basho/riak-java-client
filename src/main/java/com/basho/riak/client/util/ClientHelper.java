@@ -71,7 +71,7 @@ public class ClientHelper {
             meta = new RequestMeta();
         }
 
-        meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
+        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
         JSONObject json;
         try {
@@ -262,7 +262,7 @@ public class ClientHelper {
     protected HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
 
         if (meta != null) {
-            Map<String, String> headers = meta.getHttpHeaders();
+            Map<String, String> headers = meta.getHeaders();
             for (String header : headers.keySet()) {
                 httpMethod.setRequestHeader(header, headers.get(header));
             }
