@@ -34,6 +34,10 @@ public class JiakBucketResponse implements BucketResponse {
         }
     }
 
+    public boolean hasBucketInfo() {
+        return bucketInfo != null;
+    }
+
     public RiakBucketInfo getBucketInfo() {
         return bucketInfo;
     }

@@ -17,7 +17,7 @@ import com.basho.riak.client.util.Constants;
 public class RawBucketResponse implements BucketResponse {
 
     private HttpResponse impl;
-    private RiakBucketInfo bucketInfo;
+    private RiakBucketInfo bucketInfo = null;
 
     public RawBucketResponse(HttpResponse r) throws JSONException {
         impl = r;
@@ -32,6 +32,10 @@ public class RawBucketResponse implements BucketResponse {
 
             bucketInfo = new RiakBucketInfo(props, keys);
         }
+    }
+
+    public boolean hasBucketInfo() {
+        return bucketInfo != null;
     }
 
     public RiakBucketInfo getBucketInfo() {

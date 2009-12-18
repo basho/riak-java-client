@@ -4,6 +4,10 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
 
+/**
+ * Thrown when the Riak server returns a malformed response. The HTTP response
+ * is returned in the exception.
+ */
 public class RiakResponseException extends RuntimeException implements HttpResponse {
 
     private static final long serialVersionUID = 2853253336513247178L;
