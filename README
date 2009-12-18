@@ -1,0 +1,70 @@
+
+
+# Overview #
+
+This client for Java connects to Riak using Commons HttpClient. It provides:
+
+- **HttpClient** provides functionality such as connection pooling, timeouts, and retries. The implementation bundled with Riak built on top of HttpURLConnection lacks these features.
+- **Jiak** and **Raw** interface support.
+- **HTTP response data** directly to the client rather than via exceptions. While this slightly couples the domain model with the underlying HTTP model, it gives the benefit of allowing the full suite of HTTP to be used in possibly unforseen ways without requiring modifications to the client library. In reality, clients also need to and do understand that each operation in the client in fact translates to an HTTP operation.  In any case, **PlainClient** provides the more traditional interface with domain objects and exceptions.
+- **Stream handling** for GET requests.
+- **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location allowing the client to avoid the need to wrap each operation in try/catch blocks.
+
+
+# Raw interface quick start #
+
+Connect:
+
+    RawClient riak = new RawClient("http://localhost:8098/raw");
+
+Build an object:
+
+    RawObject o = new RawObject("bucket", "key", "value");
+
+Store it:
+
+    riak.store(o);
+
+Retrieve it:
+
+    RawFetchResponse r = riak.fetch("bucket", "key");
+    if (r.hasObject())
+        o = r.getObject();
+
+Update it:
+
+    o.setValue("foo");
+    riak.store(o);
+
+Handling siblings:
+
+    if (r.hasSiblings())
+        Collection<RawObject> siblings = r.getSiblings();
+
+
+# Jiak interface quick start #
+
+Connect:
+
+    JiakClient riak = new JiakClient("http://localhost:8098/jiak");
+
+Build an object:
+
+    JiakObject o = new JiakObject("bucket", "key", new JSONObject().put("x", 1));
+
+Store it:
+
+    riak.store(o);
+
+Retrieve it:
+
+    JiakFetchResponse r = riak.fetch("bucket", "key");
+    if (r.hasObject())
+        o = r.getObject();
+
+Update it:
+
+    o.set("x", 2);
+    riak.store(o);
+
+*Note: Jiak does not return sibling objects.*
