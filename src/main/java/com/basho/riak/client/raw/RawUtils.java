@@ -12,7 +12,7 @@ import com.basho.riak.client.util.LinkHeader;
 import com.basho.riak.client.util.Multipart;
 
 public class RawUtils {
-    
+
     public static Collection<RiakLink> parseLinkHeader(String header) {
         Collection<RiakLink> links = new ArrayList<RiakLink>();
         Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
@@ -45,7 +45,8 @@ public class RawUtils {
         return usermeta;
     }
 
-    public static List<RawObject> parseMultipart(String bucket, String key, Map<String, String> docHeaders, String docBody) {
+    public static List<RawObject> parseMultipart(String bucket, String key, Map<String, String> docHeaders,
+                                                 String docBody) {
 
         String vclock = docHeaders.get(Constants.HDR_VCLOCK);
 

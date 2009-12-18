@@ -1,18 +1,18 @@
 /*
-This file is provided to you under the Apache License,
-Version 2.0 (the "License"); you may not use this file
-except in compliance with the License.  You may obtain
-a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.  
-*/
+ * This file is provided to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.basho.riak.client.util;
 
 import java.util.ArrayList;
@@ -25,16 +25,16 @@ import java.util.regex.Pattern;
 
 /**
  * Parses the HTTP Link header as described here:
- *  
- *      http://tools.ietf.org/html/draft-nottingham-http-link-header
- *      
+ * 
+ * http://tools.ietf.org/html/draft-nottingham-http-link-header
+ * 
  * This implementation is more or less a direct port of mnot's
  * Python implementation here:
  * 
- *      http://gist.github.com/210535
+ * http://gist.github.com/210535
  * 
  * @author jlee <jonjlee@gmail.com>
- *
+ * 
  */
 public class LinkHeader {
 
@@ -51,17 +51,17 @@ public class LinkHeader {
 
     public static Map<String, Map<String, String>> parse(String header) {
         Map<String, Map<String, String>> out = new LinkedHashMap<String, Map<String, String>>();
-        
+
         if (header == null || header.length() == 0)
             return out;
-        
+
         Matcher m = LINK_SPLITTER.matcher(header);
         while (m.find()) {
             String link = m.group().trim();
             String[] urlandparams = link.split(">", 1);
             String url = urlandparams[0].substring(1);
             Map<String, String> parsedLink = new HashMap<String, String>();
-            
+
             if (urlandparams.length > 1) {
                 String params = urlandparams[1];
                 for (String param : splitParams(params)) {
@@ -75,20 +75,21 @@ public class LinkHeader {
             }
             out.put(url, parsedLink);
         }
-        
+
         return out;
     }
-    
+
     private static List<String> splitParams(String s) {
-        
+
         List<String> items = new ArrayList<String>();
-        if (s == null || s.length() == 0) 
+        if (s == null || s.length() == 0)
             return items;
-        
+
         Matcher m = PARAM_SPLITTER.matcher(s);
-        while (m.find())
+        while (m.find()) {
             items.add(m.group().trim());
-        
+        }
+
         return items;
     }
 

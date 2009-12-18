@@ -44,13 +44,13 @@ public class JiakClient implements RiakClient {
         helper = new ClientHelper(new RiakConfig(url));
     }
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask, List<String> readMask,
-                                        List<String> requiredFields, RequestMeta meta) {
+    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
+                                        List<String> readMask, List<String> requiredFields, RequestMeta meta) {
         return helper.setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask, List<String> readMask,
-                                        List<String> requiredFields) {
+    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
+                                        List<String> readMask, List<String> requiredFields) {
         return setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
     }
 

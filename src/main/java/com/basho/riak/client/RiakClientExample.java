@@ -1,18 +1,18 @@
 /*
-This file is provided to you under the Apache License,
-Version 2.0 (the "License"); you may not use this file
-except in compliance with the License.  You may obtain
-a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.  
-*/
+ * This file is provided to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.basho.riak.client;
 
 import java.util.ArrayList;
@@ -29,14 +29,15 @@ import com.basho.riak.client.raw.RawFetchResponse;
 import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.raw.RawWalkResponse;
 
-
 public class RiakClientExample {
 
     public static void main(String[] args) {
         String url = "http://localhost:8098";
-        if (args.length > 1) url = args[0];
+        if (args.length > 1) {
+            url = args[0];
+        }
         System.out.println("Connecting to " + url + "...");
-        
+
         testJiak(url + "/jiak");
         testRaw(url + "/raw");
         System.out.println("all tests passed");
@@ -51,7 +52,7 @@ public class RiakClientExample {
         allKeys.add("jleaf3");
 
         JiakClient jiak = new JiakClient(url);
-        
+
         for (String k : allKeys) {
             jiak.delete("jiak_example", k);
         }
@@ -70,9 +71,9 @@ public class RiakClientExample {
         JiakObject jLeaf3 = new JiakObject("jiak_example", "jleaf3");
         jLeaf3.set("foo", "not in results");
         JSONArray links = new JSONArray();
-        links.put(new String[]{"jiak_example", "jleaf1", "tag_one"});
-        links.put(new String[]{"jiak_example", "jleaf2", "tag_one"});       
-        links.put(new String[]{"jiak_example", "jleaf3", "tag_other"});             
+        links.put(new String[] { "jiak_example", "jleaf1", "tag_one" });
+        links.put(new String[] { "jiak_example", "jleaf2", "tag_one" });
+        links.put(new String[] { "jiak_example", "jleaf3", "tag_other" });
         jRoot.setLinks(links);
         jiak.store(jRoot);
         jiak.store(jLeaf1);
@@ -81,19 +82,18 @@ public class RiakClientExample {
         JiakWalkResponse jwr = jiak.walk("jiak_example", "jroot", "jiak_example,tag_one,1");
         assertTrue(jwr.isSuccess());
         for (List<JiakObject> i : jwr.getSteps()) {
-            for (JiakObject j: i) {
+            for (JiakObject j : i) {
                 assertTrue(j.get("foo").equals("in results"));
             }
         }
         for (String k : allKeys) {
             try {
                 jiak.delete("jiak_example", k);
-            }
-            catch (Exception e) {}
+            } catch (Exception e) {}
         }
         jiak.store(jLeaf3);
     }
-    
+
     public static void testRaw(String url) {
         ArrayList<String> allKeys = new ArrayList<String>();
         allKeys.add("testkey");
@@ -103,11 +103,11 @@ public class RiakClientExample {
         allKeys.add("jleaf3");
 
         RawClient raw = new RawClient(url);
-        
+
         for (String k : allKeys) {
             raw.delete("raw_example", k);
         }
-        
+
         RawObject ro = new RawObject("raw_example", "testkey", "foo");
         raw.store(ro);
         RawFetchResponse jfr = raw.fetch("raw_example", "testkey");
@@ -136,13 +136,13 @@ public class RiakClientExample {
         for (String k : allKeys) {
             try {
                 raw.delete("raw_example", k);
-            }
-            catch (Exception e) {}
+            } catch (Exception e) {}
         }
         raw.store(jLeaf3);
     }
 
     private static void assertTrue(boolean assertion) {
-        if (!assertion) throw new AssertionError();
+        if (!assertion)
+            throw new AssertionError();
     }
 }

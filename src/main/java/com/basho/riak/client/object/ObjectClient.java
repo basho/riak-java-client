@@ -21,39 +21,52 @@ import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
 
 public class ObjectClient {
-    
+
     private RiakClient impl;
 
-    public static ObjectClient connectToJiak(RiakConfig config) { return new ObjectClient(new JiakClient(config)); }
-    public static ObjectClient connectToJiak(String url) { return new ObjectClient(new JiakClient(url)); }
-    public static ObjectClient connectToRaw(RiakConfig config) { return new ObjectClient(new RawClient(config)); }
-    public static ObjectClient connectToRaw(String url) { return new ObjectClient(new RawClient(url)); }
-    
-    public ObjectClient(RiakClient riakClient) {
-        this.impl = riakClient;
+    public static ObjectClient connectToJiak(RiakConfig config) {
+        return new ObjectClient(new JiakClient(config));
     }
 
-    public void setBucketSchema(String bucket,
-            List<String> allowedFields, List<String> writeMask,
-            List<String> readMask, List<String> requiredFields, RequestMeta meta) throws RiakIOException, RiakResponseException {
+    public static ObjectClient connectToJiak(String url) {
+        return new ObjectClient(new JiakClient(url));
+    }
+
+    public static ObjectClient connectToRaw(RiakConfig config) {
+        return new ObjectClient(new RawClient(config));
+    }
+
+    public static ObjectClient connectToRaw(String url) {
+        return new ObjectClient(new RawClient(url));
+    }
+
+    public ObjectClient(RiakClient riakClient) {
+        impl = riakClient;
+    }
+
+    public void setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
+                                List<String> readMask, List<String> requiredFields, RequestMeta meta)
+            throws RiakIOException, RiakResponseException {
         HttpResponse r = impl.setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, meta);
         if (r.getStatusCode() != 204)
             throw new RiakResponseException(r, r.getBody());
     }
-    public void setBucketSchema(String bucket,
-            List<String> allowedFields, List<String> writeMask,
-            List<String> readMask, List<String> requiredFields) throws RiakIOException, RiakResponseException {
+
+    public void setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
+                                List<String> readMask, List<String> requiredFields) throws RiakIOException,
+            RiakResponseException {
         setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
     }
 
     public RiakBucketInfo listBucket(String bucket, RequestMeta meta) throws RiakIOException, RiakResponseException {
         BucketResponse r = impl.listBucket(bucket, meta);
-        
+
         if (r.getStatusCode() != 200)
             throw new RiakResponseException(r, r.getBody());
-        
+
         return r.getBucketInfo();
     }
+
     public RiakBucketInfo listBucket(String bucket) throws RiakIOException, RiakResponseException {
         return listBucket(bucket, null);
     }
@@ -63,34 +76,37 @@ public class ObjectClient {
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 204)
             throw new RiakResponseException(r, r.getBody());
-        
+
         object.updateMeta(r.getVclock(), r.getLastmod(), r.getVtag());
     }
+
     public void store(RiakObject object) throws RiakIOException, RiakResponseException {
         store(object, null);
     }
 
-    public RiakObject fetchMeta(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
+    public RiakObject fetchMeta(String bucket, String key, RequestMeta meta) throws RiakIOException,
+            RiakResponseException {
         FetchResponse r = impl.fetchMeta(bucket, key, meta);
-        
+
         if (r.getStatusCode() == 404)
             return null;
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
             throw new RiakResponseException(r, r.getBody());
-        
+
         if (!r.hasObject())
             throw new RiakResponseException(r, "Failed to parse metadata");
-        
+
         return r.getObject();
     }
+
     public RiakObject fetchMeta(String bucket, String key) throws RiakIOException, RiakResponseException {
         return fetchMeta(bucket, key, null);
     }
 
     public RiakObject fetch(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
         FetchResponse r = impl.fetch(bucket, key, meta);
-        
+
         if (r.getStatusCode() == 404)
             return null;
 
@@ -99,29 +115,31 @@ public class ObjectClient {
 
         if (!r.hasObject())
             throw new RiakResponseException(r, "Failed to parse object");
-        
+
         return r.getObject();
     }
+
     public RiakObject fetch(String bucket, String key) throws RiakIOException, RiakResponseException {
         return fetch(bucket, key, null);
     }
 
-    public boolean stream(String bucket, String key, StreamHandler handler,
-            RequestMeta meta) throws IOException {
+    public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
         return impl.stream(bucket, key, handler, meta);
     }
 
     public void delete(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
         HttpResponse r = impl.delete(bucket, key, meta);
-        
+
         if (r.getStatusCode() != 204 && r.getStatusCode() != 404)
             throw new RiakResponseException(r, r.getBody());
     }
+
     public void delete(String bucket, String key) throws RiakIOException, RiakResponseException {
         delete(bucket, key, null);
     }
 
-    public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec, RequestMeta meta) throws RiakIOException, RiakResponseException {
+    public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec, RequestMeta meta)
+            throws RiakIOException, RiakResponseException {
         WalkResponse r = impl.walk(bucket, key, walkSpec, meta);
 
         if (r.getStatusCode() == 404)
@@ -135,10 +153,14 @@ public class ObjectClient {
 
         return r.getSteps();
     }
-    public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec) throws RiakIOException, RiakResponseException {
+
+    public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec)
+            throws RiakIOException, RiakResponseException {
         return walk(bucket, key, walkSpec, null);
     }
-    public List<? extends List<? extends RiakObject>> walk(String bucket, String key, RiakWalkSpec walkSpec) throws RiakIOException, RiakResponseException {
+
+    public List<? extends List<? extends RiakObject>> walk(String bucket, String key, RiakWalkSpec walkSpec)
+            throws RiakIOException, RiakResponseException {
         return walk(bucket, key, walkSpec.toString(), null);
     }
 }

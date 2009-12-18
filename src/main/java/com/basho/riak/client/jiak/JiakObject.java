@@ -1,18 +1,18 @@
 /*
-This file is provided to you under the Apache License,
-Version 2.0 (the "License"); you may not use this file
-except in compliance with the License.  You may obtain
-a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.  
-*/
+ * This file is provided to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.basho.riak.client.jiak;
 
 import java.io.ByteArrayInputStream;
@@ -32,10 +32,9 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.Constants;
 
-
 public class JiakObject implements RiakObject {
 
-    private String bucket; 
+    private String bucket;
     private String key;
     private JSONObject value;
     private JSONArray links;
@@ -45,28 +44,30 @@ public class JiakObject implements RiakObject {
     private JSONObject usermeta;
 
     public JiakObject(JSONObject object) throws JSONException {
-        this(object.getString(Constants.JIAK_FL_BUCKET),
-                object.getString(Constants.JIAK_FL_KEY),
-                object.optJSONObject(Constants.JIAK_FL_VALUE),
-                object.optJSONArray(Constants.JIAK_FL_LINKS),
-                object.optJSONObject(Constants.JIAK_FL_USERMETA),
-                object.optString(Constants.JIAK_FL_VCLOCK),
-                object.optString(Constants.JIAK_FL_LAST_MODIFIED),
-                object.optString(Constants.JIAK_FL_VTAG));
+        this(object.getString(Constants.JIAK_FL_BUCKET), object.getString(Constants.JIAK_FL_KEY),
+             object.optJSONObject(Constants.JIAK_FL_VALUE), object.optJSONArray(Constants.JIAK_FL_LINKS),
+             object.optJSONObject(Constants.JIAK_FL_USERMETA), object.optString(Constants.JIAK_FL_VCLOCK),
+             object.optString(Constants.JIAK_FL_LAST_MODIFIED), object.optString(Constants.JIAK_FL_VTAG));
     }
+
     public JiakObject(String bucket, String key) {
         this(bucket, key, new JSONObject(), new JSONArray(), null, null, null, null);
     }
+
     public JiakObject(String bucket, String key, JSONObject value) {
         this(bucket, key, value, new JSONArray(), null, null, null, null);
     }
+
     public JiakObject(String bucket, String key, JSONObject value, JSONArray links) {
         this(bucket, key, value, links, null, null, null, null);
     }
+
     public JiakObject(String bucket, String key, JSONObject value, JSONArray links, JSONObject usermeta) {
         this(bucket, key, value, links, usermeta, null, null, null);
     }
-    public JiakObject(String bucket, String key, JSONObject value, JSONArray links, JSONObject usermeta, String vclock, String lastmod, String vtag) {
+
+    public JiakObject(String bucket, String key, JSONObject value, JSONArray links, JSONObject usermeta, String vclock,
+            String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
         this.value = value;
@@ -83,30 +84,30 @@ public class JiakObject implements RiakObject {
 
         if (object.getValue() != null) {
             try {
-                this.value = new JSONObject(object.getValue());
+                value = new JSONObject(object.getValue());
             } catch (JSONException e) {
                 try {
-                    this.value = new JSONObject().put("v", JSONObject.quote(object.getValue()));
-                } catch (JSONException unreached) { 
+                    value = new JSONObject().put("v", JSONObject.quote(object.getValue()));
+                } catch (JSONException unreached) {
                     throw new IllegalStateException(unreached);
                 }
             }
         } else {
-            this.value = new JSONObject();
+            value = new JSONObject();
         }
         if (object.getLinks() != null) {
-            this.links = new JSONArray(object.getLinks());
+            links = new JSONArray(object.getLinks());
         } else {
-            this.links = new JSONArray();
+            links = new JSONArray();
         }
         if (object.getUsermeta() != null) {
-            this.usermeta = new JSONObject(object.getUsermeta());
+            usermeta = new JSONObject(object.getUsermeta());
         } else {
-            this.usermeta = new JSONObject();
+            usermeta = new JSONObject();
         }
-        this.vclock = object.getVclock();
-        this.lastmod = object.getLastmod();
-        this.vtag = object.getVtag();
+        vclock = object.getVclock();
+        lastmod = object.getLastmod();
+        vtag = object.getVtag();
     }
 
     public void updateMeta(String vclock, String lastmod, String vtag) {
@@ -114,35 +115,36 @@ public class JiakObject implements RiakObject {
         this.lastmod = lastmod;
         this.vtag = vtag;
     }
-    
-    public String getBucket() { 
-        return bucket; 
-    } 
 
-    public String getKey() { 
-        return key; 
+    public String getBucket() {
+        return bucket;
     }
 
-    public String getValue() { 
-        if (this.value == null)
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        if (value == null)
             return null;
-        return this.value.toString(); 
+        return value.toString();
     }
 
-    public JSONObject getValueAsJSON() { 
-        return value; 
+    public JSONObject getValueAsJSON() {
+        return value;
     }
-    
+
     public void setValue(JSONObject object) {
-        if (object == null)
+        if (object == null) {
             object = new JSONObject();
-        this.value = object;
+        }
+        value = object;
     }
 
     public Object get(String key) {
-        return this.value.opt(key);
+        return value.opt(key);
     }
-    
+
     public void set(String key, Object value) {
         if (value != null) {
             try {
@@ -152,30 +154,30 @@ public class JiakObject implements RiakObject {
             }
         }
     }
-    
-    public Collection<RiakLink> getLinks() { 
+
+    public Collection<RiakLink> getLinks() {
         List<RiakLink> links = new ArrayList<RiakLink>();
         if (links != null && this.links.length() > 0) {
             for (int i = 0; i < this.links.length(); i++) {
                 try {
                     JSONArray link = this.links.getJSONArray(i);
-                    links.add(new RiakLink(
-                            link.getString(0),   // bucket 
-                            link.getString(1),   // key
-                            link.getString(2))); // tag
-                } catch (JSONException e) { }
+                    links.add(new RiakLink(link.getString(0), // bucket
+                                           link.getString(1), // key
+                                           link.getString(2))); // tag
+                } catch (JSONException e) {}
             }
         }
         return links;
     }
 
     public JSONArray getLinksAsJSON() {
-        return this.links;
+        return links;
     }
-    
+
     public void setLinks(JSONArray links) {
-        if (links == null)
+        if (links == null) {
             links = new JSONArray();
+        }
         this.links = links;
     }
 
@@ -185,36 +187,36 @@ public class JiakObject implements RiakObject {
             return null;
 
         Map<String, String> usermeta = new HashMap<String, String>();
-        for (Iterator<Object> iter = this.usermeta.keys(); iter.hasNext(); ) {
+        for (Iterator<Object> iter = this.usermeta.keys(); iter.hasNext();) {
             String key = iter.next().toString();
             usermeta.put(key, this.usermeta.optString(key));
         }
-        
+
         return usermeta;
     }
-    
+
     public JSONObject getUsermetaAsJSON() {
-        return this.usermeta;
+        return usermeta;
     }
-    
+
     public void setUserMeta(JSONObject usermeta) {
         this.usermeta = usermeta;
     }
 
-    public String getContentType() { 
-        return Constants.CTYPE_JSON; 
+    public String getContentType() {
+        return Constants.CTYPE_JSON;
     }
 
-    public String getVclock() { 
-        return vclock; 
+    public String getVclock() {
+        return vclock;
     }
-    
-    public String getLastmod() { 
-        return lastmod; 
+
+    public String getLastmod() {
+        return lastmod;
     }
-    
-    public String getVtag() { 
-        return vtag; 
+
+    public String getVtag() {
+        return vtag;
     }
 
     public String getEntity() {
@@ -222,13 +224,13 @@ public class JiakObject implements RiakObject {
     }
 
     public InputStream getEntityStream() {
-        if (this.value == null)
+        if (value == null)
             return null;
         return new ByteArrayInputStream(this.getEntity().getBytes());
     }
 
     public long getEntityStreamLength() {
-        if (this.value == null)
+        if (value == null)
             return 0;
         return this.getEntity().getBytes().length;
     }
@@ -236,26 +238,33 @@ public class JiakObject implements RiakObject {
     public JSONObject toJSONObject() {
         JSONObject o = new JSONObject();
         try {
-            if (getVclock() != null)
+            if (getVclock() != null) {
                 o.put("vclock", getVclock());
-            if (getLastmod() != null)
+            }
+            if (getLastmod() != null) {
                 o.put("lastmod", getLastmod());
-            if (getVtag() != null)
+            }
+            if (getVtag() != null) {
                 o.put("vtag", getVtag());
-            if (getBucket() != null)
+            }
+            if (getBucket() != null) {
                 o.put("bucket", getBucket());
-            if (getKey() != null)
+            }
+            if (getKey() != null) {
                 o.put("key", getKey());
-            if (getLinks() != null)
+            }
+            if (getLinks() != null) {
                 o.put("links", getLinksAsJSON());
-            if (getValueAsJSON() != null)
+            }
+            if (getValueAsJSON() != null) {
                 o.put("object", getValueAsJSON());
+            }
         } catch (JSONException e) {
             throw new IllegalStateException(e);
         }
         return o;
     }
-    
+
     public String toJSONString() {
         return toJSONObject().toString();
     }

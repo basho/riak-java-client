@@ -8,7 +8,7 @@ import java.util.Map;
 public class Multipart {
 
     private static String HEADER_DELIM = "\n\n";
-    
+
     /**
      * Parses a multipart message or a multipart subpart of a
      * multipart message.
@@ -30,16 +30,22 @@ public class Multipart {
         if ("\n--".equals(boundary))
             return null;
 
-        // While this parsing could be more efficiently done in one pass with an FSM,
+        // While this parsing could be more efficiently done in one pass with an
+        // FSM,
         // hopefully this method is more readable/intuitive.
         List<Part> parts = new ArrayList<Part>();
         int pos = body.indexOf(boundary);
         if (pos != -1) {
             while (pos < body.length()) {
                 int start = pos + boundarySize; // first char of part
-                int end = body.indexOf(boundary, start); // last char of part + 1
-                int headerEnd = body.indexOf(HEADER_DELIM, pos); // end of header section + 1
-                int bodyStart = headerEnd + HEADER_DELIM.length(); // start of body section
+                int end = body.indexOf(boundary, start); // last char of part +
+                                                         // 1
+                int headerEnd = body.indexOf(HEADER_DELIM, pos); // end of
+                                                                 // header
+                                                                 // section + 1
+                int bodyStart = headerEnd + HEADER_DELIM.length(); // start of
+                                                                   // body
+                                                                   // section
 
                 // check for end boundary, which is (boundary + "--")
                 if (body.substring(start).startsWith("--")) {

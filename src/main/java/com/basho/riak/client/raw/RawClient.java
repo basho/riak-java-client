@@ -1,18 +1,18 @@
 /*
-This file is provided to you under the Apache License,
-Version 2.0 (the "License"); you may not use this file
-except in compliance with the License.  You may obtain
-a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.  
-*/
+ * This file is provided to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.basho.riak.client.raw;
 
 import java.io.IOException;
@@ -37,28 +37,27 @@ import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 public class RawClient implements RiakClient {
-    
+
     private ClientHelper helper;
     private String riakBasePath;
 
     public RawClient(RiakConfig config) {
-        this.helper = new ClientHelper(config);
-        this.riakBasePath = ClientUtils.getPathFromUrl(config.getUrl()); 
+        helper = new ClientHelper(config);
+        riakBasePath = ClientUtils.getPathFromUrl(config.getUrl());
     }
 
-    public RawClient(String url) { 
-        this.helper = new ClientHelper(new RiakConfig(url));
-        this.riakBasePath = ClientUtils.getPathFromUrl(url); 
+    public RawClient(String url) {
+        helper = new ClientHelper(new RiakConfig(url));
+        riakBasePath = ClientUtils.getPathFromUrl(url);
     }
-    
-    public HttpResponse setBucketSchema(String bucket,
-            List<String> allowedFields, List<String> writeMask,
-            List<String> readMask, List<String> requiredFields, RequestMeta meta) {
+
+    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
+                                        List<String> readMask, List<String> requiredFields, RequestMeta meta) {
         return helper.setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, meta);
     }
-    public HttpResponse setBucketSchema(String bucket,
-            List<String> allowedFields, List<String> writeMask,
-            List<String> readMask, List<String> requiredFields) {
+
+    public HttpResponse setBucketSchema(String bucket, List<String> allowedFields, List<String> writeMask,
+                                        List<String> readMask, List<String> requiredFields) {
         return setBucketSchema(bucket, allowedFields, writeMask, readMask, requiredFields, null);
     }
 
@@ -70,37 +69,47 @@ public class RawClient implements RiakClient {
             throw new RiakResponseException(r, e);
         }
     }
+
     public BucketResponse listBucket(String bucket) {
         return listBucket(bucket, null);
     }
 
     public RawStoreResponse store(RiakObject object, RequestMeta meta) {
-        if (meta == null) meta = new RequestMeta();
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
         Collection<RiakLink> links = object.getLinks();
         Map<String, String> usermeta = object.getUsermeta();
-        StringBuilder linkHeader = new StringBuilder(); 
+        StringBuilder linkHeader = new StringBuilder();
         String vclock = object.getVclock();
 
-        if (links != null)
-            for (RiakLink link : links)
-                linkHeader
-                    .append("<")
-                    .append(this.riakBasePath)
-                    .append("/").append(link.getBucket())
-                    .append("/").append(link.getKey())
-                    .append(">; ")
-                    .append(Constants.RAW_LINK_TAG).append("=\"").append(link.getTag()).append("\"")
-                    .append(",");
-        if (linkHeader.length() > 0)
+        if (links != null) {
+            for (RiakLink link : links) {
+                linkHeader.append("<").append(riakBasePath).append("/").append(link.getBucket()).append("/").append(
+                                                                                                                    link.getKey()).append(
+                                                                                                                                          ">; ").append(
+                                                                                                                                                        Constants.RAW_LINK_TAG).append(
+                                                                                                                                                                                       "=\"").append(
+                                                                                                                                                                                                     link.getTag()).append(
+                                                                                                                                                                                                                           "\"").append(
+                                                                                                                                                                                                                                        ",");
+            }
+        }
+        if (linkHeader.length() > 0) {
             meta.put(Constants.HDR_LINK, linkHeader.toString());
-        if (usermeta != null)
-            for (String name : usermeta.keySet())
+        }
+        if (usermeta != null) {
+            for (String name : usermeta.keySet()) {
                 meta.put(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
-        if (vclock != null)
+            }
+        }
+        if (vclock != null) {
             meta.put(Constants.HDR_VCLOCK, vclock);
+        }
 
         return new RawStoreResponse(helper.store(object, meta));
     }
+
     public RawStoreResponse store(RiakObject object) {
         return store(object, null);
     }
@@ -108,16 +117,17 @@ public class RawClient implements RiakClient {
     public RawFetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
         return new RawFetchResponse(helper.fetchMeta(bucket, key, meta));
     }
+
     public RawFetchResponse fetchMeta(String bucket, String key) {
         return fetchMeta(bucket, key, null);
     }
 
     public RawFetchResponse fetch(String bucket, String key, RequestMeta meta) {
-        if (meta == null) { 
+        if (meta == null) {
             meta = new RequestMeta();
         }
-        
-        String accept = meta.getQueryParam(Constants.HDR_ACCEPT); 
+
+        String accept = meta.getQueryParam(Constants.HDR_ACCEPT);
         if (accept == null) {
             meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
         } else {
@@ -125,30 +135,35 @@ public class RawClient implements RiakClient {
         }
         return new RawFetchResponse(helper.fetch(bucket, key, meta));
     }
+
     public RawFetchResponse fetch(String bucket, String key) {
         return fetch(bucket, key, null);
     }
 
-    public boolean stream(String bucket, String key, StreamHandler handler,
-            RequestMeta meta) throws IOException {
+    public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
         return helper.stream(bucket, key, handler, meta);
     }
 
     public HttpResponse delete(String bucket, String key, RequestMeta meta) {
         return helper.delete(bucket, key, meta);
     }
+
     public HttpResponse delete(String bucket, String key) {
         return delete(bucket, key, null);
     }
 
     public RawWalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
-        if (meta == null) meta = new RequestMeta();
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
         meta.put(Constants.HDR_ACCEPT, Constants.CTYPE_MULTIPART_MIXED);
         return new RawWalkResponse(helper.walk(bucket, key, walkSpec, meta));
     }
+
     public RawWalkResponse walk(String bucket, String key, String walkSpec) {
         return walk(bucket, key, walkSpec, null);
     }
+
     public RawWalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
         return walk(bucket, key, walkSpec.toString(), null);
     }
