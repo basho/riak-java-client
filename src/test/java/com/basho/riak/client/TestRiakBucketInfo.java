@@ -1,27 +1,25 @@
 package com.basho.riak.client;
 
 import static org.junit.Assert.*;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Before;
 import org.junit.Test;
 
 public class TestRiakBucketInfo {
 
     RiakBucketInfo impl;
     JSONObject schema = new JSONObject();
-    List<String> keys = new ArrayList<String>();
-    
-    
-    @Before public void setup() {
-        impl = new RiakBucketInfo(schema, keys); 
-    }
+    JSONArray keys = new JSONArray();
     
     @Test public void constructor_schema_and_keys_returned_by_accessors() {
+        final String KEY = "key";
+        keys.put(KEY);
+
+        impl = new RiakBucketInfo(schema, keys); 
+
         assertSame(schema, impl.getSchema());
-        assertSame(keys, impl.getKeys());
+        assertTrue(impl.getKeys().contains(KEY));
     }
     
     @Test public void objects_constructed_for_null_constructor_arguments() {

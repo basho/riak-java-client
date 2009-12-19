@@ -33,8 +33,8 @@ public class RawObject implements RiakObject {
     private String bucket;
     private String key;
     private byte[] value = null;
-    private Collection<RiakLink> links = new ArrayList<RiakLink>();
-    private Map<String, String> usermeta = new HashMap<String, String>();
+    private Collection<RiakLink> links;
+    private Map<String, String> usermeta;
     private String contentType = Constants.CTYPE_OCTET_STREAM;
     private String vclock = null;
     private String lastmod = null;
@@ -52,17 +52,17 @@ public class RawObject implements RiakObject {
      *            The object's key
      */
     public RawObject(String bucket, String key) {
-        this(bucket, key, null, new ArrayList<RiakLink>(), new HashMap<String, String>(), Constants.CTYPE_OCTET_STREAM,
+        this(bucket, key, null, null, null, Constants.CTYPE_OCTET_STREAM,
              null, null, null);
     }
 
     public RawObject(String bucket, String key, String value) {
-        this(bucket, key, value, new ArrayList<RiakLink>(), new HashMap<String, String>(),
+        this(bucket, key, value, null, null,
              Constants.CTYPE_OCTET_STREAM, null, null, null);
     }
 
     public RawObject(String bucket, String key, String value, Collection<RiakLink> links) {
-        this(bucket, key, value, links, new HashMap<String, String>(), Constants.CTYPE_OCTET_STREAM, null, null, null);
+        this(bucket, key, value, links, null, Constants.CTYPE_OCTET_STREAM, null, null, null);
     }
 
     public RawObject(String bucket, String key, String value, Collection<RiakLink> links, Map<String, String> usermeta) {

@@ -1,6 +1,5 @@
 package com.basho.riak.client.raw;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -10,7 +9,6 @@ import org.json.JSONObject;
 
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -36,8 +34,7 @@ public class RawBucketResponse implements BucketResponse {
         if (r.isSuccess() && (r.getBody() != null)) {
             JSONObject json = new JSONObject(r.getBody());
             JSONObject props = json.optJSONObject(Constants.RAW_FL_SCHEMA);
-            JSONArray jsonKeys = json.optJSONArray(Constants.RAW_FL_KEYS);
-            Collection<String> keys = ClientUtils.jsonArrayAsList(jsonKeys);
+            JSONArray keys = json.optJSONArray(Constants.RAW_FL_KEYS);
 
             bucketInfo = new RawBucketInfo(props, keys);
         }

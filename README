@@ -2,7 +2,7 @@
 
 # Overview #
 
-This client for Java-based Riak client is uses Commons HttpClient to perform HTTP requests. It provides:
+This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It provides:
 
 - **HttpClient**-provided functionality such as connection pooling, timeouts, and retries missing in the Riak-bundled implementation, which is built on HttpURLConnection.
 - **Jiak** and **Raw** interface support.
@@ -107,7 +107,7 @@ As an alternate to JiakClient and RawClient, the PlainClient interface can be us
 
 # Operations #
 
-Through RawClient or JiakClient, you can manipulate of Riak objects and buckets.
+Through RawClient or JiakClient, you can manipulate Riak objects and buckets.
 
 ## Store Objects ##
 

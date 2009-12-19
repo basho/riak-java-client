@@ -1,7 +1,6 @@
 package com.basho.riak.client.raw;
 
-import java.util.Collection;
-
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,7 +13,11 @@ import com.basho.riak.client.util.Constants;
  */
 public class RawBucketInfo extends RiakBucketInfo {
 
-    public RawBucketInfo(JSONObject schema, Collection<String> keys) {
+    public RawBucketInfo() {
+        super(null, null);
+    }
+    
+    public RawBucketInfo(JSONObject schema, JSONArray keys) {
         super(schema, keys);
     }
 

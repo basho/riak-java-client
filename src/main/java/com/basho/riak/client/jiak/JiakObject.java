@@ -43,11 +43,11 @@ public class JiakObject implements RiakObject {
     private String bucket;
     private String key;
     private JSONObject value;
-    private JSONArray links;
+    private JSONArray links = new JSONArray();
+    private JSONObject usermeta = new JSONObject();
     private String vclock;
     private String lastmod;
     private String vtag;
-    private JSONObject usermeta;
 
     /**
      * Build a JiakObject from existing JSON. Throws {@link JSONException} if
@@ -66,11 +66,11 @@ public class JiakObject implements RiakObject {
     }
 
     public JiakObject(String bucket, String key) {
-        this(bucket, key, new JSONObject(), new JSONArray(), null, null, null, null);
+        this(bucket, key, null, null, null, null, null, null);
     }
 
     public JiakObject(String bucket, String key, JSONObject value) {
-        this(bucket, key, value, new JSONArray(), null, null, null, null);
+        this(bucket, key, value, null, null, null, null, null);
     }
 
     public JiakObject(String bucket, String key, JSONObject value, JSONArray links) {
@@ -86,8 +86,12 @@ public class JiakObject implements RiakObject {
         this.bucket = bucket;
         this.key = key;
         this.value = value;
-        this.links = links;
-        this.usermeta = usermeta;
+        if (links != null) {
+            this.links = links;
+        }
+        if (usermeta != null) {
+            this.usermeta = usermeta;
+        }
         this.vclock = vclock;
         this.lastmod = lastmod;
         this.vtag = vtag;
@@ -239,9 +243,6 @@ public class JiakObject implements RiakObject {
      */
     @SuppressWarnings("unchecked")
     public Map<String, String> getUsermeta() {
-        if (usermeta == null)
-            return null;
-
         Map<String, String> usermeta = new HashMap<String, String>();
         for (Iterator<Object> iter = this.usermeta.keys(); iter.hasNext();) {
             String key = iter.next().toString();
@@ -256,9 +257,10 @@ public class JiakObject implements RiakObject {
     }
 
     public void setUsermeta(JSONObject usermeta) {
-        if (usermeta == null)
+        if (usermeta == null) {
             usermeta = new JSONObject();
-        
+        }
+
         this.usermeta = usermeta;
     }
 
@@ -297,26 +299,29 @@ public class JiakObject implements RiakObject {
     public JSONObject toJSONObject() {
         JSONObject o = new JSONObject();
         try {
-            if (getVclock() != null) {
-                o.put("vclock", getVclock());
-            }
-            if (getLastmod() != null) {
-                o.put("lastmod", getLastmod());
-            }
-            if (getVtag() != null) {
-                o.put("vtag", getVtag());
-            }
             if (getBucket() != null) {
-                o.put("bucket", getBucket());
+                o.put(Constants.JIAK_FL_BUCKET, getBucket());
             }
             if (getKey() != null) {
-                o.put("key", getKey());
-            }
-            if (getLinks() != null) {
-                o.put("links", getLinksAsJSON());
+                o.put(Constants.JIAK_FL_KEY, getKey());
             }
             if (getValueAsJSON() != null) {
-                o.put("object", getValueAsJSON());
+                o.put(Constants.JIAK_FL_VALUE, getValueAsJSON());
+            }
+            if (getLinksAsJSON() != null) {
+                o.put(Constants.JIAK_FL_LINKS, getLinksAsJSON());
+            }
+            if (getUsermetaAsJSON() != null) {
+                o.put(Constants.JIAK_FL_USERMETA, getUsermetaAsJSON());
+            }
+            if (getVclock() != null) {
+                o.put(Constants.JIAK_FL_VCLOCK, getVclock());
+            }
+            if (getLastmod() != null) {
+                o.put(Constants.JIAK_FL_LAST_MODIFIED, getLastmod());
+            }
+            if (getVtag() != null) {
+                o.put(Constants.JIAK_FL_VTAG, getVtag());
             }
         } catch (JSONException e) {
             throw new IllegalStateException("can always add non null strings and json objects to json", e);

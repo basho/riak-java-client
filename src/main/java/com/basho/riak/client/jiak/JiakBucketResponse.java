@@ -1,6 +1,5 @@
 package com.basho.riak.client.jiak;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -10,7 +9,6 @@ import org.json.JSONObject;
 
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -37,8 +35,7 @@ public class JiakBucketResponse implements BucketResponse {
         if (r.isSuccess() && (r.getBody() != null)) {
             JSONObject json = new JSONObject(r.getBody());
             JSONObject schema = json.optJSONObject(Constants.JIAK_FL_SCHEMA);
-            JSONArray jsonKeys = json.optJSONArray(Constants.JIAK_FL_SCHEMA_KEYS);
-            Collection<String> keys = ClientUtils.jsonArrayAsList(jsonKeys);
+            JSONArray keys = json.optJSONArray(Constants.JIAK_FL_SCHEMA_KEYS);
 
             bucketInfo = new JiakBucketInfo(schema, keys);
         }

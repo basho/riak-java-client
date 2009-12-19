@@ -20,6 +20,7 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakLink;
@@ -54,19 +55,19 @@ public class RawClient implements RiakClient {
         riakBasePath = ClientUtils.getPathFromUrl(url);
     }
 
-    public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) {
-        if (schema != null) {
-            try {
-                schema = new JSONObject().put(Constants.RAW_FL_SCHEMA, schema);
-            } catch (JSONException unreached) {
-                throw new IllegalStateException("wrapping valid json should be valid", unreached);
-            }
+    public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta) {
+        JSONObject schema = null;
+        try {
+            schema = new JSONObject().put(Constants.RAW_FL_SCHEMA, bucketInfo.getSchema());
+        } catch (JSONException unreached) {
+            throw new IllegalStateException("wrapping valid json should be valid", unreached);
         }
+
         return helper.setBucketSchema(bucket, schema, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, JSONObject schema) {
-        return setBucketSchema(bucket, schema, null);
+    public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo) {
+        return setBucketSchema(bucket, bucketInfo, null);
     }
 
     public BucketResponse listBucket(String bucket, RequestMeta meta) {

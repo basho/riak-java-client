@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
@@ -69,11 +67,11 @@ public class PlainClient {
      * @throws {@link RiakPlainResponseException} if the server does not
      *         successfully update the bucket schema.
      */
-    public void setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) throws RiakPlainIOException,
+    public void setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta) throws RiakPlainIOException,
             RiakPlainResponseException {
         HttpResponse r = null;
         try {
-            r = impl.setBucketSchema(bucket, schema, meta);
+            r = impl.setBucketSchema(bucket, bucketInfo, meta);
         } catch (RiakIOException ioe) {
             throw new RiakPlainIOException(ioe);
         }
@@ -82,9 +80,9 @@ public class PlainClient {
             throw new RiakPlainResponseException(new RiakResponseException(r, r.getBody()));
     }
 
-    public void setBucketSchema(String bucket, JSONObject schema) throws RiakPlainIOException,
+    public void setBucketSchema(String bucket, RiakBucketInfo bucketInfo) throws RiakPlainIOException,
             RiakPlainResponseException {
-        setBucketSchema(bucket, schema, null);
+        setBucketSchema(bucket, bucketInfo, null);
     }
 
     /**
