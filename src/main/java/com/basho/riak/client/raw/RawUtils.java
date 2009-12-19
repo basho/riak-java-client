@@ -113,7 +113,7 @@ public class RawUtils {
                     }
                 }
 
-                RawObject o = new RawObject(partBucket, partKey, docBody, links, usermeta,
+                RawObject o = new RawObject(partBucket, partKey, part.getBody(), links, usermeta,
                                             headers.get(Constants.HDR_CONTENT_TYPE), vclock,
                                             headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
                 objects.add(o);

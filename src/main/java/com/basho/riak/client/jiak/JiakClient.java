@@ -24,7 +24,6 @@ import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
-import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakResponseException;
@@ -62,7 +61,7 @@ public class JiakClient implements RiakClient {
         return setBucketSchema(bucket, bucketInfo, null);
     }
 
-    public BucketResponse listBucket(String bucket, RequestMeta meta) {
+    public JiakBucketResponse listBucket(String bucket, RequestMeta meta) {
         HttpResponse r = helper.listBucket(bucket, meta);
         if (r == null)
             return null;
@@ -73,7 +72,7 @@ public class JiakClient implements RiakClient {
         }
     }
 
-    public BucketResponse listBucket(String bucket) {
+    public JiakBucketResponse listBucket(String bucket) {
         return listBucket(bucket, null);
     }
 

@@ -35,8 +35,8 @@ import java.util.regex.Pattern;
  */
 public class LinkHeader {
 
-    private static String TOKEN = "(?:[^\\(\\)<>@,;:\\\"/\\[\\]\\?={} \\t]+?)";
-    private static String QUOTED_STRING = "(?:\"(?:\\\"|[^\"])*\")";
+    private static String TOKEN = "(?:[^\\(\\)<>@,;:\\\\\"/\\[\\]\\?={} \\t]+?)";
+    private static String QUOTED_STRING = "(?:\"(?:\\\\\"|[^\"])*\")";
     private static String PARAMETER = String.format("(?:%s(?:=(?:%s|%s))?)", TOKEN, TOKEN, QUOTED_STRING);
     private static String LINK = "<[^>]*>\\s*(?:;\\s*" + PARAMETER + "?\\s*)*";
     private static String COMMA = "(?:\\s*(?:,\\s*)+)";
@@ -55,14 +55,14 @@ public class LinkHeader {
         Matcher m = LINK_SPLITTER.matcher(header);
         while (m.find()) {
             String link = m.group().trim();
-            String[] urlandparams = link.split(">", 1);
+            String[] urlandparams = link.split(">", 2);
             String url = urlandparams[0].substring(1);
             Map<String, String> parsedLink = new HashMap<String, String>();
 
             if (urlandparams.length > 1) {
                 String params = urlandparams[1];
                 for (String param : splitParams(params)) {
-                    String[] parts = param.split("=", 1);
+                    String[] parts = param.split("=", 2);
                     if (parts.length > 1) {
                         parsedLink.put(parts[0].toLowerCase(), ClientUtils.unquoteString(parts[1]));
                     } else {

@@ -32,9 +32,9 @@ public class RawObject implements RiakObject {
 
     private String bucket;
     private String key;
-    private byte[] value = null;
-    private Collection<RiakLink> links;
-    private Map<String, String> usermeta;
+    private byte[] value = new String().getBytes();
+    private Collection<RiakLink> links = new ArrayList<RiakLink>();
+    private Map<String, String> usermeta = new HashMap<String, String>();
     private String contentType = Constants.CTYPE_OCTET_STREAM;
     private String vclock = null;
     private String lastmod = null;

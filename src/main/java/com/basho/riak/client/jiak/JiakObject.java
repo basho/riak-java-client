@@ -42,7 +42,7 @@ public class JiakObject implements RiakObject {
 
     private String bucket;
     private String key;
-    private JSONObject value;
+    private JSONObject value = new JSONObject();
     private JSONArray links = new JSONArray();
     private JSONObject usermeta = new JSONObject();
     private String vclock;
@@ -61,8 +61,13 @@ public class JiakObject implements RiakObject {
     public JiakObject(JSONObject object) throws JSONException {
         this(object.getString(Constants.JIAK_FL_BUCKET), object.getString(Constants.JIAK_FL_KEY),
              object.optJSONObject(Constants.JIAK_FL_VALUE), object.optJSONArray(Constants.JIAK_FL_LINKS),
-             object.optJSONObject(Constants.JIAK_FL_USERMETA), object.optString(Constants.JIAK_FL_VCLOCK),
+             null, object.optString(Constants.JIAK_FL_VCLOCK),
              object.optString(Constants.JIAK_FL_LAST_MODIFIED), object.optString(Constants.JIAK_FL_VTAG));
+        
+        JSONObject value = object.optJSONObject(Constants.JIAK_FL_VALUE);
+        if (value != null) {
+            this.setUsermeta(value.optJSONObject(Constants.JIAK_FL_USERMETA));
+        }
     }
 
     public JiakObject(String bucket, String key) {
@@ -85,7 +90,9 @@ public class JiakObject implements RiakObject {
             String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
-        this.value = value;
+        if (value != null) {
+            this.value = value;
+        }
         if (links != null) {
             this.links = links;
         }
@@ -252,10 +259,20 @@ public class JiakObject implements RiakObject {
         return Collections.unmodifiableMap(usermeta);
     }
 
+    /**
+     * Jiak does not currently support extra user-defined metadata. It only
+     * stores links and the object value. Anything added to this
+     * {@link JSONObject} will be added to the "usermeta" field of the value.
+     */
     public JSONObject getUsermetaAsJSON() {
         return usermeta;
     }
 
+    /**
+     * Jiak does not currently support extra user-defined metadata. It only
+     * stores links and the object value. Anything set here will be added to the
+     * "usermeta" field of the value.
+     */
     public void setUsermeta(JSONObject usermeta) {
         if (usermeta == null) {
             usermeta = new JSONObject();
@@ -299,20 +316,26 @@ public class JiakObject implements RiakObject {
     public JSONObject toJSONObject() {
         JSONObject o = new JSONObject();
         try {
+            JSONObject value = getValueAsJSON();
+            JSONObject usermeta = getUsermetaAsJSON();
+            if (usermeta != null && usermeta.keys().hasNext()) {
+                if (value == null) {
+                    value = new JSONObject().put(Constants.JIAK_FL_USERMETA, usermeta);
+                } else if (value.opt(Constants.JIAK_FL_USERMETA) == null) {
+                    value.put(Constants.JIAK_FL_USERMETA, getUsermetaAsJSON());
+                }
+            }
+            if (value != null) {
+                o.put(Constants.JIAK_FL_VALUE, getValueAsJSON());
+            }
             if (getBucket() != null) {
                 o.put(Constants.JIAK_FL_BUCKET, getBucket());
             }
             if (getKey() != null) {
                 o.put(Constants.JIAK_FL_KEY, getKey());
             }
-            if (getValueAsJSON() != null) {
-                o.put(Constants.JIAK_FL_VALUE, getValueAsJSON());
-            }
             if (getLinksAsJSON() != null) {
                 o.put(Constants.JIAK_FL_LINKS, getLinksAsJSON());
-            }
-            if (getUsermetaAsJSON() != null) {
-                o.put(Constants.JIAK_FL_USERMETA, getUsermetaAsJSON());
             }
             if (getVclock() != null) {
                 o.put(Constants.JIAK_FL_VCLOCK, getVclock());

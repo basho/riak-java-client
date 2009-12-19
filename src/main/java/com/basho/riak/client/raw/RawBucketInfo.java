@@ -31,6 +31,13 @@ public class RawBucketInfo extends RiakBucketInfo {
             throw new IllegalStateException("operation is valid json", unreached);
         }
     }
+    
+    public int getNVal() {
+        Integer n = getSchema().optInt(Constants.RAW_FL_SCHEMA_NVAL);
+        if (n == null)
+            return -1;
+        return n;
+    }
 
     /**
      * Erlang module and name of the function to use to hash object keys. See
@@ -54,6 +61,18 @@ public class RawBucketInfo extends RiakBucketInfo {
     }
 
     /**
+     * @return the chash_keyfun property as "\<module\>:\<function\>" 
+     */
+    public String getCHashFun() {
+        JSONObject chashfun = getSchema().optJSONObject(Constants.RAW_FL_SCHEMA_CHASHFUN);
+        if (chashfun == null)
+            return null;
+        String mod = chashfun.optString(Constants.RAW_FL_SCHEMA_CHASHFUN_MOD, "");
+        String fun = chashfun.optString(Constants.RAW_FL_SCHEMA_CHASHFUN_FUN, "");
+        return mod + ":" + fun;
+    }
+
+    /**
      * Erlang module and name of the function to use to walk object links. See
      * Riak's Raw interface documentation.
      */
@@ -72,6 +91,18 @@ public class RawBucketInfo extends RiakBucketInfo {
         } catch (JSONException unreached) {
             throw new IllegalStateException("operation is valid json", unreached);
         }
+    }
+
+    /**
+     * @return the linkfun property as "\<module\>:\<function\>" 
+     */
+    public String getLinkFun() {
+        JSONObject linkfun = getSchema().optJSONObject(Constants.RAW_FL_SCHEMA_LINKFUN);
+        if (linkfun == null)
+            return null;
+        String mod = linkfun.optString(Constants.RAW_FL_SCHEMA_LINKFUN_MOD, "");
+        String fun = linkfun.optString(Constants.RAW_FL_SCHEMA_LINKFUN_FUN, "");
+        return mod + ":" + fun;
     }
 
     /**

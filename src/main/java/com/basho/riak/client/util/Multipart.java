@@ -17,25 +17,27 @@ public class Multipart {
     /**
      * Parses a multipart message or a multipart subpart of a multipart message.
      * 
-     * Note: a multipart message and multipart subpart can be parsed identically
-     * because a message begins with a blank line, which is seen as an empty
-     * header section. This is because the first boundary includes a preceding
-     * new line (http://tools.ietf.org/html/rfc2046#section-5.1.1)
-     * 
-     * @return
+     * @return A list of the parts parsed into headers and body of this
+     *         multipart message
      */
     public static List<Multipart.Part> parse(Map<String, String> headers, String body) {
         if (headers == null || body == null)
             return null;
+
+        if (!body.startsWith("\n")) {
+            // In order to parse the multipart efficiently, we want to treat the
+            // first boundary identically to the others, so make sure that the
+            // first boundary is preceded by a '\n' like the others
+            body = "\n" + body;
+        }
 
         String boundary = "\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
         int boundarySize = boundary.length();
         if ("\n--".equals(boundary))
             return null;
 
-        // While this parsing could be more efficiently done in one pass with an
-        // FSM,
-        // hopefully this method is more readable/intuitive.
+        // While this parsing could be more efficiently done in one pass with a
+        // hand written FSM, hopefully this method is more readable/intuitive.
         List<Part> parts = new ArrayList<Part>();
         int pos = body.indexOf(boundary);
         if (pos != -1) {

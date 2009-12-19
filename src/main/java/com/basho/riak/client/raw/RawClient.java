@@ -27,7 +27,6 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
-import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakResponseException;
@@ -70,7 +69,7 @@ public class RawClient implements RiakClient {
         return setBucketSchema(bucket, bucketInfo, null);
     }
 
-    public BucketResponse listBucket(String bucket, RequestMeta meta) {
+    public RawBucketResponse listBucket(String bucket, RequestMeta meta) {
         HttpResponse r = helper.listBucket(bucket, meta);
         if (r == null)
             return null;
@@ -82,7 +81,7 @@ public class RawClient implements RiakClient {
         }
     }
 
-    public BucketResponse listBucket(String bucket) {
+    public RawBucketResponse listBucket(String bucket) {
         return listBucket(bucket, null);
     }
 
@@ -99,6 +98,9 @@ public class RawClient implements RiakClient {
 
         if (links != null) {
             for (RiakLink link : links) {
+                if (linkHeader.length() > 0) {
+                    linkHeader.append(", ");
+                }
                 linkHeader.append("<");
                 linkHeader.append(riakBasePath);
                 linkHeader.append("/");
@@ -110,7 +112,6 @@ public class RawClient implements RiakClient {
                 linkHeader.append("=\"");
                 linkHeader.append(link.getTag());
                 linkHeader.append("\"");
-                linkHeader.append(",");
             }
         }
         if (linkHeader.length() > 0) {
