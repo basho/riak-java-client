@@ -189,11 +189,6 @@ public class RawClient implements RiakClient {
     }
 
     public RawWalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
-        if (meta == null) {
-            meta = new RequestMeta();
-        }
-        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_MULTIPART_MIXED);
-
         HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
         if (r == null)
             return null;

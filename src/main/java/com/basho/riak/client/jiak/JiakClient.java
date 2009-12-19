@@ -84,7 +84,6 @@ public class JiakClient implements RiakClient {
             meta = new RequestMeta();
         }
         meta.putHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
-        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         meta.addQueryParam(Constants.QP_RETURN_BODY, "true");
         HttpResponse r = helper.store(object, meta);
         if (r == null)
@@ -110,10 +109,6 @@ public class JiakClient implements RiakClient {
     }
 
     public JiakFetchResponse fetch(String bucket, String key, RequestMeta meta) {
-        if (meta == null) {
-            meta = new RequestMeta();
-        }
-        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         HttpResponse r = helper.fetch(bucket, key, meta);
         if (r == null)
             return null;
@@ -141,10 +136,6 @@ public class JiakClient implements RiakClient {
     }
 
     public JiakWalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
-        if (meta == null) {
-            meta = new RequestMeta();
-        }
-        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
         if (r == null)
             return null;
