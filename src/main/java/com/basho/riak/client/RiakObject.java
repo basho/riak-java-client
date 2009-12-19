@@ -58,6 +58,11 @@ public interface RiakObject {
      */
     public String getValue();
 
+    /** 
+     * Set the object's value 
+     */
+    public void setValue(String value);
+
     /**
      * @return The object's links
      */

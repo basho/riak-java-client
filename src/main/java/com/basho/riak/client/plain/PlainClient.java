@@ -1,6 +1,8 @@
 package com.basho.riak.client.plain;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -60,9 +62,12 @@ public class PlainClient {
     }
 
     /**
-     * See {@link RiakClient}.setBucketSchema(). In addition, throws
-     * {@link RiakPlainResponseException} if the server does not successfully
-     * update the bucket schema.
+     * See {@link RiakClient}.setBucketSchema().
+     * 
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} if the server does not
+     *         successfully update the bucket schema.
      */
     public void setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) throws RiakPlainIOException,
             RiakPlainResponseException {
@@ -83,9 +88,12 @@ public class PlainClient {
     }
 
     /**
-     * See {@link RiakClient}.listBucket(). In addition, throws
-     * {@link RiakPlainResponseException} if the server does not return the
-     * bucket information
+     * See {@link RiakClient}.listBucket().
+     * 
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} if the server does not return
+     *         the bucket information
      */
     public RiakBucketInfo listBucket(String bucket, RequestMeta meta) throws RiakPlainIOException,
             RiakPlainResponseException {
@@ -110,9 +118,12 @@ public class PlainClient {
     }
 
     /**
-     * See {@link RiakClient}.store(). In addition, throws
-     * {@link RiakPlainResponseException} if the server does not succesfully
-     * store the object.
+     * See {@link RiakClient}.store().
+     * 
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} If the server does not
+     *         succesfully store the object.
      */
     public void store(RiakObject object, RequestMeta meta) throws RiakPlainIOException, RiakPlainResponseException {
         StoreResponse r;
@@ -135,12 +146,14 @@ public class PlainClient {
     }
 
     /**
-     * See {@link RiakClient}.fetchMeta(). In addition:
+     * See {@link RiakClient}.fetchMeta().
      * 
-     * 1. Returns null if object doesn't exist.
+     * @returns {@link RiakObject} or null if object doesn't exist.
      * 
-     * 2. Throws {@link RiakPlainResponseException} if the server does not
-     * return the metadata.
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} If the server does return the
+     *         a valid object
      */
     public RiakObject fetchMeta(String bucket, String key, RequestMeta meta) throws RiakPlainIOException,
             RiakPlainResponseException {
@@ -170,12 +183,14 @@ public class PlainClient {
     }
 
     /**
-     * See {@link RiakClient}.fetch(). In addition:
+     * See {@link RiakClient}.fetch().
      * 
-     * 1. Returns null if object doesn't exist.
-     * 
-     * 2. Throws {@link RiakPlainResponseException} if the server does not
-     * return the object.
+     * @returns {@link RiakObject} or null if object doesn't exist. If siblings
+     *          exist, then returns one of the siblings.
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} If the server does return the
+     *         a valid object
      */
     public RiakObject fetch(String bucket, String key, RequestMeta meta) throws RiakPlainIOException,
             RiakPlainResponseException {
@@ -204,14 +219,64 @@ public class PlainClient {
         return fetch(bucket, key, null);
     }
 
+    /**
+     * See {@link RiakClient}.fetch().
+     * 
+     * @returns All sibling {@link RiakObject} or null if object doesn't exist.
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} If the server does return the
+     *         a valid object
+     */
+    public Collection<? extends RiakObject> fetchAll(String bucket, String key, RequestMeta meta)
+            throws RiakPlainIOException, RiakPlainResponseException {
+        FetchResponse r;
+        try {
+            r = impl.fetch(bucket, key, meta);
+        } catch (RiakIOException ioe) {
+            throw new RiakPlainIOException(ioe);
+        } catch (RiakResponseException re) {
+            throw new RiakPlainResponseException(re);
+        }
+
+        Collection<? extends RiakObject> a = fetchAll("", "", null);
+        for (RiakObject o : a) {
+            o.getBucket();
+        }
+
+        if (r.getStatusCode() == 404)
+            return null;
+
+        if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
+            throw new RiakPlainResponseException(new RiakResponseException(r, r.getBody()));
+
+        if (r.getStatusCode() == 200 && !r.hasObject())
+            throw new RiakPlainResponseException(new RiakResponseException(r, "Failed to parse object"));
+
+        if (r.hasSiblings())
+            return r.getSiblings();
+        return Arrays.asList(r.getObject());
+    }
+
+    public Collection<? extends RiakObject> fetchAll(String bucket, String key) throws RiakPlainIOException,
+            RiakPlainResponseException {
+        return fetchAll(bucket, key, null);
+    }
+
+    /**
+     * See {@link RiakClient}.stream()
+     */
     public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
         return impl.stream(bucket, key, handler, meta);
     }
 
     /**
-     * See {@link RiakClient}.delete(). In addition, throws
-     * {@link RiakPlainResponseException} if the object was not deleted.
-     * Succeeds if object did not previously exist.
+     * See {@link RiakClient}.delete(). Succeeds if object did not previously
+     * exist.
+     * 
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} If the object was not deleted.
      */
     public void delete(String bucket, String key, RequestMeta meta) throws RiakPlainIOException,
             RiakPlainResponseException {
@@ -231,10 +296,14 @@ public class PlainClient {
     }
 
     /**
-     * See {@link RiakClient}.walk(). In addition, throws
-     * {@link RiakPlainResponseException} if the links could not be walked or
-     * the result steps were not returned. Returns null if the object doesn't
-     * exist.
+     * See {@link RiakClient}.walk().
+     * 
+     * @returns list of lists of {@link RiakObject}s corresponding to steps of
+     *          the walk. Returns null if the source object doesn't exist.
+     * @throws {@link RiakIOResponseException} If an error occurs during
+     *         communication with the Riak server.
+     * @throws {@link RiakPlainResponseException} If the links could not be
+     *         walked or the result steps were not returned.
      */
     public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec, RequestMeta meta)
             throws RiakPlainIOException, RiakPlainResponseException {

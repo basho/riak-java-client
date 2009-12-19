@@ -72,7 +72,7 @@ Update it:
 
 # Connecting #
 
-Connect to a running Riak server by specifying the base URL of the Jiak or Raw interface:
+Connect to a Riak server by specifying the base URL of the Jiak or Raw interface:
     
     JiakClient jiak = new JiakClient("http://localhost:8098/jiak");
     RawClient raw = new RawClient("http://localhost:8098/raw");
@@ -99,7 +99,7 @@ The HttpClient instance itself can also be given:
     
     RawClient raw = new RawClient(config);
 
-As an alternate to JiakClient and RawClient, the PlainClient interface can be used, which hides HTTP response information:
+As an alternate to JiakClient and RawClient, the PlainClient interface can be used, which exposes a different interface that hides HTTP response information from operation results.
 
     PlainClient plain = PlainClient.connectToJiak("http://localhost:8098/jiak");
     PlainClient plain = PlainClient.connectToRaw("http://localhost:8098/raw");
@@ -107,7 +107,7 @@ As an alternate to JiakClient and RawClient, the PlainClient interface can be us
 
 # Operations #
 
-A connected RawClient or JiakClient enables the manipulation of Riak objects and buckets.
+Through RawClient or JiakClient, you can manipulate of Riak objects and buckets.
 
 ## Store Objects ##
 
@@ -143,7 +143,7 @@ With Plain (connected to Raw):
 The request `w` and `dw` values (number of write or durable write responses required for success) can be specified using a RequestMeta object:
 
     client.store(obj, RequestMeta.writeParams(2 /* w-value */, 2 /* dw-value */));
-
+    
 ## Fetch Objects ##
 
 Simply request the object by bucket and key. The response contains the requested object.
@@ -176,19 +176,29 @@ The request `r` value (number of servers responding to a read request required f
 
 This works identically to fetching an object, except that the object's value will not necessarily be populated.
 
-    client.fetchMeta("bucket", "key", RequestMeta.readParams(2 /* r-value */));
+    client.fetchMeta("bucket", "key", /* optional */ RequestMeta.readParams(2));
 
 ## Modify Objects ##
 
 To ensure that no conflicts are created when modifying an object, first fetch it, then update and store it.
 
-With Raw:
+With Raw or Jiak:
 
-    RawFetchResponse r = raw.fetch("bucket", "key");
+    FetchResponse r = client.fetch("bucket", "key");
     if (r.isSuccess()) {
-        RawObject o = r.getObject();
+        RiakObject o = r.getObject();
         o.setValue("foo");
-        raw.store(o);
+        client.store(o);
+    }
+    
+With Plain:
+
+    try {
+        RiakObject o = plain.fetch("bucket", "key");
+        o.setValue("foo");
+        plain.store(o);
+    } catch (RiakPlainIOException e) {
+    } catch (RiakPlainResponseException e) {
     }
 
 ## Delete Objects ##
@@ -207,6 +217,14 @@ With Raw:
     RawFetchResponse r = raw.fetch("bucket", "key");
     if (r.isSuccess() && r.hasSiblings())
         Collection<RawObject> siblings = r.getSiblings();
+        
+With Plain:
+
+    try {
+        Collection<? extends RiakObject> objects = client.fetchAll("bucket", "key");
+    } catch (RiakPlainIOException e) {
+    } catch (RiakPlainResponseException e) {
+    }
 
 ## Streaming Objects ##
 
@@ -241,6 +259,16 @@ With Jiak:
         info.setSchema(Arrays.asList("name", "address") /* allowed fields */, null, null, Arrays.asList("name") /* required fields */);
         raw.setBucketSchema(info.getSchema());
     }
+    
+With Plain:
+
+    try {
+        RiakBucketInfo info = plain.listBucket("bucket");
+        info.getSchema().put("allow_mult", true);
+        plain.setBucketSchema("bucket", info.getSchema());
+    } catch (RiakPlainIOException e) {
+    } catch (RiakPlainResponseException e) {
+    }
 
 ## Links and Link Walking ##
 
@@ -269,6 +297,8 @@ With Raw:
             }
         }
     }
+    
+Jiak and Plain are identical to except that a the object types returned in the steps list are `JiakObject` and `RiakObject` respectively.
 
 # HTTP Request/Response Information #
 
@@ -304,5 +334,3 @@ RawClient and JiakClient will usually throw the unchecked exceptions RiakIOExcep
             App.setConnectionStatus(Status.DOWN);
         }
     });
-    
-    

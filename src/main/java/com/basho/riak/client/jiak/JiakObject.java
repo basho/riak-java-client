@@ -151,6 +151,18 @@ public class JiakObject implements RiakObject {
         return value;
     }
 
+    public void setValue(String json) {
+        if (json == null) {
+            value = new JSONObject();
+        } else {
+            try {
+                value = new JSONObject(json);
+            } catch (JSONException e) {
+                throw new IllegalArgumentException("JiakObject value must be valid JSON", e);
+            }
+        }
+    }
+
     public void setValue(JSONObject object) {
         if (object == null) {
             object = new JSONObject();

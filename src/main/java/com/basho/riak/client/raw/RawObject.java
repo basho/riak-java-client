@@ -136,7 +136,11 @@ public class RawObject implements RiakObject {
     }
 
     public void setValue(String value) {
-        this.value = value.getBytes();
+        if (value != null) {
+            this.value = value.getBytes();
+        } else {
+            this.value = null;
+        }
     }
 
     public Collection<RiakLink> getLinks() {
@@ -189,13 +193,26 @@ public class RawObject implements RiakObject {
         return valueStream;
     }
 
-    public void setValueStream(InputStream in) {
-        valueStream = in;
-    }
-
+    /**
+     * Set the object's value as a stream. A value set here is independent of
+     * and has precedent over values set using setValue(). Calling getValue()
+     * will always return values set via setValue(), and calling
+     * getEntityStream() will always return the stream set via setValueStream.
+     * 
+     * @param in
+     *            Input stream representing the object's value
+     * @param len
+     *            Length of the InputStream or null if unknown. If null, the
+     *            value will be buffered in memory to determine its size before
+     *            sending to the server.
+     */
     public void setValueStream(InputStream in, Long len) {
         valueStream = in;
         valueStreamLength = len;
+    }
+
+    public void setValueStream(InputStream in) {
+        valueStream = in;
     }
 
     public long getEntityStreamLength() {

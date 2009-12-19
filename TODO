@@ -1,2 +1,2 @@
-- README
 - Tests 
+- Add write methods addLink() and addUsermeta() to RiakObject
