@@ -46,10 +46,24 @@ public class LinkHeader {
     private static Pattern LINK_SPLITTER = Pattern.compile(LINK_SPLIT);
     private static Pattern PARAM_SPLITTER = Pattern.compile(PARAM_SPLIT);
 
+    /**
+     * Returns a map of links to their parameters. Parameters are a map of
+     * parameter name to value.
+     * 
+     * @param header
+     *            Value of the Link header in the format described here:
+     * 
+     *            http://tools.ietf.org/html/draft-nottingham-http-link-header
+     * 
+     *            e.g. </path/to/resource1>; param="value", </path/to/resource2>;  
+     * 
+     * @return A map links to their parameters. Parameters are a map of
+     *         parameter name to value.
+     */
     public static Map<String, Map<String, String>> parse(String header) {
         Map<String, Map<String, String>> out = new LinkedHashMap<String, Map<String, String>>();
 
-        if (header == null || header.length() == 0)
+        if (header == null || header.isEmpty())
             return out;
 
         Matcher m = LINK_SPLITTER.matcher(header);
