@@ -3,10 +3,7 @@ package com.basho.riak.client;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.basho.riak.client.util.ClientUtils;
 
 /**
  * Represents the metadata stored in a bucket including its schema (whose fields
@@ -47,9 +44,7 @@ public class RiakBucketInfo {
      * @param schema The JSON object containing the bucket's schema
      * @param keys The JSON array containing the keys in the bucket  
      */
-    public RiakBucketInfo(JSONObject schema, JSONArray jsonKeys) {
-
-        Collection<String> keys = ClientUtils.jsonArrayAsList(jsonKeys);
+    public RiakBucketInfo(JSONObject schema, Collection<String> keys) {
 
         if (schema != null) {
             this.schema = schema;

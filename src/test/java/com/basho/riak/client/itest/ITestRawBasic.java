@@ -124,7 +124,7 @@ public class ITestRawBasic {
         bucketresp = c.listBucket(BUCKET);
         assertTrue(bucketresp.isSuccess() && bucketresp.hasBucketInfo());
         bucketInfo = bucketresp.getBucketInfo();
-        assertEquals(nval + 1, bucketInfo.getNVal());
+        assertEquals(nval + 1, bucketInfo.getNVal().intValue());
         assertEquals(CHASH_MOD + ":" + CHASH_FUN, bucketInfo.getCHashFun());
     }
 

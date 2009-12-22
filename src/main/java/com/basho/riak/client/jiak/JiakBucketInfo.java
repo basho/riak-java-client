@@ -1,9 +1,9 @@
 package com.basho.riak.client.jiak;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,7 +21,7 @@ public class JiakBucketInfo extends RiakBucketInfo {
         super(null, null);
     }
 
-    public JiakBucketInfo(JSONObject schema, JSONArray keys) {
+    public JiakBucketInfo(JSONObject schema, Collection<String> keys) {
         super(schema, keys);
     }
 

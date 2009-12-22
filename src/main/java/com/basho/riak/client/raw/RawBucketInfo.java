@@ -1,6 +1,7 @@
 package com.basho.riak.client.raw;
 
-import org.json.JSONArray;
+import java.util.Collection;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,7 +18,7 @@ public class RawBucketInfo extends RiakBucketInfo {
         super(null, null);
     }
     
-    public RawBucketInfo(JSONObject schema, JSONArray keys) {
+    public RawBucketInfo(JSONObject schema, Collection<String> keys) {
         super(schema, keys);
     }
 
@@ -31,12 +32,25 @@ public class RawBucketInfo extends RiakBucketInfo {
             throw new IllegalStateException("operation is valid json", unreached);
         }
     }
+
+    public Boolean getAllowMult() {
+        return getSchema().optBoolean(Constants.RAW_FL_SCHEMA_ALLOW_MULT);
+    }
+
+
+    /**
+     * Number of replicas per object in this bucket.
+     */
+    public void setNVal(int n) {
+        try {
+            getSchema().put(Constants.RAW_FL_SCHEMA_NVAL, n);
+        } catch (JSONException unreached) {
+            throw new IllegalStateException("operation is valid json", unreached);
+        }
+    }
     
-    public int getNVal() {
-        Integer n = getSchema().optInt(Constants.RAW_FL_SCHEMA_NVAL);
-        if (n == null)
-            return -1;
-        return n;
+    public Integer getNVal() {
+        return getSchema().optInt(Constants.RAW_FL_SCHEMA_NVAL);
     }
 
     /**
@@ -103,16 +117,5 @@ public class RawBucketInfo extends RiakBucketInfo {
         String mod = linkfun.optString(Constants.RAW_FL_SCHEMA_LINKFUN_MOD, "");
         String fun = linkfun.optString(Constants.RAW_FL_SCHEMA_LINKFUN_FUN, "");
         return mod + ":" + fun;
-    }
-
-    /**
-     * Number of replicas per object in this bucket.
-     */
-    public void setNVal(int n) {
-        try {
-            getSchema().put(Constants.RAW_FL_SCHEMA_NVAL, n);
-        } catch (JSONException unreached) {
-            throw new IllegalStateException("operation is valid json", unreached);
-        }
     }
 }

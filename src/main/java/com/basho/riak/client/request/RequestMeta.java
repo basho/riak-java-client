@@ -13,8 +13,6 @@
  */
 package com.basho.riak.client.request;
 
-import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,7 +39,7 @@ public class RequestMeta {
      */
     public static RequestMeta readParams(int r) {
         RequestMeta meta = new RequestMeta();
-        meta.addQueryParam(Constants.QP_R, Integer.toString(r));
+        meta.setQueryParam(Constants.QP_R, Integer.toString(r));
         return meta;
     }
 
@@ -61,10 +59,10 @@ public class RequestMeta {
     public static RequestMeta writeParams(Integer w, Integer dw) {
         RequestMeta meta = new RequestMeta();
         if (w != null) {
-            meta.addQueryParam(Constants.QP_W, Integer.toString(w));
+            meta.setQueryParam(Constants.QP_W, Integer.toString(w));
         }
         if (dw != null) {
-            meta.addQueryParam(Constants.QP_DW, Integer.toString(dw));
+            meta.setQueryParam(Constants.QP_DW, Integer.toString(dw));
         }
         return meta;
     }
@@ -77,7 +75,7 @@ public class RequestMeta {
      * @param value
      *            header value
      */
-    public void putHeader(String key, String value) {
+    public void setHeader(String key, String value) {
         headers.put(key, value);
     }
 
@@ -102,10 +100,10 @@ public class RequestMeta {
     }
 
     /**
-     * @return An unmodifiable map of HTTP header names to values
+     * @return Map of HTTP header names to values
      */
     public Map<String, String> getHeaders() {
-        return Collections.unmodifiableMap(headers);
+        return headers;
     }
 
     /**
@@ -125,13 +123,13 @@ public class RequestMeta {
      * @param value
      *            query parameter value
      */
-    public void addQueryParam(String param, String value) {
+    public void setQueryParam(String param, String value) {
         queryParams.put(param, value);
     }
 
     /**
      * @return A string containing all the specified query parameters in this
-     *         {@link RequestMeta}
+     *         {@link RequestMeta} in the form: p1=v1&p2=v2
      */
     public String getQueryParams() {
         StringBuilder qp = new StringBuilder();

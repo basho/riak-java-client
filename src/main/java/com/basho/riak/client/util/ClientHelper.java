@@ -67,7 +67,7 @@ public class ClientHelper {
             meta = new RequestMeta();
         }
 
-        meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
+        meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
         PutMethod put = new PutMethod(ClientUtils.makeURI(config, bucket));
         put.setRequestEntity(new ByteArrayRequestEntity(schema.toString().getBytes(), Constants.CTYPE_JSON));
@@ -134,7 +134,7 @@ public class ClientHelper {
             meta = new RequestMeta();
         }
         if (meta.getQueryParam(Constants.QP_R) == null) {
-            meta.addQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
+            meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
         HeadMethod head = new HeadMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
         return executeMethod(bucket, key, head, meta);
@@ -152,7 +152,7 @@ public class ClientHelper {
             meta = new RequestMeta();
         }
         if (meta.getQueryParam(Constants.QP_R) == null) {
-            meta.addQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
+            meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
         return executeMethod(bucket, key, get, meta);
@@ -170,7 +170,7 @@ public class ClientHelper {
             meta = new RequestMeta();
         }
         if (meta.getQueryParam(Constants.QP_R) == null) {
-            meta.addQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
+            meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
         try {
@@ -234,18 +234,20 @@ public class ClientHelper {
     /**
      * Hands exception <code>e</code> to installed exception handler if there is
      * one or throw it.
+     * 
+     * @return A 0-status {@link HttpResponse}.
      */
-    public <T> T toss(RiakIOException e) {
+    public HttpResponse toss(RiakIOException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
-            return null;
+            return new DefaultHttpResponse(null, null, 0, null, null, null);
         } else
             throw e;
     }
-    public <T> T toss(RiakResponseException e) {
+    public HttpResponse toss(RiakResponseException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
-            return null;
+            return new DefaultHttpResponse(null, null, 0, null, null, null);
         } else
             throw e;
     }

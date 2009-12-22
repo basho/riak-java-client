@@ -34,8 +34,8 @@ import com.basho.riak.client.util.Constants;
  */
 public class RawFetchResponse implements FetchResponse {
 
-    private HttpResponse impl;
-    private RawObject object;
+    private HttpResponse impl = null;
+    private RawObject object = null;
     private List<RawObject> siblings = new ArrayList<RawObject>();
 
     /**
@@ -48,6 +48,9 @@ public class RawFetchResponse implements FetchResponse {
      *             body
      */
     public RawFetchResponse(HttpResponse r) throws RiakResponseException {
+        if (r == null)
+            return;
+        
         Map<String, String> headers = r.getHttpHeaders();
         Collection<RiakLink> links = RawUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
         Map<String, String> usermeta = RawUtils.parseUsermeta(headers);

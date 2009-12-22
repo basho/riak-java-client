@@ -14,6 +14,7 @@
 package com.basho.riak.client.response;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -36,6 +37,10 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public DefaultHttpResponse(String bucket, String key, int status, Map<String, String> headers, String body,
             HttpMethod httpMethod) {
+        if (headers == null) {
+            headers = new HashMap<String, String>();
+        }
+
         this.bucket = bucket;
         this.key = key;
         this.status = status;
@@ -69,13 +74,22 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     public boolean isSuccess() {
+        String method = null;
+        if (httpMethod != null)
+            method = httpMethod.getName();
+        
         return (status >= 200 && status < 300) ||
-               (status == 404 && Constants.HTTP_DELETE_METHOD.equals(httpMethod.getName())) ||
-               (status == 304 && (Constants.HTTP_HEAD_METHOD.equals(httpMethod.getName()) || Constants.HTTP_GET_METHOD.equals(httpMethod.getName())));
+               ((status == 300 || status == 304) && Constants.HTTP_HEAD_METHOD.equals(method)) ||
+               ((status == 300 || status == 304) && Constants.HTTP_GET_METHOD.equals(method)) ||
+               ((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
     }
 
     public boolean isError() {
-        return status >= 400;
+        String method = null;
+        if (httpMethod != null)
+            method = httpMethod.getName();
+
+        return (status < 100 || status >= 400) && !((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
     }
 
     /**

@@ -115,15 +115,15 @@ public class RawClient implements RiakClient {
             }
         }
         if (linkHeader.length() > 0) {
-            meta.putHeader(Constants.HDR_LINK, linkHeader.toString());
+            meta.setHeader(Constants.HDR_LINK, linkHeader.toString());
         }
         if (usermeta != null) {
             for (String name : usermeta.keySet()) {
-                meta.putHeader(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
+                meta.setHeader(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
             }
         }
         if (vclock != null) {
-            meta.putHeader(Constants.HDR_VCLOCK, vclock);
+            meta.setHeader(Constants.HDR_VCLOCK, vclock);
         }
 
         HttpResponse r = helper.store(object, meta);
@@ -141,7 +141,7 @@ public class RawClient implements RiakClient {
         try {
             return new RawFetchResponse(helper.fetchMeta(bucket, key, meta));
         } catch (RiakResponseException e) {
-            return helper.toss(e);
+            return new RawFetchResponse(helper.toss(e));
         }
     }
 
@@ -157,9 +157,9 @@ public class RawClient implements RiakClient {
 
         String accept = meta.getQueryParam(Constants.HDR_ACCEPT);
         if (accept == null) {
-            meta.putHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
         } else {
-            meta.putHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
+            meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
         }
 
         HttpResponse r = helper.fetch(bucket, key, meta);
@@ -169,7 +169,7 @@ public class RawClient implements RiakClient {
         try {
             return new RawFetchResponse(r);
         } catch (RiakResponseException e) {
-            return helper.toss(e);
+            return new RawFetchResponse(helper.toss(e));
         }
 
     }
@@ -198,7 +198,7 @@ public class RawClient implements RiakClient {
         try {
             return new RawWalkResponse(r);
         } catch (RiakResponseException e) {
-            return helper.toss(e);
+            return new RawWalkResponse(helper.toss(e));
         }
     }
 
