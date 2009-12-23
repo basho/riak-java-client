@@ -85,6 +85,7 @@ public class TestRawFetchResponse {
         
         assertEquals(BUCKET, impl.getBucket());
         assertEquals(KEY, impl.getKey());
+        assertEquals(SINGLE_BODY, impl.getBody());
         assertEquals(STATUS_CODE, impl.getStatusCode());
         assertSame(SINGLE_HEADERS, impl.getHttpHeaders());
         assertSame(HTTP_METHOD, impl.getHttpMethod());

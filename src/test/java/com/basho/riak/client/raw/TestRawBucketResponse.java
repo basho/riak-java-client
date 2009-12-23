@@ -56,6 +56,7 @@ public class TestRawBucketResponse {
         
         assertEquals(BUCKET, impl.getBucket());
         assertEquals(KEY, impl.getKey());
+        assertEquals(BODY, impl.getBody());
         assertEquals(STATUS_CODE, impl.getStatusCode());
         assertSame(HTTP_HEADERS, impl.getHttpHeaders());
         assertSame(HTTP_METHOD, impl.getHttpMethod());
