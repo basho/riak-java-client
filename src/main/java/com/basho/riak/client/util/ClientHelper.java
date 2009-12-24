@@ -105,12 +105,11 @@ public class ClientHelper {
         String url = ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams());
         PutMethod put = new PutMethod(url);
 
-        InputStream entityStream = object.getEntityStream(); 
+        InputStream entityStream = object.getEntityStream();
         if (entityStream != null) {
-            long entityStreamLength = object.getEntityStreamLength(); 
+            long entityStreamLength = object.getEntityStreamLength();
             if (entityStreamLength >= 0) {
-                put.setRequestEntity(new InputStreamRequestEntity(entityStream,
-                                                                  entityStreamLength,
+                put.setRequestEntity(new InputStreamRequestEntity(entityStream, entityStreamLength,
                                                                   object.getContentType()));
             } else {
                 put.setRequestEntity(new InputStreamRequestEntity(entityStream, object.getContentType()));
@@ -145,9 +144,23 @@ public class ClientHelper {
     }
 
     /**
-     * Same as {@link RiakClient}, except only returning the HTTP response
+     * Same as {@link RiakClient}, except only returning the HTTP response and
+     * allows the response to be streamed.
+     * 
+     * @param bucket
+     *            Same as {@link RiakClient}
+     * @param key
+     *            Same as {@link RiakClient}
+     * @param meta
+     *            Same as {@link RiakClient}
+     * @param streamResponse
+     *            If true, the connection will NOT be released. Use
+     *            HttpResponse.getHttpMethod().getResponseBodyAsStream() to get
+     *            the response stream; HttpResponse.getBody() will return null.
+     * 
+     * @return Same as {@link RiakClient}
      */
-    public HttpResponse fetch(String bucket, String key, RequestMeta meta) {
+    public HttpResponse fetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -155,11 +168,15 @@ public class ClientHelper {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
-        return executeMethod(bucket, key, get, meta);
+        return executeMethod(bucket, key, get, meta, streamResponse);
+    }
+
+    public HttpResponse fetch(String bucket, String key, RequestMeta meta) {
+        return fetch(bucket, key, meta, false);
     }
 
     public HttpResponse fetch(String bucket, String key) {
-        return fetch(bucket, key, null);
+        return fetch(bucket, key, null, false);
     }
 
     /**
@@ -244,6 +261,7 @@ public class ClientHelper {
         } else
             throw e;
     }
+
     public HttpResponse toss(RiakResponseException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
@@ -274,13 +292,20 @@ public class ClientHelper {
      *            Extra HTTP headers to attach to the request. Query parameters
      *            are ignored; they should have already been used to construct
      *            <code>httpMethod</code> and query parameters.
+     * @param streamResponse
+     *            If true, the connection will NOT be released. Use
+     *            HttpResponse.getHttpMethod().getResponseBodyAsStream() to get
+     *            the response stream; HttpResponse.getBody() will return null.
+     * 
      * @return The HTTP response returned by Riak from executing
-     *         <code>httpMethod</code>
+     *         <code>httpMethod</code>.
+     * 
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server
      *             (i.e. HttpClient threw an IOException)
      */
-     HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
+    HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta,
+                               boolean streamResponse) {
 
         if (meta != null) {
             Map<String, String> headers = meta.getHeaders();
@@ -291,12 +316,24 @@ public class ClientHelper {
 
         try {
             httpClient.executeMethod(httpMethod);
-            return DefaultHttpResponse.fromHttpMethod(bucket, key, httpMethod);
+
+            int status = httpMethod.getStatusCode();
+            Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
+            String body = null;
+            if (!streamResponse) {
+                body = httpMethod.getResponseBodyAsString();
+            }
+            
+            return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
         } catch (IOException e) {
             toss(new RiakIOException(e));
             return null;
         } finally {
             httpMethod.releaseConnection();
         }
+    }
+
+    HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
+        return executeMethod(bucket, key, httpMethod, meta, false);
     }
 }

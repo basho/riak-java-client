@@ -13,6 +13,9 @@
  */
 package com.basho.riak.client.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -218,5 +221,26 @@ public class ClientUtils {
             l.add(json.optString(i));
         }
         return l;
+    }
+
+    /**
+     * Copies data from an {@link InputStream} to an {@link OutputStream} in
+     * blocks
+     * 
+     * @param in
+     *            InputStream to copy
+     * @param out
+     *            OutputStream to copy to
+     * @throws IOException
+     */
+    public static void copyStream(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        while (true) {
+            final int readCount = in.read(buffer);
+            if (readCount == -1) {
+                break;
+            }
+            out.write(buffer, 0, readCount);
+        }
     }
 }

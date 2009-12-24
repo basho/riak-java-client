@@ -151,6 +151,43 @@ public class RawClient implements RiakClient {
 
     // Fetches the object or all sibling objects if there are multiple
     public RawFetchResponse fetch(String bucket, String key, RequestMeta meta) {
+        return doFetch(bucket, key, meta, false);
+    }
+
+    public RawFetchResponse fetch(String bucket, String key) {
+        return doFetch(bucket, key, null, false);
+    }
+
+    /**
+     * Similar to fetch(), except the HTTP connection is left open, and the Riak
+     * response is provided as a stream and processed on request. The user must
+     * remember to call RawFetchResponse.close() on the return value.
+     * 
+     * @param bucket
+     *            The bucket containing the {@link RiakObject} to fetch.
+     * @param key
+     *            The key of the {@link RiakObject} to fetch.
+     * @param meta
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
+     * 
+     * @return A streaming {@link RawFetchResponse} containing HTTP response
+     *         information and the response stream. The stream is processed when
+     *         has/getObject() or has/getSibling() is called, or the stream can
+     *         be read using {@link RawFetchResponse}.getStream(). The HTTP
+     *         connection must be closed manually by the user by calling
+     *         {@link RawFetchResponse}.close().
+     */
+    public RawFetchResponse stream(String bucket, String key, RequestMeta meta) {
+        return doFetch(bucket, key, meta, true);
+    }
+
+    public RawFetchResponse stream(String bucket, String key) {
+        return doFetch(bucket, key, null, true);
+    }
+
+    private RawFetchResponse doFetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -162,7 +199,7 @@ public class RawClient implements RiakClient {
             meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
         }
 
-        HttpResponse r = helper.fetch(bucket, key, meta);
+        HttpResponse r = helper.fetch(bucket, key, meta, streamResponse);
         if (r == null)
             return null;
 
@@ -172,10 +209,6 @@ public class RawClient implements RiakClient {
             return new RawFetchResponse(helper.toss(e));
         }
 
-    }
-
-    public RawFetchResponse fetch(String bucket, String key) {
-        return fetch(bucket, key, null);
     }
 
     public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
@@ -209,7 +242,7 @@ public class RawClient implements RiakClient {
     public RawWalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
         return walk(bucket, key, walkSpec.toString(), null);
     }
-    
+
     /** @return the installed exception handler or null if not installed */
     public RiakExceptionHandler getExceptionHandler() {
         return helper.getExceptionHandler();

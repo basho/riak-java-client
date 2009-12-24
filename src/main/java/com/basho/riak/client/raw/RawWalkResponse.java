@@ -107,14 +107,16 @@ public class RawWalkResponse implements WalkResponse {
         List<List<RawObject>> parsedSteps = new ArrayList<List<RawObject>>();
         List<Multipart.Part> parts = Multipart.parse(r.getHttpHeaders(), r.getBody());
 
-        for (Multipart.Part part : parts) {
-            Map<String, String> partHeaders = part.getHeaders();
-            String contentType = partHeaders.get(Constants.HDR_CONTENT_TYPE);
-
-            if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
-                throw new RiakResponseException(r, "multipart/mixed content expected when object has siblings");
-
-            parsedSteps.add(RawUtils.parseMultipart(bucket, key, partHeaders, part.getBody()));
+        if (parts != null) {
+            for (Multipart.Part part : parts) {
+                Map<String, String> partHeaders = part.getHeaders();
+                String contentType = partHeaders.get(Constants.HDR_CONTENT_TYPE);
+    
+                if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
+                    throw new RiakResponseException(r, "multipart/mixed subparts expected in link walk results");
+    
+                parsedSteps.add(RawUtils.parseMultipart(bucket, key, partHeaders, part.getBody()));
+            }
         }
 
         return parsedSteps;

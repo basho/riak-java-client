@@ -162,10 +162,10 @@ public class ITestJiakBasic {
         root.getLinksAsJSON().put(Arrays.asList(BUCKET, LEAF1, TAG_INCLUDE));
         root.getLinksAsJSON().put(Arrays.asList(BUCKET, LEAF2, TAG_INCLUDE));
         root.getLinksAsJSON().put(Arrays.asList(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
-        assertTrue(c.store(root).isSuccess());
-        assertTrue(c.store(leaf1).isSuccess());
-        assertTrue(c.store(leaf2).isSuccess());
-        assertTrue(c.store(excludedLeaf).isSuccess());
+        assertTrue(c.store(root, WRITE_3_REPLICAS).isSuccess());
+        assertTrue(c.store(leaf1, WRITE_3_REPLICAS).isSuccess());
+        assertTrue(c.store(leaf2, WRITE_3_REPLICAS).isSuccess());
+        assertTrue(c.store(excludedLeaf, WRITE_3_REPLICAS).isSuccess());
 
         // Perform walk
         RiakWalkSpec walkSpec = new RiakWalkSpec();

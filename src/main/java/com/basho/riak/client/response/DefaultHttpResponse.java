@@ -13,13 +13,11 @@
  */
 package com.basho.riak.client.response;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
 
-import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -90,29 +88,5 @@ public class DefaultHttpResponse implements HttpResponse {
             method = httpMethod.getName();
 
         return (status < 100 || status >= 400) && !((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
-    }
-
-    /**
-     * Construct an {@link DefaultHttpResponse} from an {@link HttpMethod}.
-     * 
-     * @param bucket
-     *            Target object's bucket
-     * @param key
-     *            Target object's key or null if bucket is target
-     * @param httpMethod
-     *            HttpMethod containing response from Riak
-     * @return {@link DefaultHttpResponse} containing details from response
-     *         stored in <code>httpMethod</code>
-     * @throws IOException
-     *             if the response body cannot be retrieved from
-     *             <code>httpMethod</code> (i.e.
-     *             HttpMethod.getResponseBodyAsString() throws an IOException)
-     */
-    public static DefaultHttpResponse fromHttpMethod(String bucket, String key, final HttpMethod httpMethod)
-            throws IOException {
-        int status = httpMethod.getStatusCode();
-        Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
-        String body = httpMethod.getResponseBodyAsString();
-        return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
     }
 }

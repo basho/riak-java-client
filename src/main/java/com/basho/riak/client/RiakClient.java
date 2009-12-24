@@ -145,7 +145,7 @@ public interface RiakClient {
      *            RequestMeta.readParams().
      * 
      * @return {@link FetchResponse} containing HTTP response information and a
-     *         {@link RiakObject}.
+     *         {@link RiakObject} or sibling objects.
      * 
      * @throws RiakIOException
      *             If an error occurs during communication with the Riak server.
