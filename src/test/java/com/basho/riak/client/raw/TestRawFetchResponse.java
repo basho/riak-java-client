@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,42 +63,6 @@ public class TestRawFetchResponse {
             "\n" +
             "foo\n" +
             "--1MFeoR33D8Jdz3uUa9SQI7H8XCb--\n";
-    }
-
-    @Test public void delegates_http_response_methods_to_impl() throws JSONException {
-        final int STATUS_CODE = 1;
-        final HttpMethod HTTP_METHOD = mock(HttpMethod.class);
-        final boolean IS_SUCCESS = true;
-        final boolean IS_ERROR = true;
-        
-        when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
-        when(mockHttpResponse.getKey()).thenReturn(KEY);
-        when(mockHttpResponse.getBody()).thenReturn(SINGLE_BODY);
-        when(mockHttpResponse.getStatusCode()).thenReturn(STATUS_CODE);
-        when(mockHttpResponse.getHttpHeaders()).thenReturn(SINGLE_HEADERS);
-        when(mockHttpResponse.getHttpMethod()).thenReturn(HTTP_METHOD);
-        when(mockHttpResponse.isSuccess()).thenReturn(IS_SUCCESS);
-        when(mockHttpResponse.isError()).thenReturn(IS_ERROR);
-        
-        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
-        
-        assertEquals(BUCKET, impl.getBucket());
-        assertEquals(KEY, impl.getKey());
-        assertEquals(SINGLE_BODY, impl.getBody());
-        assertEquals(STATUS_CODE, impl.getStatusCode());
-        assertSame(SINGLE_HEADERS, impl.getHttpHeaders());
-        assertSame(HTTP_METHOD, impl.getHttpMethod());
-        assertEquals(IS_SUCCESS, impl.isSuccess());
-        assertEquals(IS_ERROR, impl.isError());
-        
-        verify(mockHttpResponse, atLeastOnce()).getBucket();
-        verify(mockHttpResponse, atLeastOnce()).getKey();
-        verify(mockHttpResponse, atLeastOnce()).getBody();
-        verify(mockHttpResponse, atLeastOnce()).getStatusCode();
-        verify(mockHttpResponse, atLeastOnce()).getHttpHeaders();
-        verify(mockHttpResponse, atLeastOnce()).getHttpMethod();
-        verify(mockHttpResponse, atLeastOnce()).isSuccess();
-        verify(mockHttpResponse, atLeastOnce()).isError();
     }
 
     @Test public void doesnt_throw_on_null_impl() throws JSONException {

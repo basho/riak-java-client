@@ -1,15 +1,14 @@
 package com.basho.riak.client.raw;
 
 import java.util.Collection;
-import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.HttpResponseDecorator;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
@@ -17,9 +16,8 @@ import com.basho.riak.client.util.Constants;
  * Decorates an HttpResponse to interpret listBucket response from Riak's Raw
  * interface which returns a JSON object with the keys "props" and "keys".
  */
-public class RawBucketResponse implements BucketResponse {
+public class RawBucketResponse extends HttpResponseDecorator implements BucketResponse {
 
-    private HttpResponse impl;
     private RawBucketInfo bucketInfo = null;
 
     /**
@@ -31,7 +29,7 @@ public class RawBucketResponse implements BucketResponse {
      *             If the response is a 2xx but contains invalid JSON
      */
     public RawBucketResponse(HttpResponse r) throws JSONException {
-        impl = r;
+        super(r);
 
         if (r != null && r.isSuccess() && (r.getBody() != null)) {
             JSONObject json = new JSONObject(r.getBody());
@@ -49,37 +47,5 @@ public class RawBucketResponse implements BucketResponse {
 
     public RawBucketInfo getBucketInfo() {
         return bucketInfo;
-    }
-
-    public String getBody() {
-        return impl.getBody();
-    }
-
-    public String getBucket() {
-        return impl.getBucket();
-    }
-
-    public Map<String, String> getHttpHeaders() {
-        return impl.getHttpHeaders();
-    }
-
-    public HttpMethod getHttpMethod() {
-        return impl.getHttpMethod();
-    }
-
-    public String getKey() {
-        return impl.getKey();
-    }
-
-    public int getStatusCode() {
-        return impl.getStatusCode();
-    }
-
-    public boolean isError() {
-        return impl.isError();
-    }
-
-    public boolean isSuccess() {
-        return impl.isSuccess();
     }
 }

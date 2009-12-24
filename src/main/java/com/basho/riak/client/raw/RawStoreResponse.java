@@ -15,9 +15,8 @@ package com.basho.riak.client.raw;
 
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
-
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.HttpResponseDecorator;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.util.Constants;
 
@@ -25,9 +24,8 @@ import com.basho.riak.client.util.Constants;
  * Decorates an HttpResponse to interpret store responses from Riak's Raw
  * interface which returns updated object metadata in HTTP headers.
  */
-public class RawStoreResponse implements StoreResponse {
+public class RawStoreResponse extends HttpResponseDecorator implements StoreResponse {
 
-    private HttpResponse impl;
     private String vclock = null;
     private String lastmod = null;
     private String vtag = null;
@@ -36,8 +34,7 @@ public class RawStoreResponse implements StoreResponse {
      * On a 2xx response, parses the HTTP headers into updated object metadata.
      */
     public RawStoreResponse(HttpResponse r) {
-
-        impl = r;
+        super(r);
 
         if (r.isSuccess()) {
             Map<String, String> headers = r.getHttpHeaders();
@@ -57,37 +54,5 @@ public class RawStoreResponse implements StoreResponse {
 
     public String getVtag() {
         return vtag;
-    }
-
-    public String getBody() {
-        return impl.getBody();
-    }
-
-    public String getBucket() {
-        return impl.getBucket();
-    }
-
-    public Map<String, String> getHttpHeaders() {
-        return impl.getHttpHeaders();
-    }
-
-    public HttpMethod getHttpMethod() {
-        return impl.getHttpMethod();
-    }
-
-    public String getKey() {
-        return impl.getKey();
-    }
-
-    public int getStatusCode() {
-        return impl.getStatusCode();
-    }
-
-    public boolean isError() {
-        return impl.isError();
-    }
-
-    public boolean isSuccess() {
-        return impl.isSuccess();
     }
 }

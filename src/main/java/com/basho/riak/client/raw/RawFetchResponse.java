@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +26,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.HttpResponseDecorator;
 import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
@@ -36,9 +36,8 @@ import com.basho.riak.client.util.Constants;
  * Riak's Raw interface which returns object metadata in HTTP headers and value
  * in the body.
  */
-public class RawFetchResponse implements FetchResponse {
+public class RawFetchResponse extends HttpResponseDecorator implements FetchResponse {
 
-    private HttpResponse impl = null;
     private RawObject object = null;
     private List<RawObject> siblings = null;
     private InputStream bodyStream = null;
@@ -58,6 +57,8 @@ public class RawFetchResponse implements FetchResponse {
      *             body
      */
     public RawFetchResponse(HttpResponse r) throws RiakResponseException {
+        super(r);
+        
         if (r == null)
             return;
         
@@ -76,7 +77,6 @@ public class RawFetchResponse implements FetchResponse {
                 bodyStream = r.getHttpMethod().getResponseBodyAsStream();
             } catch (IOException e) { /* ignore */}
         }
-        impl = r;
     }
 
     /**
@@ -146,6 +146,7 @@ public class RawFetchResponse implements FetchResponse {
         return bodyStream;
     }
 
+    @Override
     public String getBody() {
         if (body != null)
             return body;
@@ -183,47 +184,5 @@ public class RawFetchResponse implements FetchResponse {
         if (httpMethod != null) {
             httpMethod.releaseConnection();
         }
-    }
-
-    public String getBucket() {
-        if (impl == null)
-            return null;
-        return impl.getBucket();
-    }
-
-    public Map<String, String> getHttpHeaders() {
-        if (impl == null)
-            return new HashMap<String, String>();
-        return impl.getHttpHeaders();
-    }
-
-    public HttpMethod getHttpMethod() {
-        if (impl == null)
-            return null;
-        return impl.getHttpMethod();
-    }
-
-    public String getKey() {
-        if (impl == null)
-            return null;
-        return impl.getKey();
-    }
-
-    public int getStatusCode() {
-        if (impl == null)
-            return -1;
-        return impl.getStatusCode();
-    }
-
-    public boolean isError() {
-        if (impl == null)
-            return true;
-        return impl.isError();
-    }
-
-    public boolean isSuccess() {
-        if (impl == null)
-            return false;
-        return impl.isSuccess();
     }
 }

@@ -16,23 +16,20 @@ package com.basho.riak.client.jiak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.HttpResponseDecorator;
 
 /**
  * Decorates an HttpResponse to interpret fetch and fetchMeta responses from
  * Jiak's Raw interface which returns object metadata and value directly in the
  * message body as JSON.
  */
-public class JiakFetchResponse implements FetchResponse {
-
-    private HttpResponse impl;
+public class JiakFetchResponse extends HttpResponseDecorator implements FetchResponse {
 
     public JiakObject getObject() {
         return object;
@@ -48,8 +45,9 @@ public class JiakFetchResponse implements FetchResponse {
      * On a 2xx response, parse the JSON in the body into a {@link JiakObject}.
      */
     public JiakFetchResponse(HttpResponse r) throws JSONException {
-        impl = r;
-        if (r.isSuccess() && (r.getBody() != null)) {
+        super(r);
+        
+        if (r != null && r.isSuccess() && (r.getBody() != null)) {
             object = new JiakObject(new JSONObject(r.getBody()));
         }
     }
@@ -66,37 +64,5 @@ public class JiakFetchResponse implements FetchResponse {
      */
     public Collection<JiakObject> getSiblings() {
         return hasObject() ? Arrays.asList(getObject()) : new ArrayList<JiakObject>();
-    }
-
-    public String getBody() {
-        return impl.getBody();
-    }
-
-    public String getBucket() {
-        return impl.getBucket();
-    }
-
-    public Map<String, String> getHttpHeaders() {
-        return impl.getHttpHeaders();
-    }
-
-    public HttpMethod getHttpMethod() {
-        return impl.getHttpMethod();
-    }
-
-    public String getKey() {
-        return impl.getKey();
-    }
-
-    public int getStatusCode() {
-        return impl.getStatusCode();
-    }
-
-    public boolean isError() {
-        return impl.isError();
-    }
-
-    public boolean isSuccess() {
-        return impl.isSuccess();
     }
 }

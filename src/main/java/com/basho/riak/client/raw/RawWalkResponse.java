@@ -17,9 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
-
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.HttpResponseDecorator;
 import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
@@ -29,9 +28,8 @@ import com.basho.riak.client.util.Multipart;
  * Decorates an HttpResponse to interpret walk responses from Riak's Raw
  * interface which returns multipart/mixed documents.
  */
-public class RawWalkResponse implements WalkResponse {
+public class RawWalkResponse extends HttpResponseDecorator implements WalkResponse {
 
-    private HttpResponse impl = null;
     private List<? extends List<RawObject>> steps = new ArrayList<List<RawObject>>();
 
     /**
@@ -40,11 +38,9 @@ public class RawWalkResponse implements WalkResponse {
      * multipart/mixed message with multipart/mixed subparts
      */
     public RawWalkResponse(HttpResponse r) throws RiakResponseException {
-        if (r == null)
-            return;
-
-        impl = r;
-        if (r.isSuccess()) {
+        super(r);
+        
+        if (r != null && r.isSuccess()) {
             steps = parseSteps(r);
         }
     }
@@ -55,38 +51,6 @@ public class RawWalkResponse implements WalkResponse {
 
     public List<? extends List<RawObject>> getSteps() {
         return steps;
-    }
-
-    public String getBody() {
-        return impl.getBody();
-    }
-
-    public String getBucket() {
-        return impl.getBucket();
-    }
-
-    public Map<String, String> getHttpHeaders() {
-        return impl.getHttpHeaders();
-    }
-
-    public HttpMethod getHttpMethod() {
-        return impl.getHttpMethod();
-    }
-
-    public String getKey() {
-        return impl.getKey();
-    }
-
-    public int getStatusCode() {
-        return impl.getStatusCode();
-    }
-
-    public boolean isError() {
-        return impl.isError();
-    }
-
-    public boolean isSuccess() {
-        return impl.isSuccess();
     }
 
     /**

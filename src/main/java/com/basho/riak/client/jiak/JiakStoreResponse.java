@@ -13,13 +13,11 @@
  */
 package com.basho.riak.client.jiak;
 
-import java.util.Map;
-
-import org.apache.commons.httpclient.HttpMethod;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.HttpResponseDecorator;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.util.Constants;
 
@@ -28,17 +26,16 @@ import com.basho.riak.client.util.Constants;
  * interface which should returns the entire object with metadata on a store.
  * (i.e. {@link JiakClient} sends the returnbody=true query parameter on PUTs).
  */
-public class JiakStoreResponse implements StoreResponse {
+public class JiakStoreResponse extends HttpResponseDecorator implements StoreResponse {
 
-    private HttpResponse impl;
     private JSONObject object = new JSONObject();
 
     /**
      * On a 2xx response, parses the HTTP body into a JSON object.
      */
     public JiakStoreResponse(HttpResponse r) throws JSONException {
-        impl = r;
-        if (r.isSuccess() && (r.getBody() != null)) {
+        super(r);
+        if (r != null && r.isSuccess() && (r.getBody() != null)) {
             object = new JSONObject(r.getBody());
         }
     }
@@ -54,37 +51,4 @@ public class JiakStoreResponse implements StoreResponse {
     public String getVtag() {
         return object.optString(Constants.JIAK_FL_VTAG);
     }
-
-    public String getBody() {
-        return impl.getBody();
-    }
-
-    public String getBucket() {
-        return impl.getBucket();
-    }
-
-    public Map<String, String> getHttpHeaders() {
-        return impl.getHttpHeaders();
-    }
-
-    public HttpMethod getHttpMethod() {
-        return impl.getHttpMethod();
-    }
-
-    public String getKey() {
-        return impl.getKey();
-    }
-
-    public int getStatusCode() {
-        return impl.getStatusCode();
-    }
-
-    public boolean isError() {
-        return impl.isError();
-    }
-
-    public boolean isSuccess() {
-        return impl.isSuccess();
-    }
-
 }
