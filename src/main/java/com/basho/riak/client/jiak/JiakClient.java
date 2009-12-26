@@ -45,6 +45,11 @@ public class JiakClient implements RiakClient {
     public JiakClient(String url) {
         helper = new ClientHelper(new RiakConfig(url));
     }
+    
+    // Package protected constructor used for testing
+    JiakClient(ClientHelper helper) {
+        this.helper = helper;
+    }
 
     public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta) {
         JSONObject schema = null;
