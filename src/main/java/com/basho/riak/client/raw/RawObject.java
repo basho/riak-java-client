@@ -215,6 +215,10 @@ public class RawObject implements RiakObject {
         valueStream = in;
     }
 
+    public InputStream getValueStream() {
+        return valueStream;
+    }
+
     public long getEntityStreamLength() {
         return valueStreamLength;
     }

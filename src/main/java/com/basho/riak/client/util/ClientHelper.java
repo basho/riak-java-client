@@ -329,7 +329,9 @@ public class ClientHelper {
             toss(new RiakIOException(e));
             return null;
         } finally {
-            httpMethod.releaseConnection();
+            if (!streamResponse) {
+                httpMethod.releaseConnection();
+            }
         }
     }
 

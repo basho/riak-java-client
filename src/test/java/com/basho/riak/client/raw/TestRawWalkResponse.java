@@ -49,10 +49,19 @@ public class TestRawWalkResponse {
 
     @Test public void parses_walk_steps() {
         final String BODY = "\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\n"
-                            + "Content-Type: multipart/mixed; boundary=7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" + "\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" + "Location: /raw/b/k1\n" + "\n" + "foo\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" + "Location: /raw/b/k2\n" + "\n" + "bar\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n" + "\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
+                            + "Content-Type: multipart/mixed; boundary=7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
+                            + "\n"
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
+                            + "Location: /raw/b/k1\n" 
+                            + "\n" 
+                            + "foo\n"
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
+                            + "Location: /raw/b/k2\n" 
+                            + "\n" 
+                            + "bar\n"
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n" 
+                            + "\n" 
+                            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
 
         when(mockHttpResponse.getBody()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
@@ -70,10 +79,18 @@ public class TestRawWalkResponse {
         assertEquals("bar", impl.getSteps().get(0).get(1).getValue());
     }
 
-    @Test(expected = RiakResponseException.class) public void throws_on_invalid_subpart_content_type() {
-        final String BODY = "\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\n" + "Content-Type: text/plain\n" + "\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" + "\n" + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n" + "\n"
-                            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
+    @Test(expected = RiakResponseException.class)
+    public void throws_on_invalid_subpart_content_type() {
+        final String BODY = 
+            "\n" + 
+            "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\n" +
+            "Content-Type: text/plain\n" + 
+            "\n" +
+            "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" + 
+            "\n" + 
+            "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n" +
+            "\n" +
+            "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
 
         when(mockHttpResponse.getBody()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);

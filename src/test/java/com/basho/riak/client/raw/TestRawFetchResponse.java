@@ -108,9 +108,9 @@ public class TestRawFetchResponse {
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
         assertEquals("bar", o.getValue());
-        assertEquals("Tue, 22 Dec 2009 19:24:18 GMT", o.getLastmod());
         assertEquals(1, o.getLinks().size());
         assertEquals(0, o.getUsermeta().size());
+        assertEquals("Tue, 22 Dec 2009 19:24:18 GMT", o.getLastmod());
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
 
