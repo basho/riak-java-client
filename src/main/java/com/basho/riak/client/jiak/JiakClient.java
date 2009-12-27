@@ -45,7 +45,7 @@ public class JiakClient implements RiakClient {
     public JiakClient(String url) {
         helper = new ClientHelper(new RiakConfig(url));
     }
-    
+
     // Package protected constructor used for testing
     JiakClient(ClientHelper helper) {
         this.helper = helper;
@@ -76,7 +76,8 @@ public class JiakClient implements RiakClient {
             try {
                 return new JiakBucketResponse(helper.toss(new RiakResponseException(r, e)));
             } catch (JSONException unreached) {
-                throw new IllegalStateException("JiakBucketResponse doesn't throw on helper.toss() return value", unreached);
+                throw new IllegalStateException("JiakBucketResponse doesn't throw on helper.toss() return value",
+                                                unreached);
             }
         }
     }
@@ -85,14 +86,13 @@ public class JiakClient implements RiakClient {
         return listBucket(bucket, null);
     }
 
-    // Jiak stores the object value and metadata all in the message body. Ask
-    // Jiak to return the object that was just stored so we can get the updated
-    // metadata.
     public JiakStoreResponse store(RiakObject object, RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        meta.setHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
+
+        // Ask Jiak to return the object that was just stored so we can get the
+        // updated metadata.
         meta.setQueryParam(Constants.QP_RETURN_BODY, "true");
         HttpResponse r = helper.store(object, meta);
         if (r == null)
@@ -103,7 +103,8 @@ public class JiakClient implements RiakClient {
             try {
                 return new JiakStoreResponse(helper.toss(new RiakResponseException(r, e)));
             } catch (JSONException unreached) {
-                throw new IllegalStateException("JiakStoreResponse doesn't throw on helper.toss() return value", unreached);
+                throw new IllegalStateException("JiakStoreResponse doesn't throw on helper.toss() return value",
+                                                unreached);
             }
         }
     }
@@ -131,7 +132,8 @@ public class JiakClient implements RiakClient {
             try {
                 return new JiakFetchResponse(helper.toss(new RiakResponseException(r, e)));
             } catch (JSONException unreached) {
-                throw new IllegalStateException("JiakFetchResponse doesn't throw on helper.toss() return value", unreached);
+                throw new IllegalStateException("JiakFetchResponse doesn't throw on helper.toss() return value",
+                                                unreached);
             }
         }
     }
@@ -162,7 +164,8 @@ public class JiakClient implements RiakClient {
             try {
                 return new JiakWalkResponse(helper.toss(new RiakResponseException(r, e)));
             } catch (JSONException unreached) {
-                throw new IllegalStateException("JiakWalkResponse doesn't throw on helper.toss() return value", unreached);
+                throw new IllegalStateException("JiakWalkResponse doesn't throw on helper.toss() return value",
+                                                unreached);
             }
         }
     }

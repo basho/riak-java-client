@@ -19,6 +19,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.response.StoreResponse;
@@ -185,14 +190,6 @@ public class RawObject implements RiakObject {
         return vtag;
     }
 
-    public String getEntity() {
-        return this.getValue();
-    }
-
-    public InputStream getEntityStream() {
-        return valueStream;
-    }
-
     /**
      * Set the object's value as a stream. A value set here is independent of
      * and has precedent over values set using setValue(). Calling getValue()
@@ -219,12 +216,87 @@ public class RawObject implements RiakObject {
         return valueStream;
     }
 
+    public String getEntity() {
+        return this.getValue();
+    }
+
+    public InputStream getEntityStream() {
+        return valueStream;
+    }
+
     public long getEntityStreamLength() {
         return valueStreamLength;
     }
 
     public void setValueStreamLength(long len) {
         valueStreamLength = len;
+    }
+
+    public void writeToHttpMethod(HttpMethod httpMethod) {
+        // Serialize headers
+        String basePath = getBasePathFromHttpMethod(httpMethod);
+        StringBuilder linkHeader = new StringBuilder();
+        for (RiakLink link : links) {
+            if (linkHeader.length() > 0) {
+                linkHeader.append(", ");
+            }
+            linkHeader.append("<");
+            linkHeader.append(basePath);
+            linkHeader.append("/");
+            linkHeader.append(link.getBucket());
+            linkHeader.append("/");
+            linkHeader.append(link.getKey());
+            linkHeader.append(">; ");
+            linkHeader.append(Constants.RAW_LINK_TAG);
+            linkHeader.append("=\"");
+            linkHeader.append(link.getTag());
+            linkHeader.append("\"");
+        }
+        if (linkHeader.length() > 0) {
+            httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+        }
+        for (String name : usermeta.keySet()) {
+            httpMethod.setRequestHeader(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
+        }
+        if (vclock != null) {
+            httpMethod.setRequestHeader(Constants.HDR_VCLOCK, vclock);
+        }
+        
+        // Serialize body
+        if (httpMethod instanceof EntityEnclosingMethod) {
+            EntityEnclosingMethod entityEnclosingMethod = (EntityEnclosingMethod) httpMethod;
+            
+            // Any value set using setValueAsStream() has precedent over value set using setValue() 
+            if (valueStream != null) {
+                if (valueStreamLength >= 0) {
+                    entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, valueStreamLength,
+                                                                      contentType));
+                } else {
+                    entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, contentType));
+                }
+            } else if (value != null) {
+                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(value, contentType));
+            }
+        }
+   }
+
+    String getBasePathFromHttpMethod(HttpMethod httpMethod) {
+        String path = httpMethod.getPath();
+        int idx = path.length() - 1;
+        
+        // ignore any trailing slash
+        if (path.endsWith("/")) {
+            idx--;
+        }
+        
+        // trim off last two path components
+        idx = path.lastIndexOf('/', idx);
+        idx = path.lastIndexOf('/', idx);
+
+        if (idx <= 0)
+            return "/";
+        
+        return path.substring(0, idx);
     }
 
 }

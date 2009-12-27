@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.raw;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.HttpResponseDecorator;
 import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -71,7 +73,21 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
             if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
                 throw new RiakResponseException(r, "multipart/mixed content expected when object has siblings");
 
-            siblings = RawUtils.parseMultipart(r.getBucket(), r.getKey(), headers, r.getBody());
+            String body = r.getBody();
+            
+            // If response is streamed, consume and close the stream
+            if (r.getBody() == null && r.getHttpMethod() != null) {
+                try {
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    ClientUtils.copyStream(r.getHttpMethod().getResponseBodyAsStream(), os);
+                    body = os.toString();
+                } catch (IOException e) { // ignore 
+                } finally {
+                    close();
+                }
+            }
+            
+            siblings = RawUtils.parseMultipart(r.getBucket(), r.getKey(), headers, body);
             if (siblings.size() > 0) {
                 object = siblings.get(0);
             }
@@ -81,8 +97,7 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
                                    headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
 
             // If response was constructed without a response body, try to get
-            // the
-            // body as a stream from the underlying HTTP method
+            // the body as a stream from the underlying HTTP method
             if (r.getBody() == null && r.getHttpMethod() != null) {
                 try {
                     object.setValueStream(r.getHttpMethod().getResponseBodyAsStream());

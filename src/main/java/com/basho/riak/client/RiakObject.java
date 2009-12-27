@@ -13,9 +13,10 @@
  */
 package com.basho.riak.client;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
+
+import org.apache.commons.httpclient.HttpMethod;
 
 import com.basho.riak.client.response.StoreResponse;
 
@@ -58,8 +59,8 @@ public interface RiakObject {
      */
     public String getValue();
 
-    /** 
-     * Set the object's value 
+    /**
+     * Set the object's value
      */
     public void setValue(String value);
 
@@ -95,23 +96,9 @@ public interface RiakObject {
     public String getVtag();
 
     /**
-     * @return The actual entity to send to Riak for a store operation. When
-     *         storing an object either getEntity() or getEntityStream() must be
-     *         non-null.
+     * Serializes this object to an existing {@link HttpMethod} which can be
+     * sent as an HTTP request. Used by {@RiakClient} to create PUT
+     * requests.
      */
-    public String getEntity();
-
-    /**
-     * @return The actual entity to send to Riak for a store operation provided
-     *         as a stream. When storing an object either getEntity() or
-     *         getEntityStream() must be non-null.
-     */
-    public InputStream getEntityStream();
-
-    /**
-     * @return The length of the stream provided by getEntityStream() or -1 if
-     *         unknown. If unknown, the stream will be buffered in memory to
-     *         determine the entity length.
-     */
-    public long getEntityStreamLength();
+    public void writeToHttpMethod(HttpMethod httpMethod);
 }

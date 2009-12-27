@@ -13,8 +13,6 @@
  */
 package com.basho.riak.client.jiak;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,6 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,10 +61,10 @@ public class JiakObject implements RiakObject {
      */
     public JiakObject(JSONObject object) throws JSONException {
         this(object.getString(Constants.JIAK_FL_BUCKET), object.getString(Constants.JIAK_FL_KEY),
-             object.optJSONObject(Constants.JIAK_FL_VALUE), object.optJSONArray(Constants.JIAK_FL_LINKS),
-             null, object.optString(Constants.JIAK_FL_VCLOCK),
-             object.optString(Constants.JIAK_FL_LAST_MODIFIED), object.optString(Constants.JIAK_FL_VTAG));
-        
+             object.optJSONObject(Constants.JIAK_FL_VALUE), object.optJSONArray(Constants.JIAK_FL_LINKS), null,
+             object.optString(Constants.JIAK_FL_VCLOCK), object.optString(Constants.JIAK_FL_LAST_MODIFIED),
+             object.optString(Constants.JIAK_FL_VTAG));
+
         JSONObject value = object.optJSONObject(Constants.JIAK_FL_VALUE);
         if (value != null) {
             this.setUsermeta(value.optJSONObject(Constants.JIAK_FL_USERMETA));
@@ -248,8 +249,7 @@ public class JiakObject implements RiakObject {
      * @return An unmodifiable map of user-defined metadata in this object. Use
      *         getUsermetaAsJSON() to modify the metadata
      */
-    @SuppressWarnings("unchecked")
-    public Map<String, String> getUsermeta() {
+    @SuppressWarnings("unchecked") public Map<String, String> getUsermeta() {
         Map<String, String> usermeta = new HashMap<String, String>();
         for (Iterator<Object> iter = this.usermeta.keys(); iter.hasNext();) {
             String key = iter.next().toString();
@@ -297,20 +297,12 @@ public class JiakObject implements RiakObject {
         return vtag;
     }
 
-    public String getEntity() {
-        return this.toJSONString();
-    }
-
-    public InputStream getEntityStream() {
-        if (value == null)
-            return null;
-        return new ByteArrayInputStream(this.getEntity().getBytes());
-    }
-
-    public long getEntityStreamLength() {
-        if (value == null)
-            return 0;
-        return this.getEntity().getBytes().length;
+    public void writeToHttpMethod(HttpMethod httpMethod) {
+        // Jiak stores the object value and metadata all in the message body.
+        if (httpMethod instanceof EntityEnclosingMethod) {
+            ((EntityEnclosingMethod) httpMethod).setRequestEntity(new ByteArrayRequestEntity(toJSONString().getBytes(),
+                                                                                             Constants.CTYPE_JSON));
+        }
     }
 
     public JSONObject toJSONObject() {

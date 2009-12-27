@@ -54,6 +54,11 @@ public class RawClient implements RiakClient {
         riakBasePath = ClientUtils.getPathFromUrl(url);
     }
 
+    // Package protected constructor used for testing
+    RawClient(ClientHelper helper) {
+        this.helper = helper;
+    }
+
     public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta) {
         JSONObject schema = null;
         try {
@@ -155,13 +160,18 @@ public class RawClient implements RiakClient {
     }
 
     public RawFetchResponse fetch(String bucket, String key) {
-        return doFetch(bucket, key, null, false);
+        return fetch(bucket, key, null);
     }
 
     /**
-     * Similar to fetch(), except the HTTP connection is left open, and the Riak
-     * response is provided as a stream and processed on request. The user must
-     * remember to call RawFetchResponse.close() on the return value.
+     * Similar to fetch(), except the HTTP connection is left open for
+     * successful 2xx responses, and the Riak response is provided as a stream.
+     * The user must remember to call RawFetchResponse.close() on the return
+     * value.
+     * 
+     * Sibling responses (status code 300) must be read before parsing, so they
+     * cannot be streamed, so stream() is identical to fetch(), except that
+     * getBody() returns null.
      * 
      * @param bucket
      *            The bucket containing the {@link RiakObject} to fetch.
@@ -187,7 +197,7 @@ public class RawClient implements RiakClient {
         return doFetch(bucket, key, null, true);
     }
 
-    private RawFetchResponse doFetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
+    RawFetchResponse doFetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
         if (meta == null) {
             meta = new RequestMeta();
         }
