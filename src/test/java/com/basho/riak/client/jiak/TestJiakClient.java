@@ -153,9 +153,8 @@ public class TestJiakClient {
         // verification is done in the Answer impl above.
     }
 
-    @Test public void store_adds_content_type_and_return_body_query_parameter() {
+    @Test public void store_adds_return_body_query_parameter() {
         impl.store(object, meta);
-        verify(meta).setHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
         verify(meta).setQueryParam(Constants.QP_RETURN_BODY, "true");
     }
 }

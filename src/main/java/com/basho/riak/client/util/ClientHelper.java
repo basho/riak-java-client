@@ -14,7 +14,6 @@
 package com.basho.riak.client.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -23,7 +22,6 @@ import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.json.JSONObject;
 
@@ -104,20 +102,8 @@ public class ClientHelper {
         String key = object.getKey();
         String url = ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams());
         PutMethod put = new PutMethod(url);
-
-        InputStream entityStream = object.getEntityStream();
-        if (entityStream != null) {
-            long entityStreamLength = object.getEntityStreamLength();
-            if (entityStreamLength >= 0) {
-                put.setRequestEntity(new InputStreamRequestEntity(entityStream, entityStreamLength,
-                                                                  object.getContentType()));
-            } else {
-                put.setRequestEntity(new InputStreamRequestEntity(entityStream, object.getContentType()));
-            }
-        } else if (object.getEntity() != null) {
-            put.setRequestEntity(new ByteArrayRequestEntity(object.getEntity().getBytes(), object.getContentType()));
-        }
-
+        
+        object.writeToHttpMethod(put);
         return executeMethod(bucket, key, put, meta);
     }
 
