@@ -68,8 +68,6 @@ public class JiakClient implements RiakClient {
 
     public JiakBucketResponse listBucket(String bucket, RequestMeta meta) {
         HttpResponse r = helper.listBucket(bucket, meta);
-        if (r == null)
-            return null;
         try {
             return new JiakBucketResponse(r);
         } catch (JSONException e) {
@@ -95,8 +93,6 @@ public class JiakClient implements RiakClient {
         // updated metadata.
         meta.setQueryParam(Constants.QP_RETURN_BODY, "true");
         HttpResponse r = helper.store(object, meta);
-        if (r == null)
-            return null;
         try {
             return new JiakStoreResponse(r);
         } catch (JSONException e) {
@@ -124,8 +120,6 @@ public class JiakClient implements RiakClient {
 
     public JiakFetchResponse fetch(String bucket, String key, RequestMeta meta) {
         HttpResponse r = helper.fetch(bucket, key, meta);
-        if (r == null)
-            return null;
         try {
             return new JiakFetchResponse(r);
         } catch (JSONException e) {
@@ -156,8 +150,6 @@ public class JiakClient implements RiakClient {
 
     public JiakWalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
         HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
-        if (r == null)
-            return null;
         try {
             return new JiakWalkResponse(r);
         } catch (JSONException e) {

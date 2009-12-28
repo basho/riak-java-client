@@ -312,8 +312,7 @@ public class ClientHelper {
             
             return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
         } catch (IOException e) {
-            toss(new RiakIOException(e));
-            return null;
+            return toss(new RiakIOException(e));
         } finally {
             if (!streamResponse) {
                 httpMethod.releaseConnection();

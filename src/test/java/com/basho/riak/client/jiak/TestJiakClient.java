@@ -46,7 +46,7 @@ public class TestJiakClient {
         impl = new JiakClient(mockHelper);
     }
     
-    @Test public void all_interface_methods_defer_to_helper() throws IOException {
+    @Test public void interface_methods_defer_to_helper() throws IOException {
 
         impl.setBucketSchema(bucket, bucketInfo, meta);
         verify(mockHelper).setBucketSchema(eq(bucket), any(JSONObject.class), same(meta));

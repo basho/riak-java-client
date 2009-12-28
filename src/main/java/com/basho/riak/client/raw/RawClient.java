@@ -14,8 +14,6 @@
 package com.basho.riak.client.raw;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +21,6 @@ import org.json.JSONObject;
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
@@ -32,7 +29,6 @@ import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakResponseException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
-import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -42,16 +38,13 @@ import com.basho.riak.client.util.Constants;
 public class RawClient implements RiakClient {
 
     private ClientHelper helper;
-    private String riakBasePath;
 
     public RawClient(RiakConfig config) {
         helper = new ClientHelper(config);
-        riakBasePath = ClientUtils.getPathFromUrl(config.getUrl());
     }
 
     public RawClient(String url) {
         helper = new ClientHelper(new RiakConfig(url));
-        riakBasePath = ClientUtils.getPathFromUrl(url);
     }
 
     // Package protected constructor used for testing
@@ -76,10 +69,8 @@ public class RawClient implements RiakClient {
 
     public RawBucketResponse listBucket(String bucket, RequestMeta meta) {
         HttpResponse r = helper.listBucket(bucket, meta);
-        if (r == null)
-            return null;
         try {
-            return new RawBucketResponse(r);
+            return getBucketResponse(r);
         } catch (JSONException e) {
             helper.toss(new RiakResponseException(r, e));
             return null;
@@ -93,48 +84,7 @@ public class RawClient implements RiakClient {
     // Sends the object's link, user-defined metadata and vclock as HTTP headers
     // and the value as the body
     public RawStoreResponse store(RiakObject object, RequestMeta meta) {
-        if (meta == null) {
-            meta = new RequestMeta();
-        }
-        Collection<RiakLink> links = object.getLinks();
-        Map<String, String> usermeta = object.getUsermeta();
-        StringBuilder linkHeader = new StringBuilder();
-        String vclock = object.getVclock();
-
-        if (links != null) {
-            for (RiakLink link : links) {
-                if (linkHeader.length() > 0) {
-                    linkHeader.append(", ");
-                }
-                linkHeader.append("<");
-                linkHeader.append(riakBasePath);
-                linkHeader.append("/");
-                linkHeader.append(link.getBucket());
-                linkHeader.append("/");
-                linkHeader.append(link.getKey());
-                linkHeader.append(">; ");
-                linkHeader.append(Constants.RAW_LINK_TAG);
-                linkHeader.append("=\"");
-                linkHeader.append(link.getTag());
-                linkHeader.append("\"");
-            }
-        }
-        if (linkHeader.length() > 0) {
-            meta.setHeader(Constants.HDR_LINK, linkHeader.toString());
-        }
-        if (usermeta != null) {
-            for (String name : usermeta.keySet()) {
-                meta.setHeader(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
-            }
-        }
-        if (vclock != null) {
-            meta.setHeader(Constants.HDR_VCLOCK, vclock);
-        }
-
         HttpResponse r = helper.store(object, meta);
-        if (r == null)
-            return null;
-
         return new RawStoreResponse(r);
     }
 
@@ -144,7 +94,7 @@ public class RawClient implements RiakClient {
 
     public RawFetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
         try {
-            return new RawFetchResponse(helper.fetchMeta(bucket, key, meta));
+            return getFetchResponse(helper.fetchMeta(bucket, key, meta));
         } catch (RiakResponseException e) {
             return new RawFetchResponse(helper.toss(e));
         }
@@ -156,11 +106,11 @@ public class RawClient implements RiakClient {
 
     // Fetches the object or all sibling objects if there are multiple
     public RawFetchResponse fetch(String bucket, String key, RequestMeta meta) {
-        return doFetch(bucket, key, meta, false);
+        return fetch(bucket, key, meta, false);
     }
 
     public RawFetchResponse fetch(String bucket, String key) {
-        return fetch(bucket, key, null);
+        return fetch(bucket, key, null, false);
     }
 
     /**
@@ -190,19 +140,19 @@ public class RawClient implements RiakClient {
      *         {@link RawFetchResponse}.close().
      */
     public RawFetchResponse stream(String bucket, String key, RequestMeta meta) {
-        return doFetch(bucket, key, meta, true);
+        return fetch(bucket, key, meta, true);
     }
 
     public RawFetchResponse stream(String bucket, String key) {
-        return doFetch(bucket, key, null, true);
+        return fetch(bucket, key, null, true);
     }
 
-    RawFetchResponse doFetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
+    RawFetchResponse fetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
         if (meta == null) {
             meta = new RequestMeta();
         }
 
-        String accept = meta.getQueryParam(Constants.HDR_ACCEPT);
+        String accept = meta.getHeader(Constants.HDR_ACCEPT);
         if (accept == null) {
             meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
         } else {
@@ -210,11 +160,9 @@ public class RawClient implements RiakClient {
         }
 
         HttpResponse r = helper.fetch(bucket, key, meta, streamResponse);
-        if (r == null)
-            return null;
 
         try {
-            return new RawFetchResponse(r);
+            return getFetchResponse(r);
         } catch (RiakResponseException e) {
             return new RawFetchResponse(helper.toss(e));
         }
@@ -235,11 +183,9 @@ public class RawClient implements RiakClient {
 
     public RawWalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
         HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
-        if (r == null)
-            return null;
 
         try {
-            return new RawWalkResponse(r);
+            return getWalkResponse(r);
         } catch (RiakResponseException e) {
             return new RawWalkResponse(helper.toss(e));
         }
@@ -265,5 +211,16 @@ public class RawClient implements RiakClient {
      */
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);
+    }
+    
+    // Encapsulate response creation so it can be stubbed for testing
+    RawBucketResponse getBucketResponse(HttpResponse r) throws JSONException {
+        return new RawBucketResponse(r);
+    }
+    RawFetchResponse getFetchResponse(HttpResponse r) throws RiakResponseException {
+        return new RawFetchResponse(r);
+    }
+    RawWalkResponse getWalkResponse(HttpResponse r) throws RiakResponseException {
+        return new RawWalkResponse(r);
     }
 }

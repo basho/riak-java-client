@@ -291,7 +291,7 @@ public class RawObject implements RiakObject {
         
         // trim off last two path components
         idx = path.lastIndexOf('/', idx);
-        idx = path.lastIndexOf('/', idx);
+        idx = path.lastIndexOf('/', idx-1);
 
         if (idx <= 0)
             return "";

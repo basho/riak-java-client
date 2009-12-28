@@ -36,7 +36,7 @@ public class RawStoreResponse extends HttpResponseDecorator implements StoreResp
     public RawStoreResponse(HttpResponse r) {
         super(r);
 
-        if (r.isSuccess()) {
+        if (r != null && r.isSuccess()) {
             Map<String, String> headers = r.getHttpHeaders();
             vclock = headers.get(Constants.HDR_VCLOCK);
             lastmod = headers.get(Constants.HDR_LAST_MODIFIED);
