@@ -98,8 +98,7 @@ public class RiakWalkSpec extends ArrayList<RiakWalkSpecStep> {
      * Convert this walk step to a string. All bucket and tag names will be
      * URL-escaped in the return value.
      */
-    @Override
-    public String toString() {
+    @Override public String toString() {
         StringBuilder result = new StringBuilder();
         for (RiakWalkSpecStep s : this) {
             result.append(ClientUtils.urlEncode(s.bucket));

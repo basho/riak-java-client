@@ -17,7 +17,7 @@ public class RawBucketInfo extends RiakBucketInfo {
     public RawBucketInfo() {
         super(null, null);
     }
-    
+
     public RawBucketInfo(JSONObject schema, Collection<String> keys) {
         super(schema, keys);
     }
@@ -37,7 +37,6 @@ public class RawBucketInfo extends RiakBucketInfo {
         return getSchema().optBoolean(Constants.RAW_FL_SCHEMA_ALLOW_MULT);
     }
 
-
     /**
      * Number of replicas per object in this bucket.
      */
@@ -48,7 +47,7 @@ public class RawBucketInfo extends RiakBucketInfo {
             throw new IllegalStateException("operation is valid json", unreached);
         }
     }
-    
+
     public Integer getNVal() {
         return getSchema().optInt(Constants.RAW_FL_SCHEMA_NVAL);
     }
@@ -75,7 +74,7 @@ public class RawBucketInfo extends RiakBucketInfo {
     }
 
     /**
-     * @return the chash_keyfun property as "\<module\>:\<function\>" 
+     * @return the chash_keyfun property as "\<module\>:\<function\>"
      */
     public String getCHashFun() {
         JSONObject chashfun = getSchema().optJSONObject(Constants.RAW_FL_SCHEMA_CHASHFUN);
@@ -108,7 +107,7 @@ public class RawBucketInfo extends RiakBucketInfo {
     }
 
     /**
-     * @return the linkfun property as "\<module\>:\<function\>" 
+     * @return the linkfun property as "\<module\>:\<function\>"
      */
     public String getLinkFun() {
         JSONObject linkfun = getSchema().optJSONObject(Constants.RAW_FL_SCHEMA_LINKFUN);

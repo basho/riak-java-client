@@ -75,7 +75,7 @@ public class DefaultHttpResponse implements HttpResponse {
         String method = null;
         if (httpMethod != null)
             method = httpMethod.getName();
-        
+
         return (status >= 200 && status < 300) ||
                ((status == 300 || status == 304) && Constants.HTTP_HEAD_METHOD.equals(method)) ||
                ((status == 300 || status == 304) && Constants.HTTP_GET_METHOD.equals(method)) ||

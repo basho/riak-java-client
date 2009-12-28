@@ -74,19 +74,19 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
                 throw new RiakResponseException(r, "multipart/mixed content expected when object has siblings");
 
             String body = r.getBody();
-            
+
             // If response is streamed, consume and close the stream
             if (r.getBody() == null && r.getHttpMethod() != null) {
                 try {
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
                     ClientUtils.copyStream(r.getHttpMethod().getResponseBodyAsStream(), os);
                     body = os.toString();
-                } catch (IOException e) { // ignore 
+                } catch (IOException e) { // ignore
                 } finally {
                     close();
                 }
             }
-            
+
             siblings = RawUtils.parseMultipart(r.getBucket(), r.getKey(), headers, body);
             if (siblings.size() > 0) {
                 object = siblings.get(0);

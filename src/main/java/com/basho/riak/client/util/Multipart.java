@@ -68,7 +68,7 @@ public class Multipart {
                 if (bodyStart > end) {
                     bodyStart = end;
                 }
-                
+
                 Map<String, String> partHeaders = parseHeaders(body.substring(start, headerEnd));
                 String partBody = body.substring(bodyStart, end);
                 parts.add(new Part(partHeaders, partBody));

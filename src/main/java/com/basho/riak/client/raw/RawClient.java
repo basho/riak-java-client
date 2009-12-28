@@ -212,14 +212,16 @@ public class RawClient implements RiakClient {
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);
     }
-    
+
     // Encapsulate response creation so it can be stubbed for testing
     RawBucketResponse getBucketResponse(HttpResponse r) throws JSONException {
         return new RawBucketResponse(r);
     }
+
     RawFetchResponse getFetchResponse(HttpResponse r) throws RiakResponseException {
         return new RawFetchResponse(r);
     }
+
     RawWalkResponse getWalkResponse(HttpResponse r) throws RiakResponseException {
         return new RawWalkResponse(r);
     }

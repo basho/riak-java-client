@@ -102,7 +102,7 @@ public class ClientHelper {
         String key = object.getKey();
         String url = ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams());
         PutMethod put = new PutMethod(url);
-        
+
         object.writeToHttpMethod(put);
         return executeMethod(bucket, key, put, meta);
     }
@@ -309,7 +309,7 @@ public class ClientHelper {
             if (!streamResponse) {
                 body = httpMethod.getResponseBodyAsString();
             }
-            
+
             return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
         } catch (IOException e) {
             return toss(new RiakIOException(e));

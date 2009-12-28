@@ -39,7 +39,7 @@ public class JiakWalkResponse extends HttpResponseDecorator implements WalkRespo
      */
     public JiakWalkResponse(HttpResponse r) throws JSONException {
         super(r);
-        
+
         if (r != null && r.isSuccess() && (r.getBody() != null)) {
             steps = parseSteps(r.getBody());
         }

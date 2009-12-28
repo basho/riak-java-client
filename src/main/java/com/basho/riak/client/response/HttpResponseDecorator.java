@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.commons.httpclient.HttpMethod;
 
 /**
- * A default decorator implementation for HttpResponse 
+ * A default decorator implementation for HttpResponse
  */
 public class HttpResponseDecorator implements HttpResponse {
 

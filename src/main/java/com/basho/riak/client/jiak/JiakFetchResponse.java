@@ -37,7 +37,7 @@ public class JiakFetchResponse extends HttpResponseDecorator implements FetchRes
      */
     public JiakFetchResponse(HttpResponse r) throws JSONException {
         super(r);
-        
+
         if (r != null && r.isSuccess() && (r.getBody() != null)) {
             object = new JiakObject(new JSONObject(r.getBody()));
         }

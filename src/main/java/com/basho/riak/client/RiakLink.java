@@ -62,20 +62,18 @@ public class RiakLink {
         this.tag = tag;
     }
 
-    @Override
-    public boolean equals(Object obj) {
+    @Override public boolean equals(Object obj) {
         if (!(obj instanceof RiakLink))
             return false;
         RiakLink other = (RiakLink) obj;
-        
+
         boolean bucketEq = (bucket != null && bucket.equals(other.bucket)) || (bucket == null && other.bucket == null);
         boolean keyEq = (key != null && key.equals(other.key)) || (key == null && other.key == null);
         boolean tagEq = (tag != null && tag.equals(other.tag)) || (tag == null && other.tag == null);
         return bucketEq && keyEq && tagEq;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return new StringBuilder("[").append(bucket).append(",").append(key).append(",").append(tag).append("]").toString();
     }
 }

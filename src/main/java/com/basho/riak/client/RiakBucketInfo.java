@@ -37,12 +37,14 @@ public class RiakBucketInfo {
     public RiakBucketInfo() {
         this(null, null);
     }
-    
+
     /**
      * Construct a bucket info using the JSON data from a listBucket() response.
-     *  
-     * @param schema The JSON object containing the bucket's schema
-     * @param keys The JSON array containing the keys in the bucket  
+     * 
+     * @param schema
+     *            The JSON object containing the bucket's schema
+     * @param keys
+     *            The JSON array containing the keys in the bucket
      */
     public RiakBucketInfo(JSONObject schema, Collection<String> keys) {
 

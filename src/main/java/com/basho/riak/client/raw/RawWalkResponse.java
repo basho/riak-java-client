@@ -39,7 +39,7 @@ public class RawWalkResponse extends HttpResponseDecorator implements WalkRespon
      */
     public RawWalkResponse(HttpResponse r) throws RiakResponseException {
         super(r);
-        
+
         if (r != null && r.isSuccess()) {
             steps = parseSteps(r);
         }
@@ -75,10 +75,11 @@ public class RawWalkResponse extends HttpResponseDecorator implements WalkRespon
             for (Multipart.Part part : parts) {
                 Map<String, String> partHeaders = part.getHeaders();
                 String contentType = partHeaders.get(Constants.HDR_CONTENT_TYPE);
-    
-                if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
+
+                if (contentType == null ||
+                    !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
                     throw new RiakResponseException(r, "multipart/mixed subparts expected in link walk results");
-    
+
                 parsedSteps.add(RawUtils.parseMultipart(bucket, key, partHeaders, part.getBody()));
             }
         }

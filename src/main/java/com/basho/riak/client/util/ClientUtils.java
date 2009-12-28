@@ -194,8 +194,7 @@ public class ClientUtils {
             return null;
 
         Map<String, String> m = new HashMap<String, String>();
-        for (@SuppressWarnings("unchecked")
-        Iterator iter = json.keys(); iter.hasNext();) {
+        for (@SuppressWarnings("unchecked") Iterator iter = json.keys(); iter.hasNext();) {
             Object obj = iter.next();
             if (obj != null) {
                 String key = obj.toString();

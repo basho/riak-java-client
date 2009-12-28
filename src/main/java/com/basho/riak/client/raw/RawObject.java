@@ -57,13 +57,11 @@ public class RawObject implements RiakObject {
      *            The object's key
      */
     public RawObject(String bucket, String key) {
-        this(bucket, key, null, null, null, Constants.CTYPE_OCTET_STREAM,
-             null, null, null);
+        this(bucket, key, null, null, null, Constants.CTYPE_OCTET_STREAM, null, null, null);
     }
 
     public RawObject(String bucket, String key, String value) {
-        this(bucket, key, value, null, null,
-             Constants.CTYPE_OCTET_STREAM, null, null, null);
+        this(bucket, key, value, null, null, Constants.CTYPE_OCTET_STREAM, null, null, null);
     }
 
     public RawObject(String bucket, String key, String value, Collection<RiakLink> links) {
@@ -261,16 +259,17 @@ public class RawObject implements RiakObject {
         if (vclock != null) {
             httpMethod.setRequestHeader(Constants.HDR_VCLOCK, vclock);
         }
-        
+
         // Serialize body
         if (httpMethod instanceof EntityEnclosingMethod) {
             EntityEnclosingMethod entityEnclosingMethod = (EntityEnclosingMethod) httpMethod;
-            
-            // Any value set using setValueAsStream() has precedent over value set using setValue() 
+
+            // Any value set using setValueAsStream() has precedent over value
+            // set using setValue()
             if (valueStream != null) {
                 if (valueStreamLength >= 0) {
                     entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, valueStreamLength,
-                                                                      contentType));
+                                                                                        contentType));
                 } else {
                     entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, contentType));
                 }
@@ -278,24 +277,24 @@ public class RawObject implements RiakObject {
                 entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(value, contentType));
             }
         }
-   }
+    }
 
     String getBasePathFromHttpMethod(HttpMethod httpMethod) {
         String path = httpMethod.getPath();
         int idx = path.length() - 1;
-        
+
         // ignore any trailing slash
         if (path.endsWith("/")) {
             idx--;
         }
-        
+
         // trim off last two path components
         idx = path.lastIndexOf('/', idx);
-        idx = path.lastIndexOf('/', idx-1);
+        idx = path.lastIndexOf('/', idx - 1);
 
         if (idx <= 0)
             return "";
-        
+
         return path.substring(0, idx);
     }
 
