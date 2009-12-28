@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 
 public class TestRawWalkResponse {
 
@@ -79,7 +79,7 @@ public class TestRawWalkResponse {
         assertEquals("bar", impl.getSteps().get(0).get(1).getValue());
     }
 
-    @Test(expected = RiakResponseException.class)
+    @Test(expected = RiakResponseRuntimeException.class)
     public void throws_on_invalid_subpart_content_type() {
         final String BODY = 
             "\n" + 

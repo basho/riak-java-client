@@ -26,7 +26,7 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.Constants;
@@ -72,7 +72,7 @@ public class RawClient implements RiakClient {
         try {
             return getBucketResponse(r);
         } catch (JSONException e) {
-            helper.toss(new RiakResponseException(r, e));
+            helper.toss(new RiakResponseRuntimeException(r, e));
             return null;
         }
     }
@@ -95,7 +95,7 @@ public class RawClient implements RiakClient {
     public RawFetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
         try {
             return getFetchResponse(helper.fetchMeta(bucket, key, meta));
-        } catch (RiakResponseException e) {
+        } catch (RiakResponseRuntimeException e) {
             return new RawFetchResponse(helper.toss(e));
         }
     }
@@ -163,7 +163,7 @@ public class RawClient implements RiakClient {
 
         try {
             return getFetchResponse(r);
-        } catch (RiakResponseException e) {
+        } catch (RiakResponseRuntimeException e) {
             return new RawFetchResponse(helper.toss(e));
         }
 
@@ -186,7 +186,7 @@ public class RawClient implements RiakClient {
 
         try {
             return getWalkResponse(r);
-        } catch (RiakResponseException e) {
+        } catch (RiakResponseRuntimeException e) {
             return new RawWalkResponse(helper.toss(e));
         }
     }
@@ -218,11 +218,11 @@ public class RawClient implements RiakClient {
         return new RawBucketResponse(r);
     }
 
-    RawFetchResponse getFetchResponse(HttpResponse r) throws RiakResponseException {
+    RawFetchResponse getFetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
         return new RawFetchResponse(r);
     }
 
-    RawWalkResponse getWalkResponse(HttpResponse r) throws RiakResponseException {
+    RawWalkResponse getWalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
         return new RawWalkResponse(r);
     }
 }

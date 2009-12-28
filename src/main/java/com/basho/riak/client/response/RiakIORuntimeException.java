@@ -5,23 +5,23 @@ import java.io.IOException;
 /**
  * Thrown when an error occurs during communication with the Riak server.
  */
-public class RiakIOException extends RuntimeException {
+public class RiakIORuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = -3451479917953961929L;
 
-    public RiakIOException() {
+    public RiakIORuntimeException() {
         super();
     }
 
-    public RiakIOException(String message, IOException cause) {
+    public RiakIORuntimeException(String message, IOException cause) {
         super(message, cause);
     }
 
-    public RiakIOException(String message) {
+    public RiakIORuntimeException(String message) {
         super(message);
     }
 
-    public RiakIOException(Throwable cause) {
+    public RiakIORuntimeException(Throwable cause) {
         super(cause);
     }
 

@@ -5,17 +5,17 @@ import java.util.Map;
 import org.apache.commons.httpclient.HttpMethod;
 
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 
 /**
  * A checked decorator for RiakResponseException
  */
-public class RiakPlainResponseException extends Exception implements HttpResponse {
+public class RiakResponseException extends Exception implements HttpResponse {
 
     private static final long serialVersionUID = 5932513075276473483L;
-    private RiakResponseException impl;
+    private RiakResponseRuntimeException impl;
 
-    public RiakPlainResponseException(RiakResponseException e) {
+    public RiakResponseException(RiakResponseRuntimeException e) {
         super(e.getMessage(), e.getCause());
         impl = e;
     }

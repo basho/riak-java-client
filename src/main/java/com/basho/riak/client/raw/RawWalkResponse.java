@@ -19,7 +19,7 @@ import java.util.Map;
 
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.HttpResponseDecorator;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 import com.basho.riak.client.util.Multipart;
@@ -37,7 +37,7 @@ public class RawWalkResponse extends HttpResponseDecorator implements WalkRespon
      * contains a list of objects returned in that step. The HTTP body is a
      * multipart/mixed message with multipart/mixed subparts
      */
-    public RawWalkResponse(HttpResponse r) throws RiakResponseException {
+    public RawWalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
         super(r);
 
         if (r != null && r.isSuccess()) {
@@ -61,11 +61,11 @@ public class RawWalkResponse extends HttpResponseDecorator implements WalkRespon
      *            HTTP response from the Riak Raw interface
      * @return A list of lists of {@link RawObject}s represented by the
      *         response.
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If one of the parts of the body doesn't contain a proper
      *             multipart/mixed message
      */
-    private static List<? extends List<RawObject>> parseSteps(HttpResponse r) throws RiakResponseException {
+    private static List<? extends List<RawObject>> parseSteps(HttpResponse r) throws RiakResponseRuntimeException {
         String bucket = r.getBucket();
         String key = r.getKey();
         List<List<RawObject>> parsedSteps = new ArrayList<List<RawObject>>();
@@ -78,7 +78,7 @@ public class RawWalkResponse extends HttpResponseDecorator implements WalkRespon
 
                 if (contentType == null ||
                     !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
-                    throw new RiakResponseException(r, "multipart/mixed subparts expected in link walk results");
+                    throw new RiakResponseRuntimeException(r, "multipart/mixed subparts expected in link walk results");
 
                 parsedSteps.add(RawUtils.parseMultipart(bucket, key, partHeaders, part.getBody()));
             }

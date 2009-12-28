@@ -20,7 +20,7 @@ import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.Constants;
@@ -110,27 +110,27 @@ public class TestJiakClient {
 
         when(mockHelper.listBucket(bucket, meta)).thenReturn(mockHttpResponse);
         impl.listBucket(bucket, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
         
         when(mockHelper.store(object, meta)).thenReturn(mockHttpResponse);
         impl.store(object, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
 
         when(mockHelper.fetch(bucket, key, meta)).thenReturn(mockHttpResponse);
         impl.fetchMeta(bucket, key, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
         
         when(mockHelper.fetch(bucket, key, meta)).thenReturn(mockHttpResponse);
         impl.fetch(bucket, key, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
         
         when(mockHelper.walk(bucket, key, walkSpec, meta)).thenReturn(mockHttpResponse);
         impl.walk(bucket, key, walkSpec, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
     }
 

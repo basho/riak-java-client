@@ -26,7 +26,7 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.Constants;
@@ -72,7 +72,7 @@ public class JiakClient implements RiakClient {
             return new JiakBucketResponse(r);
         } catch (JSONException e) {
             try {
-                return new JiakBucketResponse(helper.toss(new RiakResponseException(r, e)));
+                return new JiakBucketResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
             } catch (JSONException unreached) {
                 throw new IllegalStateException("JiakBucketResponse doesn't throw on helper.toss() return value",
                                                 unreached);
@@ -97,7 +97,7 @@ public class JiakClient implements RiakClient {
             return new JiakStoreResponse(r);
         } catch (JSONException e) {
             try {
-                return new JiakStoreResponse(helper.toss(new RiakResponseException(r, e)));
+                return new JiakStoreResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
             } catch (JSONException unreached) {
                 throw new IllegalStateException("JiakStoreResponse doesn't throw on helper.toss() return value",
                                                 unreached);
@@ -124,7 +124,7 @@ public class JiakClient implements RiakClient {
             return new JiakFetchResponse(r);
         } catch (JSONException e) {
             try {
-                return new JiakFetchResponse(helper.toss(new RiakResponseException(r, e)));
+                return new JiakFetchResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
             } catch (JSONException unreached) {
                 throw new IllegalStateException("JiakFetchResponse doesn't throw on helper.toss() return value",
                                                 unreached);
@@ -154,7 +154,7 @@ public class JiakClient implements RiakClient {
             return new JiakWalkResponse(r);
         } catch (JSONException e) {
             try {
-                return new JiakWalkResponse(helper.toss(new RiakResponseException(r, e)));
+                return new JiakWalkResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
             } catch (JSONException unreached) {
                 throw new IllegalStateException("JiakWalkResponse doesn't throw on helper.toss() return value",
                                                 unreached);

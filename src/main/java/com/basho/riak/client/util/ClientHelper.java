@@ -33,8 +33,8 @@ import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.DefaultHttpResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
-import com.basho.riak.client.response.RiakIOException;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakIORuntimeException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
 
 /**
@@ -240,7 +240,7 @@ public class ClientHelper {
      * 
      * @return A 0-status {@link HttpResponse}.
      */
-    public HttpResponse toss(RiakIOException e) {
+    public HttpResponse toss(RiakIORuntimeException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
             return new DefaultHttpResponse(null, null, 0, null, null, null);
@@ -248,7 +248,7 @@ public class ClientHelper {
             throw e;
     }
 
-    public HttpResponse toss(RiakResponseException e) {
+    public HttpResponse toss(RiakResponseRuntimeException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
             return new DefaultHttpResponse(null, null, 0, null, null, null);
@@ -286,7 +286,7 @@ public class ClientHelper {
      * @return The HTTP response returned by Riak from executing
      *         <code>httpMethod</code>.
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server
      *             (i.e. HttpClient threw an IOException)
      */
@@ -312,7 +312,7 @@ public class ClientHelper {
 
             return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
         } catch (IOException e) {
-            return toss(new RiakIOException(e));
+            return toss(new RiakIORuntimeException(e));
         } finally {
             if (!streamResponse) {
                 httpMethod.releaseConnection();

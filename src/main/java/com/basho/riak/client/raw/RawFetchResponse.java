@@ -26,7 +26,7 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.HttpResponseDecorator;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
@@ -53,11 +53,11 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
      * Sibling objects cannot be streamed, since the stream must be consumed for
      * parsing.
      * 
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If the server returns a 300 without a proper multipart/mixed
      *             body
      */
-    public RawFetchResponse(HttpResponse r) throws RiakResponseException {
+    public RawFetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
         super(r);
 
         if (r == null)
@@ -71,7 +71,7 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
             String contentType = headers.get(Constants.HDR_CONTENT_TYPE);
 
             if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
-                throw new RiakResponseException(r, "multipart/mixed content expected when object has siblings");
+                throw new RiakResponseRuntimeException(r, "multipart/mixed content expected when object has siblings");
 
             String body = r.getBody();
 

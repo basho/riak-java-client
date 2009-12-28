@@ -22,8 +22,8 @@ import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakIOException;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakIORuntimeException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
@@ -55,7 +55,7 @@ public interface RiakClient {
      * @throws IllegalArgumentException
      *             If the provided schema values cannot be serialized to send to
      *             Riak.
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
      */
     public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta);
@@ -74,9 +74,9 @@ public interface RiakClient {
      * @return {@link BucketResponse} containing HTTP response information and
      *         the parsed schema and keys
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
     public BucketResponse listBucket(String bucket, RequestMeta meta);
@@ -97,9 +97,9 @@ public interface RiakClient {
      *         {@link RiakObject} with any updated information returned by the
      *         server such as the vclock, last modified date, and stored value.
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
     public StoreResponse store(RiakObject object, RequestMeta meta);
@@ -122,9 +122,9 @@ public interface RiakClient {
      * @return {@link FetchResponse} containing HTTP response information and a
      *         {@link RiakObject} containing only metadata and no value.
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
     public FetchResponse fetchMeta(String bucket, String key, RequestMeta meta);
@@ -147,9 +147,9 @@ public interface RiakClient {
      * @return {@link FetchResponse} containing HTTP response information and a
      *         {@link RiakObject} or sibling objects.
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
     public FetchResponse fetch(String bucket, String key, RequestMeta meta);
@@ -194,7 +194,7 @@ public interface RiakClient {
      * 
      * @return {@link HttpResponse} containing HTTP response information.
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
      */
     public HttpResponse delete(String bucket, String key, RequestMeta meta);
@@ -220,9 +220,9 @@ public interface RiakClient {
      *         corresponds to a <code>walkSpec</code> element that had
      *         <code>accumulateFlag</code> equal to 1.
      * 
-     * @throws RiakIOException
+     * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseException
+     * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      * 
      * @see RiakWalkSpec

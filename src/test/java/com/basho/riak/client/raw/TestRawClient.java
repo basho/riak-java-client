@@ -21,7 +21,7 @@ import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakResponseException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.Constants;
@@ -114,27 +114,27 @@ public class TestRawClient {
         impl = spy(impl);
         
         doThrow(new JSONException("")).when(impl).getBucketResponse(any(HttpResponse.class));
-        doThrow(new RiakResponseException(null)).when(impl).getFetchResponse(any(HttpResponse.class));
-        doThrow(new RiakResponseException(null)).when(impl).getWalkResponse(any(HttpResponse.class));
+        doThrow(new RiakResponseRuntimeException(null)).when(impl).getFetchResponse(any(HttpResponse.class));
+        doThrow(new RiakResponseRuntimeException(null)).when(impl).getWalkResponse(any(HttpResponse.class));
 
         impl.listBucket(bucket, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
 
         impl.fetchMeta(bucket, key, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
     
         impl.fetch(bucket, key, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
 
         impl.stream(bucket, key, meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
 
         impl.walk(bucket, key, "", meta);
-        verify(mockHelper).toss(any(RiakResponseException.class));
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
     }
 
