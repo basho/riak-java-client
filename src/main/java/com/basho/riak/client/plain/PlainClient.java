@@ -234,11 +234,6 @@ public class PlainClient {
             throw new RiakResponseException(re);
         }
 
-        Collection<? extends RiakObject> a = fetchAll("", "", null);
-        for (RiakObject o : a) {
-            o.getBucket();
-        }
-
         if (r.getStatusCode() == 404)
             return null;
 

@@ -1,2 +1,9 @@
-- Tests 
+- Tests:
+  - plainclient
+  - rawobject
+  - rawutils
+  - jiakobject
+  - clienthelper
+  - clientutils
 - Add write methods addLink() and addUsermeta() to RiakObject
+- Add schema get methods (allowed/required fields, read/write mask) to JiakBucketInfo 
