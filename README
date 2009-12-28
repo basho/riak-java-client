@@ -134,11 +134,7 @@ With Jiak:
 
 With Plain (connected to Raw):
 
-    try {
-        plain.store(new RawObject("a", "b"));
-    } catch (RiakPlainIOException e) {
-    } catch (RiakPlainResponseException e) {
-    }
+    plain.store(new RawObject("a", "b"));
 
 The request `w` and `dw` values (number of write or durable write responses required for success) can be specified using a RequestMeta object:
 
@@ -162,11 +158,7 @@ With Jiak:
         
 With Plain:
 
-    try {
-        RiakObject r = plain.fetch("bucket", "key");
-    } catch (RiakPlainIOException e) {
-    } catch (RiakPlainResponseException e) {
-    }
+    RiakObject r = plain.fetch("bucket", "key");
 
 The request `r` value (number of servers responding to a read request required for success) can be specified using a RequestMeta object:
 
@@ -193,13 +185,9 @@ With Raw or Jiak:
     
 With Plain:
 
-    try {
-        RiakObject o = plain.fetch("bucket", "key");
-        o.setValue("foo");
-        plain.store(o);
-    } catch (RiakPlainIOException e) {
-    } catch (RiakPlainResponseException e) {
-    }
+    RiakObject o = plain.fetch("bucket", "key");
+    o.setValue("foo");
+    plain.store(o);
 
 ## Delete Objects ##
 
@@ -220,11 +208,7 @@ With Raw:
         
 With Plain:
 
-    try {
-        Collection<? extends RiakObject> objects = client.fetchAll("bucket", "key");
-    } catch (RiakPlainIOException e) {
-    } catch (RiakPlainResponseException e) {
-    }
+    Collection<? extends RiakObject> objects = client.fetchAll("bucket", "key");
 
 ## Streaming Objects ##
 
@@ -262,13 +246,9 @@ With Jiak:
     
 With Plain:
 
-    try {
-        RiakBucketInfo info = plain.listBucket("bucket");
-        info.getSchema().put("allow_mult", true);
-        plain.setBucketSchema("bucket", info.getSchema());
-    } catch (RiakPlainIOException e) {
-    } catch (RiakPlainResponseException e) {
-    }
+    RiakBucketInfo info = plain.listBucket("bucket");
+    info.getSchema().put("allow_mult", true);
+    plain.setBucketSchema("bucket", info.getSchema());
 
 ## Links and Link Walking ##
 
@@ -318,18 +298,18 @@ All of the operations above also return results the implement the HttpResponse i
 
 # Exception Handling #
 
-RawClient and JiakClient will usually throw the unchecked exceptions RiakIOException and RiakResponseException if there is an error talking to the server or if the server returns a response that can't be parsed.  However, a RiakExceptionHandler can be installed in the client to prevent them from throwing the exceptions. Instead, they are passed to the exception handler.  This allows a user, for example, to consolidate processing for these exceptional cases in a single class and avoid inline try/catch blocks.
+RawClient and JiakClient will usually throw the unchecked exceptions RiakIORuntimeException and RiakResponseRuntimeException if there is an error talking to the server or if the server returns a response that can't be parsed.  However, a RiakExceptionHandler can be installed in the client to prevent them from throwing the exceptions. Instead, they are passed to the exception handler.  This allows a user, for example, to consolidate processing for these exceptional cases in a single class and avoid inline try/catch blocks.
 
     RawClient c = new RawClient("");
     c.setExceptionHandler(new RiakExceptionHandler() {
 
-        public void handle(RiakResponseException e) {
+        public void handle(RiakResponseRuntimeException e) {
             // Log and ignore malformed responses. The operation in progress
             // will return null.
             LOG.warn("Received malformed server response", e);
         }
 
-        public void handle(RiakIOException e) {
+        public void handle(RiakIORuntimeException e) {
             // Signal that we are experiencing connection problems
             App.setConnectionStatus(Status.DOWN);
         }
