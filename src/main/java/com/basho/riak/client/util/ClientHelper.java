@@ -53,6 +53,11 @@ public class ClientHelper {
         this.config = config;
         httpClient = ClientUtils.newHttpClient(config);
     }
+    
+    /** Used for testing -- inject an HttpClient */
+    void setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     /**
      * See {@link RiakClient}

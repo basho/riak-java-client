@@ -58,6 +58,10 @@ public class JiakBucketInfo extends RiakBucketInfo {
         }
     }
 
+    public List<String> getRequiredFields() {
+        return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS));
+    }
+
     public void setWriteMask(List<String> writeMask) {
         try {
             if (writeMask == null) {
@@ -71,6 +75,14 @@ public class JiakBucketInfo extends RiakBucketInfo {
 
     }
 
+    public List<String> getWriteMask() {
+        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_WRITE_MASK))) {
+            return null;
+        }
+
+        return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_WRITE_MASK));
+    }
+
     public void setReadMask(List<String> readMask) {
         try {
             if (readMask == null) {
@@ -81,5 +93,13 @@ public class JiakBucketInfo extends RiakBucketInfo {
         } catch (JSONException unreached) {
             throw new IllegalStateException("can always add strings and list<string> to json object", unreached);
         }
+    }
+
+    public List<String> getReadMask() {
+        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_READ_MASK))) {
+            return null;
+        }
+
+        return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_READ_MASK));
     }
 }

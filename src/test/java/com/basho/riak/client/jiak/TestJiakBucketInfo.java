@@ -36,6 +36,14 @@ public class TestJiakBucketInfo {
         final List<String> ALLOWED_FIELDS = Arrays.asList((String) null);
         impl.setAllowedFields(ALLOWED_FIELDS);
     }
+    
+    @Test public void get_allowed_fields_returns_allowed_fields() {
+        
+    }
+
+    @Test public void get_allowed_fields_returns_null_for_wildcard_or_null() {
+        
+    }
 
     @Test public void required_fields_sets_schema() throws JSONException {
         impl.setRequiredFields(FIELD_LIST);
@@ -50,6 +58,14 @@ public class TestJiakBucketInfo {
         assertEquals(0, impl.getSchema().getJSONArray(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS).length());
     }
 
+    @Test public void get_required_fields_returns_required_fields() {
+        
+    }
+
+    @Test public void get_required_fields_returns_empty_list_for_null() {
+        
+    }
+    
     @Test public void write_mask_sets_schema() throws JSONException {
         impl.setWriteMask(FIELD_LIST);
 
@@ -63,6 +79,14 @@ public class TestJiakBucketInfo {
         assertEquals("*", impl.getSchema().getString(Constants.JIAK_FL_SCHEMA_WRITE_MASK));
     }
 
+    @Test public void get_write_mask_returns_write_mask() {
+        
+    }
+
+    @Test public void get_write_mask_returns_null_for_wildcard_or_null() {
+        
+    }
+
     @Test public void read_mask_sets_schema() throws JSONException {
         impl.setReadMask(FIELD_LIST);
 
@@ -74,5 +98,13 @@ public class TestJiakBucketInfo {
     @Test public void null_read_mask_translates_to_wildcard() throws JSONException {
         impl.setReadMask(null);
         assertEquals("*", impl.getSchema().getString(Constants.JIAK_FL_SCHEMA_READ_MASK));
+    }
+
+    @Test public void get_read_mask_returns_read_mask() {
+        
+    }
+
+    @Test public void get_read_mask_returns_null_for_wildcard_or_null() {
+        
     }
 }
