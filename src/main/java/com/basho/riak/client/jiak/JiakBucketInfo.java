@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.basho.riak.client.RiakBucketInfo;
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -35,6 +36,14 @@ public class JiakBucketInfo extends RiakBucketInfo {
         } catch (JSONException unreached) {
             throw new IllegalStateException("can always add strings and list<string> to json object", unreached);
         }
+    }
+    
+    public List<String> getAllowedFields() {
+        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS))) {
+            return null;
+        }
+
+        return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS));
     }
 
     public void setRequiredFields(List<String> requiredFields) {

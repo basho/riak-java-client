@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.jiak.JiakBucketInfo;
 import com.basho.riak.client.jiak.JiakBucketResponse;
 import com.basho.riak.client.jiak.JiakClient;
@@ -35,7 +36,7 @@ public class ITestJiakBasic {
         final JiakClient c = new JiakClient(JIAK_URL);
         final String VALUE1 = "{\"value1\":1}";
         final String VALUE2 = "{\"value2\":2}";
-        final String LINK = "[\"bucket\",\"key\",\"tag\"]";
+        final RiakLink LINK = new RiakLink("bucket", "key", "tag");
         final String USERMETA_KEY = "usermeta";
         final String USERMETA_VALUE = "value";
         final String BUCKET = "jiak_itest";
@@ -63,8 +64,8 @@ public class ITestJiakBasic {
         // Modify and store it
         o = fetchresp.getObject();
         o.setValue(new JSONObject(VALUE2));
-        o.getLinksAsJSON().put(new JSONArray(LINK));
-        o.getUsermetaAsJSON().put(USERMETA_KEY, USERMETA_VALUE);
+        o.getLinks().add(LINK);
+        o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
         storeresp = c.store(o);
         assertTrue(storeresp.isSuccess());
 
@@ -74,7 +75,7 @@ public class ITestJiakBasic {
         assertTrue(fetchresp.hasObject());
         assertEquals(2, fetchresp.getObject().getValueAsJSON().optInt("value2"));
         assertEquals(1, fetchresp.getObject().getLinks().size());
-        assertEquals(LINK, fetchresp.getObject().getLinksAsJSON().get(0).toString().replaceAll("\\s", ""));
+        assertEquals(LINK, fetchresp.getObject().getLinks().iterator().next());
         assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermeta().get(USERMETA_KEY));
     }
 

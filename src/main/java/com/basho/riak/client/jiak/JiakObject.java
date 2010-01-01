@@ -15,10 +15,7 @@ package com.basho.riak.client.jiak;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -31,6 +28,7 @@ import org.json.JSONObject;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.response.StoreResponse;
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -44,8 +42,8 @@ public class JiakObject implements RiakObject {
     private String bucket;
     private String key;
     private JSONObject value = new JSONObject();
-    private JSONArray links = new JSONArray();
-    private JSONObject usermeta = new JSONObject();
+    private Collection<RiakLink> links = new ArrayList<RiakLink>();
+    private Map<String, String> usermeta = new HashMap<String, String>();
     private String vclock;
     private String lastmod;
     private String vtag;
@@ -61,13 +59,14 @@ public class JiakObject implements RiakObject {
      */
     public JiakObject(JSONObject object) throws JSONException {
         this(object.getString(Constants.JIAK_FL_BUCKET), object.getString(Constants.JIAK_FL_KEY),
-             object.optJSONObject(Constants.JIAK_FL_VALUE), object.optJSONArray(Constants.JIAK_FL_LINKS), null,
-             object.optString(Constants.JIAK_FL_VCLOCK), object.optString(Constants.JIAK_FL_LAST_MODIFIED),
-             object.optString(Constants.JIAK_FL_VTAG));
+             object.optJSONObject(Constants.JIAK_FL_VALUE), null, null, object.optString(Constants.JIAK_FL_VCLOCK),
+             object.optString(Constants.JIAK_FL_LAST_MODIFIED), object.optString(Constants.JIAK_FL_VTAG));
+
+        this.setLinks(object.optJSONArray(Constants.JIAK_FL_LINKS));
 
         JSONObject value = object.optJSONObject(Constants.JIAK_FL_VALUE);
         if (value != null) {
-            this.setUsermeta(value.optJSONObject(Constants.JIAK_FL_USERMETA));
+            this.setUsermeta(ClientUtils.jsonObjectAsMap(value.optJSONObject(Constants.JIAK_FL_USERMETA)));
         }
     }
 
@@ -79,16 +78,17 @@ public class JiakObject implements RiakObject {
         this(bucket, key, value, null, null, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, JSONArray links) {
+    public JiakObject(String bucket, String key, JSONObject value, Collection<RiakLink> links) {
         this(bucket, key, value, links, null, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, JSONArray links, JSONObject usermeta) {
+    public JiakObject(String bucket, String key, JSONObject value, Collection<RiakLink> links,
+            Map<String, String> usermeta) {
         this(bucket, key, value, links, usermeta, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, JSONArray links, JSONObject usermeta, String vclock,
-            String lastmod, String vtag) {
+    public JiakObject(String bucket, String key, JSONObject value, Collection<RiakLink> links,
+            Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
         if (value != null) {
@@ -114,23 +114,23 @@ public class JiakObject implements RiakObject {
                 value = new JSONObject(object.getValue());
             } catch (JSONException e) {
                 try {
-                    value = new JSONObject().put("v", JSONObject.quote(object.getValue()));
+                    value = new JSONObject().put("v", object.getValue());
                 } catch (JSONException unreached) {
-                    throw new IllegalStateException("can always add quoted string to json", unreached);
+                    throw new IllegalStateException("can always add non-null string to json", unreached);
                 }
             }
         } else {
             value = new JSONObject();
         }
+        links = new ArrayList<RiakLink>();
         if (object.getLinks() != null) {
-            links = new JSONArray(object.getLinks());
-        } else {
-            links = new JSONArray();
+            for (RiakLink link : object.getLinks()) {
+                links.add(new RiakLink(link));
+            }
         }
+        usermeta = new HashMap<String, String>();
         if (object.getUsermeta() != null) {
-            usermeta = new JSONObject(object.getUsermeta());
-        } else {
-            usermeta = new JSONObject();
+            usermeta.putAll(object.getUsermeta());
         }
         vclock = object.getVclock();
         lastmod = object.getLastmod();
@@ -205,67 +205,66 @@ public class JiakObject implements RiakObject {
         }
     }
 
-    /**
-     * @return An unmodifiable list of the links in this object. Use
-     *         getLinksAsJSON() to add or remove links
-     */
     public Collection<RiakLink> getLinks() {
-        List<RiakLink> links = new ArrayList<RiakLink>();
-        if (links != null && this.links.length() > 0) {
-            for (int i = 0; i < this.links.length(); i++) {
-                try {
-                    JSONArray link = this.links.getJSONArray(i);
-                    links.add(new RiakLink(link.getString(0), // bucket
-                                           link.getString(1), // key
-                                           link.getString(2))); // tag
-                } catch (JSONException e) {}
-            }
-        }
-        return Collections.unmodifiableList(links);
-    }
-
-    /**
-     * Use this method to get the object's links and modify them. A link in Jiak
-     * consists of an array with three elements: the target bucket, target key,
-     * and link tag. For example, to add a link:
-     * 
-     * object.getLinksAsJSON().put(new String[] {"bucket", "key", "tag"});
-     * 
-     * @return A modifiable {@link JSONArray} representing the links of this
-     *         object
-     */
-    public JSONArray getLinksAsJSON() {
         return links;
     }
 
-    public void setLinks(JSONArray links) {
+    /**
+     * @return The object's links serialized as JSON. A link in Jiak consists of
+     *         an array with three elements: the target bucket, target key, and
+     *         link tag. Links added to this array will not be included in the
+     *         Jiak object.
+     */
+    public JSONArray getLinksAsJSON() {
+        JSONArray jsonLinks = new JSONArray();
+        for (RiakLink link : links) {
+            JSONArray jsonLink = new JSONArray();
+            jsonLink.put(link.getBucket());
+            jsonLink.put(link.getKey());
+            jsonLink.put(link.getTag());
+            jsonLinks.put(jsonLink);
+        }
+        return jsonLinks;
+    }
+
+    public void setLinks(Collection<RiakLink> links) {
         if (links == null) {
-            links = new JSONArray();
+            links = new ArrayList<RiakLink>();
         }
         this.links = links;
     }
 
-    /**
-     * @return An unmodifiable map of user-defined metadata in this object. Use
-     *         getUsermetaAsJSON() to modify the metadata
-     */
-    @SuppressWarnings("unchecked") public Map<String, String> getUsermeta() {
-        Map<String, String> usermeta = new HashMap<String, String>();
-        for (Iterator<Object> iter = this.usermeta.keys(); iter.hasNext();) {
-            String key = iter.next().toString();
-            usermeta.put(key, this.usermeta.optString(key));
-        }
+    void setLinks(JSONArray json) {
+        links = new ArrayList<RiakLink>();
 
-        return Collections.unmodifiableMap(usermeta);
+        if (json != null) {
+            for (int i = 0; i < json.length(); i++) {
+                JSONArray jsonLink = json.optJSONArray(i);
+                links.add(new RiakLink(jsonLink.optString(0), // bucket
+                                       jsonLink.optString(1), // key
+                                       jsonLink.optString(2))); // tag
+            }
+        }
+    }
+
+    public Map<String, String> getUsermeta() {
+        return usermeta;
     }
 
     /**
-     * Jiak does not currently support extra user-defined metadata. It only
-     * stores links and the object value. Anything added to this
-     * {@link JSONObject} will be added to the "usermeta" field of the value.
+     * @return The usermeta map serialized to a JSONObject. Data added to this object will not be included in the
+     *         Jiak object.
      */
     public JSONObject getUsermetaAsJSON() {
-        return usermeta;
+        JSONObject jsonUsermeta = new JSONObject();
+        for (String key : usermeta.keySet()) {
+            try {
+                jsonUsermeta.put(key, usermeta.get(key));
+            } catch (JSONException unreached) {
+                throw new IllegalStateException("can always add non-null string to json", unreached);
+            }
+        }
+        return jsonUsermeta;
     }
 
     /**
@@ -273,11 +272,10 @@ public class JiakObject implements RiakObject {
      * stores links and the object value. Anything set here will be added to the
      * "usermeta" field of the value.
      */
-    public void setUsermeta(JSONObject usermeta) {
+    public void setUsermeta(Map<String, String> usermeta) {
         if (usermeta == null) {
-            usermeta = new JSONObject();
+            usermeta = new HashMap<String, String>();
         }
-
         this.usermeta = usermeta;
     }
 
@@ -310,24 +308,34 @@ public class JiakObject implements RiakObject {
         try {
             JSONObject value = getValueAsJSON();
             JSONObject usermeta = getUsermetaAsJSON();
-            if (usermeta != null && usermeta.keys().hasNext()) {
+            JSONArray links = getLinksAsJSON();
+
+            if (usermeta.keys().hasNext()) {
                 if (value == null) {
                     value = new JSONObject().put(Constants.JIAK_FL_USERMETA, usermeta);
-                } else if (value.opt(Constants.JIAK_FL_USERMETA) == null) {
-                    value.put(Constants.JIAK_FL_USERMETA, getUsermetaAsJSON());
+                } else {
+                    value.put(Constants.JIAK_FL_USERMETA, usermeta);
                 }
             }
             if (value != null) {
-                o.put(Constants.JIAK_FL_VALUE, getValueAsJSON());
+                o.put(Constants.JIAK_FL_VALUE, value);
+            } else {
+                o.put(Constants.JIAK_FL_VALUE, new JSONObject());
             }
             if (getBucket() != null) {
                 o.put(Constants.JIAK_FL_BUCKET, getBucket());
+            } else {
+                o.put(Constants.JIAK_FL_BUCKET, "");
             }
             if (getKey() != null) {
                 o.put(Constants.JIAK_FL_KEY, getKey());
+            } else {
+                o.put(Constants.JIAK_FL_BUCKET, "");
             }
-            if (getLinksAsJSON() != null) {
-                o.put(Constants.JIAK_FL_LINKS, getLinksAsJSON());
+            if (links != null) {
+                o.put(Constants.JIAK_FL_LINKS, links);
+            } else {
+                o.put(Constants.JIAK_FL_BUCKET, new JSONArray());
             }
             if (getVclock() != null) {
                 o.put(Constants.JIAK_FL_VCLOCK, getVclock());

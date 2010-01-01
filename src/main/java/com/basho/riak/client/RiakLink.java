@@ -29,6 +29,13 @@ public class RiakLink {
         this.tag = tag;
     }
 
+    /** Copy constructor */
+    public RiakLink(RiakLink link) {
+        bucket = link.bucket;
+        key = link.key;
+        tag = link.tag;
+    }
+
     /**
      * Bucket of the target object being linked to.
      */

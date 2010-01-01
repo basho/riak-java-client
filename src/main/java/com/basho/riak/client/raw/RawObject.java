@@ -98,7 +98,9 @@ public class RawObject implements RiakObject {
         value = object.getValue().getBytes();
         links = new ArrayList<RiakLink>();
         if (object.getLinks() != null) {
-            links.addAll(object.getLinks());
+            for (RiakLink link: object.getLinks()) {
+                links.add(new RiakLink(link));
+            }
         }
         usermeta = new HashMap<String, String>();
         if (object.getUsermeta() != null) {
@@ -111,11 +113,15 @@ public class RawObject implements RiakObject {
     }
 
     public void updateMeta(StoreResponse response) {
-        if (response == null)
-            return;
-        vclock = response.getVclock();
-        lastmod = response.getLastmod();
-        vtag = response.getVtag();
+        if (response == null) {
+            vclock = null;
+            lastmod = null;
+            vtag = null;
+        } else {
+            vclock = response.getVclock();
+            lastmod = response.getLastmod();
+            vtag = response.getVtag();
+        }
     }
 
     public String getBucket() {
@@ -151,9 +157,10 @@ public class RawObject implements RiakObject {
     }
 
     public void setLinks(Collection<RiakLink> links) {
-        if (links != null) {
-            this.links = links;
+        if (links == null) {
+            links = new ArrayList<RiakLink>();
         }
+        this.links = links;
     }
 
     public Map<String, String> getUsermeta() {
@@ -161,9 +168,10 @@ public class RawObject implements RiakObject {
     }
 
     public void setUsermeta(Map<String, String> usermeta) {
-        if (usermeta != null) {
-            this.usermeta = usermeta;
+        if (usermeta == null) {
+            usermeta = new HashMap<String, String>();
         }
+        this.usermeta = usermeta;
     }
 
     public String getContentType() {

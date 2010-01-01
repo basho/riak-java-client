@@ -3,13 +3,13 @@ package com.basho.riak.client.itest;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.jiak.JiakClient;
 import com.basho.riak.client.jiak.JiakObject;
 import com.basho.riak.client.jiak.JiakWalkResponse;
@@ -45,9 +45,9 @@ public class ITestJiakWalk {
         JiakObject leaf2 = new JiakObject(BUCKET, LEAF2, new JSONObject(INCLUDED_VALUE));
         JiakObject excludedLeaf = new JiakObject(BUCKET, EXCLUDED_LEAF, new JSONObject(EXCLUDED_VALUE));
         JiakObject root = new JiakObject(BUCKET, ROOT);
-        root.getLinksAsJSON().put(Arrays.asList(BUCKET, LEAF1, TAG_INCLUDE));
-        root.getLinksAsJSON().put(Arrays.asList(BUCKET, LEAF2, TAG_INCLUDE));
-        root.getLinksAsJSON().put(Arrays.asList(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
+        root.getLinks().add(new RiakLink(BUCKET, LEAF1, TAG_INCLUDE));
+        root.getLinks().add(new RiakLink(BUCKET, LEAF2, TAG_INCLUDE));
+        root.getLinks().add(new RiakLink(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
         assertTrue(c.store(root, WRITE_3_REPLICAS()).isSuccess());
         assertTrue(c.store(leaf1, WRITE_3_REPLICAS()).isSuccess());
         assertTrue(c.store(leaf2, WRITE_3_REPLICAS()).isSuccess());

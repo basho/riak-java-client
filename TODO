@@ -1,8 +1,4 @@
 - Tests:
-  - plainclient
-  - rawobject
-  - rawutils
-  - jiakobject
   - clienthelper
   - clientutils
 - Add write methods addLink() and addUsermeta() to RiakObject

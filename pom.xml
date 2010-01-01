@@ -53,22 +53,31 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-
-			<!-- Run integration tests (ITest*.java) by executing `mvn verify` -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>failsafe-maven-plugin</artifactId>
-				<version>2.4.3-alpha-1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
+        </plugins>
 	</build>
+	
+	<profiles>
+	   <profile>
+	       <id>enable-itest</id>
+	       <build>
+                <plugins>
+		            <!-- Run integration tests (ITest*.java) by executing `mvn -Penable-itest verify` -->
+		            <plugin>
+		                <groupId>org.codehaus.mojo</groupId>
+		                <artifactId>failsafe-maven-plugin</artifactId>
+		                <version>2.4.3-alpha-1</version>
+		                <executions>
+		                    <execution>
+		                        <goals>
+		                            <goal>integration-test</goal>
+		                            <goal>verify</goal>
+		                        </goals>
+		                    </execution>
+		                </executions>
+		            </plugin>
+		        </plugins>
+	       </build>
+	   </profile>
+	</profiles>
 
 </project>
