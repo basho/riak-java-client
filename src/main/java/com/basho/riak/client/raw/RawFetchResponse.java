@@ -16,7 +16,6 @@ package com.basho.riak.client.raw;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -64,7 +63,7 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
             return;
 
         Map<String, String> headers = r.getHttpHeaders();
-        Collection<RiakLink> links = RawUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
+        List<RiakLink> links = RawUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
         Map<String, String> usermeta = RawUtils.parseUsermeta(headers);
 
         if (r.getStatusCode() == 300) {
@@ -92,8 +91,8 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
                 object = siblings.get(0);
             }
         } else if (r.isSuccess()) {
-            object = new RawObject(r.getBucket(), r.getKey(), r.getBody(), links, usermeta,
-                                   headers.get(Constants.HDR_CONTENT_TYPE), headers.get(Constants.HDR_VCLOCK),
+            object = new RawObject(r.getBucket(), r.getKey(), r.getBody(), headers.get(Constants.HDR_CONTENT_TYPE),
+                                   links, usermeta, headers.get(Constants.HDR_VCLOCK),
                                    headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
 
             // If response was constructed without a response body, try to get
@@ -118,7 +117,7 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
         return getSiblings().size() > 0;
     }
 
-    public Collection<RawObject> getSiblings() {
+    public List<RawObject> getSiblings() {
         return siblings;
     }
 

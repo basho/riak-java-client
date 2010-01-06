@@ -14,8 +14,8 @@
 package com.basho.riak.client.jiak;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -41,9 +41,9 @@ public class JiakObject implements RiakObject {
 
     private String bucket;
     private String key;
-    private JSONObject value = new JSONObject();
-    private Collection<RiakLink> links = new ArrayList<RiakLink>();
-    private Map<String, String> usermeta = new HashMap<String, String>();
+    private JSONObject value;
+    private List<RiakLink> links;
+    private Map<String, String> usermeta;
     private String vclock;
     private String lastmod;
     private String vtag;
@@ -78,31 +78,26 @@ public class JiakObject implements RiakObject {
         this(bucket, key, value, null, null, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, Collection<RiakLink> links) {
+    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links) {
         this(bucket, key, value, links, null, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, Collection<RiakLink> links,
+    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links,
             Map<String, String> usermeta) {
         this(bucket, key, value, links, usermeta, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, Collection<RiakLink> links,
+    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links,
             Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
-        if (value != null) {
-            this.value = value;
-        }
-        if (links != null) {
-            this.links = links;
-        }
-        if (usermeta != null) {
-            this.usermeta = usermeta;
-        }
+        this.value = value;
         this.vclock = vclock;
         this.lastmod = lastmod;
         this.vtag = vtag;
+
+        setLinks(links);
+        setUsermeta(usermeta);
     }
 
     public void copyData(RiakObject object) {
@@ -205,7 +200,7 @@ public class JiakObject implements RiakObject {
         }
     }
 
-    public Collection<RiakLink> getLinks() {
+    public List<RiakLink> getLinks() {
         return links;
     }
 
@@ -227,7 +222,7 @@ public class JiakObject implements RiakObject {
         return jsonLinks;
     }
 
-    public void setLinks(Collection<RiakLink> links) {
+    public void setLinks(List<RiakLink> links) {
         if (links == null) {
             links = new ArrayList<RiakLink>();
         }

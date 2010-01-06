@@ -14,7 +14,7 @@
 package com.basho.riak.client.jiak;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,7 +61,7 @@ public class JiakFetchResponse extends HttpResponseDecorator implements FetchRes
     /**
      * @return An empty list since Jiak interface doesn't support siblings
      */
-    public Collection<JiakObject> getSiblings() {
+    public List<JiakObject> getSiblings() {
         return new ArrayList<JiakObject>();
     }
 }

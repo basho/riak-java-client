@@ -13,7 +13,7 @@
  */
 package com.basho.riak.client;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -67,7 +67,7 @@ public interface RiakObject {
     /**
      * @return The object's links
      */
-    public Collection<RiakLink> getLinks();
+    public List<RiakLink> getLinks();
 
     /**
      * @return User-specified metadata for the object in the form of key-value

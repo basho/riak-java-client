@@ -75,7 +75,7 @@ public class ITestJiakBasic {
         assertTrue(fetchresp.hasObject());
         assertEquals(2, fetchresp.getObject().getValueAsJSON().optInt("value2"));
         assertEquals(1, fetchresp.getObject().getLinks().size());
-        assertEquals(LINK, fetchresp.getObject().getLinks().iterator().next());
+        assertEquals(LINK, fetchresp.getObject().getLinks().get(0));
         assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermeta().get(USERMETA_KEY));
     }
 

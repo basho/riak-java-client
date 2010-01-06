@@ -75,7 +75,7 @@ public class ITestRawBasic {
         assertFalse(fetchresp.hasSiblings());
         assertEquals(VALUE2, fetchresp.getObject().getValue());
         assertEquals(1, fetchresp.getObject().getLinks().size());
-        assertEquals(LINK, fetchresp.getObject().getLinks().iterator().next());
+        assertEquals(LINK, fetchresp.getObject().getLinks().get(0));
         assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermeta().get(USERMETA_KEY));
     }
 

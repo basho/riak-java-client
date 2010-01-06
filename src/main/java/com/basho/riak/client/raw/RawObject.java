@@ -15,8 +15,8 @@ package com.basho.riak.client.raw;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -37,14 +37,14 @@ public class RawObject implements RiakObject {
 
     private String bucket;
     private String key;
-    private byte[] value = new String().getBytes();
-    private Collection<RiakLink> links = new ArrayList<RiakLink>();
-    private Map<String, String> usermeta = new HashMap<String, String>();
-    private String contentType = Constants.CTYPE_OCTET_STREAM;
-    private String vclock = null;
-    private String lastmod = null;
-    private String vtag = null;
-    private InputStream valueStream = null;
+    private byte[] value;
+    private List<RiakLink> links;
+    private Map<String, String> usermeta;
+    private String contentType;
+    private String vclock;
+    private String lastmod;
+    private String vtag;
+    private InputStream valueStream;
     private long valueStreamLength = -1;
 
     /**
@@ -57,48 +57,53 @@ public class RawObject implements RiakObject {
      *            The object's key
      */
     public RawObject(String bucket, String key) {
-        this(bucket, key, null, null, null, Constants.CTYPE_OCTET_STREAM, null, null, null);
+        this(bucket, key, null, null, null, null, null, null, null);
     }
 
     public RawObject(String bucket, String key, String value) {
-        this(bucket, key, value, null, null, Constants.CTYPE_OCTET_STREAM, null, null, null);
+        this(bucket, key, value, null, null, null, null, null, null);
     }
 
-    public RawObject(String bucket, String key, String value, Collection<RiakLink> links) {
-        this(bucket, key, value, links, null, Constants.CTYPE_OCTET_STREAM, null, null, null);
+    public RawObject(String bucket, String key, String value, String contentType) {
+        this(bucket, key, value, contentType, null, null, null, null, null);
     }
 
-    public RawObject(String bucket, String key, String value, Collection<RiakLink> links, Map<String, String> usermeta) {
-        this(bucket, key, value, links, usermeta, Constants.CTYPE_OCTET_STREAM, null, null, null);
+    public RawObject(String bucket, String key, String value, String contentType, List<RiakLink> links) {
+        this(bucket, key, value, contentType, links, null, null, null, null);
     }
 
-    public RawObject(String bucket, String key, String value, Collection<RiakLink> links, Map<String, String> usermeta,
-            String contentType, String vclock, String lastmod, String vtag) {
+    public RawObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
+            Map<String, String> usermeta) {
+        this(bucket, key, value, contentType, links, usermeta, null, null, null);
+    }
+
+    public RawObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
+            Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
-        if (value != null) {
-            this.value = value.getBytes();
-        }
-        if (links != null) {
-            this.links = links;
-        }
-        if (usermeta != null) {
-            this.usermeta = usermeta;
-        }
-        this.contentType = contentType;
         this.vclock = vclock;
         this.lastmod = lastmod;
         this.vtag = vtag;
+
+        setValue(value);
+        setContentType(contentType);
+        setLinks(links);
+        setUsermeta(usermeta);
     }
 
     public void copyData(RiakObject object) {
         if (object == null)
             return;
 
-        value = object.getValue().getBytes();
+        if (object.getValue() != null) {
+            value = object.getValue().getBytes();
+        } else {
+            value = null;
+        }
+
         links = new ArrayList<RiakLink>();
         if (object.getLinks() != null) {
-            for (RiakLink link: object.getLinks()) {
+            for (RiakLink link : object.getLinks()) {
                 links.add(new RiakLink(link));
             }
         }
@@ -152,11 +157,11 @@ public class RawObject implements RiakObject {
         }
     }
 
-    public Collection<RiakLink> getLinks() {
+    public List<RiakLink> getLinks() {
         return links;
     }
 
-    public void setLinks(Collection<RiakLink> links) {
+    public void setLinks(List<RiakLink> links) {
         if (links == null) {
             links = new ArrayList<RiakLink>();
         }
@@ -181,6 +186,8 @@ public class RawObject implements RiakObject {
     public void setContentType(String contentType) {
         if (contentType != null) {
             this.contentType = contentType;
+        } else {
+            this.contentType = Constants.CTYPE_OCTET_STREAM;
         }
     }
 
@@ -283,11 +290,16 @@ public class RawObject implements RiakObject {
                 }
             } else if (value != null) {
                 entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(value, contentType));
+            } else {
+                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity("".getBytes(), contentType));
             }
         }
     }
 
     String getBasePathFromHttpMethod(HttpMethod httpMethod) {
+        if (httpMethod == null || httpMethod.getPath() == null)
+            return "";
+        
         String path = httpMethod.getPath();
         int idx = path.length() - 1;
 

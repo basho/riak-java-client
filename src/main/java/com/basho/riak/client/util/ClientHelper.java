@@ -29,7 +29,6 @@ import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
-import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.DefaultHttpResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
@@ -78,10 +77,6 @@ public class ClientHelper {
         return executeMethod(bucket, null, put, meta);
     }
 
-    public HttpResponse setBucketSchema(String bucket, JSONObject schema) {
-        return setBucketSchema(bucket, schema, null);
-    }
-
     /**
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
@@ -90,10 +85,6 @@ public class ClientHelper {
         get.setRequestHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
         get.setRequestHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         return executeMethod(bucket, null, get, meta);
-    }
-
-    public HttpResponse listBucket(String bucket) {
-        return listBucket(bucket, null);
     }
 
     /**
@@ -105,15 +96,11 @@ public class ClientHelper {
         }
         String bucket = object.getBucket();
         String key = object.getKey();
-        String url = ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams());
+        String url = ClientUtils.makeURI(config, bucket, key);
         PutMethod put = new PutMethod(url);
 
         object.writeToHttpMethod(put);
         return executeMethod(bucket, key, put, meta);
-    }
-
-    public HttpResponse store(RiakObject object) {
-        return store(object, null);
     }
 
     /**
@@ -126,12 +113,8 @@ public class ClientHelper {
         if (meta.getQueryParam(Constants.QP_R) == null) {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
-        HeadMethod head = new HeadMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
+        HeadMethod head = new HeadMethod(ClientUtils.makeURI(config, bucket, key));
         return executeMethod(bucket, key, head, meta);
-    }
-
-    public HttpResponse fetchMeta(String bucket, String key) {
-        return fetchMeta(bucket, key, null);
     }
 
     /**
@@ -158,16 +141,12 @@ public class ClientHelper {
         if (meta.getQueryParam(Constants.QP_R) == null) {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
-        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
+        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key));
         return executeMethod(bucket, key, get, meta, streamResponse);
     }
 
     public HttpResponse fetch(String bucket, String key, RequestMeta meta) {
         return fetch(bucket, key, meta, false);
-    }
-
-    public HttpResponse fetch(String bucket, String key) {
-        return fetch(bucket, key, null, false);
     }
 
     /**
@@ -180,7 +159,7 @@ public class ClientHelper {
         if (meta.getQueryParam(Constants.QP_R) == null) {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
-        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams()));
+        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key));
         try {
             int status = httpClient.executeMethod(get);
             if (handler == null)
@@ -200,13 +179,9 @@ public class ClientHelper {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        String url = ClientUtils.makeURI(config, bucket, key, "?" + meta.getQueryParams());
+        String url = ClientUtils.makeURI(config, bucket, key);
         DeleteMethod delete = new DeleteMethod(url);
         return executeMethod(bucket, key, delete, meta);
-    }
-
-    public HttpResponse delete(String bucket, String key) {
-        return delete(bucket, key, null);
     }
 
     /**
@@ -215,14 +190,6 @@ public class ClientHelper {
     public HttpResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, walkSpec));
         return executeMethod(bucket, key, get, meta);
-    }
-
-    public HttpResponse walk(String bucket, String key, String walkSpec) {
-        return walk(bucket, key, walkSpec, null);
-    }
-
-    public HttpResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
-        return walk(bucket, key, walkSpec.toString(), null);
     }
 
     /** @return the installed exception handler or null if not installed */
@@ -303,12 +270,26 @@ public class ClientHelper {
             for (String header : headers.keySet()) {
                 httpMethod.setRequestHeader(header, headers.get(header));
             }
+            
+            String queryParams = meta.getQueryParams();
+            if (queryParams != null && !queryParams.isEmpty()) {
+                String currentQuery = httpMethod.getQueryString(); 
+                if (currentQuery != null && !currentQuery.isEmpty()) {
+                    httpMethod.setQueryString(currentQuery + "&" + queryParams);
+                } else {
+                    httpMethod.setQueryString(queryParams);
+                }
+            }
         }
-
+        
         try {
             httpClient.executeMethod(httpMethod);
 
-            int status = httpMethod.getStatusCode();
+            int status = 0;
+            if (httpMethod.getStatusLine() != null) { 
+                status = httpMethod.getStatusCode();
+            }
+            
             Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
             String body = null;
             if (!streamResponse) {

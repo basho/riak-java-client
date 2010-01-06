@@ -42,9 +42,9 @@ public class TestJiakFetchResponse {
         assertEquals(KEY, impl.getObject().getKey());
         assertEquals(1, impl.getObject().getValueAsJSON().getInt("value1"));
         assertEquals(1, impl.getObject().getLinks().size());
-        assertEquals("b", impl.getObject().getLinks().iterator().next().getBucket());
-        assertEquals("l", impl.getObject().getLinks().iterator().next().getKey());
-        assertEquals("tag", impl.getObject().getLinks().iterator().next().getTag());
+        assertEquals("b", impl.getObject().getLinks().get(0).getBucket());
+        assertEquals("l", impl.getObject().getLinks().get(0).getKey());
+        assertEquals("tag", impl.getObject().getLinks().get(0).getTag());
         assertEquals(1, impl.getObject().getUsermeta().size());
         assertEquals("v", impl.getObject().getUsermetaAsJSON().getString("test"));
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", impl.getObject().getLastmod());

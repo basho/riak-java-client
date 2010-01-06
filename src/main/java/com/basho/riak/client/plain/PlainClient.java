@@ -240,7 +240,7 @@ public class PlainClient {
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
             throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
 
-        if (r.getStatusCode() == 200 && !r.hasObject())
+        if (r.getStatusCode() == 200 && !(r.hasObject() || r.hasSiblings()))
             throw new RiakResponseException(new RiakResponseRuntimeException(r, "Failed to parse object"));
 
         if (r.hasSiblings())

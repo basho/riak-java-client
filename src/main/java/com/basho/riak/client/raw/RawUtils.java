@@ -1,7 +1,6 @@
 package com.basho.riak.client.raw;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +20,11 @@ public class RawUtils {
      * 
      * @param header
      *            The HTTP Link header value.
-     * @return Collection of {@link RiakLink} objects constructed from the links
-     *         in header.
+     * @return List of {@link RiakLink} objects constructed from the links
+     *         in header in order.
      */
-    public static Collection<RiakLink> parseLinkHeader(String header) {
-        Collection<RiakLink> links = new ArrayList<RiakLink>();
+    public static List<RiakLink> parseLinkHeader(String header) {
+        List<RiakLink> links = new ArrayList<RiakLink>();
         Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
         for (String url : parsedLinks.keySet()) {
             RiakLink link = parseOneLink(url, parsedLinks.get(url));
@@ -68,9 +67,11 @@ public class RawUtils {
      */
     public static Map<String, String> parseUsermeta(Map<String, String> headers) {
         Map<String, String> usermeta = new HashMap<String, String>();
-        for (String header : headers.keySet()) {
-            if (header.startsWith(Constants.HDR_USERMETA_PREFIX)) {
-                usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), headers.get(header));
+        if (headers != null) {
+            for (String header : headers.keySet()) {
+                if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
+                    usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), headers.get(header));
+                }
             }
         }
         return usermeta;
@@ -92,14 +93,17 @@ public class RawUtils {
     public static List<RawObject> parseMultipart(String bucket, String key, Map<String, String> docHeaders,
                                                  String docBody) {
 
-        String vclock = docHeaders.get(Constants.HDR_VCLOCK);
+        String vclock = null;
+        
+        if (docHeaders != null)
+            vclock = docHeaders.get(Constants.HDR_VCLOCK);
 
         List<Multipart.Part> parts = Multipart.parse(docHeaders, docBody);
         List<RawObject> objects = new ArrayList<RawObject>();
         if (parts != null) {
             for (Multipart.Part part : parts) {
                 Map<String, String> headers = part.getHeaders();
-                Collection<RiakLink> links = parseLinkHeader(headers.get(Constants.HDR_LINK));
+                List<RiakLink> links = parseLinkHeader(headers.get(Constants.HDR_LINK));
                 Map<String, String> usermeta = parseUsermeta(headers);
                 String location = headers.get(Constants.HDR_LOCATION);
                 String partBucket = bucket;
@@ -113,8 +117,8 @@ public class RawUtils {
                     }
                 }
 
-                RawObject o = new RawObject(partBucket, partKey, part.getBody(), links, usermeta,
-                                            headers.get(Constants.HDR_CONTENT_TYPE), vclock,
+                RawObject o = new RawObject(partBucket, partKey, part.getBody(),
+                                            headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta, vclock,
                                             headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
                 objects.add(o);
             }

@@ -67,12 +67,12 @@ public class ClientUtils {
         if (config.getMaxConnections() != null) {
             mp.setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, config.getMaxConnections());
         }
-
+    
         HttpClientParams cp = http.getParams();
         if (config.getTimeout() != null) {
             cp.setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, config.getTimeout());
         }
-
+        
         return http;
     }
 
@@ -101,6 +101,8 @@ public class ClientUtils {
      * @return URL to the object
      */
     public static String makeURI(RiakConfig config, String bucket, String key) {
+        if (key == null)
+            return makeURI(config, bucket); 
         return makeURI(config, bucket) + "/" + urlEncode(key);
     }
 
@@ -133,6 +135,8 @@ public class ClientUtils {
      * @return Just the path portion of the given URL
      */
     public static String getPathFromUrl(String url) {
+        if (url == null)
+            return null;
         return url.replaceFirst(URL_PATH_MASK, "");
     }
 
@@ -176,8 +180,10 @@ public class ClientUtils {
      */
     public static Map<String, String> asHeaderMap(Header[] headers) {
         Map<String, String> m = new HashMap<String, String>();
-        for (Header header : headers) {
-            m.put(header.getName().toLowerCase(), header.getValue());
+        if (headers != null) {
+            for (Header header : headers) {
+                m.put(header.getName().toLowerCase(), header.getValue());
+            }
         }
         return m;
     }
