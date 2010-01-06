@@ -1,5 +1,6 @@
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -33,10 +34,10 @@ public class ITestRawWalk {
         final String TAG_EXCLUDE = "tag_exclude";
 
         // Clear out the objects we're testing with
-        assertTrue(c.delete(BUCKET, ROOT).isSuccess());
-        assertTrue(c.delete(BUCKET, LEAF1).isSuccess());
-        assertTrue(c.delete(BUCKET, LEAF2).isSuccess());
-        assertTrue(c.delete(BUCKET, EXCLUDED_LEAF).isSuccess());
+        assertSuccess(c.delete(BUCKET, ROOT));
+        assertSuccess(c.delete(BUCKET, LEAF1));
+        assertSuccess(c.delete(BUCKET, LEAF2));
+        assertSuccess(c.delete(BUCKET, EXCLUDED_LEAF));
         
         // Add a few objects
         RawObject leaf1 = new RawObject(BUCKET, LEAF1, INCLUDED_VALUE);
@@ -46,16 +47,17 @@ public class ITestRawWalk {
         root.getLinks().add(new RiakLink(BUCKET, LEAF1, TAG_INCLUDE));
         root.getLinks().add(new RiakLink(BUCKET, LEAF2, TAG_INCLUDE));
         root.getLinks().add(new RiakLink(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
-        assertTrue(c.store(root, WRITE_3_REPLICAS()).isSuccess());
-        assertTrue(c.store(leaf1, WRITE_3_REPLICAS()).isSuccess());
-        assertTrue(c.store(leaf2, WRITE_3_REPLICAS()).isSuccess());
-        assertTrue(c.store(excludedLeaf, WRITE_3_REPLICAS()).isSuccess());
+        assertSuccess(c.store(root, WRITE_3_REPLICAS()));
+        assertSuccess(c.store(leaf1, WRITE_3_REPLICAS()));
+        assertSuccess(c.store(leaf2, WRITE_3_REPLICAS()));
+        assertSuccess(c.store(excludedLeaf, WRITE_3_REPLICAS()));
         
         // Perform walk
         RiakWalkSpec walkSpec = new RiakWalkSpec();
         walkSpec.addStep(BUCKET, TAG_INCLUDE, "1");
         RawWalkResponse walkresp = c.walk(BUCKET, ROOT, walkSpec);
-        assertTrue(walkresp.isSuccess() && walkresp.hasSteps());
+        assertSuccess(walkresp);
+        assertTrue(walkresp.hasSteps());
         assertEquals(1, walkresp.getSteps().size());
         assertEquals(2, walkresp.getSteps().get(0).size());
         

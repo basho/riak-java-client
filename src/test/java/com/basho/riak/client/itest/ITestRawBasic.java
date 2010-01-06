@@ -1,5 +1,6 @@
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -12,7 +13,6 @@ import com.basho.riak.client.raw.RawFetchResponse;
 import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.raw.RawStoreResponse;
 import com.basho.riak.client.request.RequestMeta;
-import com.basho.riak.client.response.HttpResponse;
 
 /**
  * Basic exercises such as store, fetch, and modify objects for the Raw client.
@@ -37,12 +37,10 @@ public class ITestRawBasic {
         // Set bucket schema to return siblings
         RawBucketInfo bucketInfo = new RawBucketInfo();
         bucketInfo.setAllowMult(true);
-        HttpResponse bucketresp = c.setBucketSchema(BUCKET, bucketInfo);
-        assertTrue(bucketresp.isSuccess());
+        assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
 
         // Make sure object doesn't exist
-        HttpResponse deleteresp = c.delete(BUCKET, KEY, WRITE_3_REPLICAS());
-        assertTrue(deleteresp.isSuccess());
+        assertSuccess(c.delete(BUCKET, KEY, WRITE_3_REPLICAS()));
 
         RawFetchResponse fetchresp = c.fetch(BUCKET, KEY);
         assertEquals(404, fetchresp.getStatusCode());
@@ -50,11 +48,11 @@ public class ITestRawBasic {
         // Store a new object
         RawObject o = new RawObject(BUCKET, KEY, VALUE1);
         RawStoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
-        assertTrue(storeresp.isSuccess());
+        assertSuccess(storeresp);
 
         // Retrieve it back
         fetchresp = c.fetch(BUCKET, KEY);
-        assertTrue(fetchresp.isSuccess());
+        assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
         assertEquals(VALUE1, fetchresp.getObject().getValue());
         assertTrue(fetchresp.getObject().getLinks().isEmpty());
@@ -66,11 +64,11 @@ public class ITestRawBasic {
         o.getLinks().add(LINK);
         o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
         storeresp = c.store(o);
-        assertTrue(storeresp.isSuccess());
+        assertSuccess(storeresp);
 
         // Validate modification happened
         fetchresp = c.fetch(BUCKET, KEY);
-        assertTrue(fetchresp.isSuccess());
+        assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
         assertFalse(fetchresp.hasSiblings());
         assertEquals(VALUE2, fetchresp.getObject().getValue());
@@ -90,18 +88,19 @@ public class ITestRawBasic {
         final String CHASH_FUN = "chash_bucketonly_keyfun";
 
         // Clear out the objects we're testing with
-        assertTrue(c.delete(BUCKET, KEY1).isSuccess());
-        assertTrue(c.delete(BUCKET, KEY2).isSuccess());
-        assertTrue(c.delete(BUCKET, KEY3).isSuccess());
+        assertSuccess(c.delete(BUCKET, KEY1));
+        assertSuccess(c.delete(BUCKET, KEY2));
+        assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
-        assertTrue(c.store(new RawObject(BUCKET, KEY1, "v")).isSuccess());
-        assertTrue(c.store(new RawObject(BUCKET, KEY2, "v")).isSuccess());
-        assertTrue(c.store(new RawObject(BUCKET, KEY3, "v")).isSuccess());
+        assertSuccess(c.store(new RawObject(BUCKET, KEY1, "v")));
+        assertSuccess(c.store(new RawObject(BUCKET, KEY2, "v")));
+        assertSuccess(c.store(new RawObject(BUCKET, KEY3, "v")));
 
         // Get the current bucket schema and contents
         RawBucketResponse bucketresp = c.listBucket(BUCKET);
-        assertTrue(bucketresp.isSuccess() && bucketresp.hasBucketInfo());
+        assertSuccess(bucketresp);
+        assertTrue(bucketresp.hasBucketInfo());
         RawBucketInfo bucketInfo = bucketresp.getBucketInfo();
         int nval = bucketInfo.getNVal();
 
@@ -113,14 +112,14 @@ public class ITestRawBasic {
         // Change some properties
         bucketInfo.setNVal(nval + 1);
         bucketInfo.setCHashFun(CHASH_MOD, CHASH_FUN);
-        assertTrue(c.setBucketSchema(BUCKET, bucketInfo).isSuccess());
+        assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
 
         // Verify that properties stuck
         bucketresp = c.listBucket(BUCKET);
-        assertTrue(bucketresp.isSuccess() && bucketresp.hasBucketInfo());
+        assertSuccess(bucketresp);
+        assertTrue(bucketresp.hasBucketInfo());
         bucketInfo = bucketresp.getBucketInfo();
         assertEquals(nval + 1, bucketInfo.getNVal().intValue());
         assertEquals(CHASH_MOD + ":" + CHASH_FUN, bucketInfo.getCHashFun());
     }
-    
 }

@@ -1,5 +1,6 @@
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public class ITestJiakBasic {
 
         // Make sure object doesn't exist
         HttpResponse deleteresp = c.delete(BUCKET, KEY, WRITE_3_REPLICAS());
-        assertTrue(deleteresp.isSuccess());
+        assertSuccess(deleteresp);
 
         JiakFetchResponse fetchresp = c.fetch(BUCKET, KEY);
         assertEquals(404, fetchresp.getStatusCode());
@@ -52,11 +53,11 @@ public class ITestJiakBasic {
         // Store a new object
         JiakObject o = new JiakObject(BUCKET, KEY, new JSONObject(VALUE1));
         JiakStoreResponse storeresp = c.store(o);
-        assertTrue(storeresp.isSuccess());
+        assertSuccess(storeresp);
 
         // Retrieve it back
         fetchresp = c.fetch(BUCKET, KEY);
-        assertTrue(fetchresp.isSuccess());
+        assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
         assertEquals(VALUE1, fetchresp.getObject().getValue().replaceAll("\\s", ""));
         assertTrue(fetchresp.getObject().getUsermeta().isEmpty());
@@ -67,11 +68,11 @@ public class ITestJiakBasic {
         o.getLinks().add(LINK);
         o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
         storeresp = c.store(o);
-        assertTrue(storeresp.isSuccess());
+        assertSuccess(storeresp);
 
         // Validate modification happened
         fetchresp = c.fetch(BUCKET, KEY);
-        assertTrue(fetchresp.isSuccess());
+        assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
         assertEquals(2, fetchresp.getObject().getValueAsJSON().optInt("value2"));
         assertEquals(1, fetchresp.getObject().getLinks().size());
@@ -91,18 +92,19 @@ public class ITestJiakBasic {
         final List<String> REQUIRED_FIELDS = Arrays.asList("value");
 
         // Clear out the objects we're testing with
-        assertTrue(c.delete(BUCKET, KEY1).isSuccess());
-        assertTrue(c.delete(BUCKET, KEY2).isSuccess());
-        assertTrue(c.delete(BUCKET, KEY3).isSuccess());
+        assertSuccess(c.delete(BUCKET, KEY1));
+        assertSuccess(c.delete(BUCKET, KEY2));
+        assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
-        assertTrue(c.store(new JiakObject(BUCKET, KEY1, VALUE)).isSuccess());
-        assertTrue(c.store(new JiakObject(BUCKET, KEY2, VALUE)).isSuccess());
-        assertTrue(c.store(new JiakObject(BUCKET, KEY3, VALUE)).isSuccess());
+        assertSuccess(c.store(new JiakObject(BUCKET, KEY1, VALUE)));
+        assertSuccess(c.store(new JiakObject(BUCKET, KEY2, VALUE)));
+        assertSuccess(c.store(new JiakObject(BUCKET, KEY3, VALUE)));
 
         // Get the current bucket schema and contents
         JiakBucketResponse bucketresp = c.listBucket(BUCKET);
-        assertTrue(bucketresp.isSuccess() && bucketresp.hasBucketInfo());
+        assertSuccess(bucketresp);
+        assertTrue(bucketresp.hasBucketInfo());
         JiakBucketInfo bucketInfo = bucketresp.getBucketInfo();
 
         // Verify that contents are correct
@@ -113,11 +115,12 @@ public class ITestJiakBasic {
         // Set some properties
         bucketInfo.setAllowedFields(null);
         bucketInfo.setRequiredFields(null);
-        assertTrue(c.setBucketSchema(BUCKET, bucketInfo).isSuccess());
+        assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
 
         // Verify that properties stuck
         bucketresp = c.listBucket(BUCKET);
-        assertTrue(bucketresp.isSuccess() && bucketresp.hasBucketInfo());
+        assertSuccess(bucketresp);
+        assertTrue(bucketresp.hasBucketInfo());
         bucketInfo = bucketresp.getBucketInfo();
         assertEquals("*", bucketInfo.getSchema().optString(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS));
         assertEquals(0, bucketInfo.getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_REQUIRED_FIELDS).length());
@@ -125,7 +128,7 @@ public class ITestJiakBasic {
         // Change the same properties and reverify
         bucketInfo.setAllowedFields(ALLOWED_FIELDS);
         bucketInfo.setRequiredFields(REQUIRED_FIELDS);
-        assertTrue(c.setBucketSchema(BUCKET, bucketInfo).isSuccess());
+        assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
         bucketInfo = c.listBucket(BUCKET).getBucketInfo();
         assertEquals(new JSONArray(ALLOWED_FIELDS).toString(),
                      bucketInfo.getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS).toString());
