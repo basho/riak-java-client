@@ -12,7 +12,6 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RawFetchResponse;
 import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.raw.RawStoreResponse;
-import com.basho.riak.client.request.RequestMeta;
 
 /**
  * Basic exercises such as store, fetch, and modify objects for the Raw client.
@@ -21,7 +20,6 @@ import com.basho.riak.client.request.RequestMeta;
 public class ITestRawBasic {
 
     public static String RAW_URL = "http://127.0.0.1:8098/raw";
-    public static RequestMeta WRITE_3_REPLICAS() { return RequestMeta.writeParams(null, 3); }
 
     @Test
     public void store_fetch_modify_from_raw() {

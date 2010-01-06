@@ -14,13 +14,11 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.jiak.JiakClient;
 import com.basho.riak.client.jiak.JiakObject;
 import com.basho.riak.client.jiak.JiakWalkResponse;
-import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 
 public class ITestJiakWalk {
  
     public static String JIAK_URL = "http://127.0.0.1:8098/jiak";
-    public static RequestMeta WRITE_3_REPLICAS() { return RequestMeta.writeParams(null, 3); }
 
     @Test
     public void test_jiak_walk() throws JSONException {

@@ -12,13 +12,11 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RawObject;
 import com.basho.riak.client.raw.RawWalkResponse;
-import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 
 public class ITestRawWalk {
     
     public static String RAW_URL = "http://127.0.0.1:8098/raw";
-    public static RequestMeta WRITE_3_REPLICAS() { return RequestMeta.writeParams(null, 3); }
 
     @Test
     public void test_raw_walk() {

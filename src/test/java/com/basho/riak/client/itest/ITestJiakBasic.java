@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +18,6 @@ import com.basho.riak.client.jiak.JiakClient;
 import com.basho.riak.client.jiak.JiakFetchResponse;
 import com.basho.riak.client.jiak.JiakObject;
 import com.basho.riak.client.jiak.JiakStoreResponse;
-import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.util.Constants;
 
@@ -30,7 +28,6 @@ import com.basho.riak.client.util.Constants;
 public class ITestJiakBasic {
 
     public static String JIAK_URL = "http://127.0.0.1:8098/jiak";
-    public static RequestMeta WRITE_3_REPLICAS() { return RequestMeta.writeParams(null, 3); }
 
     @Test
     public void store_fetch_modify_from_jiak() throws JSONException {
