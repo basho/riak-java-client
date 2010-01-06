@@ -1,3 +1,16 @@
+/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.basho.riak.client.jiak;
 
 import java.util.ArrayList;
@@ -13,8 +26,8 @@ import com.basho.riak.client.util.Constants;
 
 /**
  * Adds convenience methods to RiakBucketInfo to set the bucket schema
- * properties specific to the Riak Jiak interface. See Jiak documentation for
- * more information about the meaning of each property.
+ * properties specific to the Jiak interface. See Jiak documentation for more
+ * information about the meaning of each property.
  */
 public class JiakBucketInfo extends RiakBucketInfo {
 
@@ -37,11 +50,10 @@ public class JiakBucketInfo extends RiakBucketInfo {
             throw new IllegalStateException("can always add strings and list<string> to json object", unreached);
         }
     }
-    
+
     public List<String> getAllowedFields() {
-        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS))) {
+        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS)))
             return null;
-        }
 
         return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_ALLOWED_FIELDS));
     }
@@ -76,9 +88,8 @@ public class JiakBucketInfo extends RiakBucketInfo {
     }
 
     public List<String> getWriteMask() {
-        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_WRITE_MASK))) {
+        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_WRITE_MASK)))
             return null;
-        }
 
         return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_WRITE_MASK));
     }
@@ -96,9 +107,8 @@ public class JiakBucketInfo extends RiakBucketInfo {
     }
 
     public List<String> getReadMask() {
-        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_READ_MASK))) {
+        if ("*".equals(getSchema().optString(Constants.JIAK_FL_SCHEMA_READ_MASK)))
             return null;
-        }
 
         return ClientUtils.jsonArrayAsList(getSchema().optJSONArray(Constants.JIAK_FL_SCHEMA_READ_MASK));
     }

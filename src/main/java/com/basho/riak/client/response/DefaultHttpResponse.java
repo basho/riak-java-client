@@ -73,8 +73,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public boolean isSuccess() {
         String method = null;
-        if (httpMethod != null)
+        if (httpMethod != null) {
             method = httpMethod.getName();
+        }
 
         return (status >= 200 && status < 300) ||
                ((status == 300 || status == 304) && Constants.HTTP_HEAD_METHOD.equals(method)) ||
@@ -84,8 +85,9 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public boolean isError() {
         String method = null;
-        if (httpMethod != null)
+        if (httpMethod != null) {
             method = httpMethod.getName();
+        }
 
         return (status < 100 || status >= 400) && !((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
     }

@@ -36,7 +36,7 @@ import org.json.JSONObject;
 import com.basho.riak.client.RiakConfig;
 
 /**
- * General utility functions.
+ * Utility functions.
  */
 public class ClientUtils {
 
@@ -67,12 +67,12 @@ public class ClientUtils {
         if (config.getMaxConnections() != null) {
             mp.setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, config.getMaxConnections());
         }
-    
+
         HttpClientParams cp = http.getParams();
         if (config.getTimeout() != null) {
             cp.setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, config.getTimeout());
         }
-        
+
         return http;
     }
 
@@ -102,7 +102,7 @@ public class ClientUtils {
      */
     public static String makeURI(RiakConfig config, String bucket, String key) {
         if (key == null)
-            return makeURI(config, bucket); 
+            return makeURI(config, bucket);
         return makeURI(config, bucket) + "/" + urlEncode(key);
     }
 

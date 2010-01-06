@@ -120,8 +120,8 @@ public class RawClient implements RiakClient {
      * value.
      * 
      * Sibling responses (status code 300) must be read before parsing, so they
-     * cannot be streamed, so stream() is identical to fetch(), except that
-     * getBody() returns null.
+     * cannot be streamed. Therefore stream() is identical to fetch(), except
+     * that getBody() returns null.
      * 
      * @param bucket
      *            The bucket containing the {@link RiakObject} to fetch.

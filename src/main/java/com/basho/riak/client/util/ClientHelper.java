@@ -52,7 +52,7 @@ public class ClientHelper {
         this.config = config;
         httpClient = ClientUtils.newHttpClient(config);
     }
-    
+
     /** Used for testing -- inject an HttpClient */
     void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
@@ -270,10 +270,10 @@ public class ClientHelper {
             for (String header : headers.keySet()) {
                 httpMethod.setRequestHeader(header, headers.get(header));
             }
-            
+
             String queryParams = meta.getQueryParams();
             if (queryParams != null && !queryParams.isEmpty()) {
-                String currentQuery = httpMethod.getQueryString(); 
+                String currentQuery = httpMethod.getQueryString();
                 if (currentQuery != null && !currentQuery.isEmpty()) {
                     httpMethod.setQueryString(currentQuery + "&" + queryParams);
                 } else {
@@ -281,15 +281,15 @@ public class ClientHelper {
                 }
             }
         }
-        
+
         try {
             httpClient.executeMethod(httpMethod);
 
             int status = 0;
-            if (httpMethod.getStatusLine() != null) { 
+            if (httpMethod.getStatusLine() != null) {
                 status = httpMethod.getStatusCode();
             }
-            
+
             Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
             String body = null;
             if (!streamResponse) {

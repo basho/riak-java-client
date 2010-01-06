@@ -18,6 +18,10 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
 
+/**
+ * Used with RiakClient.stream() to process the HTTP responses for fetch
+ * requests as a stream.
+ */
 public interface StreamHandler {
 
     /**

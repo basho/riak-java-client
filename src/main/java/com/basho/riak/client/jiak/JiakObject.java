@@ -82,13 +82,12 @@ public class JiakObject implements RiakObject {
         this(bucket, key, value, links, null, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links,
-            Map<String, String> usermeta) {
+    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links, Map<String, String> usermeta) {
         this(bucket, key, value, links, usermeta, null, null, null);
     }
 
-    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links,
-            Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
+    public JiakObject(String bucket, String key, JSONObject value, List<RiakLink> links, Map<String, String> usermeta,
+            String vclock, String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
         this.value = value;
@@ -247,8 +246,8 @@ public class JiakObject implements RiakObject {
     }
 
     /**
-     * @return The usermeta map serialized to a JSONObject. Data added to this object will not be included in the
-     *         Jiak object.
+     * @return The usermeta map serialized to a JSONObject. Data added to this
+     *         object will not be included in the Jiak object.
      */
     public JSONObject getUsermetaAsJSON() {
         JSONObject jsonUsermeta = new JSONObject();

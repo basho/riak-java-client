@@ -1,3 +1,16 @@
+/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.basho.riak.client.plain;
 
 import java.io.IOException;
@@ -148,7 +161,7 @@ public class PlainClient {
      * 
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
-     * @throws {@link RiakResponseException} If the server does return the a
+     * @throws {@link RiakResponseException} If the server does return a
      *         valid object
      */
     public RiakObject fetchMeta(String bucket, String key, RequestMeta meta) throws RiakIOException,
@@ -185,7 +198,7 @@ public class PlainClient {
      *          exist, then returns one of the siblings.
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
-     * @throws {@link RiakResponseException} If the server does return the a
+     * @throws {@link RiakResponseException} If the server does return a
      *         valid object
      */
     public RiakObject fetch(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
@@ -220,8 +233,8 @@ public class PlainClient {
      * @returns All sibling {@link RiakObject} or null if object doesn't exist.
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
-     * @throws {@link RiakResponseException} If the server does return the a
-     *         valid object
+     * @throws {@link RiakResponseException} If the server does return any
+     *         valid objects
      */
     public Collection<? extends RiakObject> fetchAll(String bucket, String key, RequestMeta meta)
             throws RiakIOException, RiakResponseException {

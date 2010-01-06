@@ -299,7 +299,7 @@ public class RawObject implements RiakObject {
     String getBasePathFromHttpMethod(HttpMethod httpMethod) {
         if (httpMethod == null || httpMethod.getPath() == null)
             return "";
-        
+
         String path = httpMethod.getPath();
         int idx = path.length() - 1;
 
