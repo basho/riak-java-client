@@ -49,7 +49,7 @@ public class ITestJiakBasic {
 
         // Store a new object
         JiakObject o = new JiakObject(BUCKET, KEY, new JSONObject(VALUE1));
-        JiakStoreResponse storeresp = c.store(o);
+        JiakStoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
         // Retrieve it back
@@ -64,7 +64,7 @@ public class ITestJiakBasic {
         o.setValue(new JSONObject(VALUE2));
         o.getLinks().add(LINK);
         o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
-        storeresp = c.store(o);
+        storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
         // Validate modification happened
@@ -94,9 +94,9 @@ public class ITestJiakBasic {
         assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
-        assertSuccess(c.store(new JiakObject(BUCKET, KEY1, VALUE)));
-        assertSuccess(c.store(new JiakObject(BUCKET, KEY2, VALUE)));
-        assertSuccess(c.store(new JiakObject(BUCKET, KEY3, VALUE)));
+        assertSuccess(c.store(new JiakObject(BUCKET, KEY1, VALUE), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new JiakObject(BUCKET, KEY2, VALUE), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new JiakObject(BUCKET, KEY3, VALUE), WRITE_3_REPLICAS()));
 
         // Get the current bucket schema and contents
         JiakBucketResponse bucketresp = c.listBucket(BUCKET);

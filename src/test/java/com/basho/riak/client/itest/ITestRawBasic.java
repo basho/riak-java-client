@@ -61,7 +61,7 @@ public class ITestRawBasic {
         o.setValue(VALUE2);
         o.getLinks().add(LINK);
         o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
-        storeresp = c.store(o);
+        storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
         // Validate modification happened
@@ -91,9 +91,9 @@ public class ITestRawBasic {
         assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
-        assertSuccess(c.store(new RawObject(BUCKET, KEY1, "v")));
-        assertSuccess(c.store(new RawObject(BUCKET, KEY2, "v")));
-        assertSuccess(c.store(new RawObject(BUCKET, KEY3, "v")));
+        assertSuccess(c.store(new RawObject(BUCKET, KEY1, "v"), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RawObject(BUCKET, KEY2, "v"), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RawObject(BUCKET, KEY3, "v"), WRITE_3_REPLICAS()));
 
         // Get the current bucket schema and contents
         RawBucketResponse bucketresp = c.listBucket(BUCKET);
@@ -103,9 +103,9 @@ public class ITestRawBasic {
         int nval = bucketInfo.getNVal();
 
         // Verify that contents are correct
-        assertTrue(bucketInfo.getKeys().contains(KEY1));
-        assertTrue(bucketInfo.getKeys().contains(KEY2));
-        assertTrue(bucketInfo.getKeys().contains(KEY3));
+        assertTrue("Should contain key1: " + bucketInfo.getKeys(), bucketInfo.getKeys().contains(KEY1));
+        assertTrue("Should contain key2: " + bucketInfo.getKeys(), bucketInfo.getKeys().contains(KEY2));
+        assertTrue("Should contain key3: " + bucketInfo.getKeys(), bucketInfo.getKeys().contains(KEY3));
 
         // Change some properties
         bucketInfo.setNVal(nval + 1);

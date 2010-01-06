@@ -58,7 +58,7 @@
 	
 	<profiles>
 	   <profile>
-	       <id>enable-itest</id>
+	       <id>itest</id>
 	       <build>
                 <plugins>
 		            <!-- Run integration tests (ITest*.java) by executing `mvn -Penable-itest verify` -->
