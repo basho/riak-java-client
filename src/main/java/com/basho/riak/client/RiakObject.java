@@ -65,13 +65,15 @@ public interface RiakObject {
     public void setValue(String value);
 
     /**
-     * @return The object's links
+     * @return The object's links -- may be empty, but never be null. New links
+     *         can be added using getLinks().add()
      */
     public List<RiakLink> getLinks();
 
     /**
      * @return User-specified metadata for the object in the form of key-value
-     *         pairs.
+     *         pairs -- may be empty, but never be null. New key-value pairs can
+     *         be added using getUsermeta().put()
      */
     public Map<String, String> getUsermeta();
 

@@ -10,7 +10,12 @@ This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It
 - **Stream handling** for GET requests.
 - **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location. This means the client does not need to wrap each operation in try/catch blocks.
 
+# Building #
 
+This project requires Apache Maven (http://maven.apache.org/download.html) to build and deploy. With Maven installed, run:
+
+    mvn clean install
+    
 # Raw interface quick start #
 
 Connect to Riak:
@@ -257,12 +262,9 @@ Links can be stored with each object. A link consists of the target object's buc
 With Raw:
 
     RawObject o = new RawObject("bucket", "key");
-    o.getLinks.add(new RiakLink("bucket", "target-object", "link-tag"));
+    o.getLinks().add(new RiakLink("bucket", "target-object", "link-tag"));
 
-With Jiak, the links must be modified in JSON format, since a link is expressed as a 3 element JSON array:
-
-    JiakObject o = new JiakObject("bucket", "key");
-    o.getLinksAsJSON().put(new String[] {"bucket", "target-object", "link-tag"});
+With Jiak, use JiakObject rather than RawObject.
 
 Link walking is performed by calling walk() with a walk specification (see the Riak documentation and JavaDocs for RiakWalkSpec).  A list of lists of objects is returned.  Each list of objects represents all the objects returned in a single step of the walk.
 

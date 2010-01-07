@@ -5,7 +5,7 @@
 	<groupId>com.basho.riak</groupId>
 	<artifactId>riak-client</artifactId>
 	<packaging>jar</packaging>
-	<version>0.9-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>Riak Java Client</name>
 	<description>HttpClient-based Java client for Riak</description>
 
@@ -53,31 +53,34 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-        </plugins>
+		</plugins>
 	</build>
-	
+
 	<profiles>
-	   <profile>
-	       <id>itest</id>
-	       <build>
-                <plugins>
-		            <!-- Run integration tests (ITest*.java) by executing `mvn -Penable-itest verify` -->
-		            <plugin>
-		                <groupId>org.codehaus.mojo</groupId>
-		                <artifactId>failsafe-maven-plugin</artifactId>
-		                <version>2.4.3-alpha-1</version>
-		                <executions>
-		                    <execution>
-		                        <goals>
-		                            <goal>integration-test</goal>
-		                            <goal>verify</goal>
-		                        </goals>
-		                    </execution>
-		                </executions>
-		            </plugin>
-		        </plugins>
-	       </build>
-	   </profile>
+		<profile>
+			<id>itest</id>
+			<build>
+				<plugins>
+					<!--
+						Run integration tests (ITest*.java) by executing `mvn
+						-Penable-itest verify`
+					-->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>failsafe-maven-plugin</artifactId>
+						<version>2.4.3-alpha-1</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 </project>
