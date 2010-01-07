@@ -6,7 +6,7 @@
 	<artifactId>riak-client</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0</version>
-	<name>Riak Java Client</name>
+	<name>Riak Client for Java</name>
 	<description>HttpClient-based Java client for Riak</description>
 
 	<licenses>

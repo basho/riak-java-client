@@ -29,7 +29,7 @@ public interface StreamHandler {
      * 
      * @param bucket
      *            The object's bucket
-     * @param bucket
+     * @param key
      *            The object's key
      * @param status
      *            The HTTP status code returned for the request

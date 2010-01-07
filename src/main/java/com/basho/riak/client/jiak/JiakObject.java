@@ -185,7 +185,8 @@ public class JiakObject implements RiakObject {
     }
 
     /**
-     * @return set the value of some key in this object's value (not metadata)
+     * Set the value of some key in this object's value (not metadata)
+     * 
      * @throws IllegalArgumentException
      *             if <code>value</code> cannot be added to valid JSON
      */

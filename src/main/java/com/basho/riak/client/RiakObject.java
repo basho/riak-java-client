@@ -99,7 +99,7 @@ public interface RiakObject {
 
     /**
      * Serializes this object to an existing {@link HttpMethod} which can be
-     * sent as an HTTP request. Used by {@RiakClient} to create PUT
+     * sent as an HTTP request. Used by {@link RiakClient} to create PUT
      * requests.
      */
     public void writeToHttpMethod(HttpMethod httpMethod);

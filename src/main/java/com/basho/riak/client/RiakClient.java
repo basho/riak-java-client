@@ -29,9 +29,10 @@ import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
 
 /**
- * Interface for accessing the Riak document store via HTTP. See
- * {@link JiakClient} to use the JSON interface and {@link RawClient} to use the
- * Raw interface.
+ * Primary interface for interacting with Riak via HTTP. See {@link JiakClient}
+ * to use the JSON interface and {@link RawClient} to use the Raw interface. The
+ * implementations contain other interface-specific methods for interacting with
+ * Riak (e.g. {@link RawClient#stream(String, String, RequestMeta)}).
  */
 public interface RiakClient {
 
@@ -91,7 +92,8 @@ public interface RiakClient {
      * @param meta
      *            Extra metadata to attach to the request such as w and dw
      *            values for the request, HTTP headers, and other query
-     *            parameters. See RequestMeta.writeParams().
+     *            parameters. See
+     *            {@link RequestMeta#writeParams(Integer, Integer)}.
      * 
      * @return {@link StoreResponse} containing HTTP response information and a
      *         {@link RiakObject} with any updated information returned by the
@@ -107,8 +109,8 @@ public interface RiakClient {
     public StoreResponse store(RiakObject object);
 
     /**
-     * Fetch metadata for the {@link RiakObject} stored at <code>bucket</code>
-     * and <code>key</code>.
+     * Fetch metadata (e.g. vclock, last modified, vtag) for the
+     * {@link RiakObject} stored at <code>bucket</code> and <code>key</code>.
      * 
      * @param bucket
      *            The bucket containing the {@link RiakObject} to fetch.
@@ -117,7 +119,7 @@ public interface RiakClient {
      * @param meta
      *            Extra metadata to attach to the request such as an r- value
      *            for the request, HTTP headers, and other query parameters. See
-     *            RequestMeta.readParams().
+     *            {@link RequestMeta#readParams(int)}.
      * 
      * @return {@link FetchResponse} containing HTTP response information and a
      *         {@link RiakObject} containing only metadata and no value.
@@ -142,7 +144,7 @@ public interface RiakClient {
      * @param meta
      *            Extra metadata to attach to the request such as an r- value
      *            for the request, HTTP headers, and other query parameters. See
-     *            RequestMeta.readParams().
+     *            {@link RequestMeta#readParams(int)}.
      * 
      * @return {@link FetchResponse} containing HTTP response information and a
      *         {@link RiakObject} or sibling objects.
@@ -171,7 +173,7 @@ public interface RiakClient {
      *            for the request, HTTP headers, and other query parameters. See
      *            RequestMeta.readParams().
      * 
-     * @return Result from the handler.process() or true if handler is null.
+     * @return Result from calling handler.process() or true if handler is null.
      * 
      * @throws IOException
      *             If an error occurs during communication with the Riak server.
@@ -188,9 +190,10 @@ public interface RiakClient {
      * @param key
      *            The key of the object
      * @param meta
-     *            Extra metadata to attach to the request such as an r- value
-     *            for the request, HTTP headers, and other query parameters. See
-     *            RequestMeta.readParams().
+     *            Extra metadata to attach to the request such as w and dw
+     *            values for the request, HTTP headers, and other query
+     *            parameters. See
+     *            {@link RequestMeta#writeParams(Integer, Integer)}.
      * 
      * @return {@link HttpResponse} containing HTTP response information.
      * 

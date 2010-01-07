@@ -157,7 +157,7 @@ public class PlainClient {
     /**
      * See {@link RiakClient}.fetchMeta().
      * 
-     * @returns {@link RiakObject} or null if object doesn't exist.
+     * @return {@link RiakObject} or null if object doesn't exist.
      * 
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
@@ -194,7 +194,7 @@ public class PlainClient {
     /**
      * See {@link RiakClient}.fetch().
      * 
-     * @returns {@link RiakObject} or null if object doesn't exist. If siblings
+     * @return {@link RiakObject} or null if object doesn't exist. If siblings
      *          exist, then returns one of the siblings.
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
@@ -230,7 +230,7 @@ public class PlainClient {
     /**
      * See {@link RiakClient}.fetch().
      * 
-     * @returns All sibling {@link RiakObject} or null if object doesn't exist.
+     * @return All sibling {@link RiakObject} or null if object doesn't exist.
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
      * @throws {@link RiakResponseException} If the server does return any
@@ -300,7 +300,7 @@ public class PlainClient {
     /**
      * See {@link RiakClient}.walk().
      * 
-     * @returns list of lists of {@link RiakObject}s corresponding to steps of
+     * @return list of lists of {@link RiakObject}s corresponding to steps of
      *          the walk. Returns null if the source object doesn't exist.
      * @throws {@link RiakIOResponseException} If an error occurs during
      *         communication with the Riak server.
