@@ -24,6 +24,7 @@ import org.mockito.stubbing.Answer;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
@@ -157,6 +158,14 @@ public class TestClientHelper {
         impl.executeMethod(null, null, mockHttpMethod, meta);
         
         verify(mockHttpMethod).releaseConnection();
+    }
+
+    @Test public void execute_method_with_stream_response_returns_null_body() throws IOException {
+        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
+        
+        HttpResponse r = impl.executeMethod(null, null, mockHttpMethod, meta, true);
+        
+        assertNull(r.getBody());
     }
 
     @Test public void execute_method_with_stream_response_doesnt_consume_stream_or_close_connection() throws IOException {

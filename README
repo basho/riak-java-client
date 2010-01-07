@@ -1,21 +1,27 @@
 
 
+This document describes how to use this client to connect to Riak.  See the [DEVELOPERS](/jonjlee/riak-java-client/wiki/Developers) document for a technical overview of the project.
+
 # Overview #
 
 This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It provides:
 
-- **HttpClient**-provided functionality such as connection pooling, timeouts, and retries missing in the Riak-bundled implementation, which is built on HttpURLConnection.
-- **Jiak** and **Raw** interface support.
-- **HTTP response data** returned directly to the client rather than via exceptions. While this slightly couples the domain model with the underlying HTTP model, it gives the benefit of allowing the full suite of HTTP to be used (in possibly unforseen ways) without requiring modifications to the client library. In reality, clients need to and do understand that each operation in fact translates to an HTTP operation.  In any case, **PlainClient** provides the more traditional interface with domain objects and checked exceptions which can be used when appropriate.
-- **Stream handling** for GET requests.
-- **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location. This means the client does not need to wrap each operation in try/catch blocks.
+*   **HttpClient**-provided functionality such as connection pooling, timeouts, and retries missing in the Riak-bundled implementation, which is built on HttpURLConnection.
+
+*   **Jiak** and **Raw** interface support.
+
+*   **HTTP response data** returned directly to the client rather than via exceptions. While this slightly couples the domain model with the underlying HTTP model, it gives the benefit of allowing the full suite of HTTP to be used (in possibly unforseen ways) without requiring modifications to the client library. In reality, clients need to and do understand that each operation in fact translates to an HTTP operation.  In any case, **PlainClient** provides the more traditional interface with domain objects and checked exceptions which can be used when appropriate.
+
+*   **Stream handling** for GET requests.
+
+*   **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location. This means the client does not need to wrap each operation in try/catch blocks.
 
 # Building #
 
 This project requires Apache Maven (http://maven.apache.org/download.html) to build and deploy. With Maven installed, run:
 
     mvn clean install
-    
+
 # Raw interface quick start #
 
 Connect to Riak:
@@ -81,7 +87,7 @@ Connect to a Riak server by specifying the base URL of the Jiak or Raw interface
     
     JiakClient jiak = new JiakClient("http://localhost:8098/jiak");
     RawClient raw = new RawClient("http://localhost:8098/raw");
-    
+
 HttpClient parameters can be provided using a RiakConfig object:
 
     RiakConfig config = new RiakConfig("http://localhost:8098/raw");
@@ -90,7 +96,7 @@ HttpClient parameters can be provided using a RiakConfig object:
     config.setMaxConnections(50);   // 50 concurrent connections
     
     RawClient raw = new RawClient(config);
-    
+
 The HttpClient instance itself can also be given:
 
     MultiThreadedHttpConnectionManager m = new MultiThreadedHttpConnectionManager();
@@ -133,7 +139,7 @@ With Jiak:
     // An object for the Jiak interface
     JiakObject jobj = new JiakObject("bucket", "key", "value");
     jobj.setUsermeta(new JSONObject().put("custom-max-age", "60"));
-
+    
     JiakStoreResponse jresp = jiak.store(jobj);
     if (jresp.isSuccess()) robj.updateMeta(jresp);
 
@@ -144,7 +150,7 @@ With Plain (connected to Raw):
 The request `w` and `dw` values (number of write or durable write responses required for success) can be specified using a RequestMeta object:
 
     client.store(obj, RequestMeta.writeParams(2 /* w-value */, 2 /* dw-value */));
-    
+
 ## Fetch Objects ##
 
 Simply request the object by bucket and key. The response contains the requested object.
@@ -160,7 +166,7 @@ With Jiak:
     JiakFetchResponse r = jiak.fetch("bucket", "key");
     if (j.isSuccess())
         JiakObject o = r.getObject();
-        
+
 With Plain:
 
     RiakObject r = plain.fetch("bucket", "key");
@@ -187,7 +193,7 @@ With Raw or Jiak:
         o.setValue("foo");
         client.store(o);
     }
-    
+
 With Plain:
 
     RiakObject o = plain.fetch("bucket", "key");
@@ -210,7 +216,7 @@ With Raw:
     RawFetchResponse r = raw.fetch("bucket", "key");
     if (r.isSuccess() && r.hasSiblings())
         Collection<RawObject> siblings = r.getSiblings();
-        
+
 With Plain:
 
     Collection<? extends RiakObject> objects = client.fetchAll("bucket", "key");
@@ -220,7 +226,7 @@ With Plain:
 To get and process an object as a stream, implement a StreamHandler and use the stream() method. The input stream of the HTTP response is given to the handler.
 
     client.stream("bucket", "key", new MyStreamHandler(), RequestMeta.readParams(1 /* r value */));
-    
+
 RawClient also contains a stream() method that returns a RawFetchResponse containing an object whose value is an InputStream. The user is responsible for closing the response in this case.
 
     RawFetchResponse r;
@@ -257,12 +263,12 @@ With Jiak:
     if (r.isSuccess()) {
         JiakBucketInfo info = r.getBucketInfo();
         List<String> keys = info.getKeys();         // list of all object keys in this bucket
-    
+        
         // Update the schema and put
         info.setSchema(Arrays.asList("name", "address") /* allowed fields */, null, null, Arrays.asList("name") /* required fields */);
         raw.setBucketSchema(info.getSchema());
     }
-    
+
 With Plain:
 
     RiakBucketInfo info = plain.listBucket("bucket");
@@ -293,7 +299,7 @@ With Raw:
             }
         }
     }
-    
+
 Jiak and Plain are identical to except that a the object types returned in the steps list are `JiakObject` and `RiakObject` respectively.
 
 # HTTP Request/Response Information #
@@ -318,15 +324,16 @@ RawClient and JiakClient will usually throw the unchecked exceptions RiakIORunti
 
     RawClient c = new RawClient("");
     c.setExceptionHandler(new RiakExceptionHandler() {
-
+        
         public void handle(RiakResponseRuntimeException e) {
             // Log and ignore malformed responses. The operation in progress
             // will return null.
             LOG.warn("Received malformed server response", e);
         }
-
+        
         public void handle(RiakIORuntimeException e) {
             // Signal that we are experiencing connection problems
             App.setConnectionStatus(Status.DOWN);
         }
     });
+
