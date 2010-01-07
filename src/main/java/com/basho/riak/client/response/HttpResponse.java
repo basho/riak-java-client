@@ -23,48 +23,47 @@ import org.apache.commons.httpclient.HttpMethod;
 public interface HttpResponse {
 
     /**
-     * @return The target object's bucket
+     * The target object's bucket
      */
     public String getBucket();
 
     /**
-     * @return The target object's key or null if bucket is target
+     * The target object's key or null if bucket is target
      */
     public String getKey();
 
     /**
-     * @return Resulting status code from the HTTP request.
+     * Resulting status code from the HTTP request.
      */
     public int getStatusCode();
 
     /**
-     * @return The HTTP response headers.
+     * The HTTP response headers.
      */
     public Map<String, String> getHttpHeaders();
 
     /**
-     * @return The HTTP response body.
+     * The HTTP response body.
      */
     public String getBody();
 
     /**
-     * @return The actual {@link HttpMethod} used to make the HTTP request. Most
-     *         of the data here can be retrieved more simply using methods in
-     *         this class. Also, note that the connection will already be
-     *         closed, so calling getHttpMethod().getResponseBodyAsStream() will
-     *         return null.
+     * The actual {@link HttpMethod} used to make the HTTP request. Most of the
+     * data here can be retrieved more simply using methods in this class. Also,
+     * note that the connection will already be closed, so calling
+     * getHttpMethod().getResponseBodyAsStream() will return null.
      */
     public HttpMethod getHttpMethod();
 
     /**
-     * @return Whether the HTTP response is considered a success. Generally this
-     *         translates to a 2xx for any request, a 304 for GET and HEAD
-     *         requests, or 404 for DELETE requests.
+     * Whether the HTTP response is considered a success. Generally this
+     * translates to a 2xx for any request, a 304 for GET and HEAD requests, or
+     * 404 for DELETE requests.
      */
     public boolean isSuccess();
 
     /**
-     * @return Whether the HTTP request returned a 4xx or 5xx response
+     * Whether the HTTP request returned a 4xx or 5xx response
      */
     public boolean isError();
 

@@ -124,7 +124,7 @@ public class Multipart {
      * @param contentType
      *            Content type value with boundary parameter. Should be of the
      *            form "type/subtype; boundary=foobar; param=value"
-     * @return
+     * @return Value of the boundary parameter
      */
     private static String getBoundary(String contentType) {
         String[] params = contentType.split("\\s*;\\s*");
@@ -152,14 +152,14 @@ public class Multipart {
         }
 
         /**
-         * @return Headers defined in the part
+         * Headers defined in the part
          */
         public Map<String, String> getHeaders() {
             return headers;
         }
 
         /**
-         * @return Body of this part
+         * Body of this part
          */
         public String getBody() {
             return body;

@@ -19,8 +19,9 @@ import java.util.Collection;
 import org.json.JSONObject;
 
 /**
- * Represents the metadata stored in a bucket including its schema (whose fields
- * are interface dependent) and the list of keys contained in the bucket.
+ * Represents the metadata stored in a bucket including its schema and the list
+ * of keys contained in the bucket. Note that the fields in the schema depend on
+ * the Riak interface being used.
  */
 public class RiakBucketInfo {
 
@@ -31,21 +32,21 @@ public class RiakBucketInfo {
      * Returns the list of properties in the schema and their values. The
      * properties available is interface dependent.
      * 
-     * @return The properties composing this bucket's schema.
+     * The properties composing this bucket's schema.
      */
     public JSONObject getSchema() {
         return schema;
     }
 
     /**
-     * @return The object keys in this bucket.
+     * The object keys in this bucket.
      */
     public Collection<String> getKeys() {
         return keys;
     }
 
     /**
-     * Construct a bucket info to populate in a writeSchema request.
+     * Construct a bucket info to populate for a writeSchema request.
      */
     public RiakBucketInfo() {
         this(null, null);
@@ -57,7 +58,7 @@ public class RiakBucketInfo {
      * @param schema
      *            The JSON object containing the bucket's schema
      * @param keys
-     *            The JSON array containing the keys in the bucket
+     *            The keys in the bucket
      */
     public RiakBucketInfo(JSONObject schema, Collection<String> keys) {
 

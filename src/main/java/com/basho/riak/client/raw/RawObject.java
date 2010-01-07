@@ -45,7 +45,7 @@ public class RawObject implements RiakObject {
     private String lastmod;
     private String vtag;
     private InputStream valueStream;
-    private long valueStreamLength = -1;
+    private Long valueStreamLength;
 
     /**
      * Create an empty Raw object. The content type defaults to
@@ -207,7 +207,7 @@ public class RawObject implements RiakObject {
      * Set the object's value as a stream. A value set here is independent of
      * and has precedent over values set using setValue(). Calling getValue()
      * will always return values set via setValue(), and calling
-     * getEntityStream() will always return the stream set via setValueStream.
+     * getValueStream() will always return the stream set via setValueStream.
      * 
      * @param in
      *            Input stream representing the object's value
@@ -229,20 +229,12 @@ public class RawObject implements RiakObject {
         return valueStream;
     }
 
-    public String getEntity() {
-        return this.getValue();
-    }
-
-    public InputStream getEntityStream() {
-        return valueStream;
-    }
-
-    public long getEntityStreamLength() {
-        return valueStreamLength;
-    }
-
-    public void setValueStreamLength(long len) {
+    public void setValueStreamLength(Long len) {
         valueStreamLength = len;
+    }
+
+    public Long getValueStreamLength() {
+        return valueStreamLength;
     }
 
     public void writeToHttpMethod(HttpMethod httpMethod) {
@@ -282,7 +274,7 @@ public class RawObject implements RiakObject {
             // Any value set using setValueAsStream() has precedent over value
             // set using setValue()
             if (valueStream != null) {
-                if (valueStreamLength >= 0) {
+                if (valueStreamLength != null && valueStreamLength >= 0) {
                     entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, valueStreamLength,
                                                                                         contentType));
                 } else {

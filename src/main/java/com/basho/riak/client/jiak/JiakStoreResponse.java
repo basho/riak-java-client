@@ -23,8 +23,8 @@ import com.basho.riak.client.util.Constants;
 
 /**
  * Decorates an HttpResponse to interpret store responses from the Jiak
- * interface which should returns the entire object with metadata on a store.
- * (i.e. {@link JiakClient} sends the returnbody=true query parameter on PUTs).
+ * interface which should contain the entire object with metadata (i.e.
+ * {@link JiakClient} sends the returnbody=true query parameter on PUTs).
  */
 public class JiakStoreResponse extends HttpResponseDecorator implements StoreResponse {
 

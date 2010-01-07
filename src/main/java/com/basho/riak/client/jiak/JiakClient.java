@@ -170,15 +170,14 @@ public class JiakClient implements RiakClient {
         return walk(bucket, key, walkSpec.toString(), null);
     }
 
-    /** @return the installed exception handler or null if not installed */
+    /** The installed exception handler or null if not installed */
     public RiakExceptionHandler getExceptionHandler() {
         return helper.getExceptionHandler();
     }
 
     /**
-     * Install an exception handler. If an exception handler is provided, then
-     * the Riak client will hand exceptions to the handler rather than throwing
-     * them.
+     * If an exception handler is provided, then the Riak client will hand
+     * exceptions to the handler rather than throwing them.
      */
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);

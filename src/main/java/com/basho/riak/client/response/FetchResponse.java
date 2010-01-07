@@ -23,23 +23,23 @@ import com.basho.riak.client.RiakObject;
 public interface FetchResponse extends HttpResponse {
 
     /**
-     * @return Whether response contained a Riak object
+     * Whether response contained a Riak object
      */
     public boolean hasObject();
 
     /**
-     * @return The first Riak object contained in the response. Equivalent to
-     *         the first object in getSiblings() when hasSiblings() is true.
+     * Returns the first Riak object contained in the response. Equivalent to
+     * the first object in getSiblings() when hasSiblings() is true.
      */
     public RiakObject getObject();
 
     /**
-     * @return Whether response contained a multiple Riak objects
+     * Whether response contained a multiple Riak objects
      */
     public boolean hasSiblings();
 
     /**
-     * @return A list of the Riak objects contained in the response.
+     * Returns a list of the Riak objects contained in the response.
      */
     public List<? extends RiakObject> getSiblings();
 }

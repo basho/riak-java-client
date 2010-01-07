@@ -177,8 +177,8 @@ public class JiakObject implements RiakObject {
     }
 
     /**
-     * @return the value associated with this key in this object's value (not
-     *         metadata)
+     * Return the value associated with this key in this object's value (not
+     * metadata)
      */
     public Object get(String key) {
         return value.opt(key);
@@ -205,10 +205,9 @@ public class JiakObject implements RiakObject {
     }
 
     /**
-     * @return The object's links serialized as JSON. A link in Jiak consists of
-     *         an array with three elements: the target bucket, target key, and
-     *         link tag. Links added to this array will not be included in the
-     *         Jiak object.
+     * Returns the object's links serialized as JSON. A link in Jiak consists of
+     * an array with three elements: the target bucket, target key, and link
+     * tag. Links added to this array will not be included in the Jiak object.
      */
     public JSONArray getLinksAsJSON() {
         JSONArray jsonLinks = new JSONArray();
@@ -247,8 +246,8 @@ public class JiakObject implements RiakObject {
     }
 
     /**
-     * @return The usermeta map serialized to a JSONObject. Data added to this
-     *         object will not be included in the Jiak object.
+     * Returns the usermeta map serialized to a JSONObject. Data added to this
+     * object will not be included in the Jiak object.
      */
     public JSONObject getUsermetaAsJSON() {
         JSONObject jsonUsermeta = new JSONObject();
@@ -263,9 +262,9 @@ public class JiakObject implements RiakObject {
     }
 
     /**
-     * Jiak does not currently support extra user-defined metadata. It only
-     * stores links and the object value. Anything set here will be added to the
-     * "usermeta" field of the value.
+     * Anything set here will be added to the "usermeta" field of the value
+     * since Jiak does not currently support storing user-defined metadata in a
+     * separate field. It only stores links and the object value.
      */
     public void setUsermeta(Map<String, String> usermeta) {
         if (usermeta == null) {

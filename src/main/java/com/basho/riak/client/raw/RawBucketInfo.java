@@ -87,7 +87,7 @@ public class RawBucketInfo extends RiakBucketInfo {
     }
 
     /**
-     * @return the chash_keyfun property as "\<module\>:\<function\>"
+     * The chash_keyfun property as {@literal <module>:<function>}
      */
     public String getCHashFun() {
         JSONObject chashfun = getSchema().optJSONObject(Constants.RAW_FL_SCHEMA_CHASHFUN);
@@ -120,7 +120,7 @@ public class RawBucketInfo extends RiakBucketInfo {
     }
 
     /**
-     * @return the linkfun property as "\<module\>:\<function\>"
+     * The linkfun property as {@literal <module>:<function>}
      */
     public String getLinkFun() {
         JSONObject linkfun = getSchema().optJSONObject(Constants.RAW_FL_SCHEMA_LINKFUN);

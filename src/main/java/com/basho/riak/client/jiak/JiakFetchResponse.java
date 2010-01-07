@@ -52,14 +52,14 @@ public class JiakFetchResponse extends HttpResponseDecorator implements FetchRes
     }
 
     /**
-     * @return false since Jiak interface doesn't support siblings
+     * Returns false since Jiak interface doesn't support siblings
      */
     public boolean hasSiblings() {
         return false;
     }
 
     /**
-     * @return An empty list since Jiak interface doesn't support siblings
+     * Returns an empty list since Jiak interface doesn't support siblings
      */
     public List<JiakObject> getSiblings() {
         return new ArrayList<JiakObject>();

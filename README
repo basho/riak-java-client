@@ -220,6 +220,20 @@ With Plain:
 To get and process an object as a stream, implement a StreamHandler and use the stream() method. The input stream of the HTTP response is given to the handler.
 
     client.stream("bucket", "key", new MyStreamHandler(), RequestMeta.readParams(1 /* r value */));
+    
+RawClient also contains a stream() method that returns a RawFetchResponse containing an object whose value is an InputStream. The user is responsible for closing the response in this case.
+
+    RawFetchResponse r;
+    try {
+        r = raw.stream("bucket", "key");
+        if (r.isSuccess()) {
+            InputStream valueStream = r.getObject().getValueStream();
+        }
+    } finally {
+        if (r != null) {
+            r.close();
+        }
+    }
 
 ## Buckets Keys and Schema ##
 

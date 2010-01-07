@@ -45,17 +45,17 @@ public interface RiakObject {
     public void updateMeta(StoreResponse response);
 
     /**
-     * @return The object's bucket
+     * The object's bucket
      */
     public String getBucket();
 
     /**
-     * @return The object's key
+     * The object's key
      */
     public String getKey();
 
     /**
-     * @return The object's value
+     * The object's value
      */
     public String getValue();
 
@@ -65,35 +65,35 @@ public interface RiakObject {
     public void setValue(String value);
 
     /**
-     * @return The object's links -- may be empty, but never be null. New links
-     *         can be added using getLinks().add()
+     * The object's links -- may be empty, but never be null. New links can be
+     * added using getLinks().add()
      */
     public List<RiakLink> getLinks();
 
     /**
-     * @return User-specified metadata for the object in the form of key-value
-     *         pairs -- may be empty, but never be null. New key-value pairs can
-     *         be added using getUsermeta().put()
+     * User-specified metadata for the object in the form of key-value pairs --
+     * may be empty, but never be null. New key-value pairs can be added using
+     * getUsermeta().put()
      */
     public Map<String, String> getUsermeta();
 
     /**
-     * @return The object's content type as a MIME type
+     * The object's content type as a MIME type
      */
     public String getContentType();
 
     /**
-     * @return The object's opaque vclock assigned by Riak
+     * The object's opaque vclock assigned by Riak
      */
     public String getVclock();
 
     /**
-     * @return The modification date of the object determined by Riak
+     * The modification date of the object determined by Riak
      */
     public String getLastmod();
 
     /**
-     * @return An entity tag for the object assigned by Riak
+     * An entity tag for the object assigned by Riak
      */
     public String getVtag();
 

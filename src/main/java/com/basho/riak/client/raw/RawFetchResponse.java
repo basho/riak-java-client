@@ -49,8 +49,8 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
      * stream for getValueStream(). Users must remember to release the return
      * value's underlying stream by calling close().
      * 
-     * Sibling objects cannot be streamed, since the stream must be consumed for
-     * parsing.
+     * Sibling objects are not be streamed, since the stream must be consumed
+     * for parsing.
      * 
      * @throws RiakResponseRuntimeException
      *             If the server returns a 300 without a proper multipart/mixed
@@ -98,9 +98,13 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
             // If response was constructed without a response body, try to get
             // the body as a stream from the underlying HTTP method
             if (r.getBody() == null && r.getHttpMethod() != null) {
+                Long contentLength = null;
                 try {
-                    object.setValueStream(r.getHttpMethod().getResponseBodyAsStream());
-                } catch (IOException e) { /* ignore */}
+                    contentLength = Long.parseLong(headers.get(Constants.HDR_CONTENT_LENGTH));
+                } catch (NumberFormatException ignored) {}
+                try {
+                    object.setValueStream(r.getHttpMethod().getResponseBodyAsStream(), contentLength);
+                } catch (IOException ignored) {}
             }
         }
     }
@@ -123,9 +127,9 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
 
     /**
      * Releases the underlying HTTP connection, closing the InputStream returned
-     * by getBodyAsStream(), if any. User is responsible for calling this method
-     * on RawFetchResponse objects returned from streaming requests, such as
-     * RawClient.stream(bucket, key).
+     * by getObject().getValueStream(), if any. User is responsible for calling
+     * this method on RawFetchResponse objects returned from streaming requests,
+     * such as RawClient.stream(bucket, key).
      */
     public void close() {
         HttpMethod httpMethod = getHttpMethod();

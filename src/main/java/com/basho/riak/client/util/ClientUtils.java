@@ -132,7 +132,7 @@ public class ClientUtils {
     }
 
     /**
-     * @return Just the path portion of the given URL
+     * Return just the path portion of the given URL
      */
     public static String getPathFromUrl(String url) {
         if (url == null)
@@ -141,7 +141,7 @@ public class ClientUtils {
     }
 
     /**
-     * @return Just the path portion of the given URL
+     * UTF-8 encode the string
      */
     public static String urlEncode(String s) {
         try {

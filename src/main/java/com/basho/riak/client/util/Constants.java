@@ -53,6 +53,7 @@ public interface Constants {
 
     // HTTP headers used in Riak
     public static String HDR_ACCEPT = "accept";
+    public static String HDR_CONTENT_LENGTH = "content-length";
     public static String HDR_CONTENT_TYPE = "content-type";
     public static String HDR_ETAG = "etag";
     public static String HDR_LAST_MODIFIED = "last-modified";

@@ -55,10 +55,10 @@ public class LinkHeader {
      * 
      *            http://tools.ietf.org/html/draft-nottingham-http-link-header
      * 
-     *            e.g. </path/to/resource1>; param="value",
-     *            </path/to/resource2>;
+     *            e.g. {@literal </path/to/resource1>; param="value",
+     *            </path/to/resource2>}
      * 
-     * @return A map links to their parameters. Parameters are a map of
+     * @return A map of links to their parameters. Parameters are a map of
      *         parameter name to value.
      */
     public static Map<String, Map<String, String>> parse(String header) {

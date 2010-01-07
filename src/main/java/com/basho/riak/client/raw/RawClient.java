@@ -120,8 +120,8 @@ public class RawClient implements RiakClient {
      * value.
      * 
      * Sibling responses (status code 300) must be read before parsing, so they
-     * cannot be streamed. Therefore stream() is identical to fetch(), except
-     * that getBody() returns null.
+     * are not streamed. Therefore stream() is identical to fetch(), except that
+     * getBody() returns null.
      * 
      * @param bucket
      *            The bucket containing the {@link RiakObject} to fetch.
@@ -133,11 +133,9 @@ public class RawClient implements RiakClient {
      *            RequestMeta.readParams().
      * 
      * @return A streaming {@link RawFetchResponse} containing HTTP response
-     *         information and the response stream. The stream is processed when
-     *         has/getObject() or has/getSibling() is called, or the stream can
-     *         be read using {@link RawFetchResponse}.getStream(). The HTTP
-     *         connection must be closed manually by the user by calling
-     *         {@link RawFetchResponse}.close().
+     *         information and the response stream. The HTTP connection must be
+     *         closed manually by the user by calling
+     *         {@link RawFetchResponse#close()}.
      */
     public RawFetchResponse stream(String bucket, String key, RequestMeta meta) {
         return fetch(bucket, key, meta, true);
@@ -199,15 +197,14 @@ public class RawClient implements RiakClient {
         return walk(bucket, key, walkSpec.toString(), null);
     }
 
-    /** @return the installed exception handler or null if not installed */
+    /** The installed exception handler or null if not installed */
     public RiakExceptionHandler getExceptionHandler() {
         return helper.getExceptionHandler();
     }
 
     /**
-     * Install an exception handler. If an exception handler is provided, then
-     * the Riak client will hand exceptions to the handler rather than throwing
-     * them.
+     * If an exception handler is provided, then the Riak client will hand
+     * exceptions to the handler rather than throwing them.
      */
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);

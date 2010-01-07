@@ -101,7 +101,7 @@ public class RawUtils {
      *            original document's headers
      * @param docBody
      *            original document's body
-     * @return List of RawObjects represented by the multipart document
+     * @return List of {@link RawObject}s represented by the multipart document
      */
     public static List<RawObject> parseMultipart(String bucket, String key, Map<String, String> docHeaders,
                                                  String docBody) {

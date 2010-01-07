@@ -3,10 +3,14 @@ package com.basho.riak.client.raw;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpMethod;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.util.Constants;
 
 public class TestRawFetchResponse {
 
@@ -22,8 +27,10 @@ public class TestRawFetchResponse {
     final Map<String, String> SINGLE_HEADERS = new HashMap<String, String>();
     final String SINGLE_BODY = "foo";
     final Map<String, String> SIBLING_HEADERS = new HashMap<String, String>();
-    String SIBLING_BODY;
+    
     @Mock HttpResponse mockHttpResponse;
+    @Mock HttpMethod mockHttpMethod;
+    String SIBLING_BODY;
     
     @Before public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -138,4 +145,67 @@ public class TestRawFetchResponse {
         assertTrue(impl.hasObject());
         assertTrue(impl.getSiblings().contains(impl.getObject()));
     }
+    
+    @Test public void stores_value_stream_on_2xx_if_httpresponse_body_is_null() throws IOException {
+        final Long contentLength = new Long(100);
+        final InputStream mockInputStream = mock(InputStream.class);
+        
+        SINGLE_HEADERS.put(Constants.HDR_CONTENT_LENGTH, contentLength.toString());
+        
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        when(mockHttpResponse.getHttpHeaders()).thenReturn(SINGLE_HEADERS);
+        when(mockHttpResponse.getBody()).thenReturn(null);
+        when(mockHttpResponse.getHttpMethod()).thenReturn(mockHttpMethod);
+        
+        when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(mockInputStream);
+        
+        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        
+        assertTrue(impl.hasObject());
+        assertSame(mockInputStream, impl.getObject().getValueStream());
+        assertEquals(contentLength, impl.getObject().getValueStreamLength());
+    }
+
+    @Test public void consumes_and_closes_response_from_stream_on_300() throws IOException {
+        final ByteArrayInputStream is = new ByteArrayInputStream(SIBLING_BODY.getBytes());
+
+        when(mockHttpResponse.getStatusCode()).thenReturn(300);
+        when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
+        when(mockHttpResponse.getKey()).thenReturn(KEY);
+        when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
+        when(mockHttpResponse.getBody()).thenReturn(null);
+        when(mockHttpResponse.getHttpMethod()).thenReturn(mockHttpMethod);
+        
+        when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(is);
+        
+        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        List<RawObject> siblings = impl.getSiblings();
+       
+        assertTrue(impl.hasSiblings());
+        verify(mockHttpMethod).releaseConnection();
+ 
+        RawObject o;
+        o = siblings.get(0);
+        assertEquals(BUCKET, o.getBucket());
+        assertEquals(KEY, o.getKey());
+        assertEquals("text/plain", o.getContentType());
+        assertEquals("bar", o.getValue());
+        assertEquals(1, o.getLinks().size());
+        assertEquals(0, o.getUsermeta().size());
+        assertEquals("Tue, 22 Dec 2009 19:24:18 GMT", o.getLastmod());
+        assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
+        assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
+
+        o = siblings.get(1);
+        assertEquals(BUCKET, o.getBucket());
+        assertEquals(KEY, o.getKey());
+        assertEquals("application/octect-stream", o.getContentType());
+        assertEquals("foo", o.getValue());
+        assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", o.getLastmod());
+        assertEquals(0, o.getLinks().size());
+        assertEquals(1, o.getUsermeta().size());
+        assertEquals("value", o.getUsermeta().get("test"));
+        assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
+        assertEquals("4d5y9wqQK2Do0RK5ezwCJD", o.getVtag());
+   }
 }

@@ -22,12 +22,12 @@ import com.basho.riak.client.RiakObject;
  */
 public interface WalkResponse extends HttpResponse {
 
-    /** @return Whether objects were contained in the response */
+    /** Whether objects were contained in the response */
     public boolean hasSteps();
 
     /**
-     * @return Steps accumulated from link walking. See RiakClient.walk() for
-     *         more information.
+     * Steps accumulated from link walking. See RiakClient.walk() for more
+     * information.
      */
     public List<? extends List<? extends RiakObject>> getSteps();
 }

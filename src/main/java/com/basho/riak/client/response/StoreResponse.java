@@ -18,15 +18,14 @@ package com.basho.riak.client.response;
  */
 public interface StoreResponse extends HttpResponse {
 
-    /** @return the object's updated vclock or null if Riak didn't return one. */
+    /** The object's updated vclock or null if Riak didn't return one. */
     public String getVclock();
 
     /**
-     * @return the object's last modified date or null if Riak didn't return
-     *         one.
+     * The object's last modified date or null if Riak didn't return one.
      */
     public String getLastmod();
 
-    /** @return the object's updated etag or null if Riak didn't return one. */
+    /** The object's updated etag or null if Riak didn't return one. */
     public String getVtag();
 }

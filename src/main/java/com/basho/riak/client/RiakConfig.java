@@ -15,7 +15,7 @@ package com.basho.riak.client;
 import org.apache.commons.httpclient.HttpClient;
 
 /**
- * Configuration settings for connecting to a Riak instance, including the URL
+ * Configuration settings for connecting to a Riak instance including the URL
  * and settings for HttpClient. A pre-constructed HttpClient can also be
  * provided.
  */
@@ -44,14 +44,14 @@ public class RiakConfig {
     }
 
     /**
-     * @return The base URL used by a client to construct object URLs
+     * The base URL used by a client to construct object URLs
      */
     public String getUrl() {
         return url;
     }
 
     /**
-     * Set the base URL that clients should use to construct object URLs (e.g.
+     * Set the base URL that clients should use to construct object URLs (eg
      * http://localhost:8098/jiak).
      */
     public void setUrl(String url) {
@@ -59,8 +59,7 @@ public class RiakConfig {
     }
 
     /**
-     * @return The pre-constructed HttpClient for a client to use if one was
-     *         provided
+     * The pre-constructed HttpClient for a client to use if one was provided
      */
     public HttpClient getHttpClient() {
         return httpClient;
