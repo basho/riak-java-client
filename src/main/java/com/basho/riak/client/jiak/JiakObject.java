@@ -90,11 +90,11 @@ public class JiakObject implements RiakObject {
             String vclock, String lastmod, String vtag) {
         this.bucket = bucket;
         this.key = key;
-        this.value = value;
         this.vclock = vclock;
         this.lastmod = lastmod;
         this.vtag = vtag;
 
+        setValue(value);
         setLinks(links);
         setUsermeta(usermeta);
     }
@@ -300,21 +300,15 @@ public class JiakObject implements RiakObject {
     public JSONObject toJSONObject() {
         JSONObject o = new JSONObject();
         try {
-            JSONObject value = getValueAsJSON();
-            JSONObject usermeta = getUsermetaAsJSON();
-            JSONArray links = getLinksAsJSON();
+            JSONObject value = getValueAsJSON();        // never null
+            JSONArray links = getLinksAsJSON();         // never null
+            JSONObject usermeta = getUsermetaAsJSON();  // never null
+
+            o.put(Constants.JIAK_FL_VALUE, value);
+            o.put(Constants.JIAK_FL_LINKS, links);
 
             if (usermeta.keys().hasNext()) {
-                if (value == null) {
-                    value = new JSONObject().put(Constants.JIAK_FL_USERMETA, usermeta);
-                } else {
-                    value.put(Constants.JIAK_FL_USERMETA, usermeta);
-                }
-            }
-            if (value != null) {
-                o.put(Constants.JIAK_FL_VALUE, value);
-            } else {
-                o.put(Constants.JIAK_FL_VALUE, new JSONObject());
+                value.put(Constants.JIAK_FL_USERMETA, usermeta);
             }
             if (getBucket() != null) {
                 o.put(Constants.JIAK_FL_BUCKET, getBucket());
@@ -324,12 +318,7 @@ public class JiakObject implements RiakObject {
             if (getKey() != null) {
                 o.put(Constants.JIAK_FL_KEY, getKey());
             } else {
-                o.put(Constants.JIAK_FL_BUCKET, "");
-            }
-            if (links != null) {
-                o.put(Constants.JIAK_FL_LINKS, links);
-            } else {
-                o.put(Constants.JIAK_FL_BUCKET, new JSONArray());
+                o.put(Constants.JIAK_FL_KEY, "");
             }
             if (getVclock() != null) {
                 o.put(Constants.JIAK_FL_VCLOCK, getVclock());

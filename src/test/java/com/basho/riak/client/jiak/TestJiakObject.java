@@ -51,11 +51,41 @@ public class TestJiakObject {
         assertEquals("application/json", impl.getContentType());
     }
     
-    @Test public void links_never_null() {
+    // Assumed by set(key, value), get(key), and toJSONObjecct() 
+    @Test public void value_never_null() throws JSONException {
+        impl = new JiakObject(new JSONObject("{\"bucket\":\"b\",\"key\":\"k\"}"));
+        assertNotNull(impl.getValue());
+        assertNotNull(impl.getValueAsJSON());
+
+        impl = new JiakObject("b", "k", null, null, null, null, null, null);
+        assertNotNull(impl.getValue());
+        assertNotNull(impl.getValueAsJSON());
+        
+        impl.setValue((JSONObject) null);
+        assertNotNull(impl.getValue());
+        assertNotNull(impl.getValueAsJSON());
+
+        impl.setValue((String) null);
+        assertNotNull(impl.getValue());
+        assertNotNull(impl.getValueAsJSON());
+
+        impl.copyData(new JiakObject(null, null));
+        assertNotNull(impl.getValue());
+        assertNotNull(impl.getValueAsJSON());
+    }
+    
+    // So we can always getLinks().add() and assumed by toJSONObjecct()
+    @Test public void links_never_null() throws JSONException {
+        impl = new JiakObject(new JSONObject("{\"bucket\":\"b\",\"key\":\"k\"}"));
+        assertNotNull(impl.getLinks());
+
         impl = new JiakObject("b", "k", null, null, null, null, null, null);
         assertNotNull(impl.getLinks());
         
         impl.setLinks((List<RiakLink>) null);
+        assertNotNull(impl.getLinks());
+
+        impl.setLinks((JSONArray) null);
         assertNotNull(impl.getLinks());
 
         impl.copyData(new JiakObject(null, null));
@@ -63,11 +93,15 @@ public class TestJiakObject {
     }
 
 
-    @Test public void usermeta_never_null() {
+    // So we can always getUsermeta().put() and assumed by toJSONObjecct()
+    @Test public void usermeta_never_null() throws JSONException {
+        impl = new JiakObject(new JSONObject("{\"bucket\":\"b\",\"key\":\"k\"}"));
+        assertNotNull(impl.getUsermeta());
+
         impl = new JiakObject("b", "k", null, null, null, null, null, null);
         assertNotNull(impl.getUsermeta());
         
-        impl.setUsermeta((Map<String, String>) null);
+        impl.setUsermeta(null);
         assertNotNull(impl.getUsermeta());
 
         impl.copyData(new JiakObject(null, null));
