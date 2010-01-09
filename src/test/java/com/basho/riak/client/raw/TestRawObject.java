@@ -20,7 +20,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.basho.riak.client.RiakLink;
-import com.basho.riak.client.jiak.JiakObject;
 import com.basho.riak.client.util.Constants;
 
 public class TestRawObject {
@@ -97,7 +96,7 @@ public class TestRawObject {
         links.add(link);
 
         impl = new RawObject("b", "k", value, ctype, links, usermeta, vclock, lastmod, vtag);
-        impl.copyData(new JiakObject(null, null));
+        impl.copyData(new RawObject(null, null));
 
         assertEquals("b", impl.getBucket());
         assertEquals("k", impl.getKey());
