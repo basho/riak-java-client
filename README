@@ -208,7 +208,7 @@ Simply execute the delete method.  The `dw` value can be optionally specified as
 
 ## Handling Conflicts and Siblings ##
 
-The Raw interface is able to return conflicting versions of the same objects known as siblings. This functionality does not exist in Jiak, so JiakFetchResponse.hasSiblings() always returns false.
+The Raw interface is able to return conflicting versions of the same object, known as siblings. This functionality does not exist in Jiak, so JiakFetchResponse.hasSiblings() always returns false.
 
 With Raw:
 
@@ -227,13 +227,15 @@ To get and process an object as a stream, implement a StreamHandler and use the 
 
     client.stream("bucket", "key", new MyStreamHandler(), RequestMeta.readParams(1 /* r value */));
 
-RawClient also contains a stream() method that returns a RawFetchResponse containing an object whose value is an InputStream. The user is responsible for closing the response in this case.
+RawClient also contains a stream() method that returns a standard RawObject with a value stream. The user is responsible for closing the response in this case.
 
     RawFetchResponse r;
     try {
         r = raw.stream("bucket", "key");
         if (r.isSuccess()) {
             InputStream valueStream = r.getObject().getValueStream();
+            
+            /* process valueStream */
         }
     } finally {
         if (r != null) {
@@ -243,7 +245,7 @@ RawClient also contains a stream() method that returns a RawFetchResponse contai
 
 ## Buckets Keys and Schema ##
 
-The bucket schema and a list the keys of all the objects in the bucket can be read using the listBucket() method and written using the setBucketSchema() method.  The bucket schema is presented as a JSONObject and contains different fields when using the Raw interface and Jiak.  For example, the Raw interface has the `allow_mult` property which allows Riak to return conflicting versions of the same object to the client.  On the other hand, Jiak contains structured data, and you can specify read and write masks for specific fields in the value.  See the Riak documentation for more information.
+The bucket schema and a list the keys of all the objects in the bucket can be read using the listBucket() method and written using the setBucketSchema() method.  The bucket schema is presented as a JSONObject and contains different fields when using the Raw interface and Jiak.  For example, the Raw interface has the `allow_mult` property which allows Riak to return conflicting versions of the same object.  On the other hand, Jiak contains structured data, and you can specify read and write masks for specific fields in the value.  See the Riak documentation for more information.
 
 With Raw:
 
@@ -254,7 +256,7 @@ With Raw:
         
         // Update the schema and put
         info.setAllowMult(true);
-        raw.setBucketSchema(info.getSchema());
+        raw.setBucketSchema(info);
     }
 
 With Jiak:
@@ -265,15 +267,15 @@ With Jiak:
         List<String> keys = info.getKeys();         // list of all object keys in this bucket
         
         // Update the schema and put
-        info.setSchema(Arrays.asList("name", "address") /* allowed fields */, null, null, Arrays.asList("name") /* required fields */);
-        raw.setBucketSchema(info.getSchema());
+        info.setAllowedFields(Arrays.asList("name", "address"));
+        raw.setBucketSchema(info);
     }
 
 With Plain:
 
     RiakBucketInfo info = plain.listBucket("bucket");
     info.getSchema().put("allow_mult", true);
-    plain.setBucketSchema("bucket", info.getSchema());
+    plain.setBucketSchema("bucket");
 
 ## Links and Link Walking ##
 
@@ -300,7 +302,7 @@ With Raw:
         }
     }
 
-Jiak and Plain are identical to except that a the object types returned in the steps list are `JiakObject` and `RiakObject` respectively.
+Jiak and Plain are identical except that a the object types returned in the steps list are `JiakObject` and `RiakObject` respectively.
 
 # HTTP Request/Response Information #
 
@@ -312,7 +314,7 @@ All of the above operations can also be called with a RequestMeta object to spec
     
     client.fetch("bucket", "key", meta);
 
-All of the operations above also return results the implement the HttpResponse interface, which exposes the HTTP status code, headers, body, and original HttpMethod used for the request. The entity stream, however is closed, so the stream() function should be used to stream objects.
+The operations also return results that implement the HttpResponse interface, which exposes the HTTP status code, headers, body, and original HttpMethod used for the request. The entity stream, however is closed, so the stream() function should be used to stream objects.
 
     HttpResponse r = client.fetch("bucket", "key");
     Map<String, String> httpHeaders = r.getHttpHeaders();
@@ -327,7 +329,7 @@ RawClient and JiakClient will usually throw the unchecked exceptions RiakIORunti
         
         public void handle(RiakResponseRuntimeException e) {
             // Log and ignore malformed responses. The operation in progress
-            // will return null.
+            // will return an HttpResponse with 0 status code.
             LOG.warn("Received malformed server response", e);
         }
         
