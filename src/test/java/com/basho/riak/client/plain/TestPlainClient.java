@@ -31,6 +31,9 @@ import com.basho.riak.client.response.WalkResponse;
 
 public class TestPlainClient {
     
+    // The basic status codes in HTTP 1.1
+    private static final int HTTP_STATUSES[] = {100, 101, 199, 200, 201, 202, 203, 204, 205, 206, 299, 300, 301, 302, 303, 304, 305, 306, 307, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 499, 500, 501, 502, 503, 504, 505, 599};
+    
     final String bucket = "bucket";
     final String key = "key";
     final String walkSpec = "walkSpec";
@@ -167,7 +170,7 @@ public class TestPlainClient {
     @Test public void setBucketSchema_throws_except_for_204(){
         HttpResponse mockResponse = mock(HttpResponse.class);
 
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockRiakClient.setBucketSchema(bucket, bucketInfo, meta)).thenReturn(mockResponse);
             boolean threw = true;
@@ -183,7 +186,7 @@ public class TestPlainClient {
 
     @Test public void listBucket_throws_except_for_200() {
         BucketResponse mockResponse = mock(BucketResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockRiakClient.listBucket(bucket, meta)).thenReturn(mockResponse);
             boolean threw = true;
@@ -199,7 +202,7 @@ public class TestPlainClient {
 
     @Test public void store_throws_except_for_200_and_204() {
         StoreResponse mockResponse = mock(StoreResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockRiakClient.store(object, meta)).thenReturn(mockResponse);
             boolean threw = true;
@@ -215,7 +218,7 @@ public class TestPlainClient {
 
     @Test public void fetchMeta_throws_except_for_200_304_or_404() {
         FetchResponse mockResponse = mock(FetchResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockResponse.hasObject()).thenReturn(true);
             when(mockRiakClient.fetchMeta(bucket, key, meta)).thenReturn(mockResponse);
@@ -251,7 +254,7 @@ public class TestPlainClient {
 
     @Test public void fetch_throws_except_for_200_304_or_404() {
         FetchResponse mockResponse = mock(FetchResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockResponse.hasObject()).thenReturn(true);
             when(mockRiakClient.fetch(bucket, key, meta)).thenReturn(mockResponse);
@@ -287,7 +290,7 @@ public class TestPlainClient {
 
     @Test public void fetchAll_throws_except_for_200_304_or_404() {
         FetchResponse mockResponse = mock(FetchResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockResponse.hasObject()).thenReturn(true);
             when(mockRiakClient.fetch(bucket, key, meta)).thenReturn(mockResponse);
@@ -354,7 +357,7 @@ public class TestPlainClient {
 
     @Test public void delete_throws_except_for_204_and_404() {
         HttpResponse mockResponse = mock(HttpResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockRiakClient.delete(bucket, key, meta)).thenReturn(mockResponse);
             boolean threw = true;
@@ -370,7 +373,7 @@ public class TestPlainClient {
 
     @Test public void walk_throws_except_for_200_and_404() {
         WalkResponse mockResponse = mock(WalkResponse.class);
-        for (int i = 200; i < 600; i++) {
+        for (int i : HTTP_STATUSES) {
             when(mockResponse.getStatusCode()).thenReturn(i);
             when(mockResponse.hasSteps()).thenReturn(true);
             when(mockRiakClient.walk(bucket, key, walkSpec, meta)).thenReturn(mockResponse);
