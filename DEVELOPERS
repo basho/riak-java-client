@@ -29,9 +29,13 @@ The most important classes are:
 A typical fetch for an object from the Raw interface is handled as follows:
 
 1.  User calls `RawClient.fetch(...)`
+
 2.  Calls `ClientHelper.fetch(...)` which builds the `HttpMethod`
+
 3.  Calls `ClientHelper.executeMethod(...)` which executes the method and fetches the response with `getResponseBodyAsString()`
+
 4.  `RawClient.fetch(...)` constructs a `RawFetchResponse` from the response
+
 5.  `RawFetchResponse` parses the response and constructs a `RawObject`
 
 The other operations follow the same basic flow: Client -> ClientHelper -> Response.
