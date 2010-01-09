@@ -13,7 +13,7 @@
  */
 package com.basho.riak.client.response;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.basho.riak.client.RiakObject;
 
@@ -39,7 +39,7 @@ public interface FetchResponse extends HttpResponse {
     public boolean hasSiblings();
 
     /**
-     * Returns a list of the Riak objects contained in the response.
+     * Returns a collection of the Riak objects contained in the response.
      */
-    public List<? extends RiakObject> getSiblings();
+    public Collection<? extends RiakObject> getSiblings();
 }

@@ -16,6 +16,7 @@ package com.basho.riak.client.raw;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -121,7 +122,7 @@ public class RawFetchResponse extends HttpResponseDecorator implements FetchResp
         return getSiblings().size() > 0;
     }
 
-    public List<RawObject> getSiblings() {
+    public Collection<RawObject> getSiblings() {
         return siblings;
     }
 

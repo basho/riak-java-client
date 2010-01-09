@@ -6,7 +6,9 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -104,12 +106,12 @@ public class TestRawFetchResponse {
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
         RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
-        List<RawObject> siblings = impl.getSiblings();
-        
         assertTrue(impl.hasSiblings());
 
+        Iterator<RawObject> siblings = impl.getSiblings().iterator();
+
         RawObject o;
-        o = siblings.get(0);
+        o = siblings.next();
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
@@ -120,7 +122,7 @@ public class TestRawFetchResponse {
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
 
-        o = siblings.get(1);
+        o = siblings.next();
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("application/octect-stream", o.getContentType());
@@ -179,13 +181,14 @@ public class TestRawFetchResponse {
         when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(is);
         
         RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
-        List<RawObject> siblings = impl.getSiblings();
-       
         assertTrue(impl.hasSiblings());
+
         verify(mockHttpMethod).releaseConnection();
+
+        Iterator<RawObject> siblings = impl.getSiblings().iterator();
  
         RawObject o;
-        o = siblings.get(0);
+        o = siblings.next();
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
@@ -196,7 +199,7 @@ public class TestRawFetchResponse {
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
 
-        o = siblings.get(1);
+        o = siblings.next();
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("application/octect-stream", o.getContentType());
