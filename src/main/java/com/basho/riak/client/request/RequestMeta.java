@@ -75,8 +75,9 @@ public class RequestMeta {
      * @param value
      *            header value
      */
-    public void setHeader(String key, String value) {
+    public RequestMeta setHeader(String key, String value) {
         headers.put(key, value);
+        return this;
     }
 
     /**
@@ -123,8 +124,9 @@ public class RequestMeta {
      * @param value
      *            query parameter value
      */
-    public void setQueryParam(String param, String value) {
+    public RequestMeta setQueryParam(String param, String value) {
         queryParams.put(param, value);
+        return this;
     }
 
     /**
