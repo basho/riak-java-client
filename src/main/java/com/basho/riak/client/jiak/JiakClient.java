@@ -15,6 +15,7 @@ package com.basho.riak.client.jiak;
 
 import java.io.IOException;
 
+import org.apache.commons.httpclient.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -181,5 +182,10 @@ public class JiakClient implements RiakClient {
      */
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);
+    }
+
+    /** Return the {@link HttpClient} used to make requests, which can be configured. */
+    public HttpClient getHttpClient() {
+        return helper.getHttpClient();
     }
 }

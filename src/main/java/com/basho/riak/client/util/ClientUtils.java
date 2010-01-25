@@ -72,7 +72,10 @@ public class ClientUtils {
         if (config.getTimeout() != null) {
             cp.setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, config.getTimeout());
         }
-
+        if (config.getRetryHandler() != null) {
+            cp.setParameter(HttpClientParams.RETRY_HANDLER, config.getRetryHandler());
+        }
+        
         return http;
     }
 

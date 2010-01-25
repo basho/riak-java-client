@@ -15,6 +15,7 @@ package com.basho.riak.client.raw;
 
 import java.io.IOException;
 
+import org.apache.commons.httpclient.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -208,6 +209,11 @@ public class RawClient implements RiakClient {
      */
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);
+    }
+
+    /** Return the {@link HttpClient} used to make requests, which can be configured. */
+    public HttpClient getHttpClient() {
+        return helper.getHttpClient();
     }
 
     // Encapsulate response creation so it can be stubbed for testing

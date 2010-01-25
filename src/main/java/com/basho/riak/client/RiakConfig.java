@@ -13,6 +13,7 @@
 package com.basho.riak.client;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
 
 /**
  * Configuration settings for connecting to a Riak instance including the URL
@@ -25,6 +26,7 @@ public class RiakConfig {
     private HttpClient httpClient = null;
     private Long timeout = null;
     private Integer maxConnections = null;
+    private HttpMethodRetryHandler retryHandler = null;
 
     public RiakConfig() {}
 
@@ -96,5 +98,19 @@ public class RiakConfig {
 
     public void setMaxConnections(Integer maxConnections) {
         this.maxConnections = maxConnections;
+    }
+    
+    /**
+     * Value to set for the HttpClientParams.RETRY_HANDLER property: 
+     * the default retry handler for requests.
+     * 
+     * @see DefaultHttpMethodRetryHandler
+     */
+    public HttpMethodRetryHandler getRetryHandler() {
+        return retryHandler;
+    }
+
+    public void setRetryHandler(HttpMethodRetryHandler retryHandler) {
+        this.retryHandler = retryHandler;
     }
 }

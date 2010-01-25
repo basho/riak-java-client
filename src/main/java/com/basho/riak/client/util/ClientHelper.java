@@ -228,6 +228,11 @@ public class ClientHelper {
             throw e;
     }
 
+    /** Return the {@link HttpClient} used to make requests, which can be configured. */
+    public HttpClient getHttpClient() {
+        return httpClient;
+    }
+
     /**
      * @return The config used to construct the HttpClient connecting to Riak.
      */

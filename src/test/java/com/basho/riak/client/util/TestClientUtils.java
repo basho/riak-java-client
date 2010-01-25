@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodRetryHandler;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +44,15 @@ public class TestClientUtils {
         assertEquals(timeout, httpClient.getParams().getConnectionManagerTimeout());
     }
     
+    @Test public void newHttpClient_sets_retry_handler() {
+        final HttpMethodRetryHandler handler = mock(HttpMethodRetryHandler.class);
+        config.setRetryHandler(handler);
+        
+        HttpClient httpClient = ClientUtils.newHttpClient(config);
+        
+        assertSame(handler, httpClient.getParams().getParameter(HttpClientParams.RETRY_HANDLER));
+    }
+
     @Test public void makeURI_url_encodes_bucket() {
         String url = ClientUtils.makeURI(config, "/");
         assertTrue("Expected bucket to be encoded as %2F in URL" + url, url.endsWith("/%2F"));
