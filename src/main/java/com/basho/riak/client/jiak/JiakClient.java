@@ -92,7 +92,10 @@ public class JiakClient implements RiakClient {
 
         // Ask Jiak to return the object that was just stored so we can get the
         // updated metadata.
-        meta.setQueryParam(Constants.QP_RETURN_BODY, "true");
+        if (meta.getQueryParam(Constants.QP_RETURN_BODY) == null) {
+            meta.setQueryParam(Constants.QP_RETURN_BODY, "true");
+        }
+        
         HttpResponse r = helper.store(object, meta);
         try {
             return new JiakStoreResponse(r);

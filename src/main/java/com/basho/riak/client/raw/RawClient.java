@@ -82,8 +82,6 @@ public class RawClient implements RiakClient {
         return listBucket(bucket, null);
     }
 
-    // Sends the object's link, user-defined metadata and vclock as HTTP headers
-    // and the value as the body
     public RawStoreResponse store(RiakObject object, RequestMeta meta) {
         HttpResponse r = helper.store(object, meta);
         return new RawStoreResponse(r);
@@ -211,7 +209,10 @@ public class RawClient implements RiakClient {
         helper.setExceptionHandler(exceptionHandler);
     }
 
-    /** Return the {@link HttpClient} used to make requests, which can be configured. */
+    /**
+     * Return the {@link HttpClient} used to make requests, which can be
+     * configured.
+     */
     public HttpClient getHttpClient() {
         return helper.getHttpClient();
     }

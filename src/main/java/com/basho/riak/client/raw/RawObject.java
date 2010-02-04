@@ -15,6 +15,7 @@ package com.basho.riak.client.raw;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,8 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.util.DateParseException;
+import org.apache.commons.httpclient.util.DateUtil;
 
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
@@ -199,6 +202,18 @@ public class RawObject implements RiakObject {
         return lastmod;
     }
 
+    /**
+     * Convenience method to get the last modified header parsed into a Date
+     * object. Returns null if header is null, malformed, or cannot be parsed.
+     */
+    public Date getLastmodAsDate() {
+        try {
+            return DateUtil.parseDate(lastmod);
+        } catch (DateParseException e) {
+            return null;
+        }
+    }
+
     public String getVtag() {
         return vtag;
     }
@@ -237,6 +252,8 @@ public class RawObject implements RiakObject {
         return valueStreamLength;
     }
 
+    // Sends the object's link, user-defined metadata and vclock as HTTP headers
+    // and the value as the body
     public void writeToHttpMethod(HttpMethod httpMethod) {
         // Serialize headers
         String basePath = getBasePathFromHttpMethod(httpMethod);

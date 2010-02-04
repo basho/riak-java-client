@@ -132,11 +132,15 @@ public class JiakObject implements RiakObject {
     }
 
     public void updateMeta(StoreResponse response) {
-        if (response == null)
-            return;
-        vclock = response.getVclock();
-        lastmod = response.getLastmod();
-        vtag = response.getVtag();
+        if (response == null) {
+            vclock = null;
+            lastmod = null;
+            vtag = null;
+        } else {
+            vclock = response.getVclock();
+            lastmod = response.getLastmod();
+            vtag = response.getVtag();
+        }
     }
 
     public String getBucket() {
