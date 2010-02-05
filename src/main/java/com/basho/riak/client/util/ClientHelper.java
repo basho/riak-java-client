@@ -277,9 +277,9 @@ public class ClientHelper {
             }
 
             String queryParams = meta.getQueryParams();
-            if (queryParams != null && !queryParams.isEmpty()) {
+            if (queryParams != null && (queryParams.length() != 0)) {
                 String currentQuery = httpMethod.getQueryString();
-                if (currentQuery != null && !currentQuery.isEmpty()) {
+                if (currentQuery != null && (currentQuery.length() != 0)) {
                     httpMethod.setQueryString(currentQuery + "&" + queryParams);
                 } else {
                     httpMethod.setQueryString(queryParams);

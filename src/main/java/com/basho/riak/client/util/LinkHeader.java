@@ -64,7 +64,7 @@ public class LinkHeader {
     public static Map<String, Map<String, String>> parse(String header) {
         Map<String, Map<String, String>> out = new LinkedHashMap<String, Map<String, String>>();
 
-        if (header == null || header.isEmpty())
+        if (header == null || header.length() == 0)
             return out;
 
         Matcher m = LINK_SPLITTER.matcher(header);
