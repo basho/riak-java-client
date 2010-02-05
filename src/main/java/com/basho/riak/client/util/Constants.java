@@ -60,6 +60,10 @@ public interface Constants {
     public static String HDR_LINK = "link";
     public static String HDR_LOCATION = "location";
     public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
+    // Works around mochiweb issue with metadata header length and case.
+    // if x-riak-meta + client_meta_header is longer than 21 chars it won't
+    // be returned by mochiweb/webmachine.
+    public static String HDR_USERMETA_REQ_PREFIX = "X-Riak-Meta-";
     public static String HDR_VCLOCK = "x-riak-vclock";
 
     // Content types used in Riak

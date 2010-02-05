@@ -278,7 +278,7 @@ public class RawObject implements RiakObject {
             httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
         }
         for (String name : usermeta.keySet()) {
-            httpMethod.setRequestHeader(Constants.HDR_USERMETA_PREFIX + name, usermeta.get(name));
+            httpMethod.setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, usermeta.get(name));
         }
         if (vclock != null) {
             httpMethod.setRequestHeader(Constants.HDR_VCLOCK, vclock);

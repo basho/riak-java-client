@@ -191,7 +191,7 @@ public class TestRawObject {
         impl.getUsermeta().put("k", "v");
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).setRequestHeader(Constants.HDR_USERMETA_PREFIX + "k", "v");
+        verify(mockHttpMethod).setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + "k", "v");
     }
 
     @Test public void write_to_http_method_doesnt_sets_user_meta_headers_if_no_usermeta() {
@@ -199,7 +199,7 @@ public class TestRawObject {
 
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod, never()).setRequestHeader(contains(Constants.HDR_USERMETA_PREFIX), anyString());
+        verify(mockHttpMethod, never()).setRequestHeader(contains(Constants.HDR_USERMETA_REQ_PREFIX), anyString());
     }
 
     @Test public void write_to_http_method_sets_vclock() {
