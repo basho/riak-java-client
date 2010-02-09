@@ -39,7 +39,11 @@ import com.basho.riak.client.util.Constants;
 public class RawClient implements RiakClient {
 
     private ClientHelper helper;
-
+    
+    public RiakConfig getConfig() {
+        return helper.getConfig();
+    }
+    
     public RawClient(RiakConfig config) {
         helper = new ClientHelper(config);
     }

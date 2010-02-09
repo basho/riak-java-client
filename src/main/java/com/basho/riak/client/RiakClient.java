@@ -235,5 +235,10 @@ public interface RiakClient {
     public WalkResponse walk(String bucket, String key, String walkSpec);
 
     public WalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec);
+    
+    /**
+     * Provides callers with access to configuration info for this client.
+     */
+    public RiakConfig getConfig();
 
 }

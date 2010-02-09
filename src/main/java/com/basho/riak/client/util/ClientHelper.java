@@ -236,7 +236,7 @@ public class ClientHelper {
     /**
      * @return The config used to construct the HttpClient connecting to Riak.
      */
-    RiakConfig getConfig() {
+    public RiakConfig getConfig() {
         return config;
     }
 

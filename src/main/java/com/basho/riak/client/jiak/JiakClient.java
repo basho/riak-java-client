@@ -39,6 +39,10 @@ public class JiakClient implements RiakClient {
 
     private ClientHelper helper;
 
+    public RiakConfig getConfig() {
+        return helper.getConfig();
+    }
+    
     public JiakClient(RiakConfig config) {
         helper = new ClientHelper(config);
     }
