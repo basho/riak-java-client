@@ -1,8 +1,10 @@
 package com.basho.riak.client.mapreduce;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -21,11 +23,12 @@ public class MapReduceBuilder {
    
    private static enum Types {
       MAP,
-      REDUCE
+      REDUCE,
+      LINK
    }
    
    private String bucket = null;
-   private List<String[]> objects = new LinkedList<String[]>();
+   private Map<String, List<String>> objects = new HashMap<String, List<String>>();
    private List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
    private int timeout = -1;
    
@@ -46,7 +49,7 @@ public class MapReduceBuilder {
     * @throws IllegalStateException - If objects have already been added to the job
     */
    public void setBucket(String newBucket) {
-      if (this.phases.size() > 0) {
+      if (this.objects.size() > 0) {
          throw new IllegalStateException("Cannot map/reduce over buckets and objects");
       }
       this.bucket = newBucket;
@@ -61,9 +64,16 @@ public class MapReduceBuilder {
       if (this.bucket != null) {
          throw new IllegalStateException("Cannot map/reduce over buckets and objects");
       }
-      String[] pair = {bucket, key};
-      if (!this.objects.contains(pair)) {
-         this.objects.add(pair);
+      List<String> keys = this.objects.get(bucket);
+      if (keys != null) {
+         if (!keys.contains(key)) {
+            keys.add(key);
+         }
+      }
+      else {
+         keys = new LinkedList<String>();
+         keys.add(key);
+         this.objects.put(bucket, keys);
       }
    }
    
@@ -71,16 +81,21 @@ public class MapReduceBuilder {
     * Removes a Riak object (bucket name/key pair) for the job's input list
     */
    public void removeRiakObject(String bucket, String key) {
-      String[] pair = {bucket, key};
-      this.objects.remove(pair);
+      List<String> keys = this.objects.get(bucket);
+      if (keys != null) {
+         keys.remove(key);
+         if (keys.size() == 0) {
+            this.objects.remove(bucket);
+         }
+      }
    }
    
    /**
     * Returns a copy of the Riak objects on the input list for
     * a map/reduce job
     */
-   public List<String[]> getRiakObjects() {
-      return new LinkedList<String[]>(this.objects);
+   public Map<String, List<String>> getRiakObjects() {
+      return new HashMap<String, List<String>>(this.objects);
    }
 
    /**
@@ -130,6 +145,16 @@ public class MapReduceBuilder {
       this.addPhase(MapReduceBuilder.Types.REDUCE, function, keep);
       return this;
    }
+   
+   public MapReduceBuilder link(String bucket, boolean keep) {
+      this.addPhase(MapReduceBuilder.Types.LINK, new LinkFunction(bucket), keep);
+      return this;
+   }
+   
+   public MapReduceBuilder link(String bucket, String key, boolean keep) {
+      this.addPhase(MapReduceBuilder.Types.LINK, new LinkFunction(bucket, key), keep);
+      return this;
+   }
 
    /**
     * Submits the job to the Riak server
@@ -145,17 +170,10 @@ public class MapReduceBuilder {
             method.getResponseBodyAsString());
    }
    
-   private MapReduceBuilder addPhase(Types phaseType, MapReduceFunction function, boolean keep) {
-      MapReducePhase phase = new MapReducePhase();
-      phase.type = phaseType;
-      phase.function = function;
-      phase.keep = keep;
-      phases.add(phase);
-      return this;
-   }
-
-   
-   private JSONObject toJSON() throws JSONException {
+   /**
+    * Builds the JSON representation of a map/reduce job
+    */
+   public JSONObject toJSON() throws JSONException {
       JSONObject job = new JSONObject();
       JSONArray query = new JSONArray();
       for(MapReducePhase phase : this.phases) {
@@ -169,12 +187,29 @@ public class MapReduceBuilder {
       return job;
    }
    
+   private MapReduceBuilder addPhase(Types phaseType, MapReduceFunction function, boolean keep) {
+      MapReducePhase phase = new MapReducePhase();
+      phase.type = phaseType;
+      phase.function = function;
+      phase.keep = keep;
+      phases.add(phase);
+      return this;
+   }
+   
    private void buildInputs(JSONObject job) throws JSONException {
       if (this.bucket != null) {
          job.put("inputs", this.bucket);
       }
       else {
-         job.put("inputs", this.objects);
+         JSONArray inputs = new JSONArray();
+         for(String bucket : this.objects.keySet()) {
+            List<String> keys = this.objects.get(bucket);
+            for(String key : keys) {
+               String[] pair = {bucket, key};
+               inputs.put(pair);
+            }
+         }
+         job.put("inputs", inputs);
       }
    }
    
@@ -182,12 +217,19 @@ public class MapReduceBuilder {
       JSONObject phaseJson = new JSONObject();
       JSONObject functionJson = phase.function.toJson();
       functionJson.put("keep", phase.keep);
-      if (phase.type.equals(Types.MAP)) {
-         phaseJson.put("map", functionJson);
+      String type = null;
+      switch(phase.type) {
+         case MAP:
+            type = "map";
+            break;
+         case REDUCE:
+            type = "reduce";
+            break;
+         case LINK:
+            type = "link";
+            break;
       }
-      else {
-         phaseJson.put("reduce", functionJson);
-      }
+      phaseJson.put(type, functionJson);
       query.put(phaseJson);
    }
    

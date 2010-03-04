@@ -28,9 +28,9 @@ public class ErlangFunction implements MapReduceFunction {
     */
    public JSONObject toJson() throws JSONException {
       JSONObject retval = new JSONObject();
-      retval.append("language", "erlang");
-      retval.append("module", this.module);
-      retval.append("function", this.function);
+      retval.put("language", "erlang");
+      retval.put("module", this.module);
+      retval.put("function", this.function);
       return retval;
    }
 
