@@ -18,6 +18,7 @@ public class Tester {
       MapReduceResponse response = builder.submit(mapredClient);
       if (response.isSuccess()) {
          JSONArray results = response.getParsedBody();
+         System.out.println(results.get(0));
       }
    }
 }

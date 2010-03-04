@@ -22,7 +22,7 @@ public class MapReduceBuilder {
    }
    
    private String bucket = null;
-   private List<RiakObject> objects = new LinkedList<RiakObject>();
+   private List<String[]> objects = new LinkedList<String[]>();
    private List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
    private int timeout = -1;
    
@@ -34,21 +34,23 @@ public class MapReduceBuilder {
       this.bucket = newBucket;
    }
    
-   public void addRiakObject(RiakObject newObject) {
+   public void addRiakObject(String bucket, String key) {
       if (this.bucket != null) {
          throw new IllegalStateException("Cannot map/reduce over buckets and objects");
       }
-      if (!this.objects.contains(newObject)) {
-         this.objects.add(newObject);
+      String[] pair = {bucket, key};
+      if (!this.objects.contains(pair)) {
+         this.objects.add(pair);
       }
    }
    
-   public void removeRiakObject(RiakObject oldObject) {
-      this.objects.remove(oldObject);
+   public void removeRiakObject(String bucket, String key) {
+      String[] pair = {bucket, key};
+      this.objects.remove(pair);
    }
    
-   public List<RiakObject> getRiakObjects() {
-      return new LinkedList<RiakObject>(this.objects);
+   public List<String[]> getRiakObjects() {
+      return new LinkedList<String[]>(this.objects);
    }
    
    public void clearRiakObjects() {
@@ -109,14 +111,7 @@ public class MapReduceBuilder {
          job.put("inputs", this.bucket);
       }
       else {
-         List<String[]> bkPairs = new LinkedList<String[]>(); 
-         for(RiakObject object : this.objects) {
-            String bucket = object.getBucket();
-            String key = object.getKey();
-            String[] pair = {bucket, key};
-            bkPairs.add(pair);
-         }
-         job.put("inputs", bkPairs);
+         job.put("inputs", this.objects);
       }
    }
    
