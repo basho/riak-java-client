@@ -367,6 +367,14 @@ public class RiakClient {
         return walk(bucket, key, walkSpec.toString(), null);
     }
     
+    /**
+     * Wrapper for sending a job (aka blob of JSON) to the Riak server
+     * via POST. This is used by the map/reduce interface.
+     * @param job JSON String to submit
+     * @return
+     * @throws HttpException
+     * @throws IOException
+     */
     @SuppressWarnings("deprecation")
    public PostMethod sendJob(String job) throws HttpException, IOException {
        PostMethod post = new PostMethod(this.getConfig().getUrl());
