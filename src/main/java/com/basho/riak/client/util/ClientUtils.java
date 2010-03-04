@@ -234,6 +234,19 @@ public class ClientUtils {
         }
         return l;
     }
+    
+    public static String join(String[] arr, String delimiter) {
+        String res = null;
+        if (arr == null || arr.length == 0)
+            return res;
+        
+        res = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            res += delimiter + arr[i];
+        }
+        
+        return res;
+    }
 
     /**
      * Copies data from an {@link InputStream} to an {@link OutputStream} in

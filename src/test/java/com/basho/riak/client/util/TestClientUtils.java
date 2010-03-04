@@ -288,6 +288,26 @@ public class TestClientUtils {
         List<RiakObject> objects = ClientUtils.parseMultipart("b", "k", headers, body);
         assertEquals("foo", objects.get(0).getValue());
     }
+    
+    @Test public void join_handles_null_array() {
+        assertNull(ClientUtils.join(null, null));
+    }
+
+    @Test public void join_handles_empty_array() {
+        assertNull(ClientUtils.join(new String[0], null));
+    }
+
+    @Test public void join_handles_one_element_array() {
+        assertEquals("x", ClientUtils.join(new String[] {"x"}, ","));
+    }
+
+    @Test public void join_handles_one_multielement_array() {
+        assertEquals("x,y,z", ClientUtils.join(new String[] {"x", "y", "z"}, ","));
+    }
+
+    @Test public void join_handles_one_multicharacter_delimiter() {
+        assertEquals("x//y//z", ClientUtils.join(new String[] {"x", "y", "z"}, "//"));
+    }
 
     // Rely on Multipart tests to verify that multipart parsing actually works
 }

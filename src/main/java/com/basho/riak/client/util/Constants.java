@@ -38,6 +38,10 @@ public interface Constants {
     public static String HDR_CONTENT_LENGTH = "content-length";
     public static String HDR_CONTENT_TYPE = "content-type";
     public static String HDR_ETAG = "etag";
+    public static String HDR_IF_MATCH = "if-match";
+    public static String HDR_IF_MODIFIED_SINCE = "if-modified-since";
+    public static String HDR_IF_UNMODIFIED_SINCE = "if-unmodified-since";
+    public static String HDR_IF_NONE_MATCH = "if-none-match";
     public static String HDR_LAST_MODIFIED = "last-modified";
     public static String HDR_LINK = "link";
     public static String HDR_LOCATION = "location";

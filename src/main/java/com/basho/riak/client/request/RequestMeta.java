@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.httpclient.util.DateUtil;
+
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -69,38 +72,47 @@ public class RequestMeta {
     }
     
     public RequestMeta ifModifiedSince(String lastmod) { 
+        setHeader(Constants.HDR_IF_MODIFIED_SINCE, lastmod);
         return this;
     }
 
     public RequestMeta ifModifiedSince(Date lastmod) { 
+        setHeader(Constants.HDR_IF_MODIFIED_SINCE, DateUtil.formatDate(lastmod));
         return this;
     }
 
     public RequestMeta ifUnmodifiedSince(String lastmod) { 
+        setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, lastmod);
         return this;
     }
 
     public RequestMeta ifUnmodifiedSince(Date lastmod) { 
+        setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, DateUtil.formatDate(lastmod));
         return this;
     }
 
     public RequestMeta ifMatch(String etags) { 
+        setHeader(Constants.HDR_IF_MATCH, etags);
         return this;
     }
     
     public RequestMeta ifMatch(String[] etags) { 
+        setHeader(Constants.HDR_IF_MATCH, ClientUtils.join(etags, ","));
         return this;
     }
 
     public RequestMeta ifNoneMatch(String etags) { 
+        setHeader(Constants.HDR_IF_NONE_MATCH, etags);
         return this;
     }
 
     public RequestMeta ifNoneMatch(String[] etags) { 
+        setHeader(Constants.HDR_IF_NONE_MATCH, ClientUtils.join(etags, ","));
         return this;
     }
     
-    public RequestMeta accept(String contentTypes) { 
+    public RequestMeta accept(String contentTypes) {
+        setHeader(Constants.HDR_ACCEPT, contentTypes);
         return this;
     }
 
