@@ -15,26 +15,47 @@ package com.basho.riak.client;
 
 import java.io.IOException;
 
-import com.basho.riak.client.jiak.JiakClient;
-import com.basho.riak.client.raw.RawClient;
+import org.apache.commons.httpclient.HttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
+import com.basho.riak.client.util.ClientHelper;
+import com.basho.riak.client.util.Constants;
 
 /**
- * Primary interface for interacting with Riak via HTTP. See {@link JiakClient}
- * to use the JSON interface and {@link RawClient} to use the Raw interface. The
- * implementations contain other interface-specific methods for interacting with
- * Riak (e.g. {@link RawClient#stream(String, String, RequestMeta)}).
+ * Primary interface for interacting with Riak via HTTP.
  */
-public interface RiakClient {
+public class RiakClient {
+
+    private ClientHelper helper;
+
+    public RiakConfig getConfig() {
+        return helper.getConfig();
+    }
+
+    public RiakClient(RiakConfig config) {
+        helper = new ClientHelper(config);
+    }
+
+    public RiakClient(String url) {
+        helper = new ClientHelper(new RiakConfig(url));
+    }
+
+    // Package protected constructor used for testing
+    RiakClient(ClientHelper helper) {
+        this.helper = helper;
+    }
 
     /**
      * Set the schema describing the structure and per-field permissions for a
@@ -43,10 +64,9 @@ public interface RiakClient {
      * @param bucket
      *            The bucket name.
      * @param bucketInfo
-     *            Contains the schema to use for the bucket. Refer to the
-     *            documentation for a specific Riak interface (i.e. Jiak, Raw)
-     *            for a list of the recognized schema properties and the format
-     *            of their values.
+     *            Contains the schema to use for the bucket. Refer to the Riak
+     *            documentation for a list of the recognized schema properties
+     *            and the format of their values.
      * @param meta
      *            Extra metadata to attach to the request such as HTTP headers
      *            and query parameters.
@@ -59,9 +79,20 @@ public interface RiakClient {
      * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
      */
-    public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta);
+    public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta) {
+        JSONObject schema = null;
+        try {
+            schema = new JSONObject().put(Constants.FL_SCHEMA, bucketInfo.getSchema());
+        } catch (JSONException unreached) {
+            throw new IllegalStateException("wrapping valid json should be valid", unreached);
+        }
 
-    public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo);
+        return helper.setBucketSchema(bucket, schema, meta);
+    }
+
+    public HttpResponse setBucketSchema(String bucket, RiakBucketInfo bucketInfo) {
+        return setBucketSchema(bucket, bucketInfo, null);
+    }
 
     /**
      * Return the schema and keys for a Riak bucket.
@@ -80,9 +111,19 @@ public interface RiakClient {
      * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
-    public BucketResponse listBucket(String bucket, RequestMeta meta);
+    public BucketResponse listBucket(String bucket, RequestMeta meta) {
+        HttpResponse r = helper.listBucket(bucket, meta);
+        try {
+            return getBucketResponse(r);
+        } catch (JSONException e) {
+            helper.toss(new RiakResponseRuntimeException(r, e));
+            return null;
+        }
+    }
 
-    public BucketResponse listBucket(String bucket);
+    public BucketResponse listBucket(String bucket) {
+        return listBucket(bucket, null);
+    }
 
     /**
      * Store a {@link RiakObject}.
@@ -104,9 +145,14 @@ public interface RiakClient {
      * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
-    public StoreResponse store(RiakObject object, RequestMeta meta);
+    public StoreResponse store(RiakObject object, RequestMeta meta) {
+        HttpResponse r = helper.store(object, meta);
+        return new StoreResponse(r);
+    }
 
-    public StoreResponse store(RiakObject object);
+    public StoreResponse store(RiakObject object) {
+        return store(object, null);
+    }
 
     /**
      * Fetch metadata (e.g. vclock, last modified, vtag) for the
@@ -129,13 +175,21 @@ public interface RiakClient {
      * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
-    public FetchResponse fetchMeta(String bucket, String key, RequestMeta meta);
+    public FetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
+        try {
+            return getFetchResponse(helper.fetchMeta(bucket, key, meta));
+        } catch (RiakResponseRuntimeException e) {
+            return new FetchResponse(helper.toss(e));
+        }
+    }
 
-    public FetchResponse fetchMeta(String bucket, String key);
+    public FetchResponse fetchMeta(String bucket, String key) {
+        return fetchMeta(bucket, key, null);
+    }
 
     /**
-     * Fetch the {@link RiakObject} stored at <code>bucket</code> and
-     * <code>key</code>.
+     * Fetch the {@link RiakObject} (which can include sibling objects) stored
+     * at <code>bucket</code> and <code>key</code>.
      * 
      * @param bucket
      *            The bucket containing the {@link RiakObject} to fetch.
@@ -154,9 +208,66 @@ public interface RiakClient {
      * @throws RiakResponseRuntimeException
      *             If the Riak server returns a malformed response.
      */
-    public FetchResponse fetch(String bucket, String key, RequestMeta meta);
+    public FetchResponse fetch(String bucket, String key, RequestMeta meta) {
+        return fetch(bucket, key, meta, false);
+    }
 
-    public FetchResponse fetch(String bucket, String key);
+    public FetchResponse fetch(String bucket, String key) {
+        return fetch(bucket, key, null, false);
+    }
+
+    /**
+     * Similar to fetch(), except the HTTP connection is left open for
+     * successful 2xx responses, and the Riak response is provided as a stream.
+     * The user must remember to call FetchResponse.close() on the return value.
+     * 
+     * Sibling responses (status code 300) must be read before parsing, so they
+     * are not streamed. Therefore stream() is identical to fetch(), except that
+     * getBody() returns null.
+     * 
+     * @param bucket
+     *            The bucket containing the {@link RiakObject} to fetch.
+     * @param key
+     *            The key of the {@link RiakObject} to fetch.
+     * @param meta
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
+     * 
+     * @return A streaming {@link FetchResponse} containing HTTP response
+     *         information and the response stream. The HTTP connection must be
+     *         closed manually by the user by calling
+     *         {@link FetchResponse#close()}.
+     */
+    public FetchResponse stream(String bucket, String key, RequestMeta meta) {
+        return fetch(bucket, key, meta, true);
+    }
+
+    public FetchResponse stream(String bucket, String key) {
+        return fetch(bucket, key, null, true);
+    }
+
+    FetchResponse fetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+
+        String accept = meta.getHeader(Constants.HDR_ACCEPT);
+        if (accept == null) {
+            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        } else {
+            meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        }
+
+        HttpResponse r = helper.fetch(bucket, key, meta, streamResponse);
+
+        try {
+            return getFetchResponse(r);
+        } catch (RiakResponseRuntimeException e) {
+            return new FetchResponse(helper.toss(e));
+        }
+
+    }
 
     /**
      * Fetch and process the object stored at <code>bucket</code> and
@@ -180,7 +291,9 @@ public interface RiakClient {
      * 
      * @see StreamHandler
      */
-    public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException;
+    public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
+        return helper.stream(bucket, key, handler, meta);
+    }
 
     /**
      * Delete the object at <code>bucket</code> and <code>key</code>.
@@ -200,9 +313,13 @@ public interface RiakClient {
      * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
      */
-    public HttpResponse delete(String bucket, String key, RequestMeta meta);
+    public HttpResponse delete(String bucket, String key, RequestMeta meta) {
+        return helper.delete(bucket, key, meta);
+    }
 
-    public HttpResponse delete(String bucket, String key);
+    public HttpResponse delete(String bucket, String key) {
+        return delete(bucket, key, null);
+    }
 
     /**
      * Perform a map/reduce link walking operation and return the objects for
@@ -230,15 +347,60 @@ public interface RiakClient {
      * 
      * @see RiakWalkSpec
      */
-    public WalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta);
+    public WalkResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
+        HttpResponse r = helper.walk(bucket, key, walkSpec, meta);
 
-    public WalkResponse walk(String bucket, String key, String walkSpec);
+        try {
+            return getWalkResponse(r);
+        } catch (RiakResponseRuntimeException e) {
+            return new WalkResponse(helper.toss(e));
+        }
+    }
 
-    public WalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec);
-    
+    public WalkResponse walk(String bucket, String key, String walkSpec) {
+        return walk(bucket, key, walkSpec, null);
+    }
+
+    public WalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
+        return walk(bucket, key, walkSpec.toString(), null);
+    }
+
     /**
-     * Provides callers with access to configuration info for this client.
+     * The installed exception handler or null if not installed
      */
-    public RiakConfig getConfig();
+    public RiakExceptionHandler getExceptionHandler() {
+        return helper.getExceptionHandler();
+    }
 
+    /**
+     * If an exception handler is provided, then the Riak client will hand
+     * exceptions to the handler rather than throwing them. The exceptionHandler
+     * can use ClientUtils.throwChecked() to throw undeclared checked exceptions
+     * in order to convert RiakClient's unchecked exceptions to checked ones, if
+     * desired.
+     */
+    public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
+        helper.setExceptionHandler(exceptionHandler);
+    }
+
+    /**
+     * Return the {@link HttpClient} used to make requests, which can be
+     * configured.
+     */
+    public HttpClient getHttpClient() {
+        return helper.getHttpClient();
+    }
+
+    // Encapsulate response creation so it can be stubbed for testing
+    BucketResponse getBucketResponse(HttpResponse r) throws JSONException {
+        return new BucketResponse(r);
+    }
+
+    FetchResponse getFetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
+        return new FetchResponse(r);
+    }
+
+    WalkResponse getWalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
+        return new WalkResponse(r);
+    }
 }

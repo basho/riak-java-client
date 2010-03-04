@@ -34,7 +34,7 @@ import java.util.Iterator;
  * @author JSON.org
  * @version 2008-11-20
  */
-public class JSONML {
+@SuppressWarnings("unchecked") public class JSONML {
 		
     /**
      * Parse XML values and store them in a JSONArray.

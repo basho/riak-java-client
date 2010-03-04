@@ -30,7 +30,7 @@ SOFTWARE.
  * @author JSON.org
  * @version 2010-01-30
  */
-public class XMLTokener extends JSONTokener {
+@SuppressWarnings("unchecked") public class XMLTokener extends JSONTokener {
 
 
    /** The table of entity values. It initially contains Character values for

@@ -15,41 +15,23 @@ package com.basho.riak.client.util;
 
 public interface Constants {
 
-    // Default URL path prefixes to Jiak and Raw interfaces
-    public static String JIAK_PREFIX = "/jiak";
-    public static String RAW_PREFIX = "/raw";
+    // Default URL path prefixes Riak HTTP interface
+    public static String RIAK_URL_PREFIX = "/riak";
 
-    // JSON fields used by Jiak
-    public static String JIAK_FL_BUCKET = "bucket";
-    public static String JIAK_FL_KEY = "key";
-    public static String JIAK_FL_LAST_MODIFIED = "lastmod";
-    public static String JIAK_FL_LINKS = "links";
-    public static String JIAK_FL_SCHEMA = "schema";
-    public static String JIAK_FL_SCHEMA_ALLOWED_FIELDS = "allowed_fields";
-    public static String JIAK_FL_SCHEMA_KEYS = "keys";
-    public static String JIAK_FL_SCHEMA_READ_MASK = "read_mask";
-    public static String JIAK_FL_SCHEMA_REQUIRED_FIELDS = "required_fields";
-    public static String JIAK_FL_SCHEMA_WRITE_MASK = "write_mask";
-    public static String JIAK_FL_VALUE = "object";
-    public static String JIAK_FL_VCLOCK = "vclock";
-    public static String JIAK_FL_VTAG = "vtag";
-    public static String JIAK_FL_USERMETA = "usermeta";
-    public static String JIAK_FL_WALK_RESULTS = "results";
+    // JSON fields used by Riak
+    public static String FL_KEYS = "keys";
+    public static String FL_SCHEMA = "props";
+    public static String FL_SCHEMA_ALLOW_MULT = "allow_mult";
+    public static String FL_SCHEMA_CHASHFUN = "chash_keyfun";
+    public static String FL_SCHEMA_CHASHFUN_MOD = "mod";
+    public static String FL_SCHEMA_CHASHFUN_FUN = "fun";
+    public static String FL_SCHEMA_LINKFUN = "linkfun";
+    public static String FL_SCHEMA_LINKFUN_MOD = "mod";
+    public static String FL_SCHEMA_LINKFUN_FUN = "fun";
+    public static String FL_SCHEMA_NVAL = "n_val";
 
-    // JSON fields used by Raw
-    public static String RAW_FL_KEYS = "keys";
-    public static String RAW_FL_SCHEMA = "props";
-    public static String RAW_FL_SCHEMA_ALLOW_MULT = "allow_mult";
-    public static String RAW_FL_SCHEMA_CHASHFUN = "chash_keyfun";
-    public static String RAW_FL_SCHEMA_CHASHFUN_MOD = "mod";
-    public static String RAW_FL_SCHEMA_CHASHFUN_FUN = "fun";
-    public static String RAW_FL_SCHEMA_LINKFUN = "linkfun";
-    public static String RAW_FL_SCHEMA_LINKFUN_MOD = "mod";
-    public static String RAW_FL_SCHEMA_LINKFUN_FUN = "fun";
-    public static String RAW_FL_SCHEMA_NVAL = "n_val";
-
-    // Header directives used by Raw
-    public static String RAW_LINK_TAG = "riaktag";
+    // Header directives used by Riak
+    public static String LINK_TAG = "riaktag";
 
     // HTTP headers used in Riak
     public static String HDR_ACCEPT = "accept";
@@ -59,12 +41,13 @@ public interface Constants {
     public static String HDR_LAST_MODIFIED = "last-modified";
     public static String HDR_LINK = "link";
     public static String HDR_LOCATION = "location";
-    public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
-    // Works around mochiweb issue with metadata header length and case.
-    // if x-riak-meta + client_meta_header is longer than 21 chars it won't
-    // be returned by mochiweb/webmachine.
-    public static String HDR_USERMETA_REQ_PREFIX = "X-Riak-Meta-";
     public static String HDR_VCLOCK = "x-riak-vclock";
+    // Declared twice because of Erlang has bizarre HTTP header case handling.
+    // If a header name is 21 chars or shorteer, it is auto-capitalized between
+    // dashes. Otherwise, it is passed as is. Therefore, we just make sure this
+    // headers prefix is correctly capitalized in requests.
+    public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
+    public static String HDR_USERMETA_REQ_PREFIX = "X-Riak-Meta-";
 
     // Content types used in Riak
     public static String CTYPE_ANY = "*/*";

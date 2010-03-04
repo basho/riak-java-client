@@ -1,4 +1,4 @@
-package com.basho.riak.client.raw;
+package com.basho.riak.client;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -19,15 +19,14 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.util.Constants;
 
-public class TestRawObject {
+public class TestRiakObject {
 
-    RawObject impl;
+    RiakObject impl;
 
     @Before public void setup() {
-        impl = new RawObject("b", "k");
+        impl = new RiakObject("b", "k");
     }
 
     @Test public void content_type_defaults_to_octet_stream() {
@@ -35,24 +34,24 @@ public class TestRawObject {
     }
 
     @Test public void links_never_null() {
-        impl = new RawObject("b", "k", null, null, null, null, null, null, null);
+        impl = new RiakObject("b", "k", null, null, null, null, null, null, null);
         assertNotNull(impl.getLinks());
 
         impl.setLinks((List<RiakLink>) null);
         assertNotNull(impl.getLinks());
 
-        impl.copyData(new RawObject(null, null));
+        impl.copyData(new RiakObject(null, null));
         assertNotNull(impl.getLinks());
     }
 
     @Test public void usermeta_never_null() {
-        impl = new RawObject("b", "k", null, null, null, null, null, null, null);
+        impl = new RiakObject("b", "k", null, null, null, null, null, null, null);
         assertNotNull(impl.getUsermeta());
 
         impl.setUsermeta((Map<String, String>) null);
         assertNotNull(impl.getUsermeta());
 
-        impl.copyData(new RawObject(null, null));
+        impl.copyData(new RiakObject(null, null));
         assertNotNull(impl.getUsermeta());
     }
 
@@ -67,7 +66,7 @@ public class TestRawObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        impl.copyData(new RawObject("b", "k2", value, ctype, links, usermeta, vclock, lastmod, vtag));
+        impl.copyData(new RiakObject("b", "k2", value, ctype, links, usermeta, vclock, lastmod, vtag));
 
         assertEquals("b", impl.getBucket());
         assertEquals("k", impl.getKey());
@@ -95,8 +94,8 @@ public class TestRawObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        impl = new RawObject("b", "k", value, ctype, links, usermeta, vclock, lastmod, vtag);
-        impl.copyData(new RawObject(null, null));
+        impl = new RiakObject("b", "k", value, ctype, links, usermeta, vclock, lastmod, vtag);
+        impl.copyData(new RiakObject(null, null));
 
         assertEquals("b", impl.getBucket());
         assertEquals("k", impl.getKey());
@@ -113,7 +112,7 @@ public class TestRawObject {
         final String lastmod = "lastmod";
         final String vtag = "vtag";
 
-        impl = new RawObject("b", "k", null, null, null, null, vclock, lastmod, vtag);
+        impl = new RiakObject("b", "k", null, null, null, null, vclock, lastmod, vtag);
         impl.updateMeta(null);
 
         assertNull(impl.getVclock());
@@ -169,12 +168,12 @@ public class TestRawObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/raw/b/k");
+        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
 
         impl.getLinks().add(link);
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).setRequestHeader(eq(Constants.HDR_LINK), contains("</raw/b/l>; riaktag=\"t\""));
+        verify(mockHttpMethod).setRequestHeader(eq(Constants.HDR_LINK), contains("</riak/b/l>; riaktag=\"t\""));
     }
 
     @Test public void write_to_http_method_doesnt_sets_link_header_if_no_links() {
@@ -206,7 +205,7 @@ public class TestRawObject {
         final String vclock = "vclock";
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
-        impl = new RawObject("b", "k", null, null, null, null, vclock, null, null);
+        impl = new RiakObject("b", "k", null, null, null, null, vclock, null, null);
         impl.writeToHttpMethod(mockHttpMethod);
 
         verify(mockHttpMethod).setRequestHeader(Constants.HDR_VCLOCK, vclock);
@@ -234,21 +233,21 @@ public class TestRawObject {
     @Test public void get_base_path_finds_one_element_base_path() {
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/raw/b/k");
-        assertEquals("/raw", impl.getBasePathFromHttpMethod(mockHttpMethod));
+        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+        assertEquals("/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 
     @Test public void get_base_path_finds_multiple_element_base_path() {
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/path/to/raw/b/k");
-        assertEquals("/path/to/raw", impl.getBasePathFromHttpMethod(mockHttpMethod));
+        when(mockHttpMethod.getPath()).thenReturn("/path/to/riak/b/k");
+        assertEquals("/path/to/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 
     @Test public void get_base_path_handles_trailing_slash() {
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/raw/b/k/");
-        assertEquals("/raw", impl.getBasePathFromHttpMethod(mockHttpMethod));
+        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k/");
+        assertEquals("/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 }

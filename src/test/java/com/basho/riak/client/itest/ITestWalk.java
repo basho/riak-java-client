@@ -8,20 +8,20 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakLink;
-import com.basho.riak.client.raw.RawClient;
-import com.basho.riak.client.raw.RawObject;
-import com.basho.riak.client.raw.RawWalkResponse;
+import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RiakWalkSpec;
+import com.basho.riak.client.response.WalkResponse;
 
-public class ITestRawWalk {
+public class ITestWalk {
     
-    public static String RAW_URL = "http://127.0.0.1:8098/raw";
+    public static String RIAK_URL = "http://127.0.0.1:8098/riak";
 
     @Test
-    public void test_raw_walk() {
-        final RawClient c = new RawClient(RAW_URL);
-        final String BUCKET = "test_raw_walk";
+    public void test_walk() {
+        final RiakClient c = new RiakClient(RIAK_URL);
+        final String BUCKET = "test_walk";
         final String ROOT = "root";
         final String LEAF1 = "leaf1";
         final String LEAF2 = "leaf2";
@@ -38,10 +38,10 @@ public class ITestRawWalk {
         assertSuccess(c.delete(BUCKET, EXCLUDED_LEAF));
         
         // Add a few objects
-        RawObject leaf1 = new RawObject(BUCKET, LEAF1, INCLUDED_VALUE);
-        RawObject leaf2 = new RawObject(BUCKET, LEAF2, INCLUDED_VALUE);
-        RawObject excludedLeaf = new RawObject(BUCKET, EXCLUDED_LEAF, EXCLUDED_VALUE);
-        RawObject root = new RawObject(BUCKET, ROOT);
+        RiakObject leaf1 = new RiakObject(BUCKET, LEAF1, INCLUDED_VALUE);
+        RiakObject leaf2 = new RiakObject(BUCKET, LEAF2, INCLUDED_VALUE);
+        RiakObject excludedLeaf = new RiakObject(BUCKET, EXCLUDED_LEAF, EXCLUDED_VALUE);
+        RiakObject root = new RiakObject(BUCKET, ROOT);
         root.getLinks().add(new RiakLink(BUCKET, LEAF1, TAG_INCLUDE));
         root.getLinks().add(new RiakLink(BUCKET, LEAF2, TAG_INCLUDE));
         root.getLinks().add(new RiakLink(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
@@ -53,17 +53,17 @@ public class ITestRawWalk {
         // Perform walk
         RiakWalkSpec walkSpec = new RiakWalkSpec();
         walkSpec.addStep(BUCKET, TAG_INCLUDE, "1");
-        RawWalkResponse walkresp = c.walk(BUCKET, ROOT, walkSpec);
+        WalkResponse walkresp = c.walk(BUCKET, ROOT, walkSpec);
         assertSuccess(walkresp);
         assertTrue(walkresp.hasSteps());
         assertEquals(1, walkresp.getSteps().size());
         assertEquals(2, walkresp.getSteps().get(0).size());
         
         // Verify expected only linked to objects are returned
-        List<? extends List<RawObject>> steps = walkresp.getSteps();
+        List<? extends List<RiakObject>> steps = walkresp.getSteps();
         List<String> keys = new ArrayList<String>();
-        for (List<RawObject> step : steps) {
-            for (RawObject object : step) {
+        for (List<RiakObject> step : steps) {
+            for (RiakObject object : step) {
                 keys.add(object.getKey());
                 assertEquals(INCLUDED_VALUE, object.getValue());
             }

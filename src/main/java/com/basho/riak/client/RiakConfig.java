@@ -99,10 +99,10 @@ public class RiakConfig {
     public void setMaxConnections(Integer maxConnections) {
         this.maxConnections = maxConnections;
     }
-    
+
     /**
-     * Value to set for the HttpClientParams.RETRY_HANDLER property: 
-     * the default retry handler for requests.
+     * Value to set for the HttpClientParams.RETRY_HANDLER property: the default
+     * retry handler for requests.
      * 
      * @see DefaultHttpMethodRetryHandler
      */

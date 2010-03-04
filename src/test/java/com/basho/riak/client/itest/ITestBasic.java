@@ -5,47 +5,46 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.basho.riak.client.RiakBucketInfo;
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakLink;
-import com.basho.riak.client.raw.RawBucketInfo;
-import com.basho.riak.client.raw.RawBucketResponse;
-import com.basho.riak.client.raw.RawClient;
-import com.basho.riak.client.raw.RawFetchResponse;
-import com.basho.riak.client.raw.RawObject;
-import com.basho.riak.client.raw.RawStoreResponse;
+import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.response.BucketResponse;
+import com.basho.riak.client.response.FetchResponse;
+import com.basho.riak.client.response.StoreResponse;
 
 /**
- * Basic exercises such as store, fetch, and modify objects for the Raw client.
- * Assumes Riak is reachable at 127.0.0.1:8098/raw.
+ * Basic exercises such as store, fetch, and modify objects for the Riak client.
+ * Assumes Riak is reachable at 127.0.0.1:8098/riak.
  */
-public class ITestRawBasic {
+public class ITestBasic {
 
-    public static String RAW_URL = "http://127.0.0.1:8098/raw";
+    public static String RIAK_URL = "http://127.0.0.1:8098/riak";
 
-    @Test
-    public void store_fetch_modify_from_raw() {
-        final RawClient c = new RawClient(RAW_URL);
+    @Test public void store_fetch_modify() {
+        final RiakClient c = new RiakClient(RIAK_URL);
         final String VALUE1 = "value1";
         final String VALUE2 = "value2";
         final RiakLink LINK = new RiakLink("bucket", "key", "tag");
         final String USERMETA_KEY = "usermeta";
         final String USERMETA_VALUE = "value";
-        final String BUCKET = "store_fetch_modify_from_raw";
+        final String BUCKET = "store_fetch_modify";
         final String KEY = "key";
 
         // Set bucket schema to return siblings
-        RawBucketInfo bucketInfo = new RawBucketInfo();
+        RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setAllowMult(true);
         assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
 
         // Make sure object doesn't exist
         assertSuccess(c.delete(BUCKET, KEY, WRITE_3_REPLICAS()));
 
-        RawFetchResponse fetchresp = c.fetch(BUCKET, KEY);
+        FetchResponse fetchresp = c.fetch(BUCKET, KEY);
         assertEquals(404, fetchresp.getStatusCode());
 
         // Store a new object
-        RawObject o = new RawObject(BUCKET, KEY, VALUE1);
-        RawStoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
+        RiakObject o = new RiakObject(BUCKET, KEY, VALUE1);
+        StoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
         // Retrieve it back
@@ -75,10 +74,9 @@ public class ITestRawBasic {
         assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermeta().get(USERMETA_KEY));
     }
 
-    @Test
-    public void test_raw_bucket_schema() {
-        final RawClient c = new RawClient(RAW_URL);
-        final String BUCKET = "test_raw_bucket_schema";
+    @Test public void test_bucket_schema() {
+        final RiakClient c = new RiakClient(RIAK_URL);
+        final String BUCKET = "test_bucket_schema";
         final String KEY1 = "key1";
         final String KEY2 = "key2";
         final String KEY3 = "key3";
@@ -91,15 +89,15 @@ public class ITestRawBasic {
         assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
-        assertSuccess(c.store(new RawObject(BUCKET, KEY1, "v"), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RawObject(BUCKET, KEY2, "v"), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RawObject(BUCKET, KEY3, "v"), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY1, "v"), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY2, "v"), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY3, "v"), WRITE_3_REPLICAS()));
 
         // Get the current bucket schema and contents
-        RawBucketResponse bucketresp = c.listBucket(BUCKET);
+        BucketResponse bucketresp = c.listBucket(BUCKET);
         assertSuccess(bucketresp);
         assertTrue(bucketresp.hasBucketInfo());
-        RawBucketInfo bucketInfo = bucketresp.getBucketInfo();
+        RiakBucketInfo bucketInfo = bucketresp.getBucketInfo();
         int nval = bucketInfo.getNVal();
 
         // Verify that contents are correct

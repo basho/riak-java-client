@@ -1,8 +1,5 @@
 package com.basho.riak.client.plain;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,16 +12,16 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.jiak.JiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakIORuntimeException;
-import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
@@ -48,6 +45,10 @@ public class TestPlainClient {
     @Before public void setup() {
         MockitoAnnotations.initMocks(this);
         impl = new PlainClient(mockRiakClient);
+    }
+    
+    @Test public void installs_convert_to_checked_exception_handler() {
+        verify(mockRiakClient).setExceptionHandler(isA(ConvertToCheckedExceptions.class));
     }
 
     @Test public void methods_defer_to_impl() throws RiakIOException, RiakResponseException, IOException {
@@ -105,68 +106,6 @@ public class TestPlainClient {
         verify(mockRiakClient).walk(bucket, key, walkSpec, meta);
     }
     
-    // the below can be summarized as methods_translate_io_runtime_exception_to_checked()
-    @Test(expected=RiakIOException.class) public void setBucketSchema_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.setBucketSchema(bucket, bucketInfo, meta)).thenThrow(new RiakIORuntimeException());
-        impl.setBucketSchema(bucket, bucketInfo, meta);
-    }
-    @Test(expected=RiakIOException.class) public void listBucket_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.listBucket(bucket, meta)).thenThrow(new RiakIORuntimeException());
-        impl.listBucket(bucket, meta);
-    }
-    @Test(expected=RiakIOException.class) public void store_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.store(object, meta)).thenThrow(new RiakIORuntimeException());
-        impl.store(object, meta);
-    }
-    @Test(expected=RiakIOException.class) public void fetchMeta_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.fetchMeta(bucket, key, meta)).thenThrow(new RiakIORuntimeException());
-        impl.fetchMeta(bucket, key, meta);
-    }
-    @Test(expected=RiakIOException.class) public void fetch_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.fetch(bucket, key, meta)).thenThrow(new RiakIORuntimeException());
-        impl.fetch(bucket, key, meta);
-    }
-    @Test(expected=RiakIOException.class) public void fetchAll_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.fetch(bucket, key, meta)).thenThrow(new RiakIORuntimeException());
-        impl.fetchAll(bucket, key, meta);
-    }
-    @Test(expected=RiakIOException.class) public void delete_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.delete(bucket, key, meta)).thenThrow(new RiakIORuntimeException());
-        impl.delete(bucket, key, meta);
-    }
-    @Test(expected=RiakIOException.class) public void walk_translates_io_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.walk(bucket, key, walkSpec, meta)).thenThrow(new RiakIORuntimeException());
-        impl.walk(bucket, key, walkSpec, meta);
-    }
-
-    // the below can be summarized as methods_translate_response_runtime_exception_to_checked()
-    // note, setBucketSchema & delete do not throw RiakResponseRuntimeExceptions
-    @Test(expected=RiakResponseException.class) public void listBucket_translates_response_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.listBucket(bucket, meta)).thenThrow(new RiakResponseRuntimeException(null));
-        impl.listBucket(bucket, meta);
-    }
-    @Test(expected=RiakResponseException.class) public void store_translates_response_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.store(object, meta)).thenThrow(new RiakResponseRuntimeException(null));
-        impl.store(object, meta);
-    }
-    @Test(expected=RiakResponseException.class) public void fetchMeta_translates_response_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.fetchMeta(bucket, key, meta)).thenThrow(new RiakResponseRuntimeException(null));
-        impl.fetchMeta(bucket, key, meta);
-    }
-    @Test(expected=RiakResponseException.class) public void fetch_translates_response_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.fetch(bucket, key, meta)).thenThrow(new RiakResponseRuntimeException(null));
-        impl.fetch(bucket, key, meta);
-    }
-    @Test(expected=RiakResponseException.class) public void fetchAll_translates_response_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.fetch(bucket, key, meta)).thenThrow(new RiakResponseRuntimeException(null));
-        impl.fetchAll(bucket, key, meta);
-    }
-    @Test(expected=RiakResponseException.class) public void walk_translates_response_runtime_exception_to_checked() throws RiakIOException, RiakResponseException {
-        when(mockRiakClient.walk(bucket, key, walkSpec, meta)).thenThrow(new RiakResponseRuntimeException(null));
-        impl.walk(bucket, key, walkSpec, meta);
-    }
-
-
     @Test public void setBucketSchema_throws_except_for_204(){
         HttpResponse mockResponse = mock(HttpResponse.class);
 
@@ -316,7 +255,7 @@ public class TestPlainClient {
 
     @Test public void fetchAll_returns_siblings_if_exists() throws RiakIOException, RiakResponseException {
         final FetchResponse mockResponse = mock(FetchResponse.class);
-        final List<JiakObject> siblings = new ArrayList<JiakObject>();
+        final List<RiakObject> siblings = new ArrayList<RiakObject>();
 
         when(mockResponse.getStatusCode()).thenReturn(200);
         when(mockResponse.hasSiblings()).thenReturn(true);

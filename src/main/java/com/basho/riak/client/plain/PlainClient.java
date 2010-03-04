@@ -22,14 +22,12 @@ import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.jiak.JiakClient;
-import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.RiakIORuntimeException;
+import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.StreamHandler;
@@ -44,31 +42,23 @@ public class PlainClient {
 
     private RiakClient impl;
 
-    /** Connect to the Jiak interface using the given configuration. */
-    public static PlainClient connectToJiak(RiakConfig config) {
-        return new PlainClient(new JiakClient(config));
+    /** Connect to Riak using the given configuration. */
+    public static PlainClient getClient(RiakConfig config) {
+        return new PlainClient(new RiakClient(config));
     }
 
-    /** Connect to the Jiak interface using the given URL. */
-    public static PlainClient connectToJiak(String url) {
-        return new PlainClient(new JiakClient(url));
-    }
-
-    /** Connect to the Raw interface using the given configuration. */
-    public static PlainClient connectToRaw(RiakConfig config) {
-        return new PlainClient(new RawClient(config));
-    }
-
-    /** Connect to the Jiak interface using the given URL. */
-    public static PlainClient connectToRaw(String url) {
-        return new PlainClient(new RawClient(url));
+    /** Connect to Riak using the given URL. */
+    public static PlainClient getClient(String url) {
+        return new PlainClient(new RiakClient(url));
     }
 
     /**
-     * The primary constructor. Wraps an existing {@link RiakClient}.
+     * The primary constructor. Wraps an existing {@link RiakClient} and
+     * installs a custom {@link RiakExceptionHandler}.
      */
     public PlainClient(RiakClient riakClient) {
         impl = riakClient;
+        impl.setExceptionHandler(new ConvertToCheckedExceptions());
     }
 
     /**
@@ -83,12 +73,7 @@ public class PlainClient {
      */
     public void setBucketSchema(String bucket, RiakBucketInfo bucketInfo, RequestMeta meta) throws RiakIOException,
             RiakResponseException {
-        HttpResponse r = null;
-        try {
-            r = impl.setBucketSchema(bucket, bucketInfo, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        }
+        HttpResponse r = impl.setBucketSchema(bucket, bucketInfo, meta);
 
         if (r.getStatusCode() != 204)
             throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
@@ -108,15 +93,7 @@ public class PlainClient {
      *             if the server does not return the bucket information
      */
     public RiakBucketInfo listBucket(String bucket, RequestMeta meta) throws RiakIOException, RiakResponseException {
-        BucketResponse r;
-
-        try {
-            r = impl.listBucket(bucket, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        } catch (RiakResponseRuntimeException re) {
-            throw new RiakResponseException(re);
-        }
+        BucketResponse r = impl.listBucket(bucket, meta);
 
         if (r.getStatusCode() != 200)
             throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
@@ -139,14 +116,7 @@ public class PlainClient {
      *             If the server does not succesfully store the object.
      */
     public void store(RiakObject object, RequestMeta meta) throws RiakIOException, RiakResponseException {
-        StoreResponse r;
-        try {
-            r = impl.store(object, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        } catch (RiakResponseRuntimeException re) {
-            throw new RiakResponseException(re);
-        }
+        StoreResponse r = impl.store(object, meta);
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 204)
             throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
@@ -172,14 +142,7 @@ public class PlainClient {
      */
     public RiakObject fetchMeta(String bucket, String key, RequestMeta meta) throws RiakIOException,
             RiakResponseException {
-        FetchResponse r;
-        try {
-            r = impl.fetchMeta(bucket, key, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        } catch (RiakResponseRuntimeException re) {
-            throw new RiakResponseException(re);
-        }
+        FetchResponse r = impl.fetchMeta(bucket, key, meta);
 
         if (r.getStatusCode() == 404)
             return null;
@@ -210,14 +173,7 @@ public class PlainClient {
      *             If the server does return a valid object
      */
     public RiakObject fetch(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
-        FetchResponse r;
-        try {
-            r = impl.fetch(bucket, key, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        } catch (RiakResponseRuntimeException re) {
-            throw new RiakResponseException(re);
-        }
+        FetchResponse r = impl.fetch(bucket, key, meta);
 
         if (r.getStatusCode() == 404)
             return null;
@@ -248,14 +204,7 @@ public class PlainClient {
      */
     public Collection<? extends RiakObject> fetchAll(String bucket, String key, RequestMeta meta)
             throws RiakIOException, RiakResponseException {
-        FetchResponse r;
-        try {
-            r = impl.fetch(bucket, key, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        } catch (RiakResponseRuntimeException re) {
-            throw new RiakResponseException(re);
-        }
+        FetchResponse r = impl.fetch(bucket, key, meta);
 
         if (r.getStatusCode() == 404)
             return null;
@@ -295,12 +244,7 @@ public class PlainClient {
      *             If the object was not deleted.
      */
     public void delete(String bucket, String key, RequestMeta meta) throws RiakIOException, RiakResponseException {
-        HttpResponse r;
-        try {
-            r = impl.delete(bucket, key, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        }
+        HttpResponse r = impl.delete(bucket, key, meta);
 
         if (r.getStatusCode() != 204 && r.getStatusCode() != 404)
             throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
@@ -324,14 +268,7 @@ public class PlainClient {
      */
     public List<? extends List<? extends RiakObject>> walk(String bucket, String key, String walkSpec, RequestMeta meta)
             throws RiakIOException, RiakResponseException {
-        WalkResponse r;
-        try {
-            r = impl.walk(bucket, key, walkSpec, meta);
-        } catch (RiakIORuntimeException ioe) {
-            throw new RiakIOException(ioe);
-        } catch (RiakResponseRuntimeException re) {
-            throw new RiakResponseException(re);
-        }
+        WalkResponse r = impl.walk(bucket, key, walkSpec, meta);
 
         if (r.getStatusCode() == 404)
             return null;

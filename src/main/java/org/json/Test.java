@@ -9,7 +9,7 @@ import java.io.StringWriter;
  * Test class. This file is not formally a member of the org.json library.
  * It is just a casual test tool.
  */
-public class Test {
+@SuppressWarnings("unchecked") public class Test {
 	
     /**
      * Entry point.

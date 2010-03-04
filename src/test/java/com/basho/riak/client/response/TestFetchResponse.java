@@ -1,4 +1,4 @@
-package com.basho.riak.client.raw;
+package com.basho.riak.client.response;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -17,10 +17,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.Constants;
 
-public class TestRawFetchResponse {
+public class TestFetchResponse {
 
     final String BUCKET = "bucket";
     final String KEY = "key";
@@ -38,7 +38,7 @@ public class TestRawFetchResponse {
         SINGLE_HEADERS.put("X-Riak-Vclock".toLowerCase(), "a85hYGBgzGDKBVIsDPKZOzKYEhnzWBlaJyw9wpcFAA==");
         SINGLE_HEADERS.put("Vary".toLowerCase(), "Accept-Encoding");
         SINGLE_HEADERS.put("Server".toLowerCase(), "MochiWeb/1.1 WebMachine/1.5.1 (hack the charles gibson)");
-        SINGLE_HEADERS.put("Link".toLowerCase(), "</raw/b/l>; riaktag=\"next\", </raw/b>; rel=\"up\"");
+        SINGLE_HEADERS.put("Link".toLowerCase(), "</riak/b/l>; riaktag=\"next\", </riak/b>; rel=\"up\"");
         SINGLE_HEADERS.put("Last-Modified".toLowerCase(), "Tue, 22 Dec 2009 18:48:37 GMT");
         SINGLE_HEADERS.put("ETag".toLowerCase(), "4d5y9wqQK2Do0RK5ezwCJD");
         SINGLE_HEADERS.put("Date".toLowerCase(), "Tue, 22 Dec 2009 19:06:47 GMT");
@@ -55,14 +55,14 @@ public class TestRawFetchResponse {
         SIBLING_BODY = "\n" +
             "--1MFeoR33D8Jdz3uUa9SQI7H8XCb\n" +
             "Content-Type: text/plain\n" +
-            "Link: </raw/b>; rel=\"up\", </raw/b/l>; riaktag=\"next\"\n" +
+            "Link: </riak/b>; rel=\"up\", </riak/b/l>; riaktag=\"next\"\n" +
             "Etag: 55SrI4GjdnGfyuShLBWjuf\n" +
             "Last-Modified: Tue, 22 Dec 2009 19:24:18 GMT\n" +
             "\n" +
             "bar\n" +
             "--1MFeoR33D8Jdz3uUa9SQI7H8XCb\n" +
             "Content-Type: application/octect-stream\n" +
-            "Link: </raw/b>; rel=\"up\"\n" +
+            "Link: </riak/b>; rel=\"up\"\n" +
             "Etag: 4d5y9wqQK2Do0RK5ezwCJD\n" +
             "Last-Modified: Tue, 22 Dec 2009 18:48:37 GMT\n" +
             "X-Riak-Meta-Test: value\n" +
@@ -72,7 +72,7 @@ public class TestRawFetchResponse {
     }
 
     @Test public void doesnt_throw_on_null_impl() throws JSONException {
-        new RawFetchResponse(null);
+        new FetchResponse(null);
     }
     
     @Test public void parses_single_object() throws JSONException {
@@ -82,7 +82,7 @@ public class TestRawFetchResponse {
         when(mockHttpResponse.getBody()).thenReturn(SINGLE_BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
-        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse);
         
         assertTrue(impl.hasObject());
         assertEquals(BUCKET, impl.getObject().getBucket());
@@ -103,12 +103,12 @@ public class TestRawFetchResponse {
         when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY);
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
-        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse);
         assertTrue(impl.hasSiblings());
 
-        Iterator<RawObject> siblings = impl.getSiblings().iterator();
+        Iterator<RiakObject> siblings = impl.getSiblings().iterator();
 
-        RawObject o;
+        RiakObject o;
         o = siblings.next();
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
@@ -140,7 +140,7 @@ public class TestRawFetchResponse {
         when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY);
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
-        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse);
         
         assertTrue(impl.hasObject());
         assertTrue(impl.getSiblings().contains(impl.getObject()));
@@ -159,7 +159,7 @@ public class TestRawFetchResponse {
         
         when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(mockInputStream);
         
-        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse);
         
         assertTrue(impl.hasObject());
         assertSame(mockInputStream, impl.getObject().getValueStream());
@@ -178,14 +178,14 @@ public class TestRawFetchResponse {
         
         when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(is);
         
-        RawFetchResponse impl = new RawFetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse);
         assertTrue(impl.hasSiblings());
 
         verify(mockHttpMethod).releaseConnection();
 
-        Iterator<RawObject> siblings = impl.getSiblings().iterator();
+        Iterator<RiakObject> siblings = impl.getSiblings().iterator();
  
-        RawObject o;
+        RiakObject o;
         o = siblings.next();
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());

@@ -1,4 +1,4 @@
-package com.basho.riak.client.raw;
+package com.basho.riak.client.response;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.basho.riak.client.response.HttpResponse;
 
-public class TestRawBucketResponse {
+public class TestBucketResponse {
 
     final String BODY = 
         "{\"props\":" +
@@ -31,7 +31,7 @@ public class TestRawBucketResponse {
                 "[\"j\",\"k\",\"l\"]}";
 
     @Test public void doesnt_throw_on_null_impl() throws JSONException {
-        new RawBucketResponse(null);
+        new BucketResponse(null);
     }
 
     @Test public void parses_schema_field() throws JSONException {
@@ -39,7 +39,7 @@ public class TestRawBucketResponse {
         when(mockHttpResponse.getBody()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
-        RawBucketResponse impl = new RawBucketResponse(mockHttpResponse);
+        BucketResponse impl = new BucketResponse(mockHttpResponse);
         
         assertEquals(false, impl.getBucketInfo().getAllowMult());
         assertEquals(3, impl.getBucketInfo().getNVal().intValue());
@@ -52,7 +52,7 @@ public class TestRawBucketResponse {
         when(mockHttpResponse.getBody()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
-        RawBucketResponse impl = new RawBucketResponse(mockHttpResponse);
+        BucketResponse impl = new BucketResponse(mockHttpResponse);
         Collection<String> keys = impl.getBucketInfo().getKeys();
         
         assertEquals(3, keys.size());

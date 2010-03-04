@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.request;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -65,6 +66,42 @@ public class RequestMeta {
             meta.setQueryParam(Constants.QP_DW, Integer.toString(dw));
         }
         return meta;
+    }
+    
+    public RequestMeta ifModifiedSince(String lastmod) { 
+        return this;
+    }
+
+    public RequestMeta ifModifiedSince(Date lastmod) { 
+        return this;
+    }
+
+    public RequestMeta ifUnmodifiedSince(String lastmod) { 
+        return this;
+    }
+
+    public RequestMeta ifUnmodifiedSince(Date lastmod) { 
+        return this;
+    }
+
+    public RequestMeta ifMatch(String etags) { 
+        return this;
+    }
+    
+    public RequestMeta ifMatch(String[] etags) { 
+        return this;
+    }
+
+    public RequestMeta ifNoneMatch(String etags) { 
+        return this;
+    }
+
+    public RequestMeta ifNoneMatch(String[] etags) { 
+        return this;
+    }
+    
+    public RequestMeta accept(String contentTypes) { 
+        return this;
     }
 
     /**
