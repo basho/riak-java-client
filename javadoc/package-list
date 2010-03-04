@@ -1,0 +1,6 @@
+com.basho.riak.client
+com.basho.riak.client.plain
+com.basho.riak.client.request
+com.basho.riak.client.response
+com.basho.riak.client.util
+org.json
