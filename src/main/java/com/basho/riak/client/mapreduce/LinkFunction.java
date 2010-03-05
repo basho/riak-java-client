@@ -6,21 +6,23 @@ import org.json.JSONObject;
 public class LinkFunction implements MapReduceFunction {
    
    private String bucket = null;
-   private String key = null;
+   private String tag = null;
    
    public LinkFunction(String bucket) {
       this.bucket = bucket;
    }
    
-   public LinkFunction(String bucket, String key) {
+   public LinkFunction(String bucket, String tag) {
       this.bucket = bucket;
-      this.key = key;
+      this.tag = tag;
    }
 
    public JSONObject toJson() throws JSONException {
       JSONObject link = new JSONObject();
       link.put("bucket", this.bucket);
-      link.put("key", this.key);
+      if (this.tag != null) {
+         link.put("tag", this.tag);
+      }
       return link;
    }
 

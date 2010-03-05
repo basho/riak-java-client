@@ -146,13 +146,33 @@ public class MapReduceBuilder {
       return this;
    }
    
+   /**
+    * Adds a link phase to the job
+    * @param function bucket to link walk
+    * @param keep should the server keep and return the results
+    * @return current MapReduceBuilder instance. This is done so
+    * multiple calls to map, reduce, and link can be chained together
+    * a la StringBuffer
+    * 
+    * Pointing at a bucket without specifying a link tag will follow all
+    * links pointing to objects in the bucket
+    */
    public MapReduceBuilder link(String bucket, boolean keep) {
       this.addPhase(MapReduceBuilder.Types.LINK, new LinkFunction(bucket), keep);
       return this;
    }
-   
-   public MapReduceBuilder link(String bucket, String key, boolean keep) {
-      this.addPhase(MapReduceBuilder.Types.LINK, new LinkFunction(bucket, key), keep);
+
+   /**
+    * Adds a link phase to the job
+    * @param function bucket to link walk
+    * @param tag link tag to match
+    * @param keep should the server keep and return the results
+    * @return current MapReduceBuilder instance. This is done so
+    * multiple calls to map, reduce, and link can be chained together
+    * a la StringBuffer
+    */
+   public MapReduceBuilder link(String bucket, String tag, boolean keep) {
+      this.addPhase(MapReduceBuilder.Types.LINK, new LinkFunction(bucket, tag), keep);
       return this;
    }
 

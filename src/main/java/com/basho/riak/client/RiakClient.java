@@ -378,6 +378,7 @@ public class RiakClient {
     @SuppressWarnings("deprecation")
    public PostMethod sendJob(String job) throws HttpException, IOException {
        PostMethod post = new PostMethod(this.getConfig().getUrl());
+       post.addRequestHeader("Content-Type", "application/json");
        post.setRequestBody(job);
        this.getHttpClient().executeMethod(post);
        return post;
