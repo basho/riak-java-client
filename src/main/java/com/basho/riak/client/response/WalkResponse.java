@@ -44,6 +44,7 @@ public class WalkResponse extends HttpResponseDecorator implements HttpResponse 
             steps = parseSteps(r, riak);
         }
     }
+
     public WalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
         this(r, null);
     }

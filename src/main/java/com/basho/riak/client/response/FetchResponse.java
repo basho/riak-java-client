@@ -90,9 +90,10 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
                 object = siblings.get(0);
             }
         } else if (r.isSuccess()) {
-            object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(), headers.get(Constants.HDR_CONTENT_TYPE),
-                                    links, usermeta, headers.get(Constants.HDR_VCLOCK),
-                                    headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
+            object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),
+                                    headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta,
+                                    headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
+                                    headers.get(Constants.HDR_ETAG));
 
             // If response was constructed without a response body, try to get
             // the body as a stream from the underlying HTTP method
@@ -107,6 +108,7 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
             }
         }
     }
+
     public FetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
         this(r, null);
     }
