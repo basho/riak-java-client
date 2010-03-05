@@ -27,14 +27,18 @@ import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.util.DateParseException;
 import org.apache.commons.httpclient.util.DateUtil;
 
+import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.response.FetchResponse;
+import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.util.Constants;
 
 /**
- * A Riak object
+ * A Riak object.
  */
 public class RiakObject {
 
+    private RiakClient riak;
     private String bucket;
     private String key;
     private byte[] value;
@@ -51,34 +55,33 @@ public class RiakObject {
      * Create an empty object. The content type defaults to
      * application/octet-stream.
      * 
+     * @param riak
+     *            Riak instance this object is associated with, which is used by
+     *            the convenience methods in this class (e.g.
+     *            {@link RiakObject#store()}).
      * @param bucket
      *            The object's bucket
      * @param key
      *            The object's key
+     * @param value
+     *            The object's value
+     * @param contentType
+     *            The object's content type which defaults to
+     *            application/octet-stream if null.
+     * @param links
+     *            Links to other objects
+     * @param usermeta
+     *            Custom metadata key-value pairs for this object
+     * @param vclock
+     *            An opaque vclock assigned by Riak
+     * @param lastmod
+     *            The last time this object was modified according to Riak
+     * @param vtag
+     *            This object's entity tag assigned by Riak
      */
-    public RiakObject(String bucket, String key) {
-        this(bucket, key, null, null, null, null, null, null, null);
-    }
-
-    public RiakObject(String bucket, String key, String value) {
-        this(bucket, key, value, null, null, null, null, null, null);
-    }
-
-    public RiakObject(String bucket, String key, String value, String contentType) {
-        this(bucket, key, value, contentType, null, null, null, null, null);
-    }
-
-    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links) {
-        this(bucket, key, value, contentType, links, null, null, null, null);
-    }
-
-    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
-            Map<String, String> usermeta) {
-        this(bucket, key, value, contentType, links, usermeta, null, null, null);
-    }
-
-    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
-            Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
+    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType,
+            List<RiakLink> links, Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
+        this.riak = riak;
         this.bucket = bucket;
         this.key = key;
         this.vclock = vclock;
@@ -89,6 +92,67 @@ public class RiakObject {
         setContentType(contentType);
         setLinks(links);
         setUsermeta(usermeta);
+    }
+
+    public RiakObject(RiakClient riak, String bucket, String key) {
+        this(riak, bucket, key, null, null, null, null, null, null, null);
+    }
+
+    public RiakObject(RiakClient riak, String bucket, String key, String value) {
+        this(riak, bucket, key, value, null, null, null, null, null, null);
+    }
+
+    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType) {
+        this(riak, bucket, key, value, contentType, null, null, null, null, null);
+    }
+
+    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType, List<RiakLink> links) {
+        this(riak, bucket, key, value, contentType, links, null, null, null, null);
+    }
+
+    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType,
+            List<RiakLink> links, Map<String, String> usermeta) {
+        this(riak, bucket, key, value, contentType, links, usermeta, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key) {
+        this(null, bucket, key, null, null, null, null, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key, String value) {
+        this(null, bucket, key, value, null, null, null, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key, String value, String contentType) {
+        this(null, bucket, key, value, contentType, null, null, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links) {
+        this(null, bucket, key, value, contentType, links, null, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
+            Map<String, String> usermeta) {
+        this(null, bucket, key, value, contentType, links, usermeta, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
+            Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
+        this(null, bucket, key, value, contentType, links, usermeta, vclock, lastmod, vtag);
+    }
+
+    /**
+     * A {@link RiakObject} can be loosely attached to the {@link RiakClient}
+     * from which retrieve it was retrieved. Calling convenience methods like
+     * {@link RiakObject#store()} will store this object use that client.
+     */
+    public RiakClient getRiakClient() {
+        return riak;
+    }
+
+    public RiakObject setRiakClient(RiakClient client) {
+        riak = client;
+        return this;
     }
 
     /**
@@ -145,6 +209,25 @@ public class RiakObject {
     }
 
     /**
+     * Update the object's metadata from a fetch or fetchMeta operation
+     * 
+     * @param response
+     *            Response from a fetch or fetchMeta operation containing a
+     *            vclock, last modified date, and vtag
+     */
+    public void updateMeta(FetchResponse response) {
+        if (response == null || response.getObject() == null) {
+            vclock = null;
+            lastmod = null;
+            vtag = null;
+        } else {
+            vclock = response.getObject().getVclock();
+            lastmod = response.getObject().getLastmod();
+            vtag = response.getObject().getVtag();
+        }
+    }
+
+    /**
      * The object's bucket
      */
     public String getBucket() {
@@ -183,9 +266,11 @@ public class RiakObject {
 
     /**
      * Set the object's value as a stream. A value set here is independent of
-     * and has precedent over values set using setValue(). Calling getValue()
-     * will always return values set via setValue(), and calling
-     * getValueStream() will always return the stream set via setValueStream.
+     * and has precedent over any value set using setValue():
+     * {@link RiakObject#writeToHttpMethod(HttpMethod)} will always write the
+     * value from getValueStream() if it is not null. Calling getValue() will
+     * always return values set via setValue(), and calling getValueStream()
+     * will always return the stream set via setValueStream.
      * 
      * @param in
      *            Input stream representing the object's value
@@ -292,6 +377,113 @@ public class RiakObject {
      */
     public String getVtag() {
         return vtag;
+    }
+
+    /**
+     * Convenience method for calling
+     * {@link RiakClient#store(RiakObject, RequestMeta)} followed by
+     * {@link RiakObject#updateMeta(StoreResponse)}
+     * 
+     * @throws IllegalStateException
+     *             if this object was not fetched from a Riak instance, so there
+     *             is not associated server to store it with.
+     */
+    public StoreResponse store(RequestMeta meta) {
+        return store(riak, meta);
+    }
+
+    public StoreResponse store() {
+        return store(riak, null);
+    }
+
+    /**
+     * Store this object to a different Riak instance.
+     * 
+     * @param riak
+     *            Riak instance to store this object to
+     * @param meta
+     *            Same as {@link RiakClient#store(RiakObject, RequestMeta)}
+     * @throws IllegalStateException
+     *             if this object was not fetched from a Riak instance, so there
+     *             is not associated server to store it with.
+     */
+    public StoreResponse store(RiakClient riak, RequestMeta meta) {
+        if (riak == null)
+            throw new IllegalStateException("Cannot store an object without a RiakClient");
+
+        StoreResponse r = riak.store(this, meta);
+        if (r.isSuccess()) {
+            this.updateMeta(r);
+        }
+        return r;
+    }
+
+    /**
+     * Convenience method for calling {@link RiakClient#fetch(String, String)}
+     * followed by {@link RiakObject#copyData(RiakObject)}
+     * 
+     * @param meta
+     *            Same as {@link RiakClient#fetch(String, String, RequestMeta)}
+     * @throws IllegalStateException
+     *             if this object was not fetched from a Riak instance, so there
+     *             is not associated server to refetch it from.
+     */
+    public FetchResponse fetch(RequestMeta meta) {
+        if (riak == null)
+            throw new IllegalStateException("Cannot fetch an object without a RiakClient");
+
+        FetchResponse r = riak.fetch(bucket, key, meta);
+        if (r.isSuccess()) {
+            this.copyData(r.getObject());
+        }
+        return r;
+    }
+
+    public FetchResponse fetch() {
+        return fetch(null);
+    }
+
+    /**
+     * Convenience method for calling
+     * {@link RiakClient#fetchMeta(String, String, RequestMeta)} followed by
+     * {@link RiakObject#updateMeta(FetchResponse)}
+     * 
+     * @throws IllegalStateException
+     *             if this object was not fetched from a Riak instance, so there
+     *             is not associated server to refetch meta from.
+     */
+    public FetchResponse fetchMeta(RequestMeta meta) {
+        if (riak == null)
+            throw new IllegalStateException("Cannot fetch meta for an object without a RiakClient");
+
+        FetchResponse r = riak.fetchMeta(bucket, key, meta);
+        if (r.isSuccess()) {
+            this.updateMeta(r);
+        }
+        return r;
+    }
+
+    public FetchResponse fetchMeta() {
+        return fetchMeta(null);
+    }
+
+    /**
+     * Convenience method for calling
+     * {@link RiaRiakClient#delete(String, String, RequestMeta)}.
+     * 
+     * @throws IllegalStateException
+     *             if this object was not fetched from a Riak instance, so there
+     *             is not associated server to delete from.
+     */
+    public HttpResponse delete(RequestMeta meta) {
+        if (riak == null)
+            throw new IllegalStateException("Cannot delete an object without a RiakClient");
+
+        return riak.delete(bucket, key, meta);
+    }
+
+    public HttpResponse delete() {
+        return delete(null);
     }
 
     /**

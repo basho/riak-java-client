@@ -31,10 +31,7 @@ public class RiakBucketInfo {
     private Collection<String> keys;
 
     /**
-     * Returns the list of properties in the schema and their values. The
-     * properties available is interface dependent.
-     * 
-     * The properties composing this bucket's schema.
+     * Returns the bucket's properties.
      */
     public JSONObject getSchema() {
         return schema;

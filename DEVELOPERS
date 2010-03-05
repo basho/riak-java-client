@@ -16,27 +16,27 @@ The most important classes are:
 
 *   **ClientHelper**: executes HTTP methods
 
-*   **RawObject** and **JiakObject**: Java representations of a Riak object capable of serializing to an HTTP request
+*   **RiakObject**: Java representations of a Riak object capable of serializing to an HTTP request
 
 *   **--Response** classes: parse HTTP responses from Riak
 
-*   **RawClient** and **JiakClient**: calls ClientHelper and wraps responses in `--Response` classes
+*   **RiakClient**: calls ClientHelper and wraps responses in `--Response` classes
 
 # Classes #
 
 ## Example ##
 
-A typical fetch for an object from the Raw interface is handled as follows:
+A typical fetch for an object from the Riak HTTP interface is handled as follows:
 
-1.  User calls `RawClient.fetch(...)`
+1.  User calls `RiakClient.fetch(...)`
 
 2.  Calls `ClientHelper.fetch(...)` which builds the `HttpMethod`
 
 3.  Calls `ClientHelper.executeMethod(...)` which executes the method and fetches the response with `getResponseBodyAsString()`
 
-4.  `RawClient.fetch(...)` constructs a `RawFetchResponse` from the response
+4.  `RiakClient.fetch(...)` constructs a `FetchResponse` from the response
 
-5.  `RawFetchResponse` parses the response and constructs a `RawObject`
+5.  `FetchResponse` parses the response and constructs a `RiakObject`
 
 The other operations follow the same basic flow: Client -> ClientHelper -> Response.
 
@@ -46,11 +46,11 @@ The heart of the client is `ClientHelper`.  It builds and executes the HTTP meth
 
 ## Serialization/Parsing ##
 
-While the HTTP operations are performed by ClientHelper, the majority of the work actually consists of serializing objects and parsing the HTTP responses from Riak. Serialization of objects to send to Riak is performed by the `writeToHttpMethod(...)` methods in `JiakObject` and `RawObject`. Responses are parsed by the `Jiak--Response` and `Raw--Response` classes which read the `HttpResponse` returned by `ClientHelper` and construct the appropriate domain objects.
+While the HTTP operations are performed by ClientHelper, the majority of the work actually consists of serializing objects and parsing the HTTP responses from Riak. Serialization of objects to send to Riak is performed by the `writeToHttpMethod(...)` methods in `JiakObject` and `RiakObject`. Responses are parsed by the `--Response` classes which read the `HttpResponse` returned by `ClientHelper` and construct the appropriate domain objects.
 
 ## Client Interfaces ##
 
-Users primarily use `RawClient`/`RawObject` or `JiakClient`/`JiakObject`.  `RawClient` and `JiakClient` are simple adapters from `ClientHelper` to the `RiakClient` interface. They use `ClientHelper` to execute the HTTP methods and wrap the resulting response with the proper `Raw--Response` or `Jiak--Response`.
+Users primarily use `RiakClient`/`RiakObject`.  `RiakClient` is a simple adapters from `ClientHelper` to the `RiakClient` interface. They use `ClientHelper` to execute the HTTP methods and wrap the resulting response with the proper `--Response`.
 
 # Development #
 
@@ -60,7 +60,7 @@ The integration tests perform each of the basic operations (store bucket schema,
 
     mvn -Pitest clean verify
 
-Riak must be running on `127.0.0.1:8098` with the Raw and Jiak interfaces located at `/raw` and `/jiak`. 
+Riak must be running on `127.0.0.1:8098` with the HTTP interface located at `/riak`.  Note that prior to Riak 0.9, the HTTP interface was located at `/raw` by default.
 
 ## Code Format ##
 

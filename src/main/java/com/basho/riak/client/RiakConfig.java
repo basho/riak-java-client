@@ -16,8 +16,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 
 /**
- * Configuration settings for connecting to a Riak instance including the URL
- * and settings for HttpClient. A pre-constructed HttpClient can also be
+ * Configuration settings for connecting to a Riak instance such as the base
+ * Riak URL and HttpClient settings. A pre-constructed HttpClient can also be
  * provided.
  */
 public class RiakConfig {
@@ -53,8 +53,8 @@ public class RiakConfig {
     }
 
     /**
-     * Set the base URL that clients should use to construct object URLs (eg
-     * http://localhost:8098/jiak).
+     * Set the base URL that clients should use to construct object URLs (e.g.
+     * http://localhost:8098/riak).
      */
     public void setUrl(String url) {
         this.url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
@@ -80,31 +80,31 @@ public class RiakConfig {
      * property: timeout in milliseconds for retrieving an HTTP connection. Null
      * for default.
      */
-    public Long getTimeout() {
-        return timeout;
-    }
-
     public void setTimeout(final long timeout) {
         this.timeout = timeout;
+    }
+
+    public Long getTimeout() {
+        return timeout;
     }
 
     /**
      * Value to set for the HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS
      * property: overall maximum number of connections used by the HttpClient.
      */
-    public Integer getMaxConnections() {
-        return maxConnections;
-    }
-
     public void setMaxConnections(Integer maxConnections) {
         this.maxConnections = maxConnections;
+    }
+
+    public Integer getMaxConnections() {
+        return maxConnections;
     }
 
     /**
      * Value to set for the HttpClientParams.RETRY_HANDLER property: the default
      * retry handler for requests.
      * 
-     * @see DefaultHttpMethodRetryHandler
+     * @see org.apache.commons.httpclient.DefaultHttpMethodRetryHandler
      */
     public HttpMethodRetryHandler getRetryHandler() {
         return retryHandler;

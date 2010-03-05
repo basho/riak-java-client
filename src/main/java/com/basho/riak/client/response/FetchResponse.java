@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.ClientUtils;
@@ -54,7 +55,7 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
      *             If the server returns a 300 without a proper multipart/mixed
      *             body
      */
-    public FetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
+    public FetchResponse(HttpResponse r, RiakClient riak) throws RiakResponseRuntimeException {
         super(r);
 
         if (r == null)
@@ -84,12 +85,12 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
                 }
             }
 
-            siblings = ClientUtils.parseMultipart(r.getBucket(), r.getKey(), headers, body);
+            siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, body);
             if (siblings.size() > 0) {
                 object = siblings.get(0);
             }
         } else if (r.isSuccess()) {
-            object = new RiakObject(r.getBucket(), r.getKey(), r.getBody(), headers.get(Constants.HDR_CONTENT_TYPE),
+            object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(), headers.get(Constants.HDR_CONTENT_TYPE),
                                     links, usermeta, headers.get(Constants.HDR_VCLOCK),
                                     headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
 
@@ -105,6 +106,9 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
                 } catch (IOException ignored) {}
             }
         }
+    }
+    public FetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
+        this(r, null);
     }
 
     /**

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
@@ -36,12 +37,15 @@ public class WalkResponse extends HttpResponseDecorator implements HttpResponse 
      * contains a list of objects returned in that step. The HTTP body is a
      * multipart/mixed message with multipart/mixed subparts
      */
-    public WalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
+    public WalkResponse(HttpResponse r, RiakClient riak) throws RiakResponseRuntimeException {
         super(r);
 
         if (r != null && r.isSuccess()) {
-            steps = parseSteps(r);
+            steps = parseSteps(r, riak);
         }
+    }
+    public WalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
+        this(r, null);
     }
 
     /** Whether objects were contained in the response */
@@ -63,13 +67,16 @@ public class WalkResponse extends HttpResponseDecorator implements HttpResponse 
      * 
      * @param r
      *            HTTP response from Riak
+     * @param riak
+     *            {@link RiakClient} to associate this object with
      * @return A list of lists of {@link RiakObject}s represented by the
      *         response.
      * @throws RiakResponseRuntimeException
      *             If one of the parts of the body doesn't contain a proper
      *             multipart/mixed message
      */
-    private static List<? extends List<RiakObject>> parseSteps(HttpResponse r) throws RiakResponseRuntimeException {
+    private static List<? extends List<RiakObject>> parseSteps(HttpResponse r, RiakClient riak)
+            throws RiakResponseRuntimeException {
         String bucket = r.getBucket();
         String key = r.getKey();
         List<List<RiakObject>> parsedSteps = new ArrayList<List<RiakObject>>();
@@ -84,7 +91,7 @@ public class WalkResponse extends HttpResponseDecorator implements HttpResponse 
                     !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
                     throw new RiakResponseRuntimeException(r, "multipart/mixed subparts expected in link walk results");
 
-                parsedSteps.add(ClientUtils.parseMultipart(bucket, key, partHeaders, part.getBody()));
+                parsedSteps.add(ClientUtils.parseMultipart(riak, bucket, key, partHeaders, part.getBody()));
             }
         }
 

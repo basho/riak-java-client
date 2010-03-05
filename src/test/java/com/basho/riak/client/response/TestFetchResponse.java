@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.Constants;
 
@@ -30,6 +31,7 @@ public class TestFetchResponse {
     
     @Mock HttpResponse mockHttpResponse;
     @Mock HttpMethod mockHttpMethod;
+    @Mock RiakClient mockRiakClient;
     String SIBLING_BODY;
     
     @Before public void setup() {
@@ -72,7 +74,7 @@ public class TestFetchResponse {
     }
 
     @Test public void doesnt_throw_on_null_impl() throws JSONException {
-        new FetchResponse(null);
+        new FetchResponse(null, null);
     }
     
     @Test public void parses_single_object() throws JSONException {
@@ -82,9 +84,10 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBody()).thenReturn(SINGLE_BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
-        FetchResponse impl = new FetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         
         assertTrue(impl.hasObject());
+        assertSame(mockRiakClient, impl.getObject().getRiakClient());
         assertEquals(BUCKET, impl.getObject().getBucket());
         assertEquals(KEY, impl.getObject().getKey());
         assertEquals("text/plain", impl.getObject().getContentType());
@@ -103,13 +106,14 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY);
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
-        FetchResponse impl = new FetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         assertTrue(impl.hasSiblings());
 
         Iterator<RiakObject> siblings = impl.getSiblings().iterator();
 
         RiakObject o;
         o = siblings.next();
+        assertSame(mockRiakClient, o.getRiakClient());
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
@@ -121,6 +125,7 @@ public class TestFetchResponse {
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
 
         o = siblings.next();
+        assertSame(mockRiakClient, o.getRiakClient());
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("application/octect-stream", o.getContentType());
@@ -140,7 +145,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY);
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
-        FetchResponse impl = new FetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         
         assertTrue(impl.hasObject());
         assertTrue(impl.getSiblings().contains(impl.getObject()));
@@ -159,7 +164,7 @@ public class TestFetchResponse {
         
         when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(mockInputStream);
         
-        FetchResponse impl = new FetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         
         assertTrue(impl.hasObject());
         assertSame(mockInputStream, impl.getObject().getValueStream());
@@ -178,7 +183,7 @@ public class TestFetchResponse {
         
         when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(is);
         
-        FetchResponse impl = new FetchResponse(mockHttpResponse);
+        FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         assertTrue(impl.hasSiblings());
 
         verify(mockHttpMethod).releaseConnection();
@@ -187,6 +192,7 @@ public class TestFetchResponse {
  
         RiakObject o;
         o = siblings.next();
+        assertSame(mockRiakClient, o.getRiakClient());
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
@@ -198,6 +204,7 @@ public class TestFetchResponse {
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
 
         o = siblings.next();
+        assertSame(mockRiakClient, o.getRiakClient());
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("application/octect-stream", o.getContentType());

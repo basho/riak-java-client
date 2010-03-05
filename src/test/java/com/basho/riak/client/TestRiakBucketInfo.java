@@ -61,14 +61,10 @@ public class TestRiakBucketInfo {
         impl.setLinkFun(LINK_MOD, LINK_FUN);
 
         assertEquals(LINK_MOD + ":" + LINK_FUN, impl.getLinkFun());
-        assertEquals(
-                     LINK_MOD,
-                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_LINKFUN).getString(
-                                                                                           Constants.FL_SCHEMA_LINKFUN_MOD));
-        assertEquals(
-                     LINK_FUN,
-                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_LINKFUN).getString(
-                                                                                           Constants.FL_SCHEMA_LINKFUN_FUN));
+        assertEquals(LINK_MOD, 
+                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_LINKFUN).getString(Constants.FL_SCHEMA_LINKFUN_MOD));
+        assertEquals(LINK_FUN,
+                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_LINKFUN).getString(Constants.FL_SCHEMA_LINKFUN_FUN));
     }
 
     @Test public void chash_fun_sets_schema() throws JSONException {
@@ -79,13 +75,9 @@ public class TestRiakBucketInfo {
         impl.setCHashFun(HASH_MOD, HASH_FUN);
 
         assertEquals(HASH_MOD + ":" + HASH_FUN, impl.getCHashFun());
-        assertEquals(
-                     HASH_MOD,
-                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_CHASHFUN).getString(
-                                                                                            Constants.FL_SCHEMA_CHASHFUN_MOD));
-        assertEquals(
-                     HASH_FUN,
-                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_CHASHFUN).getString(
-                                                                                            Constants.FL_SCHEMA_CHASHFUN_FUN));
+        assertEquals(HASH_MOD,
+                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_CHASHFUN).getString(Constants.FL_SCHEMA_CHASHFUN_MOD));
+        assertEquals(HASH_FUN,
+                     impl.getSchema().getJSONObject(Constants.FL_SCHEMA_CHASHFUN).getString(Constants.FL_SCHEMA_CHASHFUN_FUN));
     }
 }

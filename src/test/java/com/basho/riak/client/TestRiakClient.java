@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,14 +17,13 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.basho.riak.client.RiakBucketInfo;
-import com.basho.riak.client.RiakClient;
-import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
+import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
+import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.ClientHelper;
 import com.basho.riak.client.util.Constants;
 
@@ -138,7 +138,7 @@ public class TestRiakClient {
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
     }
-
+    
     @Test public void setBucketSchema_puts_schema_in_props_field() {
         final JSONObject mockJSONObject = mock(JSONObject.class);
         
@@ -168,4 +168,56 @@ public class TestRiakClient {
         assertTrue(meta.getHeader("accept").contains("text/plain"));
         assertTrue(meta.getHeader("accept").contains("multipart/mixed"));
     }
+
+    @Test public void fetch_meta_asks_fetchresponse_to_associate_new_objects_with_client() {
+        when(mockHelper.fetchMeta(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        
+        FetchResponse r = impl.fetchMeta(bucket, key);
+
+        assertSame(impl, r.getObject().getRiakClient());
+    }
+
+    @Test public void fetch_asks_fetchresponse_to_associate_new_objects_with_client() {
+        when(mockHelper.fetch(anyString(), anyString(), any(RequestMeta.class), anyBoolean())).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        
+        FetchResponse r = impl.fetch(bucket, key);
+
+        assertSame(impl, r.getObject().getRiakClient());
+    }
+
+    @Test public void stream_asks_fetchresponse_to_associate_new_objects_with_client() {
+        when(mockHelper.fetch(anyString(), anyString(), any(RequestMeta.class), anyBoolean())).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        
+        FetchResponse r = impl.stream(bucket, key);
+
+        assertSame(impl, r.getObject().getRiakClient());
+    }
+
+    @Test public void walk_asks_fetchresponse_to_associate_new_objects_with_client() {
+        @SuppressWarnings("serial") final Map<String, String> HEADERS = new HashMap<String, String>() {{
+            put("Content-Type".toLowerCase(), "multipart/mixed; boundary=BCVLGEKnH0gY7KsH5nW3xnzhYbU");
+        }};
+        final String BODY = "\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\n"
+            + "Content-Type: multipart/mixed; boundary=7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
+            + "\n"
+            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
+            + "Location: /riak/b/k1\n" 
+            + "\n" 
+            + "foo\n"
+            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n"
+            + "\n"
+            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
+    
+        when(mockHelper.walk(anyString(), anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.getHttpHeaders()).thenReturn(HEADERS);
+        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        
+        WalkResponse r = impl.walk(bucket, key, walkSpec);
+
+        assertSame(impl, r.getSteps().get(0).get(0).getRiakClient());
+   }
 }

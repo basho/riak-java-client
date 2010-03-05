@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -34,6 +36,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
@@ -161,6 +164,29 @@ public class ClientUtils {
     }
 
     /**
+     * Base64 encodes the first 4 bytes of clientId into a value acceptable for
+     * the X-Riak-ClientId header.
+     */
+    public static String encodeClientId(String clientId) {
+        if (clientId == null || clientId.getBytes().length < 4)
+            throw new IllegalArgumentException("ClientId must be 4 bytes");
+
+        byte[] bytes = clientId.getBytes();
+        byte[] encoded = Base64.encodeBase64(new byte[] { bytes[0], bytes[1], bytes[2], bytes[3] });
+        return new String(encoded);
+    }
+
+    /**
+     * Returns a random X-Riak-ClientId header value.
+     */
+    public static String randomClientId() {
+        byte[] rnd = new byte[4];
+        new Random().nextBytes(rnd);
+        byte[] encoded = Base64.encodeBase64(rnd);
+        return new String(encoded);
+    }
+
+    /**
      * Unquote and unescape an HTTP <code>quoted-string</code>:
      * 
      * http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2
@@ -234,17 +260,20 @@ public class ClientUtils {
         }
         return l;
     }
-    
+
+    /**
+     * Join the elements in arr in to a single string separated by delimiter.
+     */
     public static String join(String[] arr, String delimiter) {
         String res = null;
         if (arr == null || arr.length == 0)
             return res;
-        
+
         res = arr[0];
         for (int i = 1; i < arr.length; i++) {
             res += delimiter + arr[i];
         }
-        
+
         return res;
     }
 
@@ -268,7 +297,6 @@ public class ClientUtils {
             out.write(buffer, 0, readCount);
         }
     }
-
 
     /**
      * Parse a link header into a {@link RiakLink}. See {@link LinkHeader}.
@@ -335,6 +363,9 @@ public class ClientUtils {
     /**
      * Convert a multipart/mixed document to a list of {@link RiakObject}s.
      * 
+     * @param riak
+     *            {@link RiakClient} this object should be associate with, or
+     *            null if none
      * @param bucket
      *            original object's bucket
      * @param key
@@ -345,8 +376,8 @@ public class ClientUtils {
      *            original document's body
      * @return List of {@link RiakObject}s represented by the multipart document
      */
-    public static List<RiakObject> parseMultipart(String bucket, String key, Map<String, String> docHeaders,
-                                                 String docBody) {
+    public static List<RiakObject> parseMultipart(RiakClient riak, String bucket, String key,
+                                                  Map<String, String> docHeaders, String docBody) {
 
         String vclock = null;
 
@@ -373,9 +404,9 @@ public class ClientUtils {
                     }
                 }
 
-                RiakObject o = new RiakObject(partBucket, partKey, part.getBody(),
-                                            headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta, vclock,
-                                            headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
+                RiakObject o = new RiakObject(riak, partBucket, partKey, part.getBody(),
+                                              headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta, vclock,
+                                              headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
                 objects.add(o);
             }
         }

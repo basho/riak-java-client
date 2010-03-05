@@ -16,6 +16,7 @@ package com.basho.riak.client.util;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -37,20 +38,21 @@ import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StreamHandler;
 
 /**
- * This class performs the actual HTTP requests underlying the operations in the
- * RiakClient interface and returns the resulting HTTP responses. It is up to
- * actual implementations of RiakClient to interpret the responses and translate
- * them into the appropriate format.
+ * This class performs the actual HTTP requests underlying the operations in
+ * RiakClient and returns the resulting HTTP responses. It is up to RiakClient
+ * to interpret the responses and translate them into the appropriate format.
  */
 public class ClientHelper {
 
     private RiakConfig config;
     private HttpClient httpClient;
+    private String clientId = null;
     private RiakExceptionHandler exceptionHandler = null;
 
-    public ClientHelper(RiakConfig config) {
+    public ClientHelper(RiakConfig config, String clientId) {
         this.config = config;
         httpClient = ClientUtils.newHttpClient(config);
+        setClientId(clientId);
     }
 
     /** Used for testing -- inject an HttpClient */
@@ -59,7 +61,23 @@ public class ClientHelper {
     }
 
     /**
-     * See {@link RiakClient}
+     * See {@link RiakClient#getClientId()}
+     */
+    public String getClientId() {
+        return new String(Base64.decodeBase64(clientId.getBytes()));
+    }
+
+    public void setClientId(String clientId) {
+        if (clientId != null) {
+            this.clientId = ClientUtils.encodeClientId(clientId);
+        } else {
+            this.clientId = ClientUtils.randomClientId();
+        }
+    }
+
+    /**
+     * See
+     * {@link RiakClient#setBucketSchema(String, com.basho.riak.client.RiakBucketInfo, RequestMeta)}
      */
     public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) {
         if (schema == null) {
@@ -94,6 +112,13 @@ public class ClientHelper {
         if (meta == null) {
             meta = new RequestMeta();
         }
+        if (meta.getClientId() == null) {
+            meta.setClientId(clientId);
+        }
+        if (meta.getHeader(Constants.HDR_CONNECTION) == null) {
+            meta.setHeader(Constants.HDR_CONNECTION, "close");
+        }
+
         String bucket = object.getBucket();
         String key = object.getKey();
         String url = ClientUtils.makeURI(config, bucket, key);
@@ -228,7 +253,10 @@ public class ClientHelper {
             throw e;
     }
 
-    /** Return the {@link HttpClient} used to make requests, which can be configured. */
+    /**
+     * Return the {@link HttpClient} used to make requests, which can be
+     * configured.
+     */
     public HttpClient getHttpClient() {
         return httpClient;
     }

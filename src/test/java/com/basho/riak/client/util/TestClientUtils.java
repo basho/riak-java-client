@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 import org.apache.commons.httpclient.params.HttpClientParams;
@@ -15,16 +16,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 
 public class TestClientUtils {
 
+    @Mock RiakClient mockRiakClient;
+
     RiakConfig config = new RiakConfig();
 
     @Test public void newHttpClient_uses_configs_http_client_if_exists() {
+        MockitoAnnotations.initMocks(this);
+
         HttpClient httpClient = new HttpClient();
         config.setHttpClient(httpClient);
         assertSame(httpClient, ClientUtils.newHttpClient(config));
@@ -243,17 +251,18 @@ public class TestClientUtils {
     }
 
     @Test public void parse_multipart_handles_null_params() {
-        List<RiakObject> objects = ClientUtils.parseMultipart(null, null, null, null);
+        List<RiakObject> objects = ClientUtils.parseMultipart(null, null, null, null, null);
         assertNotNull(objects);
     }
 
-    @Test public void parse_multipart_returns_correct_bucket_and_key() {
+    @Test public void parse_multipart_returns_correct_riak_and_bucket_and_key() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         String body = "\n--boundary\n" + "\n" + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart("b", "k", headers, body);
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
         assertEquals(1, objects.size());
+        assertSame(mockRiakClient, objects.get(0).getRiakClient());
         assertEquals("b", objects.get(0).getBucket());
         assertEquals("k", objects.get(0).getKey());
     }
@@ -266,7 +275,7 @@ public class TestClientUtils {
                       + "Link: </riak/b/l>; riaktag=t\n" + "ETag: vtag\n" + "X-Riak-Meta-Test: value\n" + "\n"
                       + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart("b", "k", headers, body);
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
 
         assertEquals(1, objects.get(0).getLinks().size());
         assertEquals(new RiakLink("b", "l", "t"), objects.get(0).getLinks().get(0));
@@ -285,9 +294,11 @@ public class TestClientUtils {
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         String body = "\n--boundary\n" + "\n" + "foo\n" + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart("b", "k", headers, body);
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
         assertEquals("foo", objects.get(0).getValue());
     }
+
+    // Rely on Multipart tests to verify that multipart parsing actually works
     
     @Test public void join_handles_null_array() {
         assertNull(ClientUtils.join(null, null));
@@ -308,6 +319,39 @@ public class TestClientUtils {
     @Test public void join_handles_one_multicharacter_delimiter() {
         assertEquals("x//y//z", ClientUtils.join(new String[] {"x", "y", "z"}, "//"));
     }
+    
+    @Test(expected=IllegalArgumentException.class) public void encode_client_id_throws_on_null() {
+        ClientUtils.encodeClientId(null);
+    }
 
-    // Rely on Multipart tests to verify that multipart parsing actually works
+    @Test(expected=IllegalArgumentException.class) public void encode_client_id_throws_on_too_short_input() {
+        ClientUtils.encodeClientId("id");
+    }
+
+    @Test public void encode_client_id_encodes_first_4_bytes() {
+        String id = "clientid";
+        String encoded = ClientUtils.encodeClientId(id);
+        
+        byte[] decoded = Base64.decodeBase64(encoded.getBytes());
+        assertEquals(4, decoded.length);
+        assertEquals(id.getBytes()[0], decoded[0]);
+        assertEquals(id.getBytes()[1], decoded[1]);
+        assertEquals(id.getBytes()[2], decoded[2]);
+        assertEquals(id.getBytes()[3], decoded[3]);
+    }
+
+    @Test public void random_client_id_returns_4_encoded_bytes() {
+        String encoded = ClientUtils.randomClientId();
+        byte[] decoded = Base64.decodeBase64(encoded.getBytes());
+        assertEquals(4, decoded.length);
+    }
+
+    @Test public void random_client_id_returns_different_ids() {
+        String id1 = ClientUtils.randomClientId();
+        String id2 = ClientUtils.randomClientId();
+        assertNotNull(id1);
+        assertNotNull(id2);
+        assertFalse(id1.equals(id2));
+    }
+
 }

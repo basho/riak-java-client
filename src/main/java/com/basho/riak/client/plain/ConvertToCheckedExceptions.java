@@ -10,15 +10,20 @@ import com.basho.riak.client.util.ClientUtils;
  * Converts unchecked exceptions RiakIORuntimeException and
  * RiakResponseRuntimeException to checked exceptions RiakIOException and
  * RiakRuntimeException. Be careful that everywhere calling a {@link RiakClient}
- * with this {@link RiakExceptionHandler} installed contains the appropriate
- * throws declaration.
+ * with this handler installed contains the appropriate throws declaration.
  */
 public class ConvertToCheckedExceptions implements RiakExceptionHandler {
 
+    /**
+     * Throws a checked {@link RiakIOException}
+     */
     public void handle(RiakIORuntimeException e) {
         ClientUtils.throwChecked(new RiakIOException(e));
     }
 
+    /**
+     * Throws a checked {@link RiakResponseException}
+     */
     public void handle(RiakResponseRuntimeException e) {
         ClientUtils.throwChecked(new RiakResponseException(e));
     }

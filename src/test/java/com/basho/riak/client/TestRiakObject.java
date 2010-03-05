@@ -19,6 +19,10 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.response.FetchResponse;
+import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.util.Constants;
 
 public class TestRiakObject {
@@ -113,7 +117,14 @@ public class TestRiakObject {
         final String vtag = "vtag";
 
         impl = new RiakObject("b", "k", null, null, null, null, vclock, lastmod, vtag);
-        impl.updateMeta(null);
+        impl.updateMeta((StoreResponse) null);
+
+        assertNull(impl.getVclock());
+        assertNull(impl.getLastmod());
+        assertNull(impl.getVtag());
+
+        impl = new RiakObject("b", "k", null, null, null, null, vclock, lastmod, vtag);
+        impl.updateMeta((FetchResponse) null);
 
         assertNull(impl.getVclock());
         assertNull(impl.getLastmod());
@@ -130,6 +141,135 @@ public class TestRiakObject {
 
         assertEquals(value, impl.getValue());
         assertSame(is, impl.getValueStream());
+    }
+
+    @Test public void convenience_riak_client_methods_defer_to_riak_client() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        RequestMeta mockRequestMeta = mock(RequestMeta.class);
+        StoreResponse mockStoreResponse = mock(StoreResponse.class);
+        FetchResponse mockFetchResponse = mock(FetchResponse.class);
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        
+        when(mockRiakClient.store(any(RiakObject.class), any(RequestMeta.class))).thenReturn(mockStoreResponse);
+        impl = new RiakObject(mockRiakClient, "b", "k");
+        impl.store();
+        impl.store(mockRequestMeta);
+        
+        verify(mockRiakClient).store(impl, null);        
+        verify(mockRiakClient).store(impl, mockRequestMeta);        
+
+        when(mockRiakClient.fetchMeta(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
+        impl.fetchMeta();
+        impl.fetchMeta(mockRequestMeta);
+        
+        verify(mockRiakClient).fetchMeta("b", "k", null);        
+        verify(mockRiakClient).fetchMeta("b", "k", mockRequestMeta);        
+
+        when(mockRiakClient.fetch(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
+        impl.fetch();
+        impl.fetch(mockRequestMeta);
+        
+        verify(mockRiakClient).fetch("b", "k", null);        
+        verify(mockRiakClient).fetch("b", "k", mockRequestMeta);        
+
+        when(mockRiakClient.delete(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
+        impl.delete();
+        impl.delete(mockRequestMeta);
+        
+        verify(mockRiakClient).delete("b", "k", null);        
+        verify(mockRiakClient).delete("b", "k", mockRequestMeta);        
+    }
+    
+    @Test public void store_updates_meta_on_success() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        StoreResponse mockStoreResponse = mock(StoreResponse.class);
+        
+        when(mockRiakClient.store(any(RiakObject.class), any(RequestMeta.class))).thenReturn(mockStoreResponse);
+        when(mockStoreResponse.isSuccess()).thenReturn(true);
+        impl = spy(new RiakObject(mockRiakClient, "b", "k"));
+        impl.store();
+        
+        verify(impl).updateMeta(mockStoreResponse);
+    }
+
+    @Test public void store_does_not_modify_meta_on_failure() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        StoreResponse mockStoreResponse = mock(StoreResponse.class);
+        
+        when(mockRiakClient.store(any(RiakObject.class), any(RequestMeta.class))).thenReturn(mockStoreResponse);
+        when(mockStoreResponse.isSuccess()).thenReturn(false);
+        impl = spy(new RiakObject(mockRiakClient, "b", "k"));
+        impl.store();
+        
+        verify(impl, never()).updateMeta(any(StoreResponse.class));
+        verify(impl, never()).copyData(any(RiakObject.class));
+    }
+
+    @Test public void fetchMeta_updates_meta_on_success() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        FetchResponse mockFetchResponse = mock(FetchResponse.class);
+        
+        when(mockRiakClient.fetchMeta(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
+        when(mockFetchResponse.isSuccess()).thenReturn(true);
+        impl = spy(new RiakObject(mockRiakClient, "b", "k"));
+        impl.fetchMeta();
+        
+        verify(impl).updateMeta(mockFetchResponse);
+    }
+
+    @Test public void fetchMeta_does_not_modify_meta_on_failure() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        FetchResponse mockFetchResponse = mock(FetchResponse.class);
+        
+        when(mockRiakClient.fetchMeta(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
+        when(mockFetchResponse.isSuccess()).thenReturn(false);
+        impl = spy(new RiakObject(mockRiakClient, "b", "k"));
+        impl.fetchMeta();
+        
+        verify(impl, never()).updateMeta(any(FetchResponse.class));
+        verify(impl, never()).copyData(any(RiakObject.class));
+    }
+
+    @Test public void fetch_copies_data_on_success() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        FetchResponse mockFetchResponse = mock(FetchResponse.class);
+        RiakObject mockRiakObject = mock(RiakObject.class);
+        
+        when(mockRiakClient.fetch(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
+        when(mockFetchResponse.isSuccess()).thenReturn(true);
+        when(mockFetchResponse.getObject()).thenReturn(mockRiakObject);
+        impl = spy(new RiakObject(mockRiakClient, "b", "k"));
+        impl.fetch();
+        
+        verify(impl).copyData(mockRiakObject);
+    }
+
+    @Test public void fetch_does_not_copy_data_on_failure() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        FetchResponse mockFetchResponse = mock(FetchResponse.class);
+        
+        when(mockRiakClient.fetch(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
+        when(mockFetchResponse.isSuccess()).thenReturn(false);
+        when(mockFetchResponse.getObject()).thenReturn(null);
+        impl = spy(new RiakObject(mockRiakClient, "b", "k"));
+        impl.fetch();
+        
+        verify(impl, never()).updateMeta(any(FetchResponse.class));
+        verify(impl, never()).copyData(any(RiakObject.class));
+    }
+
+    // The following could be combined as "convenience_riak_client_methods_throw_if_no_associated_riak_client"
+    @Test(expected=IllegalStateException.class) public void store_throws_if_no_associated_riak_client() {
+        impl.store();
+    }
+    @Test(expected=IllegalStateException.class) public void fetchMeta_throws_if_no_associated_riak_client() {
+        impl.fetchMeta();
+    }
+    @Test(expected=IllegalStateException.class) public void fetch_throws_if_no_associated_riak_client() {
+        impl.fetch();
+    }
+    @Test(expected=IllegalStateException.class) public void delete_throws_if_no_associated_riak_client() {
+        impl.delete();
     }
 
     @SuppressWarnings("unchecked") @Test public void write_to_http_method_gives_value_stream_priority_over_value() {

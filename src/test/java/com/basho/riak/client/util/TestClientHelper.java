@@ -36,6 +36,7 @@ public class TestClientHelper {
     final String bucket = "bucket";
     final String key = "key";
     final String walkSpec = "walkSpec";
+    final String clientId = "test";
     final RequestMeta meta = new RequestMeta();
 
     @Mock HttpClient mockHttpClient;
@@ -49,10 +50,20 @@ public class TestClientHelper {
         when(object.getBucket()).thenReturn(bucket);
         when(object.getKey()).thenReturn(key);
 
-        impl = new ClientHelper(config);
+        impl = new ClientHelper(config, clientId);
         impl.setHttpClient(mockHttpClient);
     }
     
+    @Test public void client_helper_uses_passed_in_client_id() {
+        assertEquals(clientId, impl.getClientId());
+    }
+
+    @Test public void client_helper_generates_client_id_if_null() {
+        impl = new ClientHelper(config, null);
+        assertNotNull(impl.getClientId());
+        assertEquals(4, impl.getClientId().getBytes().length);
+    }
+
     @Test public void fetch_defaults_to_not_streaming() {
         impl = spy(impl);
         impl.fetch(bucket, key, meta);
@@ -77,6 +88,30 @@ public class TestClientHelper {
         verify(mockHttpClient).executeMethod(any(PutMethod.class));
     }
     
+    @Test public void store_sets_client_id() {
+        impl.store(object, meta);
+        assertEquals(ClientUtils.encodeClientId(clientId), meta.getClientId());
+    }
+    
+    @Test public void store_doesnt_overwrite_client_id() {
+        meta.setClientId("clientId");
+        impl.store(object, meta);
+        assertEquals("clientId", meta.getClientId());
+    }
+
+    // This is currently required because Riak/Webmachine doesn't support persistent connections
+    // for PUTs, but also incorrectly handles 0-length objects if connection: close is not specified 
+    @Test public void store_sets_connection_header() {
+        impl.store(object, meta);
+        assertEquals("close", meta.getHeader(Constants.HDR_CONNECTION));
+    }
+
+    @Test public void store_doesnt_overwrite_connection_header() {
+        meta.setHeader(Constants.HDR_CONNECTION, "connection");
+        impl.store(object, meta);
+        assertEquals("connection", meta.getHeader(Constants.HDR_CONNECTION));
+    }
+
     @Test public void fetchMeta_HEADs_object_URL() throws HttpException, IOException {
         when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
         impl.fetchMeta(bucket, key, meta);
@@ -84,7 +119,8 @@ public class TestClientHelper {
     }
 
     @Test public void fetchMeta_adds_default_R_value() {
-        
+        impl.fetchMeta(bucket, key, meta);
+        assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
     }
 
     @Test public void fetch_GETs_object_URL() throws HttpException, IOException {

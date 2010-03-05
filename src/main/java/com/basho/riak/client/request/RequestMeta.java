@@ -70,51 +70,6 @@ public class RequestMeta {
         }
         return meta;
     }
-    
-    public RequestMeta ifModifiedSince(String lastmod) { 
-        setHeader(Constants.HDR_IF_MODIFIED_SINCE, lastmod);
-        return this;
-    }
-
-    public RequestMeta ifModifiedSince(Date lastmod) { 
-        setHeader(Constants.HDR_IF_MODIFIED_SINCE, DateUtil.formatDate(lastmod));
-        return this;
-    }
-
-    public RequestMeta ifUnmodifiedSince(String lastmod) { 
-        setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, lastmod);
-        return this;
-    }
-
-    public RequestMeta ifUnmodifiedSince(Date lastmod) { 
-        setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, DateUtil.formatDate(lastmod));
-        return this;
-    }
-
-    public RequestMeta ifMatch(String etags) { 
-        setHeader(Constants.HDR_IF_MATCH, etags);
-        return this;
-    }
-    
-    public RequestMeta ifMatch(String[] etags) { 
-        setHeader(Constants.HDR_IF_MATCH, ClientUtils.join(etags, ","));
-        return this;
-    }
-
-    public RequestMeta ifNoneMatch(String etags) { 
-        setHeader(Constants.HDR_IF_NONE_MATCH, etags);
-        return this;
-    }
-
-    public RequestMeta ifNoneMatch(String[] etags) { 
-        setHeader(Constants.HDR_IF_NONE_MATCH, ClientUtils.join(etags, ","));
-        return this;
-    }
-    
-    public RequestMeta accept(String contentTypes) {
-        setHeader(Constants.HDR_ACCEPT, contentTypes);
-        return this;
-    }
 
     /**
      * Add the specified HTTP header
@@ -141,25 +96,27 @@ public class RequestMeta {
     }
 
     /**
+     * Whether the HTTP header has been set
+     * 
      * @param key
      *            header name
-     * @return whether the HTTP header has been set
      */
     public boolean hasHeader(String key) {
         return headers.containsKey(key);
     }
 
     /**
-     * @return Map of HTTP header names to values
+     * Map of HTTP header names to values
      */
     public Map<String, String> getHeaders() {
         return headers;
     }
 
     /**
+     * Query parameter value or null if not set
+     * 
      * @param param
      *            query parameter name
-     * @return query parameter value or null if not set
      */
     public String getQueryParam(String param) {
         return queryParams.get(param);
@@ -179,8 +136,8 @@ public class RequestMeta {
     }
 
     /**
-     * @return A string containing all the specified query parameters in this
-     *         {@link RequestMeta} in the form: p1=v1&p2=v2
+     * A string containing all the specified query parameters in this
+     * {@link RequestMeta} in the form: p1=v1&p2=v2
      */
     public String getQueryParams() {
         StringBuilder qp = new StringBuilder();
@@ -193,5 +150,75 @@ public class RequestMeta {
             }
         }
         return qp.toString();
+    }
+
+    /** Convenience method for the X-Riak-ClientId HTTP header */
+    public String getClientId() {
+        return getHeader(Constants.HDR_CLIENT_ID);
+    }
+
+    public RequestMeta setClientId(String clientId) {
+        return setHeader(Constants.HDR_CLIENT_ID, clientId);
+    }
+
+    /** Convenience method for the If-Modified-Since HTTP header */
+    public String getIfModifiedSince() {
+        return getHeader(Constants.HDR_IF_MODIFIED_SINCE);
+    }
+
+    public RequestMeta setIfModifiedSince(String lastmod) {
+        return setHeader(Constants.HDR_IF_MODIFIED_SINCE, lastmod);
+    }
+
+    public RequestMeta setIfModifiedSince(Date lastmod) {
+        return setHeader(Constants.HDR_IF_MODIFIED_SINCE, DateUtil.formatDate(lastmod));
+    }
+
+    /** Convenience method for the If-Unmodified-Since HTTP header */
+    public String getIfUnmodifiedSince() {
+        return getHeader(Constants.HDR_IF_UNMODIFIED_SINCE);
+    }
+
+    public RequestMeta setIfUnmodifiedSince(String lastmod) {
+        return setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, lastmod);
+    }
+
+    public RequestMeta setIfUnmodifiedSince(Date lastmod) {
+        return setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, DateUtil.formatDate(lastmod));
+    }
+
+    /** Convenience method for the If-Match HTTP header */
+    public String getIfMatch() {
+        return getHeader(Constants.HDR_IF_MATCH);
+    }
+
+    public RequestMeta setIfMatch(String etags) {
+        return setHeader(Constants.HDR_IF_MATCH, etags);
+    }
+
+    public RequestMeta setIfMatch(String[] etags) {
+        return setHeader(Constants.HDR_IF_MATCH, ClientUtils.join(etags, ","));
+    }
+
+    /** Convenience method for the If-None-Match HTTP header */
+    public String getIfNoneMatch() {
+        return getHeader(Constants.HDR_IF_NONE_MATCH);
+    }
+
+    public RequestMeta setIfNoneMatch(String etags) {
+        return setHeader(Constants.HDR_IF_NONE_MATCH, etags);
+    }
+
+    public RequestMeta setIfNoneMatch(String[] etags) {
+        return setHeader(Constants.HDR_IF_NONE_MATCH, ClientUtils.join(etags, ","));
+    }
+
+    /** Convenience method for the Accept HTTP header */
+    public String getAccept() {
+        return getHeader(Constants.HDR_ACCEPT);
+    }
+
+    public RequestMeta setAccept(String contentTypes) {
+        return setHeader(Constants.HDR_ACCEPT, contentTypes);
     }
 }

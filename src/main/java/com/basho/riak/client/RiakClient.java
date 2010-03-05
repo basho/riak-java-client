@@ -31,6 +31,7 @@ import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.StreamHandler;
 import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.ClientHelper;
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -45,11 +46,19 @@ public class RiakClient {
     }
 
     public RiakClient(RiakConfig config) {
-        helper = new ClientHelper(config);
+        this(config, null);
+    }
+
+    public RiakClient(RiakConfig config, String clientId) {
+        helper = new ClientHelper(config, clientId);
     }
 
     public RiakClient(String url) {
-        helper = new ClientHelper(new RiakConfig(url));
+        this(new RiakConfig(url), null);
+    }
+
+    public RiakClient(String url, String clientId) {
+        this(new RiakConfig(url), clientId);
     }
 
     // Package protected constructor used for testing
@@ -58,15 +67,14 @@ public class RiakClient {
     }
 
     /**
-     * Set the schema describing the structure and per-field permissions for a
-     * Riak bucket.
+     * Set the properties for a Riak bucket.
      * 
      * @param bucket
      *            The bucket name.
      * @param bucketInfo
      *            Contains the schema to use for the bucket. Refer to the Riak
-     *            documentation for a list of the recognized schema properties
-     *            and the format of their values.
+     *            documentation for a list of the recognized properties and the
+     *            format of their values.
      * @param meta
      *            Extra metadata to attach to the request such as HTTP headers
      *            and query parameters.
@@ -95,7 +103,7 @@ public class RiakClient {
     }
 
     /**
-     * Return the schema and keys for a Riak bucket.
+     * Return the properties and keys for a Riak bucket.
      * 
      * @param bucket
      *            The bucket to list.
@@ -136,9 +144,9 @@ public class RiakClient {
      *            parameters. See
      *            {@link RequestMeta#writeParams(Integer, Integer)}.
      * 
-     * @return {@link StoreResponse} containing HTTP response information and a
-     *         {@link RiakObject} with any updated information returned by the
-     *         server such as the vclock, last modified date, and stored value.
+     * @return A {@link StoreResponse} containing HTTP response information and
+     *         any updated information returned by the server such as the
+     *         vclock, last modified date.
      * 
      * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
@@ -146,6 +154,13 @@ public class RiakClient {
      *             If the Riak server returns a malformed response.
      */
     public StoreResponse store(RiakObject object, RequestMeta meta) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (meta.getQueryParam(Constants.QP_RETURN_BODY) == null) {
+            meta.setQueryParam(Constants.QP_RETURN_BODY, "true");
+        }
+
         HttpResponse r = helper.store(object, meta);
         return new StoreResponse(r);
     }
@@ -179,7 +194,7 @@ public class RiakClient {
         try {
             return getFetchResponse(helper.fetchMeta(bucket, key, meta));
         } catch (RiakResponseRuntimeException e) {
-            return new FetchResponse(helper.toss(e));
+            return new FetchResponse(helper.toss(e), this);
         }
     }
 
@@ -264,7 +279,7 @@ public class RiakClient {
         try {
             return getFetchResponse(r);
         } catch (RiakResponseRuntimeException e) {
-            return new FetchResponse(helper.toss(e));
+            return new FetchResponse(helper.toss(e), this);
         }
 
     }
@@ -353,7 +368,7 @@ public class RiakClient {
         try {
             return getWalkResponse(r);
         } catch (RiakResponseRuntimeException e) {
-            return new WalkResponse(helper.toss(e));
+            return new WalkResponse(helper.toss(e), this);
         }
     }
 
@@ -374,10 +389,10 @@ public class RiakClient {
 
     /**
      * If an exception handler is provided, then the Riak client will hand
-     * exceptions to the handler rather than throwing them. The exceptionHandler
-     * can use ClientUtils.throwChecked() to throw undeclared checked exceptions
-     * in order to convert RiakClient's unchecked exceptions to checked ones, if
-     * desired.
+     * exceptions to the handler rather than throwing them.
+     * {@link ClientUtils#throwChecked(Throwable)} can be used to throw
+     * undeclared checked exceptions to effectively "convert" RiakClient's
+     * unchecked exceptions to checked exceptions.
      */
     public void setExceptionHandler(RiakExceptionHandler exceptionHandler) {
         helper.setExceptionHandler(exceptionHandler);
@@ -391,16 +406,31 @@ public class RiakClient {
         return helper.getHttpClient();
     }
 
+    /**
+     * A 4-byte unique ID for this client. The ID is base 64 encoded and sent to
+     * Riak to generating the object vclock on store operations. Refer to the
+     * Riak documentation and
+     * http://lists.basho.com/pipermail/riak-users_lists.basho.com/2009-
+     * November/000153.html for information about the client ID.
+     */
+    public String getClientId() {
+        return helper.getClientId();
+    }
+
+    public void setClientId(String clientId) {
+        helper.setClientId(clientId);
+    }
+
     // Encapsulate response creation so it can be stubbed for testing
     BucketResponse getBucketResponse(HttpResponse r) throws JSONException {
         return new BucketResponse(r);
     }
 
     FetchResponse getFetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
-        return new FetchResponse(r);
+        return new FetchResponse(r, this);
     }
 
     WalkResponse getWalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
-        return new WalkResponse(r);
+        return new WalkResponse(r, this);
     }
 }
