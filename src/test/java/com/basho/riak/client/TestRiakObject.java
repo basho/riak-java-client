@@ -23,6 +23,7 @@ import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.StoreResponse;
+import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 
 public class TestRiakObject {
@@ -156,35 +157,53 @@ public class TestRiakObject {
         StoreResponse mockStoreResponse = mock(StoreResponse.class);
         FetchResponse mockFetchResponse = mock(FetchResponse.class);
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        WalkResponse mockWalkResponse = mock(WalkResponse.class);
         
         when(mockRiakClient.store(any(RiakObject.class), any(RequestMeta.class))).thenReturn(mockStoreResponse);
         impl = new RiakObject(mockRiakClient, "b", "k");
-        impl.store();
-        impl.store(mockRequestMeta);
+        StoreResponse sr1 = impl.store();
+        StoreResponse sr2 = impl.store(mockRequestMeta);
         
         verify(mockRiakClient).store(impl, null);        
-        verify(mockRiakClient).store(impl, mockRequestMeta);        
+        verify(mockRiakClient).store(impl, mockRequestMeta);
+        assertSame(mockStoreResponse, sr1);
+        assertSame(mockStoreResponse, sr2);
 
         when(mockRiakClient.fetchMeta(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
-        impl.fetchMeta();
-        impl.fetchMeta(mockRequestMeta);
+        FetchResponse fr1 = impl.fetchMeta();
+        FetchResponse fr2 = impl.fetchMeta(mockRequestMeta);
         
         verify(mockRiakClient).fetchMeta("b", "k", null);        
-        verify(mockRiakClient).fetchMeta("b", "k", mockRequestMeta);        
+        verify(mockRiakClient).fetchMeta("b", "k", mockRequestMeta);
+        assertSame(mockFetchResponse, fr1);
+        assertSame(mockFetchResponse, fr2);
 
         when(mockRiakClient.fetch(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
-        impl.fetch();
-        impl.fetch(mockRequestMeta);
+        fr1 = impl.fetch();
+        fr2 = impl.fetch(mockRequestMeta);
         
         verify(mockRiakClient).fetch("b", "k", null);        
         verify(mockRiakClient).fetch("b", "k", mockRequestMeta);        
+        assertSame(mockFetchResponse, fr1);
+        assertSame(mockFetchResponse, fr2);
 
         when(mockRiakClient.delete(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
-        impl.delete();
-        impl.delete(mockRequestMeta);
+        HttpResponse hr1 = impl.delete();
+        HttpResponse hr2 = impl.delete(mockRequestMeta);
         
         verify(mockRiakClient).delete("b", "k", null);        
-        verify(mockRiakClient).delete("b", "k", mockRequestMeta);        
+        verify(mockRiakClient).delete("b", "k", mockRequestMeta);
+        assertSame(mockHttpResponse, hr1);
+        assertSame(mockHttpResponse, hr2);
+
+        when(mockRiakClient.walk(anyString(), anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockWalkResponse);
+        WalkResponse wr1 = impl.walk().run();
+        WalkResponse wr2 = impl.walk().run(mockRequestMeta);
+        
+        verify(mockRiakClient).walk("b", "k", "_,_,_/", null);        
+        verify(mockRiakClient).walk("b", "k", "_,_,_/", mockRequestMeta);
+        assertSame(mockWalkResponse, wr1);
+        assertSame(mockWalkResponse, wr2);
     }
     
     @Test public void store_updates_meta_on_success() {
@@ -265,6 +284,39 @@ public class TestRiakObject {
         verify(impl, never()).shallowCopy(any(RiakObject.class));
         verify(impl, never()).copyData(any(RiakObject.class));
     }
+    
+    @Test public void walk_returns_one_step_correctly() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        
+        impl = new RiakObject(mockRiakClient, "b", "k");
+
+        impl.walk().run();
+        verify(mockRiakClient).walk("b", "k", "_,_,_/", null);
+
+        impl.walk(false).run();
+        verify(mockRiakClient).walk("b", "k", "_,_,0/", null);
+
+        impl.walk("bucket").run();
+        verify(mockRiakClient).walk("b", "k", "bucket,_,_/", null);
+
+        impl.walk("bucket", false).run();
+        verify(mockRiakClient).walk("b", "k", "bucket,_,0/", null);
+
+        impl.walk("bucket", "tag").run();
+        verify(mockRiakClient).walk("b", "k", "bucket,tag,_/", null);
+
+        impl.walk("bucket", "tag", false).run();
+        verify(mockRiakClient).walk("b", "k", "bucket,tag,0/", null);
+    }
+
+    @Test public void walk_returns_multiple_step_correctly() {
+        RiakClient mockRiakClient = mock(RiakClient.class);
+        impl = new RiakObject(mockRiakClient, "b", "k");
+
+        impl.walk().walk("bucket").walk("bucket", "tag", false).run();
+        
+        verify(mockRiakClient).walk("b", "k", "_,_,_/bucket,_,_/bucket,tag,0/", null);    
+    }
 
     // The following could be combined as "convenience_riak_client_methods_throw_if_no_associated_riak_client"
     @Test(expected=IllegalStateException.class) public void store_throws_if_no_associated_riak_client() {
@@ -278,6 +330,9 @@ public class TestRiakObject {
     }
     @Test(expected=IllegalStateException.class) public void delete_throws_if_no_associated_riak_client() {
         impl.delete();
+    }
+    @Test(expected=IllegalStateException.class) public void walk_throws_if_no_associated_riak_client() {
+        impl.walk().run();
     }
 
     @SuppressWarnings("unchecked") @Test public void write_to_http_method_gives_value_stream_priority_over_value() {

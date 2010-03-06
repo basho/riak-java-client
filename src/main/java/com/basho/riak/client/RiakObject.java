@@ -29,9 +29,13 @@ import org.apache.commons.httpclient.util.DateParseException;
 import org.apache.commons.httpclient.util.DateUtil;
 
 import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakIORuntimeException;
+import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
+import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -191,20 +195,20 @@ public class RiakObject {
         lastmod = object.lastmod;
         vtag = object.vtag;
     }
-    
+
     /**
      * Perform a shallow copy of the object
      */
     void shallowCopy(RiakObject object) {
-        this.value = object.value;
-        this.links = object.links;
-        this.usermeta = object.usermeta;
-        this.contentType = object.contentType;
-        this.vclock = object.vclock;
-        this.lastmod = object.lastmod;
-        this.vtag = object.vtag;
-        this.valueStream = object.valueStream;
-        this.valueStreamLength = object.valueStreamLength;
+        value = object.value;
+        links = object.links;
+        usermeta = object.usermeta;
+        contentType = object.contentType;
+        vclock = object.vclock;
+        lastmod = object.lastmod;
+        vtag = object.vtag;
+        valueStream = object.valueStream;
+        valueStreamLength = object.valueStreamLength;
     }
 
     /**
@@ -321,7 +325,7 @@ public class RiakObject {
 
     /**
      * The object's links -- may be empty, but never be null. New links can be
-     * added using getLinks().add()
+     * added using addLink() or getLinks().add()
      */
     public List<RiakLink> getLinks() {
         return links;
@@ -334,10 +338,17 @@ public class RiakObject {
         this.links = links;
     }
 
+    public RiakObject addLink(RiakLink link) {
+        if (link != null) {
+            links.add(link);
+        }
+        return this;
+    }
+
     /**
      * User-specified metadata for the object in the form of key-value pairs --
      * may be empty, but never be null. New key-value pairs can be added using
-     * getUsermeta().put()
+     * addUsermeta() or getUsermeta().put()
      */
     public Map<String, String> getUsermeta() {
         return usermeta;
@@ -348,6 +359,11 @@ public class RiakObject {
             usermeta = new HashMap<String, String>();
         }
         this.usermeta = usermeta;
+    }
+
+    public RiakObject addUsermeta(String key, String value) {
+        usermeta.put(key, value);
+        return this;
     }
 
     /**
@@ -490,7 +506,7 @@ public class RiakObject {
 
     /**
      * Convenience method for calling
-     * {@link RiaRiakClient#delete(String, String, RequestMeta)}.
+     * {@link RiakClient#delete(String, String, RequestMeta)}.
      * 
      * @throws IllegalStateException
      *             if this object was not fetched from a Riak instance, so there
@@ -505,6 +521,45 @@ public class RiakObject {
 
     public HttpResponse delete() {
         return delete(null);
+    }
+
+    /**
+     * Convenience methods for building a link walk specification starting from
+     * this object and calling
+     * {@link RiakClient#walk(String, String, RiakWalkSpec)}
+     * 
+     * @param bucket
+     *            The bucket to follow object links to
+     * @param tag
+     *            The link tags to follow from this object
+     * @param keep
+     *            Whether to keep the output from this link walking step. If not
+     *            specified, then the output is only kept from the last step.
+     * @return A {@link LinkBuilder} object to continue building the walk query
+     *         or to run it.
+     */
+    public LinkBuilder walk(String bucket, String tag, boolean keep) {
+        return new LinkBuilder().walk(bucket, tag, keep);
+    }
+
+    public LinkBuilder walk(String bucket, String tag) {
+        return new LinkBuilder().walk(bucket, tag);
+    }
+
+    public LinkBuilder walk(String bucket, boolean keep) {
+        return new LinkBuilder().walk(bucket, keep);
+    }
+
+    public LinkBuilder walk(String bucket) {
+        return new LinkBuilder().walk(bucket);
+    }
+
+    public LinkBuilder walk() {
+        return new LinkBuilder().walk();
+    }
+
+    public LinkBuilder walk(boolean keep) {
+        return new LinkBuilder().walk(keep);
     }
 
     /**
@@ -584,5 +639,73 @@ public class RiakObject {
             return "";
 
         return path.substring(0, idx);
+    }
+
+    /**
+     * Created by links() as a convenient way to build up link walking queries
+     */
+    public class LinkBuilder {
+
+        private RiakWalkSpec walkSpec = new RiakWalkSpec();
+
+        public LinkBuilder walk() {
+            walkSpec.addStep(RiakWalkSpec.WILDCARD, RiakWalkSpec.WILDCARD);
+            return this;
+        }
+
+        public LinkBuilder walk(boolean keep) {
+            walkSpec.addStep(RiakWalkSpec.WILDCARD, RiakWalkSpec.WILDCARD, keep);
+            return this;
+        }
+
+        public LinkBuilder walk(String bucket) {
+            walkSpec.addStep(bucket, RiakWalkSpec.WILDCARD);
+            return this;
+        }
+
+        public LinkBuilder walk(String bucket, boolean keep) {
+            walkSpec.addStep(bucket, RiakWalkSpec.WILDCARD, keep);
+            return this;
+        }
+
+        public LinkBuilder walk(String bucket, String tag) {
+            walkSpec.addStep(bucket, tag);
+            return this;
+        }
+
+        public LinkBuilder walk(String bucket, String tag, boolean keep) {
+            walkSpec.addStep(bucket, tag, keep);
+            return this;
+        }
+
+        public String getWalkSpec() {
+            return walkSpec.toString();
+        }
+
+        /**
+         * Execute the link walking query by calling
+         * {@link RiakClient#walk(String, String, String, RequestMeta)}.
+         * 
+         * @param meta
+         *            Extra metadata to attach to the request such as HTTP
+         *            headers or query parameters.
+         * @return See
+         *         {@link RiakClient#walk(String, String, String, RequestMeta)}.
+         * 
+         * @throws RiakIORuntimeException
+         *             If an error occurs during communication with the Riak
+         *             server.
+         * @throws RiakResponseRuntimeException
+         *             If the Riak server returns a malformed response.
+         */
+        public WalkResponse run(RequestMeta meta) {
+            if (riak == null)
+                throw new IllegalStateException("Cannot perform object link walk without a RiakClient");
+            return riak.walk(bucket, key, getWalkSpec(), meta);
+        }
+
+        public WalkResponse run() {
+            return run(null);
+        }
     }
 }

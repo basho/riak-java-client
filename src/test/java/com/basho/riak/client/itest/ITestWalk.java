@@ -11,7 +11,6 @@ import org.junit.Test;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.WalkResponse;
 
 public class ITestWalk {
@@ -41,19 +40,17 @@ public class ITestWalk {
         RiakObject leaf1 = new RiakObject(BUCKET, LEAF1, INCLUDED_VALUE);
         RiakObject leaf2 = new RiakObject(BUCKET, LEAF2, INCLUDED_VALUE);
         RiakObject excludedLeaf = new RiakObject(BUCKET, EXCLUDED_LEAF, EXCLUDED_VALUE);
-        RiakObject root = new RiakObject(BUCKET, ROOT);
-        root.getLinks().add(new RiakLink(BUCKET, LEAF1, TAG_INCLUDE));
-        root.getLinks().add(new RiakLink(BUCKET, LEAF2, TAG_INCLUDE));
-        root.getLinks().add(new RiakLink(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
+        RiakObject root = new RiakObject(c, BUCKET, ROOT)
+                            .addLink(new RiakLink(BUCKET, LEAF1, TAG_INCLUDE))
+                            .addLink(new RiakLink(BUCKET, LEAF2, TAG_INCLUDE))
+                            .addLink(new RiakLink(BUCKET, EXCLUDED_LEAF, TAG_EXCLUDE));
         assertSuccess(c.store(root, WRITE_3_REPLICAS()));
         assertSuccess(c.store(leaf1, WRITE_3_REPLICAS()));
         assertSuccess(c.store(leaf2, WRITE_3_REPLICAS()));
         assertSuccess(c.store(excludedLeaf, WRITE_3_REPLICAS()));
         
         // Perform walk
-        RiakWalkSpec walkSpec = new RiakWalkSpec();
-        walkSpec.addStep(BUCKET, TAG_INCLUDE, "1");
-        WalkResponse walkresp = c.walk(BUCKET, ROOT, walkSpec);
+        WalkResponse walkresp = root.walk(BUCKET, TAG_INCLUDE).run();
         assertSuccess(walkresp);
         assertTrue(walkresp.hasSteps());
         assertEquals(1, walkresp.getSteps().size());

@@ -354,6 +354,9 @@ public class RiakClient {
      *            <code>bucket,tag-spec,accumulateFlag</code> The
      *            <code>tag-spec "_"</code> matches all tags.
      *            <code>accumulateFlag</code> is either the String "1" or "0".
+     * @param meta
+     *            Extra metadata to attach to the request such as HTTP headers
+     *            or query parameters.
      * 
      * @return {@link WalkResponse} containing HTTP response information and a
      *         <code>List</code> of <code>Lists</code>, where each sub-list
@@ -384,22 +387,23 @@ public class RiakClient {
     public WalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
         return walk(bucket, key, walkSpec.toString(), null);
     }
-    
+
     /**
-     * Wrapper for sending a job (aka blob of JSON) to the Riak server
-     * via POST. This is used by the map/reduce interface.
-     * @param job JSON String to submit
+     * Wrapper for sending a job (aka blob of JSON) to the Riak server via POST.
+     * This is used by the map/reduce interface.
+     * 
+     * @param job
+     *            JSON String to submit
      * @return
      * @throws HttpException
      * @throws IOException
      */
-    @SuppressWarnings("deprecation")
-   public PostMethod sendJob(String job) throws HttpException, IOException {
-       PostMethod post = new PostMethod(this.getConfig().getUrl());
-       post.addRequestHeader("Content-Type", "application/json");
-       post.setRequestBody(job);
-       this.getHttpClient().executeMethod(post);
-       return post;
+    @SuppressWarnings("deprecation") public PostMethod sendJob(String job) throws HttpException, IOException {
+        PostMethod post = new PostMethod(this.getConfig().getUrl());
+        post.addRequestHeader("Content-Type", "application/json");
+        post.setRequestBody(job);
+        this.getHttpClient().executeMethod(post);
+        return post;
     }
 
     /**
