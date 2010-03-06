@@ -15,6 +15,7 @@ package com.basho.riak.client;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -166,26 +167,44 @@ public class RiakObject {
         if (object == null)
             return;
 
-        if (object.getValue() != null) {
-            value = object.getValue().getBytes();
+        if (object.value != null) {
+            value = Arrays.copyOf(object.value, object.value.length);
         } else {
             value = null;
         }
 
+        valueStream = object.valueStream;
+        valueStreamLength = object.valueStreamLength;
+
         links = new ArrayList<RiakLink>();
-        if (object.getLinks() != null) {
-            for (RiakLink link : object.getLinks()) {
+        if (object.links != null) {
+            for (RiakLink link : object.links) {
                 links.add(new RiakLink(link));
             }
         }
         usermeta = new HashMap<String, String>();
-        if (object.getUsermeta() != null) {
-            usermeta.putAll(object.getUsermeta());
+        if (object.usermeta != null) {
+            usermeta.putAll(object.usermeta);
         }
-        contentType = object.getContentType();
-        vclock = object.getVclock();
-        lastmod = object.getLastmod();
-        vtag = object.getVtag();
+        contentType = object.contentType;
+        vclock = object.vclock;
+        lastmod = object.lastmod;
+        vtag = object.vtag;
+    }
+    
+    /**
+     * Perform a shallow copy of the object
+     */
+    void shallowCopy(RiakObject object) {
+        this.value = object.value;
+        this.links = object.links;
+        this.usermeta = object.usermeta;
+        this.contentType = object.contentType;
+        this.vclock = object.vclock;
+        this.lastmod = object.lastmod;
+        this.vtag = object.vtag;
+        this.valueStream = object.valueStream;
+        this.valueStreamLength = object.valueStreamLength;
     }
 
     /**
@@ -433,8 +452,10 @@ public class RiakObject {
             throw new IllegalStateException("Cannot fetch an object without a RiakClient");
 
         FetchResponse r = riak.fetch(bucket, key, meta);
-        if (r.isSuccess()) {
-            this.copyData(r.getObject());
+        if (r.getObject() != null) {
+            RiakObject other = r.getObject();
+            shallowCopy(other);
+            r.setObject(this);
         }
         return r;
     }

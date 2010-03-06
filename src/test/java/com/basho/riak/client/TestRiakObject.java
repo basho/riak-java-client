@@ -61,6 +61,8 @@ public class TestRiakObject {
 
     @Test public void copyData_does_deep_copy() {
         final String value = "value";
+        final InputStream valueStream = mock(InputStream.class);
+        final long valueStreamLength = 10;
         final String ctype = "ctype";
         final List<RiakLink> links = new ArrayList<RiakLink>();
         final Map<String, String> usermeta = new HashMap<String, String>();
@@ -70,11 +72,15 @@ public class TestRiakObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        impl.copyData(new RiakObject("b", "k2", value, ctype, links, usermeta, vclock, lastmod, vtag));
+        RiakObject copy = new RiakObject("b", "k2", value, ctype, links, usermeta, vclock, lastmod, vtag);
+        copy.setValueStream(valueStream, valueStreamLength);
+        impl.copyData(copy);
 
         assertEquals("b", impl.getBucket());
         assertEquals("k", impl.getKey());
         assertEquals(value, impl.getValue());
+        assertSame(valueStream, impl.getValueStream());
+        assertEquals(valueStreamLength, impl.getValueStreamLength().longValue());
         assertEquals(ctype, impl.getContentType());
         assertEquals(links, impl.getLinks());
         assertEquals(usermeta, impl.getUsermeta());
@@ -82,9 +88,10 @@ public class TestRiakObject {
         assertEquals(lastmod, impl.getLastmod());
         assertEquals(vtag, impl.getVtag());
 
-        assertNotSame(links, impl.getLinks());
-        assertNotSame(link, impl.getLinks().get(0));
-        assertNotSame(usermeta, impl.getUsermeta());
+        assertNotSame(copy.getValueAsBytes(), impl.getValueAsBytes());
+        assertNotSame(copy.getLinks(), impl.getLinks());
+        assertNotSame(copy.getLinks().get(0), impl.getLinks().get(0));
+        assertNotSame(copy.getUsermeta(), impl.getUsermeta());
     }
 
     @Test public void copyData_copies_null_data() {
@@ -230,21 +237,21 @@ public class TestRiakObject {
         verify(impl, never()).copyData(any(RiakObject.class));
     }
 
-    @Test public void fetch_copies_data_on_success() {
+    @Test public void fetch_shallow_copies_object_on_success() {
         RiakClient mockRiakClient = mock(RiakClient.class);
         FetchResponse mockFetchResponse = mock(FetchResponse.class);
         RiakObject mockRiakObject = mock(RiakObject.class);
-        
         when(mockRiakClient.fetch(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockFetchResponse);
         when(mockFetchResponse.isSuccess()).thenReturn(true);
         when(mockFetchResponse.getObject()).thenReturn(mockRiakObject);
         impl = spy(new RiakObject(mockRiakClient, "b", "k"));
         impl.fetch();
         
-        verify(impl).copyData(mockRiakObject);
+        verify(impl).shallowCopy(mockRiakObject);
+        verify(mockFetchResponse).setObject(impl);
     }
 
-    @Test public void fetch_does_not_copy_data_on_failure() {
+    @Test public void fetch_does_not_update_data_on_failure() {
         RiakClient mockRiakClient = mock(RiakClient.class);
         FetchResponse mockFetchResponse = mock(FetchResponse.class);
         
@@ -255,6 +262,7 @@ public class TestRiakObject {
         impl.fetch();
         
         verify(impl, never()).updateMeta(any(FetchResponse.class));
+        verify(impl, never()).shallowCopy(any(RiakObject.class));
         verify(impl, never()).copyData(any(RiakObject.class));
     }
 

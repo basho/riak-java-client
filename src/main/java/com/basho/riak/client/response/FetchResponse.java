@@ -112,7 +112,8 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
     public FetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
         this(r, null);
     }
-
+    
+    
     /**
      * Whether response contained a Riak object
      */
@@ -126,6 +127,10 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
      */
     public RiakObject getObject() {
         return object;
+    }
+    
+    public void setObject(RiakObject object) {
+        this.object = object;
     }
 
     /**
