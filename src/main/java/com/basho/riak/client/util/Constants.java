@@ -19,6 +19,7 @@ public interface Constants {
     public static String RIAK_URL_PREFIX = "/riak";
 
     // JSON fields used by Riak
+    public static String FL_NAME = "name";
     public static String FL_KEYS = "keys";
     public static String FL_SCHEMA = "props";
     public static String FL_SCHEMA_ALLOW_MULT = "allow_mult";

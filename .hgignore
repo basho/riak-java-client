@@ -1,6 +1,8 @@
-syntax: glob
-
+bin/*
+lib/*
+.DS_Store
 .project
 .classpath
 .settings
 target
+javadoc

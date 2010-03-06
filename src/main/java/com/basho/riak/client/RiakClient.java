@@ -16,9 +16,14 @@ package com.basho.riak.client;
 import java.io.IOException;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.basho.riak.client.RiakBucketInfo;
+import com.basho.riak.client.RiakConfig;
+import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
@@ -378,6 +383,23 @@ public class RiakClient {
 
     public WalkResponse walk(String bucket, String key, RiakWalkSpec walkSpec) {
         return walk(bucket, key, walkSpec.toString(), null);
+    }
+    
+    /**
+     * Wrapper for sending a job (aka blob of JSON) to the Riak server
+     * via POST. This is used by the map/reduce interface.
+     * @param job JSON String to submit
+     * @return
+     * @throws HttpException
+     * @throws IOException
+     */
+    @SuppressWarnings("deprecation")
+   public PostMethod sendJob(String job) throws HttpException, IOException {
+       PostMethod post = new PostMethod(this.getConfig().getUrl());
+       post.addRequestHeader("Content-Type", "application/json");
+       post.setRequestBody(job);
+       this.getHttpClient().executeMethod(post);
+       return post;
     }
 
     /**
