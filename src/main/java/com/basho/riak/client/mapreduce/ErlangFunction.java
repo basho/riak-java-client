@@ -26,12 +26,16 @@ public class ErlangFunction implements MapReduceFunction {
    /**
     * Converts the function definition to JSON
     */
-   public JSONObject toJson() throws JSONException {
-      JSONObject retval = new JSONObject();
-      retval.put("language", "erlang");
-      retval.put("module", this.module);
-      retval.put("function", this.function);
-      return retval;
+   public JSONObject toJson() {
+      try {
+          JSONObject retval = new JSONObject();
+          retval.put("language", "erlang");
+          retval.put("module", this.module);
+          retval.put("function", this.function);
+          return retval;
+      } catch (JSONException e) {
+          throw new RuntimeException("Can always map a string to a string");
+      }
    }
 
 }

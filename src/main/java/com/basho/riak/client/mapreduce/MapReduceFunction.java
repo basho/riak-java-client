@@ -1,6 +1,5 @@
 package com.basho.riak.client.mapreduce;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -14,5 +13,5 @@ public interface MapReduceFunction {
       NAMED
    }
    
-   public JSONObject toJson() throws JSONException;
+   public JSONObject toJson();
 }

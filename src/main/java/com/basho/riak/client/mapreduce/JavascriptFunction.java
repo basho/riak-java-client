@@ -34,16 +34,21 @@ public class JavascriptFunction implements MapReduceFunction {
    /**
     * Converts the function definition to JSON
     */
-   public JSONObject toJson() throws JSONException {
-      JSONObject retval = new JSONObject();
-      retval.put("language", "javascript");
-      if (type == MapReduceFunction.Types.NAMED) {
-         retval.put("name", this.source);
+   public JSONObject toJson() {
+      try {
+          JSONObject retval = new JSONObject();
+          retval.put("language", "javascript");
+          if (type == MapReduceFunction.Types.NAMED) {
+             retval.put("name", this.source);
+          }
+          else {
+             retval.put("source", this.source);
+          }
+
+          return retval;
+      } catch (JSONException e) {
+          throw new RuntimeException("Can always map a string to a string");
       }
-      else {
-         retval.put("source", this.source);
-      }
-      return retval;
    }
    
    private JavascriptFunction(MapReduceFunction.Types functionType,

@@ -14,6 +14,7 @@
 package com.basho.riak.client.util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -23,7 +24,9 @@ import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.json.JSONObject;
 
 import com.basho.riak.client.RiakClient;
@@ -215,6 +218,19 @@ public class ClientHelper {
     public HttpResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, walkSpec));
         return executeMethod(bucket, key, get, meta);
+    }
+    
+    /**
+     * Same as {@link RiakClient}, except only returning the HTTP response
+     */
+    public HttpResponse mapReduce(String job, RequestMeta meta) {
+        PostMethod post = new PostMethod(config.getMapReduceUrl());
+        try {
+            post.setRequestEntity(new StringRequestEntity(job, Constants.CTYPE_JSON, null));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("StringRequestEntity should always support no charset", e);
+        }
+        return executeMethod(null, null, post, meta);
     }
 
     /** @return the installed exception handler or null if not installed */

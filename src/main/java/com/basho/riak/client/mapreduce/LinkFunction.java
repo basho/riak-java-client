@@ -17,13 +17,19 @@ public class LinkFunction implements MapReduceFunction {
       this.tag = tag;
    }
 
-   public JSONObject toJson() throws JSONException {
-      JSONObject link = new JSONObject();
-      link.put("bucket", this.bucket);
-      if (this.tag != null) {
-         link.put("tag", this.tag);
+   public JSONObject toJson() {
+      try {
+          JSONObject link = new JSONObject();
+          link.put("bucket", this.bucket);
+    
+          if (this.tag != null) {
+             link.put("tag", this.tag);
+          }
+
+          return link;
+      } catch (JSONException e) {
+          throw new RuntimeException("Can always map a string to a string");
       }
-      return link;
    }
 
 }

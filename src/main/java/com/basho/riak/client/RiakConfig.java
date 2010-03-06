@@ -12,6 +12,9 @@
  */
 package com.basho.riak.client;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
 
@@ -22,7 +25,11 @@ import org.apache.commons.httpclient.HttpMethodRetryHandler;
  */
 public class RiakConfig {
 
+    public static Pattern BASE_URL_PATTERN = Pattern.compile("^((?:[^:]*://)?[^/]*)");
+
     private String url = null;
+    private String baseUrl = null;
+    private String mapredPath = "/mapred";
     private HttpClient httpClient = null;
     private Long timeout = null;
     private Integer maxConnections = null;
@@ -58,6 +65,46 @@ public class RiakConfig {
      */
     public void setUrl(String url) {
         this.url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        
+        Matcher m = BASE_URL_PATTERN.matcher(url);
+        if (m.find()) {
+            this.baseUrl = m.group();
+        } else {
+            this.baseUrl = this.url;
+        }
+    }
+
+    /**
+     * The full URL of Riak map reduce resource, which is calculated by
+     * combining the host and port from the Riak URL and the map reduce path.
+     */
+    public String getMapReduceUrl() {
+        return baseUrl + mapredPath;
+    }
+
+    /**
+     * The host and port of the Riak server, which is extracted from the
+     * specified Riak URL.
+     */
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    /**
+     * The path to the Riak map reduce resource, which defaults to /mapred
+     */
+    public String getMapReducePath() {
+        return mapredPath;
+    }
+
+    public void setMapReducePath(String path) {
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        mapredPath = path;
     }
 
     /**

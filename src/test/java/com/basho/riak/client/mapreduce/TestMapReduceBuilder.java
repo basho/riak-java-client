@@ -1,12 +1,17 @@
 package com.basho.riak.client.mapreduce;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.junit.Test;
+
+import com.basho.riak.client.RiakObject;
 
 public class TestMapReduceBuilder {
 
@@ -19,9 +24,9 @@ public class TestMapReduceBuilder {
    @Test public void canStoreObjects() {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.addRiakObject("foo", "bar");
-      Map<String, List<String>> objects = builder.getRiakObjects();
+      Map<String, Set<String>> objects = builder.getRiakObjects();
       assertEquals(objects.get("foo").size(), 1);
-      assertEquals("bar", objects.get("foo").get(0));
+      assertTrue(objects.get("foo").contains("bar"));
       // Verify duplicates are not added
       builder.addRiakObject("foo", "bar");
       assertEquals(1, builder.getRiakObjects().get("foo").size());
@@ -34,6 +39,29 @@ public class TestMapReduceBuilder {
       assertEquals(2, builder.getRiakObjects().get("foo").size());
       builder.removeRiakObject("foo", "bar");
       assertEquals(1, builder.getRiakObjects().get("foo").size());
+   }
+   
+   @Test public void nullParamClearsObject() {
+       MapReduceBuilder builder = new MapReduceBuilder();
+       builder.addRiakObject("foo", "bar");
+       builder.setRiakObjects((Map<String, Set<String>>) null);
+       assertEquals(0, builder.getRiakObjects().size());
+
+       builder.addRiakObject("foo", "bar");
+       builder.setRiakObjects((Collection<RiakObject>) null);
+       assertEquals(0, builder.getRiakObjects().size());
+   }
+   
+   @Test public void extractsRiakObjectInfo() {
+       MapReduceBuilder builder = new MapReduceBuilder();
+       List<RiakObject> riakObjects = Arrays.asList(new RiakObject[] { new RiakObject("foo", "bar"), 
+                                                                   new RiakObject("foo", "baz")});
+       builder.setRiakObjects(riakObjects);
+
+       Map<String, Set<String>> objects = builder.getRiakObjects();
+       assertEquals(objects.get("foo").size(), 2);
+       assertTrue(objects.get("foo").contains("bar"));
+       assertTrue(objects.get("foo").contains("baz"));
    }
    
    @Test(expected=IllegalStateException.class)

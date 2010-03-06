@@ -22,5 +22,35 @@ public class TestRiakConfig {
         RiakConfig impl = new RiakConfig("ip", "port", "/prefix");
         assertEquals("http://ip:port/prefix", impl.getUrl());
     }
+    
+    @Test public void calculates_correct_base_url() {
+        RiakConfig impl = new RiakConfig("http://ip:port/path/to/riak");
+        assertEquals("http://ip:port", impl.getBaseUrl());
+        
+        impl = new RiakConfig("http://ip:port/prefix");
+        assertEquals("http://ip:port", impl.getBaseUrl());
+        
+        impl = new RiakConfig("http://ip:port");
+        assertEquals("http://ip:port", impl.getBaseUrl());
 
+        impl = new RiakConfig("http://ip");
+        assertEquals("http://ip", impl.getBaseUrl());
+
+        impl = new RiakConfig("ip:port/prefix");
+        assertEquals("ip:port", impl.getBaseUrl());
+
+        impl = new RiakConfig("ip/prefix");
+        assertEquals("ip", impl.getBaseUrl());
+
+        impl = new RiakConfig("ip");
+        assertEquals("ip", impl.getBaseUrl());
+    }
+
+    @Test public void calculates_correct_base_mapred_url() {
+        RiakConfig impl = new RiakConfig("http://ip:port/path/to/riak");
+        assertEquals("http://ip:port/mapred", impl.getMapReduceUrl());
+
+        impl.setMapReducePath("/path/to/mapred/");
+        assertEquals("http://ip:port/path/to/mapred", impl.getMapReduceUrl());
+    }
 }

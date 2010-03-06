@@ -14,16 +14,15 @@
 package com.basho.riak.client;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.basho.riak.client.RiakBucketInfo;
-import com.basho.riak.client.RiakConfig;
-import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.mapreduce.MapReduceBuilder;
+import com.basho.riak.client.mapreduce.MapReduceResponse;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
@@ -389,21 +388,54 @@ public class RiakClient {
     }
 
     /**
-     * Wrapper for sending a job (aka blob of JSON) to the Riak server via POST.
-     * This is used by the map/reduce interface.
+     * Execute a map reduce job on the Riak server.
      * 
      * @param job
-     *            JSON String to submit
-     * @return
-     * @throws HttpException
-     * @throws IOException
+     *            JSON string representing the map reduce job to run, which can
+     *            be created using {@link MapReduceBuilder}
+     * @param meta
+     *            Extra metadata to attach to the request such as HTTP headers
+     *            or query parameters.
+     * 
+     * @return {@link MapReduceResponse} containing HTTP response information
+     *         and the result of the map reduce job
+     * 
+     * @throws RiakIORuntimeException
+     *             If an error occurs during communication with the Riak server.
+     * @throws RiakResponseRuntimeException
+     *             If the Riak server returns a malformed response.
      */
-    @SuppressWarnings("deprecation") public PostMethod sendJob(String job) throws HttpException, IOException {
-        PostMethod post = new PostMethod(this.getConfig().getUrl());
-        post.addRequestHeader("Content-Type", "application/json");
-        post.setRequestBody(job);
-        this.getHttpClient().executeMethod(post);
-        return post;
+    public MapReduceResponse mapReduce(String job, RequestMeta meta) {
+        HttpResponse r = helper.mapReduce(job, meta);
+        return new MapReduceResponse(r);
+    }
+
+    public MapReduceResponse mapReduce(String job) {
+        return mapReduce(job, null);
+    }
+
+    /**
+     * A convenience method for creating a MapReduceBuilder used for building a
+     * map reduce job to submission to this client
+     * 
+     * @param bucket
+     *            The bucket to perform the map reduce job over
+     * @return A {@link MapReduceBuilder} to build the map reduce job
+     */
+    public MapReduceBuilder mapReduceOverBucket(String bucket) {
+        return new MapReduceBuilder(this).setBucket(bucket);
+    }
+
+    /**
+     * Same as {@link RiakClient#mapReduceOverBucket(String)}, except over a set of
+     * objects instead of a bucket.
+     * 
+     * @param objects
+     *            A set of objects represented as a map of { bucket : [ list of
+     *            keys in bucket ] }
+     */
+    public MapReduceBuilder mapReduceOverObjects(Map<String, Set<String>> objects) {
+        return new MapReduceBuilder(this).setRiakObjects(objects);
     }
 
     /**

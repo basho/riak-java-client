@@ -29,9 +29,8 @@ import com.basho.riak.client.mapreduce.MapReduceResponse;
 public class ITestMapReduce {
 
     public static String RIAK_URL = "http://127.0.0.1:8098/riak";
-    public static String MAPRED_URL = "http://127.0.0.1:8098/mapred";
     public static String BUCKET_NAME = "mr_test_java";
-    public static int TEST_ITEMS = 1000;
+    public static int TEST_ITEMS = 200;
     
     @BeforeClass
     public static void setup() {
@@ -60,46 +59,45 @@ public class ITestMapReduce {
     }
     
     @Test public void doLinkMapReduce() throws HttpException, IOException, JSONException {
-       RiakClient c = new RiakClient(MAPRED_URL);
-       MapReduceBuilder builder = new MapReduceBuilder();
-       builder.setBucket(BUCKET_NAME);
-       builder.link(BUCKET_NAME, "test", false);
-       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
-       builder.reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true);
-       MapReduceResponse response = builder.submit(c);
+       RiakClient c = new RiakClient(RIAK_URL);
+       MapReduceResponse response = c.mapReduceOverBucket(BUCKET_NAME)
+           .link(BUCKET_NAME, "test", false)
+           .map(JavascriptFunction.named("Riak.mapValuesJson"), false)
+           .reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true)
+           .submit();
        assertTrue(response.isSuccess());
        JSONArray results = response.getParsedBody();
        assertEquals(TEST_ITEMS - 1, results.length());
     }
     
     @Test public void doErlangMapReduce() throws HttpException, IOException, JSONException {
-       RiakClient c = new RiakClient(MAPRED_URL);
-       MapReduceBuilder builder = new MapReduceBuilder();
+       RiakClient c = new RiakClient(RIAK_URL);
+       MapReduceBuilder builder = new MapReduceBuilder(c);
        builder.setBucket(BUCKET_NAME);
        builder.map(new ErlangFunction("riak_mapreduce", "map_object_value"), false);
        builder.reduce(new ErlangFunction("riak_mapreduce", "reduce_string_to_integer"), false);
        builder.reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true);
-       MapReduceResponse response = builder.submit(c);
+       MapReduceResponse response = builder.submit();
        assertTrue(response.isSuccess());
        JSONArray results = response.getParsedBody();
        assertEquals(TEST_ITEMS, results.length());
        assertEquals(0, results.getInt(0));
-       assertEquals(573, results.getInt(573));
-       assertEquals(997, results.getInt(997));       
+       assertEquals(73, results.getInt(73));
+       assertEquals(197, results.getInt(197));       
     }
     
     @Test public void doJavascriptMapReduce() throws HttpException, IOException, JSONException {
-       RiakClient c = new RiakClient(MAPRED_URL);
-       MapReduceBuilder builder = new MapReduceBuilder();
+       RiakClient c = new RiakClient(RIAK_URL);
+       MapReduceBuilder builder = new MapReduceBuilder(c);
        builder.setBucket(BUCKET_NAME);
        builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
        builder.reduce(JavascriptFunction.named("Riak.reduceNumericSort"), true);
-       MapReduceResponse response = builder.submit(c);
+       MapReduceResponse response = builder.submit();
        assertTrue(response.isSuccess());
        JSONArray results = response.getParsedBody();
        assertEquals(TEST_ITEMS, results.length());
        assertEquals(0, results.getInt(0));
-       assertEquals(573, results.getInt(573));
-       assertEquals(997, results.getInt(997));       
+       assertEquals(73, results.getInt(73));
+       assertEquals(197, results.getInt(197));       
     }
 }
