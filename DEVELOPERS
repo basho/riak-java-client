@@ -46,17 +46,17 @@ The heart of the client is `ClientHelper`.  It builds and executes the HTTP meth
 
 ## Serialization/Parsing ##
 
-While the HTTP operations are performed by ClientHelper, the majority of the work actually consists of serializing objects and parsing the HTTP responses from Riak. Serialization of objects to send to Riak is performed by the `writeToHttpMethod(...)` methods in `JiakObject` and `RiakObject`. Responses are parsed by the `--Response` classes which read the `HttpResponse` returned by `ClientHelper` and construct the appropriate domain objects.
+While the HTTP operations are performed by ClientHelper, the majority of the work actually consists of serializing objects and parsing the HTTP responses from Riak. Serialization of objects to send to Riak is performed by `RiakObject.writeToHttpMethod(...)`. Responses are parsed by the `--Response` classes which read the `HttpResponse` returned by `ClientHelper` and construct the appropriate domain objects.
 
-## Client Interfaces ##
+## Client Interface ##
 
-Users primarily use `RiakClient`/`RiakObject`.  `RiakClient` is a simple adapters from `ClientHelper` to the `RiakClient` interface. They use `ClientHelper` to execute the HTTP methods and wrap the resulting response with the proper `--Response`.
+Users primarily use `RiakClient`/`RiakObject`.  `RiakClient` is a simple adapter from `ClientHelper` to the `RiakClient` interface. It uses `ClientHelper` to execute the HTTP methods and wraps the resulting response with the proper `--Response`.
 
 # Development #
 
 ## Integration Tests ##
 
-The integration tests perform each of the basic operations (store bucket schema, list bucket, store, fetch, modify, walk) against a running Riak instance.  They can be run using:
+The integration tests perform each of the basic operations (store bucket schema, list bucket, store, fetch, modify, walk, map/reduce) against a running Riak instance.  They can be run using:
 
     mvn -Pitest clean verify
 
