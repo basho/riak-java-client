@@ -8,6 +8,7 @@
 	<version>0.9.0-SNAPSHOT</version>
 	<name>Riak Client for Java</name>
 	<description>HttpClient-based client for Riak</description>
+	<url>http://bitbucket.org/jonjlee/riak-java-client</url>
 
 	<licenses>
 		<license>
@@ -16,6 +17,25 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<url>http://bitbucket.org/jonjlee/riak-java-client/src</url>
+		<connection>scm:hg:https://bitbucket.org/jonjlee/riak-java-client</connection>
+		<developerConnection>scm:hg:https://bitbucket.org/jonjlee/riak-java-client</developerConnection>
+	</scm>
+  
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<name>Nexus Release Repository</name>
+			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+	
 	<dependencies>
 		<!-- Apache Commons -->
 		<dependency>
@@ -76,34 +96,29 @@
 			</build>
 		</profile>
 		<profile>
-			<id>deploy</id>
+			<id>release</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
 			<build>
 				<plugins>
-				    <!-- Build source and javadoc jars for artifact deployment -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
+						<artifactId>maven-gpg-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>attach-sources</id>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
 								<goals>
-									<goal>jar</goal>
+									<goal>sign</goal>
 								</goals>
 							</execution>
 						</executions>
 					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+					<!-- NOTE: source and javadoc jars automatically generated on release (http://maven.apache.org/pom.html#The_Super_POM) -->
 				</plugins>
 			</build>
 		</profile>
