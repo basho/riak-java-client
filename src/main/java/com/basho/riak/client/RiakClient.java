@@ -21,13 +21,13 @@ import org.apache.commons.httpclient.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.basho.riak.client.mapreduce.MapReduceBuilder;
-import com.basho.riak.client.mapreduce.MapReduceResponse;
+import com.basho.riak.client.request.MapReduceBuilder;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.MapReduceResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
 import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
@@ -403,11 +403,16 @@ public class RiakClient {
      * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
      * @throws RiakResponseRuntimeException
-     *             If the Riak server returns a malformed response.
+     *             If the Riak server does not return a valid JSON array.
      */
     public MapReduceResponse mapReduce(String job, RequestMeta meta) {
         HttpResponse r = helper.mapReduce(job, meta);
-        return new MapReduceResponse(r);
+        try {
+            return getMapReduceResponse(r);
+        } catch (JSONException e) {
+            helper.toss(new RiakResponseRuntimeException(r, e));
+            return null;
+        }
     }
 
     public MapReduceResponse mapReduce(String job) {
@@ -490,5 +495,9 @@ public class RiakClient {
 
     WalkResponse getWalkResponse(HttpResponse r) throws RiakResponseRuntimeException {
         return new WalkResponse(r, this);
+    }
+
+    MapReduceResponse getMapReduceResponse(HttpResponse r) throws JSONException {
+        return new MapReduceResponse(r);
     }
 }

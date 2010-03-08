@@ -34,7 +34,6 @@ public class BucketResponse extends HttpResponseDecorator implements HttpRespons
 
     /**
      * On a 2xx response, parses the JSON response into a {@link RiakBucketInfo}
-     * .
      * 
      * @param r
      *            The HTTP response from a GET at a bucket

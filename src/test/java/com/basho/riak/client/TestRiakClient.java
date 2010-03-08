@@ -32,6 +32,7 @@ public class TestRiakClient {
     final String bucket = "bucket";
     final String key = "key";
     final String walkSpec = "walkSpec";
+    final String mrJob = "mrJob";
 
     @Mock ClientHelper mockHelper;
     @Mock RiakBucketInfo bucketInfo;
@@ -73,6 +74,9 @@ public class TestRiakClient {
 
         impl.walk(bucket, key, walkSpec, meta);
         verify(mockHelper).walk(bucket, key, walkSpec, meta);
+        
+        impl.mapReduce(mrJob, meta);
+        verify(mockHelper).mapReduce(mrJob, meta);
     }
     
     @Test public void convenience_methods_defer_to_main_methods_with_null_meta() {
@@ -109,6 +113,9 @@ public class TestRiakClient {
         impl.walk(bucket, key, walkSpec);
         impl.walk(bucket, key, riakWalkSpec);
         verify(impl, times(2)).walk(bucket, key, walkSpec, null);
+        
+        impl.mapReduce(mrJob);
+        verify(impl).mapReduce(mrJob, null);
     }
     
     @Test public void method_defers_to_helper_on_expection() throws JSONException {
@@ -117,6 +124,7 @@ public class TestRiakClient {
         doThrow(new JSONException("")).when(impl).getBucketResponse(any(HttpResponse.class));
         doThrow(new RiakResponseRuntimeException(null)).when(impl).getFetchResponse(any(HttpResponse.class));
         doThrow(new RiakResponseRuntimeException(null)).when(impl).getWalkResponse(any(HttpResponse.class));
+        doThrow(new JSONException("")).when(impl).getMapReduceResponse(any(HttpResponse.class));
 
         impl.listBucket(bucket, meta);
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
@@ -135,6 +143,10 @@ public class TestRiakClient {
         reset(mockHelper);
 
         impl.walk(bucket, key, "", meta);
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
+        reset(mockHelper);
+        
+        impl.mapReduce(mrJob, meta);
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
     }

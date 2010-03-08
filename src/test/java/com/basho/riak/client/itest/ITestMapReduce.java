@@ -19,8 +19,8 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.mapreduce.ErlangFunction;
 import com.basho.riak.client.mapreduce.JavascriptFunction;
-import com.basho.riak.client.mapreduce.MapReduceBuilder;
-import com.basho.riak.client.mapreduce.MapReduceResponse;
+import com.basho.riak.client.request.MapReduceBuilder;
+import com.basho.riak.client.response.MapReduceResponse;
 
 /**
  * Exercises map/reduce features of the Riak client.
@@ -66,7 +66,7 @@ public class ITestMapReduce {
            .reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true)
            .submit();
        assertTrue(response.isSuccess());
-       JSONArray results = response.getParsedBody();
+       JSONArray results = response.getResults();
        assertEquals(TEST_ITEMS - 1, results.length());
     }
     
@@ -79,7 +79,7 @@ public class ITestMapReduce {
        builder.reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true);
        MapReduceResponse response = builder.submit();
        assertTrue(response.isSuccess());
-       JSONArray results = response.getParsedBody();
+       JSONArray results = response.getResults();
        assertEquals(TEST_ITEMS, results.length());
        assertEquals(0, results.getInt(0));
        assertEquals(73, results.getInt(73));
@@ -94,7 +94,7 @@ public class ITestMapReduce {
        builder.reduce(JavascriptFunction.named("Riak.reduceNumericSort"), true);
        MapReduceResponse response = builder.submit();
        assertTrue(response.isSuccess());
-       JSONArray results = response.getParsedBody();
+       JSONArray results = response.getResults();
        assertEquals(TEST_ITEMS, results.length());
        assertEquals(0, results.getInt(0));
        assertEquals(73, results.getInt(73));

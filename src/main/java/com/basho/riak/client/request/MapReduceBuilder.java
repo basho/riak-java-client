@@ -1,4 +1,4 @@
-package com.basho.riak.client.mapreduce;
+package com.basho.riak.client.request;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,7 +14,9 @@ import org.json.JSONObject;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.mapreduce.LinkFunction;
+import com.basho.riak.client.mapreduce.MapReduceFunction;
+import com.basho.riak.client.response.MapReduceResponse;
 import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
 

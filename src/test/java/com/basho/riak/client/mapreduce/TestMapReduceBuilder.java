@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.junit.Test;
 
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.request.MapReduceBuilder;
 
 public class TestMapReduceBuilder {
 

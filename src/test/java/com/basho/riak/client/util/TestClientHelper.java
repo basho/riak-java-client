@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -36,6 +37,7 @@ public class TestClientHelper {
     final String bucket = "bucket";
     final String key = "key";
     final String walkSpec = "walkSpec";
+    final String mrJob = "mrJob";
     final String clientId = "test";
     final RequestMeta meta = new RequestMeta();
 
@@ -156,6 +158,12 @@ public class TestClientHelper {
         impl.walk(bucket, key, walkSpec, meta);
         verify(mockHttpClient).executeMethod(any(GetMethod.class));
     }
+    
+    @Test public void mapreduce_POSTs_to_mapred_URL() throws HttpException, IOException {
+        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/mapred"));
+        impl.mapReduce(mrJob, meta);
+        verify(mockHttpClient).executeMethod(any(PostMethod.class));
+    }
 
     @Test public void all_methods_add_query_params() throws HttpException, IOException {
 
@@ -166,6 +174,7 @@ public class TestClientHelper {
         impl.fetch(bucket, key, meta);
         impl.delete(bucket, key, meta);
         impl.walk(bucket, key, walkSpec, meta);
+        impl.mapReduce(mrJob, meta);
     }
 
     @Test public void execute_method_adds_headers() throws HttpException, IOException {
