@@ -8,6 +8,8 @@ This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It
 
 *   **HttpClient**-provided functionality such as connection pooling, timeouts, and retries, which is not provided by `HttpURLConnection`.
 
+*   **Link** and **Map/Reduce** query building support.
+
 *   **HTTP response data** returned directly to the client rather than via exceptions. While this slightly couples the domain model with the underlying HTTP model, it gives the benefit of allowing the full suite of HTTP to be used (in possibly unforseen ways) without requiring modifications to the client library. In reality, clients need to and do understand that each operation in fact translates to an HTTP operation.  In any case, **PlainClient** provides the more traditional interface with domain objects and checked exceptions which can be used when appropriate.
 
 *   **Stream handling** for GET requests.
@@ -253,22 +255,29 @@ A Map/Reduce query is built by chaining methods calls that to corresponding Riak
 * `reduce(function, keep)`
 * `link(bucket, tag, keep)` 
 
+The `keep` flag determines whether the results from that phase is returned by Riak.
+
 The supported `map()` and `reduce()` function types are
 
 * `ErlangFunction`: an Erlang function specified by a module and function
-
-        new ErlangFunction("riak_mapreduce", "reduce_sort");
-
 * `JavascriptFunction`: a named or anonymous Javascript function
-
-        JavascriptFunction.named(Riak.mapValuesJson);
-        JavascriptFunction.anon("function(v) { return [v.values[0].data]; }");
-
 * `LinkFunction`: a link specification consisting of a bucket name and tag
 
-        LinkFunction("bucket", "tag")
+For example:
 
-The `keep` flag determines whether the results from that phase is returned by Riak. On success, Riak returns a JSON array containing the query result.
+    // Erlang function riak_mapreduce:reduce_sort
+    new ErlangFunction("riak_mapreduce", "reduce_sort");
+    
+    // Built-in named Javascript function Riak.mapValuesJson
+    JavascriptFunction.named("Riak.mapValuesJson");
+    
+    // Unnamed Javascript function
+    JavascriptFunction.anon("function(v) { return [v.values[0].data]; }");
+    
+    // Follow links to bucket "b" tagged with tag "t"
+    new LinkFunction("b", "t");
+
+If `submit()` succeeds, Riak returns the query result, which is a JSON array.
 
 
 # HTTP Request/Response Information #
