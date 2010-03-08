@@ -5,4 +5,3 @@ lib/*
 .classpath
 .settings
 target
-javadoc
