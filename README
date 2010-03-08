@@ -167,7 +167,7 @@ With Plain:
 
 ## Streaming Objects ##
 
-To get and process an object as a stream, implement a StreamHandler and use the stream() method. The input stream of the HTTP response is given to the handler.
+To process an object as a stream, implement a StreamHandler and use the stream() method. The input stream of the HTTP response is given to the handler.
 
     client.stream("bucket", "key", new MyStreamHandler(), RequestMeta.readParams(1 /* r value */));
 
@@ -226,7 +226,50 @@ Link walking is performed by calling walk() with a walk specification (see the R
         }
     }
 
-The operation is identical with Plain.
+Alternatively, the link walk can be built from a `RiakObject`.
+
+    RiakObject o = new RiakObject(riak, "bucket", "key");
+    WalkResponse r = o.walk("bucket").run();
+
+## Map/Reduce Queries ##
+
+Refer to the [Riak Javascript Map/Reduce documentation](http://bitbucket.org/basho/riak/src/tip/doc/js-mapreduce.org) for a detailed explanation of how map/reduce works in Riak over HTTP.
+
+First, build a Map/Reduce query by calling `mapReduceOverBucket()` or `mapReduceOverObjects()`. Then execute it by calling `submit()`.
+
+    MapReduceResponse r = riak.mapReduceOverBucket("bucket")
+        .link("bucket", "tag", false)
+        .map(JavascriptFunction.named("Riak.mapValuesJson"), false)
+        .reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true)
+        .submit();
+    if (r.isSuccess()) {
+        JSONArray results = r.getResults();
+        // process the results array
+    }
+
+A Map/Reduce query is built by chaining methods calls that to corresponding Riak Map/Reduce phase types.
+
+* `map(function, keep)`
+* `reduce(function, keep)`
+* `link(bucket, tag, keep)` 
+
+The supported `map()` and `reduce()` function types are
+
+* `ErlangFunction`: an Erlang function specified by a module and function
+
+        new ErlangFunction("riak_mapreduce", "reduce_sort");
+
+* `JavascriptFunction`: a named or anonymous Javascript function
+
+        JavascriptFunction.named(Riak.mapValuesJson);
+        JavascriptFunction.anon("function(v) { return [v.values[0].data]; }");
+
+* `LinkFunction`: a link specification consisting of a bucket name and tag
+
+        LinkFunction("bucket", "tag")
+
+The `keep` flag determines whether the results from that phase is returned by Riak. On success, Riak returns a JSON array containing the query result.
+
 
 # HTTP Request/Response Information #
 
