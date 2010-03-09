@@ -80,8 +80,24 @@ public class TestClientHelper {
 
     @Test public void listBucket_GETs_bucket_URL() throws HttpException, IOException {
         when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
-        impl.listBucket(bucket, meta);
+        impl.listBucket(bucket, meta, false);
         verify(mockHttpClient).executeMethod(any(GetMethod.class));
+    }
+    
+    @Test public void listBucket_adds_keys_qp_when_streaming_response() {
+        RequestMeta meta = spy(new RequestMeta());
+        impl = spy(impl);
+        impl.listBucket(bucket, meta, true);
+        verify(meta).setQueryParam(Constants.QP_KEYS, Constants.STREAM_KEYS);
+        verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(true));
+    }
+    
+    @Test public void listBucket_doesnt_add_keys_qp_if_not_streaming_response() {
+        RequestMeta meta = spy(new RequestMeta());
+        impl = spy(impl);
+        impl.listBucket(bucket, meta, false);
+        verify(meta, never()).setQueryParam(eq(Constants.QP_KEYS), anyString());
+        verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(false));
     }
     
     @Test public void store_PUTs_object_URL() throws HttpException, IOException {
@@ -168,7 +184,7 @@ public class TestClientHelper {
     @Test public void all_methods_add_query_params() throws HttpException, IOException {
 
         impl.setBucketSchema(bucket, schema, meta);
-        impl.listBucket(bucket, meta);
+        impl.listBucket(bucket, meta, false);
         impl.store(object, meta);
         impl.fetchMeta(bucket, key, meta);
         impl.fetch(bucket, key, meta);

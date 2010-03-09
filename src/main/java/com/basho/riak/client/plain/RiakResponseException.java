@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.plain;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -37,6 +38,14 @@ public class RiakResponseException extends Exception implements HttpResponse {
         return impl.getBody();
     }
 
+    public InputStream getStream() {
+        return impl.getStream();
+    }
+
+    public boolean isStreamed() {
+        return impl.isStreamed();
+    }
+    
     public String getBucket() {
         return impl.getBucket();
     }
@@ -65,4 +74,7 @@ public class RiakResponseException extends Exception implements HttpResponse {
         return impl.isSuccess();
     }
 
+    public void close() {
+        impl.close();
+    }
 }

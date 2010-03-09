@@ -196,12 +196,26 @@ The bucket schema and a list the keys of all the objects in the bucket can be re
     BucketResponse r = riak.listBucket("bucket");
     if (r.isSuccess()) {
         BucketInfo info = r.getBucketInfo();
-        List<String> keys = info.getKeys();         // list of all object keys in this bucket
+        Collection<String> keys = info.getKeys();         // list of all object keys in this bucket
         
         // Update the schema and put
         info.setAllowMult(true);
         riak.setBucketSchema(info);
     }
+
+It is also possible to stream the keys in the bucket, which sends the `?keys=stream` query parameter to Riak.
+
+    BucketResponse r;
+    try {
+        r = riak.streamBucket("bucket");
+        if (r.isSuccess())
+            for (String key : r.getBucketInfo().getKeys())
+                // process key
+    } finally {
+        if (r != null)
+            r.close();
+    }
+
 
 With Plain:
 

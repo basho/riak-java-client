@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.response;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +48,18 @@ public class HttpResponseDecorator implements HttpResponse {
         return impl.getBody();
     }
 
+    public InputStream getStream() {
+        if (impl == null)
+            return null;
+        return impl.getStream();
+    }
+
+    public boolean isStreamed() {
+        if (impl == null)
+            return false;
+        return impl.isStreamed();
+    }
+
     public Map<String, String> getHttpHeaders() {
         if (impl == null)
             return new HashMap<String, String>();
@@ -75,5 +88,11 @@ public class HttpResponseDecorator implements HttpResponse {
         if (impl == null)
             return false;
         return impl.isSuccess();
+    }
+    
+    public void close() {
+        if (impl != null) {
+            impl.close();
+        }
     }
 }

@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.response;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,10 +32,11 @@ public class DefaultHttpResponse implements HttpResponse {
     private int status = -1;
     private Map<String, String> headers = null;
     private String body = null;
+    private InputStream stream = null;
     private HttpMethod httpMethod = null;
 
     public DefaultHttpResponse(String bucket, String key, int status, Map<String, String> headers, String body,
-            HttpMethod httpMethod) {
+            InputStream stream, HttpMethod httpMethod) {
         if (headers == null) {
             headers = new HashMap<String, String>();
         }
@@ -44,6 +46,7 @@ public class DefaultHttpResponse implements HttpResponse {
         this.status = status;
         this.headers = headers;
         this.body = body;
+        this.stream = stream;
         this.httpMethod = httpMethod;
     }
 
@@ -65,6 +68,14 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public String getBody() {
         return body;
+    }
+
+    public InputStream getStream() {
+        return stream;
+    }
+
+    public boolean isStreamed() {
+        return stream != null;
     }
 
     public HttpMethod getHttpMethod() {
@@ -90,5 +101,11 @@ public class DefaultHttpResponse implements HttpResponse {
         }
 
         return (status < 100 || status >= 400) && !((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
+    }
+
+    public void close() {
+        if (httpMethod != null) {
+            httpMethod.releaseConnection();
+        }
     }
 }

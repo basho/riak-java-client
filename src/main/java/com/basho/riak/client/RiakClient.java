@@ -124,17 +124,45 @@ public class RiakClient {
      *             If the Riak server returns a malformed response.
      */
     public BucketResponse listBucket(String bucket, RequestMeta meta) {
-        HttpResponse r = helper.listBucket(bucket, meta);
-        try {
-            return getBucketResponse(r);
-        } catch (JSONException e) {
-            helper.toss(new RiakResponseRuntimeException(r, e));
-            return null;
-        }
+        return listBucket(bucket, meta, false);
     }
 
     public BucketResponse listBucket(String bucket) {
         return listBucket(bucket, null);
+    }
+
+    /**
+     * Same as {@link RiakClient#listBucket(String, RequestMeta)}, except
+     * streams the response, so the user must remember to call
+     * {@link BucketResponse#close() on the return value.
+     */
+    public BucketResponse streamBucket(String bucket, RequestMeta meta) {
+        return listBucket(bucket, meta, true);
+    }
+
+    public BucketResponse streamBucket(String bucket) {
+        return streamBucket(bucket, null);
+    }
+
+    BucketResponse listBucket(String bucket, RequestMeta meta, boolean streamResponse) {
+        HttpResponse r = helper.listBucket(bucket, meta, streamResponse);
+        try {
+            return getBucketResponse(r);
+        } catch (JSONException e) {
+            try {
+                return new BucketResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to parse it or throw");
+            }
+        } catch (IOException e) {
+            try {
+                return new BucketResponse(helper.toss(new RiakIORuntimeException(e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to read it or throw");
+            }
+        }
     }
 
     /**
@@ -238,7 +266,8 @@ public class RiakClient {
     /**
      * Similar to fetch(), except the HTTP connection is left open for
      * successful 2xx responses, and the Riak response is provided as a stream.
-     * The user must remember to call FetchResponse.close() on the return value.
+     * The user must remember to call {@link FetchResponse#close()} on the
+     * return value.
      * 
      * Sibling responses (status code 300) must be read before parsing, so they
      * are not streamed. Therefore stream() is identical to fetch(), except that
@@ -432,8 +461,8 @@ public class RiakClient {
     }
 
     /**
-     * Same as {@link RiakClient#mapReduceOverBucket(String)}, except over a set of
-     * objects instead of a bucket.
+     * Same as {@link RiakClient#mapReduceOverBucket(String)}, except over a set
+     * of objects instead of a bucket.
      * 
      * @param objects
      *            A set of objects represented as a map of { bucket : [ list of
@@ -485,7 +514,7 @@ public class RiakClient {
     }
 
     // Encapsulate response creation so it can be stubbed for testing
-    BucketResponse getBucketResponse(HttpResponse r) throws JSONException {
+    BucketResponse getBucketResponse(HttpResponse r) throws JSONException, IOException {
         return new BucketResponse(r);
     }
 

@@ -159,10 +159,8 @@ public class TestFetchResponse {
         
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SINGLE_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(null);
-        when(mockHttpResponse.getHttpMethod()).thenReturn(mockHttpMethod);
-        
-        when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(mockInputStream);
+        when(mockHttpResponse.isStreamed()).thenReturn(true);
+        when(mockHttpResponse.getStream()).thenReturn(mockInputStream);
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         
@@ -178,15 +176,13 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(null);
-        when(mockHttpResponse.getHttpMethod()).thenReturn(mockHttpMethod);
-        
-        when(mockHttpMethod.getResponseBodyAsStream()).thenReturn(is);
+        when(mockHttpResponse.isStreamed()).thenReturn(true);
+        when(mockHttpResponse.getStream()).thenReturn(is);
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         assertTrue(impl.hasSiblings());
 
-        verify(mockHttpMethod).releaseConnection();
+        verify(mockHttpResponse).close();
 
         Iterator<RiakObject> siblings = impl.getSiblings().iterator();
  

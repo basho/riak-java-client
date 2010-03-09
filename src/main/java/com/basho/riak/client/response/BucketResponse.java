@@ -13,11 +13,15 @@
  */
 package com.basho.riak.client.response;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.util.ClientUtils;
@@ -39,16 +43,30 @@ public class BucketResponse extends HttpResponseDecorator implements HttpRespons
      *            The HTTP response from a GET at a bucket
      * @throws JSONException
      *             If the response is a 2xx but contains invalid JSON
+     * @throws IOException
+     *             If a communication error with the Riak server while trying to
+     *             read the streamed response
      */
-    public BucketResponse(HttpResponse r) throws JSONException {
+    public BucketResponse(HttpResponse r) throws JSONException, IOException {
         super(r);
 
-        if (r != null && r.isSuccess() && (r.getBody() != null)) {
-            JSONObject json = new JSONObject(r.getBody());
-            JSONObject props = json.optJSONObject(Constants.FL_SCHEMA);
-            JSONArray jsonKeys = json.optJSONArray(Constants.FL_KEYS);
-            Collection<String> keys = ClientUtils.jsonArrayAsList(jsonKeys);
+        if (r != null && r.isSuccess()) {
+            JSONObject props;
+            Collection<String> keys;
+            if (!r.isStreamed()) {
+                JSONObject json = new JSONObject(r.getBody());
+                JSONArray jsonKeys = json.optJSONArray(Constants.FL_KEYS);
+                props = json.optJSONObject(Constants.FL_SCHEMA);
+                keys = ClientUtils.jsonArrayAsList(jsonKeys);
+            } else {
+                InputStream stream = r.getStream();
+                JSONTokener tokens = new JSONTokener(new InputStreamReader(stream));
 
+                // suck in the first object from the stream, which is the schema
+                // and give the rest to the streamed keys collection
+                props = new JSONObject(tokens).optJSONObject(Constants.FL_SCHEMA);
+                keys = new StreamedKeysCollection(tokens);
+            }
             bucketInfo = new RiakBucketInfo(props, keys);
         }
     }

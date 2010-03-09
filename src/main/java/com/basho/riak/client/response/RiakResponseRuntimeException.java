@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.response;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -50,6 +51,18 @@ public class RiakResponseRuntimeException extends RuntimeException implements Ht
         if (response == null)
             return null;
         return response.getBody();
+    }
+
+    public InputStream getStream() {
+        if (response == null)
+            return null;
+        return response.getStream();
+    }
+
+    public boolean isStreamed() {
+        if (response == null)
+            return false;
+        return response.isStreamed();
     }
 
     public String getBucket() {
@@ -90,4 +103,8 @@ public class RiakResponseRuntimeException extends RuntimeException implements Ht
         return false;
     }
 
+    public void close() {
+        if (response != null)
+            response.close();
+    }
 }

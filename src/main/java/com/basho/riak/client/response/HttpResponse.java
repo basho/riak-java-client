@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.response;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -43,9 +44,19 @@ public interface HttpResponse {
     public Map<String, String> getHttpHeaders();
 
     /**
-     * The HTTP response body.
+     * The HTTP response body or null if isStreamed()
      */
     public String getBody();
+
+    /**
+     * The HTTP response body as an input stream if isStreamed(); null otherwise
+     */
+    public InputStream getStream();
+
+    /**
+     * Whether the response body is available as an input stream
+     */
+    public boolean isStreamed();
 
     /**
      * The actual {@link HttpMethod} used to make the HTTP request. Most of the
@@ -67,4 +78,8 @@ public interface HttpResponse {
      */
     public boolean isError();
 
+    /**
+     * Releases the underlying the HTTP connection when the response is streamed
+     */
+    public void close();
 }

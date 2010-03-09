@@ -14,6 +14,7 @@
 package com.basho.riak.client.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.DefaultHttpResponse;
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakExceptionHandler;
@@ -99,13 +101,26 @@ public class ClientHelper {
     }
 
     /**
-     * Same as {@link RiakClient}, except only returning the HTTP response
+     * Same as {@link RiakClient}, except only returning the HTTP response, and
+     * if streamResponse==true, the response will be streamed back, so the user
+     * is responsible for calling {@link BucketResponse#close()}
      */
-    public HttpResponse listBucket(String bucket, RequestMeta meta) {
+    public HttpResponse listBucket(String bucket, RequestMeta meta, boolean streamResponse) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (streamResponse && (meta.getQueryParam(Constants.QP_KEYS) == null)) {
+            meta.setQueryParam(Constants.QP_KEYS, Constants.STREAM_KEYS);
+        }
+        if (meta.getHeader(Constants.HDR_CONTENT_TYPE) == null) {
+            meta.setHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
+        }
+        if (meta.getHeader(Constants.HDR_ACCEPT) == null) {
+            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
+        }
+
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket));
-        get.setRequestHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);
-        get.setRequestHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
-        return executeMethod(bucket, null, get, meta);
+        return executeMethod(bucket, null, get, meta, streamResponse);
     }
 
     /**
@@ -219,7 +234,7 @@ public class ClientHelper {
         GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, walkSpec));
         return executeMethod(bucket, key, get, meta);
     }
-    
+
     /**
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
@@ -256,7 +271,7 @@ public class ClientHelper {
     public HttpResponse toss(RiakIORuntimeException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
-            return new DefaultHttpResponse(null, null, 0, null, null, null);
+            return new DefaultHttpResponse(null, null, 0, null, null, null, null);
         } else
             throw e;
     }
@@ -264,7 +279,7 @@ public class ClientHelper {
     public HttpResponse toss(RiakResponseRuntimeException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
-            return new DefaultHttpResponse(null, null, 0, null, null, null);
+            return new DefaultHttpResponse(null, null, 0, null, null, null, null);
         } else
             throw e;
     }
@@ -341,11 +356,14 @@ public class ClientHelper {
 
             Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
             String body = null;
-            if (!streamResponse) {
+            InputStream stream = null;
+            if (streamResponse) {
+                stream = httpMethod.getResponseBodyAsStream();
+            } else {
                 body = httpMethod.getResponseBodyAsString();
             }
 
-            return new DefaultHttpResponse(bucket, key, status, headers, body, httpMethod);
+            return new DefaultHttpResponse(bucket, key, status, headers, body, stream, httpMethod);
         } catch (IOException e) {
             return toss(new RiakIORuntimeException(e));
         } finally {

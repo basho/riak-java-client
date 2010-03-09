@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
-
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
@@ -74,10 +72,10 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
             String body = r.getBody();
 
             // If response is streamed, consume and close the stream
-            if (r.getBody() == null && r.getHttpMethod() != null) {
+            if (r.isStreamed()) {
                 try {
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ClientUtils.copyStream(r.getHttpMethod().getResponseBodyAsStream(), os);
+                    ClientUtils.copyStream(r.getStream(), os);
                     body = os.toString();
                 } catch (IOException e) { // ignore
                 } finally {
@@ -95,17 +93,14 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
                                     headers.get(Constants.HDR_ETAG));
 
-            // If response was constructed without a response body, try to get
-            // the body as a stream from the underlying HTTP method
-            if (r.getBody() == null && r.getHttpMethod() != null) {
-                Long contentLength = null;
+            // If response was constructed with a streamed response body, also try to get the content length
+            Long contentLength = null;
+            if (r.isStreamed()) {
                 try {
                     contentLength = Long.parseLong(headers.get(Constants.HDR_CONTENT_LENGTH));
                 } catch (NumberFormatException ignored) {}
-                try {
-                    object.setValueStream(r.getHttpMethod().getResponseBodyAsStream(), contentLength);
-                } catch (IOException ignored) {}
             }
+            object.setValueStream(r.getStream(), contentLength);
         }
     }
 
@@ -145,18 +140,5 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
      */
     public Collection<RiakObject> getSiblings() {
         return siblings;
-    }
-
-    /**
-     * Releases the underlying HTTP connection, closing the InputStream returned
-     * by getObject().getValueStream(), if any. User is responsible for calling
-     * this method on FetchResponse objects returned from streaming requests,
-     * such as RiakClient.stream(bucket, key).
-     */
-    public void close() {
-        HttpMethod httpMethod = getHttpMethod();
-        if (httpMethod != null) {
-            httpMethod.releaseConnection();
-        }
     }
 }

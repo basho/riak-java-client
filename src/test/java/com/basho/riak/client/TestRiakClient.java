@@ -55,7 +55,10 @@ public class TestRiakClient {
         verify(mockHelper).setBucketSchema(eq(bucket), any(JSONObject.class), same(meta));
 
         impl.listBucket(bucket, meta);
-        verify(mockHelper).listBucket(bucket, meta);
+        verify(mockHelper).listBucket(bucket, meta, false);
+
+        impl.streamBucket(bucket, meta);
+        verify(mockHelper).listBucket(bucket, meta, true);
 
         impl.store(object, meta);
         verify(mockHelper).store(object, meta);
@@ -88,6 +91,9 @@ public class TestRiakClient {
         impl.listBucket(bucket);
         verify(impl).listBucket(bucket, null);
 
+        impl.streamBucket(bucket);
+        verify(impl).streamBucket(bucket, null);
+
         impl.store(object);
         verify(impl).store(object, null);
 
@@ -118,7 +124,7 @@ public class TestRiakClient {
         verify(impl).mapReduce(mrJob, null);
     }
     
-    @Test public void method_defers_to_helper_on_expection() throws JSONException {
+    @Test public void method_defers_to_helper_on_expection() throws JSONException, IOException {
         impl = spy(impl);
         
         doThrow(new JSONException("")).when(impl).getBucketResponse(any(HttpResponse.class));
@@ -127,6 +133,10 @@ public class TestRiakClient {
         doThrow(new JSONException("")).when(impl).getMapReduceResponse(any(HttpResponse.class));
 
         impl.listBucket(bucket, meta);
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
+        reset(mockHelper);
+
+        impl.streamBucket(bucket, meta);
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
 

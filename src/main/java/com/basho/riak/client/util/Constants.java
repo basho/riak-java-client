@@ -67,12 +67,17 @@ public interface Constants {
     public static Integer DEFAULT_R = 2;
     public static Integer DEFAULT_W = null;
     public static Integer DEFAULT_DW = null;
+    
+    // Values for the "keys" query parameter
+    public static String NO_KEYS = "false";
+    public static String STREAM_KEYS = "stream";
 
     // Query parameters used in Riak
     public static String QP_RETURN_BODY = "returnbody";
     public static String QP_R = "r";
     public static String QP_W = "w";
     public static String QP_DW = "dw";
+    public static String QP_KEYS = "keys";
 
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";
