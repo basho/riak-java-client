@@ -72,12 +72,14 @@ public class ClientUtils {
 
         HttpConnectionManagerParams mp = m.getParams();
         if (config.getMaxConnections() != null) {
-            mp.setIntParameter(HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS, config.getMaxConnections());
+        	mp.setMaxTotalConnections(config.getMaxConnections());
         }
 
         HttpClientParams cp = http.getParams();
         if (config.getTimeout() != null) {
-            cp.setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT, config.getTimeout());
+            mp.setConnectionTimeout(config.getTimeout().intValue());
+            cp.setConnectionManagerTimeout(config.getTimeout());
+            cp.setSoTimeout(config.getTimeout().intValue());
         }
         if (config.getRetryHandler() != null) {
             cp.setParameter(HttpMethodParams.RETRY_HANDLER, config.getRetryHandler());

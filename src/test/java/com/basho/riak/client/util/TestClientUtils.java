@@ -61,12 +61,14 @@ public class TestClientUtils {
     }
 
     @Test public void newHttpClient_sets_connection_timeout() {
-        final long timeout = 11;
+        final int timeout = 11;
         config.setTimeout(timeout);
 
         HttpClient httpClient = ClientUtils.newHttpClient(config);
 
         assertEquals(timeout, httpClient.getParams().getConnectionManagerTimeout());
+        assertEquals(timeout, httpClient.getParams().getSoTimeout());
+        assertEquals(timeout, httpClient.getHttpConnectionManager().getParams().getConnectionTimeout());
     }
 
     @Test public void newHttpClient_sets_retry_handler() {
