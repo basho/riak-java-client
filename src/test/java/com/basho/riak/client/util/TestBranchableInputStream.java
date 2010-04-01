@@ -14,14 +14,12 @@
 package com.basho.riak.client.util;
 
 import static org.junit.Assert.*;
-import static org.mockito.AdditionalMatchers.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.junit.Test;
@@ -43,7 +41,7 @@ public class TestBranchableInputStream {
     }
     
     @Test public void behaves_as_standard_input_stream_for_long_inputs() throws IOException {
-        byte[] bytes = new byte[BranchableInputStream.DEFAULT_BUFFER_SIZE * 5];
+        byte[] bytes = new byte[BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5];
         new Random().nextBytes(bytes);
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -95,7 +93,7 @@ public class TestBranchableInputStream {
         impl = new BranchableInputStream(is);
         
         for (int i = 0; i < 20; i++) {
-            assertEquals(i, impl.readOffset);
+            assertEquals(i, impl.mainBranch.pos);
             impl.read();
         }   
     }
@@ -114,123 +112,65 @@ public class TestBranchableInputStream {
         
         for (int i = 0; i < 5; i++) {
             for (int j = i; j < 20; j++) {
-                assertEquals(j, branches[i].offset);
+                assertEquals(j, branches[i].pos);
                 branches[i].read();
             }
         }
 
-        assertEquals(5, impl.readOffset);
+        assertEquals(5, impl.mainBranch.pos);
     }
     
-    @Test public void ensureBuffer_readjusts_offset_to_earliest_branch_location() throws IOException {
-        byte[] bytes = new byte[BranchableInputStream.DEFAULT_BUFFER_SIZE * 5];
+    @Test public void no_data_loss_when_branches_span_chunks() throws IOException {
+        byte[] bytes = new byte[BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5];
         new Random().nextBytes(bytes);
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-        impl = spy(new BranchableInputStream(is));
-        
-        when(impl.needToReallocate(anyInt())).thenReturn(true);
-        
-        for (int i = 0; i < 20; i++) { impl.read(); }
-        
-        impl.ensureBuffer(1024);
-        assertEquals(20, impl.bufOffset);
-        
-        InputStream b1 = impl.branch();
-        for (int i = 0; i < 20; i++) { impl.read(); }
-        InputStream b2 = impl.branch();
-        for (int i = 0; i < 20; i++) { impl.read(); }
-        
-        impl.ensureBuffer(1024);
-        assertEquals(20, impl.bufOffset);
-        
-        b1.close();
-        impl.ensureBuffer(1024);
-        assertEquals(40, impl.bufOffset);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        impl = new BranchableInputStream(is);
 
-        b2.close();
-        impl.ensureBuffer(1024);
-        assertEquals(60, impl.bufOffset);
+        InputStream[] branches = new InputStreamBranch[2];
+        branches[0] = impl.branch();
+        
+        for (int i = 0; i < BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 3; i++) {
+            impl.read();
+        }   
+
+        branches[1] = impl.branch();
+        for (int i = 0; i < BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE; i++) {
+            branches[1].read();
+        }   
+
+        ClientUtils.copyStream(impl, os);
+        assertArrayEquals(Arrays.copyOfRange(bytes, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 3, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5), os.toByteArray());
+        
+        os.reset();
+        ClientUtils.copyStream(branches[0], os);
+        assertArrayEquals(bytes, os.toByteArray());
+
+        os.reset();
+        ClientUtils.copyStream(branches[1], os);
+        assertArrayEquals(Arrays.copyOfRange(bytes, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5), os.toByteArray());
     }
     
-    @Test public void ensureBuffer_defers_to_reallocateBuffer() {
-        byte[] bytes = new byte[100];
-        ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-
-        impl = spy(new BranchableInputStream(is));
-        when(impl.needToReallocate(anyInt())).thenReturn(true);
-        
-        impl.ensureBuffer(1024);
-        verify(impl).reallocateBuffer(eq(0), anyInt());
-    }
-
-    @Test public void reallocateBuffer_doesnt_lose_data() throws IOException {
-        byte[] bytes = new byte[100];
-        byte[] copy = new byte[bytes.length];
+    @Test public void chunk_sizes_increase_exponentially() throws IOException {
+        byte[] bytes = new byte[BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5];
         new Random().nextBytes(bytes);
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-        impl = spy(new BranchableInputStream(is));
-        impl.read(copy);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         
-        int offset = 0;
-        impl.reallocateBuffer(offset, 1024);
-        assertEquals(bytes.length, impl.bufLen + offset);
-        for (int i = offset; i < bytes.length; i++) {
-            assertEquals(bytes[i], impl.buf[i]);
-        }
-
-        offset = 10;
-        impl.reallocateBuffer(offset, 1024);
-        assertEquals(bytes.length, impl.bufLen + offset);
-        for (int i = offset; i < bytes.length; i++) {
-            assertEquals(bytes[i], impl.buf[i - offset]);
-        }
-
-        offset = 20;
-        impl.reallocateBuffer(offset, 1024);
-        assertEquals(bytes.length, impl.bufLen + offset);
-        for (int i = offset; i < bytes.length; i++) {
-            assertEquals(bytes[i], impl.buf[i - offset]);
-        }
-
-        offset = 100;
-        impl.reallocateBuffer(offset, 1024);
-        assertEquals(0, impl.bufLen);
-    }
-
-    @Test public void ensureBuffer_allocates_enough_space() {
-        impl = spy(new BranchableInputStream(null));
-        when(impl.needToReallocate(anyInt())).thenReturn(true);
-        doNothing().when(impl).reallocateBuffer(anyInt(), anyInt());
+        impl = new BranchableInputStream(is);
+        InputStream branch = impl.branch();
+        ClientUtils.copyStream(branch, os);
         
-        impl.ensureBuffer(100);
-        verify(impl).reallocateBuffer(eq(0), geq(100));
-        reset(impl);
-        
-        when(impl.needToReallocate(anyInt())).thenReturn(true);
-        doNothing().when(impl).reallocateBuffer(anyInt(), anyInt());
-        impl.ensureBuffer(BranchableInputStream.DEFAULT_BUFFER_SIZE);
-        verify(impl).reallocateBuffer(eq(0), geq(BranchableInputStream.DEFAULT_BUFFER_SIZE)); 
-        reset(impl);
+        assertEquals(0, impl.mainBranch.chunk.buf.length);
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE, impl.mainBranch.chunk.next().buf.length);
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE*2, impl.mainBranch.chunk.next().next().buf.length);
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE*4, impl.mainBranch.chunk.next().next().next().buf.length);
 
-        when(impl.needToReallocate(anyInt())).thenReturn(true);
-        doNothing().when(impl).reallocateBuffer(anyInt(), anyInt());
-        impl.ensureBuffer(BranchableInputStream.DEFAULT_BUFFER_SIZE * 10);
-        verify(impl).reallocateBuffer(eq(0), geq(BranchableInputStream.DEFAULT_BUFFER_SIZE * 10)); 
-        reset(impl);
-    }
+        assertTrue(impl.mainBranch.chunk.full());
+        assertTrue(impl.mainBranch.chunk.next().full());
+        assertTrue(impl.mainBranch.chunk.next().next().full());
+        assertFalse(impl.mainBranch.chunk.next().next().next().full());
 
-    @Test public void ensureBuffer_allocates_exponentially() {
-        impl = spy(new BranchableInputStream(null));
-        doNothing().when(impl).reallocateBuffer(anyInt(), anyInt());
-        when(impl.needToReallocate(anyInt())).thenReturn(true);
-        
-        impl.ensureBuffer(100);
-        verify(impl).reallocateBuffer(eq(0), geq(BranchableInputStream.DEFAULT_BUFFER_SIZE));
-        
-        impl.ensureBuffer(BranchableInputStream.DEFAULT_BUFFER_SIZE + 1);
-        verify(impl).reallocateBuffer(eq(0), geq(BranchableInputStream.DEFAULT_BUFFER_SIZE * 2)); 
-
-        impl.ensureBuffer(BranchableInputStream.DEFAULT_BUFFER_SIZE * 2 + 1);
-        verify(impl).reallocateBuffer(eq(0), geq(BranchableInputStream.DEFAULT_BUFFER_SIZE * 4)); 
+        assertNull(impl.mainBranch.chunk.next().next().next().next());
     }
 }

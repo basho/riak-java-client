@@ -15,10 +15,6 @@ package com.basho.riak.client.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.BufferOverflowException;
-import java.nio.BufferUnderflowException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * An input stream that can be branched into other InputStreams, each
@@ -28,140 +24,127 @@ import java.util.Map;
  */
 public class BranchableInputStream extends InputStream {
 
-    static final int DEFAULT_BUFFER_SIZE = 4096;
-    static final int READ_CHUNK_SIZE = 1024;
+    static final int DEFAULT_BASE_CHUNK_SIZE = 1024;
+    static final int MAX_BYTES_PER_READ = 1024;
+    int nextChunkSize;
 
-    int readOffset = 0;
-    int bufOffset = 0;
-    int bufLen = 0;
-    volatile byte buf[];
-    Map<InputStreamBranch, Integer> branches = new LinkedHashMap<InputStreamBranch, Integer>();
     InputStream impl;
+    InputStreamBranch mainBranch = null;
+    LinkedChunk lastChunk = null;
+    int dataLen = 0;
+    boolean eof = false;
 
     public BranchableInputStream(InputStream in) {
-        this(in, DEFAULT_BUFFER_SIZE);
+        this(in, DEFAULT_BASE_CHUNK_SIZE);
     }
 
     public BranchableInputStream(InputStream in, int initialBufferSize) {
         impl = in;
-        buf = new byte[initialBufferSize];
+        lastChunk = new LinkedChunk(0, 0); 
+        mainBranch = new InputStreamBranch(lastChunk, 0);
+        nextChunkSize = initialBufferSize;
     }
 
     @Override public int read() throws IOException {
-        if (buf == null)
-            return -1;
-        int c = readAt(readOffset);
-        readOffset++;
-        return c;
+        return mainBranch.read();
     }
 
     @Override public void close() throws IOException {
-        buf = null;
+        mainBranch.close();
         impl.close();
     }
 
     public InputStream branch() {
-        return new InputStreamBranch();
+        return new InputStreamBranch(mainBranch);
     }
 
-    public int readAt(int pos) throws IOException {
-        readUntil(pos);
-        pos -= bufOffset;
-        if (pos >= 0 && pos < bufLen)
-            return buf[pos] & 0xff;
-        return -1;
-    }
-
-    void readUntil(int pos) throws IOException {
-        int bytesRead = 0;
-        while ((pos - bufOffset >= bufLen) && (bytesRead >= 0)) {
-            ensureBuffer(bufOffset + bufLen + READ_CHUNK_SIZE);
-            bytesRead = impl.read(buf, bufLen, READ_CHUNK_SIZE);
-            if (bytesRead > 0) {
-                bufLen += bytesRead;
+    boolean readUntil(int pos) throws IOException {
+        if (!eof) {
+            while ((pos >= dataLen) && !eof) {
+                if (lastChunk.full()) {
+                    lastChunk.setNext(new LinkedChunk(lastChunk.lastIndex() + 1, nextChunkSize));
+                    lastChunk = lastChunk.next();
+                    nextChunkSize *= 2;
+                }
+                
+                int bytesRead = lastChunk.readFrom(impl, MAX_BYTES_PER_READ);
+                if (bytesRead < 0) {
+                    eof = true;
+                } else {
+                    dataLen += bytesRead;
+                }
             }
         }
-    }
-
-    void ensureBuffer(int size) {
-        if (!needToReallocate(size))
-            return;
-
-        // We only need to keep a buffer containing data back to the
-        // earliest read location in all branches
-        int offset = readOffset;
-        for (int i : branches.values()) {
-            if (i < offset) {
-                offset = i;
-            }
-        }
-        size -= offset;
-
-        if (size > Integer.MAX_VALUE)
-            throw new BufferOverflowException();
-
-        int bufSize = DEFAULT_BUFFER_SIZE;
-        while (size > bufSize) {
-            if (bufSize > Integer.MAX_VALUE / 2) {
-                // guaranteed not to overflow, since DEFAULT_BUFFER_SIZE is a
-                // power of 2.
-                bufSize += Integer.MAX_VALUE / 4;
-            } else {
-                bufSize *= 2;
-            }
-        }
-
-        reallocateBuffer(offset, bufSize);
-    }
-
-    void reallocateBuffer(int offset, int size) {
-        if (bufOffset == offset && buf.length == size)
-            return;
-
-        if (offset + size < bufOffset + bufLen)
-            throw new BufferUnderflowException();
-
-        byte[] copy = new byte[size];
-        if (offset != bufOffset) {
-            if (offset - bufOffset < buf.length) {
-                bufLen -= (offset - bufOffset);
-                System.arraycopy(buf, offset - bufOffset, copy, 0, bufLen);
-            } else {
-                bufLen = 0;
-            }
-
-            bufOffset = offset;
-        } else {
-            System.arraycopy(buf, 0, copy, 0, bufLen);
-        }
-        buf = copy;
-    }
-
-    boolean needToReallocate(int size) {
-        return (buf.length < size - bufOffset);
+        
+        return pos < dataLen;
     }
 
     class InputStreamBranch extends InputStream {
 
-        int offset;
-        boolean closed = false;
+        LinkedChunk chunk;
+        int pos;
 
-        public InputStreamBranch() {
-            branches.put(this, readOffset);
-            offset = readOffset;
+        InputStreamBranch(LinkedChunk chunk, int pos) {
+            this.chunk = chunk;
+            this.pos = pos;
+        }
+
+        InputStreamBranch(InputStreamBranch other) {
+            this.chunk = other.chunk;
+            this.pos = other.pos;
         }
 
         @Override public int read() throws IOException {
-            if (closed)
+            if (chunk == null || !readUntil(pos))
                 return -1;
-            int b = readAt(offset++);
-            branches.put(this, offset);
-            return b;
+            
+            while (pos > chunk.lastIndex()) {
+                chunk = chunk.next;
+            }
+            return chunk.get(pos++);
         }
 
         @Override public void close() {
-            branches.remove(this);
-            closed = true;
+            chunk = null;
+        }
+    }
+    
+    class LinkedChunk {
+        int offset;
+        int len;
+        byte[] buf;
+        LinkedChunk next = null;
+        LinkedChunk(int offset, int size) {
+            this.offset = offset;
+            this.buf = new byte[size];
+            this.len = 0;
+        }
+        int readFrom(InputStream in, int maxBytes) throws IOException {
+            int bytesRead = in.read(buf, len, Math.min(remaining(), maxBytes));
+            if (bytesRead > 0) {
+                len += bytesRead;
+            }
+            return bytesRead;
+        }
+        int get(int index) {
+            if ((index < offset) || (index - offset >= len))
+                return -1;
+            return buf[index - offset] & 0xff;
+        }
+        int lastIndex() {
+            return offset + buf.length - 1;
+        }
+        boolean full() {
+            return (len == buf.length);
+        }
+        int remaining() {
+            return (buf.length - len);
+        }
+        LinkedChunk next() {
+            return next;
+        }
+        void setNext(LinkedChunk next) {
+            this.next = next;
         }
     }
 }
