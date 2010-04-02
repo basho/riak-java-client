@@ -13,6 +13,10 @@
  */
 package com.basho.riak.client.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,7 +106,7 @@ public class Multipart {
      *            The header blob
      * @return Map of header names to values
      */
-    private static Map<String, String> parseHeaders(String s) {
+    public static Map<String, String> parseHeaders(String s) {
         // "unfold" header lines (http://tools.ietf.org/html/rfc822#section-3.1)
         s.replaceAll("\n\\s+", " ");
 
@@ -126,7 +130,7 @@ public class Multipart {
      *            form "type/subtype; boundary=foobar; param=value"
      * @return Value of the boundary parameter
      */
-    private static String getBoundary(String contentType) {
+    public static String getBoundary(String contentType) {
         String[] params = contentType.split("\\s*;\\s*");
         for (String param : params) {
             String[] nv = param.split("\\s*=\\s*", 2);
@@ -144,11 +148,16 @@ public class Multipart {
     public static class Part {
         private Map<String, String> headers;
         private String body;
+        private InputStream stream;
 
         public Part(Map<String, String> headers, String body) {
-            super();
             this.headers = headers;
             this.body = body;
+        }
+
+        public Part(Map<String, String> headers, InputStream body) {
+            this.headers = headers;
+            stream = body;
         }
 
         /**
@@ -162,8 +171,26 @@ public class Multipart {
          * Body of this part
          */
         public String getBody() {
+            if (body == null && stream != null) {
+                try {
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    for (int readCount = 0; readCount != -1; readCount = stream.read(buffer)) {
+                        os.write(buffer, 0, readCount);
+                    }
+                    body = os.toString();
+                } catch (IOException e) { /* nop */}
+                stream = null;
+            }
             return body;
         }
 
+        public InputStream getStream() {
+            if (stream == null && body != null) {
+                stream = new ByteArrayInputStream(body.getBytes());
+            }
+
+            return stream;
+        }
     }
 }

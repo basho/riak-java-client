@@ -14,6 +14,7 @@
 package com.basho.riak.client.util;
 
 import java.io.IOException;
+
 import java.io.InputStream;
 
 /**
@@ -29,9 +30,9 @@ public class BranchableInputStream extends InputStream {
     int nextChunkSize;
 
     InputStream impl;
-    InputStreamBranch mainBranch = null;
     LinkedChunk lastChunk = null;
     int dataLen = 0;
+    int pos;
     boolean eof = false;
 
     public BranchableInputStream(InputStream in) {
@@ -41,23 +42,32 @@ public class BranchableInputStream extends InputStream {
     public BranchableInputStream(InputStream in, int initialBufferSize) {
         impl = in;
         lastChunk = new LinkedChunk(0, 0); 
-        mainBranch = new InputStreamBranch(lastChunk, 0);
         nextChunkSize = initialBufferSize;
     }
 
     @Override public int read() throws IOException {
-        return mainBranch.read();
+        int curpos = this.pos;
+        if (readUntil(curpos))
+            return lastChunk.get(curpos);
+        return -1;
     }
 
     @Override public void close() throws IOException {
-        mainBranch.close();
+        eof = true;
         impl.close();
     }
 
-    public InputStream branch() {
-        return new InputStreamBranch(mainBranch);
+    public int peek() throws IOException {
+        int curpos = this.pos;
+        int c = read();
+        this.pos = curpos;
+        return c;
     }
 
+    public InputStream branch() {
+        return new InputStreamBranch(lastChunk, pos);
+    }
+    
     boolean readUntil(int pos) throws IOException {
         if (!eof) {
             while ((pos >= dataLen) && !eof) {
@@ -75,8 +85,11 @@ public class BranchableInputStream extends InputStream {
                 }
             }
         }
-        
-        return pos < dataLen;
+        if (pos < dataLen) {
+            this.pos = Math.max(this.pos, pos+1);
+            return true;
+        }
+        return false;
     }
 
     class InputStreamBranch extends InputStream {
@@ -87,11 +100,6 @@ public class BranchableInputStream extends InputStream {
         InputStreamBranch(LinkedChunk chunk, int pos) {
             this.chunk = chunk;
             this.pos = pos;
-        }
-
-        InputStreamBranch(InputStreamBranch other) {
-            this.chunk = other.chunk;
-            this.pos = other.pos;
         }
 
         @Override public int read() throws IOException {

@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.response;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +24,7 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.util.StreamedMultipart;
 
 /**
  * Response from a HEAD or GET request for an object. Decorates an HttpResponse
@@ -34,7 +34,7 @@ import com.basho.riak.client.util.Constants;
 public class FetchResponse extends HttpResponseDecorator implements HttpResponse {
 
     private RiakObject object = null;
-    private List<RiakObject> siblings = new ArrayList<RiakObject>();
+    private Collection<RiakObject> siblings = new ArrayList<RiakObject>();
 
     /**
      * On a 2xx response, parse the HTTP response from Riak into a
@@ -52,8 +52,10 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
      * @throws RiakResponseRuntimeException
      *             If the server returns a 300 without a proper multipart/mixed
      *             body
+     * @throws RiakIORuntimeException
+     *             If an error occurs during communication with the Riak server.
      */
-    public FetchResponse(HttpResponse r, RiakClient riak) throws RiakResponseRuntimeException {
+    public FetchResponse(HttpResponse r, RiakClient riak) throws RiakResponseRuntimeException, RiakIORuntimeException {
         super(r);
 
         if (r == null)
@@ -69,23 +71,19 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
             if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
                 throw new RiakResponseRuntimeException(r, "multipart/mixed content expected when object has siblings");
 
-            String body = r.getBody();
-
-            // If response is streamed, consume and close the stream
             if (r.isStreamed()) {
                 try {
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ClientUtils.copyStream(r.getStream(), os);
-                    body = os.toString();
-                } catch (IOException e) { // ignore
-                } finally {
-                    close();
+                    StreamedMultipart multipart = new StreamedMultipart(headers, r.getStream());
+                    siblings = new StreamedSiblingsCollection(riak, r.getBucket(), r.getKey(), multipart);
+                } catch (IOException e) {
+                    throw new RiakIORuntimeException("Error finding initial boundary", e);
                 }
+            } else {
+                siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, r.getBody());
             }
 
-            siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, body);
             if (siblings.size() > 0) {
-                object = siblings.get(0);
+                object = siblings.iterator().next();
             }
         } else if (r.isSuccess()) {
             object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),

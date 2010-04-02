@@ -18,57 +18,26 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import org.json.JSONTokener;
 import org.junit.Test;
 
-public class TestStreamedKeys {
+public class TestStreamedKeysCollection {
     
-    @Test public void cacheAll_gets_all_keys() {
+    StreamedKeysCollection impl;
+    
+    @Test public void gets_all_keys() {
         final String keys = "{\"keys\":[\"key1\"]}{\"keys\":[]}{\"keys\":[]}{\"keys\":[\"key2\",\"key3\"]}{\"keys\":[]}";
         final InputStream stream = new ByteArrayInputStream(keys.getBytes());
-        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
+        impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
+        Iterator<String> iter = impl.iterator();
 
-        impl.cacheAll();
-        
-        assertEquals(3, impl.getCache().size());
-        assertTrue(impl.getCache().contains("key1"));
-        assertTrue(impl.getCache().contains("key2"));
-        assertTrue(impl.getCache().contains("key3"));
-    }
-    
-    @Test public void cacheNext_reads_an_input_array() {
-        final String keys = "[\"key1\", \"key2\"]";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
-        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
-        
-        assertTrue(impl.cacheNext());
-        assertTrue(impl.cacheNext());
-        
-        assertEquals("key1", impl.getCache().get(0));
-        assertEquals("key2", impl.getCache().get(1));
-    }
-    
-    @Test public void cacheNext_finds_first_embedded_array() {
-        final String keys = "{\"keys\":[\"key1\",\"key2\",\"key3\"]}";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
-        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
-
-        assertTrue(impl.cacheNext());
-        assertEquals("key1", impl.getCache().get(0));
-    }
-
-    @Test public void cacheNext_finds_next_array() {
-        final String keys = "{\"keys\":[\"key1\"]}{\"j\": 1, \"k\": \"v\", \"l\": [ ]}[\"key2\", \"key3\"]";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
-        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
-
-        assertTrue(impl.cacheNext());
-        assertTrue(impl.cacheNext());
-        assertTrue(impl.cacheNext());
-        
-        assertEquals("key2", impl.getCache().get(1));
-        assertEquals("key3", impl.getCache().get(2));
+        // cause all keys to be cached
+        assertEquals(3, impl.size());
+        assertEquals("key1", iter.next());
+        assertEquals("key2", iter.next());
+        assertEquals("key3", iter.next());
     }
 
     @Test public void iterator_iterates_all_keys() {
@@ -81,5 +50,47 @@ public class TestStreamedKeys {
         for (String key : impl) {
             assertEquals(expected[i++], key);
         }
+    }
+    
+    @Test public void reads_an_input_array() {
+        final String keys = "[\"key1\", \"key2\"]";
+        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
+        Iterator<String> iter = impl.iterator();
+        
+        assertEquals("key1", iter.next());
+        assertEquals("key2", iter.next());
+    }
+    
+    @Test public void cacheNext_finds_first_embedded_array() {
+        final String keys = "{\"keys\":[\"key1\",\"key2\",\"key3\"]}";
+        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
+
+        assertEquals("key1", impl.iterator().next());
+    }
+
+    @Test public void finds_next_array() {
+        final String keys = "{\"keys\":[\"key1\"]}{\"j\": 1, \"k\": \"v\", \"l\": [ ]}[\"key2\", \"key3\"]";
+        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
+        Iterator<String> iter = impl.iterator();
+        
+        assertEquals("key1", iter.next());
+        assertEquals("key2", iter.next());
+        assertEquals("key3", iter.next());
+    }
+
+    @Test public void cache_next_returns_false_after_calling_close_backend() {
+        final String keys = "[\"key1\", \"key2\"]";
+        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+
+        impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
+        assertTrue(impl.cacheNext());
+        
+        impl.closeBackend();
+        assertFalse(impl.cacheNext());
+        
+        assertEquals("key1", impl.iterator().next());
     }
 }

@@ -25,6 +25,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.basho.riak.client.util.BranchableInputStream.InputStreamBranch;
+import com.basho.riak.client.util.BranchableInputStream.LinkedChunk;
 
 public class TestBranchableInputStream {
 
@@ -82,9 +83,7 @@ public class TestBranchableInputStream {
             }
         }
 
-        for (int i = 5; i < bytes.length; i++) {
-            assertEquals(bytes[i], (byte) impl.read());
-        }
+        assertEquals(-1, impl.read());
     }
 
     @Test public void read_position_updates_when_reading() throws IOException {
@@ -93,12 +92,12 @@ public class TestBranchableInputStream {
         impl = new BranchableInputStream(is);
         
         for (int i = 0; i < 20; i++) {
-            assertEquals(i, impl.mainBranch.pos);
+            assertEquals(i, impl.pos);
             impl.read();
         }   
     }
 
-    @Test public void branch_position_update_when_reading_from_branch() throws IOException {
+    @Test public void primary_and_branch_positions_updates_when_reading_from_branch() throws IOException {
         byte[] bytes = "012345678901234567890123456789".getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
         InputStreamBranch[] branches = new InputStreamBranch[5];
@@ -117,7 +116,7 @@ public class TestBranchableInputStream {
             }
         }
 
-        assertEquals(5, impl.mainBranch.pos);
+        assertEquals(20, impl.pos);
     }
     
     @Test public void no_data_loss_when_branches_span_chunks() throws IOException {
@@ -139,9 +138,8 @@ public class TestBranchableInputStream {
             branches[1].read();
         }   
 
-        ClientUtils.copyStream(impl, os);
-        assertArrayEquals(Arrays.copyOfRange(bytes, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 3, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5), os.toByteArray());
-        
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4, impl.pos);
+
         os.reset();
         ClientUtils.copyStream(branches[0], os);
         assertArrayEquals(bytes, os.toByteArray());
@@ -149,6 +147,8 @@ public class TestBranchableInputStream {
         os.reset();
         ClientUtils.copyStream(branches[1], os);
         assertArrayEquals(Arrays.copyOfRange(bytes, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5), os.toByteArray());
+
+        assertEquals(-1, impl.read());
     }
     
     @Test public void chunk_sizes_increase_exponentially() throws IOException {
@@ -158,19 +158,20 @@ public class TestBranchableInputStream {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         impl = new BranchableInputStream(is);
+        LinkedChunk firstChunk = impl.lastChunk;
         InputStream branch = impl.branch();
         ClientUtils.copyStream(branch, os);
         
-        assertEquals(0, impl.mainBranch.chunk.buf.length);
-        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE, impl.mainBranch.chunk.next().buf.length);
-        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE*2, impl.mainBranch.chunk.next().next().buf.length);
-        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE*4, impl.mainBranch.chunk.next().next().next().buf.length);
+        assertEquals(0, firstChunk.buf.length);
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE, firstChunk.next().buf.length);
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE*2, firstChunk.next().next().buf.length);
+        assertEquals(BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE*4, firstChunk.next().next().next().buf.length);
 
-        assertTrue(impl.mainBranch.chunk.full());
-        assertTrue(impl.mainBranch.chunk.next().full());
-        assertTrue(impl.mainBranch.chunk.next().next().full());
-        assertFalse(impl.mainBranch.chunk.next().next().next().full());
+        assertTrue(firstChunk.full());
+        assertTrue(firstChunk.next().full());
+        assertTrue(firstChunk.next().next().full());
+        assertFalse(firstChunk.next().next().next().full());
 
-        assertNull(impl.mainBranch.chunk.next().next().next().next());
+        assertNull(firstChunk.next().next().next().next());
     }
 }
