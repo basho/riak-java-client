@@ -17,7 +17,7 @@ public class OneTokenInputStream extends InputStream {
     int pos = 0;
     int dataLen = 0;
     int bufOffset = 0;
-    StringBuilder buf;
+    StringBuilder buf = null;
     String delimiter; 
 
     public OneTokenInputStream(InputStream in, String delimiter) {
@@ -27,8 +27,9 @@ public class OneTokenInputStream extends InputStream {
     }
 
     @Override public int read() throws IOException {
-        if (!eof)
+        while (!eof && pos >= dataLen) {
             buffer();
+        }
         if (pos >= dataLen)
             return -1;
 
@@ -48,26 +49,16 @@ public class OneTokenInputStream extends InputStream {
     }
     
     private void buffer() throws IOException {
-        if (eof) {
+        if (eof)
             return;
+
+        if (buf == null) {
+            initBuffer();
         }
-        if (buf.length() == 0) {
-            byte[] headStart = new byte[delimiter.length() - 1];
-            int offset = 0;
-            while (true) {
-                int bytesRead = impl.read(headStart, offset, headStart.length - offset);
-                if (bytesRead == -1) {
-                    eof = true;
-                    break;
-                } else {
-                    offset += bytesRead;
-                }
-            }
-            buf.append(new String(headStart), 0, offset);
-        }
-        while (!eof) {
+        if (!eof) {
             int c = impl.read();
             if (c == -1) {
+                dataLen = buf.length();
                 eof = true;
             } else {
                 buf.append((char) c);
@@ -82,5 +73,20 @@ public class OneTokenInputStream extends InputStream {
                 }
             }
         }
+    }
+    
+    private void initBuffer() throws IOException {
+        byte[] headStart = new byte[delimiter.length() - 1];
+        int offset = 0;
+        while (offset < headStart.length) {
+            int bytesRead = impl.read(headStart, offset, headStart.length - offset);
+            if (bytesRead == -1) {
+                eof = true;
+                return;
+            } else {
+                offset += bytesRead;
+            }
+        }
+        buf = new StringBuilder(new String(headStart));
     }
 }

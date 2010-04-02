@@ -14,7 +14,7 @@ public class StreamedMultipart implements Iterator<Part> {
     BranchableInputStream stream;
     String boundary;
     boolean foundNext = false;
-    OneTokenInputStream currentPartStream = null;
+    BranchableInputStream currentPartStream = null;
 
     /**
      * Parses a multipart message or a multipart subpart of a multipart message.
@@ -30,7 +30,11 @@ public class StreamedMultipart implements Iterator<Part> {
      *            Content-Type header including the boundary string
      * @param stream
      *            The input stream to read from
-     * @throws IOException 
+     * @throws IOException
+     *             There was a communication error reading the input stream while
+     *             looking for the initial boundary
+     * @throws EOFException
+     *             The initial boundary was not found
      */
     public StreamedMultipart(Map<String, String> headers, InputStream stream) throws IOException, EOFException {
         if (headers == null || stream == null)
@@ -45,10 +49,12 @@ public class StreamedMultipart implements Iterator<Part> {
             int c = stream.read();
             if (c == -1)
                 throw new EOFException();
-            sb.append(c);
+            sb.append((char) c);
             if ((sb.length() == initialBoundary.length() && initialBoundary.equals(sb.toString())) ||
-                    (sb.indexOf(boundary, sb.length() - boundary.length()) >= 0))
+                (sb.indexOf(boundary, sb.length() - boundary.length()) >= 0)) {
+                finishReadingLine(stream);
                 break;
+            }
         }
 
         this.headers = headers;
@@ -56,7 +62,15 @@ public class StreamedMultipart implements Iterator<Part> {
         this.stream = new BranchableInputStream(new OneTokenInputStream(stream, boundary + "--"));
     }
 
-    /** 
+    private void finishReadingLine(InputStream in) throws IOException {
+        while (true) {
+            int c = in.read();
+            if (c == -1 || c == '\n')
+                break;
+        }
+    }
+
+    /**
      * Return the map of document headers that this object was constructed with.
      */
     public Map<String, String> getHeaders() {
@@ -102,7 +116,7 @@ public class StreamedMultipart implements Iterator<Part> {
         }
 
         Map<String, String> headers = Multipart.parseHeaders(headerBlock);
-        return new Part(headers, currentPartStream);
+        return new Part(headers, currentPartStream.branch());
     }
 
     public void remove() { /* nop */}
@@ -115,16 +129,17 @@ public class StreamedMultipart implements Iterator<Part> {
      * @throws IOException
      */
     private boolean findNext() throws IOException {
-        if (currentPartStream != null && !currentPartStream.done()) {
-            InputStream is = new OneTokenInputStream(stream, boundary);
+        if (currentPartStream != null) {
+            InputStream is = currentPartStream.branch();
             try {
-                while (is.read() != -1) { /* nop */}
+                while (is.read() != -1) { /* nop */}    // advance stream to end of next boundary 
+                finishReadingLine(stream);              // and consume the rest of the boundary line including the newline
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
         if (stream.peek() != -1) {
-            currentPartStream = new OneTokenInputStream(stream.branch(), boundary);
+            currentPartStream = new BranchableInputStream(new OneTokenInputStream(stream.branch(), boundary));
             return true;
         }
         return false;

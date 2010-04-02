@@ -61,6 +61,7 @@ public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
                                  headers.get(Constants.HDR_ETAG));
             o.setValueStream(part.getStream());
             cache(o);
+            return true;
         }
 
         return false;
