@@ -19,7 +19,8 @@ import java.io.InputStream;
 
 /**
  * An input stream that can be branched into other InputStreams, each
- * maintaining its own location.
+ * maintaining its own location, with the main read() method always returning
+ * bytes from the furthest advanced branch.
  * 
  * @author jlee <jonjlee@gmail.com>
  */
@@ -41,12 +42,12 @@ public class BranchableInputStream extends InputStream {
 
     public BranchableInputStream(InputStream in, int initialBufferSize) {
         impl = in;
-        lastChunk = new LinkedChunk(0, 0); 
+        lastChunk = new LinkedChunk(0, 0);
         nextChunkSize = initialBufferSize;
     }
 
     @Override public int read() throws IOException {
-        int curpos = this.pos;
+        int curpos = pos;
         if (readUntil(curpos))
             return lastChunk.get(curpos);
         return -1;
@@ -58,16 +59,16 @@ public class BranchableInputStream extends InputStream {
     }
 
     public int peek() throws IOException {
-        int curpos = this.pos;
+        int curpos = pos;
         int c = read();
-        this.pos = curpos;
+        pos = curpos;
         return c;
     }
 
     public InputStream branch() {
         return new InputStreamBranch(lastChunk, pos);
     }
-    
+
     boolean readUntil(int pos) throws IOException {
         if (!eof) {
             while ((pos >= dataLen) && !eof) {
@@ -76,7 +77,7 @@ public class BranchableInputStream extends InputStream {
                     lastChunk = lastChunk.next();
                     nextChunkSize *= 2;
                 }
-                
+
                 int bytesRead = lastChunk.readFrom(impl, MAX_BYTES_PER_READ);
                 if (bytesRead < 0) {
                     eof = true;
@@ -86,7 +87,7 @@ public class BranchableInputStream extends InputStream {
             }
         }
         if (pos < dataLen) {
-            this.pos = Math.max(this.pos, pos+1);
+            this.pos = Math.max(this.pos, pos + 1);
             return true;
         }
         return false;
@@ -105,7 +106,7 @@ public class BranchableInputStream extends InputStream {
         @Override public int read() throws IOException {
             if (chunk == null || !readUntil(pos))
                 return -1;
-            
+
             while (pos > chunk.lastIndex()) {
                 chunk = chunk.next;
             }
@@ -116,17 +117,19 @@ public class BranchableInputStream extends InputStream {
             chunk = null;
         }
     }
-    
+
     class LinkedChunk {
         int offset;
         int len;
         byte[] buf;
         LinkedChunk next = null;
+
         LinkedChunk(int offset, int size) {
             this.offset = offset;
-            this.buf = new byte[size];
-            this.len = 0;
+            buf = new byte[size];
+            len = 0;
         }
+
         int readFrom(InputStream in, int maxBytes) throws IOException {
             int bytesRead = in.read(buf, len, Math.min(remaining(), maxBytes));
             if (bytesRead > 0) {
@@ -134,23 +137,29 @@ public class BranchableInputStream extends InputStream {
             }
             return bytesRead;
         }
+
         int get(int index) {
             if ((index < offset) || (index - offset >= len))
                 return -1;
             return buf[index - offset] & 0xff;
         }
+
         int lastIndex() {
             return offset + buf.length - 1;
         }
+
         boolean full() {
             return (len == buf.length);
         }
+
         int remaining() {
             return (buf.length - len);
         }
+
         LinkedChunk next() {
             return next;
         }
+
         void setNext(LinkedChunk next) {
             this.next = next;
         }
