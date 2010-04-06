@@ -91,6 +91,7 @@ public class DefaultHttpResponse implements HttpResponse {
         return (status >= 200 && status < 300) ||
                ((status == 300 || status == 304) && Constants.HTTP_HEAD_METHOD.equals(method)) ||
                ((status == 300 || status == 304) && Constants.HTTP_GET_METHOD.equals(method)) ||
+               ((status == 300) && Constants.HTTP_PUT_METHOD.equals(method)) ||
                ((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
     }
 

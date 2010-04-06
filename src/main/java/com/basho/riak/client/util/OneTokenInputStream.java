@@ -63,8 +63,8 @@ public class OneTokenInputStream extends InputStream {
             } else {
                 buf.append((char) c);
                 if (buf.length() > maxBufferLen) {
+                    bufOffset += buf.length() - delimiter.length();
                     buf.delete(0, buf.length() - delimiter.length());
-                    bufOffset += delimiter.length();
                 }
                 if (buf.indexOf(delimiter) >= 0) {
                     eof = true;

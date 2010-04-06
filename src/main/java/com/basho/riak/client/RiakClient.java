@@ -265,13 +265,9 @@ public class RiakClient {
 
     /**
      * Similar to fetch(), except the HTTP connection is left open for
-     * successful 2xx responses, and the Riak response is provided as a stream.
+     * successful responses, and the Riak response is provided as a stream.
      * The user must remember to call {@link FetchResponse#close()} on the
      * return value.
-     * 
-     * Sibling responses (status code 300) must be read before parsing, so they
-     * are not streamed. Therefore stream() is identical to fetch(), except that
-     * getBody() returns null.
      * 
      * @param bucket
      *            The bucket containing the {@link RiakObject} to fetch.

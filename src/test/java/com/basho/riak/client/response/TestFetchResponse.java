@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 public class TestFetchResponse {
@@ -182,7 +184,7 @@ public class TestFetchResponse {
         assertEquals(contentLength, impl.getObject().getValueStreamLength());
     }
 
-    @Test public void consumes_and_closes_response_from_stream_on_300() throws IOException {
+    @Test public void returns_streamed_collection_on_streaming_300_response() throws IOException {
         final ByteArrayInputStream is = new ByteArrayInputStream(SIBLING_BODY.getBytes());
 
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
@@ -194,18 +196,20 @@ public class TestFetchResponse {
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
         assertTrue(impl.hasSiblings());
-
-        verify(mockHttpResponse).close();
+        assertTrue(impl.getSiblings() instanceof StreamedSiblingsCollection);
 
         Iterator<RiakObject> siblings = impl.getSiblings().iterator();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
  
         RiakObject o;
         o = siblings.next();
+        ClientUtils.copyStream(o.getValueStream(), os);
+        
         assertSame(mockRiakClient, o.getRiakClient());
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
-        assertEquals("bar", o.getValue());
+        assertEquals("bar", os.toString());
         assertEquals(1, o.getLinks().size());
         assertEquals(0, o.getUsermeta().size());
         assertEquals("Tue, 22 Dec 2009 19:24:18 GMT", o.getLastmod());
@@ -213,16 +217,33 @@ public class TestFetchResponse {
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
 
         o = siblings.next();
+        os.reset();
+        ClientUtils.copyStream(o.getValueStream(), os);
         assertSame(mockRiakClient, o.getRiakClient());
         assertEquals(BUCKET, o.getBucket());
         assertEquals(KEY, o.getKey());
         assertEquals("application/octect-stream", o.getContentType());
-        assertEquals("foo", o.getValue());
+        assertEquals("foo", os.toString());
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", o.getLastmod());
         assertEquals(0, o.getLinks().size());
         assertEquals(1, o.getUsermeta().size());
         assertEquals("value", o.getUsermeta().get("test"));
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("4d5y9wqQK2Do0RK5ezwCJD", o.getVtag());
+    }
+
+    @Test public void does_not_close_stream_on_streaming_300_response() throws IOException {
+        final ByteArrayInputStream is = new ByteArrayInputStream(SIBLING_BODY.getBytes());
+
+        when(mockHttpResponse.getStatusCode()).thenReturn(300);
+        when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
+        when(mockHttpResponse.getKey()).thenReturn(KEY);
+        when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
+        when(mockHttpResponse.isStreamed()).thenReturn(true);
+        when(mockHttpResponse.getStream()).thenReturn(is);
+        
+        new FetchResponse(mockHttpResponse, mockRiakClient);
+
+        verify(mockHttpResponse, never()).close();
    }
 }

@@ -1,5 +1,6 @@
 package com.basho.riak.client.response;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,9 @@ public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
 
     /**
      * Tries to read and cache another part of the multipart/mixed stream.
+     * 
+     * @throws RiakIORuntimeException
+     *             If an error occurs during communication with the Riak server.
      */
     @Override protected boolean cacheNext() {
         if (multipart == null)
@@ -39,7 +43,16 @@ public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
             vclock = multipart.getHeaders().get(Constants.HDR_VCLOCK);
         }
 
-        Multipart.Part part = multipart.next();
+        Multipart.Part part;
+        try {
+             part = multipart.next();
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof IOException) {
+                throw new RiakIORuntimeException(e);
+            }
+            throw e;
+        }
+        
         if (part != null) {
             Map<String, String> headers = part.getHeaders();
             List<RiakLink> links = ClientUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
