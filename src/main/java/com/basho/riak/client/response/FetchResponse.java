@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.response;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +24,7 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.util.StreamedMultipart;
 
 /**
  * Response from a HEAD or GET request for an object. Decorates an HttpResponse
@@ -34,26 +34,31 @@ import com.basho.riak.client.util.Constants;
 public class FetchResponse extends HttpResponseDecorator implements HttpResponse {
 
     private RiakObject object = null;
-    private List<RiakObject> siblings = new ArrayList<RiakObject>();
+    private Collection<RiakObject> siblings = new ArrayList<RiakObject>();
 
     /**
      * On a 2xx response, parse the HTTP response from Riak into a
      * {@link RiakObject}. On a 300 response, parse the multipart/mixed HTTP
-     * body into a list of sibling {@link RiakObject}s.
+     * body into a collection of sibling {@link RiakObject}s.
      * 
-     * A 2xx response is "streaming" if it has a null body and non-null stream.
-     * The resulting {@link RiakObject} will return null for getValue() and the
-     * stream for getValueStream(). Users must remember to release the return
-     * value's underlying stream by calling close().
+     * A streaming response (i.e. r.isStreaming() == true), will have a null
+     * body and non-null stream. The resulting {@link RiakObject}(s) will return
+     * null for getValue() and the stream for getValueStream(). Users must
+     * remember to release the return value's underlying stream by calling
+     * close().
      * 
-     * Sibling objects are not be streamed, since the stream must be consumed
-     * for parsing.
+     * Sibling objects are also streamed. The values of the objects are buffered
+     * in memory as the stream is read. Consume and/or close each
+     * {@link RiakObject}'s stream as the collection is iterated to allow the
+     * buffers to be freed.
      * 
      * @throws RiakResponseRuntimeException
      *             If the server returns a 300 without a proper multipart/mixed
      *             body
+     * @throws RiakIORuntimeException
+     *             If an error occurs during communication with the Riak server.
      */
-    public FetchResponse(HttpResponse r, RiakClient riak) throws RiakResponseRuntimeException {
+    public FetchResponse(HttpResponse r, RiakClient riak) throws RiakResponseRuntimeException, RiakIORuntimeException {
         super(r);
 
         if (r == null)
@@ -69,31 +74,26 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
             if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
                 throw new RiakResponseRuntimeException(r, "multipart/mixed content expected when object has siblings");
 
-            String body = r.getBody();
-
-            // If response is streamed, consume and close the stream
             if (r.isStreamed()) {
                 try {
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ClientUtils.copyStream(r.getStream(), os);
-                    body = os.toString();
-                } catch (IOException e) { // ignore
-                } finally {
-                    close();
+                    StreamedMultipart multipart = new StreamedMultipart(headers, r.getStream());
+                    siblings = new StreamedSiblingsCollection(riak, r.getBucket(), r.getKey(), multipart);
+                } catch (IOException e) {
+                    throw new RiakIORuntimeException("Error finding initial boundary", e);
                 }
+            } else {
+                siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, r.getBody());
             }
 
-            siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, body);
-            if (siblings.size() > 0) {
-                object = siblings.get(0);
-            }
+            object = siblings.iterator().next();
         } else if (r.isSuccess()) {
             object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),
                                     headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta,
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
                                     headers.get(Constants.HDR_ETAG));
 
-            // If response was constructed with a streamed response body, also try to get the content length
+            // If response was constructed with a streamed response body, also
+            // try to get the content length
             Long contentLength = null;
             if (r.isStreamed()) {
                 try {
@@ -107,8 +107,7 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
     public FetchResponse(HttpResponse r) throws RiakResponseRuntimeException {
         this(r, null);
     }
-    
-    
+
     /**
      * Whether response contained a Riak object
      */
@@ -123,7 +122,7 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
     public RiakObject getObject() {
         return object;
     }
-    
+
     public void setObject(RiakObject object) {
         this.object = object;
     }

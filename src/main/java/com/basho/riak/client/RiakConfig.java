@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodRetryHandler;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 
 /**
  * Configuration settings for connecting to a Riak instance such as the base
@@ -31,7 +33,7 @@ public class RiakConfig {
     private String baseUrl = null;
     private String mapredPath = "/mapred";
     private HttpClient httpClient = null;
-    private Long timeout = null;
+    private Integer timeout = null;
     private Integer maxConnections = null;
     private HttpMethodRetryHandler retryHandler = null;
 
@@ -65,12 +67,12 @@ public class RiakConfig {
      */
     public void setUrl(String url) {
         this.url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-        
+
         Matcher m = BASE_URL_PATTERN.matcher(url);
         if (m.find()) {
-            this.baseUrl = m.group();
+            baseUrl = m.group();
         } else {
-            this.baseUrl = this.url;
+            baseUrl = this.url;
         }
     }
 
@@ -123,15 +125,18 @@ public class RiakConfig {
     }
 
     /**
-     * Value to set for the HttpClientParams.CONNECTION_MANAGER_TIMEOUT
-     * property: timeout in milliseconds for retrieving an HTTP connection. Null
-     * for default.
+     * Value to set for the properties:
+     * {@link HttpClientParams#CONNECTION_MANAGER_TIMEOUT},
+     * {@link HttpClientParams#SO_TIMEOUT},
+     * {@link HttpConnectionManagerParams#CONNECTION_TIMEOUT} which sets the
+     * timeout milliseconds for retrieving an HTTP connection and data over the
+     * connection. Null for default.
      */
-    public void setTimeout(final long timeout) {
+    public void setTimeout(final Integer timeout) {
         this.timeout = timeout;
     }
 
-    public Long getTimeout() {
+    public Integer getTimeout() {
         return timeout;
     }
 

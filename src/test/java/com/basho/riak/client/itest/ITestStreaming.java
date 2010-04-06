@@ -1,3 +1,16 @@
+/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.basho.riak.client.itest;
 
 import static com.basho.riak.client.itest.Utils.*;
@@ -6,16 +19,19 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
 
+import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.util.ClientUtils;
+import com.basho.riak.client.util.Constants;
 
 public class ITestStreaming {
 
@@ -71,6 +87,68 @@ public class ITestStreaming {
         ByteArrayOutputStream os = new ByteArrayOutputStream(512);
         ClientUtils.copyStream(r.getStream(), os);
         assertArrayEquals(bytes, os.toByteArray());
+        
+        r.close();
+    }
+    
+    @Test public void stream_siblings() throws IOException {
+        final RiakClient c = new RiakClient(RIAK_URL);
+        final String BUCKET = "test_stream_siblings";
+        final String KEY = "key";
+        final byte[][] bytes = new byte[][] { new byte[512], new byte[512], new byte[512] };
+        new Random().nextBytes(bytes[0]);
+        new Random().nextBytes(bytes[1]);
+        new Random().nextBytes(bytes[2]);
+        
+        // Enable storing siblings in this bucket
+        BucketResponse bucketresp = c.listBucket(BUCKET);
+        assertSuccess(bucketresp);
+        assertTrue(bucketresp.hasBucketInfo());
+        RiakBucketInfo bucketInfo = bucketresp.getBucketInfo();
+        bucketInfo.setAllowMult(true);
+        assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
+        
+        // Clean out any previous entry
+        c.delete(BUCKET, KEY, WRITE_3_REPLICAS());
+        
+        // Add conflicting objects
+        c.setClientId("foo-");
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes[0])), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
+        
+        c.setClientId("bar-");
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes[1])), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
+
+        c.setClientId("baz-");
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes[2])), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
+
+        // Stream the object back
+        FetchResponse r = c.stream(BUCKET, KEY);
+        assertEquals(300, r.getStatusCode());
+        
+        assertTrue(r.isStreamed());
+        assertNotNull(r.getStream());
+        
+        assertTrue(r.hasSiblings());
+        for (Iterator<RiakObject> i = r.getSiblings().iterator(); i.hasNext(); ) {
+            RiakObject o = i.next();
+            ByteArrayOutputStream os = new ByteArrayOutputStream(512);
+            ClientUtils.copyStream(o.getValueStream(), os);
+            byte[] out = os.toByteArray();
+            boolean found = false;
+            for (int j = 0; j < bytes.length; j++) {
+                found = true;
+                for (int k = 0; k < bytes[j].length; k++) {
+                    if (bytes[j][k] != out[k]) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    break;
+                }
+            }
+            assertTrue("Sibling value does not match any expected input", found);
+        }
         
         r.close();
     }
