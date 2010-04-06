@@ -16,6 +16,13 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
+    
+    <developers>
+        <developer>
+            <name>Jonathan Lee</name>
+            <email>jonjlee@gmail.com</email>
+        </developer>
+    </developers>
 
 	<scm>
 		<url>http://bitbucket.org/jonjlee/riak-java-client/src</url>
