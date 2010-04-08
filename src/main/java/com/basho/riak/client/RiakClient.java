@@ -134,7 +134,7 @@ public class RiakClient {
     /**
      * Same as {@link RiakClient#listBucket(String, RequestMeta)}, except
      * streams the response, so the user must remember to call
-     * {@link BucketResponse#close() on the return value.
+     * {@link BucketResponse#close()} on the return value.
      */
     public BucketResponse streamBucket(String bucket, RequestMeta meta) {
         return listBucket(bucket, meta, true);

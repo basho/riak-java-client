@@ -65,3 +65,53 @@ Riak must be running on `127.0.0.1:8098` with the HTTP interface located at `/ri
 ## Code Format ##
 
 The files `eclipse-cleanup-profile.xml` and `eclipse-format-profile.xml` are provided to be used with Eclipse.  Import them using Preferences > Java > Code Style > Clean Up and ... > Formatter.  New code can be formatted like the current code using the Source > Clean Up... feature.
+
+# Releasing #
+
+## Sonatype Access ##
+
+Artifacts are deployed to the [Sonatype OSS Nexus repository](http://oss.sonatype.org/), which is synchronized with the Maven Central Repository. Therefore, in order to deploy you must have a Sonatype account with write permission to the repository. First, sign up for an account on the [Sonatype Nexus homepage](http://oss.sonatype.org/) (link on upper right of page). Next, send me a message with your account name to request access to the repository.
+
+Once you have the proper permissions, place the following blob inside `~/.m2/settings.xml`. You may need to create this file.
+
+    <settings>
+      <servers>
+        <server>
+          <id>sonatype-nexus-snapshots</id>
+          <username>your-sonatype-username</username>
+          <password>your-sonatype-password</password>
+        </server>
+        <server>
+          <id>sonatype-nexus-staging</id>
+          <username>your-sonatype-username</username>
+          <password>your-sonatype-password</password>
+        </server>
+      </servers>
+    </settings>
+
+
+## Deploying Snapshots ##
+
+At this point, SNAPSHOT artifacts can be deployed by simply running:
+
+    mvn clean deploy
+
+## Deploying Releases ##
+
+Releases are more complicated because they must be properly signed. Follow the [instructions here](http://www.sonatype.com/people/2010/01/how-to-generate-pgp-signatures-with-maven/) to set up GPG locally. Once that is done, to release:
+
+1. Edit pom.xml to reflect the correct scm.connection and scm.developerConnection and check in.
+2. Run the Maven release:prepare goal until it succeeds
+
+        # Note: this command pushes to bitbucket!
+        mvn release:prepare -Dresume=true -Dusername=<bitbucket-username> -Dpassword=<bitbucket-password>    
+
+3. Run
+
+        gpg-agent --use-standard-socket --daemon 2>/dev/null
+
+4. In the same terminal, run
+
+        mvn release:perform -Dgpg.passphrase=<gpg-password> -Darguments="-Dgpg.passphrase=<gpg-password>"
+
+If the release succeeds, you should be able to log in to Sonatype and see the new artifact in the Staging section. Right click and choose "Close" to approve the artifact to be synchronized to Maven Central.
