@@ -124,7 +124,7 @@ public class ITestBasic {
         assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
 
         // Verify that properties stuck
-        bucketresp = c.listBucket(BUCKET);
+        bucketresp = c.getBucketSchema(BUCKET);
         assertSuccess(bucketresp);
         assertTrue(bucketresp.hasBucketInfo());
         bucketInfo = bucketresp.getBucketInfo();

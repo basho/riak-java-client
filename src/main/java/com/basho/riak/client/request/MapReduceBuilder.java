@@ -219,7 +219,7 @@ public class MapReduceBuilder {
     /**
      * Adds a link phase to the job
      * 
-     * @param function
+     * @param bucket
      *            bucket to link walk
      * @param keep
      *            should the server keep and return the results
@@ -238,7 +238,7 @@ public class MapReduceBuilder {
     /**
      * Adds a link phase to the job
      * 
-     * @param function
+     * @param bucket
      *            bucket to link walk
      * @param tag
      *            link tag to match

@@ -107,6 +107,48 @@ public class RiakClient {
     }
 
     /**
+     * Return the properties for a Riak bucket without listing the keys in it.
+     * 
+     * @param bucket
+     *            The bucket to list.
+     * @param meta
+     *            Extra metadata to attach to the request such as HTTP headers
+     *            and query parameters.
+     * 
+     * @return {@link BucketResponse} containing HTTP response information and
+     *         the parsed schema
+     * 
+     * @throws RiakIORuntimeException
+     *             If an error occurs during communication with the Riak server.
+     * @throws RiakResponseRuntimeException
+     *             If the Riak server returns a malformed response.
+     */
+    public BucketResponse getBucketSchema(String bucket, RequestMeta meta) {
+        HttpResponse r = helper.getBucketSchema(bucket, meta);
+        try {
+            return getBucketResponse(r);
+        } catch (JSONException e) {
+            try {
+                return new BucketResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to parse it or throw");
+            }
+        } catch (IOException e) {
+            try {
+                return new BucketResponse(helper.toss(new RiakIORuntimeException(e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to read it or throw");
+            }
+        }
+    }
+
+    public BucketResponse getBucketSchema(String bucket) {
+        return getBucketSchema(bucket, null);
+    }
+
+    /**
      * Return the properties and keys for a Riak bucket.
      * 
      * @param bucket
@@ -134,7 +176,7 @@ public class RiakClient {
     /**
      * Same as {@link RiakClient#listBucket(String, RequestMeta)}, except
      * streams the response, so the user must remember to call
-     * {@link BucketResponse#close() on the return value.
+     * {@link BucketResponse#close()} on the return value.
      */
     public BucketResponse streamBucket(String bucket, RequestMeta meta) {
         return listBucket(bucket, meta, true);
