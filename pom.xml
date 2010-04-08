@@ -7,7 +7,7 @@
 	<version>0.9.1-SNAPSHOT</version>
 	<name>Riak Client for Java</name>
 	<description>HttpClient-based client for Riak</description>
-	<url>http://bitbucket.org/jonjlee/riak-java-client</url>
+	<url>http://bitbucket.org/basho/riak-java-client</url>
 
 	<licenses>
 		<license>
@@ -15,7 +15,7 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
-    
+
     <developers>
         <developer>
             <name>Jonathan Lee</name>
@@ -24,11 +24,11 @@
     </developers>
 
 	<scm>
-		<url>http://bitbucket.org/jonjlee/riak-java-client/src</url>
-		<connection>scm:hg:https://bitbucket.org/jonjlee/riak-java-client</connection>
-		<developerConnection>scm:hg:https://bitbucket.org/jonjlee/riak-java-client</developerConnection>
+		<url>http://bitbucket.org/basho/riak-java-client/src</url>
+		<connection>scm:hg:https://bitbucket.org/basho/riak-java-client</connection>
+		<developerConnection>scm:hg:https://bitbucket.org/basho/riak-java-client</developerConnection>
 	</scm>
-  
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>sonatype-nexus-snapshots</id>
@@ -41,7 +41,7 @@
 			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
-	
+
 	<dependencies>
 		<!-- Apache Commons -->
 		<dependency>
