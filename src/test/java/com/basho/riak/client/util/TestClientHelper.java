@@ -91,6 +91,20 @@ public class TestClientHelper {
         verify(mockHttpClient).executeMethod(any(PutMethod.class));
     }
 
+    @Test public void getBucketSchema_GETs_bucket_URL() throws HttpException, IOException {
+        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
+        impl.getBucketSchema(bucket, meta);
+        verify(mockHttpClient).executeMethod(any(GetMethod.class));
+    }
+
+    @Test public void getBucketSchema_adds_no_keys_qp() throws HttpException, IOException {
+        RequestMeta meta = spy(new RequestMeta());
+        impl = spy(impl);
+        impl.getBucketSchema(bucket, meta);
+        verify(meta).setQueryParam(Constants.QP_KEYS, Constants.NO_KEYS);
+        verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(false));
+    }
+
     @Test public void listBucket_GETs_bucket_URL() throws HttpException, IOException {
         when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
         impl.listBucket(bucket, meta, false);

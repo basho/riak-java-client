@@ -101,6 +101,20 @@ public class ClientHelper {
     }
 
     /**
+     * Same as {@link RiakClient#getBucketSchema(String, RequestMeta)}, except
+     * only returning the HTTP response.
+     */
+    public HttpResponse getBucketSchema(String bucket, RequestMeta meta) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (meta.getQueryParam(Constants.QP_KEYS) == null) {
+            meta.setQueryParam(Constants.QP_KEYS, Constants.NO_KEYS);
+        }
+        return listBucket(bucket, meta, false);
+    }
+
+    /**
      * Same as {@link RiakClient}, except only returning the HTTP response, and
      * if streamResponse==true, the response will be streamed back, so the user
      * is responsible for calling {@link BucketResponse#close()}

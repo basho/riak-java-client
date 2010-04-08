@@ -121,4 +121,16 @@ public class TestBucketResponse {
         assertEquals("k", key.next());
         assertEquals("l", key.next());
     }
+    
+    @Test public void returns_empty_keys_list_if_keys_element_not_in_response() throws JSONException, IOException {
+        final String body = "{\"props\": {\"name\":\"b\"}}";
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        when(mockHttpResponse.getBody()).thenReturn(body);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        
+        BucketResponse impl = new BucketResponse(mockHttpResponse);
+        
+        assertNotNull(impl.getBucketInfo().getKeys());
+        assertTrue(impl.getBucketInfo().getKeys().isEmpty());
+    }
 }

@@ -67,6 +67,9 @@ public class TestRiakClient {
         impl.setBucketSchema(bucket, bucketInfo, meta);
         verify(mockHelper).setBucketSchema(eq(bucket), any(JSONObject.class), same(meta));
 
+        impl.getBucketSchema(bucket, meta);
+        verify(mockHelper).getBucketSchema(bucket, meta);
+
         impl.listBucket(bucket, meta);
         verify(mockHelper).listBucket(bucket, meta, false);
 
@@ -100,6 +103,9 @@ public class TestRiakClient {
 
         impl.setBucketSchema(bucket, bucketInfo);
         verify(impl).setBucketSchema(bucket, bucketInfo, null);
+
+        impl.getBucketSchema(bucket);
+        verify(impl).getBucketSchema(bucket, null);
 
         impl.listBucket(bucket);
         verify(impl).listBucket(bucket, null);
@@ -144,6 +150,10 @@ public class TestRiakClient {
         doThrow(new RiakResponseRuntimeException(null)).when(impl).getFetchResponse(any(HttpResponse.class));
         doThrow(new RiakResponseRuntimeException(null)).when(impl).getWalkResponse(any(HttpResponse.class));
         doThrow(new JSONException("")).when(impl).getMapReduceResponse(any(HttpResponse.class));
+
+        impl.getBucketSchema(bucket, meta);
+        verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
+        reset(mockHelper);
 
         impl.listBucket(bucket, meta);
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));

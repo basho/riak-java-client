@@ -101,6 +101,7 @@ At this point, SNAPSHOT artifacts can be deployed by simply running:
 Releases are more complicated because they must be properly signed. Follow the [instructions here](http://www.sonatype.com/people/2010/01/how-to-generate-pgp-signatures-with-maven/) to set up GPG locally. Once that is done, to release:
 
 1. Edit pom.xml to reflect the correct scm.connection and scm.developerConnection and check in.
+
 2. Run the Maven release:prepare goal until it succeeds
 
         # Note: this command pushes to bitbucket!
