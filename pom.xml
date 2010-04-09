@@ -83,7 +83,7 @@
 				<plugins>
 					<!--
 						Run integration tests (ITest*.java) by executing `mvn
-						-Penable-itest verify`
+						-Pitest verify`
 					-->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>

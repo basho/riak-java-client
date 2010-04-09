@@ -16,9 +16,17 @@ This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It
 
 *   **Exceptions** are unchecked and the **RiakExceptionHandler** interface allows all exceptions to be handled in a central location. This means the client does not need to wrap each operation in try/catch blocks.
 
-# Building #
+# Including in your project #
 
-This project requires Apache Maven (http://maven.apache.org/download.html) to build and deploy. With Maven installed, run:
+To use `riak-client` in a [Maven](http://maven.apache.org/) project, add the following dependency to `pom.xml`:
+
+    <dependency>
+        <groupId>com.basho.riak</groupId>
+        <artifactId>riak-client</artifactId>
+        <version>0.9.1</version>
+    </dependency>
+
+To build and install from source, first install Apache Maven (http://maven.apache.org/download.html). With Maven installed, run:
 
     mvn clean install
 
