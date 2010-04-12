@@ -33,7 +33,7 @@ public class TestMultipart {
     @Test public void null_result_if_not_content_type_missing_boundary_parameter() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed");
-        String body = "\n--boundary\n" + "Content-Type: text/plain\n" + "\n" + "subpart\n" + "--boundary--";
+        String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "\r\n" + "subpart\r\n" + "--boundary--";
 
         assertNull(Multipart.parse(headers, body));
     }
@@ -41,7 +41,7 @@ public class TestMultipart {
     @Test public void parses_multipart_with_1_empty_part() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        String body = "\n--boundary\n" + "\n" + "--boundary--";
+        String body = "\r\n--boundary\r\n" + "\r\n" + "--boundary--";
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());
@@ -52,7 +52,7 @@ public class TestMultipart {
     @Test public void parses_multipart_with_1_part() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        String body = "\n--boundary\n" + "Content-Type: text/plain\n" + "\n" + "subpart\n" + "--boundary--";
+        String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "\r\n" + "subpart\r\n" + "--boundary--";
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());
@@ -64,8 +64,8 @@ public class TestMultipart {
     @Test public void parses_multipart_with_multiple_parts() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        String body = "\n--boundary\n" + "Content-Type: text/plain\n" + "\n" + "part1\n" + "--boundary\n" + "\n"
-                      + "part2\n" + "--boundary--";
+        String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "\r\n" + "part1\r\n" + "--boundary\r\n" + "\r\n"
+                      + "part2\r\n" + "--boundary--";
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(2, parts.size());
@@ -76,10 +76,10 @@ public class TestMultipart {
     @Test public void parses_multipart_subpart() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        String body = "\n--boundary\n" + "Content-Type: multipart/mixed; boundary=5hgaasMxj1NIcoxJBpWd4j9IuaW\n" + "\n"
-                      + "--5hgaasMxj1NIcoxJBpWd4j9IuaW\n" + "Content-Type: application/octet-stream\n" + "\n"
-                      + "subpart1\n" + "--5hgaasMxj1NIcoxJBpWd4j9IuaW\n" + "Content-Type: application/octet-stream\n"
-                      + "\n" + "subpart2\n" + "--5hgaasMxj1NIcoxJBpWd4j9IuaW--\n" + "\n" + "--boundary--\n";
+        String body = "\r\n--boundary\r\n" + "Content-Type: multipart/mixed; boundary=5hgaasMxj1NIcoxJBpWd4j9IuaW\r\n" + "\r\n"
+                      + "--5hgaasMxj1NIcoxJBpWd4j9IuaW\r\n" + "Content-Type: application/octet-stream\r\n" + "\r\n"
+                      + "subpart1\r\n" + "--5hgaasMxj1NIcoxJBpWd4j9IuaW\r\n" + "Content-Type: application/octet-stream\r\n"
+                      + "\r\n" + "subpart2\r\n" + "--5hgaasMxj1NIcoxJBpWd4j9IuaW--\r\n" + "\r\n" + "--boundary--\r\n";
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());
@@ -93,10 +93,10 @@ public class TestMultipart {
     @Test public void parses_subpart_headers_and_body() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=\"boundary\"");
-        String PART_BODY = "this part has multiple" + "lines of text\n";
-        String body = "\n--boundary\n" + "X-Riak-Vclock: a85hYGBgzGDKBVIsLOLmazKYEhnzWBkmzFt4hC8LAA==\n" +
-                      "Location: /riak/test/key\n" + "Content-Type: application/octet-stream\n" + "\n" + PART_BODY +
-                      "\n--boundary--";
+        String PART_BODY = "this part has multiple" + "lines of text\r\n";
+        String body = "\r\n--boundary\r\n" + "X-Riak-Vclock: a85hYGBgzGDKBVIsLOLmazKYEhnzWBkmzFt4hC8LAA==\r\n" +
+                      "Location: /riak/test/key\r\n" + "Content-Type: application/octet-stream\r\n" + "\r\n" + PART_BODY +
+                      "\r\n--boundary--";
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(3, parts.get(0).getHeaders().size());
@@ -114,7 +114,7 @@ public class TestMultipart {
                                                                                   // the
                                                                                   // string:
                                                                                   // \x"
-        String body = "\n--\\x\"\n" + "\n" + "part\n" + "--\\x\"--";
+        String body = "\r\n--\\x\"\r\n" + "\r\n" + "part\r\n" + "--\\x\"--";
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());

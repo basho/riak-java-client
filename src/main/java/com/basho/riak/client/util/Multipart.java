@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public class Multipart {
 
-    private static String HEADER_DELIM = "\n\n";
+    private static String HEADER_DELIM = "\r\n\r\n";
 
     /**
      * Parses a multipart message or a multipart subpart of a multipart message.
@@ -41,16 +41,16 @@ public class Multipart {
         if (headers == null || body == null)
             return null;
 
-        if (!body.startsWith("\n")) {
+        if (!body.startsWith("\r\n")) {
             // In order to parse the multipart efficiently, we want to treat the
             // first boundary identically to the others, so make sure that the
-            // first boundary is preceded by a '\n' like the others
-            body = "\n" + body;
+            // first boundary is preceded by a '\r\n' like the others
+            body = "\r\n" + body;
         }
 
-        String boundary = "\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
+        String boundary = "\r\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
         int boundarySize = boundary.length();
-        if ("\n--".equals(boundary))
+        if ("\r\n--".equals(boundary))
             return null;
 
         // While this parsing could be more efficiently done in one pass with a
@@ -108,9 +108,9 @@ public class Multipart {
      */
     public static Map<String, String> parseHeaders(String s) {
         // "unfold" header lines (http://tools.ietf.org/html/rfc822#section-3.1)
-        s.replaceAll("\n\\s+", " ");
+        s.replaceAll("\r\n\\s+", " ");
 
-        String[] headers = s.split("\n");
+        String[] headers = s.split("\r\n");
         Map<String, String> parsedHeaders = new HashMap<String, String>();
         for (String header : headers) {
             // Split header line into name and value

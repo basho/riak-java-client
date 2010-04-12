@@ -273,7 +273,7 @@ public class TestClientUtils {
     @Test public void parse_multipart_returns_correct_riak_and_bucket_and_key() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        String body = "\n--boundary\n" + "\n" + "--boundary--";
+        String body = "\r\n--boundary\r\n" + "\r\n" + "--boundary--";
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
         assertEquals(1, objects.size());
@@ -286,8 +286,8 @@ public class TestClientUtils {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         headers.put("x-riak-vclock", "vclock");
-        String body = "\n--boundary\n" + "Content-Type: text/plain\n" + "Last-Modified: lastmod\n"
-                      + "Link: </riak/b/l>; riaktag=t\n" + "ETag: vtag\n" + "X-Riak-Meta-Test: value\n" + "\n"
+        String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "Last-Modified: lastmod\r\n"
+                      + "Link: </riak/b/l>; riaktag=t\r\n" + "ETag: vtag\r\n" + "X-Riak-Meta-Test: value\r\n" + "\r\n"
                       + "--boundary--";
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
@@ -307,7 +307,7 @@ public class TestClientUtils {
     @Test public void parse_multipart_returns_value() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        String body = "\n--boundary\n" + "\n" + "foo\n" + "--boundary--";
+        String body = "\r\n--boundary\r\n" + "\r\n" + "foo\r\n" + "--boundary--";
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
         assertEquals("foo", objects.get(0).getValue());

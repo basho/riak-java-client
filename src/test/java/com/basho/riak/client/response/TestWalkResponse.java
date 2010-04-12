@@ -63,20 +63,20 @@ public class TestWalkResponse {
     }
 
     @Test public void parses_walk_steps() {
-        final String BODY = "\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\n"
-                            + "Content-Type: multipart/mixed; boundary=7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
-                            + "\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
-                            + "Location: /riak/b/k1\n" 
-                            + "\n" 
-                            + "foo\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
-                            + "Location: /riak/b/k2\n" 
-                            + "\n"
-                            + "bar\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n"
-                            + "\n"
-                            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
+        final String BODY = "\r\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\r\n"
+                            + "Content-Type: multipart/mixed; boundary=7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
+                            + "\r\n"
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
+                            + "Location: /riak/b/k1\r\n" 
+                            + "\r\n" 
+                            + "foo\r\n"
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
+                            + "Location: /riak/b/k2\r\n" 
+                            + "\r\n"
+                            + "bar\r\n"
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\r\n"
+                            + "\r\n"
+                            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\r\n";
 
         when(mockHttpResponse.getBody()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
@@ -97,15 +97,15 @@ public class TestWalkResponse {
     }
 
     @Test(expected = RiakResponseRuntimeException.class) public void throws_on_invalid_subpart_content_type() {
-        final String BODY = "\n" 
-            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\n"
-            + "Content-Type: text/plain\n"
-            + "\n"
-            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\n" 
-            + "\n"
-            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\n" 
-            + "\n"
-            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\n";
+        final String BODY = "\r\n" 
+            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\r\n"
+            + "Content-Type: text/plain\r\n"
+            + "\r\n"
+            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
+            + "\r\n"
+            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5--\r\n" 
+            + "\r\n"
+            + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\r\n";
 
         when(mockHttpResponse.getBody()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);

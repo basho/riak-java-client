@@ -41,7 +41,7 @@ public class StreamedMultipart implements Iterator<Part> {
             throw new IllegalArgumentException();
 
         String initialBoundary = "--" + Multipart.getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
-        String boundary = "\n" + initialBoundary;
+        String boundary = "\r\n" + initialBoundary;
 
         // Find the first boundary, ignoring everything preceding it
         StringBuilder sb = new StringBuilder();

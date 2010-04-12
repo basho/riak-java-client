@@ -33,28 +33,28 @@ public class TestStreamedMultipart {
         put("content-type", "multipart/mixed; boundary=\"boundary\"");
     }};
     final String body = 
-        "\n" +
-        "--boundary\n" +
-        "X-Riak-Vclock: a85hYGBgzGDKBVIsLOLmazKYEhnzWBkmzFt4hC8LAA==\n" +
-        "Location: /riak/test/key\n" +
-        "Content-Type: application/octet-stream\n" +
-        "\n" +
-        "foo\n" +
-        "--boundary\n" +
-        "Content-Type: text/plain\n" +
-        "Header: value1\n" +
-        "\n" +
+        "\r\n" +
+        "--boundary\r\n" +
+        "X-Riak-Vclock: a85hYGBgzGDKBVIsLOLmazKYEhnzWBkmzFt4hC8LAA==\r\n" +
+        "Location: /riak/test/key\r\n" +
+        "Content-Type: application/octet-stream\r\n" +
+        "\r\n" +
+        "foo\r\n" +
+        "--boundary\r\n" +
+        "Content-Type: text/plain\r\n" +
+        "Header: value1\r\n" +
+        "\r\n" +
         "multiple lines of\n" +
         "text in this part\n" +
-        "\n" +
-        "--boundary with some trailing text on the same line\n" +
-        "Content-Type: text/csv\n" +
-        "Header: value2\n" +
-        "\n" +
-        "baz,\n" +
-        "--boundary--\n" +
+        "\r\n" +
+        "--boundary with some trailing text on the same line\r\n" +
+        "Content-Type: text/csv\r\n" +
+        "Header: value2\r\n" +
+        "\r\n" +
+        "baz,\r\n" +
+        "--boundary--\r\n" +
         "postlude\n" +
-        "\n";
+        "\r\n";
     InputStream stream = new ByteArrayInputStream(body.getBytes());
         
     StreamedMultipart impl;

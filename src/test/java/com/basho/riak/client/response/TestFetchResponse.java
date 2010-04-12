@@ -69,23 +69,23 @@ public class TestFetchResponse {
         SIBLING_HEADERS.put("Content-Type".toLowerCase(), "multipart/mixed; boundary=1MFeoR33D8Jdz3uUa9SQI7H8XCb");
         SIBLING_HEADERS.put("Content-Length".toLowerCase(), "407");
         
-        SIBLING_BODY = "\n" +
-            "--1MFeoR33D8Jdz3uUa9SQI7H8XCb\n" +
-            "Content-Type: text/plain\n" +
-            "Link: </riak/b>; rel=\"up\", </riak/b/l>; riaktag=\"next\"\n" +
-            "Etag: 55SrI4GjdnGfyuShLBWjuf\n" +
-            "Last-Modified: Tue, 22 Dec 2009 19:24:18 GMT\n" +
-            "\n" +
-            "bar\n" +
-            "--1MFeoR33D8Jdz3uUa9SQI7H8XCb\n" +
-            "Content-Type: application/octect-stream\n" +
-            "Link: </riak/b>; rel=\"up\"\n" +
-            "Etag: 4d5y9wqQK2Do0RK5ezwCJD\n" +
-            "Last-Modified: Tue, 22 Dec 2009 18:48:37 GMT\n" +
-            "X-Riak-Meta-Test: value\n" +
-            "\n" +
-            "foo\n" +
-            "--1MFeoR33D8Jdz3uUa9SQI7H8XCb--\n";
+        SIBLING_BODY = "\r\n" +
+            "--1MFeoR33D8Jdz3uUa9SQI7H8XCb\r\n" +
+            "Content-Type: text/plain\r\n" +
+            "Link: </riak/b>; rel=\"up\", </riak/b/l>; riaktag=\"next\"\r\n" +
+            "Etag: 55SrI4GjdnGfyuShLBWjuf\r\n" +
+            "Last-Modified: Tue, 22 Dec 2009 19:24:18 GMT\r\n" +
+            "\r\n" +
+            "bar\r\n" +
+            "--1MFeoR33D8Jdz3uUa9SQI7H8XCb\r\n" +
+            "Content-Type: application/octect-stream\r\n" +
+            "Link: </riak/b>; rel=\"up\"\r\n" +
+            "Etag: 4d5y9wqQK2Do0RK5ezwCJD\r\n" +
+            "Last-Modified: Tue, 22 Dec 2009 18:48:37 GMT\r\n" +
+            "X-Riak-Meta-Test: value\r\n" +
+            "\r\n" +
+            "foo\r\n" +
+            "--1MFeoR33D8Jdz3uUa9SQI7H8XCb--\r\n";
     }
 
     @Test public void doesnt_throw_on_null_impl() throws JSONException {
