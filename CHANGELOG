@@ -1,0 +1,14 @@
+0.10-SNAPSHOT
+-------------
+
+This version breaks compatibility with Riak releases prior to the pre-0.10 tag. Specifically, it no longer parses link walking results in prior releases.
+
+**Changes**:
+
+* Expect CRLF in multipart (link walking) results (http://bitbucket.org/basho/riak/changeset/df553e35cc92/)
+
+
+0.9.1
+-------------
+
+First official release of riak-client.
