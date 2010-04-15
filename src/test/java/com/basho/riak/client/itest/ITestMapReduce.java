@@ -76,7 +76,7 @@ public class ITestMapReduce {
        MapReduceResponse response = c.mapReduceOverBucket(BUCKET_NAME)
            .link(BUCKET_NAME, "test", false)
            .map(JavascriptFunction.named("Riak.mapValuesJson"), false)
-           .reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true)
+           .reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
            .submit();
        assertTrue(response.isSuccess());
        JSONArray results = response.getResults();
@@ -87,9 +87,9 @@ public class ITestMapReduce {
        RiakClient c = new RiakClient(RIAK_URL);
        MapReduceBuilder builder = new MapReduceBuilder(c);
        builder.setBucket(BUCKET_NAME);
-       builder.map(new ErlangFunction("riak_mapreduce", "map_object_value"), false);
-       builder.reduce(new ErlangFunction("riak_mapreduce", "reduce_string_to_integer"), false);
-       builder.reduce(new ErlangFunction("riak_mapreduce", "reduce_sort"), true);
+       builder.map(new ErlangFunction("riak_kv_mapreduce", "map_object_value"), false);
+       builder.reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false);
+       builder.reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), true);
        MapReduceResponse response = builder.submit();
        assertTrue(response.isSuccess());
        JSONArray results = response.getResults();
