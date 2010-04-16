@@ -33,7 +33,7 @@ import com.basho.riak.client.response.StoreResponse;
 public class ITestBasic {
 
     public static String RIAK_URL = "http://127.0.0.1:8098/riak";
-
+    
     @Test public void store_fetch_modify() {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String VALUE1 = "value1";
@@ -93,9 +93,9 @@ public class ITestBasic {
         final String KEY1 = "key1";
         final String KEY2 = "key2";
         final String KEY3 = "key3";
-        final String CHASH_MOD = "riak_util";
+        final String CHASH_MOD = "riak_core_util";
         final String CHASH_FUN = "chash_bucketonly_keyfun";
-
+        
         // Clear out the objects we're testing with
         assertSuccess(c.delete(BUCKET, KEY1));
         assertSuccess(c.delete(BUCKET, KEY2));
