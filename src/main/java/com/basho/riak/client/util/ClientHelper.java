@@ -68,8 +68,12 @@ public class ClientHelper {
     /**
      * See {@link RiakClient#getClientId()}
      */
-    public String getClientId() {
-        return new String(Base64.decodeBase64(clientId.getBytes()));
+    public byte[] getClientId() {
+        try {
+            return Base64.decodeBase64(clientId.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 support required in JVM");
+        }
     }
 
     public void setClientId(String clientId) {

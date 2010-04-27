@@ -543,7 +543,7 @@ public class RiakClient {
      * http://lists.basho.com/pipermail/riak-users_lists.basho.com/2009-
      * November/000153.html for information about the client ID.
      */
-    public String getClientId() {
+    public byte[] getClientId() {
         return helper.getClientId();
     }
 
