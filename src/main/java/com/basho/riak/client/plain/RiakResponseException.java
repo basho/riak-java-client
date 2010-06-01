@@ -34,8 +34,12 @@ public class RiakResponseException extends Exception implements HttpResponse {
         impl = e;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return impl.getBody();
+    }
+    
+    public String getBodyAsString() {
+       return impl.getBodyAsString();
     }
 
     public InputStream getStream() {

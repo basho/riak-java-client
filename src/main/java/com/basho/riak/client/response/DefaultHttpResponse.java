@@ -31,11 +31,11 @@ public class DefaultHttpResponse implements HttpResponse {
     private String key;
     private int status = -1;
     private Map<String, String> headers = null;
-    private String body = null;
+    private byte[] body = null;
     private InputStream stream = null;
     private HttpMethod httpMethod = null;
 
-    public DefaultHttpResponse(String bucket, String key, int status, Map<String, String> headers, String body,
+    public DefaultHttpResponse(String bucket, String key, int status, Map<String, String> headers, byte[] body,
             InputStream stream, HttpMethod httpMethod) {
         if (headers == null) {
             headers = new HashMap<String, String>();
@@ -66,8 +66,15 @@ public class DefaultHttpResponse implements HttpResponse {
         return headers;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
+    }
+    
+    public String getBodyAsString() {
+       if (body == null) {
+          return null;
+       }
+       return new String(body);
     }
 
     public InputStream getStream() {

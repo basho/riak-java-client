@@ -57,7 +57,7 @@ public class ITestDataLoad {
                         String value = new String(data[rnd.nextInt(NUM_VALUES)]);
                         RiakObject o = riak.fetch(BUCKET, key).getObject();
                         if (o == null) {
-                            o = new RiakObject(riak, BUCKET, key, value);
+                            o = new RiakObject(riak, BUCKET, key, value.getBytes());
                         } else {
                             o.setValue(value);
                         }

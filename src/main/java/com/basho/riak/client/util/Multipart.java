@@ -38,8 +38,9 @@ public class Multipart {
      *         multipart message
      */
     public static List<Multipart.Part> parse(Map<String, String> headers, String body) {
-        if (headers == null || body == null)
+        if (headers == null || body == null ||  body.length() == 0)
             return null;
+
 
         if (!body.startsWith("\r\n")) {
             // In order to parse the multipart efficiently, we want to treat the
@@ -88,7 +89,7 @@ public class Multipart {
 
                 Map<String, String> partHeaders = parseHeaders(body.substring(start, headerEnd));
                 String partBody = body.substring(bodyStart, end);
-                parts.add(new Part(partHeaders, partBody));
+                parts.add(new Part(partHeaders, partBody.getBytes()));
 
                 pos = end;
             }
@@ -147,10 +148,10 @@ public class Multipart {
      */
     public static class Part {
         private Map<String, String> headers;
-        private String body;
+        private byte[] body;
         private InputStream stream;
 
-        public Part(Map<String, String> headers, String body) {
+        public Part(Map<String, String> headers, byte[] body) {
             this.headers = headers;
             this.body = body;
         }
@@ -170,7 +171,7 @@ public class Multipart {
         /**
          * Body of this part
          */
-        public String getBody() {
+        public byte[] getBody() {
             if (body == null && stream != null) {
                 try {
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -178,16 +179,23 @@ public class Multipart {
                     for (int readCount = 0; readCount != -1; readCount = stream.read(buffer)) {
                         os.write(buffer, 0, readCount);
                     }
-                    body = os.toString();
+                    body = os.toByteArray();
                 } catch (IOException e) { /* nop */}
                 stream = null;
             }
             return body;
         }
+        
+        public String getBodyAsString() {
+           byte[] body = getBody();
+           if (body == null)
+              return null;
+           return new String(body);
+        }
 
         public InputStream getStream() {
             if (stream == null && body != null) {
-                stream = new ByteArrayInputStream(body.getBytes());
+                stream = new ByteArrayInputStream(body);
             }
 
             return stream;

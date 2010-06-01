@@ -68,7 +68,7 @@ public class TestBucketResponse {
 
     @Test public void parses_schema_field() throws JSONException, IOException {
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         BucketResponse impl = new BucketResponse(mockHttpResponse);
@@ -81,7 +81,7 @@ public class TestBucketResponse {
 
     @Test public void parses_keys_field() throws Exception {
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         BucketResponse impl = new BucketResponse(mockHttpResponse);
@@ -123,7 +123,7 @@ public class TestBucketResponse {
     }
     
     @Test public void returns_empty_keys_list_if_keys_element_not_in_response() throws JSONException, IOException {
-        final String body = "{\"props\": {\"name\":\"b\"}}";
+        final byte[] body = "{\"props\": {\"name\":\"b\"}}".getBytes();
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
         when(mockHttpResponse.getBody()).thenReturn(body);
         when(mockHttpResponse.isSuccess()).thenReturn(true);

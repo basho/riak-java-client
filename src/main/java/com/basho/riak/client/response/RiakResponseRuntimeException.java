@@ -47,10 +47,16 @@ public class RiakResponseRuntimeException extends RuntimeException implements Ht
         this.response = response;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         if (response == null)
             return null;
         return response.getBody();
+    }
+    
+    public String getBodyAsString() {
+       if (response == null)
+          return null;
+       return response.getBodyAsString();
     }
 
     public InputStream getStream() {

@@ -38,8 +38,8 @@ public class ITestWalk {
         final String LEAF1 = "leaf1";
         final String LEAF2 = "leaf2";
         final String EXCLUDED_LEAF = "excluded_leaf";
-        final String INCLUDED_VALUE = "included";
-        final String EXCLUDED_VALUE = "excluded";
+        final byte[] INCLUDED_VALUE = "included".getBytes();
+        final byte[] EXCLUDED_VALUE = "excluded".getBytes();
         final String TAG_INCLUDE = "tag_include";
         final String TAG_EXCLUDE = "tag_exclude";
 

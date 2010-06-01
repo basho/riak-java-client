@@ -56,7 +56,7 @@ public class ITestBasic {
         assertEquals(404, fetchresp.getStatusCode());
 
         // Store a new object
-        RiakObject o = new RiakObject(BUCKET, KEY, VALUE1);
+        RiakObject o = new RiakObject(BUCKET, KEY, VALUE1.getBytes());
         StoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
@@ -102,9 +102,9 @@ public class ITestBasic {
         assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY1, "v"), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY2, "v"), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY3, "v"), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY1, "v".getBytes()), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY2, "v".getBytes()), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY3, "v".getBytes()), WRITE_3_REPLICAS()));
 
         // Get the current bucket schema and contents
         BucketResponse bucketresp = c.listBucket(BUCKET);
@@ -129,6 +129,5 @@ public class ITestBasic {
         assertTrue(bucketresp.hasBucketInfo());
         bucketInfo = bucketresp.getBucketInfo();
         assertEquals(nval + 1, bucketInfo.getNVal().intValue());
-        assertEquals(CHASH_MOD + ":" + CHASH_FUN, bucketInfo.getCHashFun());
     }
 }

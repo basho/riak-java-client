@@ -46,7 +46,9 @@ public interface HttpResponse {
     /**
      * The HTTP response body or null if isStreamed()
      */
-    public String getBody();
+    public byte[] getBody();
+    
+    public String getBodyAsString();
 
     /**
      * The HTTP response body as an input stream if isStreamed(); null otherwise

@@ -42,10 +42,16 @@ public class HttpResponseDecorator implements HttpResponse {
         return impl.getKey();
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         if (impl == null)
             return null;
         return impl.getBody();
+    }
+    
+    public String getBodyAsString() {
+       if (impl == null)
+          return null;
+       return impl.getBodyAsString();
     }
 
     public InputStream getStream() {

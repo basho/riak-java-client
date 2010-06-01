@@ -84,7 +84,7 @@ public class RiakObject {
      * @param vtag
      *            This object's entity tag assigned by Riak
      */
-    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType,
+    public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
             List<RiakLink> links, Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
         this.riak = riak;
         this.bucket = bucket;
@@ -103,19 +103,19 @@ public class RiakObject {
         this(riak, bucket, key, null, null, null, null, null, null, null);
     }
 
-    public RiakObject(RiakClient riak, String bucket, String key, String value) {
+    public RiakObject(RiakClient riak, String bucket, String key, byte[] value) {
         this(riak, bucket, key, value, null, null, null, null, null, null);
     }
 
-    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType) {
+    public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType) {
         this(riak, bucket, key, value, contentType, null, null, null, null, null);
     }
 
-    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType, List<RiakLink> links) {
+    public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType, List<RiakLink> links) {
         this(riak, bucket, key, value, contentType, links, null, null, null, null);
     }
 
-    public RiakObject(RiakClient riak, String bucket, String key, String value, String contentType,
+    public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
             List<RiakLink> links, Map<String, String> usermeta) {
         this(riak, bucket, key, value, contentType, links, usermeta, null, null, null);
     }
@@ -124,24 +124,24 @@ public class RiakObject {
         this(null, bucket, key, null, null, null, null, null, null, null);
     }
 
-    public RiakObject(String bucket, String key, String value) {
+    public RiakObject(String bucket, String key, byte[] value) {
         this(null, bucket, key, value, null, null, null, null, null, null);
     }
 
-    public RiakObject(String bucket, String key, String value, String contentType) {
+    public RiakObject(String bucket, String key, byte[] value, String contentType) {
         this(null, bucket, key, value, contentType, null, null, null, null, null);
     }
 
-    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links) {
+    public RiakObject(String bucket, String key, byte[] value, String contentType, List<RiakLink> links) {
         this(null, bucket, key, value, contentType, links, null, null, null, null);
     }
 
-    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
+    public RiakObject(String bucket, String key, byte[] value, String contentType, List<RiakLink> links,
             Map<String, String> usermeta) {
         this(null, bucket, key, value, contentType, links, usermeta, null, null, null);
     }
 
-    public RiakObject(String bucket, String key, String value, String contentType, List<RiakLink> links,
+    public RiakObject(String bucket, String key, byte[] value, String contentType, List<RiakLink> links,
             Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
         this(null, bucket, key, value, contentType, links, usermeta, vclock, lastmod, vtag);
     }
