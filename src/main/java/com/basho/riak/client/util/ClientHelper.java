@@ -373,12 +373,12 @@ public class ClientHelper {
             }
 
             Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
-            String body = null;
+            byte[] body = null;
             InputStream stream = null;
             if (streamResponse) {
                 stream = httpMethod.getResponseBodyAsStream();
             } else {
-                body = httpMethod.getResponseBodyAsString();
+                body = httpMethod.getResponseBody();
             }
 
             return new DefaultHttpResponse(bucket, key, status, headers, body, stream, httpMethod);

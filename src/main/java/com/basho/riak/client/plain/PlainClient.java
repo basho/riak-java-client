@@ -76,7 +76,7 @@ public class PlainClient {
         HttpResponse r = impl.setBucketSchema(bucket, bucketInfo, meta);
 
         if (r.getStatusCode() != 204)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
     }
 
     public void setBucketSchema(String bucket, RiakBucketInfo bucketInfo) throws RiakIOException, RiakResponseException {
@@ -96,7 +96,7 @@ public class PlainClient {
         BucketResponse r = impl.listBucket(bucket, meta);
 
         if (r.getStatusCode() != 200)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
 
         return r.getBucketInfo();
     }
@@ -119,7 +119,7 @@ public class PlainClient {
         StoreResponse r = impl.store(object, meta);
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 204)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
 
         object.updateMeta(r);
     }
@@ -148,7 +148,7 @@ public class PlainClient {
             return null;
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
 
         if (r.getStatusCode() == 200 && !r.hasObject())
             throw new RiakResponseException(new RiakResponseRuntimeException(r, "Failed to parse metadata"));
@@ -179,7 +179,7 @@ public class PlainClient {
             return null;
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
 
         if (r.getStatusCode() == 200 && !r.hasObject())
             throw new RiakResponseException(new RiakResponseRuntimeException(r, "Failed to parse object"));
@@ -210,7 +210,7 @@ public class PlainClient {
             return null;
 
         if (r.getStatusCode() != 200 && r.getStatusCode() != 304)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
 
         if (r.getStatusCode() == 200 && !(r.hasObject() || r.hasSiblings()))
             throw new RiakResponseException(new RiakResponseRuntimeException(r, "Failed to parse object"));
@@ -247,7 +247,7 @@ public class PlainClient {
         HttpResponse r = impl.delete(bucket, key, meta);
 
         if (r.getStatusCode() != 204 && r.getStatusCode() != 404)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
     }
 
     public void delete(String bucket, String key) throws RiakIOException, RiakResponseException {
@@ -274,7 +274,7 @@ public class PlainClient {
             return null;
 
         if (r.getStatusCode() != 200)
-            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBody()));
+            throw new RiakResponseException(new RiakResponseRuntimeException(r, r.getBodyAsString()));
 
         if (!r.hasSteps())
             throw new RiakResponseException(new RiakResponseRuntimeException(r, "Failed to parse walk results"));

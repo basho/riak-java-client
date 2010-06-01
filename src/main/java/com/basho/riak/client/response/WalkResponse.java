@@ -81,7 +81,7 @@ public class WalkResponse extends HttpResponseDecorator implements HttpResponse 
         String bucket = r.getBucket();
         String key = r.getKey();
         List<List<RiakObject>> parsedSteps = new ArrayList<List<RiakObject>>();
-        List<Multipart.Part> parts = Multipart.parse(r.getHttpHeaders(), r.getBody());
+        List<Multipart.Part> parts = Multipart.parse(r.getHttpHeaders(), r.getBodyAsString());
 
         if (parts != null) {
             for (Multipart.Part part : parts) {
@@ -92,7 +92,7 @@ public class WalkResponse extends HttpResponseDecorator implements HttpResponse 
                     !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
                     throw new RiakResponseRuntimeException(r, "multipart/mixed subparts expected in link walk results");
 
-                parsedSteps.add(ClientUtils.parseMultipart(riak, bucket, key, partHeaders, part.getBody()));
+                parsedSteps.add(ClientUtils.parseMultipart(riak, bucket, key, partHeaders, part.getBodyAsString()));
             }
         }
 

@@ -84,7 +84,7 @@ public class TestMultipart {
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());
 
-        List<Multipart.Part> subparts = Multipart.parse(parts.get(0).getHeaders(), parts.get(0).getBody());
+        List<Multipart.Part> subparts = Multipart.parse(parts.get(0).getHeaders(), parts.get(0).getBodyAsString());
         assertEquals(2, subparts.size());
         assertEquals("subpart1", subparts.get(0).getBody());
         assertEquals("subpart2", subparts.get(1).getBody());

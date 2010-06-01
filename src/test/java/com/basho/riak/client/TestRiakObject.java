@@ -86,7 +86,7 @@ public class TestRiakObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        RiakObject copy = new RiakObject("b", "k2", value, ctype, links, usermeta, vclock, lastmod, vtag);
+        RiakObject copy = new RiakObject("b", "k2", value.getBytes(), ctype, links, usermeta, vclock, lastmod, vtag);
         copy.setValueStream(valueStream, valueStreamLength);
         impl.copyData(copy);
 
@@ -119,7 +119,7 @@ public class TestRiakObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        impl = new RiakObject("b", "k", value, ctype, links, usermeta, vclock, lastmod, vtag);
+        impl = new RiakObject("b", "k", value.getBytes(), ctype, links, usermeta, vclock, lastmod, vtag);
         impl.copyData(new RiakObject(null, null));
 
         assertEquals("b", impl.getBucket());

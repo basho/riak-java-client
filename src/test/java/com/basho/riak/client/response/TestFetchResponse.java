@@ -96,7 +96,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SINGLE_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(SINGLE_BODY);
+        when(mockHttpResponse.getBody()).thenReturn(SINGLE_BODY.getBytes());
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
@@ -118,7 +118,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY);
+        when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY.getBytes());
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
@@ -157,7 +157,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY);
+        when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY.getBytes());
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);

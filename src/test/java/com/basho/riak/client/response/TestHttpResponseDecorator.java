@@ -39,7 +39,7 @@ public class TestHttpResponseDecorator {
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
-        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
         when(mockHttpResponse.getStatusCode()).thenReturn(STATUS_CODE);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(HTTP_HEADERS);
         when(mockHttpResponse.getHttpMethod()).thenReturn(HTTP_METHOD);

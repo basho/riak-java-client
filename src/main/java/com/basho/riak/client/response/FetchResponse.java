@@ -82,7 +82,7 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
                     throw new RiakIORuntimeException("Error finding initial boundary", e);
                 }
             } else {
-                siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, r.getBody());
+                siblings = ClientUtils.parseMultipart(riak, r.getBucket(), r.getKey(), headers, r.getBodyAsString());
             }
 
             object = siblings.iterator().next();

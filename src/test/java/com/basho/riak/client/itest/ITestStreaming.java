@@ -44,7 +44,8 @@ public class ITestStreaming {
         
         // Add objects
         for (int i = 0; i < NUM_KEYS; i++) {
-            assertSuccess(c.store(new RiakObject(BUCKET, "key" + Integer.toString(i), "v"), WRITE_3_REPLICAS()));
+            assertSuccess(c.store(new RiakObject(BUCKET, "key" + Integer.toString(i), "v".getBytes()),
+                  WRITE_3_REPLICAS()));
         }
 
         // Iterate over keys in bucket
@@ -75,7 +76,7 @@ public class ITestStreaming {
         new Random().nextBytes(bytes);
         
         // Add object
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes)), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, bytes), WRITE_3_REPLICAS()));
 
         // Stream the object back
         FetchResponse r = c.stream(BUCKET, KEY);
@@ -113,13 +114,13 @@ public class ITestStreaming {
         
         // Add conflicting objects
         c.setClientId("foo-");
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes[0])), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, bytes[0]), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
         
         c.setClientId("bar-");
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes[1])), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, bytes[1]), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
 
         c.setClientId("baz-");
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY, new String(bytes[2])), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY, bytes[2]), WRITE_3_REPLICAS().setQueryParam(Constants.QP_RETURN_BODY, "false")));
 
         // Stream the object back
         FetchResponse r = c.stream(BUCKET, KEY);

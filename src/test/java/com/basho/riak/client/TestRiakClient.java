@@ -258,7 +258,7 @@ public class TestRiakClient {
     
         when(mockHelper.walk(anyString(), anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         WalkResponse r = impl.walk(bucket, key, walkSpec);
