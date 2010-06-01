@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class TestBucketResponse {
 
-    final String BODY = 
+    final String TEXT_BODY = 
         "{\"props\":" +
             "{\"name\":\"b\"," +
             "\"allow_mult\":false," +
@@ -44,6 +44,7 @@ public class TestBucketResponse {
             "\"young_vclock\":20}," +
             "\"keys\":" +
                 "[\"j\",\"k\",\"l\"]}";
+    final byte[] BODY = TEXT_BODY.getBytes();
     final InputStream STREAM = new ByteArrayInputStream( 
         ("{\"props\":" +
             "{\"name\":\"b\"," +
@@ -68,7 +69,8 @@ public class TestBucketResponse {
 
     @Test public void parses_schema_field() throws JSONException, IOException {
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.getBodyAsString()).thenReturn(TEXT_BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         BucketResponse impl = new BucketResponse(mockHttpResponse);
@@ -81,7 +83,8 @@ public class TestBucketResponse {
 
     @Test public void parses_keys_field() throws Exception {
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(BODY);
+        when(mockHttpResponse.getBodyAsString()).thenReturn(TEXT_BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         BucketResponse impl = new BucketResponse(mockHttpResponse);
@@ -126,6 +129,7 @@ public class TestBucketResponse {
         final byte[] body = "{\"props\": {\"name\":\"b\"}}".getBytes();
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
         when(mockHttpResponse.getBody()).thenReturn(body);
+        when(mockHttpResponse.getBodyAsString()).thenReturn(new String(body));
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         BucketResponse impl = new BucketResponse(mockHttpResponse);

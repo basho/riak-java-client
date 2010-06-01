@@ -54,7 +54,7 @@ public class BucketResponse extends HttpResponseDecorator implements HttpRespons
             JSONObject props;
             Collection<String> keys;
             if (!r.isStreamed()) {
-                JSONObject json = new JSONObject(r.getBody());
+                JSONObject json = new JSONObject(r.getBodyAsString());
                 JSONArray jsonKeys = json.optJSONArray(Constants.FL_KEYS);
                 props = json.optJSONObject(Constants.FL_SCHEMA);
                 keys = ClientUtils.jsonArrayAsList(jsonKeys);

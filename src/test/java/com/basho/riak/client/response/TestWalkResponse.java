@@ -79,6 +79,7 @@ public class TestWalkResponse {
                             + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\r\n";
 
         when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBodyAsString()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
 
         WalkResponse impl = new WalkResponse(mockHttpResponse, mockRiakClient);
@@ -108,6 +109,7 @@ public class TestWalkResponse {
             + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\r\n";
 
         when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBodyAsString()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
 
         new WalkResponse(mockHttpResponse, mockRiakClient);

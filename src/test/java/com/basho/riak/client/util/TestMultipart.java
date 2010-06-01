@@ -46,7 +46,7 @@ public class TestMultipart {
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());
         assertEquals(0, parts.get(0).getHeaders().size());
-        assertEquals("", parts.get(0).getBody());
+        assertEquals("", parts.get(0).getBodyAsString());
     }
 
     @Test public void parses_multipart_with_1_part() {
@@ -58,7 +58,7 @@ public class TestMultipart {
         assertEquals(1, parts.size());
         assertEquals(1, parts.get(0).getHeaders().size());
         assertEquals("text/plain", parts.get(0).getHeaders().get(Constants.HDR_CONTENT_TYPE));
-        assertEquals("subpart", parts.get(0).getBody());
+        assertEquals("subpart", parts.get(0).getBodyAsString());
     }
 
     @Test public void parses_multipart_with_multiple_parts() {
@@ -69,8 +69,8 @@ public class TestMultipart {
 
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(2, parts.size());
-        assertEquals("part1", parts.get(0).getBody());
-        assertEquals("part2", parts.get(1).getBody());
+        assertEquals("part1", parts.get(0).getBodyAsString());
+        assertEquals("part2", parts.get(1).getBodyAsString());
     }
 
     @Test public void parses_multipart_subpart() {
@@ -86,8 +86,8 @@ public class TestMultipart {
 
         List<Multipart.Part> subparts = Multipart.parse(parts.get(0).getHeaders(), parts.get(0).getBodyAsString());
         assertEquals(2, subparts.size());
-        assertEquals("subpart1", subparts.get(0).getBody());
-        assertEquals("subpart2", subparts.get(1).getBody());
+        assertEquals("subpart1", subparts.get(0).getBodyAsString());
+        assertEquals("subpart2", subparts.get(1).getBodyAsString());
     }
 
     @Test public void parses_subpart_headers_and_body() {
@@ -104,7 +104,7 @@ public class TestMultipart {
                      parts.get(0).getHeaders().get(Constants.HDR_VCLOCK));
         assertEquals("/riak/test/key", parts.get(0).getHeaders().get(Constants.HDR_LOCATION));
         assertEquals("application/octet-stream", parts.get(0).getHeaders().get(Constants.HDR_CONTENT_TYPE));
-        assertEquals(PART_BODY, parts.get(0).getBody());
+        assertEquals(PART_BODY, parts.get(0).getBodyAsString());
     }
 
     @Test public void handles_quoted_boundary() {
@@ -119,6 +119,6 @@ public class TestMultipart {
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(1, parts.size());
         assertEquals(0, parts.get(0).getHeaders().size());
-        assertEquals("part", parts.get(0).getBody());
+        assertEquals("part", parts.get(0).getBodyAsString());
     }
 }
