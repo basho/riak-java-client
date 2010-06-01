@@ -18,6 +18,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -69,14 +70,14 @@ public class TestClientHelper {
         impl.setHttpClient(mockHttpClient);
     }
     
-    @Test public void client_helper_uses_passed_in_client_id() {
-        assertEquals(clientId, impl.getClientId());
+    @Test public void client_helper_uses_passed_in_client_id() throws UnsupportedEncodingException {
+        assertEquals(clientId, new String(impl.getClientId()));
     }
 
     @Test public void client_helper_generates_client_id_if_null() {
         impl = new ClientHelper(config, null);
         assertNotNull(impl.getClientId());
-        assertEquals(4, impl.getClientId().getBytes().length);
+        assertEquals(4, impl.getClientId().length);
     }
 
     @Test public void fetch_defaults_to_not_streaming() {

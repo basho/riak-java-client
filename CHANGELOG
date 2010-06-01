@@ -1,3 +1,10 @@
+0.11
+-------------
+
+This version no longer performs binary to String conversions automatically. All bucket data is surfaced as
+byte arrays. Clients will need to either perform their own string conversions or use the getBodyAsString() method
+added to the com.basho.riak.client.response.HttpResponse interface.
+
 0.10-SNAPSHOT
 -------------
 
@@ -6,7 +13,7 @@ This version breaks compatibility with Riak releases prior to the pre-0.10 tag. 
 **Changes**:
 
 * Expect CRLF in multipart (link walking) results (http://bitbucket.org/basho/riak/changeset/df553e35cc92/)
-
+* RiakClient.getClientId() returns the raw client ID byte[4] rather than String to avoid charset encoding issues
 
 0.9.1
 -------------

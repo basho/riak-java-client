@@ -16,6 +16,7 @@ package com.basho.riak.client.util;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -336,7 +337,7 @@ public class TestClientUtils {
     }
     
     @Test(expected=IllegalArgumentException.class) public void encode_client_id_throws_on_null() {
-        ClientUtils.encodeClientId(null);
+        ClientUtils.encodeClientId((byte[]) null);
     }
 
     @Test(expected=IllegalArgumentException.class) public void encode_client_id_throws_on_too_short_input() {
@@ -347,7 +348,12 @@ public class TestClientUtils {
         String id = "clientid";
         String encoded = ClientUtils.encodeClientId(id);
         
-        byte[] decoded = Base64.decodeBase64(encoded.getBytes());
+        byte[] decoded;
+        try {
+            decoded = Base64.decodeBase64(encoded.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 support required in JVM");
+        }
         assertEquals(4, decoded.length);
         assertEquals(id.getBytes()[0], decoded[0]);
         assertEquals(id.getBytes()[1], decoded[1]);
@@ -357,7 +363,12 @@ public class TestClientUtils {
 
     @Test public void random_client_id_returns_4_encoded_bytes() {
         String encoded = ClientUtils.randomClientId();
-        byte[] decoded = Base64.decodeBase64(encoded.getBytes());
+        byte[] decoded;
+        try {
+            decoded = Base64.decodeBase64(encoded.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 support required in JVM");
+        }
         assertEquals(4, decoded.length);
     }
 

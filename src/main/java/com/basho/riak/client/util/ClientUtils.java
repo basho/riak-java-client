@@ -169,13 +169,19 @@ public class ClientUtils {
      * Base64 encodes the first 4 bytes of clientId into a value acceptable for
      * the X-Riak-ClientId header.
      */
-    public static String encodeClientId(String clientId) {
-        if (clientId == null || clientId.getBytes().length < 4)
-            throw new IllegalArgumentException("ClientId must be 4 bytes");
+    public static String encodeClientId(byte[] clientId) {
+        if (clientId == null || clientId.length < 4)
+            throw new IllegalArgumentException("ClientId must be at least 4 bytes");
 
-        byte[] bytes = clientId.getBytes();
-        byte[] encoded = Base64.encodeBase64(new byte[] { bytes[0], bytes[1], bytes[2], bytes[3] });
-        return new String(encoded);
+        try {
+            return new String(Base64.encodeBase64(new byte[] { clientId[0], clientId[1], clientId[2], clientId[3] }), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 support is required by JVM");
+        }
+    }
+
+    public static String encodeClientId(String clientId) {
+        return encodeClientId(clientId.getBytes());
     }
 
     /**
@@ -184,8 +190,7 @@ public class ClientUtils {
     public static String randomClientId() {
         byte[] rnd = new byte[4];
         new Random().nextBytes(rnd);
-        byte[] encoded = Base64.encodeBase64(rnd);
-        return new String(encoded);
+        return encodeClientId(rnd);
     }
 
     /**

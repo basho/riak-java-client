@@ -208,7 +208,7 @@ The bucket schema and a list the keys of all the objects in the bucket can be re
         
         // Update the schema and put
         info.setAllowMult(true);
-        riak.setBucketSchema(info);
+        riak.setBucketSchema("bucket", info);
     }
 
 It is also possible to stream the keys in the bucket, which sends the `?keys=stream` query parameter to Riak.
@@ -229,7 +229,7 @@ With Plain:
 
     RiakBucketInfo info = plain.listBucket("bucket");
     info.getSchema().put("allow_mult", true);
-    plain.setBucketSchema("bucket");
+    plain.setBucketSchema("bucket", info);
 
 ## Links and Link Walking ##
 
