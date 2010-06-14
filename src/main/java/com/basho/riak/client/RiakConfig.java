@@ -12,6 +12,7 @@
  */
 package com.basho.riak.client;
 
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,19 @@ public class RiakConfig {
             throw new IllegalArgumentException();
 
         this.setUrl(url);
+    }
+    
+    public RiakConfig(URL url) {
+       if (url == null) {
+          throw new IllegalArgumentException();
+       }
+       
+       String protocol = url.getProtocol().toLowerCase();
+       if(!protocol.equals("http") && !protocol.equals("https")) {
+          throw new IllegalArgumentException();
+       }
+       
+       this.setUrl(url.toExternalForm());
     }
 
     public RiakConfig(String ip, String port, String prefix) {
