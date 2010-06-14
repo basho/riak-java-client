@@ -21,6 +21,10 @@
             <name>Jonathan Lee</name>
             <email>jonjlee@gmail.com</email>
         </developer>
+	<developer>
+	    <name>Kevin A. Smith</name>
+	    <email>ksmith@basho.com</email>
+	</developer>
     </developers>
 
 	<scm>
