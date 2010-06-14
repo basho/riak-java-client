@@ -152,7 +152,7 @@ public class ClientHelper {
             meta.setClientId(clientId);
         }
         if (meta.getHeader(Constants.HDR_CONNECTION) == null) {
-            meta.setHeader(Constants.HDR_CONNECTION, "close");
+            meta.setHeader(Constants.HDR_CONNECTION, "keep-alive");
         }
 
         String bucket = object.getBucket();
