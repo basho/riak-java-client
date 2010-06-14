@@ -145,11 +145,9 @@ public class TestClientHelper {
         assertEquals("clientId", meta.getClientId());
     }
 
-    // This is currently required because Riak/Webmachine doesn't support persistent connections
-    // for PUTs, but also incorrectly handles 0-length objects if connection: close is not specified 
     @Test public void store_sets_connection_header() {
         impl.store(object, meta);
-        assertEquals("close", meta.getHeader(Constants.HDR_CONNECTION));
+        assertEquals("keep-alive", meta.getHeader(Constants.HDR_CONNECTION));
     }
 
     @Test public void store_doesnt_overwrite_connection_header() {
