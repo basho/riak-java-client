@@ -13,8 +13,10 @@
  */
 package com.basho.riak.client.mapreduce;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -187,5 +189,64 @@ public class TestMapReduceBuilder {
       assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"link\":{\"bucket\":\"foo\",\"keep\":false}}," +
             "{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
    }
+   
+   @Test public void canBuildMapJobWithPhaseArg() throws JSONException {
+      MapReduceBuilder builder = new MapReduceBuilder();
+      builder.setBucket("wubba");
+      builder.map(JavascriptFunction.named("Riak.mapValuesJson"), "123", true);
+      String json = builder.toJSON().toString();
+      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":\"123\"," +
+            "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      builder = new MapReduceBuilder();
+      builder.setBucket("wubba");
+      builder.map(JavascriptFunction.named("Riak.mapValuesJson"), 123, true);
+      json = builder.toJSON().toString();
+      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":123," +
+            "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      builder = new MapReduceBuilder();
+      builder.setBucket("wubba");
+      List<Object> args = new ArrayList<Object>(2);
+      args.add(123);
+      args.add("testing");
+      builder.map(JavascriptFunction.named("Riak.mapValuesJson"), args, true);
+      json = builder.toJSON().toString();
+      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":[123,\"testing\"]," +
+            "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
 
+   }
+
+   @Test public void canBuildMapReduceJobWithPhaseArg() throws JSONException {
+      MapReduceBuilder builder = new MapReduceBuilder();
+      builder.setBucket("wubba");
+      builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
+      builder.reduce(JavascriptFunction.named("Riak.reduceSort"), "testing", true);
+      String json = builder.toJSON().toString();
+      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
+            "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":\"testing\"," +
+            "\"name\":\"Riak.reduceSort\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      builder = new MapReduceBuilder();
+      builder.setBucket("wubba");
+      builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
+      builder.reduce(JavascriptFunction.named("Riak.reduceSort"), 123, true);
+      json = builder.toJSON().toString();
+      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
+            "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":123," +
+            "\"name\":\"Riak.reduceSort\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      List<Object> args = new ArrayList<Object>(2);
+      args.add(123);
+      args.add("testing");
+      builder = new MapReduceBuilder();
+      builder.setBucket("wubba");
+      builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
+      builder.reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), args, true);
+      json = builder.toJSON().toString();
+      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
+            "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":[123,\"testing\"]," +
+            "\"module\":\"riak_kv_mapreduce\",\"language\":\"erlang\",\"keep\":true,\"function\":" +
+            "\"reduce_sort\"}}]}", json);
+   }
 }

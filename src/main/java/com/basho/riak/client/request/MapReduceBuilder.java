@@ -189,6 +189,7 @@ public class MapReduceBuilder {
      * 
      * @param function
      *            function to run for the phase
+     * 
      * @param keep
      *            should the server keep and return the results
      * @return current MapReduceBuilder instance. This is done so multiple calls
@@ -196,15 +197,37 @@ public class MapReduceBuilder {
      *         StringBuffer
      */
     public MapReduceBuilder map(MapReduceFunction function, boolean keep) {
-        this.addPhase(MapReduceBuilder.Types.MAP, function, keep);
-        return this;
+       return this.map(function, null, keep);
     }
 
+
+    /**
+     * Adds a map phase to the job
+     * 
+     * @param function
+     *            function to run for the phase
+     * 
+     * @param arg
+     *            Static argument to pass to the function. Should be an
+     *            object easily converted to JSON
+     *            
+     * @param keep
+     *            should the server keep and return the results
+     * @return current MapReduceBuilder instance. This is done so multiple calls
+     *         to map, reduce, and link can be chained together a la
+     *         StringBuffer
+     */
+    public MapReduceBuilder map(MapReduceFunction function, Object arg, boolean keep) {
+        this.addPhase(MapReduceBuilder.Types.MAP, function, arg, keep);
+        return this;
+    }
+    
     /**
      * Adds a reduce phase to the job
      * 
      * @param function
      *            function to run for the phase
+     *            
      * @param keep
      *            should the server keep and return the results
      * @return current MapReduceBuilder instance. This is done so multiple calls
@@ -212,7 +235,28 @@ public class MapReduceBuilder {
      *         StringBuffer
      */
     public MapReduceBuilder reduce(MapReduceFunction function, boolean keep) {
-        this.addPhase(MapReduceBuilder.Types.REDUCE, function, keep);
+       return this.reduce(function, null, keep);
+    }
+
+
+    /**
+     * Adds a reduce phase to the job
+     * 
+     * @param function
+     *            function to run for the phase
+     *            
+     * @param arg
+     *            Static argument to pass to the function. Should be an
+     *            object easily converted to JSON
+     *            
+     * @param keep
+     *            should the server keep and return the results
+     * @return current MapReduceBuilder instance. This is done so multiple calls
+     *         to map, reduce, and link can be chained together a la
+     *         StringBuffer
+     */
+    public MapReduceBuilder reduce(MapReduceFunction function, Object arg, boolean keep) {
+        this.addPhase(MapReduceBuilder.Types.REDUCE, function, arg, keep);
         return this;
     }
 
@@ -304,16 +348,21 @@ public class MapReduceBuilder {
         }
         return job;
     }
-
+    
     private MapReduceBuilder addPhase(Types phaseType, MapReduceFunction function, boolean keep) {
-        MapReducePhase phase = new MapReducePhase();
-        phase.type = phaseType;
-        phase.function = function;
-        phase.keep = keep;
-        phases.add(phase);
-        return this;
+       return addPhase(phaseType, function, null, keep);
     }
 
+    private MapReduceBuilder addPhase(Types phaseType, MapReduceFunction function, Object arg, boolean keep) {
+       MapReducePhase phase = new MapReducePhase();
+       phase.type = phaseType;
+       phase.function = function;
+       phase.arg = arg;
+       phase.keep = keep;
+       phases.add(phase);
+       return this;
+    }
+    
     private void buildInputs(JSONObject job) {
         if (bucket != null) {
             try {
@@ -346,6 +395,13 @@ public class MapReduceBuilder {
         } catch (JSONException e) {
             throw new RuntimeException("Can always map a string to a boolean");
         }
+        try {
+           if (phase.arg != null) {
+              functionJson.put("arg", phase.arg);
+           }
+        } catch (JSONException e) {
+           throw new RuntimeException("Cannot convert phase arg to JSON");
+        }
         String type = null;
         switch (phase.type) {
         case MAP:
@@ -369,6 +425,7 @@ public class MapReduceBuilder {
     private class MapReducePhase {
         Types type;
         MapReduceFunction function;
+        Object arg;
         boolean keep;
     }
 
