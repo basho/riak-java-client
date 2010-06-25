@@ -127,8 +127,12 @@ public class ClientHelper {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        if (streamResponse && (meta.getQueryParam(Constants.QP_KEYS) == null)) {
-            meta.setQueryParam(Constants.QP_KEYS, Constants.STREAM_KEYS);
+        if (meta.getQueryParam(Constants.QP_KEYS) == null) {
+            if (streamResponse) {
+                meta.setQueryParam(Constants.QP_KEYS, Constants.STREAM_KEYS);
+            } else {
+                meta.setQueryParam(Constants.QP_KEYS, Constants.INCLUDE_KEYS);
+            }
         }
         if (meta.getHeader(Constants.HDR_CONTENT_TYPE) == null) {
             meta.setHeader(Constants.HDR_CONTENT_TYPE, Constants.CTYPE_JSON);

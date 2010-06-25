@@ -120,11 +120,11 @@ public class TestClientHelper {
         verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(true));
     }
     
-    @Test public void listBucket_doesnt_add_keys_qp_if_not_streaming_response() {
+    @Test public void listBucket_add_keys_equals_true_qp_if_not_streaming_response() {
         RequestMeta meta = spy(new RequestMeta());
         impl = spy(impl);
         impl.listBucket(bucket, meta, false);
-        verify(meta, never()).setQueryParam(eq(Constants.QP_KEYS), anyString());
+        verify(meta).setQueryParam(eq(Constants.QP_KEYS), eq(Constants.INCLUDE_KEYS));
         verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(false));
     }
     

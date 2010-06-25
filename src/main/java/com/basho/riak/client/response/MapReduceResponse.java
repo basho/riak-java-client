@@ -36,7 +36,7 @@ public class MapReduceResponse extends HttpResponseDecorator implements HttpResp
         super(r);
 
         if (r != null && r.isSuccess() && (r.getBody() != null)) {
-            result = new JSONArray(r.getBody());
+            result = new JSONArray(r.getBodyAsString());
         }
     }
 

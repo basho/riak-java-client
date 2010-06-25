@@ -70,6 +70,7 @@ public interface Constants {
     
     // Values for the "keys" query parameter
     public static String NO_KEYS = "false";
+    public static String INCLUDE_KEYS = "true";
     public static String STREAM_KEYS = "stream";
 
     // Query parameters used in Riak

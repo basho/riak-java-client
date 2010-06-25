@@ -75,7 +75,7 @@ public class ITestWalk {
         for (List<RiakObject> step : steps) {
             for (RiakObject object : step) {
                 keys.add(object.getKey());
-                assertEquals(INCLUDED_VALUE, object.getValue());
+                assertArrayEquals(INCLUDED_VALUE, object.getValueAsBytes());
             }
         }
         assertTrue(keys.contains(LEAF1));
