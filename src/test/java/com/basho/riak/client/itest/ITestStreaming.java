@@ -91,7 +91,7 @@ public class ITestStreaming {
         
         r.close();
     }
-    
+
     @Test public void stream_siblings() throws IOException {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String BUCKET = "test_stream_siblings";

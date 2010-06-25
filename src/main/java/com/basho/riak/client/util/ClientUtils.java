@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -161,6 +162,17 @@ public class ClientUtils {
         } catch (UnsupportedEncodingException unreached) {
             // UTF-8 must be supported by every Java implementation:
             // http://java.sun.com/j2se/1.4.2/docs/api/java/nio/charset/Charset.html
+            throw new IllegalStateException("UTF-8 must be supported", unreached);
+        }
+    }
+
+    /**
+     * Decodes a UTF-8 encoded string
+     */
+    public static String urlDecode(String s) {
+        try {
+            return URLDecoder.decode(s, "UTF-8");
+        } catch (UnsupportedEncodingException unreached) {
             throw new IllegalStateException("UTF-8 must be supported", unreached);
         }
     }

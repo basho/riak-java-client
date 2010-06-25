@@ -110,7 +110,7 @@ public class RiakClient {
      * Return the properties for a Riak bucket without listing the keys in it.
      * 
      * @param bucket
-     *            The bucket to list.
+     *            The target bucket.
      * @param meta
      *            Extra metadata to attach to the request such as HTTP headers
      *            and query parameters.
