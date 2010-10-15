@@ -1,0 +1,5 @@
+bin
+lib
+classes
+*.xml
+*.jar
