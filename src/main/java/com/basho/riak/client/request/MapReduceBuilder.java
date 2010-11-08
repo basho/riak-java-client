@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.request;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -29,6 +30,7 @@ import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.mapreduce.LinkFunction;
 import com.basho.riak.client.mapreduce.MapReduceFunction;
+import com.basho.riak.client.mapreduce.filter.MapReduceFilter;
 import com.basho.riak.client.response.MapReduceResponse;
 import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
@@ -45,6 +47,7 @@ public class MapReduceBuilder {
 
     private String bucket = null;
     private Map<String, Set<String>> objects = new HashMap<String, Set<String>>();
+    private List<MapReduceFilter> keyFilters = new ArrayList<MapReduceFilter>();
     private List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
     private int timeout = -1;
     private RiakClient riak = null;
@@ -57,7 +60,7 @@ public class MapReduceBuilder {
         this.riak = riak;
     }
 
-    public MapReduceBuilder() { /* nop */}
+    public MapReduceBuilder() { /* nop */ }
 
     /**
      * The {@link RiakClient} to which this map reduce job will be submitted to
@@ -182,6 +185,25 @@ public class MapReduceBuilder {
      */
     public int getTimeout() {
         return timeout;
+    }
+
+    /**
+     * Adds a map phase to the job
+     * 
+     * @param function
+     *            function to run for the phase
+     * 
+     * @param keep
+     *            should the server keep and return the results
+     * @return current MapReduceBuilder instance. This is done so multiple calls
+     *         to map, reduce, and link can be chained together a la
+     *         StringBuffer
+     */
+    public MapReduceBuilder keyFilter(MapReduceFilter... filters) {
+       for(MapReduceFilter filter: filters) {
+          this.keyFilters.add(filter);
+       }
+       return this;
     }
 
     /**
@@ -330,6 +352,7 @@ public class MapReduceBuilder {
     public JSONObject toJSON() {
         JSONObject job = new JSONObject();
         JSONArray query = new JSONArray();
+        
         for (MapReducePhase phase : phases) {
             renderPhase(phase, query);
         }
@@ -363,12 +386,31 @@ public class MapReduceBuilder {
        return this;
     }
     
+    private JSONArray buildFilters(List<MapReduceFilter> filterList) {
+        JSONArray filters = new JSONArray();
+        for(MapReduceFilter filter: filterList) {
+            filters.put(filter.toJson());
+        }
+        return filters;
+    }
+    
     private void buildInputs(JSONObject job) {
         if (bucket != null) {
-            try {
-                job.put("inputs", bucket);
-            } catch (JSONException e) {
-                throw new RuntimeException("Can always map a string to a string");
+            if (keyFilters.size() > 0) {
+                try {
+                    JSONObject jobInputs = new JSONObject();
+                    jobInputs.put("bucket", bucket);
+                    jobInputs.put("key_filters", buildFilters(this.keyFilters));
+                    job.put("inputs", jobInputs);
+                } catch (JSONException e) {
+                    throw new RuntimeException("Can always map a collection of MapReduceFilter objects to a JSONArray");
+                }
+            } else {
+                try {
+                    job.put("inputs", bucket);
+                } catch (JSONException e) {
+                    throw new RuntimeException("Can always map a string to a string");
+                }
             }
         } else {
             JSONArray inputs = new JSONArray();
