@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Header;
@@ -50,7 +51,7 @@ public class ClientUtils {
 
     // Matches the scheme, host and port of a URL
     private static String URL_PATH_MASK = "^(?:[A-Za-z0-9+-\\.]+://)?[^/]*";
-
+    private static Random rng = new Random();
     /**
      * Construct a new {@link HttpClient} instance given a {@link RiakConfig}.
      * 
@@ -201,7 +202,7 @@ public class ClientUtils {
      */
     public static String randomClientId() {
         byte[] rnd = new byte[4];
-        new Random().nextBytes(rnd);
+        rng.nextBytes(rnd);
         return encodeClientId(rnd);
     }
 
@@ -284,16 +285,16 @@ public class ClientUtils {
      * Join the elements in arr in to a single string separated by delimiter.
      */
     public static String join(String[] arr, String delimiter) {
-        String res = null;
+        StringBuffer buf = new StringBuffer();
         if (arr == null || arr.length == 0)
-            return res;
+            return null;
 
-        res = arr[0];
+        buf.append(arr[0]);
         for (int i = 1; i < arr.length; i++) {
-            res += delimiter + arr[i];
+        	buf.append(delimiter);
+        	buf.append(arr[i]);
         }
-
-        return res;
+        return buf.toString();
     }
 
     /**
@@ -328,11 +329,12 @@ public class ClientUtils {
     public static List<RiakLink> parseLinkHeader(String header) {
         List<RiakLink> links = new ArrayList<RiakLink>();
         Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
-        for (String url : parsedLinks.keySet()) {
-            RiakLink link = parseOneLink(url, parsedLinks.get(url));
-            if (link != null) {
-                links.add(link);
-            }
+        for (Entry<String, Map<String, String>> e: parsedLinks.entrySet()) {
+        	String url = e.getKey();
+        	RiakLink link = parseOneLink(url, e.getValue());
+        	if (link != null) {
+        		links.add(link);
+        	}
         }
         return links;
     }
@@ -370,11 +372,12 @@ public class ClientUtils {
     public static Map<String, String> parseUsermeta(Map<String, String> headers) {
         Map<String, String> usermeta = new HashMap<String, String>();
         if (headers != null) {
-            for (String header : headers.keySet()) {
-                if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
-                    usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), headers.get(header));
-                }
-            }
+        	for (Entry<String, String> e : headers.entrySet()) { 
+        		String header = e.getKey();
+        		if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
+        			usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), e.getValue());
+        		}
+        	}
         }
         return usermeta;
     }
