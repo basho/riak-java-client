@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.mapreduce.filter;
 
-import java.util.List;
 import org.json.JSONArray;
 
 /*

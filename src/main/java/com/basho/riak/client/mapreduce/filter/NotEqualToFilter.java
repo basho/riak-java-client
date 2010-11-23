@@ -14,7 +14,6 @@
 package com.basho.riak.client.mapreduce.filter;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.json.JSONArray;
 
 public class NotEqualToFilter implements MapReduceFilter {
