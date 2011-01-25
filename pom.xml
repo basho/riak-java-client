@@ -22,15 +22,19 @@
             <email>jonjlee@gmail.com</email>
         </developer>
 	<developer>
-	    <name>Kevin A. Smith</name>
-	    <email>ksmith@basho.com</email>
+	    <name>Andy Gross</name>
+	    <email>andy@basho.com</email>
 	</developer>
+	<developer>
+            <name>Dave Smith</name>
+            <email>dizzyd@basho.com</email>
+        </developer>
     </developers>
 
 	<scm>
-		<url>http://bitbucket.org/basho/riak-java-client/src</url>
-		<connection>scm:hg:https://bitbucket.org/basho/riak-java-client</connection>
-		<developerConnection>scm:hg:https://bitbucket.org/basho/riak-java-client</developerConnection>
+		<url>http://github.org/basho/riak-java-client</url>
+		<connection>scm:git:git://github.com/basho/riak-java-client</connection>
+		<developerConnection>scm:git:git@github.com:/basho/riak-java-client</developerConnection>
 	</scm>
 
 	<distributionManagement>
