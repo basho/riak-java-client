@@ -4,7 +4,7 @@
 	<groupId>com.basho.riak</groupId>
 	<artifactId>riak-client</artifactId>
 	<packaging>jar</packaging>
-	<version>0.14.0</version>
+	<version>0.14.0-SNAPSHOT</version>
 	<name>Riak Client for Java</name>
 	<description>HttpClient-based client for Riak</description>
 	<url>http://bitbucket.org/basho/riak-java-client</url>
@@ -34,7 +34,6 @@
 	<scm>
 		<url>http://github.org/basho/riak-java-client</url>
 		<connection>scm:git:git://github.com/basho/riak-java-client</connection>
-		<developerConnection>scm:git:git@github.com:/basho/riak-java-client</developerConnection>
 	</scm>
 
 	<distributionManagement>
