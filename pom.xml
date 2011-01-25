@@ -34,7 +34,6 @@
 	<scm>
 		<url>http://github.org/basho/riak-java-client</url>
 		<connection>scm:git:git://github.com/basho/riak-java-client</connection>
-		<developerConnection>scm:git:git@github.com:/basho/riak-java-client</developerConnection>
 	</scm>
 
 	<distributionManagement>
