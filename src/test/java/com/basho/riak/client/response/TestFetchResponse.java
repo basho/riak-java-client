@@ -44,6 +44,8 @@ public class TestFetchResponse {
     final String SINGLE_BODY = "foo";
     final Map<String, String> SIBLING_HEADERS = new HashMap<String, String>();
     
+    final String CONTENT_LENGTH = "3";
+    
     @Mock HttpResponse mockHttpResponse;
     @Mock HttpMethod mockHttpMethod;
     @Mock RiakClient mockRiakClient;
@@ -60,7 +62,7 @@ public class TestFetchResponse {
         SINGLE_HEADERS.put("ETag".toLowerCase(), "4d5y9wqQK2Do0RK5ezwCJD");
         SINGLE_HEADERS.put("Date".toLowerCase(), "Tue, 22 Dec 2009 19:06:47 GMT");
         SINGLE_HEADERS.put("Content-Type".toLowerCase(), "text/plain");
-        SINGLE_HEADERS.put("Content-Length".toLowerCase(), "3");
+        SINGLE_HEADERS.put("Content-Length".toLowerCase(), CONTENT_LENGTH);
 
         SIBLING_HEADERS.put("X-Riak-Vclock".toLowerCase(), "a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==");
         SIBLING_HEADERS.put("Vary".toLowerCase(), "Accept, Accept-Encoding");
@@ -248,4 +250,27 @@ public class TestFetchResponse {
 
         verify(mockHttpResponse, never()).close();
    }
+    
+    @Test public void returns_content_length_for_head() {
+        when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
+        when(mockHttpResponse.getKey()).thenReturn(KEY);
+        when(mockHttpResponse.getHttpHeaders()).thenReturn(SINGLE_HEADERS);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        
+        FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
+        
+        assertSame(mockRiakClient, impl.getObject().getRiakClient());
+        assertEquals(BUCKET, impl.getObject().getBucket());
+        assertEquals(KEY, impl.getObject().getKey());
+        assertEquals("text/plain", impl.getObject().getContentType());
+        
+        Long contentLength = impl.getObject().getValueStreamLength();
+        assertNotNull("Content-Length should not be null", contentLength);
+        assertEquals(CONTENT_LENGTH, contentLength.toString());
+        assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", impl.getObject().getLastmod());
+        assertEquals(1, impl.getObject().getLinks().size());
+        assertEquals(0, impl.getObject().getUsermeta().size());
+        assertEquals("a85hYGBgzGDKBVIsDPKZOzKYEhnzWBlaJyw9wpcFAA==", impl.getObject().getVclock());
+        assertEquals("4d5y9wqQK2Do0RK5ezwCJD", impl.getObject().getVtag());
+    }
 }

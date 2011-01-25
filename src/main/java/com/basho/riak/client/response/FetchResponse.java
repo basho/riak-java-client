@@ -92,14 +92,12 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
                                     headers.get(Constants.HDR_ETAG));
 
-            // If response was constructed with a streamed response body, also
-            // try to get the content length
             Long contentLength = null;
-            if (r.isStreamed()) {
-                try {
-                    contentLength = Long.parseLong(headers.get(Constants.HDR_CONTENT_LENGTH));
-                } catch (NumberFormatException ignored) {}
-            }
+            try {
+                contentLength = Long.parseLong(headers
+                        .get(Constants.HDR_CONTENT_LENGTH));
+            } catch (NumberFormatException ignored) {}
+        
             object.setValueStream(r.getStream(), contentLength);
         }
     }
