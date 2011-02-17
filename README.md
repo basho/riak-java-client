@@ -20,11 +20,12 @@ This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It
 
 To use `riak-client` in a [Maven](http://maven.apache.org/) project, add the following dependency to `pom.xml`:
 
-    <dependency>
-        <groupId>com.basho.riak</groupId>
-        <artifactId>riak-client</artifactId>
-        <version>0.9.1</version>
-    </dependency>
+	<dependency>
+	  <groupId>com.basho.riak</groupId>
+	  <artifactId>riak-client</artifactId>
+	  <version>0.14.0</version>
+	  <type>pom</type>
+	</dependency>
 
 To build and install from source, first install Apache Maven (http://maven.apache.org/download.html). With Maven installed, run:
 
