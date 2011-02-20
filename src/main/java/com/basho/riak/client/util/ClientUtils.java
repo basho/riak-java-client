@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -75,6 +76,7 @@ public class ClientUtils {
         HttpConnectionManagerParams mp = m.getParams();
         if (config.getMaxConnections() != null) {
         	mp.setMaxTotalConnections(config.getMaxConnections());
+        	mp.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, config.getMaxConnections());
         }
 
         HttpClientParams cp = http.getParams();
