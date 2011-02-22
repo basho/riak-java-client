@@ -83,11 +83,9 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 	public abstract boolean hasNext() throws IOException;
 	public abstract T next() throws IOException; 
 
-	@Override
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 
-			@Override
 			public boolean hasNext() {
 				try {
 					return RiakStreamClient.this.hasNext();
@@ -96,7 +94,6 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 				}
 			}
 
-			@Override
 			public T next() {
 				try {
 					return RiakStreamClient.this.next();
@@ -105,7 +102,6 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 				}
 			}
 
-			@Override
 			public void remove() {
 				throw new UnsupportedOperationException();
 			}

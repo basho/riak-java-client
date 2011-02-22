@@ -127,7 +127,7 @@ public class RiakClient implements RiakMessageCodes {
 			try {
 				prefs.flush();
 			} catch (BackingStoreException e) {
-				throw new IOException(e);
+				throw new IOException(e.toString());
 			}
 		}
 
@@ -334,7 +334,6 @@ public class RiakClient implements RiakMessageCodes {
 			this.vclocks = new ByteString[count];
 		}
 
-		@Override
 		public void run() {
 
 			try {

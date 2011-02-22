@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Random;
 
 import org.junit.Test;
@@ -146,7 +145,12 @@ public class TestBranchableInputStream {
 
         os.reset();
         ClientUtils.copyStream(branches[1], os);
-        assertArrayEquals(Arrays.copyOfRange(bytes, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5), os.toByteArray());
+        
+        byte[] expected = new byte[BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5 - BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4];
+        
+        System.arraycopy(bytes, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4, expected, 0, BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 5 - BranchableInputStream.DEFAULT_BASE_CHUNK_SIZE * 4);
+        
+        assertArrayEquals(expected, os.toByteArray());
 
         assertEquals(-1, impl.read());
     }

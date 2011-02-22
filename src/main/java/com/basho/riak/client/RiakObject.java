@@ -172,7 +172,7 @@ public class RiakObject {
             return;
 
         if (object.value != null) {
-            value = Arrays.copyOf(object.value, object.value.length);
+            value = object.value.clone();
         } else {
             value = null;
         }
