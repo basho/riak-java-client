@@ -201,4 +201,19 @@ public class RiakObject {
 		links.add(new RiakLink(bucket, key, tag));
 	}
 
+    public Map<String, String> getUsermeta() {
+        return userMeta;
+    }
+    
+    public void setUserMeta(Map<String,String> userMeta){
+    	this.userMeta = userMeta;
+    }
+    
+    public List<RiakLink> getLinks(){
+    	return this.links;
+    }
+    
+    public void setLinks(List<RiakLink> links){
+    	this.links = links;
+    }
 }
