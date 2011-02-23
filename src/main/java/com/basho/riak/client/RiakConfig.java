@@ -156,7 +156,10 @@ public class RiakConfig {
 
     /**
      * Value to set for the HttpConnectionManagerParams.MAX_TOTAL_CONNECTIONS
-     * property: overall maximum number of connections used by the HttpClient.
+     * and the HttpConnectionManagerParams.MAX_HOST_CONNECTIONS properties: 
+     * overall maximum number of connections used by the HttpClient and the
+     * maximum number of connections per host. The latter is set to overcome
+     * the default 2 connections per host in HttpClient.
      */
     public void setMaxConnections(Integer maxConnections) {
         this.maxConnections = maxConnections;
