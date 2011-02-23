@@ -23,12 +23,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.mapreduce.filter.BetweenFilter;
+import com.basho.riak.client.mapreduce.filter.EndsWithFilter;
+import com.basho.riak.client.mapreduce.filter.EqualToFilter;
+import com.basho.riak.client.mapreduce.filter.FloatToStringFilter;
+import com.basho.riak.client.mapreduce.filter.GreaterThanFilter;
+import com.basho.riak.client.mapreduce.filter.GreaterThanOrEqualFilter;
+import com.basho.riak.client.mapreduce.filter.IntToStringFilter;
+import com.basho.riak.client.mapreduce.filter.LessThanFilter;
+import com.basho.riak.client.mapreduce.filter.LessThanOrEqualFilter;
+import com.basho.riak.client.mapreduce.filter.LogicalAndFilter;
+import com.basho.riak.client.mapreduce.filter.LogicalFilterGroup;
+import com.basho.riak.client.mapreduce.filter.LogicalNotFilter;
+import com.basho.riak.client.mapreduce.filter.LogicalOrFilter;
+import com.basho.riak.client.mapreduce.filter.MatchFilter;
+import com.basho.riak.client.mapreduce.filter.NotEqualToFilter;
+import com.basho.riak.client.mapreduce.filter.SetMemberFilter;
+import com.basho.riak.client.mapreduce.filter.SimilarToFilter;
+import com.basho.riak.client.mapreduce.filter.StartsWithFilter;
+import com.basho.riak.client.mapreduce.filter.StringToFloatFilter;
+import com.basho.riak.client.mapreduce.filter.StringToIntFilter;
+import com.basho.riak.client.mapreduce.filter.ToLowerFilter;
+import com.basho.riak.client.mapreduce.filter.ToUpperFilter;
+import com.basho.riak.client.mapreduce.filter.TokenizeFilter;
+import com.basho.riak.client.mapreduce.filter.UrlDecodeFilter;
 import com.basho.riak.client.request.MapReduceBuilder;
-import com.basho.riak.client.mapreduce.filter.*;
+import com.basho.riak.test.util.JSONEquals;
 
 public class TestMapReduceBuilder {
 
@@ -99,10 +125,12 @@ public class TestMapReduceBuilder {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":" + 
-            "[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}",
-            json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":" + 
+                                           "[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}");
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
+      
    }
    
    @Test public void canBuildJSMapReduceJobWithBucket() throws JSONException {
@@ -110,10 +138,12 @@ public class TestMapReduceBuilder {
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.anon("function(v) { return [v]; }"), false);
       builder.reduce(JavascriptFunction.named("Riak.reduceMin"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"source\":" +
-            "\"function(v) { return [v]; }\",\"language\":\"javascript\",\"keep\":false}}," + 
-            "{\"reduce\":{\"name\":\"Riak.reduceMin\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"source\":" +
+                                           "\"function(v) { return [v]; }\",\"language\":\"javascript\",\"keep\":false}}," + 
+                                           "{\"reduce\":{\"name\":\"Riak.reduceMin\",\"language\":\"javascript\",\"keep\":true}}]}");
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    
@@ -121,9 +151,11 @@ public class TestMapReduceBuilder {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.setBucket("wubba");
       builder.map(new ErlangFunction("foo", "bar"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"module\":\"foo\"," +
-            "\"language\":\"erlang\",\"keep\":true,\"function\":\"bar\"}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"module\":\"foo\"," +
+                                           "\"language\":\"erlang\",\"keep\":true,\"function\":\"bar\"}}]}");
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    @Test public void canBuildErlangMapReduceJobWithBucket() throws JSONException {
@@ -131,20 +163,28 @@ public class TestMapReduceBuilder {
       builder.setBucket("wubba");
       builder.map(new ErlangFunction("foo", "bar"), false);
       builder.reduce(new ErlangFunction("baz", "quux"), true);
-      String json =  builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"module\":\"foo\"," +
-            "\"language\":\"erlang\",\"keep\":false,\"function\":\"bar\"}}," +
-            "{\"reduce\":{\"module\":\"baz\",\"language\":\"erlang\",\"keep\":true,\"function\":\"quux\"}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"module\":\"foo\"," +
+                                           "\"language\":\"erlang\",\"keep\":false,\"function\":\"bar\"}}," +
+                                           "{\"reduce\":{\"module\":\"baz\",\"language\":\"erlang\",\"keep\":true,\"function\":\"quux\"}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    @Test public void canBuildJSMapOnlyJobWithObjects() throws JSONException {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.addRiakObject("first", "key1");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":[[\"first\",\"key1\"]]," +
-            "\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}",
-            json);
+      
+      
+      JSONObject expected = new JSONObject();
+      JSONArray inputs = new JSONArray();
+      inputs.put(new String[] {"first", "key1"});
+      expected.put("inputs", inputs);
+      JSONArray query = new JSONArray("[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]");     
+      expected.put("query", query);
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    @Test public void canBuildJSMapReduceJobWithObjects() throws JSONException {
@@ -152,10 +192,18 @@ public class TestMapReduceBuilder {
       builder.addRiakObject("first", "key2");
       builder.map(JavascriptFunction.anon("function(v) { return [v]; }"), false);
       builder.reduce(JavascriptFunction.named("Riak.reduceMin"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":[[\"first\",\"key2\"]],\"query\":[{\"map\":{\"source\":" +
-            "\"function(v) { return [v]; }\",\"language\":\"javascript\",\"keep\":false}}," + 
-            "{\"reduce\":{\"name\":\"Riak.reduceMin\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      
+      JSONObject expected = new JSONObject();
+      JSONArray inputs = new JSONArray();
+      inputs.put(new String[] {"first", "key2"});
+      expected.put("inputs", inputs);
+      JSONArray query = new JSONArray("[{\"map\":{\"source\":" +
+                                      "\"function(v) { return [v]; }\",\"language\":\"javascript\",\"keep\":false}}," + 
+                                      "{\"reduce\":{\"name\":\"Riak.reduceMin\",\"language\":\"javascript\",\"keep\":true}}]");     
+      expected.put("query", query);
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    
@@ -164,10 +212,16 @@ public class TestMapReduceBuilder {
       builder.addRiakObject("first", "key1");
       builder.addRiakObject("second", "key1");
       builder.map(new ErlangFunction("foo", "bar"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":[[\"second\",\"key1\"],[\"first\",\"key1\"]]," +
-            "\"query\":[{\"map\":{\"module\":\"foo\",\"language\":\"erlang\",\"keep\":true,\"function\":\"bar\"}}]}",
-            json);
+      
+      JSONObject expected = new JSONObject();
+      JSONArray inputs = new JSONArray();
+      inputs.put(new String[] {"first", "key1"});
+      inputs.put(new String[] {"second", "key1"});
+      expected.put("inputs", inputs);
+      JSONArray query = new JSONArray("[{\"map\":{\"module\":\"foo\",\"language\":\"erlang\",\"keep\":true,\"function\":\"bar\"}}]");     
+      expected.put("query", query);
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    @Test public void canBuildErlangMapReduceJobWitObjects() throws JSONException {
@@ -175,10 +229,12 @@ public class TestMapReduceBuilder {
       builder.setBucket("wubba");
       builder.map(new ErlangFunction("foo", "bar"), false);
       builder.reduce(new ErlangFunction("baz", "quux"), true);
-      String json =  builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"module\":\"foo\"," +
-            "\"language\":\"erlang\",\"keep\":false,\"function\":\"bar\"}}," +
-            "{\"reduce\":{\"module\":\"baz\",\"language\":\"erlang\",\"keep\":true,\"function\":\"quux\"}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"module\":\"foo\"," +
+                                           "\"language\":\"erlang\",\"keep\":false,\"function\":\"bar\"}}," +
+                                           "{\"reduce\":{\"module\":\"baz\",\"language\":\"erlang\",\"keep\":true,\"function\":\"quux\"}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    @Test public void canBuildLinkMapReduceJob() throws JSONException {
@@ -186,25 +242,31 @@ public class TestMapReduceBuilder {
       builder.setBucket("wubba");
       builder.link("foo", false);
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"link\":{\"bucket\":\"foo\",\"keep\":false}}," +
-            "{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"link\":{\"bucket\":\"foo\",\"keep\":false}}," +
+                                           "{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
-   @Test public void canBuildMapJobWithPhaseArg() throws JSONException {
+   @SuppressWarnings("unchecked") @Test public void canBuildMapJobWithPhaseArg() throws JSONException {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), "123", true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":\"123\"," +
-            "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":\"123\"," +
+                                           "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
       
       builder = new MapReduceBuilder();
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), 123, true);
-      json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":123," +
-            "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":123," +
+                                "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
       
       builder = new MapReduceBuilder();
       builder.setBucket("wubba");
@@ -212,30 +274,44 @@ public class TestMapReduceBuilder {
       args.add(123);
       args.add("testing");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), args, true);
-      json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"arg\":[123,\"testing\"]," +
-            "\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}}]}", json);
-
+      
+      expected = new JSONObject("{\"inputs\":\"wubba\"}");
+      
+      JSONObject mapSpec = new JSONObject("{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":true}");
+      mapSpec.put("arg", (Object)Arrays.asList(123, "testing"));
+      JSONObject map = new JSONObject();
+      map.put("map", mapSpec);
+      JSONArray query = new JSONArray();
+      query.put(map);
+     
+      expected.put("query", query);
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
-   @Test public void canBuildMapReduceJobWithPhaseArg() throws JSONException {
+   @SuppressWarnings("unchecked") @Test public void canBuildMapReduceJobWithPhaseArg() throws JSONException {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
       builder.reduce(JavascriptFunction.named("Riak.reduceSort"), "testing", true);
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
-            "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":\"testing\"," +
-            "\"name\":\"Riak.reduceSort\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
+                                           "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":\"testing\"," +
+                                           "\"name\":\"Riak.reduceSort\",\"language\":\"javascript\",\"keep\":true}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
       
       builder = new MapReduceBuilder();
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
       builder.reduce(JavascriptFunction.named("Riak.reduceSort"), 123, true);
-      json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
-            "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":123," +
-            "\"name\":\"Riak.reduceSort\",\"language\":\"javascript\",\"keep\":true}}]}", json);
+      
+      expected = new JSONObject("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
+                                           "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":123," +
+                                           "\"name\":\"Riak.reduceSort\",\"language\":\"javascript\",\"keep\":true}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
+      
       
       List<Object> args = new ArrayList<Object>(2);
       args.add(123);
@@ -244,11 +320,21 @@ public class TestMapReduceBuilder {
       builder.setBucket("wubba");
       builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
       builder.reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), args, true);
-      json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":\"wubba\",\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\"," +
-            "\"language\":\"javascript\",\"keep\":false}},{\"reduce\":{\"arg\":[123,\"testing\"]," +
-            "\"module\":\"riak_kv_mapreduce\",\"language\":\"erlang\",\"keep\":true,\"function\":" +
-            "\"reduce_sort\"}}]}", json);
+      
+      expected = new JSONObject("{\"inputs\":\"wubba\"}");
+      JSONObject map = new JSONObject("{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}");
+      
+      JSONObject reduceSpec = new JSONObject("{\"module\":\"riak_kv_mapreduce\",\"language\":\"erlang\",\"keep\":true,\"function\":\"reduce_sort\"}");
+      reduceSpec.put("arg", (Object)Arrays.asList(123, "testing"));
+      JSONObject reduce = new JSONObject();
+      reduce.put("reduce", reduceSpec);
+      
+      JSONArray query = new JSONArray();
+      query.put(map);
+      query.put(reduce);
+      expected.put("query", query);
+      
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    /*
@@ -283,8 +369,10 @@ public class TestMapReduceBuilder {
              .keyFilter(new ToLowerFilter())
              .keyFilter(new ToUpperFilter())
              .keyFilter(new UrlDecodeFilter());
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"between\",22,93],[\"ends_with\",\"apples\"],[\"eq\",36],[\"float_to_string\"],[\"greater_than\",72],[\"greater_than_eq\",72],[\"int_to_string\"],[\"less_than\",42],[\"less_than_eq\",43],[\"matches\",\"fun.*\"],[\"neq\",90],[\"set_member\",\"member1\",\"member2\",\"member3\"],[\"similar_to\",\"valeu\",2],[\"starts_with\",\"super\"],[\"string_to_float\"],[\"string_to_int\"],[\"tokenize\",\"-\",3],[\"to_lower\"],[\"to_upper\"],[\"urldecode\"]],\"bucket\":\"wubba\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"between\",22,93],[\"ends_with\",\"apples\"],[\"eq\",36],[\"float_to_string\"],[\"greater_than\",72],[\"greater_than_eq\",72],[\"int_to_string\"],[\"less_than\",42],[\"less_than_eq\",43],[\"matches\",\"fun.*\"],[\"neq\",90],[\"set_member\",\"member1\",\"member2\",\"member3\"],[\"similar_to\",\"valeu\",2],[\"starts_with\",\"super\"],[\"string_to_float\"],[\"string_to_int\"],[\"tokenize\",\"-\",3],[\"to_lower\"],[\"to_upper\"],[\"urldecode\"]],\"bucket\":\"wubba\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    /*
@@ -299,8 +387,10 @@ public class TestMapReduceBuilder {
              .keyFilter(new LogicalOrFilter().add(new BetweenFilter("apples", "bananas"))
                                              .add(new GreaterThanFilter(36)))
              .keyFilter(new BetweenFilter(12.5, 36.8));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"or\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"or\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    @Test public void canBuildMapJobWithVarArgLogicalOrKeyFilters() throws JSONException {
@@ -311,8 +401,10 @@ public class TestMapReduceBuilder {
              .keyFilter(new LogicalOrFilter(
                 new BetweenFilter("apples", "bananas"), new GreaterThanFilter(36)))
              .keyFilter(new BetweenFilter(12.5, 36.8));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"or\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"or\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    @Test public void canBuildMapJobWithBuilderLogicalAndKeyFilters() throws JSONException {
@@ -323,8 +415,10 @@ public class TestMapReduceBuilder {
              .keyFilter(new LogicalAndFilter().add(new BetweenFilter("apples", "bananas"))
                                               .add(new GreaterThanFilter(36)))
              .keyFilter(new BetweenFilter(12.5, 36.8));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"and\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"and\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    @Test public void canBuildMapJobWithVarArgLogicalAndKeyFilters() throws JSONException {
@@ -335,8 +429,10 @@ public class TestMapReduceBuilder {
              .keyFilter(new LogicalAndFilter(
                 new BetweenFilter("apples", "bananas"), new GreaterThanFilter(36)))
              .keyFilter(new BetweenFilter(12.5, 36.8));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"and\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"and\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    @Test public void canBuildMapJobWithBuilderLogicalNotKeyFilters() throws JSONException {
@@ -347,8 +443,10 @@ public class TestMapReduceBuilder {
              .keyFilter(new LogicalNotFilter().add(new BetweenFilter("apples", "bananas"))
                                               .add(new GreaterThanFilter(36)))
              .keyFilter(new BetweenFilter(12.5, 36.8));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"not\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"not\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
    /*
@@ -363,8 +461,10 @@ public class TestMapReduceBuilder {
                         new LogicalNotFilter(new BetweenFilter("apples", "bananas"),
                                              new GreaterThanFilter(36)),
                         new BetweenFilter(12.5, 36.8));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"not\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"int_to_string\"],[\"not\",[\"between\",\"apples\",\"bananas\"],[\"greater_than\",36]],[\"between\",12.5,36.8]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
 
    /*
@@ -394,8 +494,10 @@ public class TestMapReduceBuilder {
             new LogicalFilterGroup(
                 new StringToIntFilter(),
                 new EqualToFilter(12)))));
-      String json = builder.toJSON().toString();
-      assertEquals("{\"inputs\":{\"key_filters\":[[\"or\",[\"or\",[[\"string_to_int\"],[\"greater_than_eq\",98]],[[\"string_to_int\"],[\"less_than\",2]]],[\"and\",[[\"string_to_int\"],[\"between\",18,36]],[[\"string_to_int\"],[\"greater_than\",0]]],[\"not\",[[\"string_to_int\"],[\"eq\",12]]]]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}", json);
+      
+      JSONObject expected = new JSONObject("{\"inputs\":{\"key_filters\":[[\"or\",[\"or\",[[\"string_to_int\"],[\"greater_than_eq\",98]],[[\"string_to_int\"],[\"less_than\",2]]],[\"and\",[[\"string_to_int\"],[\"between\",18,36]],[[\"string_to_int\"],[\"greater_than\",0]]],[\"not\",[[\"string_to_int\"],[\"eq\",12]]]]],\"bucket\":\"wubba1\"},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\",\"language\":\"javascript\",\"keep\":false}}]}");
+
+      assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
    
 }

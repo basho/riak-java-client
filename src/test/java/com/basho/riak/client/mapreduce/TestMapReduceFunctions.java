@@ -16,14 +16,19 @@ package com.basho.riak.client.mapreduce;
 import static org.junit.Assert.assertEquals;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
 public class TestMapReduceFunctions {
 
    @Test public void erlangFunction_generatesCorrectJson() throws JSONException {
       ErlangFunction f = new ErlangFunction("testing", "doit");
-      String json = f.toJson().toString();
-      assertEquals("{\"module\":\"testing\",\"language\":\"erlang\",\"function\":\"doit\"}", json);
+      JSONObject json = f.toJson();
+      
+      assertEquals("testing", json.get("module"));
+      assertEquals("erlang", json.get("language"));
+      assertEquals("doit", json.get("function"));
+      //assertEquals("{\"module\":\"testing\",\"language\":\"erlang\",\"function\":\"doit\"}", json);
    }
    
    @Test public void namedJSFunction_generatesCorrectJson() throws JSONException {
