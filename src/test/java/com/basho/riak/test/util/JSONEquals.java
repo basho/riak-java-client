@@ -81,7 +81,7 @@ public class JSONEquals {
      */
     private static boolean logicallyEqual(JSONObject json1, JSONObject json2) throws JSONException {
         boolean equal = true;
-        Iterator iterator = json1.keys();
+        @SuppressWarnings("rawtypes") Iterator iterator = json1.keys();
         
         while(iterator.hasNext()){
             String key = (String)iterator.next();
