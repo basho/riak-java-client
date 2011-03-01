@@ -389,7 +389,7 @@ public class TestRiakObject {
         impl.getLinks().add(link);
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).setRequestHeader(eq(Constants.HDR_LINK), contains("</riak/b/l>; riaktag=\"t\""));
+        verify(mockHttpMethod).addRequestHeader(eq(Constants.HDR_LINK), contains("</riak/b/l>; riaktag=\"t\""));
     }
 
     @Test public void write_to_http_method_doesnt_sets_link_header_if_no_links() {
@@ -397,7 +397,7 @@ public class TestRiakObject {
 
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod, never()).setRequestHeader(eq(Constants.HDR_LINK), anyString());
+        verify(mockHttpMethod, never()).addRequestHeader(eq(Constants.HDR_LINK), anyString());
     }
 
     @Test public void write_to_http_method_sets_user_meta_headers() {
