@@ -571,26 +571,7 @@ public class RiakObject {
     public void writeToHttpMethod(HttpMethod httpMethod) {
         // Serialize headers
         String basePath = getBasePathFromHttpMethod(httpMethod);
-        StringBuilder linkHeader = new StringBuilder();
-        for (RiakLink link : links) {
-            if (linkHeader.length() > 0) {
-                linkHeader.append(", ");
-            }
-            linkHeader.append("<");
-            linkHeader.append(basePath);
-            linkHeader.append("/");
-            linkHeader.append(link.getBucket());
-            linkHeader.append("/");
-            linkHeader.append(link.getKey());
-            linkHeader.append(">; ");
-            linkHeader.append(Constants.LINK_TAG);
-            linkHeader.append("=\"");
-            linkHeader.append(link.getTag());
-            linkHeader.append("\"");
-        }
-        if (linkHeader.length() > 0) {
-            httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
-        }
+        writeLinks(httpMethod, basePath);
         for (String name : usermeta.keySet()) {
             httpMethod.setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, usermeta.get(name));
         }
@@ -618,6 +599,35 @@ public class RiakObject {
             }
         }
     }
+    
+    private void writeLinks(HttpMethod httpMethod, String basePath) {
+    	StringBuilder linkHeader = new StringBuilder();
+    	for (RiakLink link : links) {
+            if (linkHeader.length() > 0) {
+                linkHeader.append(", ");
+            }
+            linkHeader.append("<");
+            linkHeader.append(basePath);
+            linkHeader.append("/");
+            linkHeader.append(link.getBucket());
+            linkHeader.append("/");
+            linkHeader.append(link.getKey());
+            linkHeader.append(">; ");
+            linkHeader.append(Constants.LINK_TAG);
+            linkHeader.append("=\"");
+            linkHeader.append(link.getTag());
+            linkHeader.append("\"");
+
+	    // To avoid (MochiWeb) problems with too long headers, flush if it grows too big:
+            if (linkHeader.length() > 2000) {
+            	httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+            	linkHeader = new StringBuilder();
+            }
+        }
+		if (linkHeader.length() > 0) {
+        	httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+		}
+	}
 
     String getBasePathFromHttpMethod(HttpMethod httpMethod) {
         if (httpMethod == null || httpMethod.getPath() == null)
