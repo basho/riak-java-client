@@ -601,8 +601,8 @@ public class RiakObject {
     }
     
     private void writeLinks(HttpMethod httpMethod, String basePath) {
-    	StringBuilder linkHeader = new StringBuilder();
-    	for (RiakLink link : links) {
+        StringBuilder linkHeader = new StringBuilder();
+        for (RiakLink link : links) {
             if (linkHeader.length() > 0) {
                 linkHeader.append(", ");
             }
@@ -618,16 +618,16 @@ public class RiakObject {
             linkHeader.append(link.getTag());
             linkHeader.append("\"");
 
-	    // To avoid (MochiWeb) problems with too long headers, flush if it grows too big:
+            // To avoid (MochiWeb) problems with too long headers, flush if it grows too big:
             if (linkHeader.length() > 2000) {
-            	httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
-            	linkHeader = new StringBuilder();
+                httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+                linkHeader = new StringBuilder();
             }
         }
-		if (linkHeader.length() > 0) {
-        	httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
-		}
-	}
+        if (linkHeader.length() > 0) {
+            httpMethod.setRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+        }
+    }
 
     String getBasePathFromHttpMethod(HttpMethod httpMethod) {
         if (httpMethod == null || httpMethod.getPath() == null)
