@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Header;
@@ -437,6 +440,44 @@ public class ClientUtils {
         return objects;
     }
 
+    
+    private static Charset ISO_8859_1 = Charset.forName("ISO-8859-1"); 
+    private static Charset UTF_8 = Charset.forName("UTF-8"); 
+    
+    public static Charset getCharset(Map<String,String> headers) {
+    	return getCharset(headers.get(Constants.HDR_CONTENT_TYPE));
+    }
+    
+    static Pattern CHARSET_PATT = Pattern.compile("\\bcharset *= *([^ ;]+)", 
+                                                  Pattern.CASE_INSENSITIVE);
+    
+    public static Charset getCharset(String contentType) {
+        if (contentType == null)
+            return ISO_8859_1;
+        
+        if (Constants.CTYPE_JSON_UTF8.equals(contentType)) {
+            return UTF_8; // Fast-track
+        }
+        
+        Matcher matcher = CHARSET_PATT.matcher(contentType);
+        if (matcher.find()) {
+           String encstr = matcher.group(1);
+        
+           if (encstr.equalsIgnoreCase("UTF-8")) {
+               return UTF_8; // Fast-track
+           } else {
+               try {
+                   return Charset.forName(encstr.toUpperCase());
+               } catch (Exception e) {
+                   // ignore //
+               }
+           }
+        }
+
+        return ISO_8859_1;
+    }
+
+    
     /**
      * Throws a checked {@link Exception} not declared in the method signature,
      * which can be particularly useful for throwing checked exceptions within a

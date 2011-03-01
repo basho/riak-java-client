@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpMethod;
 
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -74,7 +75,7 @@ public class DefaultHttpResponse implements HttpResponse {
        if (body == null) {
           return null;
        }
-       return new String(body);
+       return new String(body, ClientUtils.getCharset(headers));
     }
 
     public InputStream getStream() {

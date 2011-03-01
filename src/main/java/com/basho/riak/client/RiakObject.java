@@ -36,6 +36,7 @@ import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.WalkResponse;
+import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -268,7 +269,7 @@ public class RiakObject {
      * The object's value
      */
     public String getValue() {
-        return (value == null ? null : new String(value));
+        return (value == null ? null : new String(value, ClientUtils.getCharset(contentType)));
     }
 
     public byte[] getValueAsBytes() {
