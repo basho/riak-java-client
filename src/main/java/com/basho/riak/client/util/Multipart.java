@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.nio.charset.Charset;
 
 /**
  * Represents a multipart entity as described here:
@@ -185,12 +186,21 @@ public class Multipart {
             }
             return body;
         }
+
+	public String contentType() {
+	    String contentType = headers.get("content-type");
+	    if (contentType == null) {
+		// Specified by http://tools.ietf.org/html/rfc2046#section-5.1
+		contentType = "text/plain; charset=US-ASCII";
+	    }
+	    return contentType;
+	}
         
         public String getBodyAsString() {
            byte[] body = getBody();
            if (body == null)
               return null;
-           return new String(body);
+           return new String(body, ClientUtils.getCharset(contentType()));
         }
 
         public InputStream getStream() {

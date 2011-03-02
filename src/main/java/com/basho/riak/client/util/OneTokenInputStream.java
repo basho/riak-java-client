@@ -2,6 +2,7 @@ package com.basho.riak.client.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 /**
  * A wrapper that reads a single element an underlying {@link InputStream}
@@ -10,6 +11,7 @@ import java.io.InputStream;
  * @author jlee <jonjlee@gmail.com>
  */
 public class OneTokenInputStream extends InputStream {
+    static final Charset LATIN_1 = Charset.forName("ISO-8859-1");
 
     int maxBufferLen;
     InputStream impl;
@@ -87,6 +89,6 @@ public class OneTokenInputStream extends InputStream {
                 offset += bytesRead;
             }
         }
-        buf = new StringBuilder(new String(headStart));
+        buf = new StringBuilder(new String(headStart, LATIN_1));
     }
 }
