@@ -21,6 +21,8 @@ import org.json.JSONObject;
  *
  */
 public class JSONEquals {
+    
+    private JSONEquals() {}
 
     /**
      * Compare two {@link JSONObject}s for equality.
