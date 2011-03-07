@@ -60,7 +60,7 @@ public class RequestMeta implements IRequestMeta {
 	 * @see com.trifork.riak.IRequestMeta#w(int)
 	 */
 	public IRequestMeta w(int w) {
-		w = new Integer(w);
+	    writeQuorum = new Integer(w);
 		return this;
 	}
 
@@ -68,7 +68,7 @@ public class RequestMeta implements IRequestMeta {
 	 * @see com.trifork.riak.IRequestMeta#dw(int)
 	 */
 	public IRequestMeta dw(int dw) {
-		dw = new Integer(dw);
+	    durableWriteQuorum = new Integer(dw);
 		return this;
 	}
 	
