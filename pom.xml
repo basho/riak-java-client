@@ -35,6 +35,12 @@
 		<url>http://github.org/basho/riak-java-client</url>
 		<connection>scm:git:git://github.com/basho/riak-java-client</connection>
 	</scm>
+	
+	<properties>
+        <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cobertura.version>2.4</cobertura.version>
+    </properties>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -86,6 +92,26 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
+			<plugin>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>cobertura-maven-plugin</artifactId>
+		        <version>${cobertura.version}</version>
+		        <configuration>
+		          <instrumentation>
+		            <excludes>
+		              <exclude>org/json/*.class</exclude>
+		              <exclude>com/basho/riak/pbc/RPB*</exclude>
+		            </excludes>
+		          </instrumentation>
+		        </configuration>
+		        <executions>
+		          <execution>
+		            <goals>
+		              <goal>clean</goal>
+		            </goals>
+		          </execution>
+		        </executions>
+		      </plugin>
 		</plugins>
 	</build>
 
@@ -142,5 +168,15 @@
 			</build>
 		</profile>
 	</profiles>
+	
+	<reporting>
+		<plugins>
+			  <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>cobertura-maven-plugin</artifactId>
+                    <version>${cobertura.version}</version>
+			  </plugin>
+		</plugins>
+	</reporting>
 
 </project>

@@ -16,7 +16,6 @@ package com.basho.riak.pbc;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
 /**
  * @author russell
  *
@@ -43,5 +42,4 @@ public class TestRequestMeta {
         assertEquals(returnBody, builder.getReturnBody());
         
     }
-
 }

@@ -250,12 +250,12 @@ public class ClientUtils {
      *            {@link JSONObject} to convert
      * @return Map of the field names to string representations of the values
      */
-    public static Map<String, String> jsonObjectAsMap(JSONObject json) {
+    @SuppressWarnings("rawtypes") public static Map<String, String> jsonObjectAsMap(JSONObject json) {
         if (json == null)
             return null;
 
         Map<String, String> m = new HashMap<String, String>();
-        for (@SuppressWarnings("unchecked") Iterator iter = json.keys(); iter.hasNext();) {
+        for (Iterator iter = json.keys(); iter.hasNext();) {
             Object obj = iter.next();
             if (obj != null) {
                 String key = obj.toString();
