@@ -62,7 +62,7 @@ public class RiakClient implements RiakMessageCodes {
 	 * if this has been set (or gotten) then it will be applied to new
 	 * connections
 	 */
-	private ByteString clientID;
+	private volatile ByteString clientID;
 
 	public RiakClient(String host) throws IOException {
 		this(host, RiakConnection.DEFAULT_RIAK_PB_PORT);
@@ -80,19 +80,21 @@ public class RiakClient implements RiakMessageCodes {
 	private ThreadLocal<RiakConnection> connections = new ThreadLocal<RiakConnection>();
 
 	RiakConnection getConnection() throws IOException {
-		RiakConnection c = connections.get();
-		if (c == null || !c.endIdleAndCheckValid()) {
-			c = new RiakConnection(addr, port);
-
-			if (this.clientID != null) {
-				setClientID(clientID);
-			}
-		} else {
-			// we're fine! //
-		}
-		connections.set(null);
-		return c;
+		return getConnection(true);
 	}
+
+	RiakConnection getConnection(boolean setClientId) throws IOException {
+        RiakConnection c = connections.get();
+        if (c == null || !c.endIdleAndCheckValid()) {
+            c = new RiakConnection(addr, port);
+
+            if (this.clientID != null && setClientId) {
+                setClientID(clientID);
+            }
+        }
+        connections.set(null);
+        return c;
+    }
 
 	void release(RiakConnection c) {
 		RiakConnection cc = connections.get();
@@ -153,7 +155,7 @@ public class RiakClient implements RiakMessageCodes {
 	public void setClientID(ByteString id) throws IOException {
 		RpbSetClientIdReq req = RPB.RpbSetClientIdReq.newBuilder().setClientId(
 				id).build();
-		RiakConnection c = getConnection();
+		RiakConnection c = getConnection(false);
 		try {
 			c.send(MSG_SetClientIdReq, req);
 			c.receive_code(MSG_SetClientIdResp);
