@@ -47,6 +47,7 @@ public class ITestBasic {
         // Set bucket schema to return siblings
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setAllowMult(true);
+        bucketInfo.setNVal(3);
         assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
 
         // Make sure object doesn't exist
