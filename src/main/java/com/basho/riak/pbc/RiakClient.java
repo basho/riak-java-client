@@ -82,8 +82,7 @@ public class RiakClient implements RiakMessageCodes {
 	RiakConnection getConnection() throws IOException {
 		return getConnection(false);
 	}
-	
-	
+
 	RiakConnection getConnection(boolean settingClientId) throws IOException {
         RiakConnection c = connections.get();
         if (c == null || !c.endIdleAndCheckValid()) {
@@ -92,7 +91,7 @@ public class RiakClient implements RiakMessageCodes {
             if (this.clientID != null && !settingClientId) {
                 setClientID(clientID);
             }
-        } 
+        }
         connections.set(null);
         return c;
     }
