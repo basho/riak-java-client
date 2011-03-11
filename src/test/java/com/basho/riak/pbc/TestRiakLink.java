@@ -13,9 +13,15 @@
  */
 package com.basho.riak.pbc;
 
+import static com.basho.riak.test.util.ExpectedValues.BS_BUCKET;
+import static com.basho.riak.test.util.ExpectedValues.BS_KEY;
+import static com.basho.riak.test.util.ExpectedValues.BS_TAG;
+import static com.basho.riak.test.util.ExpectedValues.BUCKET;
+import static com.basho.riak.test.util.ExpectedValues.KEY;
+import static com.basho.riak.test.util.ExpectedValues.TAG;
+import static com.basho.riak.test.util.ExpectedValues.rpbLinks;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,37 +37,23 @@ import com.google.protobuf.ByteString;
  */
 public class TestRiakLink {
 
-    private static final String BUCKET = "bucket";
-    private static final String KEY = "key";
-    private static final String TAG = "tag";
-    
-    private static final ByteString BS_BUCKET = ByteString.copyFromUtf8(BUCKET);
-    private static final ByteString BS_KEY = ByteString.copyFromUtf8(KEY);
-    private static final ByteString BS_TAG = ByteString.copyFromUtf8(TAG);
-
     @Test public void fromRpbLink() {
         final RPB.RpbLink rpbLink = RPB.RpbLink.newBuilder().setBucket(BS_BUCKET).setKey(BS_KEY).setTag(BS_TAG).build();
         final RiakLink link = new RiakLink(rpbLink);
 
-        assertEquals(BS_BUCKET, link.getBucket());
-        assertEquals(BS_KEY, link.getKey());
-        assertEquals(BS_TAG, link.getTag());
+        assertBasicValues(link);
     }
 
     @Test public void fromByteStrings() {
         final RiakLink link = new RiakLink(BS_BUCKET, BS_KEY, BS_TAG);
 
-        assertEquals(BS_BUCKET, link.getBucket());
-        assertEquals(BS_KEY, link.getKey());
-        assertEquals(BS_TAG, link.getTag());
+        assertBasicValues(link);
     }
     
     @Test public void fromStrings() {
         final RiakLink link = new RiakLink(BUCKET, KEY, TAG);
         
-        assertEquals(BS_BUCKET, link.getBucket());
-        assertEquals(BS_KEY, link.getKey());
-        assertEquals(BS_TAG, link.getTag());
+        assertBasicValues(link);
     }
     
     @Test
@@ -74,18 +66,16 @@ public class TestRiakLink {
         assertEquals(BS_TAG, rpbLink.getTag());
     }
     
+    private static void assertBasicValues(final RiakLink riakLink) {
+        assertEquals(BS_BUCKET, riakLink.getBucket());
+        assertEquals(BS_KEY, riakLink.getKey());
+        assertEquals(BS_TAG, riakLink.getTag());
+    }
+
     @Test
     public void decode() {
         final int numLinks = 10;
-        final List<RpbLink> rpbLinks = new ArrayList<RpbLink>();
-        
-        for(int i=0; i < numLinks; i++) {
-            RpbLink.Builder builder = RpbLink.newBuilder()
-                .setBucket(concatToByteString(BUCKET, i))
-                .setKey(concatToByteString(KEY, i))
-                .setTag(concatToByteString(TAG, i));
-            rpbLinks.add(builder.build());
-        }
+        final List<RpbLink> rpbLinks = rpbLinks(numLinks);
         
         final List<RiakLink> decoded = RiakLink.decode(rpbLinks);
         
@@ -110,9 +100,5 @@ public class TestRiakLink {
     private String[] splitByteString(final ByteString bs) {
         return bs.toStringUtf8().split("_");
     }
-    
-    private ByteString concatToByteString(String value, int counter) {
-        return ByteString.copyFromUtf8(value + "_" + counter);
-    }
-    
+
 }

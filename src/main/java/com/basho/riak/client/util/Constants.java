@@ -85,4 +85,7 @@ public interface Constants {
     public static String HTTP_GET_METHOD = "GET";
     public static String HTTP_PUT_METHOD = "PUT";
     public static String HTTP_DELETE_METHOD = "DELETE";
+
+    // Riak magic numbers
+    public static int RIAK_CLIENT_ID_LENGTH = 4;
 }

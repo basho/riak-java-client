@@ -13,7 +13,7 @@
  */
 package com.basho.riak.pbc;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -74,6 +74,41 @@ public class TestBucketProperties {
 
         assertEquals("built allow multi incorrect", true, rbpBucketProps.getAllowMult());
         assertEquals("nVal incorrect", N_VAL, rbpBucketProps.getNVal());
+    }
+
+    @Test public void equalsHashCode() {
+        final Builder rpbBucketPropsBuilder = RpbBucketProps.newBuilder().setAllowMult(true).setNVal(N_VAL);
+        final RpbGetBucketResp bucketResponse = RpbGetBucketResp.newBuilder().setProps(rpbBucketPropsBuilder).build();
+
+        bucketProperties = new BucketProperties();
+        bucketProperties.init(bucketResponse);
+
+        assertTrue(bucketProperties.equals(bucketProperties));
+        assertFalse(bucketProperties.equals(null));
+        assertFalse(bucketProperties.equals("not a bucket properties"));
+
+        final BucketProperties equalProperties = new BucketProperties();
+        equalProperties.init(bucketResponse);
+
+        assertTrue(equalProperties.equals(bucketProperties));
+        assertTrue(bucketProperties.equals(equalProperties));
+        assertEquals(equalProperties.hashCode(), bucketProperties.hashCode());
+
+        final BucketProperties nullProperties = new BucketProperties();
+        nullProperties.init(RpbGetBucketResp.getDefaultInstance());
+
+        assertFalse(bucketProperties.equals(nullProperties));
+        assertFalse(nullProperties.equals(bucketProperties));
+        assertFalse(nullProperties.hashCode() == bucketProperties.hashCode());
+
+        final Builder builder = RpbBucketProps.newBuilder().setAllowMult(false).setNVal(1);
+        final RpbGetBucketResp response = RpbGetBucketResp.newBuilder().setProps(builder).build();
+
+        final BucketProperties differentProperties =  new BucketProperties();
+        differentProperties.init(response);
+        assertFalse(bucketProperties.equals(differentProperties));
+        assertFalse(differentProperties.equals(bucketProperties));
+        assertFalse(differentProperties.hashCode() == bucketProperties.hashCode());
     }
 
 }

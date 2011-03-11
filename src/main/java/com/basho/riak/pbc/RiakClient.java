@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 
 import org.json.JSONObject;
 
+import com.basho.riak.client.util.Constants;
 import com.basho.riak.pbc.RPB.RpbDelReq;
 import com.basho.riak.pbc.RPB.RpbGetClientIdResp;
 import com.basho.riak.pbc.RPB.RpbGetReq;
@@ -90,6 +91,7 @@ public class RiakClient implements RiakMessageCodes {
             c = new RiakConnection(addr, port);
 
             if (this.clientID != null && !settingClientId) {
+                connections.set(c);
                 setClientID(clientID);
             }
         } 
@@ -148,12 +150,18 @@ public class RiakClient implements RiakMessageCodes {
 	}
 
 	public void setClientID(String id) throws IOException {
-		setClientID(ByteString.copyFromUtf8(id));
+	    if(id == null || id.length() < Constants.RIAK_CLIENT_ID_LENGTH) {
+	        throw new IllegalArgumentException("Client ID must be at least " + Constants.RIAK_CLIENT_ID_LENGTH + " bytes long");
+	    }
+		setClientID(ByteString.copyFrom(id.getBytes(), 0, Constants.RIAK_CLIENT_ID_LENGTH));
 	}
 
 	// /////////////////////
 
 	public void setClientID(ByteString id) throws IOException {
+	    if(id.size() > Constants.RIAK_CLIENT_ID_LENGTH) {
+	        id = ByteString.copyFrom(id.toByteArray(), 0, Constants.RIAK_CLIENT_ID_LENGTH);
+	    }
 		RpbSetClientIdReq req = RPB.RpbSetClientIdReq.newBuilder().setClientId(
 				id).build();
 		RiakConnection c = getConnection(true);
@@ -292,7 +300,7 @@ public class RiakClient implements RiakMessageCodes {
 					builder.setVclock(value.getVclock());
 				}
 
-				builder.setReturnBody(false);
+				builder.setReturnBody(true);
 
 				if (meta != null) {
 

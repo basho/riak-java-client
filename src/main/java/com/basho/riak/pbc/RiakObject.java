@@ -20,7 +20,7 @@ package com.basho.riak.pbc;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +68,7 @@ public class RiakObject {
 		if (content.getUsermetaCount() == 0) {
 			userMeta = Collections.emptyMap();
 		} else {
-			userMeta = new HashMap<String, String>();
+			userMeta = new LinkedHashMap<String, String>();
 			for (int i = 0; i < content.getUsermetaCount(); i++) {
 				RpbPair um = content.getUsermeta(i);
 				userMeta.put(um.getKey().toStringUtf8(),

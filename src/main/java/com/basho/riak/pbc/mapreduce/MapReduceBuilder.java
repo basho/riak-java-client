@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.MapReduceResponseSource;
+import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
@@ -321,7 +322,7 @@ public class MapReduceBuilder {
     }
 
     public MapReduceResponseSource submit() throws JSONException, IOException {
-        return submit(null);
+        return submit(new RequestMeta().contentType("application/json"));
     }
 
     /**
