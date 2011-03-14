@@ -16,6 +16,7 @@ package com.basho.riak.pbc.mapreduce;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class MapReduceBuilder {
     }
 
     private String bucket = null;
-    private Map<String, Set<String>> objects = new HashMap<String, Set<String>>();
+    private Map<String, Set<String>> objects = new LinkedHashMap<String, Set<String>>();
     private List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
     private int timeout = -1;
     private RiakClient riak = null;
