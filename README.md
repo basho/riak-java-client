@@ -1,6 +1,6 @@
 
 
-This document describes how to use this client to interact with Riak.  See the [DEVELOPERS](https://github.com/basho/riak-java-client/blob/master/DEVELOPERS) document for a technical overview of the project.
+This document describes how to use this client to interact with Riak.  See the [DEVELOPERS](https://github.com/basho/riak-java-client/blob/master/DEVELOPERS.md) document for a technical overview of the project.
 
 # Overview #
 
