@@ -41,7 +41,18 @@ public class TestRequestMeta {
         assertEquals(dw, builder.getDw());
         assertEquals(w, builder.getW());
         assertEquals(returnBody, builder.getReturnBody());
-        
     }
 
+    @Test
+    public void nullsGetPrimativeDefaults() {
+        final RPB.RpbPutReq.Builder builder = RPB.RpbPutReq.newBuilder();
+
+        IRequestMeta requestMeta = new RequestMeta();
+
+        requestMeta.preparePut(builder);
+
+        assertEquals(0, builder.getDw());
+        assertEquals(0, builder.getW());
+        assertEquals(false, builder.getReturnBody());
+    }
 }

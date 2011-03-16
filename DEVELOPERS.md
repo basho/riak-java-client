@@ -54,13 +54,25 @@ Users primarily use `RiakClient`/`RiakObject`.  `RiakClient` is a simple adapter
 
 # Development #
 
+## Unit Tests ##
+
+The unit tests exercise the code. The coverage for the unit tests can be obtained by running
+
+	mvn cobertura:cobertura
+	
+Then browse to 
+
+	riak-java-client/target/site/cobertura/index.html 
+	
+to see the coverage report. Coverage is currently ~66%. It should only go *up* from here. If you add code, add a test. If you fix a bug, add a test.
+
 ## Integration Tests ##
 
 The integration tests perform each of the basic operations (store bucket schema, list bucket, store, fetch, modify, walk, map/reduce) against a running Riak instance.  They can be run using:
 
     mvn -Pitest clean verify
 
-Riak must be running on `127.0.0.1:8098` with the HTTP interface located at `/riak`.  Note that prior to Riak 0.9, the HTTP interface was located at `/raw` by default.
+Riak must be running on `127.0.0.1:8098` with the HTTP interface located at `/riak`.  Note that prior to Riak 0.9, the HTTP interface was located at `/raw` by default. The integration tests expect to find the protobuffers interface at '127.0.0.1:8087'
 
 ## Code Format ##
 

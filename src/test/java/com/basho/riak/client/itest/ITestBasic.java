@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,6 +15,8 @@ package com.basho.riak.client.itest;
 
 import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
+
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -33,7 +35,7 @@ import com.basho.riak.client.response.StoreResponse;
 public class ITestBasic {
 
     public static String RIAK_URL = "http://127.0.0.1:8098/riak";
-    
+
     @Test public void store_fetch_modify() {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String VALUE1 = "value1";
@@ -90,17 +92,12 @@ public class ITestBasic {
 
     @Test public void test_bucket_schema() {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = "test_bucket_schema";
-        final String KEY1 = "key1";
-        final String KEY2 = "key2";
-        final String KEY3 = "key3";
+        final String BUCKET = UUID.randomUUID().toString();
+        final String KEY1 = UUID.randomUUID().toString();
+        final String KEY2 = UUID.randomUUID().toString();
+        final String KEY3 = UUID.randomUUID().toString();
         final String CHASH_MOD = "riak_core_util";
         final String CHASH_FUN = "chash_bucketonly_keyfun";
-        
-        // Clear out the objects we're testing with
-        assertSuccess(c.delete(BUCKET, KEY1));
-        assertSuccess(c.delete(BUCKET, KEY2));
-        assertSuccess(c.delete(BUCKET, KEY3));
 
         // Add a few objects
         assertSuccess(c.store(new RiakObject(BUCKET, KEY1, "v".getBytes()), WRITE_3_REPLICAS()));
@@ -130,5 +127,10 @@ public class ITestBasic {
         assertTrue(bucketresp.hasBucketInfo());
         bucketInfo = bucketresp.getBucketInfo();
         assertEquals(nval + 1, bucketInfo.getNVal().intValue());
+
+        // Clear out the objects we're testing with
+        assertSuccess(c.delete(BUCKET, KEY1));
+        assertSuccess(c.delete(BUCKET, KEY2));
+        assertSuccess(c.delete(BUCKET, KEY3));
     }
 }

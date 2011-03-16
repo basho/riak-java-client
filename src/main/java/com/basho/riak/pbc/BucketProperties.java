@@ -51,4 +51,53 @@ public class BucketProperties {
 		return builder.build();
 	}
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((allowMult == null) ? 0 : allowMult.hashCode());
+        result = prime * result + ((nValue == null) ? 0 : nValue.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof BucketProperties)) {
+            return false;
+        }
+        BucketProperties other = (BucketProperties) obj;
+        if (allowMult == null) {
+            if (other.allowMult != null) {
+                return false;
+            }
+        } else if (!allowMult.equals(other.allowMult)) {
+            return false;
+        }
+        if (nValue == null) {
+            if (other.nValue != null) {
+                return false;
+            }
+        } else if (!nValue.equals(other.nValue)) {
+            return false;
+        }
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override public String toString() {
+        return String.format("BucketProperties [allowMult=%s, nValue=%s]", allowMult, nValue);
+    }
+
 }
