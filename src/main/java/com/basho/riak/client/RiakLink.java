@@ -43,6 +43,11 @@ public class RiakLink {
         return bucket;
     }
 
+    /**
+     * @deprecated will be removed in future versions to make RiakLink immutable.
+     * @param bucket
+     */
+    @Deprecated
     public void setBucket(String bucket) {
         this.bucket = bucket;
     }
@@ -54,6 +59,11 @@ public class RiakLink {
         return key;
     }
 
+    /**
+     * @deprecated will be removed in future versions to make RiakLink immutable.
+     * @param key
+     */
+    @Deprecated
     public void setKey(String key) {
         this.key = key;
     }
@@ -65,6 +75,11 @@ public class RiakLink {
         return tag;
     }
 
+    /**
+     * @deprecated will be removed in future versions to make RiakLink immutable.
+     * @param tag
+     */
+    @Deprecated
     public void setTag(String tag) {
         this.tag = tag;
     }

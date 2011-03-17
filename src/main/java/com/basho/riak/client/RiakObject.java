@@ -15,11 +15,13 @@ package com.basho.riak.client;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -180,12 +182,8 @@ public class RiakObject {
         valueStream = object.valueStream;
         valueStreamLength = object.valueStreamLength;
 
-        links = new ArrayList<RiakLink>();
-        if (object.links != null) {
-            for (RiakLink link : object.links) {
-                links.add(new RiakLink(link));
-            }
-        }
+        setLinks(object.links);
+
         usermeta = new HashMap<String, String>();
         if (object.usermeta != null) {
             usermeta.putAll(object.usermeta);
@@ -201,7 +199,7 @@ public class RiakObject {
      */
     void shallowCopy(RiakObject object) {
         value = object.value;
-        links = object.links;
+        this.links = object.links;
         usermeta = object.usermeta;
         contentType = object.contentType;
         vclock = object.vclock;
@@ -324,20 +322,61 @@ public class RiakObject {
     }
 
     /**
-     * The object's links -- may be empty, but never be null. New links can be
-     * added using addLink() or getLinks().add()
+     * The object's links -- may be empty, but never be null.
+     *
+     * @see {@link RiakObject#addLink()}, {@link RiakObject#removeLink()}, {@link RiakObject#iterator()}, {@link RiakObject#hasLinks()} and , {@link RiakObject#numLinks()}
+     *
+     * @return the list of {@link RiakLink}s for this
+     *         RiakObject
+     * @deprecated please use {@link RiakObject#iterableLinks())} to iterate over the
+     *             collection of {@link RiakLink}s. Attempting to mutate the
+     *             collection will result in UnsupportedOperationException in
+     *             future versions. Use {@link RiakObject#addLink()} and {@link RiakObject#removeLink()} instead.
+     *             Use {@link RiakObject#hasLinks()}, {@link RiakObject#numLinks()} and {@link RiakObject#hasLink(RiakLink)}
+     *             to query state of links.
      */
+    @Deprecated
     public List<RiakLink> getLinks() {
-        return links;
+        return this.links;
     }
 
+    /**
+     * Makes a *deep* copy of links.
+     *
+     * Changes made to the original collection and its contents will not be reflected
+     * in this RiakObject's links. Use {@link RiakObject#addLink(RiakLink)},
+     * {@link RiakObject#removeLink(RiakLink)} and {@link RiakObject#setLinks(List)} to alter the collection.
+     * @param links a List of {@link RiakLink}
+     */
     public void setLinks(List<RiakLink> links) {
         if (links == null) {
-            links = new ArrayList<RiakLink>();
+            this.links = new CopyOnWriteArrayList<RiakLink>();
+        } else {
+            this.links = new CopyOnWriteArrayList<RiakLink>(deepCopy(links));
         }
-        this.links = links;
     }
 
+    /**
+     * Creates a new RiakLink for each RiakLink in links and adds it to a new List.
+     *
+     * @param links a List of {@link RiakLink}s
+     * @return a deep copy of List.
+     */
+    private List<RiakLink> deepCopy(List<RiakLink> links) {
+        final ArrayList<RiakLink> copyLinks = new ArrayList<RiakLink>();
+
+        for(RiakLink link : links) {
+            copyLinks.add(new RiakLink(link));
+        }
+
+        return copyLinks;
+    }
+
+    /**
+     * Add link to this RiakObject's links.
+     * @param link a {@link RiakLink} to add.
+     * @return this RiakObject.
+     */
     public RiakObject addLink(RiakLink link) {
         if (link != null) {
             links.add(link);
@@ -346,24 +385,111 @@ public class RiakObject {
     }
 
     /**
+     * Remove a {@link RiakLink} from this RiakObject.
+     * @param link the {@link RiakLink} to remove
+     * @return this RiakObject
+     */
+    public RiakObject removeLink(final RiakLink link) {
+        this.links.remove(link);
+        return this;
+    }
+
+    /**
+     * Does this RiakObject has any {@link RiakLink}s?
+     * @return true if there are links, false otherwise
+     */
+    public boolean hasLinks() {
+        return !links.isEmpty();
+    }
+
+    /**
+     * How many {@link RiakLink}s does this RiakObject have?
+     * @return the number of {@link RiakLink}s this object has.
+     */
+    public int numLinks() {
+        return links.size();
+    }
+
+    /**
+     * Checks if the collection of RiakLinks contains the one passed in.
+     * @param riakLink a RiakLink
+     * @return true if the RiakObject's link collection contains riakLink.
+     */
+    public boolean hasLink(final RiakLink riakLink) {
+        return links.contains(riakLink);
+    }
+
+    /**
      * User-specified metadata for the object in the form of key-value pairs --
      * may be empty, but never be null. New key-value pairs can be added using
-     * addUsermeta() or getUsermeta().put()
+     * addUsermeta()
+     *
+     * @deprecated Future versions will return an unmodifiable view of the user meta. Please use
+     *             {@link RiakObject#addUsermeta(String, String)},
+     *             {@link RiakObject#removeUsermetaItem(String)},
+     *             {@link RiakObject#setUsermeta(Map)},
+     *             {@link RiakObject#hasUsermetaItem(String)},
+     *             {@link RiakObject#hasUsermeta()} and
+     *             {@link RiakObject#getUsermetaItem(String)} to mutate and query the User meta collection
      */
+    @Deprecated
     public Map<String, String> getUsermeta() {
         return usermeta;
     }
 
-    public void setUsermeta(Map<String, String> usermeta) {
+    /**
+     * Creates a copy of usermeta. Changes made to the original collection will not be
+     * reflected in the RiakObject's state.
+     * @param usermeta
+     */
+    public void setUsermeta(final Map<String, String> usermeta) {
         if (usermeta == null) {
-            usermeta = new HashMap<String, String>();
+            this.usermeta = new ConcurrentHashMap<String, String>();
+        } else {
+            this.usermeta = new ConcurrentHashMap<String, String>(usermeta);
         }
-        this.usermeta = usermeta;
     }
 
-    public RiakObject addUsermeta(String key, String value) {
+    /**
+     * Adds the key, value to the collection of user meta for this object.
+     * @param key
+     * @param value
+     * @return this RiakObject.
+     */
+    public RiakObject addUsermetaItem(String key, String value) {
         usermeta.put(key, value);
         return this;
+    }
+
+    /**
+     * @return true if there are any user meta data set on this RiakObject.
+     */
+    public boolean hasUsermeta() {
+        return !usermeta.isEmpty();
+    }
+
+    /**
+     * @param key
+     * @return
+     */
+    public boolean hasUsermetaItem(String key) {
+        return usermeta.containsKey(key);
+    }
+
+    /**
+     * Get an item of user meta data.
+     * @param key the user meta data item key
+     * @return The value for the given key or null.
+     */
+    public String getUsermetaItem(String key) {
+        return usermeta.get(key);
+    }
+
+    /**
+     * @param key the key of the item to remove
+     */
+    public void removeUsermetaItem(String key) {
+        usermeta.remove(key);
     }
 
     /**
@@ -602,7 +728,8 @@ public class RiakObject {
     
     private void writeLinks(HttpMethod httpMethod, String basePath) {
         StringBuilder linkHeader = new StringBuilder();
-        for (RiakLink link : links) {
+
+        for (RiakLink link : this.links) {
             if (linkHeader.length() > 0) {
                 linkHeader.append(", ");
             }
@@ -618,7 +745,8 @@ public class RiakObject {
             linkHeader.append(link.getTag());
             linkHeader.append("\"");
 
-            // To avoid (MochiWeb) problems with too long headers, flush if it grows too big:
+            // To avoid (MochiWeb) problems with too long headers, flush if
+            // it grows too big:
             if (linkHeader.length() > 2000) {
                 httpMethod.addRequestHeader(Constants.HDR_LINK, linkHeader.toString());
                 linkHeader = new StringBuilder();
@@ -717,5 +845,18 @@ public class RiakObject {
         public WalkResponse run() {
             return run(null);
         }
+    }
+
+    /**
+     * A thread safe, snapshot Iterable view of the state of this RiakObject's {@link RiakLink}s at call time.
+     * Modifications are *NOT* supported.
+     * @return Iterable<RiakLink> for this RiakObject's {@link RiakLink}s
+     */
+    public Iterable<RiakLink> iterableLinks() {
+        return new Iterable<RiakLink>() {
+            public Iterator<RiakLink> iterator() {
+                return links.iterator();
+            }
+        };
     }
 }

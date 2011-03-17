@@ -148,12 +148,14 @@ public class Multipart {
      */
     public static class Part {
         private Map<String, String> headers;
-        private byte[] body;
+        private byte[] body = null;
         private InputStream stream;
 
         public Part(Map<String, String> headers, byte[] body) {
             this.headers = headers;
-            this.body = body;
+            if(body != null) {
+                this.body = body.clone();
+            }
         }
 
         public Part(Map<String, String> headers, InputStream body) {

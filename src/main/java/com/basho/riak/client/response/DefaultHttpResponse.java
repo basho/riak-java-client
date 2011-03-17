@@ -45,7 +45,9 @@ public class DefaultHttpResponse implements HttpResponse {
         this.key = key;
         this.status = status;
         this.headers = headers;
-        this.body = body;
+        if(body != null) {
+            this.body = body.clone();
+        }
         this.stream = stream;
         this.httpMethod = httpMethod;
     }
@@ -67,7 +69,10 @@ public class DefaultHttpResponse implements HttpResponse {
     }
 
     public byte[] getBody() {
-        return body;
+        if (body != null) {
+            return body.clone();
+        }
+        return null;
     }
     
     public String getBodyAsString() {

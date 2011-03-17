@@ -74,7 +74,7 @@ public class ITestBasic {
         // Modify and store it
         o = fetchresp.getObject();
         o.setValue(VALUE2);
-        o.getLinks().add(LINK);
+        o.addLink(LINK);
         o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
         storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);

@@ -21,6 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -465,5 +467,108 @@ public class TestRiakObject {
 
         when(mockHttpMethod.getPath()).thenReturn("/riak/b/k/");
         assertEquals("/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
+    }
+
+    /*
+     * Encapsulated links
+     */
+
+    @Test public void linkEncapsulationIsAsGoodAsDirectAccess() {
+        final List<RiakLink> links = Arrays.asList(new RiakLink("b", "l", "t"), new RiakLink("b", "e", "c"),
+                                                   new RiakLink("g", "c", "s"), new RiakLink("q", "p", "c"));
+
+        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes(), "", links, (Map<String, String>) null, "", "", "");
+
+        assertEquals(links.size(), riakObject.numLinks());
+        assertTrue(riakObject.hasLinks());
+
+        for(RiakLink link : riakObject.iterableLinks()) {
+            assertTrue(links.contains(link));
+        }
+
+        //updates on iterator fail
+        try {
+            riakObject.iterableLinks().iterator().remove();
+            fail("Expected UnsupportedOperationException");
+        } catch(UnsupportedOperationException e) {
+            //NO-OP
+        }
+
+        //updates on collection succeed
+        final RiakLink addedLink = new RiakLink("s", "e", "c");
+        riakObject.getLinks().add(addedLink);
+        assertTrue(linkPresent(riakObject, addedLink));
+
+        riakObject.getLinks().remove(addedLink);
+        assertFalse(linkPresent(riakObject, addedLink));
+
+        //updates from encapsulation API succeed
+        riakObject.addLink(addedLink);
+        assertTrue(linkPresent(riakObject, addedLink));
+
+        riakObject.removeLink(addedLink);
+        assertFalse(linkPresent(riakObject, addedLink));
+
+        riakObject.addLink(addedLink);
+        assertTrue(riakObject.hasLink(addedLink));
+
+        riakObject.removeLink(addedLink);
+        assertFalse(riakObject.hasLink(addedLink));
+    }
+
+    /**
+     * Checks if the riakObject's collection of RiakLinks contains the passed RiakLink.
+     * @param riakObject the RiakObject to test
+     * @param link the RiakLink to test
+     * @return true if the RiakObject's collection of links contains the RiakLink.
+     */
+    private boolean linkPresent(final RiakObject riakObject, final RiakLink link) {
+        boolean linkPresent = false;
+
+        for (RiakLink l : riakObject.iterableLinks()) {
+            if (l.equals(link)) {
+                linkPresent = true;
+            }
+        }
+        return linkPresent;
+    }
+
+    /*
+     * Encapsulated user meta
+     */
+    @Test public void userMetaEncapsulationIsAsGoodAsDirectAccess() {
+        final Map<String, String> userMeta = new HashMap<String, String>();
+        userMeta.put("acl", "admin");
+        userMeta.put("my-meta", "my-value");
+
+        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes(), "", null, userMeta, "", "", "");
+
+        assertTrue(riakObject.hasUsermeta());
+        assertTrue(riakObject.hasUsermetaItem("acl"));
+        assertTrue(riakObject.hasUsermetaItem("my-meta"));
+
+        userMeta.clear();
+
+        assertTrue(riakObject.hasUsermetaItem("acl"));
+        assertTrue(riakObject.hasUsermetaItem("my-meta"));
+
+        riakObject.addUsermetaItem("my-meta2", "my-value2");
+
+        assertTrue(riakObject.hasUsermetaItem("my-meta2"));
+        assertEquals("my-value2", riakObject.getUsermetaItem("my-meta2"));
+
+        riakObject.removeUsermetaItem("acl");
+
+        assertFalse(riakObject.hasUsermetaItem("acl"));
+
+        final Map<String, String> leakedUserMeta = riakObject.getUsermeta();
+
+        assertEquals("my-value2", leakedUserMeta.get("my-meta2"));
+        assertEquals("my-value", leakedUserMeta.get("my-meta"));
+
+        // still writes through
+        leakedUserMeta.put("my-meta3", "my-value3");
+        assertTrue(riakObject.hasUsermetaItem("my-meta3"));
+        assertEquals("my-value3", riakObject.getUsermetaItem("my-meta3"));
     }
 }
