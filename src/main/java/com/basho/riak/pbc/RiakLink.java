@@ -27,9 +27,9 @@ import com.google.protobuf.ByteString;
 
 public class RiakLink {
 
-	private ByteString bucket;
-	private ByteString key;
-	private ByteString tag;
+	private final ByteString bucket;
+	private final ByteString key;
+	private final ByteString tag;
 
 	RiakLink(RpbLink rpbLink) {
 		this.bucket = rpbLink.getBucket();

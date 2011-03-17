@@ -38,7 +38,7 @@ public class RiakObject {
 	private ByteString value;
 
 	private String contentType;
-	private List<RiakLink> links;
+	private List<RiakLink> links = Collections.synchronizedList(new ArrayList<RiakLink>());
 	private String vtag;
 	private String contentEncoding;
 	private String charset;
@@ -57,8 +57,8 @@ public class RiakObject {
 		this.contentEncoding = str(content.getContentEncoding());
 		this.vtag = str(content.getVtag());
 		this.links = content.getLinksCount() == 0 
-			? null 
-			: RiakLink.decode(content.getLinksList());
+			? Collections.synchronizedList(new ArrayList<RiakLink>())
+			: Collections.synchronizedList(RiakLink.decode(content.getLinksList()));
 		
 		if (content.hasLastMod()) {
 			this.lastModified = new Integer(content.getLastMod());
@@ -153,11 +153,15 @@ public class RiakObject {
 			b.setVtag(ByteString.copyFromUtf8(vtag));
 		}
 		
-		if (links != null && links.size() != 0) {
-			for (RiakLink l : links) {
-				b.addLinks( l.build() );
-			}
-		}
+        if (links.size() != 0) {
+            RiakLink[] localLinks = null;
+            synchronized (links) {
+                localLinks = links.toArray(new RiakLink[links.size()]);
+            }
+            for (RiakLink l : localLinks) {
+                b.addLinks(l.build());
+            }
+        }
 		
 		if (lastModified != null) {
 			b.setLastMod(lastModified);
@@ -185,20 +189,12 @@ public class RiakObject {
 		this.contentType = contentType;
 	}
 
-	public void addLink(String tag, String bucket,
-			String key) {
-		if (links == null) {
-			links = new ArrayList<RiakLink>();
-		}
-		links.add(new RiakLink(bucket, key, tag));
-	}
+    public void addLink(String tag, String bucket, String key) {
+        links.add(new RiakLink(bucket, key, tag));
+    }
 
-	public void addLink(ByteString tag, ByteString bucket,
-			ByteString key) {
-		if (links == null) {
-			links = new ArrayList<RiakLink>();
-		}
-		links.add(new RiakLink(bucket, key, tag));
-	}
+    public void addLink(ByteString tag, ByteString bucket, ByteString key) {
+        links.add(new RiakLink(bucket, key, tag));
+    }
 
 }
