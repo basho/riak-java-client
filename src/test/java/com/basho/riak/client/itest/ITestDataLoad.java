@@ -16,6 +16,7 @@ package com.basho.riak.client.itest;
 import static org.junit.Assert.*;
 
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
@@ -75,14 +76,15 @@ public class ITestDataLoad {
 
     @Test public void vclock_doesnt_explode_using_single_client() {
         final RiakClient riak = new RiakClient(RIAK_URL);
-        final RiakObject o = new RiakObject(riak, BUCKET, "test-vclock-size");
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "test-vclock-size";
+        final RiakObject o = new RiakObject(riak, bucket, key);
         final Random rnd = new Random();
-        
-        Utils.assertSuccess(o.delete(Utils.WRITE_3_REPLICAS()));
+
         Utils.assertSuccess(o.store());
-        
+
         String originalVclock = o.getVclock();
-        
+
         for (int i = 0; i < 15; i++) {
             o.fetch();
             o.setValue(data[rnd.nextInt(NUM_VALUES)]);
@@ -90,5 +92,6 @@ public class ITestDataLoad {
         }
 
         assertEquals(originalVclock.length(), o.getVclock().length());
+        o.delete(Utils.WRITE_3_REPLICAS());
     }
 }
