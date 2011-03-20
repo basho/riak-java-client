@@ -95,10 +95,10 @@ public class RiakObject {
         this.lastmod = lastmod;
         this.vtag = vtag;
 
-        setValue(value);
-        setContentType(contentType);
-        setLinks(links);
-        setUsermeta(usermeta);
+        safeSetValue(value);
+        this.contentType = contentType == null ? Constants.CTYPE_OCTET_STREAM : contentType;
+        safeSetLinks(links);
+        safeSetUsermeta(usermeta);
     }
 
     public RiakObject(RiakClient riak, String bucket, String key) {
@@ -282,7 +282,19 @@ public class RiakObject {
     }
 
     public void setValue(byte[] value) {
-        this.value = value;
+       safeSetValue(value);
+    }
+
+    /**
+     *
+     * @param value
+     */
+    private void safeSetValue(final byte[] value) {
+        if(value != null) {
+            this.value = value.clone();
+        } else {
+            this.value = null;
+        }
     }
 
     /**
@@ -349,6 +361,10 @@ public class RiakObject {
      * @param links a List of {@link RiakLink}
      */
     public void setLinks(List<RiakLink> links) {
+       safeSetLinks(links);
+    }
+
+    private void safeSetLinks(final List<RiakLink> links) {
         if (links == null) {
             this.links = new CopyOnWriteArrayList<RiakLink>();
         } else {
@@ -443,6 +459,10 @@ public class RiakObject {
      * @param usermeta
      */
     public void setUsermeta(final Map<String, String> usermeta) {
+       safeSetUsermeta(usermeta);
+    }
+
+    private void safeSetUsermeta(final Map<String, String> usermeta) {
         if (usermeta == null) {
             this.usermeta = new ConcurrentHashMap<String, String>();
         } else {
