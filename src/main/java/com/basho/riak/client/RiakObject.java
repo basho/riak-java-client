@@ -270,7 +270,7 @@ public class RiakObject {
     }
 
     public byte[] getValueAsBytes() {
-        return value;
+        return value == null ? value : value.clone();
     }
 
     public void setValue(String value) {
