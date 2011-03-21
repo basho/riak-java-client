@@ -18,10 +18,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.nio.charset.Charset;
 
 /**
  * Represents a multipart entity as described here:
@@ -30,57 +30,59 @@ import java.nio.charset.Charset;
  */
 public class Multipart {
 
-    private static String HEADER_DELIM = "\r\n\r\n";
-
+    private static final byte[] HEADER_DELIM = {'\r','\n','\r','\n'};
+    private static final byte[] CR_NL = {'\r','\n'};
+    private static final byte[] CR_NL_DASH_DASH = {'\r','\n','-','-'};
+    private static final byte[] DASH_DASH = {'-','-'};
+    
     /**
      * Parses a multipart message or a multipart subpart of a multipart message.
      * 
      * @return A list of the parts parsed into headers and body of this
      *         multipart message
      */
-    public static List<Multipart.Part> parse(Map<String, String> headers, String body) {
-        if (headers == null || body == null ||  body.length() == 0)
+    public static List<Multipart.Part> parse(Map<String, String> headers, byte[] body) {
+        if (headers == null || body == null ||  body.length == 0)
             return null;
 
-
-        if (!body.startsWith("\r\n")) {
+        if (!startsWith(body, CR_NL, 0)) {
             // In order to parse the multipart efficiently, we want to treat the
             // first boundary identically to the others, so make sure that the
             // first boundary is preceded by a '\r\n' like the others
-            body = "\r\n" + body;
+            body = ByteUtils.concat(CR_NL, body);
         }
 
-        String boundary = "\r\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
-        int boundarySize = boundary.length();
-        if ("\r\n--".equals(boundary))
+        byte[] boundary = ByteUtils.concat( CR_NL_DASH_DASH, asBytes(getBoundary(headers.get(Constants.HDR_CONTENT_TYPE))));
+        int boundarySize = boundary.length;
+        if (Arrays.equals(CR_NL_DASH_DASH, boundary))
             return null;
 
         // While this parsing could be more efficiently done in one pass with a
         // hand written FSM, hopefully this method is more readable/intuitive.
         List<Part> parts = new ArrayList<Part>();
-        int pos = body.indexOf(boundary);
+        int pos = indexOf(body, boundary, 0);
         if (pos != -1) {
-            while (pos < body.length()) {
+            while (pos < body.length) {
                 // first char of part
                 int start = pos + boundarySize;
                 // last char of part + 1
-                int end = body.indexOf(boundary, start);
+                int end = indexOf(body, boundary, start);
                 // end of header section + 1
-                int headerEnd = body.indexOf(HEADER_DELIM, pos);
+                int headerEnd = indexOf(body, HEADER_DELIM, pos+1);
                 // start of body section
-                int bodyStart = headerEnd + HEADER_DELIM.length();
+                int bodyStart = headerEnd + HEADER_DELIM.length;
 
                 // check for end boundary, which is (boundary + "--")
-                if (body.substring(start).startsWith("--")) {
+                if (startsWith(body, DASH_DASH, start)) {
                     break;
                 }
 
                 if (end == -1) {
-                    end = body.length();
+                    end = body.length;
                 }
 
                 if (headerEnd == -1) {
-                    headerEnd = body.length();
+                    headerEnd = body.length;
                     bodyStart = end;
                 }
 
@@ -88,9 +90,9 @@ public class Multipart {
                     bodyStart = end;
                 }
 
-                Map<String, String> partHeaders = parseHeaders(body.substring(start, headerEnd));
-                String partBody = body.substring(bodyStart, end);
-                parts.add(new Part(partHeaders, partBody.getBytes()));
+                Map<String, String> partHeaders = parseHeaders(new String(body, start, headerEnd-start));
+                byte[] partBody = getBytes(body,bodyStart, end);
+                parts.add(new Part(partHeaders, partBody));
 
                 pos = end;
             }
@@ -99,7 +101,39 @@ public class Multipart {
         return parts;
     }
 
-    /**
+	private static byte[] asBytes(String boundary) {
+		return boundary.getBytes();
+	}
+
+	private static boolean startsWith(byte[] body, byte[] key, int start) {
+		for( int i = 0; i<key.length; i++ ) {
+			if( body[start+i] != key[i] ) return false;
+		}
+		return true;
+	}
+
+	private static int indexOf(byte[] bytes, byte[] headerDelim, int from) {
+		boolean found = false;
+    	for( int outer = from; outer<bytes.length; outer++) {
+    		if( bytes[outer] == headerDelim[0] ) {
+    			for( int inner = 1; inner<headerDelim.length; inner++) {
+    				if( (outer+inner+1)>bytes.length || bytes[outer+inner] != headerDelim[inner] ) {
+    					found = false;
+    					break;
+    				}
+    				found = true;
+    			}
+    			if(found) return outer;
+    		}
+    	}
+    	return -1;
+    }
+
+	private static byte[] getBytes(byte[] body, int from, int to) {
+		return Arrays.copyOfRange(body, from, to);
+	}
+
+	/**
      * Parse a block of header lines as defined here:
      * 
      * http://tools.ietf.org/html/rfc822#section-3.2
@@ -186,21 +220,12 @@ public class Multipart {
             }
             return body;
         }
-
-	public String contentType() {
-	    String contentType = headers.get("content-type");
-	    if (contentType == null) {
-		// Specified by http://tools.ietf.org/html/rfc2046#section-5.1
-		contentType = "text/plain; charset=US-ASCII";
-	    }
-	    return contentType;
-	}
         
         public String getBodyAsString() {
            byte[] body = getBody();
            if (body == null)
               return null;
-           return new String(body, ClientUtils.getCharset(contentType()));
+           return new String(body);
         }
 
         public InputStream getStream() {

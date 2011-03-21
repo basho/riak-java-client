@@ -386,7 +386,7 @@ public class ClientUtils {
         }
         return usermeta;
     }
-
+    
     /**
      * Convert a multipart/mixed document to a list of {@link RiakObject}s.
      * 
@@ -404,7 +404,7 @@ public class ClientUtils {
      * @return List of {@link RiakObject}s represented by the multipart document
      */
     public static List<RiakObject> parseMultipart(RiakClient riak, String bucket, String key,
-                                                  Map<String, String> docHeaders, String docBody) {
+                                                  Map<String, String> docHeaders, byte[] docBody) {
 
         String vclock = null;
 
