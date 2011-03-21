@@ -15,6 +15,7 @@ package com.basho.riak.client.util;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,9 +142,8 @@ public class TestMultipart {
         
         List<Multipart.Part> parts = Multipart.parse(headers, body);
         assertEquals(2, parts.size());
-        assertEquals(data1, parts.get(0).getBody());
-        assertEquals(data2, parts.get(1).getBody());
-        
+        assertTrue(Arrays.equals(data1, parts.get(0).getBody()));
+        assertTrue(Arrays.equals(data2, parts.get(1).getBody()));
     }
     
 }
