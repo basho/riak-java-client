@@ -133,6 +133,14 @@ public class RiakObject {
         this(null, bucket, key, value, contentType, null, null, null, null, null);
     }
 
+    public RiakObject(String bucket, String key, String value, String contentType) {
+        this(null, bucket, key, value.getBytes(ClientUtils.UTF_8), ClientUtils.addUtf8Charset(contentType), null, null, null, null, null);
+    }
+
+    public RiakObject(String bucket, String key, String value) {
+        this(null, bucket, key, value.getBytes(ClientUtils.UTF_8), "text/plain;charset=utf-8", null, null, null, null, null);
+    }
+
     public RiakObject(String bucket, String key, byte[] value, String contentType, List<RiakLink> links) {
         this(null, bucket, key, value, contentType, links, null, null, null, null);
     }
