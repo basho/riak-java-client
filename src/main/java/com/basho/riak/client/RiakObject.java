@@ -284,9 +284,15 @@ public class RiakObject {
         return value;
     }
 
+    /** Set the value for this Object as a String.
+     *
+     * When using this method, make sure to first set the contentType using
+     * {@link RiakObject#setContentType(String)}, because this method will use
+     * the charset given in that contentType to generate a byte sequence.
+     */
     public void setValue(String value) {
         if (value != null) {
-            this.value = value.getBytes();
+            this.value = value.getBytes(ClientUtils.getCharset(contentType));
         } else {
             this.value = null;
         }
