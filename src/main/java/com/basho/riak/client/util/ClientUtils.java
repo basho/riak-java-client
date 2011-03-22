@@ -441,14 +441,15 @@ public class ClientUtils {
     }
 
     
-    private static Charset ISO_8859_1 = Charset.forName("ISO-8859-1"); 
-    private static Charset UTF_8 = Charset.forName("UTF-8"); 
+    public static Charset ASCII = Charset.forName("ASCII");
+    public static Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+    public static Charset UTF_8 = Charset.forName("UTF-8");
     
     public static Charset getCharset(Map<String,String> headers) {
     	return getCharset(headers.get(Constants.HDR_CONTENT_TYPE));
     }
     
-    static Pattern CHARSET_PATT = Pattern.compile("\\bcharset *= *([^ ;]+)", 
+    static Pattern CHARSET_PATT = Pattern.compile("\\bcharset *= *\"?([^ ;\"]+)\"?",
                                                   Pattern.CASE_INSENSITIVE);
     
     public static Charset getCharset(String contentType) {
@@ -476,6 +477,22 @@ public class ClientUtils {
 
         return ISO_8859_1;
     }
+
+	public static String addUtf8Charset(String contentType) {
+		if (contentType == null) {
+			return "text/plain;charset=utf-8";
+		}
+
+		Matcher matcher = CHARSET_PATT.matcher(contentType);
+		if (matcher.find()) {
+			// replace what ever content-type with utf8
+			return contentType.substring(0, matcher.start(1))
+				+ "utf-8"
+				+ contentType.substring(matcher.end(1));
+		}
+
+		return contentType+";charset=utf-8";
+	}
 
     
     /**

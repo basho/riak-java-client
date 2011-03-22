@@ -380,4 +380,30 @@ public class TestClientUtils {
         assertFalse(id1.equals(id2));
     }
 
+    @Test public void test_utf8_augment() {
+    	assertEquals("text/plain;charset=utf-8", ClientUtils.addUtf8Charset(null));
+    	assertEquals("application/json;charset=utf-8", ClientUtils.addUtf8Charset("application/json"));
+    	assertEquals("application/json;charset=\"utf-8\"", ClientUtils.addUtf8Charset("application/json;charset=\"ascii\""));
+    }
+
+    @Test public void test_charset() {
+
+    	// test that the default charset is latin1
+    	assertEquals(ClientUtils.ISO_8859_1, ClientUtils.getCharset((String)null));
+    	assertEquals(ClientUtils.ISO_8859_1, ClientUtils.getCharset("text/plain"));
+
+    	// test some non-existing charsets
+    	assertEquals(ClientUtils.ISO_8859_1, ClientUtils.getCharset("text/plain;charset=utf"));
+    	assertEquals(ClientUtils.ISO_8859_1, ClientUtils.getCharset("text/plain;charset=foobar"));
+
+    	// test some names for latin1
+    	assertEquals(ClientUtils.ISO_8859_1, ClientUtils.getCharset("text/plain;charset=latin1"));
+    	assertEquals(ClientUtils.ISO_8859_1, ClientUtils.getCharset("text/plain;charset=iso-8859-1"));
+
+    	// test some ways to specify utf-8
+    	assertEquals(ClientUtils.UTF_8, ClientUtils.getCharset("text/plain;charset=UTF-8"));
+    	assertEquals(ClientUtils.UTF_8, ClientUtils.getCharset("text/plain;charset=\"UTF-8\""));
+    	assertEquals(ClientUtils.UTF_8, ClientUtils.getCharset("text/plain;charset=utf-8"));
+    	assertEquals(ClientUtils.UTF_8, ClientUtils.getCharset("text/plain;charset=utf8"));
+    }
 }
