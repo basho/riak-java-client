@@ -274,7 +274,7 @@ public class TestClientUtils {
     @Test public void parse_multipart_returns_correct_riak_and_bucket_and_key() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        byte[] body = ("\r\n--boundary\r\n" + "\r\n" + "--boundary--").getBytes();
+        byte[] body = ("\r\n--boundary\r\n" + "\r\n" + "--boundary--").getBytes(ClientUtils.ISO_8859_1);
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
         assertEquals(1, objects.size());
@@ -289,7 +289,7 @@ public class TestClientUtils {
         headers.put("x-riak-vclock", "vclock");
         byte[] body = ("\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "Last-Modified: lastmod\r\n"
                       + "Link: </riak/b/l>; riaktag=t\r\n" + "ETag: vtag\r\n" + "X-Riak-Meta-Test: value\r\n" + "\r\n"
-                      + "--boundary--").getBytes();
+                      + "--boundary--").getBytes(ClientUtils.ISO_8859_1);
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
 
@@ -308,7 +308,7 @@ public class TestClientUtils {
     @Test public void parse_multipart_returns_value() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
-        byte[] body = ("\r\n--boundary\r\n" + "\r\n" + "foo\r\n" + "--boundary--").getBytes();
+        byte[] body = ("\r\n--boundary\r\n" + "\r\n" + "foo\r\n" + "--boundary--").getBytes(ClientUtils.ISO_8859_1);
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
         assertEquals("foo", objects.get(0).getValue());
@@ -349,26 +349,18 @@ public class TestClientUtils {
         String encoded = ClientUtils.encodeClientId(id);
         
         byte[] decoded;
-        try {
-            decoded = Base64.decodeBase64(encoded.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 support required in JVM");
-        }
+        decoded = Base64.decodeBase64(encoded.getBytes(ClientUtils.ISO_8859_1));
         assertEquals(4, decoded.length);
-        assertEquals(id.getBytes()[0], decoded[0]);
-        assertEquals(id.getBytes()[1], decoded[1]);
-        assertEquals(id.getBytes()[2], decoded[2]);
-        assertEquals(id.getBytes()[3], decoded[3]);
+        assertEquals(id.getBytes(ClientUtils.ISO_8859_1)[0], decoded[0]);
+        assertEquals(id.getBytes(ClientUtils.ISO_8859_1)[1], decoded[1]);
+        assertEquals(id.getBytes(ClientUtils.ISO_8859_1)[2], decoded[2]);
+        assertEquals(id.getBytes(ClientUtils.ISO_8859_1)[3], decoded[3]);
     }
 
     @Test public void random_client_id_returns_4_encoded_bytes() {
         String encoded = ClientUtils.randomClientId();
         byte[] decoded;
-        try {
-            decoded = Base64.decodeBase64(encoded.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 support required in JVM");
-        }
+        decoded = Base64.decodeBase64(encoded.getBytes(ClientUtils.ISO_8859_1));
         assertEquals(4, decoded.length);
     }
 
