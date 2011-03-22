@@ -52,7 +52,7 @@ public class Multipart {
             body = ByteUtils.concat(CR_NL, body);
         }
 
-        byte[] boundary = ByteUtils.concat( CR_NL_DASH_DASH, asBytes(getBoundary(headers.get(Constants.HDR_CONTENT_TYPE))));
+        byte[] boundary = ByteUtils.concat( CR_NL_DASH_DASH, getBoundary(headers.get(Constants.HDR_CONTENT_TYPE)).getBytes(ClientUtils.ISO_8859_1));
         int boundarySize = boundary.length;
         if (Arrays.equals(CR_NL_DASH_DASH, boundary))
             return null;
@@ -90,7 +90,7 @@ public class Multipart {
                     bodyStart = end;
                 }
 
-                Map<String, String> partHeaders = parseHeaders(new String(body, start, headerEnd-start));
+                Map<String, String> partHeaders = parseHeaders(new String(body, start, headerEnd-start, ClientUtils.ISO_8859_1));
                 byte[] partBody = getBytes(body,bodyStart, end);
                 parts.add(new Part(partHeaders, partBody));
 
@@ -100,10 +100,6 @@ public class Multipart {
 
         return parts;
     }
-
-	private static byte[] asBytes(String boundary) {
-		return boundary.getBytes();
-	}
 
 	private static boolean startsWith(byte[] body, byte[] key, int start) {
 		for( int i = 0; i<key.length; i++ ) {
