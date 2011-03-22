@@ -15,6 +15,7 @@ package com.basho.riak.client.util;
 
 import static org.junit.Assert.*;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -146,4 +147,36 @@ public class TestMultipart {
         assertTrue(Arrays.equals(data2, parts.get(1).getBody()));
     }
     
+    @Test public void handle_UTF() throws UnsupportedEncodingException {
+    	Map<String, String> headers = new HashMap<String, String>();
+        headers.put("content-type", "multipart/mixed; boundary=boundary");
+
+        // construct some strings using ISO Latin 1
+        String data1_string = new String(new byte[] {(byte)198}, "ISO8859_1"); // Capital AE ligature
+        String data2_string = new String(new byte[] {(byte)255}, "ISO8859_1"); // Small y, diaeresis / umlaut
+
+        byte[] data1 = data1_string.getBytes("UTF-8");
+        byte[] data2 = data2_string.getBytes("UTF-16");
+
+        byte[] startBody = ("Content-Type: multipart/mixed; boundary=boundary\r\n" + "\r\n"
+                      + "--boundary\r\n" + "Content-Type: text/plain;charset=UTF-8\r\n" + "\r\n").getBytes();
+
+        byte[] part1 = data1;
+        byte[] bound1 = ("\r\n--boundary\r\n" + "Content-Type: text/plain;charset=\"UTF-16\"\r\n\r\n").getBytes();
+        byte[] part2 = data2;
+        byte[] bound2 = "\r\n--boundary--".getBytes();
+
+        byte[] body = ByteUtils.concat(startBody, part1, bound1, part2, bound2);
+
+        List<Multipart.Part> parts = Multipart.parse(headers, body);
+        assertEquals(2, parts.size());
+
+        // test binary
+        assertTrue(Arrays.equals(data1, parts.get(0).getBody()));
+        assertTrue(Arrays.equals(data2, parts.get(1).getBody()));
+
+        // test strings
+        assertEquals(data1_string, parts.get(0).getBodyAsString());
+        assertEquals(data2_string, parts.get(1).getBodyAsString());
+    }
 }

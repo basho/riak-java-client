@@ -221,7 +221,7 @@ public class Multipart {
            byte[] body = getBody();
            if (body == null)
               return null;
-           return new String(body);
+           return new String(body, ClientUtils.getCharset(headers));
         }
 
         public InputStream getStream() {
