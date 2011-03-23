@@ -179,4 +179,34 @@ public class TestMultipart {
         assertEquals(data1_string, parts.get(0).getBodyAsString());
         assertEquals(data2_string, parts.get(1).getBodyAsString());
     }
+
+    @Test public void test_bz677() {
+    	Map<String, String> headers = new HashMap<String, String>();
+        headers.put("content-type", "multipart/mixed; boundary=6wqKbmJmaqomN97uJWWwDYELkxg");
+
+		String data =
+				  "Content-Type: multipart/mixed; boundary=6wqKbmJmaqomN97uJWWwDYELkxg\r\n"
+				+ "Content-Length: 399\r\n"
+				+ "\r\n"
+				+ "--6wqKbmJmaqomN97uJWWwDYELkxg\r\n"
+				+ "Content-Type: application/octet-stream\r\n"
+				+ "Link: </riak/test>; rel=\"up\"\r\n"
+				+ "Etag: 4WSUqjRNiUC3eOSbeUDuXe\r\n"
+				+ "Last-Modified: Fri, 27 Aug 2010 19:20:41 GMT\r\n"
+				+ "\r\n"
+				+ "¾\r\n"
+				+ "--6wqKbmJmaqomN97uJWWwDYELkxg\r\n"
+				+ "Content-Type: application/octet-stream\r\n"
+				+ "Link: </riak/test>; rel=\"up\"\r\n"
+				+ "Etag: 3yoZYjkFfreCfGpxjfgKsI\r\n"
+				+ "Last-Modified: Fri, 27 Aug 2010 19:20:06 GMT\r\n"
+				+ "\r\n"
+				+ "?\r\n" + "--6wqKbmJmaqomN97uJWWwDYELkxg--\r\n";
+
+        List<Multipart.Part> parts = Multipart.parse(headers, data.getBytes(ClientUtils.ISO_8859_1));
+        assertEquals(2, parts.size());
+
+        assertEquals("¾", parts.get(0).getBodyAsString());
+        assertEquals("?", parts.get(1).getBodyAsString());
+    }
 }
