@@ -50,7 +50,7 @@ public class RiakObject {
     private String key;
     private byte[] value;
     private List<RiakLink> links;
-    private Map<String, String> usermeta;
+    private Map<String, String> userMetaData;
     private String contentType;
     private String vclock;
     private String lastmod;
@@ -77,7 +77,7 @@ public class RiakObject {
      *            application/octet-stream if null.
      * @param links
      *            Links to other objects
-     * @param usermeta
+     * @param userMetaData
      *            Custom metadata key-value pairs for this object
      * @param vclock
      *            An opaque vclock assigned by Riak
@@ -87,7 +87,7 @@ public class RiakObject {
      *            This object's entity tag assigned by Riak
      */
     public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
-            List<RiakLink> links, Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
+            List<RiakLink> links, Map<String, String> userMetaData, String vclock, String lastmod, String vtag) {
         this.riak = riak;
         this.bucket = bucket;
         this.key = key;
@@ -98,7 +98,7 @@ public class RiakObject {
         safeSetValue(value);
         this.contentType = contentType == null ? Constants.CTYPE_OCTET_STREAM : contentType;
         safeSetLinks(links);
-        safeSetUsermeta(usermeta);
+        safeSetUsermetaData(userMetaData);
     }
 
     public RiakObject(RiakClient riak, String bucket, String key) {
@@ -118,8 +118,8 @@ public class RiakObject {
     }
 
     public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
-            List<RiakLink> links, Map<String, String> usermeta) {
-        this(riak, bucket, key, value, contentType, links, usermeta, null, null, null);
+            List<RiakLink> links, Map<String, String> userMetaData) {
+        this(riak, bucket, key, value, contentType, links, userMetaData, null, null, null);
     }
 
     public RiakObject(String bucket, String key) {
@@ -139,13 +139,13 @@ public class RiakObject {
     }
 
     public RiakObject(String bucket, String key, byte[] value, String contentType, List<RiakLink> links,
-            Map<String, String> usermeta) {
-        this(null, bucket, key, value, contentType, links, usermeta, null, null, null);
+            Map<String, String> userMetaData) {
+        this(null, bucket, key, value, contentType, links, userMetaData, null, null, null);
     }
 
     public RiakObject(String bucket, String key, byte[] value, String contentType, List<RiakLink> links,
-            Map<String, String> usermeta, String vclock, String lastmod, String vtag) {
-        this(null, bucket, key, value, contentType, links, usermeta, vclock, lastmod, vtag);
+            Map<String, String> userMetaData, String vclock, String lastmod, String vtag) {
+        this(null, bucket, key, value, contentType, links, userMetaData, vclock, lastmod, vtag);
     }
 
     /**
@@ -184,9 +184,9 @@ public class RiakObject {
 
         setLinks(object.links);
 
-        usermeta = new HashMap<String, String>();
-        if (object.usermeta != null) {
-            usermeta.putAll(object.usermeta);
+        userMetaData = new HashMap<String, String>();
+        if (object.userMetaData != null) {
+            userMetaData.putAll(object.userMetaData);
         }
         contentType = object.contentType;
         vclock = object.vclock;
@@ -200,7 +200,7 @@ public class RiakObject {
     void shallowCopy(RiakObject object) {
         value = object.value;
         this.links = object.links;
-        usermeta = object.usermeta;
+        userMetaData = object.userMetaData;
         contentType = object.contentType;
         vclock = object.vclock;
         lastmod = object.lastmod;
@@ -411,7 +411,7 @@ public class RiakObject {
     }
 
     /**
-     * Does this RiakObject has any {@link RiakLink}s?
+     * Does this RiakObject have any {@link RiakLink}s?
      * @return true if there are links, false otherwise
      */
     public boolean hasLinks() {
@@ -450,23 +450,23 @@ public class RiakObject {
      */
     @Deprecated
     public Map<String, String> getUsermeta() {
-        return usermeta;
+        return userMetaData;
     }
 
     /**
-     * Creates a copy of usermeta. Changes made to the original collection will not be
+     * Creates a copy of userMetaData. Changes made to the original collection will not be
      * reflected in the RiakObject's state.
-     * @param usermeta
+     * @param userMetaData
      */
-    public void setUsermeta(final Map<String, String> usermeta) {
-       safeSetUsermeta(usermeta);
+    public void setUsermeta(final Map<String, String> userMetaData) {
+       safeSetUsermetaData(userMetaData);
     }
 
-    private void safeSetUsermeta(final Map<String, String> usermeta) {
-        if (usermeta == null) {
-            this.usermeta = new ConcurrentHashMap<String, String>();
+    private void safeSetUsermetaData(final Map<String, String> userMetaData) {
+        if (userMetaData == null) {
+            this.userMetaData = new ConcurrentHashMap<String, String>();
         } else {
-            this.usermeta = new ConcurrentHashMap<String, String>(usermeta);
+            this.userMetaData = new ConcurrentHashMap<String, String>(userMetaData);
         }
     }
 
@@ -477,7 +477,7 @@ public class RiakObject {
      * @return this RiakObject.
      */
     public RiakObject addUsermetaItem(String key, String value) {
-        usermeta.put(key, value);
+        userMetaData.put(key, value);
         return this;
     }
 
@@ -485,7 +485,7 @@ public class RiakObject {
      * @return true if there are any user meta data set on this RiakObject.
      */
     public boolean hasUsermeta() {
-        return !usermeta.isEmpty();
+        return !userMetaData.isEmpty();
     }
 
     /**
@@ -493,7 +493,7 @@ public class RiakObject {
      * @return
      */
     public boolean hasUsermetaItem(String key) {
-        return usermeta.containsKey(key);
+        return userMetaData.containsKey(key);
     }
 
     /**
@@ -502,14 +502,14 @@ public class RiakObject {
      * @return The value for the given key or null.
      */
     public String getUsermetaItem(String key) {
-        return usermeta.get(key);
+        return userMetaData.get(key);
     }
 
     /**
      * @param key the key of the item to remove
      */
     public void removeUsermetaItem(String key) {
-        usermeta.remove(key);
+        userMetaData.remove(key);
     }
 
     /**
@@ -718,8 +718,8 @@ public class RiakObject {
         // Serialize headers
         String basePath = getBasePathFromHttpMethod(httpMethod);
         writeLinks(httpMethod, basePath);
-        for (String name : usermeta.keySet()) {
-            httpMethod.setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, usermeta.get(name));
+        for (String name : userMetaData.keySet()) {
+            httpMethod.setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, userMetaData.get(name));
         }
         if (vclock != null) {
             httpMethod.setRequestHeader(Constants.HDR_VCLOCK, vclock);
