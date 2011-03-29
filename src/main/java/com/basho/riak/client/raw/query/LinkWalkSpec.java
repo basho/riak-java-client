@@ -11,20 +11,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.megacorp.kv.exceptions;
-
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+package com.basho.riak.client.raw.query;
 
 /**
  * @author russell
- * 
+ *
  */
-public class MyCheckedBusinessException extends Exception {
-
-    private static final long serialVersionUID = 6815472644307051262L;
-
-    public MyCheckedBusinessException(UnresolvedConflictException e) {
-        super(e);
-    }
+public interface LinkWalkSpec {
 
 }

@@ -11,20 +11,35 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.megacorp.kv.exceptions;
+package com.basho.riak.newapi.query;
 
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.RiakException;
+import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.operations.RiakOperation;
 
 /**
+ * 
  * @author russell
  * 
  */
-public class MyCheckedBusinessException extends Exception {
+public class LinkWalk implements RiakOperation<WalkResult> {
 
-    private static final long serialVersionUID = 6815472644307051262L;
+    private final RiakObject startObject;
 
-    public MyCheckedBusinessException(UnresolvedConflictException e) {
-        super(e);
+    /**
+     * @param startObject
+     */
+    public LinkWalk(final RiakObject startObject) {
+        this.startObject = startObject;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.RiakOperation#execute()
+     */
+    public WalkResult execute() throws RiakException {
+        return null;
     }
 
 }

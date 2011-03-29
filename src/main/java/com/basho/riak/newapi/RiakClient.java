@@ -11,20 +11,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.megacorp.kv.exceptions;
+package com.basho.riak.newapi;
 
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.bucket.Bucket;
+import com.basho.riak.newapi.bucket.FetchBucket;
+import com.basho.riak.newapi.bucket.WriteBucket;
+import com.basho.riak.newapi.query.LinkWalk;
+import com.basho.riak.newapi.query.MapReduce;
 
 /**
  * @author russell
  * 
  */
-public class MyCheckedBusinessException extends Exception {
+public interface RiakClient {
 
-    private static final long serialVersionUID = 6815472644307051262L;
+    FetchBucket fetchBucket(String bucketName);
 
-    public MyCheckedBusinessException(UnresolvedConflictException e) {
-        super(e);
-    }
+    WriteBucket updateBucket(Bucket b);
 
+    WriteBucket createBucket(String string);
+
+    // query - links
+    LinkWalk walk(final RiakObject startObject);
+
+    // query - m/r
+    MapReduce mapReduce();
 }

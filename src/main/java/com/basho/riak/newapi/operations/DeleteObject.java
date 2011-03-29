@@ -11,20 +11,36 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.megacorp.kv.exceptions;
+package com.basho.riak.newapi.operations;
 
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.RiakRetryFailedException;
 
 /**
  * @author russell
  * 
  */
-public class MyCheckedBusinessException extends Exception {
+public class DeleteObject<T> implements RiakOperation<T> {
 
-    private static final long serialVersionUID = 6815472644307051262L;
+    private Integer rw;
+    private int retries = 0;
 
-    public MyCheckedBusinessException(UnresolvedConflictException e) {
-        super(e);
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.RiakOperation#execute()
+     */
+    public T execute() throws RiakRetryFailedException {
+        return null;
+    }
+
+    public DeleteObject rw(int rw) {
+        this.rw = rw;
+        return this;
+    }
+
+    public DeleteObject retry(int times) {
+        this.retries = times;
+        return this;
     }
 
 }

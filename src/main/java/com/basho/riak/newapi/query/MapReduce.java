@@ -11,20 +11,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.megacorp.kv.exceptions;
+package com.basho.riak.newapi.query;
 
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.RiakException;
+import com.basho.riak.newapi.operations.RiakOperation;
+
 
 /**
  * @author russell
- * 
+ *
  */
-public class MyCheckedBusinessException extends Exception {
+public class MapReduce implements RiakOperation<MapReduceResult>{
 
-    private static final long serialVersionUID = 6815472644307051262L;
-
-    public MyCheckedBusinessException(UnresolvedConflictException e) {
-        super(e);
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.RiakOperation#execute()
+     */
+    public MapReduceResult execute() throws RiakException {
+        return null;
     }
-
+    
 }

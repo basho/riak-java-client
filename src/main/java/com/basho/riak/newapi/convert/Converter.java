@@ -11,20 +11,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.megacorp.kv.exceptions;
+package com.basho.riak.newapi.convert;
 
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.RiakObject;
 
 /**
  * @author russell
  * 
  */
-public class MyCheckedBusinessException extends Exception {
+public interface Converter<T> {
 
-    private static final long serialVersionUID = 6815472644307051262L;
+    /**
+     * Convert from domain specific type to RiakObject 
+     * @param domainObject
+     * @return a RiakObject populated from domainObject
+     */
+    RiakObject fromDomain(T domainObject);
 
-    public MyCheckedBusinessException(UnresolvedConflictException e) {
-        super(e);
-    }
+    /**
+     * Convert from a riakObject to a domain specific instance
+     * @param riakObject the RiakObject to convert
+     * @return an instance of type T
+     */
+    T toDomain(RiakObject riakObject);
 
 }

@@ -18,8 +18,21 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collection;
+
 import org.junit.Test;
 
+import com.basho.riak.client.raw.pbc.PBClient;
+import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.RiakFactory;
+import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.RiakRetryFailedException;
+import com.basho.riak.newapi.bucket.Bucket;
+import com.basho.riak.newapi.cap.CAP;
+import com.basho.riak.newapi.cap.ConflictResolver;
+import com.basho.riak.newapi.cap.Mutation;
+import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.query.NamedErlangFunction;
 import com.megacorp.kv.exceptions.BailException;
 import com.megacorp.kv.exceptions.MyCheckedBusinessException;
 
@@ -32,33 +45,36 @@ public class BasicOperations {
     @Test public void basicOpertaions() throws Exception {
         final RiakClient c = RiakFactory.defaultClient();
         
-        c.createBucket("testBucket").retry(2).nval(3).execute();
+        c.createBucket("testBucket").retry(2).nVal(3).execute();
 
         Bucket b = c.fetchBucket("bucket").retry(1).fetchKeys(false).fetchProperties(true).execute();
         
-        assertEquals(3, b.getNVal());
+        assertEquals(new Integer(3), b.getNVal());
         assertEquals("bucket", b.getName());
         
         b = c.updateBucket(b).r(CAP.QUORUM).w(CAP.ALL).dw(CAP.ONE).rw(2)
-                                .nval(5)
+                                .nVal(5)
                                     .allowSiblings(true)
                                         .chashKeyFunction(new NamedErlangFunction("keys", "hash"))
                            .execute();
         
-        assertEquals(5, b.getNVal());
-        assertTrue(b.isAllowSiblings());
+        assertEquals(new Integer(5), b.getNVal());
+        assertTrue(b.getAllowSiblings());
         assertEquals(2, b.getRW());
 
         // most simple store
         b.store("k", "v").execute();
 
         // most simple fetch
-        RiakObject o = b.fetch("k").execute();
+        RiakObject o = b.fetch("k", RiakObject.class).execute();
         
         assertEquals("v", o.getValue());
 
         try {
-            b.fetch("k").r(1).withResolver(new DoNothingResolver()).execute();
+            b.fetch("k", RiakObject.class).r(1).withResolver(new ConflictResolver<RiakObject>() {
+                public RiakObject resolve(Collection<RiakObject> siblings) throws UnresolvedConflictException {
+                    throw new UnresolvedConflictException("meh", siblings);
+                }}).execute();
             fail("Expected UnresolvedConflictException");
         } catch (UnresolvedConflictException e) {
             assertEquals("meh", e.getReason());
@@ -72,8 +88,16 @@ public class BasicOperations {
                 .w(3).dw(1)
                     .returnBody(true)
                         .retry(3)
-                            .withMutator(new ClobberMutator("new value"))
-                                .withResolver(new TakeTheFirst())
+                            .withMutator(new Mutation<RiakObject>() {
+                                public RiakObject apply(RiakObject value) {
+                                    return value.setValue("my new value");
+                                }})
+                                .withResolver(new ConflictResolver<RiakObject>() {
+
+                                    public RiakObject resolve(Collection<RiakObject> siblings)
+                                            throws UnresolvedConflictException {
+                                        return siblings.iterator().next();
+                                    }})
               .execute();
         
         
@@ -81,8 +105,8 @@ public class BasicOperations {
         
         o = b.fetch(o).execute();
         
-        //with default mutator
-        b.store(o).withValue("new value").execute();
+        //with default clobber mutator
+        b.store(o).withValue(o.setValue("new value")).execute();
         
         b.delete(o).rw(3).retry(2).execute();
         
