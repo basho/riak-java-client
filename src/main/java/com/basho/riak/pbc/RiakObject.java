@@ -20,6 +20,7 @@ package com.basho.riak.pbc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,6 +196,21 @@ public class RiakObject {
 
     public void addLink(ByteString tag, ByteString bucket, ByteString key) {
         links.add(new RiakLink(bucket, key, tag));
+    }
+
+    /**
+     * @return the lastModified
+     */
+    public Date getLastModified() {
+        Date d = null;
+
+        if (lastModified != null && lastModifiedUsec != null) {
+            long mega = lastModified / 1000000;
+            long milli = lastModified % 1000000;
+            int usec = lastModifiedUsec / 1000;
+            d = new Date(Long.valueOf((mega + "" + milli + "" + usec)));
+        }
+        return d;
     }
 
 }
