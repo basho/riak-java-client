@@ -68,14 +68,14 @@ public class ITestBasic {
         assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
         assertEquals(VALUE1, fetchresp.getObject().getValue());
-        assertTrue(fetchresp.getObject().getLinks().isEmpty());
-        assertTrue(fetchresp.getObject().getUsermeta().isEmpty());
+        assertFalse(fetchresp.getObject().hasLinks());
+        assertFalse(fetchresp.getObject().hasUsermeta());
 
         // Modify and store it
         o = fetchresp.getObject();
         o.setValue(VALUE2);
         o.addLink(LINK);
-        o.getUsermeta().put(USERMETA_KEY, USERMETA_VALUE);
+        o.addUsermetaItem(USERMETA_KEY, USERMETA_VALUE);
         storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
@@ -85,9 +85,9 @@ public class ITestBasic {
         assertTrue(fetchresp.hasObject());
         assertFalse(fetchresp.hasSiblings());
         assertEquals(VALUE2, fetchresp.getObject().getValue());
-        assertEquals(1, fetchresp.getObject().getLinks().size());
-        assertEquals(LINK, fetchresp.getObject().getLinks().get(0));
-        assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermeta().get(USERMETA_KEY));
+        assertEquals(1, fetchresp.getObject().numLinks());
+        assertTrue(fetchresp.getObject().hasLink(LINK));
+        assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermetaItem(USERMETA_KEY));
     }
 
     @Test public void test_bucket_schema() {

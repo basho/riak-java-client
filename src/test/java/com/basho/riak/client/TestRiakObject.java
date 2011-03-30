@@ -22,7 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +81,7 @@ public class TestRiakObject {
         final String ctype = "ctype";
         final List<RiakLink> links = new ArrayList<RiakLink>();
         final Map<String, String> usermeta = new HashMap<String, String>();
+        usermeta.put("testKey", "testValue");
         final String vclock = "vclock";
         final String lastmod = "lastmod";
         final String vtag = "vtag";
@@ -98,16 +98,47 @@ public class TestRiakObject {
         assertSame(valueStream, impl.getValueStream());
         assertEquals(valueStreamLength, impl.getValueStreamLength().longValue());
         assertEquals(ctype, impl.getContentType());
-        assertEquals(links, impl.getLinks());
-        assertEquals(usermeta, impl.getUsermeta());
+
+        // links and impl links are equal
+        assertEquals(links.size(), impl.numLinks());
+        for(RiakLink l : links) {
+            assertTrue(impl.hasLink(l));
+        }
+
+        // user meta are equal
+        assertEquals(usermeta.size(), impl.numUsermetaItems());
+
+        for(Map.Entry<String, String> e : usermeta.entrySet()) {
+            assertTrue(impl.hasUsermetaItem(e.getKey()));
+            assertEquals(e.getValue(), impl.getUsermetaItem(e.getKey()));
+        }
+
         assertEquals(vclock, impl.getVclock());
         assertEquals(lastmod, impl.getLastmod());
         assertEquals(vtag, impl.getVtag());
 
         assertNotSame(copy.getValueAsBytes(), impl.getValueAsBytes());
-        assertNotSame(copy.getLinks(), impl.getLinks());
-        assertNotSame(copy.getLinks().get(0), impl.getLinks().get(0));
-        assertNotSame(copy.getUsermeta(), impl.getUsermeta());
+
+        // assert that the collections *and* contents of the collections are not the same
+        // for the copy and the original object
+        assertEquals(copy.numLinks(), impl.numLinks());
+        for(RiakLink l : impl.iterableLinks()) {
+            assertTrue(copy.hasLink(l));
+            l.setKey("new Key");
+            assertFalse(copy.hasLink(l));
+            assertTrue(impl.hasLink(l));
+        }
+
+        assertEquals(copy.numUsermetaItems(), impl.numUsermetaItems());
+        for(String key : impl.usermetaKeys()) {
+            assertTrue(impl.hasUsermetaItem(key));
+            assertTrue(copy.hasUsermetaItem(key));
+            assertEquals(copy.getUsermetaItem(key), impl.getUsermetaItem(key));
+        }
+
+        impl.removeUsermetaItem("testKey");
+        assertEquals(0, impl.numUsermetaItems());
+        assertEquals(1, copy.numUsermetaItems());
     }
 
     @Test public void copyData_copies_null_data() {
@@ -127,8 +158,8 @@ public class TestRiakObject {
         assertEquals("b", impl.getBucket());
         assertEquals("k", impl.getKey());
         assertNull(impl.getValue());
-        assertEquals(0, impl.getLinks().size());
-        assertEquals(0, impl.getUsermeta().size());
+        assertEquals(0, impl.numLinks());
+        assertEquals(0, impl.numUsermetaItems());
         assertNull(impl.getVclock());
         assertNull(impl.getLastmod());
         assertNull(impl.getVtag());
@@ -388,7 +419,7 @@ public class TestRiakObject {
 
         when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
 
-        impl.getLinks().add(link);
+        impl.addLink(link);
         impl.writeToHttpMethod(mockHttpMethod);
 
         verify(mockHttpMethod).addRequestHeader(eq(Constants.HDR_LINK), contains("</riak/b/l>; riaktag=\"t\""));
@@ -405,7 +436,7 @@ public class TestRiakObject {
     @Test public void write_to_http_method_sets_user_meta_headers() {
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
-        impl.getUsermeta().put("k", "v");
+        impl.addUsermetaItem("k", "v");
         impl.writeToHttpMethod(mockHttpMethod);
 
         verify(mockHttpMethod).setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + "k", "v");

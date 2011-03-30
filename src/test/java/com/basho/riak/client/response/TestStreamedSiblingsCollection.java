@@ -98,7 +98,7 @@ public class TestStreamedSiblingsCollection {
         when(mockMultipart.next()).thenReturn(mockPart);
         RiakObject o = impl.iterator().next();
         assertNotNull(o);
-        assertEquals("bar", o.getUsermeta().get("foo"));
+        assertEquals("bar", o.getUsermetaItem("foo"));
     }
 
     @Test public void reads_subpart_links() {
@@ -106,7 +106,7 @@ public class TestStreamedSiblingsCollection {
         when(mockMultipart.next()).thenReturn(mockPart);
         RiakObject o = impl.iterator().next();
         assertNotNull(o);
-        assertEquals(new RiakLink("other_bucket", "other_key", "foo"), o.getLinks().get(0));
+        assertTrue(o.hasLink(new RiakLink("other_bucket", "other_key", "foo")));
     }
 
     @Test public void reads_subpart_stream() {

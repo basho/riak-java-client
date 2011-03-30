@@ -489,6 +489,13 @@ public class RiakObject {
     }
 
     /**
+     * @return how many user meta data items this RiakObject has.
+     */
+    public int numUsermetaItems() {
+        return userMetaData.size();
+    }
+
+    /**
      * @param key
      * @return
      */
@@ -510,6 +517,10 @@ public class RiakObject {
      */
     public void removeUsermetaItem(String key) {
         userMetaData.remove(key);
+    }
+
+    public Iterable<String> usermetaKeys() {
+        return userMetaData.keySet();
     }
 
     /**

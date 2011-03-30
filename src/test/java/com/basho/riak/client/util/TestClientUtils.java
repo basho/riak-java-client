@@ -293,11 +293,11 @@ public class TestClientUtils {
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
 
-        assertEquals(1, objects.get(0).getLinks().size());
-        assertEquals(new RiakLink("b", "l", "t"), objects.get(0).getLinks().get(0));
+        assertEquals(1, objects.get(0).numLinks());
+        assertTrue(objects.get(0).hasLink(new RiakLink("b", "l", "t")));
 
-        assertEquals(1, objects.get(0).getUsermeta().size());
-        assertEquals("value", objects.get(0).getUsermeta().get("test"));
+        assertEquals(1, objects.get(0).numUsermetaItems());
+        assertEquals("value", objects.get(0).getUsermetaItem("test"));
 
         assertEquals("text/plain", objects.get(0).getContentType());
         assertEquals("vclock", objects.get(0).getVclock());

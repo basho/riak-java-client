@@ -110,8 +110,8 @@ public class TestFetchResponse {
         assertEquals("text/plain", impl.getObject().getContentType());
         assertEquals(SINGLE_BODY, impl.getObject().getValue());
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", impl.getObject().getLastmod());
-        assertEquals(1, impl.getObject().getLinks().size());
-        assertEquals(0, impl.getObject().getUsermeta().size());
+        assertEquals(1, impl.getObject().numLinks());
+        assertFalse(impl.getObject().hasUsermeta());
         assertEquals("a85hYGBgzGDKBVIsDPKZOzKYEhnzWBlaJyw9wpcFAA==", impl.getObject().getVclock());
         assertEquals("4d5y9wqQK2Do0RK5ezwCJD", impl.getObject().getVtag());
     }
@@ -136,8 +136,8 @@ public class TestFetchResponse {
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
         assertEquals("bar", o.getValue());
-        assertEquals(1, o.getLinks().size());
-        assertEquals(0, o.getUsermeta().size());
+        assertEquals(1, o.numLinks());
+        assertFalse(o.hasUsermeta());
         assertEquals("Tue, 22 Dec 2009 19:24:18 GMT", o.getLastmod());
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
@@ -149,9 +149,9 @@ public class TestFetchResponse {
         assertEquals("application/octect-stream", o.getContentType());
         assertEquals("foo", o.getValue());
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", o.getLastmod());
-        assertEquals(0, o.getLinks().size());
-        assertEquals(1, o.getUsermeta().size());
-        assertEquals("value", o.getUsermeta().get("test"));
+        assertFalse(o.hasLinks());
+        assertEquals(1, o.numUsermetaItems());
+        assertEquals("value", o.getUsermetaItem("test"));
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("4d5y9wqQK2Do0RK5ezwCJD", o.getVtag());
     }
@@ -214,8 +214,8 @@ public class TestFetchResponse {
         assertEquals(KEY, o.getKey());
         assertEquals("text/plain", o.getContentType());
         assertEquals("bar", os.toString());
-        assertEquals(1, o.getLinks().size());
-        assertEquals(0, o.getUsermeta().size());
+        assertEquals(1, o.numLinks());
+        assertFalse(o.hasUsermeta());
         assertEquals("Tue, 22 Dec 2009 19:24:18 GMT", o.getLastmod());
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("55SrI4GjdnGfyuShLBWjuf", o.getVtag());
@@ -229,9 +229,9 @@ public class TestFetchResponse {
         assertEquals("application/octect-stream", o.getContentType());
         assertEquals("foo", os.toString());
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", o.getLastmod());
-        assertEquals(0, o.getLinks().size());
-        assertEquals(1, o.getUsermeta().size());
-        assertEquals("value", o.getUsermeta().get("test"));
+        assertFalse(o.hasLinks());
+        assertEquals(1, o.numUsermetaItems());
+        assertEquals("value", o.getUsermetaItem("test"));
         assertEquals("a85hYGBgzmDKBVIsDPKZOzKYEhnzWBlaJyw9wgcVZtWdug4q/GgGXJitOYmh6u0rZIksAA==", o.getVclock());
         assertEquals("4d5y9wqQK2Do0RK5ezwCJD", o.getVtag());
     }
@@ -268,8 +268,8 @@ public class TestFetchResponse {
         assertNotNull("Content-Length should not be null", contentLength);
         assertEquals(CONTENT_LENGTH, contentLength.toString());
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", impl.getObject().getLastmod());
-        assertEquals(1, impl.getObject().getLinks().size());
-        assertEquals(0, impl.getObject().getUsermeta().size());
+        assertEquals(1, impl.getObject().numLinks());
+        assertFalse(impl.getObject().hasUsermeta());
         assertEquals("a85hYGBgzGDKBVIsDPKZOzKYEhnzWBlaJyw9wpcFAA==", impl.getObject().getVclock());
         assertEquals("4d5y9wqQK2Do0RK5ezwCJD", impl.getObject().getVtag());
     }
