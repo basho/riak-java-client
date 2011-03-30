@@ -678,4 +678,18 @@ public class TestRiakObject {
 
         riakObject.writeToHttpMethod(mockHttpMethod);
     }
+
+    @Test public void valueByteArraySafelyEncapsulated() {
+        final byte[] value = "vvvv".getBytes();
+        final RiakObject riakObject = new RiakObject("b", "k", value);
+
+        assertArrayEquals("vvvv".getBytes(), riakObject.getValueAsBytes());
+        value[0] = 'b';
+        assertArrayEquals("vvvv".getBytes(), riakObject.getValueAsBytes());
+
+        byte[] roInternalValue = riakObject.getValueAsBytes();
+        roInternalValue[0] = 'z';
+
+        assertArrayEquals("vvvv".getBytes(), riakObject.getValueAsBytes());
+    }
 }
