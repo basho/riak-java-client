@@ -16,6 +16,8 @@ package com.basho.riak.pbc;
 import static com.basho.riak.test.util.ExpectedValues.*;
 import static org.junit.Assert.*;
 
+import java.util.UUID;
+
 import org.junit.Test;
 
 import com.basho.riak.pbc.RPB.RpbContent;
@@ -116,6 +118,41 @@ public class TestRiakObject {
         } else {
             assertNull("Expected null vclock", riakObject.getVclock());
         }
+    }
+
+    @Test public void modifyLinksAndBuildContentConcurrently() throws InterruptedException {
+        final RiakObject riakObject = new RiakObject(BS_VCLOCK, BS_BUCKET, BS_KEY, BS_CONTENT);
+        final int cnt = 20;
+
+        Thread[] threads = new Thread[cnt];
+
+        for (int i = 0; i < cnt; i++) {
+            threads[i] = new Thread(new Runnable() {
+
+                public void run() {
+                    String bucket = UUID.randomUUID().toString();
+                    String key = UUID.randomUUID().toString();
+                    String tag = UUID.randomUUID().toString();
+                    int cnt = 0;
+                    while (true) {
+                        riakObject.addLink(bucket + cnt, key + cnt, tag + cnt);
+                        cnt++;
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+
+                }
+            });
+            threads[i].setDaemon(true);
+            threads[i].start();
+        }
+
+        Thread.sleep(500);
+
+        riakObject.buildContent();
     }
 
 }

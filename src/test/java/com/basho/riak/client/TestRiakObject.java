@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -601,5 +602,80 @@ public class TestRiakObject {
         leakedUserMeta.put("my-meta3", "my-value3");
         assertTrue(riakObject.hasUsermetaItem("my-meta3"));
         assertEquals("my-value3", riakObject.getUsermetaItem("my-meta3"));
+    }
+
+    @Test public void modifyLinksAndWriteToMethodConcurrently() throws InterruptedException {
+        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes());
+        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+
+        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+
+        final int cnt = 20;
+        Thread[] threads = new Thread[cnt];
+
+        for (int i = 0; i < cnt; i++) {
+            threads[i] = new Thread(new Runnable() {
+
+                public void run() {
+                    String bucket = UUID.randomUUID().toString();
+                    String key = UUID.randomUUID().toString();
+                    String tag = UUID.randomUUID().toString();
+                    int cnt = 0;
+                    while (true) {
+                        riakObject.addLink(new RiakLink(bucket + cnt, key + cnt, tag + cnt));
+                        cnt++;
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+
+                }
+            });
+            threads[i].setDaemon(true);
+            threads[i].start();
+        }
+
+        Thread.sleep(500);
+
+        riakObject.writeToHttpMethod(mockHttpMethod);
+    }
+
+    @Test public void modifyUserMetaAndWriteToMethodConcurrently() throws InterruptedException {
+        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes());
+        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+
+        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+
+        final int cnt = 20;
+        Thread[] threads = new Thread[cnt];
+
+        for (int i = 0; i < cnt; i++) {
+            threads[i] = new Thread(new Runnable() {
+
+                public void run() {
+                    String key = UUID.randomUUID().toString();
+                    String tag = UUID.randomUUID().toString();
+                    int cnt = 0;
+                    while (true) {
+                        riakObject.addUsermetaItem(key + cnt, tag + cnt);
+                        cnt++;
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+
+                }
+            });
+            threads[i].setDaemon(true);
+            threads[i].start();
+        }
+
+        Thread.sleep(500);
+
+        riakObject.writeToHttpMethod(mockHttpMethod);
     }
 }
