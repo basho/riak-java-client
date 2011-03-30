@@ -16,6 +16,7 @@ package com.basho.riak.pbc;
 import static com.basho.riak.test.util.ExpectedValues.*;
 import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -91,7 +92,24 @@ public class TestRiakObject {
         assertEquals(content, riakObject.buildContent());
     }
     
-    @Test public void setContenType() {
+    @Test public void addUserMetaDataItem() {
+        final String[] userMetaKeys = { "MetaKey1", "MetaKey2" };
+        final String[] userMetaValues = { "MetaValue1", "MetaValue2" };
+
+        final RiakObject riakObject = new RiakObject(BUCKET, KEY, CONTENT);
+        final RpbContent.Builder contentBuilder = RpbContent.newBuilder();
+
+        contentBuilder.addAllUsermeta(rpbPairs(userMetaKeys, userMetaValues)).setValue(BS_CONTENT);
+
+        final RpbContent content = contentBuilder.build();
+
+        riakObject.addUsermetaItem(userMetaKeys[0], userMetaValues[0]);
+        riakObject.addUsermetaItem(userMetaKeys[1], userMetaValues[1]);
+
+        assertEquals(content, riakObject.buildContent());
+    }
+
+    @Test public void setContentType() {
         final RiakObject riakObject = new RiakObject(BUCKET, KEY, CONTENT);
         final RpbContent.Builder contentBuilder = RpbContent.newBuilder();
         
@@ -101,11 +119,24 @@ public class TestRiakObject {
         
         assertEquals(contentBuilder.build(), riakObject.buildContent());
     }
-    
+
+    @Test public void getLastModifiedDate() {
+        final Date date = new Date();
+        long time = date.getTime();
+        long lastModified = time / 1000;
+        long lastModifiedUsec = (time % 1000) * 100;
+
+        final RpbContent.Builder contentBuilder = RpbContent.newBuilder();
+        contentBuilder.setValue(BS_CONTENT).setLastMod((int)lastModified).setLastModUsecs((int)lastModifiedUsec);
+        final RiakObject riakObject = new RiakObject(BS_VCLOCK, BS_BUCKET, BS_KEY, contentBuilder.build());
+
+        assertEquals(date, riakObject.getLastModified());
+    }
+
     private static void assertBasicValues(final RiakObject riakObject) {
         assertBasicValues(riakObject, false);
     }
-    
+
     private static void assertBasicValues(final RiakObject riakObject, boolean hasVClock) {
         assertEquals(BUCKET, riakObject.getBucket());
         assertEquals(BS_BUCKET, riakObject.getBucketBS());
@@ -155,4 +186,37 @@ public class TestRiakObject {
         riakObject.buildContent();
     }
 
+    @Test public void modifyUserMetaAndBuildContentConcurrently() throws InterruptedException {
+        final RiakObject riakObject = new RiakObject(BS_VCLOCK, BS_BUCKET, BS_KEY, BS_CONTENT);
+        final int cnt = 20;
+
+        Thread[] threads = new Thread[cnt];
+
+        for (int i = 0; i < cnt; i++) {
+            threads[i] = new Thread(new Runnable() {
+
+                public void run() {
+                    String key = UUID.randomUUID().toString();
+                    String value = UUID.randomUUID().toString();
+                    int cnt = 0;
+                    while (true) {
+                        riakObject.addUsermetaItem(key + cnt, value + cnt);
+                        cnt++;
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+
+                }
+            });
+            threads[i].setDaemon(true);
+            threads[i].start();
+        }
+
+        Thread.sleep(500);
+
+        riakObject.buildContent();
+    }
 }

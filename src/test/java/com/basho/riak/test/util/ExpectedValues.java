@@ -48,12 +48,11 @@ public final class ExpectedValues {
     /**
      * Generate a number of RpbLinks, each link has the values
      * {@link ExpectedValues#BUCKET} _ <i>n</i>, {@link ExpectedValues#KEY} _ <i>n</i>, {@link ExpectedValues#TAG} _ <i>n</i>
-     * @param num how many RpbLinks to generate
+     * @param numLinks how many RpbLinks to generate
      * @return List of RpbLinks
      */
-    public static List<RpbLink> rpbLinks(int num) {
-        final int numLinks = num;
-        final List<RpbLink> rpbLinks = new ArrayList<RpbLink>();
+    public static List<RpbLink> rpbLinks(int numLinks) {
+        final List<RpbLink> rpbLinks = new ArrayList<RpbLink>(numLinks);
         
         for(int i=0; i < numLinks; i++) {
             RpbLink.Builder builder = RpbLink.newBuilder()
@@ -65,8 +64,7 @@ public final class ExpectedValues {
         
         return rpbLinks;
     }
-    
-    
+
     public static ByteString concatToByteString(String value, int counter) {
         return ByteString.copyFromUtf8(value + "_" + counter);
     }

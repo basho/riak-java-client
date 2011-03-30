@@ -43,7 +43,8 @@ public class RiakObject {
 	private String vtag;
 	private String contentEncoding;
 	private String charset;
-	private Map<String,String> userMeta;
+	private Object userMetaDataLock = new Object();
+	private Map<String,String> userMetaData = new LinkedHashMap<String, String>();
 	private Integer lastModified;
 	private Integer lastModifiedUsec;
 	
@@ -66,15 +67,17 @@ public class RiakObject {
 			this.lastModifiedUsec = new Integer(content.getLastModUsecs());
 		}
 
-		if (content.getUsermetaCount() == 0) {
-			userMeta = Collections.emptyMap();
-		} else {
-			userMeta = new LinkedHashMap<String, String>();
+		if (content.getUsermetaCount() > 0) {
+			Map<String, String> tmpUserMetaData = new LinkedHashMap<String, String>();
 			for (int i = 0; i < content.getUsermetaCount(); i++) {
 				RpbPair um = content.getUsermeta(i);
-				userMeta.put(um.getKey().toStringUtf8(),
+				tmpUserMetaData.put(um.getKey().toStringUtf8(),
 							 str(um.getValue()));
 			}
+
+			synchronized (userMetaDataLock) {
+			    userMetaData.putAll(tmpUserMetaData);
+            }
 		}
 	}
 
@@ -172,8 +175,14 @@ public class RiakObject {
 			b.setLastModUsecs(lastModifiedUsec);
 		}
 		
-		if (userMeta != null && !userMeta.isEmpty()) {
-			for (Map.Entry<String, String> ent : userMeta.entrySet()) {
+		final Map<String, String> tmpUserMetaData = new LinkedHashMap<String, String>();
+
+		synchronized (userMetaDataLock) {
+		    tmpUserMetaData.putAll(userMetaData);
+        }
+
+		if (tmpUserMetaData != null && !tmpUserMetaData.isEmpty()) {
+			for (Map.Entry<String, String> ent : tmpUserMetaData.entrySet()) {
 				ByteString key = ByteString.copyFromUtf8(ent.getKey());
 				com.basho.riak.pbc.RPB.RpbPair.Builder pb = RPB.RpbPair.newBuilder().setKey(key);
 				if (ent.getValue() != null) {
@@ -199,16 +208,27 @@ public class RiakObject {
     }
 
     /**
+     * Add an item to the user meta data for this RiakObject.
+     * @param key the key of the user meta data item
+     * @param value the user meta data item
+     * @return this RiakObject
+     */
+    public RiakObject addUsermetaItem(String key, String value) {
+        synchronized (userMetaDataLock) {
+            userMetaData.put(key, value);
+        }
+        return this;
+    }
+
+    /**
      * @return the lastModified
      */
     public Date getLastModified() {
         Date d = null;
 
         if (lastModified != null && lastModifiedUsec != null) {
-            long mega = lastModified / 1000000;
-            long milli = lastModified % 1000000;
-            int usec = lastModifiedUsec / 1000;
-            d = new Date(Long.valueOf((mega + "" + milli + "" + usec)));
+            long t = (lastModified * 1000L ) + (lastModifiedUsec / 100L);
+            d = new Date(t);
         }
         return d;
     }
