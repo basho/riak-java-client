@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.apache.commons.codec.binary.Base64;
 
 import org.json.JSONObject;
 
@@ -126,7 +127,7 @@ public class RiakClient implements RiakMessageCodes {
 			}
 			byte[] data = new byte[6];
 			sr.nextBytes(data);
-			clid = Base64Coder.encodeLines(data);
+			clid = new String(Base64.encodeBase64Chunked(data));
 			prefs.put("client_id", clid);
 			try {
 				prefs.flush();
