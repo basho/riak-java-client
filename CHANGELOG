@@ -1,3 +1,49 @@
+0.14.1
+-------------
+
+This version fixes a few bugs with the protocol buffers client (including one major crasher with setClientId).
+It fixes a bug setting max connections per host which limitted 2 the http client to 2 concurrent connections.
+It fixes a few encapsulation/thread safety issues.
+Some API elements have been deprecated (direct access to RiakObject(s) links and user meta collections, mutation of RiakLink) in preparation for removal in the next release.
+Unit and integration test coverage has been increased to ~70% in preparation for a refactor.
+Java 5 is now supported.
+
+**Changes**:
+
+d8824e5 Add test to show byte[] value safely encapsulated in RiakObject
+0e7d255 Add tests to show RiakObjects internal collections are thread safe
+568cab8 Remove calls to deprecated methods from tests
+c1e23eb Remove references to sun Base64Encoder/Decoder
+79b3f5a Fix Javadoc typo and rename usermeta to userMetaData
+35e49c5 Return defensive copy of internal value byte array
+ad05279 Fix direct store of byte array
+46bb956 Fix sporadically failing vclock test
+86b1927 Fix encapsulation/safety issues from direct store of array arguments
+825e734 Fix concurrent mutation issue for RiakObject's links
+fc3172f Fix typo in README (link to DEVELOPERS.md)
+a11206f Merge branch 'bz1040_coverage'
+d88abac Add unit tests for pbc MapReduceBuilder
+eb3cea9 Remove redundant imports
+3eda593 Add integration and unit tests for the protobufs client
+bb82e66 Add test for pbc RiakLink
+96ac2aa Improve test coverage prior to refactor
+cd0104e bz 1038 fix infinite loop in PBC setClientId
+3897895 Fix always zero w and dw for PBC put request with RequestMeta
+6aaecd8 RiakObject.writeLink(): Fixed bug (using setRequestHeader() vs. addRequestHeader())
+d54dd19 RiakObject.writeToHttpMethod(): Factored link part out; circumventing problem with long http header lines (MochiWeb apparently has an 8K limit)
+1f452b8 Add private constructor to JSONEquals helper class
+6215c9f Change internal representation of M/R inputs to LinkedHashMap
+ebdb63d Fix tests that depend on order of keys in Map
+ff9748c Remove Java 6 only code and annotations
+af74421 Add max connections per host to match max connections
+2d72f31 updating maven dependency info on README
+
+
+0.14.0
+-------------
+
+This version adds support for the riak protocol buffers interface.
+
 0.11
 -------------
 

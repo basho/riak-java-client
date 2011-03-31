@@ -7,7 +7,7 @@
 	<version>0.14.1-SNAPSHOT</version>
 	<name>Riak Client for Java</name>
 	<description>HttpClient-based client for Riak</description>
-	<url>http://bitbucket.org/basho/riak-java-client</url>
+	<url>https://github.com/basho/riak-java-client</url>
 
 	<licenses>
 		<license>
@@ -28,6 +28,10 @@
 	<developer>
             <name>Dave Smith</name>
             <email>dizzyd@basho.com</email>
+        </developer>
+    <developer>
+            <name>Russell Brown</name>
+            <email>russelldb@basho.com</email>
         </developer>
     </developers>
 
