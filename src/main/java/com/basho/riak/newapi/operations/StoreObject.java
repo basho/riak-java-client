@@ -42,7 +42,7 @@ public class StoreObject<T> implements RiakOperation<T> {
     private Integer w;
     private Integer dw;
     private boolean returnBody = false;
-    
+
     private int retries = 0;
     private Mutation<T> mutation;
     private ConflictResolver<T> resolver;
@@ -83,19 +83,27 @@ public class StoreObject<T> implements RiakOperation<T> {
         for (RiakObject o : ros) {
             siblings.add(converter.toDomain(o));
         }
+        
+        System.out.println("Siblings length is " + siblings.size());
 
         final T resolved = resolver.resolve(siblings);
         final T mutated = mutation.apply(resolved);
 
         final RiakObject o = converter.fromDomain(mutated);
 
-        final RiakObject stored = new DefaultRetrier().attempt(new Command<RiakObject>() {
-            public RiakObject execute() throws IOException {
+        final RiakObject[] stored = new DefaultRetrier().attempt(new Command<RiakObject[]>() {
+            public RiakObject[] execute() throws IOException {
                 return client.store(o, generateStoreMeta());
             }
         }, retries);
 
-        return converter.toDomain(stored);
+        final Collection<T> storedSiblings = new ArrayList<T>(ros.length);
+
+        for (RiakObject s : stored) {
+            siblings.add(converter.toDomain(s));
+        }
+
+        return resolver.resolve(storedSiblings);
     }
 
     /**
@@ -134,7 +142,7 @@ public class StoreObject<T> implements RiakOperation<T> {
         this.resolver = resolver;
         return this;
     }
-    
+
     public StoreObject<T> withConverter(Converter<T> converter) {
         this.converter = converter;
         return this;
@@ -143,7 +151,8 @@ public class StoreObject<T> implements RiakOperation<T> {
     /**
      * default clobber mutator. Beware.
      * 
-     * @param value new value
+     * @param value
+     *            new value
      * @return this StoreObject
      */
     public StoreObject<T> withValue(final T value) {

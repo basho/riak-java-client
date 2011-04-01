@@ -63,8 +63,8 @@ public class RiakObjectBuilder {
         return this;
     }
 
-    public RiakObjectBuilder withVClock(String value) {
-        this.vclock = new BasicVClock(value);
+    public RiakObjectBuilder withVClock(byte[] vclock) {
+        this.vclock = new BasicVClock(vclock);
         return this;
     }
 

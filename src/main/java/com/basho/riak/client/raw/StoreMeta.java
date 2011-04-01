@@ -13,10 +13,9 @@
  */
 package com.basho.riak.client.raw;
 
-
 /**
  * @author russell
- *
+ * 
  */
 public class StoreMeta {
     private final Integer w;
@@ -53,12 +52,15 @@ public class StoreMeta {
         return dw != null;
     }
 
+    public boolean hasReturnBody() {
+        return returnBody != null;
+    }
+
     /**
      * @return the returnBody
      */
     public Boolean getReturnBody() {
         return returnBody;
     }
-    
-    
+
 }

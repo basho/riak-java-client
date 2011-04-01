@@ -35,7 +35,7 @@ public interface RawClient {
 
     RiakObject[] fetch(Bucket bucket, String key) throws IOException;
 
-    RiakObject store(RiakObject object, StoreMeta storeMeta) throws IOException;
+    RiakObject[] store(RiakObject object, StoreMeta storeMeta) throws IOException;
 
     void store(RiakObject object) throws IOException;
 
@@ -54,4 +54,14 @@ public interface RawClient {
     WalkResult linkWalk(RiakObject startObject, LinkWalkSpec linkWalkSpec) throws IOException;
     
     MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException;
+
+    /**
+     * If you don't set a client id explicitly at least call this to set one.
+     * It generates the 4 byte ID and sets that Id on the client
+     * IE you *don't* need to call setClientId() with the result of generate.
+     * @return the generated clientId for the client
+     */
+    byte[] generateAndSetClientId() throws IOException;
+    void setClientId(byte[] clientId) throws IOException;
+    byte[] getClientId() throws IOException;
 }

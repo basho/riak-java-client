@@ -15,6 +15,7 @@ package com.basho.riak.newapi;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +27,7 @@ import com.basho.riak.newapi.cap.VClock;
 
 /**
  * @author russell
- *
+ * 
  */
 public class DefaultRiakObject implements RiakObject {
     private final Bucket bucket;
@@ -59,17 +60,16 @@ public class DefaultRiakObject implements RiakObject {
      * @param userMeta
      */
     public DefaultRiakObject(Bucket bucket, String key, VClock vclock, String vtag, final Date lastModified,
-            String contentType, String value, final Collection<RiakLink> links,
-            final Map<String, String> userMeta) {
+            String contentType, String value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
 
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
         }
 
-        if(key == null) {
+        if (key == null) {
             throw new IllegalArgumentException("Key cannot be null");
         }
-        
+
         this.bucket = bucket;
         this.key = key;
         this.vclock = vclock;
@@ -308,6 +308,14 @@ public class DefaultRiakObject implements RiakObject {
             userMeta.remove(key);
         }
         return this;
+    }
+
+    /**
+     * return an unmodifiable view of the user meta entries. Attempts to modify
+     * will throw UnsupportedOperationException.
+     */
+    public Iterable<Map.Entry<String, String>> usermetaKeys() {
+        return Collections.unmodifiableCollection(userMeta.entrySet());
     }
 
 }

@@ -227,7 +227,12 @@ public class DefaultBucket implements Bucket {
 
         return new StoreObject<RiakObject>(client, b, key).withMutator(new Mutation<RiakObject>() {
             public RiakObject apply(RiakObject original) {
-                return original.setValue(value);
+                if(original == null) {
+                    return RiakObjectBuilder.newBuilder(b, key).withValue(value).build();
+                } else {
+                    System.out.println(Thread.currentThread().getName() + " mutating existing value " + original.getValue() + " to " + value);
+                    return original.setValue(value);
+                }
             }
         }).withResolver(new ConflictResolver<RiakObject>() {
 
@@ -237,7 +242,7 @@ public class DefaultBucket implements Bucket {
                 } else if (siblings.size() == 1) {
                     return siblings.iterator().next();
                 } else {
-                    return RiakObjectBuilder.newBuilder(b, key).build();
+                    return null;
                 }
             }
         }).withConverter(new Converter<RiakObject>() {

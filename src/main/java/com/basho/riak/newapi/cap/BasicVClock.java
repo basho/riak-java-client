@@ -19,13 +19,16 @@ package com.basho.riak.newapi.cap;
  */
 public class BasicVClock implements VClock {
 
-    private final String value;
+    private final byte[] value;
 
-    public BasicVClock(final String value) {
+    public BasicVClock(final byte[] value) {
         if (value == null) {
             throw new IllegalArgumentException("VClock value cannot be null");
         }
-        this.value = value;
+        this.value = value.clone();
     }
 
+    public byte[] getBytes() {
+        return value.clone();
+    }
 }

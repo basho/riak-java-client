@@ -18,19 +18,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.bucket.DefaultBucketProperties;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
+import com.basho.riak.newapi.cap.VClock;
 import com.basho.riak.newapi.query.MapReduceResult;
 import com.basho.riak.newapi.query.MapReduceSpec;
 import com.basho.riak.newapi.query.WalkResult;
+import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.google.protobuf.ByteString;
 
@@ -92,7 +96,8 @@ public class PBClient implements RawClient {
         RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(bucket, o.getKey());
 
         builder.withValue(nullSafeToStringUtf8(o.getValue()));
-        builder.withVClock(nullSafeToStringUtf8(o.getVclock()));
+        builder.withVClock(nullSafeToBytes(o.getVclock()));
+        builder.withVtag(o.getVtag());
 
         Date lastModified = o.getLastModified();
 
@@ -104,11 +109,23 @@ public class PBClient implements RawClient {
     }
 
     /**
+     * @param vclock
+     * @return
+     */
+    private byte[] nullSafeToBytes(ByteString value) {
+        return value == null ? null : value.toByteArray();
+    }
+
+    /**
      * @param value
      * @return
      */
     private String nullSafeToStringUtf8(ByteString value) {
         return value == null ? null : value.toStringUtf8();
+    }
+
+    private ByteString nullSafeToByteString(String value) {
+        return value == null ? null : ByteString.copyFromUtf8(value);
     }
 
     /*
@@ -118,8 +135,79 @@ public class PBClient implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.RiakObject
      * , com.basho.riak.client.raw.StoreMeta)
      */
-    public RiakObject store(RiakObject object, StoreMeta storeMeta) throws IOException {
-        return null;
+    public RiakObject[] store(RiakObject riakObject, StoreMeta storeMeta) throws IOException {
+        if (riakObject == null || riakObject.getKey() == null || riakObject.getBucket() == null) {
+            throw new IllegalArgumentException(
+                                               "object cannot be null, object's key cannot be null, object's bucket cannot be null");
+        }
+
+        return convert(client.store(convert(riakObject), convert(storeMeta, riakObject)), riakObject.getBucket());
+    }
+
+    /**
+     * Convert a {@link StoreMeta} to a pbc {@link RequestMeta}
+     * 
+     * @param storeMeta
+     *            a {@link StoreMeta} for the store operation.
+     * @return a {@link RequestMeta} populated from the storeMeta's values.
+     */
+    private RequestMeta convert(StoreMeta storeMeta, RiakObject riakObject) {
+        RequestMeta requestMeta = new RequestMeta();
+        if (storeMeta.hasW()) {
+            requestMeta.w(storeMeta.getW());
+        }
+        if (storeMeta.hasDW()) {
+            requestMeta.dw(storeMeta.getDw());
+        }
+        if (storeMeta.hasReturnBody()) {
+            requestMeta.returnBody(storeMeta.getReturnBody());
+        }
+        String contentType = riakObject.getContentType();
+        if (contentType != null) {
+            requestMeta.contentType(contentType);
+        }
+        return requestMeta;
+    }
+
+    /**
+     * Convert a {@link RiakObject} to a pbc
+     * {@link com.basho.riak.pbc.RiakObject}
+     * 
+     * @param riakObject
+     *            the RiakObject to convert
+     * @return a {@link com.basho.riak.pbc.RiakObject} populated from riakObject
+     */
+    private com.basho.riak.pbc.RiakObject convert(RiakObject riakObject) {
+        VClock vc = riakObject.getVClock();
+        ByteString bucketName = nullSafeToByteString(riakObject.getBucketName());
+        ByteString key = nullSafeToByteString(riakObject.getKey());
+        ByteString content = nullSafeToByteString(riakObject.getValue());
+
+        ByteString vclock = null;
+        if (vc != null) {
+            vclock = nullSafeFromBytes(vc.getBytes());
+        }
+
+        com.basho.riak.pbc.RiakObject result = new com.basho.riak.pbc.RiakObject(vclock, bucketName, key, content);
+
+        for (RiakLink link : riakObject) {
+            result.addLink(link.getTag(), link.getBucket(), link.getKey());
+        }
+
+        for (Entry<String, String> metaDataItem : riakObject.usermetaKeys()) {
+            result.addUsermetaItem(metaDataItem.getKey(), metaDataItem.getValue());
+        }
+
+        result.setContentType(riakObject.getContentType());
+        return result;
+    }
+
+    /**
+     * @param bytes
+     * @return
+     */
+    private ByteString nullSafeFromBytes(byte[] bytes) {
+        return ByteString.copyFrom(bytes);
     }
 
     /*
@@ -222,6 +310,41 @@ public class PBClient implements RawClient {
      */
     public MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException {
         return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#generateClientId()
+     */
+    public byte[] generateAndSetClientId() throws IOException {
+        client.prepareClientID();
+        return client.getClientID().getBytes();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#setClientId()
+     */
+    public void setClientId(byte[] clientId) throws IOException {
+        if (clientId == null || clientId.length != 4) {
+            throw new IllegalArgumentException("clientId must be 4 bytes.generateClientId() can do this for you");
+        }
+        client.setClientID(ByteString.copyFrom(clientId));
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getClientId()
+     */
+    public byte[] getClientId() throws IOException {
+        final String clientId = client.getClientID();
+        
+        if(clientId != null) {
+            return clientId.getBytes();
+        } else {
+            throw new IOException("null clientId returned by client");
+        }
     }
 
 }

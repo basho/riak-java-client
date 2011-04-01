@@ -22,7 +22,6 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import com.basho.riak.client.raw.pbc.PBClient;
 import com.basho.riak.newapi.RiakClient;
 import com.basho.riak.newapi.RiakFactory;
 import com.basho.riak.newapi.RiakObject;
@@ -43,7 +42,7 @@ import com.megacorp.kv.exceptions.MyCheckedBusinessException;
 public class BasicOperations {
 
     @Test public void basicOpertaions() throws Exception {
-        final RiakClient c = RiakFactory.defaultClient();
+        final RiakClient c = RiakFactory.pbcClient();
         
         c.createBucket("testBucket").retry(2).nVal(3).execute();
 

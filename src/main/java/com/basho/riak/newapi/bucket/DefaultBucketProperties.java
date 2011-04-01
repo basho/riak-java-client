@@ -242,7 +242,7 @@ public class DefaultBucketProperties implements BucketProperties {
         public Integer bigVClock;
         public Integer smallVClock;
         public String backend;
-        public int nVal;
+        public int nVal = 3;
         public Boolean lastWriteWins;
         public Boolean allowSiblings;
 

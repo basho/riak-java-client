@@ -15,6 +15,8 @@ package com.basho.riak.newapi;
 
 import java.io.IOException;
 
+import com.basho.riak.client.raw.Command;
+import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.pbc.PBClient;
 import com.basho.riak.newapi.bucket.Bucket;
@@ -29,7 +31,7 @@ import com.basho.riak.newapi.query.MapReduce;
  */
 public class RiakFactory {
 
-    public static RiakClient defaultClient() throws RiakException {
+    public static RiakClient pbcClient() throws RiakException {
 
         try {
             final RawClient client = new PBClient("127.0.0.1", 8087);
@@ -56,6 +58,41 @@ public class RiakFactory {
                 public WriteBucket createBucket(String bucketName) {
                     WriteBucket op = new WriteBucket(client, bucketName);
                     return op;
+                }
+
+                public RiakClient setClientId(final byte[] clientId) throws RiakException {
+                    if (clientId == null || clientId.length != 4) {
+                        throw new IllegalArgumentException("Client Id must be 4 bytes long");
+                    }
+                    final byte[] cloned = clientId.clone();
+                    new DefaultRetrier().attempt(new Command<Boolean>() {
+                        public Boolean execute() throws IOException {
+                            client.setClientId(cloned);
+                            return true;
+                        }
+                    }, 3);
+
+                    return this;
+                }
+
+                public byte[] generateAndSetClientId() throws RiakException {
+                    final byte[] clientId = new DefaultRetrier().attempt(new Command<byte[]>() {
+                        public byte[] execute() throws IOException {
+                            return client.generateAndSetClientId();
+                        }
+                    }, 3);
+                    
+                    return clientId;
+                }
+
+                public byte[] getClientId() throws RiakException {
+                    final byte[] clientId = new DefaultRetrier().attempt(new Command<byte[]>() {
+                        public byte[] execute() throws IOException {
+                            return client.getClientId();
+                        }
+                    }, 3);
+                    
+                    return clientId;
                 }
             };
         } catch (IOException e) {

@@ -13,10 +13,15 @@
  */
 package com.basho.riak.newapi.cap;
 
+
 /**
  * @author russell
- *
+ * 
  */
 public interface VClock {
 
+    /**
+     * @return
+     */
+    byte[] getBytes();
 }

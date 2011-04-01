@@ -15,8 +15,14 @@ package com.basho.riak.newapi;
 
 /**
  * @author russell
- *
+ * 
  */
 public interface RiakLink {
+
+    String getTag();
+
+    String getBucket();
+
+    String getKey();
 
 }

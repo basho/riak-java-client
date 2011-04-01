@@ -16,6 +16,7 @@ package com.basho.riak.newapi;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.VClock;
@@ -57,6 +58,8 @@ public interface RiakObject extends Iterable<RiakLink> {
     boolean hasUsermeta(String key);
 
     String getUsermeta(String key);
+    
+    Iterable<Entry<String, String>> usermetaKeys();
 
     // Mutate
 
