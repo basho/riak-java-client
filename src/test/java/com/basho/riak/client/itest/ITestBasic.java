@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_URL;
 import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
 
@@ -30,11 +31,10 @@ import com.basho.riak.client.response.StoreResponse;
 
 /**
  * Basic exercises such as store, fetch, and modify objects for the Riak client.
- * Assumes Riak is reachable at 127.0.0.1:8098/riak.
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_URL }.
+ * @see com.basho.riak.client.Hosts#RIAK_URL
  */
 public class ITestBasic {
-
-    public static String RIAK_URL = "http://127.0.0.1:8098/riak";
 
     @Test public void store_fetch_modify() {
         final RiakClient c = new RiakClient(RIAK_URL);

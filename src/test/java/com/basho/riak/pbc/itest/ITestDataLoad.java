@@ -13,6 +13,7 @@
  */
 package com.basho.riak.pbc.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_HOST;
 import static com.google.protobuf.ByteString.copyFrom;
 import static com.google.protobuf.ByteString.copyFromUtf8;
 import static org.junit.Assert.assertEquals;
@@ -34,9 +35,12 @@ import com.basho.riak.pbc.RiakObject;
 import com.basho.riak.test.util.ExpectedValues;
 import com.google.protobuf.ByteString;
 
+/**
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_HOST }.
+ * @see com.basho.riak.client.Hosts#RIAK_HOST
+ */
 public class ITestDataLoad {
 
-    private static final String RIAK_HOST = "127.0.0.1";
     private static final String BUCKET = "__itest_java_pbc_dataload__";
     final int NUM_VALUES = 10;
     final int VALUE_LENGTH = 512;

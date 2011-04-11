@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -37,11 +38,11 @@ import com.basho.riak.client.response.MapReduceResponse;
 
 /**
  * Exercises map/reduce features of the Riak client.
- * Assumes Riak is reachable at 127.0.0.1:8098/riak.
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_URL }.
+ * @see com.basho.riak.client.Hosts#RIAK_URL
  */
 public class ITestMapReduce {
 
-    public static String RIAK_URL = "http://127.0.0.1:8098/riak";
     public static String BUCKET_NAME = "mr_test_java";
     public static int TEST_ITEMS = 200;
     
