@@ -29,7 +29,7 @@ package com.basho.riak.client;
  */
 public class Hosts {
 
-	public static final String RIAK_HOST = "10.0.1.104";
+	public static final String RIAK_HOST = "127.0.0.1";
 
 	public static final String RIAK_URL = "http://" + RIAK_HOST + ":8098/riak";
 }
