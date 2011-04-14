@@ -116,6 +116,7 @@ public class RiakClient implements RiakMessageCodes {
                 connection.close();
             }
         } finally {
+            // not canceled Timer prevents JVM shutdown.
             RiakConnection.timer.cancel();
         }
     }
