@@ -1,12 +1,14 @@
 0.14.1
 -------------
 
-This version fixes a few bugs with the protocol buffers client (including one major crasher with setClientId).
-It fixes a bug setting max connections per host which limitted 2 the http client to 2 concurrent connections.
-It fixes a few encapsulation/thread safety issues.
-Some API elements have been deprecated (direct access to RiakObject(s) links and user meta collections, mutation of RiakLink) in preparation for removal in the next release.
-Unit and integration test coverage has been increased to ~70% in preparation for a refactor.
-Java 5 is now supported.
+This version fixes a few bugs with the protocol buffers client (including one
+major crasher with setClientId).  It fixes a bug setting max connections per
+host which limitted 2 the http client to 2 concurrent connections.  It fixes a
+few encapsulation/thread safety issues.  Some API elements have been deprecated
+(direct access to RiakObject(s) links and user meta collections, mutation of
+RiakLink) in preparation for removal in the next release.  Unit and integration
+test coverage has been increased to ~70% in preparation for a refactor.  Java 5
+is now supported.
 
 **Changes**:
 
@@ -29,8 +31,10 @@ bb82e66 Add test for pbc RiakLink
 96ac2aa Improve test coverage prior to refactor
 cd0104e bz 1038 fix infinite loop in PBC setClientId
 3897895 Fix always zero w and dw for PBC put request with RequestMeta
-6aaecd8 RiakObject.writeLink(): Fixed bug (using setRequestHeader() vs. addRequestHeader())
-d54dd19 RiakObject.writeToHttpMethod(): Factored link part out; circumventing problem with long http header lines (MochiWeb apparently has an 8K limit)
+6aaecd8 RiakObject.writeLink(): Fixed bug (using setRequestHeader()
+        vs. addRequestHeader())
+d54dd19 RiakObject.writeToHttpMethod(): Factored link part out; circumventing
+        problem with long http header lines (MochiWeb apparently has an 8K limit)
 1f452b8 Add private constructor to JSONEquals helper class
 6215c9f Change internal representation of M/R inputs to LinkedHashMap
 ebdb63d Fix tests that depend on order of keys in Map
@@ -47,19 +51,23 @@ This version adds support for the riak protocol buffers interface.
 0.11
 -------------
 
-This version no longer performs binary to String conversions automatically. All bucket data is surfaced as
-byte arrays. Clients will need to either perform their own string conversions or use the getBodyAsString() method
-added to the com.basho.riak.client.response.HttpResponse interface.
+This version no longer performs binary to String conversions automatically. All
+bucket data is surfaced as byte arrays. Clients will need to either perform
+their own string conversions or use the getBodyAsString() method added to the
+com.basho.riak.client.response.HttpResponse interface.
 
 0.10-SNAPSHOT
 -------------
 
-This version breaks compatibility with Riak releases prior to the pre-0.10 tag. Specifically, it no longer parses link walking results in prior releases.
+This version breaks compatibility with Riak releases prior to the pre-0.10
+tag. Specifically, it no longer parses link walking results in prior releases.
 
 **Changes**:
 
-* Expect CRLF in multipart (link walking) results (http://bitbucket.org/basho/riak/changeset/df553e35cc92/)
-* RiakClient.getClientId() returns the raw client ID byte[4] rather than String to avoid charset encoding issues
+* Expect CRLF in multipart (link walking) results
+  (http://bitbucket.org/basho/riak/changeset/df553e35cc92/)
+* RiakClient.getClientId() returns the raw client ID byte[4] rather than String
+  to avoid charset encoding issues
 
 0.9.1
 -------------
