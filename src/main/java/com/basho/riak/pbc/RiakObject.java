@@ -195,6 +195,10 @@ public class RiakObject {
 		return b.build();
 	}
 
+	public String getVtag() {
+	    return this.vtag;
+	}
+
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
