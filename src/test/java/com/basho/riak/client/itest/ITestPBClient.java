@@ -11,22 +11,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.cap;
+package com.basho.riak.client.itest;
 
+import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.RiakException;
+import com.basho.riak.newapi.RiakFactory;
 
 /**
  * @author russell
  * 
  */
-public interface VClock {
-
-    /**
-     * @return
+public class ITestPBClient extends ITestClientBasic {
+    
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
-    byte[] getBytes();
+    @Override protected RiakClient getClient() throws RiakException {
+        return RiakFactory.pbcClient();
+    }
 
-    /**
-     * @return
-     */
-    String asString();
 }

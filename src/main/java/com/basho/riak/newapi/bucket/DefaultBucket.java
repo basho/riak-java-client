@@ -13,19 +13,21 @@
  */
 package com.basho.riak.newapi.bucket;
 
+import static com.basho.riak.newapi.convert.ConversionUtil.getKey;
+
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
-import com.basho.riak.newapi.cap.ConflictResolver;
+import com.basho.riak.newapi.cap.DefaultResolver;
 import com.basho.riak.newapi.cap.Mutation;
 import com.basho.riak.newapi.cap.Quorum;
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
 import com.basho.riak.newapi.convert.Converter;
+import com.basho.riak.newapi.convert.JSONConverter;
+import com.basho.riak.newapi.convert.NoKeySpecifedException;
 import com.basho.riak.newapi.operations.DeleteObject;
 import com.basho.riak.newapi.operations.FetchObject;
 import com.basho.riak.newapi.operations.StoreObject;
@@ -51,6 +53,8 @@ public class DefaultBucket implements Bucket {
         this.properties = properties;
         this.client = client;
     }
+
+    // / BUCKET PROPS
 
     /*
      * (non-Javadoc)
@@ -205,12 +209,14 @@ public class DefaultBucket implements Bucket {
         return properties.getLinkWalkFunction();
     }
 
+    // / BUCKET
+
     /**
      * Iterate over the keys for this bucket (Expensive, are you sure?)
      */
-    public Iterator<String> keys() throws RiakException {
+    public Iterable<String> keys() throws RiakException {
         try {
-            return client.fetchBucketKeys(name);
+            return client.listKeys(name);
         } catch (IOException e) {
             throw new RiakException(e);
         }
@@ -227,25 +233,13 @@ public class DefaultBucket implements Bucket {
 
         return new StoreObject<RiakObject>(client, b, key).withMutator(new Mutation<RiakObject>() {
             public RiakObject apply(RiakObject original) {
-                if(original == null) {
+                if (original == null) {
                     return RiakObjectBuilder.newBuilder(b, key).withValue(value).build();
                 } else {
-                    System.out.println(Thread.currentThread().getName() + " mutating existing value " + original.getValue() + " to " + value);
                     return original.setValue(value);
                 }
             }
-        }).withResolver(new ConflictResolver<RiakObject>() {
-
-            public RiakObject resolve(Collection<RiakObject> siblings) throws UnresolvedConflictException {
-                if (siblings.size() > 1) {
-                    throw new UnresolvedConflictException("Siblings found", siblings);
-                } else if (siblings.size() == 1) {
-                    return siblings.iterator().next();
-                } else {
-                    return null;
-                }
-            }
-        }).withConverter(new Converter<RiakObject>() {
+        }).withResolver(new DefaultResolver<RiakObject>()).withConverter(new Converter<RiakObject>() {
 
             public RiakObject toDomain(RiakObject riakObject) {
                 return riakObject;
@@ -262,18 +256,39 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.Bucket#store(java.lang.Object)
      */
-    public <T> StoreObject<T> store(T o) {
-        return null;
+    public <T> StoreObject<T> store(final T o) {
+        final Bucket b = this;
+        @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) o.getClass();
+        final String key = getKey(o);
+        if(key == null) {
+            throw new NoKeySpecifedException(o);
+        }
+        return new StoreObject<T>(client, b, key)
+            .withConverter(new JSONConverter<T>(clazz, b))
+            .withMutator(new Mutation<T>() {
+                public T apply(T original) {
+                    return o;
+                };
+            }).withResolver(new DefaultResolver<T>());
     }
-
+    
     /*
      * (non-Javadoc)
      * 
-     * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String,
-     * java.lang.Class)
+     * @see com.basho.riak.newapi.bucket.Bucket#store(java.lang.String,
+     * java.lang.Object)
      */
-    public <T> FetchObject<T> fetch(String key, Class<T> type) {
-        return null;
+    public <T> StoreObject<T> store(final String key, final T o) {
+        final Bucket b = this;
+        @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
+        
+        return new StoreObject<T>(client, b, key)
+            .withConverter(new JSONConverter<T>(clazz, b, key))
+            .withMutator(new Mutation<T>() {
+                public T apply(T original) {
+                    return o;
+                };
+            }).withResolver(new DefaultResolver<T>());
     }
 
     /*
@@ -282,7 +297,50 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.Object)
      */
     public <T> FetchObject<T> fetch(T o) {
-        return null;
+        final Bucket b = this;
+        @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
+        final String key = getKey(o);
+        if(key == null) {
+            throw new NoKeySpecifedException(o);
+        }
+        return new FetchObject<T>(client, this, key)
+                        .withConverter(new JSONConverter<T>(clazz, b))
+                                .withResolver(new DefaultResolver<T>());
+    }
+
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String,
+     * java.lang.Class)
+     */
+    public <T> FetchObject<T> fetch(final String key, final Class<T> type) {
+        final Bucket b = this;
+        return new FetchObject<T>(client, this, key)
+            .withConverter(new JSONConverter<T>(type, b))
+            .withResolver(new DefaultResolver<T>());
+    }
+
+    
+     /* (non-Javadoc)
+     * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String)
+     */
+    public FetchObject<RiakObject> fetch(String key) {
+        final Bucket b = this;
+        
+        return new FetchObject<RiakObject>(client, b, key)
+            .withResolver(new DefaultResolver<RiakObject>())
+            .withConverter(new Converter<RiakObject>() {
+
+            public RiakObject toDomain(RiakObject riakObject) {
+                return riakObject;
+            }
+
+            public RiakObject fromDomain(RiakObject domainObject) {
+                return domainObject;
+            }
+        });
     }
 
     /*
@@ -290,7 +348,23 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.Bucket#delete(java.lang.Object)
      */
-    public <T> DeleteObject<T> delete(T o) {
-        return null;
+    public <T> DeleteObject delete(T o) {
+        final String key = getKey(o);
+        if(key == null) {
+            throw new NoKeySpecifedException(o);
+        }
+        return new DeleteObject(client, this, key);
     }
+
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.newapi.bucket.Bucket#delete(java.lang.String)
+     */
+    public DeleteObject delete(String key) {
+        return new DeleteObject(client, this, key);
+    }
+
+    
 }

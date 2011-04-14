@@ -34,6 +34,7 @@ import com.basho.riak.newapi.cap.VClock;
 import com.basho.riak.newapi.query.MapReduceResult;
 import com.basho.riak.newapi.query.MapReduceSpec;
 import com.basho.riak.newapi.query.WalkResult;
+import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.google.protobuf.ByteString;
@@ -42,7 +43,7 @@ import com.google.protobuf.ByteString;
  * @author russell
  * 
  */
-public class PBClient implements RawClient {
+public class PBClientAdapter implements RawClient {
 
     private final RiakClient client;
 
@@ -50,7 +51,7 @@ public class PBClient implements RawClient {
      * @param client
      * @throws IOException
      */
-    public PBClient(String host, int port) throws IOException {
+    public PBClientAdapter(String host, int port) throws IOException {
         this.client = new RiakClient(host, port);
     }
 
@@ -63,13 +64,34 @@ public class PBClient implements RawClient {
     public RiakObject[] fetch(Bucket bucket, String key) throws IOException {
         if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
             throw new IllegalArgumentException(
-                                               "bucket must not be null and bucket.getName() must not be null or empty or just whitespace.");
+                                               "bucket must not be null and bucket.getName() must not be null or empty "
+                                                       + "or just whitespace.");
         }
 
         if (key == null || key.trim().equals("")) {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
         return convert(client.fetch(bucket.getName(), key), bucket);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
+     * .Bucket, java.lang.String, int)
+     */
+    public RiakObject[] fetch(Bucket bucket, String key, int readQuorum) throws IOException {
+        if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
+            throw new IllegalArgumentException(
+                                               "bucket must not be null and bucket.getName() must not be null or empty "
+                                                       + "or just whitespace.");
+        }
+
+        if (key == null || key.trim().equals("")) {
+            throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
+        }
+        return convert(client.fetch(bucket.getName(), key, readQuorum), bucket);
     }
 
     /**
@@ -194,7 +216,7 @@ public class PBClient implements RawClient {
             result.addLink(link.getTag(), link.getBucket(), link.getKey());
         }
 
-        for (Entry<String, String> metaDataItem : riakObject.usermetaKeys()) {
+        for (Entry<String, String> metaDataItem : riakObject.userMetaEntries()) {
             result.addUsermetaItem(metaDataItem.getKey(), metaDataItem.getValue());
         }
 
@@ -217,16 +239,27 @@ public class PBClient implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.RiakObject
      * )
      */
-    public void store(RiakObject object) throws IOException {}
+    public void store(RiakObject object) throws IOException {
+        store(object, new StoreMeta(null, null, false));
+    }
 
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.basho.riak.client.raw.RawClient#delete(com.basho.riak.client.RiakObject
-     * )
+     * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String)
      */
-    public void delete(RiakObject object) throws IOException {}
+    public void delete(Bucket bucket, String key) throws IOException {
+        client.delete(bucket.getName(), key);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String, int)
+     */
+    public void delete(Bucket bucket, String key, int deleteQuorum) throws IOException {
+        client.delete(bucket.getName(), key, deleteQuorum);
+    }
 
     /*
      * (non-Javadoc)
@@ -286,8 +319,34 @@ public class PBClient implements RawClient {
      * @see
      * com.basho.riak.client.raw.RawClient#fetchBucketKeys(java.lang.String)
      */
-    public Iterator<String> fetchBucketKeys(String bucketName) throws IOException {
-        return null;
+    public Iterable<String> listKeys(String bucketName) throws IOException {
+        if (bucketName == null || bucketName.trim().equals("")) {
+            throw new IllegalArgumentException("bucketName cannot be null, empty or all whitespace");
+        }
+        
+        final KeySource keySource = client.listKeys(ByteString.copyFromUtf8(bucketName));
+        final Iterator<String> i = new Iterator<String>() {
+
+            private final Iterator<ByteString> delegate = keySource.iterator();
+
+            public boolean hasNext() {
+                return delegate.hasNext();
+            }
+
+            public String next() {
+                return nullSafeToStringUtf8(delegate.next());
+            }
+
+            public void remove() {
+                delegate.remove();
+            }
+        };
+
+        return new Iterable<String>() {
+            public Iterator<String> iterator() {
+                return i;
+            }
+        };
     }
 
     /*
@@ -329,18 +388,20 @@ public class PBClient implements RawClient {
      */
     public void setClientId(byte[] clientId) throws IOException {
         if (clientId == null || clientId.length != 4) {
-            throw new IllegalArgumentException("clientId must be 4 bytes.generateClientId() can do this for you");
+            throw new IllegalArgumentException("clientId must be 4 bytes. generateAndSetClientId() can do this for you");
         }
         client.setClientID(ByteString.copyFrom(clientId));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.raw.RawClient#getClientId()
      */
     public byte[] getClientId() throws IOException {
         final String clientId = client.getClientID();
-        
-        if(clientId != null) {
+
+        if (clientId != null) {
             return clientId.getBytes();
         } else {
             throw new IOException("null clientId returned by client");

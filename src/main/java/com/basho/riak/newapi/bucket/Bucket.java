@@ -13,8 +13,6 @@
  */
 package com.basho.riak.newapi.bucket;
 
-import java.util.Iterator;
-
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.operations.DeleteObject;
@@ -33,12 +31,18 @@ public interface Bucket extends BucketProperties {
     StoreObject<RiakObject> store(String key, String value);
 
     <T> StoreObject<T> store(T o);
+    
+    <T> StoreObject<T> store(String key, T o);
 
+    FetchObject<RiakObject> fetch(String key);
+    
     <T> FetchObject<T> fetch(String key, Class<T> type);
     
     <T> FetchObject<T> fetch(T o);
 
-    <T> DeleteObject<T> delete(T o);
+    <T> DeleteObject delete(T o);
     
-    Iterator<String> keys() throws RiakException;
+    DeleteObject delete(String key);
+    
+    Iterable<String> keys() throws RiakException;
 }

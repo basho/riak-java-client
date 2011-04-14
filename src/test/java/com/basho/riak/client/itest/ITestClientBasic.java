@@ -13,28 +13,43 @@
  */
 package com.basho.riak.client.itest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.newapi.RiakClient;
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakFactory;
 import com.basho.riak.newapi.bucket.Bucket;
 
 /**
  * @author russell
  * 
  */
-public class ITestClient {
+public abstract class ITestClientBasic {
+    
+   protected RiakClient client;
+    
+    @Before
+    public void setUp() throws RiakException {
+        this.client = getClient();
+    }
+
+    /**
+     * @return
+     */
+    protected abstract RiakClient getClient() throws RiakException;
 
     @Test public void fetchBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();
-        RiakClient c = RiakFactory.pbcClient();
 
-        Bucket b = c.fetchBucket(bucketName).execute();
+        Bucket b = client.fetchBucket(bucketName).execute();
 
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
@@ -44,16 +59,15 @@ public class ITestClient {
     
     @Test public void updateBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();
-        RiakClient c = RiakFactory.pbcClient();
 
-        Bucket b = c.fetchBucket(bucketName).execute();
+        Bucket b = client.fetchBucket(bucketName).execute();
 
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
         assertFalse(b.getAllowSiblings());
         
-        b = c.updateBucket(b).nVal(4).allowSiblings(true).execute();
+        b = client.updateBucket(b).nVal(4).allowSiblings(true).execute();
         
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
@@ -61,12 +75,10 @@ public class ITestClient {
         assertTrue(b.getAllowSiblings());
     }
     
-    
     @Test public void createBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();
-        RiakClient c = RiakFactory.pbcClient();
 
-        Bucket b = c.createBucket(bucketName).nVal(1).allowSiblings(true).execute();
+        Bucket b = client.createBucket(bucketName).nVal(1).allowSiblings(true).execute();
 
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
@@ -76,12 +88,12 @@ public class ITestClient {
 
     @Test public void clientIds() throws Exception {
         final byte[] clientId = "abcd".getBytes("UTF-8");
-        RiakClient c = RiakFactory.pbcClient();
-        c.setClientId(clientId.clone());
-        assertArrayEquals(clientId, c.getClientId());
         
-        byte[] newId = c.generateAndSetClientId();
+        client.setClientId(clientId.clone());
+        assertArrayEquals(clientId, client.getClientId());
         
-        assertArrayEquals(newId, c.getClientId());
+        byte[] newId = client.generateAndSetClientId();
+        
+        assertArrayEquals(newId, client.getClientId());
     }
 }

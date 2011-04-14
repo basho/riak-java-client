@@ -13,7 +13,6 @@
  */
 package com.basho.riak.newapi;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -59,7 +58,7 @@ public interface RiakObject extends Iterable<RiakLink> {
 
     String getUsermeta(String key);
     
-    Iterable<Entry<String, String>> usermetaKeys();
+    Iterable<Entry<String, String>> userMetaEntries();
 
     // Mutate
 
@@ -99,5 +98,10 @@ public interface RiakObject extends Iterable<RiakLink> {
      *            the key of the item to remove
      */
     RiakObject removeUsermeta(String key);
+
+    /**
+     * @return A String of the VClock
+     */
+    String getVClockAsString();
 
 }

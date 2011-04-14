@@ -13,23 +13,56 @@
  */
 package com.basho.riak.newapi.operations;
 
+import java.io.IOException;
+
+import com.basho.riak.client.raw.Command;
+import com.basho.riak.client.raw.DefaultRetrier;
+import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakRetryFailedException;
+import com.basho.riak.newapi.bucket.Bucket;
 
 /**
  * @author russell
  * 
  */
-public class DeleteObject<T> implements RiakOperation<T> {
+public class DeleteObject implements RiakOperation<Void> {
+
+    private final RawClient client;
+    private final Bucket bucket;
+    private final String key;
 
     private Integer rw;
     private int retries = 0;
+
+    /**
+     * @param client
+     * @param bucket
+     * @param key
+     */
+    public DeleteObject(RawClient client, Bucket bucket, String key) {
+        this.client = client;
+        this.bucket = bucket;
+        this.key = key;
+    }
 
     /*
      * (non-Javadoc)
      * 
      * @see com.basho.riak.client.RiakOperation#execute()
      */
-    public T execute() throws RiakRetryFailedException {
+    public Void execute() throws RiakRetryFailedException {
+        Command<Void> command = new Command<Void>() {
+            public Void execute() throws IOException {
+                if(rw == null) {
+                    client.delete(bucket, key);
+                } else {
+                    client.delete(bucket, key, rw);
+                }
+                return null;
+            }
+        };
+        
+        new DefaultRetrier().attempt(command, retries);
         return null;
     }
 

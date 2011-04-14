@@ -24,14 +24,18 @@ import java.util.Map;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.VClock;
+import com.basho.riak.newapi.convert.RiakKey;
 
 /**
  * @author russell
  * 
  */
 public class DefaultRiakObject implements RiakObject {
+    
+    public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    
     private final Bucket bucket;
-    private final String key;
+    @RiakKey private final String key;
     private final VClock vclock;
     private final String vtag;
     private final long lastModified;
@@ -105,7 +109,7 @@ public class DefaultRiakObject implements RiakObject {
 
     private void safeSetContentType(String contentType) {
         if (contentType == null) {
-            this.contentType = "";
+            this.contentType = DEFAULT_CONTENT_TYPE;
         } else {
             this.contentType = contentType;
         }
@@ -314,8 +318,20 @@ public class DefaultRiakObject implements RiakObject {
      * return an unmodifiable view of the user meta entries. Attempts to modify
      * will throw UnsupportedOperationException.
      */
-    public Iterable<Map.Entry<String, String>> usermetaKeys() {
+    public Iterable<Map.Entry<String, String>> userMetaEntries() {
         return Collections.unmodifiableCollection(userMeta.entrySet());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.newapi.RiakObject#getVClockAsString()
+     */
+    public String getVClockAsString() {
+        if (vclock != null) {
+            return vclock.asString();
+        }
+        return null;
     }
 
 }

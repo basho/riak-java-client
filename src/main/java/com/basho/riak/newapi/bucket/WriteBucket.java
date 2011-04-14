@@ -56,10 +56,10 @@ public class WriteBucket implements RiakOperation<Bucket> {
     public Bucket execute() throws RiakRetryFailedException {
         final BucketProperties propsToStore = builder.build();
 
-        new DefaultRetrier().attempt(new Command<Boolean>() {
-            public Boolean execute() throws IOException {
+        new DefaultRetrier().attempt(new Command<Void>() {
+            public Void execute() throws IOException {
                 client.updateBucket(name, propsToStore);
-                return true;
+                return null;
             }
         }, retries);
 

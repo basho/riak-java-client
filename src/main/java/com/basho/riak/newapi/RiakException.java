@@ -20,9 +20,14 @@ package com.basho.riak.newapi;
 public class RiakException extends Exception {
 
     /**
+     * 
+     */
+    private static final long serialVersionUID = 7644302774003494842L;
+
+    /**
      * @param e
      */
-    public RiakException(Exception e) {
+    public RiakException(Throwable e) {
         super(e);
     }
 

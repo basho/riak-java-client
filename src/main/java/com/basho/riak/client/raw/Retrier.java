@@ -20,6 +20,5 @@ import com.basho.riak.newapi.RiakRetryFailedException;
  *
  */
 public interface Retrier {
-
     <T> T attempt(Command<T> command, int times) throws RiakRetryFailedException;
 }

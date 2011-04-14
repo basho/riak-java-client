@@ -13,20 +13,24 @@
  */
 package com.basho.riak.newapi.cap;
 
+import java.security.SecureRandom;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author russell
- * 
+ *
  */
-public interface VClock {
+public class ClientId {
 
-    /**
-     * @return
+    static SecureRandom rnd = new SecureRandom();
+    
+    /** 
+     * @return a generated client id
      */
-    byte[] getBytes();
-
-    /**
-     * @return
-     */
-    String asString();
+    public static byte[] generate() {
+        byte[] bytes = new byte[4];
+        rnd.nextBytes(bytes);
+        return new Base64().encode(bytes);
+    }
 }

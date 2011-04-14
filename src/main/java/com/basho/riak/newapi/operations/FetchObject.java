@@ -13,26 +13,72 @@
  */
 package com.basho.riak.newapi.operations;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import com.basho.riak.client.raw.Command;
+import com.basho.riak.client.raw.DefaultRetrier;
+import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
+import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.convert.ConversionException;
 import com.basho.riak.newapi.convert.Converter;
 
 /**
  * @author russell
- *
+ * 
  */
 public class FetchObject<T> implements RiakOperation<T> {
-    
+
+    private final Bucket bucket;
+    private final RawClient client;
+    private final String key;
+
+    private int retries = 0;
+
     private Integer r;
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
 
-    /* (non-Javadoc)
+    /**
+     * @param bucket
+     * @param client
+     */
+    public FetchObject(final RawClient client, final Bucket bucket, final String key) {
+        this.bucket = bucket;
+        this.client = client;
+        this.key = key;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.RiakOperation#execute()
      */
-    public T execute() throws UnresolvedConflictException, RiakRetryFailedException {
-        return null;
+    public T execute() throws UnresolvedConflictException, RiakRetryFailedException, ConversionException {
+        // fetch, resolve
+        Command<RiakObject[]> command = new Command<RiakObject[]>() {
+            public RiakObject[] execute() throws IOException {
+                if (r != null) {
+                    return client.fetch(bucket, key, r);
+                } else {
+                    return client.fetch(bucket, key);
+                }
+            }
+        };
+
+        final RiakObject[] ros = new DefaultRetrier().attempt(command, retries);
+        final Collection<T> siblings = new ArrayList<T>(ros.length);
+
+        for (RiakObject o : ros) {
+            siblings.add(converter.toDomain(o));
+        }
+
+        return resolver.resolve(siblings);
     }
 
     public FetchObject<T> withResolver(ConflictResolver<T> resolver) {
@@ -44,10 +90,14 @@ public class FetchObject<T> implements RiakOperation<T> {
         this.r = r;
         return this;
     }
-    
+
     public FetchObject<T> withConverter(Converter<T> converter) {
         this.converter = converter;
         return this;
     }
 
+    public FetchObject<T> retry(int times) {
+        this.retries = times;
+        return this;
+    }
 }

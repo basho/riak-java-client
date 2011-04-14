@@ -26,13 +26,13 @@ public interface Converter<T> {
      * @param domainObject
      * @return a RiakObject populated from domainObject
      */
-    RiakObject fromDomain(T domainObject);
+    RiakObject fromDomain(T domainObject) throws ConversionException;
 
     /**
      * Convert from a riakObject to a domain specific instance
      * @param riakObject the RiakObject to convert
      * @return an instance of type T
      */
-    T toDomain(RiakObject riakObject);
+    T toDomain(RiakObject riakObject) throws ConversionException;
 
 }

@@ -13,20 +13,30 @@
  */
 package com.basho.riak.newapi.cap;
 
-
 /**
+ * A dumb mutation that overwrites the original value with a new one.
+ * 
  * @author russell
+ * @param <T>
  * 
  */
-public interface VClock {
+public class ClobberMutation<T> implements Mutation<T> {
+
+    final T newValue;
 
     /**
-     * @return
+     * @param newValue
      */
-    byte[] getBytes();
+    public ClobberMutation(T newValue) {
+        this.newValue = newValue;
+    }
 
-    /**
-     * @return
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.newapi.cap.Mutation#apply(java.lang.Object)
      */
-    String asString();
+    public T apply(T original) {
+        return newValue;
+    }
 }

@@ -34,12 +34,16 @@ public interface RawClient {
     // RiakObject
 
     RiakObject[] fetch(Bucket bucket, String key) throws IOException;
+    
+    RiakObject[] fetch(Bucket bucket, String key, int readQuorum) throws IOException;
 
     RiakObject[] store(RiakObject object, StoreMeta storeMeta) throws IOException;
 
     void store(RiakObject object) throws IOException;
 
-    void delete(RiakObject object) throws IOException;
+    void delete(Bucket bucket, String key) throws IOException;
+    
+    void delete(Bucket bucket, String key, int deleteQuorum) throws IOException;
 
     // Bucket
     Iterator<String> listBuckets() throws IOException;
@@ -48,7 +52,7 @@ public interface RawClient {
 
     void updateBucket(String name, BucketProperties bucketProperties) throws IOException;
 
-    Iterator<String> fetchBucketKeys(String bucketName) throws IOException;
+    Iterable<String> listKeys(String bucketName) throws IOException;
 
     // Query
     WalkResult linkWalk(RiakObject startObject, LinkWalkSpec linkWalkSpec) throws IOException;

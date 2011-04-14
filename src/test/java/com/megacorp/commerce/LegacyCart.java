@@ -11,43 +11,55 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.query;
+package com.megacorp.commerce;
+
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * Models a named erlang function.
- * 
- * Immutable.
- * 
  * @author russell
  * 
  */
-public class NamedErlangFunction implements NamedFunction {
-    private final String mod;
-    private final String fun;
+public class LegacyCart {
+
+    private String userId;
+    private Set<String> cartItems = new CopyOnWriteArraySet<String>();
 
     /**
-     * @param mod
-     *            the module that contains the function.
-     * @param fun
-     *            the function name.
+     * @return the userId
      */
-    public NamedErlangFunction(String mod, String fun) {
-        this.mod = mod;
-        this.fun = fun;
+    public String getUserId() {
+        return userId;
     }
 
     /**
-     * @return the erlang module that contains the function.
+     * @param userId
+     *            the userId to set
      */
-    public String getMod() {
-        return mod;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     /**
-     * @return the function name.
+     * @return the cartItems
      */
-    public String getFun() {
-        return fun;
+    public Set<String> getCartItems() {
+        return cartItems;
+    }
+
+    /**
+     * @param cartItems
+     *            the cartItems to set
+     */
+    public void setCartItems(Set<String> cartItems) {
+        this.cartItems = cartItems;
+    }
+
+    /**
+     * @param string
+     */
+    public void addItem(String item) {
+        cartItems.add(item);
     }
 
     /* (non-Javadoc)
@@ -56,8 +68,8 @@ public class NamedErlangFunction implements NamedFunction {
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fun == null) ? 0 : fun.hashCode());
-        result = prime * result + ((mod == null) ? 0 : mod.hashCode());
+        result = prime * result + ((cartItems == null) ? 0 : cartItems.hashCode());
+        result = prime * result + ((userId == null) ? 0 : userId.hashCode());
         return result;
     }
 
@@ -71,32 +83,24 @@ public class NamedErlangFunction implements NamedFunction {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof NamedErlangFunction)) {
+        if (!(obj instanceof LegacyCart)) {
             return false;
         }
-        NamedErlangFunction other = (NamedErlangFunction) obj;
-        if (fun == null) {
-            if (other.fun != null) {
+        LegacyCart other = (LegacyCart) obj;
+        if (cartItems == null) {
+            if (other.cartItems != null) {
                 return false;
             }
-        } else if (!fun.equals(other.fun)) {
+        } else if (!cartItems.equals(other.cartItems)) {
             return false;
         }
-        if (mod == null) {
-            if (other.mod != null) {
+        if (userId == null) {
+            if (other.userId != null) {
                 return false;
             }
-        } else if (!mod.equals(other.mod)) {
+        } else if (!userId.equals(other.userId)) {
             return false;
         }
         return true;
     }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override public String toString() {
-        return String.format("NamedErlangFunction [mod=%s, fun=%s]", mod, fun);
-    }
-    
 }

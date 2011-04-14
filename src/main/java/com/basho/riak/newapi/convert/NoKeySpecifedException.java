@@ -11,22 +11,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.cap;
-
+package com.basho.riak.newapi.convert;
 
 /**
  * @author russell
  * 
  */
-public interface VClock {
+public class NoKeySpecifedException extends RuntimeException {
 
     /**
-     * @return
+     * 
      */
-    byte[] getBytes();
+    private static final long serialVersionUID = 8973356637885359438L;
+    private final Object domainObject;
 
     /**
-     * @return
+     * @param domainObject
      */
-    String asString();
+    public NoKeySpecifedException(final Object domainObject) {
+        this.domainObject = domainObject;
+    }
+
+    public Object getDomainObject() {
+        return domainObject;
+    }
 }

@@ -28,9 +28,14 @@ import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.Mutation;
 import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.newapi.convert.ConversionException;
 import com.basho.riak.newapi.convert.Converter;
 
 /**
+ * Stores a given object into riak. Fetches first.
+ * 
+ * @TODO figure out if you *should* fetch first, and if you should, what about
+ *       R?
  * @author russell
  * 
  */
@@ -48,21 +53,11 @@ public class StoreObject<T> implements RiakOperation<T> {
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
 
-    private String key;
-
-    /**
-     * Create a StoreObject to use the given RawClient to talk to riak.
-     * 
-     * @param client
-     *            The configured client to use.
-     */
-    public StoreObject(final RawClient client, Bucket bucket) {
-        this.client = client;
-        this.bucket = bucket;
-    }
+    private final String key;
 
     public StoreObject(final RawClient client, Bucket bucket, String key) {
-        this(client, bucket);
+        this.client = client;
+        this.bucket = bucket;
         this.key = key;
     }
 
@@ -70,25 +65,16 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @return null if returnBody is false
      * @throws RiakException
      */
-    public T execute() throws RiakRetryFailedException, UnresolvedConflictException {
-        // fetch, resolve, mutate, put
-        final RiakObject[] ros = new DefaultRetrier().attempt(new Command<RiakObject[]>() {
-            public RiakObject[] execute() throws IOException {
-                return client.fetch(bucket, key);
-            }
-        }, retries);
-
-        final Collection<T> siblings = new ArrayList<T>(ros.length);
-
-        for (RiakObject o : ros) {
-            siblings.add(converter.toDomain(o));
-        }
+    public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
+        // fetch, mutate, put
         
-        System.out.println("Siblings length is " + siblings.size());
+        final T resolved = new FetchObject<T>(client, bucket, key)
+                .retry(retries)
+                .withConverter(converter)
+                .withResolver(resolver)
+            .execute();
 
-        final T resolved = resolver.resolve(siblings);
         final T mutated = mutation.apply(resolved);
-
         final RiakObject o = converter.fromDomain(mutated);
 
         final RiakObject[] stored = new DefaultRetrier().attempt(new Command<RiakObject[]>() {
@@ -97,10 +83,10 @@ public class StoreObject<T> implements RiakOperation<T> {
             }
         }, retries);
 
-        final Collection<T> storedSiblings = new ArrayList<T>(ros.length);
+        final Collection<T> storedSiblings = new ArrayList<T>(stored.length);
 
         for (RiakObject s : stored) {
-            siblings.add(converter.toDomain(s));
+            storedSiblings.add(converter.toDomain(s));
         }
 
         return resolver.resolve(storedSiblings);

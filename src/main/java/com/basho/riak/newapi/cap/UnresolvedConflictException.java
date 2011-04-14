@@ -16,11 +16,9 @@ package com.basho.riak.newapi.cap;
 import java.util.Collection;
 
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
 
 /**
  * @author russell
- * @param <T>
  * 
  */
 public class UnresolvedConflictException extends RiakException {
@@ -31,9 +29,9 @@ public class UnresolvedConflictException extends RiakException {
     private static final long serialVersionUID = -219858468775752064L;
     
     private final String reason;
-    private final Collection<RiakObject> siblings;
+    private final Collection<? extends Object> siblings;
 
-    public UnresolvedConflictException(String reason, Collection<RiakObject> siblings) {
+    public UnresolvedConflictException(String reason, Collection<? extends Object> siblings) {
         this.reason = reason;
         this.siblings = siblings;
     }
@@ -49,7 +47,7 @@ public class UnresolvedConflictException extends RiakException {
      * @param <T>
      * @return the siblings
      */
-    public Collection<RiakObject> getSiblings() {
+    public Collection<? extends Object> getSiblings() {
         return siblings;
     }
 

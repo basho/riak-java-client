@@ -11,22 +11,40 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.cap;
+package com.basho.riak.newapi.convert;
 
+import com.basho.riak.newapi.RiakException;
 
 /**
  * @author russell
  * 
  */
-public interface VClock {
+public class ConversionException extends RiakException {
 
     /**
-     * @return
+     * 
      */
-    byte[] getBytes();
+    private static final long serialVersionUID = -2271716956697197374L;
 
     /**
-     * @return
+     * 
      */
-    String asString();
+    public ConversionException() {
+        super();
+    }
+
+    /**
+     * @param message
+     */
+    public ConversionException(String message) {
+        super(message);
+    }
+
+    /**
+     * @param cause
+     */
+    public ConversionException(Throwable cause) {
+        super(cause);
+    }
+
 }

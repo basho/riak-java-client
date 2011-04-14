@@ -15,9 +15,16 @@ package com.basho.riak.newapi.cap;
 
 
 /**
+ * Interface for a mutation.
+ * 
  * @author russell
  *
  */
 public interface Mutation<T> {
-    T apply(T value);
+    /**
+     * Applies a mutation to the "original" value passed in
+     * @param original the value to mutate.
+     * @return the mutated value.
+     */
+    T apply(T original);
 }
