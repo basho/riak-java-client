@@ -41,6 +41,12 @@ public class TestRequestMeta {
         assertEquals(Integer.toString(DW), impl.getQueryParam("dw"));
     }
 
+    @Test public void deleteParams_sets_rw_query_parameter() {
+        final int RW = 10;
+        RequestMeta impl = RequestMeta.deleteParams(RW);
+        assertEquals(Integer.toString(RW), impl.getQueryParam("rw"));
+    }
+
     @Test public void headers_are_returned_by_get_headers() {
         final String HEADER_KEY = "key";
         final String HEADER_VALUE = "value";

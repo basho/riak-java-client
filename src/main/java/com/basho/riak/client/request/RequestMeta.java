@@ -72,6 +72,22 @@ public class RequestMeta {
     }
 
     /**
+     * Use the given rw parameter for delete operations
+     *
+     * @param rw
+     *            rw- parameter for delete: the number of
+     *            successful read/write response required for a successful overall
+     *            response
+     * @return A {@link RequestMeta} object with the appropriate query
+     *         parameters
+     */
+    public static RequestMeta deleteParams(int rw) {
+        RequestMeta meta = new RequestMeta();
+        meta.setQueryParam(Constants.QP_RW, Integer.toString(rw));
+        return meta;
+    }
+
+    /**
      * Add the specified HTTP header
      * 
      * @param key

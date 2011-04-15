@@ -24,8 +24,13 @@ import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.plain.PlainClient;
+import com.basho.riak.client.plain.RiakIOException;
+import com.basho.riak.client.plain.RiakResponseException;
+import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
+import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.StoreResponse;
 
 /**
@@ -132,5 +137,29 @@ public class ITestBasic {
         assertSuccess(c.delete(BUCKET, KEY1));
         assertSuccess(c.delete(BUCKET, KEY2));
         assertSuccess(c.delete(BUCKET, KEY3));
+    }
+
+    @Test public void deleteQuorumIsApplied() {
+        final RiakClient c = new RiakClient(RIAK_URL);
+
+        final String bucket = UUID.randomUUID().toString();
+        final String key = UUID.randomUUID().toString();
+        final byte[] value = "value".getBytes();
+
+        RiakBucketInfo bucketInfo = new RiakBucketInfo();
+        bucketInfo.setNVal(3);
+
+        c.setBucketSchema(bucket, bucketInfo);
+        RiakObject o = new RiakObject(bucket, key, value);
+
+        final RequestMeta rm = WRITE_3_REPLICAS();
+
+        StoreResponse storeresp = c.store(o, rm);
+        assertSuccess(storeresp);
+
+        HttpResponse deleteResponse = c.delete(bucket, key, RequestMeta.deleteParams(4));
+
+        assertEquals(500, deleteResponse.getStatusCode());
+        assertTrue(deleteResponse.getBodyAsString().contains("n_val_violation"));
     }
 }

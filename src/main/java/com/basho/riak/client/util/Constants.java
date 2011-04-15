@@ -78,6 +78,7 @@ public interface Constants {
     public static String QP_R = "r";
     public static String QP_W = "w";
     public static String QP_DW = "dw";
+    public static String QP_RW = "rw";
     public static String QP_KEYS = "keys";
 
     // HTTP method names
