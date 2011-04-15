@@ -56,21 +56,20 @@ The high level Riak client lets you work with buckets and map reduce. The map
 reduce/link walking stuff is incomplete so I'll skip that (for now).
 
 Have a look at
-[[https://github.com/russelldb/riak-api/blob/master/src/test/java/com/basho/riak/client/itest/ITestClientBasic.java][ITestClientBasic]]
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/basho/riak/client/itest/ITestClientBasic.java][ITestClientBasic]]
 and
-[[https://github.com/russelldb/riak-api/blob/master/src/main/java/com/basho/riak/newapi/RiakClient.java][RiakClient]].
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/RiakClient.java][RiakClient]].
 All Riak access to a riak objects is done through the Bucket interface, the
 client just creates/updates and fetches buckets.
 
 **** Buckets
 
 A test is worth a 100 words so have a look at
-[[https://github.com/russelldb/riak-api/blob/master/src/test/java/com/basho/riak/client/itest/ITestBucket.java][ITestBucket]]
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/basho/riak/client/itest/ITestBucket.java][ITestBucket]]
 and the interface
-[[https://github.com/russelldb/riak-api/blob/master/src/main/java/com/basho/riak/newapi/bucket/Bucket.java][Bucket]]
-
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/bucket/Bucket.java][Bucket]]
 Bucket methods return
-[[https://github.com/russelldb/riak-api/blob/master/src/main/java/com/basho/riak/newapi/operations/RiakOperation.java][RiakOperation's]],
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/operations/RiakOperation.java][RiakOperation's]]
 which are implemented as fluent builders to save the proliferation of methods
 that occur when you have a lot of optional arguments.
 
@@ -79,7 +78,7 @@ that occur when you have a lot of optional arguments.
 A RiakOpertaion is configured and then it is executed. This is how to fetch,
 store or delete data. It can be configured to be retried N times. By default
 that N is 0 (IE try once and fail at once.) An operation accepts the parameters
-it needs. So A Delete Operation accepts an optional RW param, for example.
+it needs. So a [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/operations/DeleteObject.java][Delete Operation]] accepts an optional RW param, for example.
 
 **** Conflict resolution, Mutation and Converstion 
 
@@ -87,9 +86,12 @@ it needs. So A Delete Operation accepts an optional RW param, for example.
 
 Conflict happens in Dynamo style systems. It is best to have a strategy in mind
 to deal with it. The strategy is highly dependant on your domain. A classic
-example is the shopping cart [see_shopping_cart] , conflicting shopping carts
+example is the 
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/megacorp/commerce/ShoppingCart.java][shopping cart]], conflicting shopping carts
 can be merged by a union of their contents, sure you might reinstate a deleted
-toaster but that is better than losing money... See [cart_merger].
+toaster but that is better than losing money... 
+
+See [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/megacorp/commerce/MergeCartResolver.java][MergeCartResolver]].
 
 Both fetch and store make use of a ConflictResolver to handle siblings. The
 default conflict resolver right now does not resolve conflicts, it blows up with
@@ -102,10 +104,10 @@ conflict resolver to either a fetch or a store operation.
 
 Since conflict resolution is a very domain specific thing it makes sense to
 convert the Riak data into a domain specific object before conflict is
-resolved. You provide an implementation of the [Converter] interface to any
+resolved. You provide an implementation of the [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/convert/Converter.java][Converter]] interface to any
 fetch/store operation. By default, if you are working with a <RiakObject>
 operation the converter does nothing. If you are working with a <T> generic
-operation then there is a basic JSONConverter [link] that is the simplest
+operation then there is a basic [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/convert/JSONConverter.java][JSONConverter]] that is the simplest
 possible use of [[http://wiki.fasterxml.com/JacksonHome][Jackson JSON converter]]. It will attempt to coherce a
 RiakObject's JSON payload into a domain class of your chosing. It can also
 return Map, Collection etc if you are yet to decide on a domain.
@@ -123,8 +125,8 @@ again, you don't want to overwrite the existing value with your own new value,
 so a Mutation that merges the current value with your new value makes sense
 here.
 
-You provide an implementation of Mutation<T> [link] that accepts the old value
-and returns the new value. The default current mutation clobbers the old value,
+You provide an implementation of [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/cap/Mutation.java][Mutation<T>]] that accepts the old value
+and returns the new value. The [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/cap/ClobberMutation.java][default]] current mutation clobbers the old value,
 that is it ignores the old value and returns your new value.
 
 ***** Fetch then Store All together a Fetch operation now entails
@@ -147,11 +149,13 @@ a store
 
  If you are working with ShoppingCarts you're working with Shopping Carts. It is
  a lot of faff providing the Converter, Mutation and ConflictResolver to the
- Bucket operation over and over again (see [link to ItestBasicBucket]). So there
- are [DomainBuckets]. A DomainBucket is a wrapper around a bucket (you see,
+ Bucket operation over and over again. So there
+ are
+ [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/bucket/DomainBucket.java][Domain Buckets]]. A DomainBucket is a wrapper around a bucket (you see,
  *another* layer) that is configured at creation time with a ConflictResolver,
  MutationProvider and a Converter. Thereafter you can work with the DomainBucket
- and deal solely with your ShoppingCart. Look at [link_to_itest_domain_bucket]
+ and deal solely with your ShoppingCart. Look at
+ [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/basho/riak/client/itest/ITestDomainBucket.java][this test]]
  for an example.
 
 There well very soon be a default RiakObject DomainBucket preconfigured with a
@@ -188,4 +192,5 @@ testable, resusable classes and DomainBuckets.
 - Sort out the package names
 - Stop leaking Jackson annotations
 - A default RiakObject DomaonBucket (as described above)
+- Lots more
 
