@@ -11,16 +11,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.operations;
+package com.basho.riak.client.itest;
 
+import com.basho.riak.newapi.RiakClient;
 import com.basho.riak.newapi.RiakException;
+import com.basho.riak.newapi.RiakFactory;
 
 /**
  * @author russell
  * 
  */
-public interface RiakOperation<T> {
+public class ITestDomainBucketHTTP extends ITestDomainBucket {
 
-    T execute() throws RiakException;
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.itest.ITestDomainBucket#getClient()
+     */
+    @Override public RiakClient getClient() throws RiakException {
+        // com.basho.riak.client.RiakClient riakClient = new
+        // com.basho.riak.client.RiakClient("http://127.0.0.1:8098/riak");
+        // riakClient.getHttpClient().getHostConfiguration().setProxy("127.0.0.1",
+        // 8008);
+        return RiakFactory.httpClient();
+    }
 
 }

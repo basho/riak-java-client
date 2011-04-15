@@ -50,7 +50,9 @@ public class NamedErlangFunction implements NamedFunction {
         return fun;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override public int hashCode() {
@@ -61,7 +63,9 @@ public class NamedErlangFunction implements NamedFunction {
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override public boolean equals(Object obj) {
@@ -92,11 +96,13 @@ public class NamedErlangFunction implements NamedFunction {
         return true;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override public String toString() {
         return String.format("NamedErlangFunction [mod=%s, fun=%s]", mod, fun);
     }
-    
+
 }

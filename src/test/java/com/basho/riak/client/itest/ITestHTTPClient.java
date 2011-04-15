@@ -30,15 +30,17 @@ import com.basho.riak.newapi.query.NamedErlangFunction;
  * 
  */
 public class ITestHTTPClient extends ITestClientBasic {
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
     @Override protected RiakClient getClient() throws RiakException {
         return RiakFactory.httpClient();
     }
-    
-    @Test public void fetchBucket()  throws RiakException {
+
+    @Test public void fetchBucket() throws RiakException {
         super.fetchBucket();
         final String bucketName = UUID.randomUUID().toString();
 
@@ -47,41 +49,40 @@ public class ITestHTTPClient extends ITestClientBasic {
         assertEquals(new NamedErlangFunction("riak_core_util", "chash_std_keyfun"), b.getChashKeyFunction());
         assertEquals(new NamedErlangFunction("riak_kv_wm_link_walker", "mapreduce_linkfun"), b.getLinkWalkFunction());
     }
-    
+
     @Test public void updateBucket() throws RiakException {
         final NamedErlangFunction newChashkeyFun = new NamedErlangFunction("riak_core_util", "chash_bucketonly_keyfun");
         final NamedErlangFunction newLinkwalkFun = new NamedErlangFunction("riak_core_util", "chash_std_keyfun");
-        
+
         super.updateBucket();
-        
+
         final String bucketName = UUID.randomUUID().toString();
 
         Bucket b = client.fetchBucket(bucketName).execute();
 
-       
         b = client.updateBucket(b).chashKeyFunction(newChashkeyFun).linkWalkFunction(newLinkwalkFun).execute();
-        
+
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.itest.ITestClient#createBucket()
      */
     @Override public void createBucket() throws RiakException {
         super.createBucket();
-        
+
         final NamedErlangFunction newChashkeyFun = new NamedErlangFunction("riak_core_util", "chash_bucketonly_keyfun");
         final NamedErlangFunction newLinkwalkFun = new NamedErlangFunction("riak_core_util", "chash_std_keyfun");
-        
+
         final String bucketName = UUID.randomUUID().toString();
 
         Bucket b = client.createBucket(bucketName).chashKeyFunction(newChashkeyFun).linkWalkFunction(newLinkwalkFun).execute();
-        
+
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());
     }
-    
-    
 
 }

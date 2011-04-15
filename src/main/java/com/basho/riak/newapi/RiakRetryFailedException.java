@@ -15,7 +15,7 @@ package com.basho.riak.newapi;
 
 /**
  * @author russell
- *
+ * 
  */
 public class RiakRetryFailedException extends RiakException {
 

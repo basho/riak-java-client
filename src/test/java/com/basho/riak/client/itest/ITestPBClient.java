@@ -22,8 +22,10 @@ import com.basho.riak.newapi.RiakFactory;
  * 
  */
 public class ITestPBClient extends ITestClientBasic {
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
     @Override protected RiakClient getClient() throws RiakException {

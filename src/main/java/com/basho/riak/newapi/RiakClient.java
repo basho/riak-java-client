@@ -24,11 +24,11 @@ import com.basho.riak.newapi.query.MapReduce;
  * 
  */
 public interface RiakClient {
-    
+
     RiakClient setClientId(byte[] clientId) throws RiakException;
-    
+
     byte[] generateAndSetClientId() throws RiakException;
-    
+
     byte[] getClientId() throws RiakException;
 
     FetchBucket fetchBucket(String bucketName);

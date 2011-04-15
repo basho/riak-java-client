@@ -13,7 +13,6 @@
  */
 package com.basho.riak.newapi.cap;
 
-
 public final class Quorum {
     private Integer i;
     private CAP cap;

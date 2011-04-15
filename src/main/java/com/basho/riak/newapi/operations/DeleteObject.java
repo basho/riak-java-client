@@ -53,7 +53,7 @@ public class DeleteObject implements RiakOperation<Void> {
     public Void execute() throws RiakRetryFailedException {
         Command<Void> command = new Command<Void>() {
             public Void execute() throws IOException {
-                if(rw == null) {
+                if (rw == null) {
                     client.delete(bucket, key);
                 } else {
                     client.delete(bucket, key, rw);
@@ -61,7 +61,7 @@ public class DeleteObject implements RiakOperation<Void> {
                 return null;
             }
         };
-        
+
         new DefaultRetrier().attempt(command, retries);
         return null;
     }

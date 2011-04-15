@@ -51,4 +51,12 @@ public class RiakFactory {
         return new DefaultClient(client);
     }
 
+    /**
+     * @return a wrapped RiakClient
+     */
+    public static RiakClient httpClient(com.basho.riak.client.RiakClient delegate) throws RiakException {
+        final RawClient client = new HTTPClientAdapter(delegate);
+        return new DefaultClient(client);
+    }
+
 }

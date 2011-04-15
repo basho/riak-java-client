@@ -24,6 +24,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
+import com.basho.riak.newapi.cap.VClock;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -57,12 +58,13 @@ public class JSONConverter<T> implements Converter<T> {
     /*
      * (non-Javadoc)
      * 
-     * @see com.basho.riak.newapi.convert.Converter#fromDomain(java.lang.Object)
+     * @see com.basho.riak.newapi.convert.Converter#fromDomain(java.lang.Object,
+     * VClock)
      */
-    public RiakObject fromDomain(T domainObject) throws ConversionException {
+    public RiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException {
         try {
             String key = getKey(domainObject, this.defaultKey);
-            
+
             if (key == null) {
                 throw new NoKeySpecifedException(domainObject);
             }
@@ -70,7 +72,7 @@ public class JSONConverter<T> implements Converter<T> {
             final StringWriter sw = new StringWriter();
             objectMapper.writeValue(sw, domainObject);
 
-            return RiakObjectBuilder.newBuilder(bucket, key).withValue(sw.toString()).build();
+            return RiakObjectBuilder.newBuilder(bucket, key).withValue(sw.toString()).withVClock(vclock).build();
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);
         } catch (IOException e) {

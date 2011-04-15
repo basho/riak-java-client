@@ -19,7 +19,6 @@ import com.basho.riak.newapi.operations.DeleteObject;
 import com.basho.riak.newapi.operations.FetchObject;
 import com.basho.riak.newapi.operations.StoreObject;
 
-
 /**
  * @author russell
  * 
@@ -27,22 +26,22 @@ import com.basho.riak.newapi.operations.StoreObject;
 public interface Bucket extends BucketProperties {
 
     String getName();
-    
+
     StoreObject<RiakObject> store(String key, String value);
 
     <T> StoreObject<T> store(T o);
-    
+
     <T> StoreObject<T> store(String key, T o);
 
     FetchObject<RiakObject> fetch(String key);
-    
+
     <T> FetchObject<T> fetch(String key, Class<T> type);
-    
+
     <T> FetchObject<T> fetch(T o);
 
     <T> DeleteObject delete(T o);
-    
+
     DeleteObject delete(String key);
-    
+
     Iterable<String> keys() throws RiakException;
 }

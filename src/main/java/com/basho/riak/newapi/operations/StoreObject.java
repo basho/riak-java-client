@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
@@ -44,6 +45,8 @@ public class StoreObject<T> implements RiakOperation<T> {
     private final RawClient client;
     private final Bucket bucket;
 
+    // TODO populate
+    private Integer r;
     private Integer w;
     private Integer dw;
     private boolean returnBody = false;
@@ -67,23 +70,34 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
         // fetch, mutate, put
-        
-        final T resolved = new FetchObject<T>(client, bucket, key)
-                .retry(retries)
-                .withConverter(converter)
-                .withResolver(resolver)
-            .execute();
+        Command<RiakResponse> command = new Command<RiakResponse>() {
+            public RiakResponse execute() throws IOException {
+                if (r != null) {
+                    return client.fetch(bucket, key, r);
+                } else {
+                    return client.fetch(bucket, key);
+                }
+            }
+        };
 
+        final RiakResponse ros = new DefaultRetrier().attempt(command, retries);
+        final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
+
+        for (RiakObject o : ros) {
+            siblings.add(converter.toDomain(o));
+        }
+
+        final T resolved = resolver.resolve(siblings);
         final T mutated = mutation.apply(resolved);
-        final RiakObject o = converter.fromDomain(mutated);
+        final RiakObject o = converter.fromDomain(mutated, ros.getVclock());
 
-        final RiakObject[] stored = new DefaultRetrier().attempt(new Command<RiakObject[]>() {
-            public RiakObject[] execute() throws IOException {
+        final RiakResponse stored = new DefaultRetrier().attempt(new Command<RiakResponse>() {
+            public RiakResponse execute() throws IOException {
                 return client.store(o, generateStoreMeta());
             }
         }, retries);
 
-        final Collection<T> storedSiblings = new ArrayList<T>(stored.length);
+        final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
 
         for (RiakObject s : stored) {
             storedSiblings.add(converter.toDomain(s));

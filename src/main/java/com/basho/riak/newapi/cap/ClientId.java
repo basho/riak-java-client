@@ -19,13 +19,13 @@ import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author russell
- *
+ * 
  */
 public class ClientId {
 
     static SecureRandom rnd = new SecureRandom();
-    
-    /** 
+
+    /**
      * @return a generated client id
      */
     public static byte[] generate() {

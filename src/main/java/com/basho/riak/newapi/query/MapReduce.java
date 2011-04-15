@@ -16,18 +16,19 @@ package com.basho.riak.newapi.query;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.operations.RiakOperation;
 
-
 /**
  * @author russell
- *
+ * 
  */
-public class MapReduce implements RiakOperation<MapReduceResult>{
+public class MapReduce implements RiakOperation<MapReduceResult> {
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.RiakOperation#execute()
      */
     public MapReduceResult execute() throws RiakException {
         return null;
     }
-    
+
 }

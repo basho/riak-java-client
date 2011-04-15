@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.bucket.Bucket;
@@ -61,8 +62,8 @@ public class FetchObject<T> implements RiakOperation<T> {
      */
     public T execute() throws UnresolvedConflictException, RiakRetryFailedException, ConversionException {
         // fetch, resolve
-        Command<RiakObject[]> command = new Command<RiakObject[]>() {
-            public RiakObject[] execute() throws IOException {
+        Command<RiakResponse> command = new Command<RiakResponse>() {
+            public RiakResponse execute() throws IOException {
                 if (r != null) {
                     return client.fetch(bucket, key, r);
                 } else {
@@ -71,8 +72,8 @@ public class FetchObject<T> implements RiakOperation<T> {
             }
         };
 
-        final RiakObject[] ros = new DefaultRetrier().attempt(command, retries);
-        final Collection<T> siblings = new ArrayList<T>(ros.length);
+        final RiakResponse ros = new DefaultRetrier().attempt(command, retries);
+        final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
 
         for (RiakObject o : ros) {
             siblings.add(converter.toDomain(o));

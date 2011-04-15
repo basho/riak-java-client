@@ -14,13 +14,12 @@
 package com.basho.riak.client.raw.pbc;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -61,7 +60,7 @@ public class PBClientAdapter implements RawClient {
      * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String,
      * java.lang.String)
      */
-    public RiakObject[] fetch(Bucket bucket, String key) throws IOException {
+    public RiakResponse fetch(Bucket bucket, String key) throws IOException {
         if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
@@ -81,7 +80,7 @@ public class PBClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String, int)
      */
-    public RiakObject[] fetch(Bucket bucket, String key, int readQuorum) throws IOException {
+    public RiakResponse fetch(Bucket bucket, String key, int readQuorum) throws IOException {
         if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
@@ -98,16 +97,18 @@ public class PBClientAdapter implements RawClient {
      * @param fetch
      * @return
      */
-    private RiakObject[] convert(com.basho.riak.pbc.RiakObject[] pbcObjects, final Bucket bucket) {
-        Collection<RiakObject> converted = new ArrayList<RiakObject>();
+    private RiakResponse convert(com.basho.riak.pbc.RiakObject[] pbcObjects, final Bucket bucket) {
+        RiakResponse response = RiakResponse.empty();
 
-        if (pbcObjects != null) {
-            for (com.basho.riak.pbc.RiakObject o : pbcObjects) {
-                converted.add(convert(o, bucket));
+        if (pbcObjects != null && pbcObjects.length > 0) {
+            RiakObject[] converted = new RiakObject[pbcObjects.length];
+            for (int i = 0; i < pbcObjects.length; i++) {
+                converted[i] = convert(pbcObjects[i], bucket);
             }
+            response = new RiakResponse(pbcObjects[0].getVclock().toByteArray(), converted);
         }
 
-        return converted.toArray(new RiakObject[converted.size()]);
+        return response;
     }
 
     /**
@@ -157,7 +158,7 @@ public class PBClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.RiakObject
      * , com.basho.riak.client.raw.StoreMeta)
      */
-    public RiakObject[] store(RiakObject riakObject, StoreMeta storeMeta) throws IOException {
+    public RiakResponse store(RiakObject riakObject, StoreMeta storeMeta) throws IOException {
         if (riakObject == null || riakObject.getKey() == null || riakObject.getBucket() == null) {
             throw new IllegalArgumentException(
                                                "object cannot be null, object's key cannot be null, object's bucket cannot be null");
@@ -323,7 +324,7 @@ public class PBClientAdapter implements RawClient {
         if (bucketName == null || bucketName.trim().equals("")) {
             throw new IllegalArgumentException("bucketName cannot be null, empty or all whitespace");
         }
-        
+
         final KeySource keySource = client.listKeys(ByteString.copyFromUtf8(bucketName));
         final Iterator<String> i = new Iterator<String>() {
 

@@ -21,25 +21,27 @@ import org.junit.Test;
 
 /**
  * @author russell
- *
+ * 
  */
 public class ClobberMutationTest {
 
     /**
-     * Test method for {@link com.basho.riak.newapi.cap.ClobberMutation#ClobberMutation(java.lang.Object)}.
+     * Test method for
+     * {@link com.basho.riak.newapi.cap.ClobberMutation#ClobberMutation(java.lang.Object)}
+     * .
      */
     @Test public void apply() {
         final Object oldValue = new Object();
-        
+
         ClobberMutation<Object> mutation = new ClobberMutation<Object>(null);
-        
+
         assertNull(mutation.apply(oldValue));
-        
+
         Object newValue = new Object();
-        
+
         assertNotSame(oldValue, newValue);
         mutation = new ClobberMutation<Object>(newValue);
-        
+
         assertSame(newValue, mutation.apply(new Object()));
     }
 

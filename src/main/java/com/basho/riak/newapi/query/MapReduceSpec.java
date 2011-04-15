@@ -13,12 +13,11 @@
  */
 package com.basho.riak.newapi.query;
 
-
 /**
  * A Map Reduce Query run it via {@link RiakClient#mapReduce(MapReduceSpec)}
  * 
  * @author russell
- *
+ * 
  */
 public class MapReduceSpec {
 

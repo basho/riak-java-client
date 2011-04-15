@@ -38,7 +38,8 @@ public class TestKeySource {
      * 
      * @throws Exception
      */
-    @SuppressWarnings({ "unchecked", "unused" }) @Test public void streamIsClosedWhenKeySourceIsWeaklyReachable() throws Exception {
+    @SuppressWarnings({ "unchecked", "unused" }) @Test public void streamIsClosedWhenKeySourceIsWeaklyReachable()
+            throws Exception {
         final BucketResponse bucketResponse = mock(BucketResponse.class);
         final RiakBucketInfo riakBucketInfo = mock(RiakBucketInfo.class);
         final Collection<String> keys = mock(Collection.class);

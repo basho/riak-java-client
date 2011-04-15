@@ -62,7 +62,9 @@ public class LegacyCart {
         cartItems.add(item);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override public int hashCode() {
@@ -73,7 +75,9 @@ public class LegacyCart {
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override public boolean equals(Object obj) {

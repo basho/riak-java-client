@@ -25,12 +25,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakFactory;
+import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.DomainBucket;
-import com.megacorp.commerce.MergeResolver;
+import com.megacorp.commerce.MergeCartResolver;
 import com.megacorp.commerce.ShoppingCart;
 
 /**
@@ -40,23 +42,25 @@ import com.megacorp.commerce.ShoppingCart;
  * @author russell
  * 
  */
-public class ITestDomainBucket {
+public abstract class ITestDomainBucket {
+
+    protected RiakClient client;
+
+    @Before public void setUp() throws RiakException {
+        this.client = getClient();
+    }
+
+    public abstract RiakClient getClient() throws RiakException;
 
     @Test public void useDomainBucket() throws Exception {
         final String bucketName = UUID.randomUUID().toString() + "_carts";
         final String userId = UUID.randomUUID().toString();
 
-        final Bucket b = RiakFactory.pbcClient().createBucket(bucketName).allowSiblings(true).nVal(3).execute();
+        client.generateAndSetClientId();
 
-        final DomainBucket<ShoppingCart> carts = DomainBucket.builder(b, ShoppingCart.class)
-                .withResolver(new MergeResolver())
-                .returnBody(true)
-                .retry(3)
-                .w(1)
-                .dw(1)
-                .r(1)
-                .rw(1)
-            .build();
+        final Bucket b = client.createBucket(bucketName).allowSiblings(true).nVal(3).execute();
+
+        final DomainBucket<ShoppingCart> carts = DomainBucket.builder(b, ShoppingCart.class).withResolver(new MergeCartResolver()).returnBody(true).retry(3).w(1).dw(1).r(1).rw(1).build();
 
         final ShoppingCart cart = new ShoppingCart(userId);
 
@@ -97,6 +101,7 @@ public class ITestDomainBucket {
                                              "bowtie" };
 
         final ShoppingCart finalCart = carts.fetch(userId);
+
         assertTrue(finalCart.hasAll(Arrays.asList(expectedMergesCart)));
     }
 }

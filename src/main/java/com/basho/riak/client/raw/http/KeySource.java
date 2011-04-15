@@ -21,9 +21,8 @@ import java.util.TimerTask;
 import com.basho.riak.client.response.BucketResponse;
 
 /**
- * Wraps the stream of keys from BucketResponse.getBucketInfo.getKeys
- * in an iterator that handles closing the underlying http stream
- * when finished with.
+ * Wraps the stream of keys from BucketResponse.getBucketInfo.getKeys in an
+ * iterator that handles closing the underlying http stream when finished with.
  * 
  * @author russell
  * 

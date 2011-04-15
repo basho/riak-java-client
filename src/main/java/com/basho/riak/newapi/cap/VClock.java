@@ -13,7 +13,6 @@
  */
 package com.basho.riak.newapi.cap;
 
-
 /**
  * @author russell
  * 

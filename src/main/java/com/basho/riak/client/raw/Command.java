@@ -17,10 +17,10 @@ import java.io.IOException;
 
 /**
  * @author russell
- *
+ * 
  */
 public interface Command<T> {
 
     T execute() throws IOException;
-    
+
 }

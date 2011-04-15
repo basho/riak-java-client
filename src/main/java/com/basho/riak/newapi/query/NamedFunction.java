@@ -17,7 +17,7 @@ package com.basho.riak.newapi.query;
  * Tag interface.
  * 
  * @author russell
- *
+ * 
  */
 public interface NamedFunction {
 

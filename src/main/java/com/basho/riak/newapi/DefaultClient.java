@@ -13,7 +13,7 @@ import com.basho.riak.newapi.query.MapReduce;
 
 /**
  * @author russell
- *
+ * 
  */
 public final class DefaultClient implements RiakClient {
     /**
@@ -72,7 +72,7 @@ public final class DefaultClient implements RiakClient {
                 return client.generateAndSetClientId();
             }
         }, 3);
-        
+
         return clientId;
     }
 
@@ -82,7 +82,7 @@ public final class DefaultClient implements RiakClient {
                 return client.getClientId();
             }
         }, 3);
-        
+
         return clientId;
     }
 }

@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.util.DateUtil;
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -81,7 +82,7 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String)
      */
-    public RiakObject[] fetch(Bucket bucket, String key) throws IOException {
+    public RiakResponse fetch(Bucket bucket, String key) throws IOException {
         if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
@@ -104,7 +105,7 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String, int)
      */
-    public RiakObject[] fetch(Bucket bucket, String key, int readQuorum) throws IOException {
+    public RiakResponse fetch(Bucket bucket, String key, int readQuorum) throws IOException {
         if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
@@ -125,14 +126,21 @@ public class HTTPClientAdapter implements RawClient {
      * @param resp
      * @return
      */
-    private RiakObject[] handleBodyResponse(Bucket bucket, WithBodyResponse resp) {
+    private RiakResponse handleBodyResponse(Bucket bucket, WithBodyResponse resp) {
+        RiakResponse response = RiakResponse.empty();
+        RiakObject[] values = new RiakObject[] {};
+
         if (resp.hasSiblings()) {
-            return convert(resp.getSiblings(), bucket);
+            values = convert(resp.getSiblings(), bucket);
         } else if (resp.hasObject()) {
-            return new RiakObject[] { convert(resp.getObject(), bucket) };
-        } else  {
-            return new RiakObject[] {};
+            values = new RiakObject[] { convert(resp.getObject(), bucket) };
         }
+
+        if (values.length > 0) {
+            response = new RiakResponse(resp.getObject().getVclock().getBytes(), values);
+        }
+
+        return response;
     }
 
     /**
@@ -159,6 +167,7 @@ public class HTTPClientAdapter implements RawClient {
         RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(bucket, o.getKey());
 
         builder.withValue(o.getValue());
+        System.out.println("VClock into new riak object " + o.getVclock());
         builder.withVClock(nullSafeGetBytes(o.getVclock()));
         builder.withVtag(o.getVtag());
 
@@ -212,29 +221,28 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.newapi.RiakObject
      * , com.basho.riak.client.raw.StoreMeta)
      */
-    public RiakObject[] store(RiakObject object, StoreMeta storeMeta) throws IOException {
-        if(object == null || object.getBucket() == null) {
+    public RiakResponse store(RiakObject object, StoreMeta storeMeta) throws IOException {
+        if (object == null || object.getBucket() == null) {
             throw new IllegalArgumentException("cannot store a null RiakObject, or a RiakObject without a bucket");
         }
         final Bucket bucket = object.getBucket();
-        
-        RiakObject[] result = new RiakObject[] {};
-        
+        RiakResponse response = RiakResponse.empty();
+
         com.basho.riak.client.RiakObject riakObject = convert(object);
         RequestMeta requestMeta = convert(storeMeta);
         StoreResponse resp = client.store(riakObject, requestMeta);
-        
-        if(resp.isSuccess()) {
+
+        if (resp.isSuccess()) {
             riakObject.updateMeta(resp);
         } else {
             throw new IOException(resp.getBodyAsString());
         }
-        
-        if(storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
-           result = handleBodyResponse(bucket, resp);
-        } 
 
-        return result;
+        if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
+            response = handleBodyResponse(bucket, resp);
+        }
+
+        return response;
     }
 
     /**
@@ -243,13 +251,13 @@ public class HTTPClientAdapter implements RawClient {
      */
     private RequestMeta convert(StoreMeta storeMeta) {
         RequestMeta requestMeta = RequestMeta.writeParams(storeMeta.getW(), storeMeta.getDw());
-        
-        if(storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
+
+        if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(true));
         } else {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(false));
         }
-        
+
         return requestMeta;
     }
 
@@ -258,6 +266,8 @@ public class HTTPClientAdapter implements RawClient {
      * @return
      */
     private com.basho.riak.client.RiakObject convert(RiakObject object) {
+
+        System.out.println("Vclock out of new object " + object.getVClockAsString());
 
         com.basho.riak.client.RiakObject riakObject = new com.basho.riak.client.RiakObject(
                                                                                            client,
@@ -278,7 +288,7 @@ public class HTTPClientAdapter implements RawClient {
      * @return
      */
     private String formatDate(Date lastModified) {
-        if(lastModified == null) {
+        if (lastModified == null) {
             return null;
         }
         return DateUtil.formatDate(lastModified);
@@ -339,10 +349,10 @@ public class HTTPClientAdapter implements RawClient {
      * .Bucket, java.lang.String)
      */
     public void delete(Bucket bucket, String key) throws IOException {
-       HttpResponse resp = client.delete(bucket.getName(), key);
-       if(!resp.isSuccess()) {
-           throw new IOException(resp.getBodyAsString());
-       }
+        HttpResponse resp = client.delete(bucket.getName(), key);
+        if (!resp.isSuccess()) {
+            throw new IOException(resp.getBodyAsString());
+        }
     }
 
     /*
@@ -354,7 +364,7 @@ public class HTTPClientAdapter implements RawClient {
      */
     public void delete(Bucket bucket, String key, int deleteQuorum) throws IOException {
         HttpResponse resp = client.delete(bucket.getName(), key, RequestMeta.deleteParams(deleteQuorum));
-        if(!resp.isSuccess()) {
+        if (!resp.isSuccess()) {
             throw new IOException(resp.getBodyAsString());
         }
     }

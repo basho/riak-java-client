@@ -51,7 +51,14 @@ public class RiakObjectBuilder {
     }
 
     public static RiakObjectBuilder from(RiakObject o) {
-        return new RiakObjectBuilder(o.getBucket(), o.getKey());
+        RiakObjectBuilder rob = new RiakObjectBuilder(o.getBucket(), o.getKey());
+        rob.vclock = o.getVClock();
+        rob.contentType = o.getContentType();
+        rob.lastModified = o.getLastModified();
+        rob.value = o.getValue();
+        rob.links = o.getLinks();
+        rob.userMeta = o.getMeta();
+        return rob;
     }
 
     public RiakObject build() {
@@ -90,6 +97,15 @@ public class RiakObjectBuilder {
 
     public RiakObjectBuilder withContentType(String contentType) {
         this.contentType = contentType;
+        return this;
+    }
+
+    /**
+     * @param vclock
+     * @return
+     */
+    public RiakObjectBuilder withVClock(VClock vclock) {
+        this.vclock = vclock;
         return this;
     }
 }

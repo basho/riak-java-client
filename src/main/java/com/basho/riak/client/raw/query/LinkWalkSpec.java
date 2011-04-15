@@ -15,7 +15,7 @@ package com.basho.riak.client.raw.query;
 
 /**
  * @author russell
- *
+ * 
  */
 public interface LinkWalkSpec {
 

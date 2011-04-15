@@ -11,12 +11,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.cap;
+package com.basho.riak.client.itest;
+
+import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.RiakException;
+import com.basho.riak.newapi.RiakFactory;
 
 /**
  * @author russell
  * 
  */
-public enum CAP {
-    ALL, ONE, QUORUM;
+public class ITestDomainBucketPB extends ITestDomainBucket {
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.itest.ITestDomainBucket#getClient()
+     */
+    @Override public RiakClient getClient() throws RiakException {
+        return RiakFactory.pbcClient();
+    }
+
 }

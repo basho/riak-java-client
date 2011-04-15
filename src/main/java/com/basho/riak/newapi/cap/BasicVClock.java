@@ -31,7 +31,7 @@ public class BasicVClock implements VClock {
     public byte[] getBytes() {
         return value.clone();
     }
-    
+
     public String asString() {
         return new String(value);
     }

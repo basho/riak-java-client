@@ -22,10 +22,8 @@ import java.lang.annotation.Target;
  * Annotation to declare a field as the key to a data item in Riak.
  * 
  * @author russell
- *
+ * 
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface RiakKey {
+@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakKey {
 
 }

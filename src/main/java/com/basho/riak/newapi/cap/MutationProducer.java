@@ -14,10 +14,12 @@
 package com.basho.riak.newapi.cap;
 
 /**
- * Maybe you want to produce a mutation at will? Say if you are using a domain bucket?
+ * Maybe you want to produce a mutation at will? Say if you are using a domain
+ * bucket?
+ * 
  * @author russell
  * @param <T>
- *
+ * 
  */
 public interface MutationProducer<T> {
     Mutation<T> produce(T o);

@@ -21,11 +21,10 @@ import com.basho.riak.newapi.query.NamedFunction;
 
 /**
  * @author russell
- *
+ * 
  */
 public interface BucketProperties {
 
-    
     /**
      * @return the allowSiblings if set, or null if not
      */

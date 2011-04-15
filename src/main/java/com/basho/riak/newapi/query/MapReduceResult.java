@@ -25,8 +25,9 @@ public interface MapReduceResult {
     /**
      * Mapped results to a simple java type
      * 
-     * @param <T> 
-     * @param resultType A Java type to map the result too.
+     * @param <T>
+     * @param resultType
+     *            A Java type to map the result too.
      * @return a Collection of T.
      */
     <T> Collection<T> getResult(T resultType);

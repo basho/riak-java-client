@@ -27,7 +27,7 @@ public class UnresolvedConflictException extends RiakException {
      * eclipse generated id
      */
     private static final long serialVersionUID = -219858468775752064L;
-    
+
     private final String reason;
     private final Collection<? extends Object> siblings;
 

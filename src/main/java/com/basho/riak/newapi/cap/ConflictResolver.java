@@ -17,10 +17,10 @@ import java.util.Collection;
 
 /**
  * @author russell
- *
+ * 
  */
 public interface ConflictResolver<T> {
 
     T resolve(final Collection<T> siblings) throws UnresolvedConflictException;
-    
+
 }

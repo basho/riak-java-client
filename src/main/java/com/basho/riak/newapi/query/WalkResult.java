@@ -20,7 +20,7 @@ import com.basho.riak.newapi.RiakObject;
 /**
  * 
  * @author russell
- *
+ * 
  */
-public interface WalkResult extends Iterable<Collection<RiakObject>>{
+public interface WalkResult extends Iterable<Collection<RiakObject>> {
 }

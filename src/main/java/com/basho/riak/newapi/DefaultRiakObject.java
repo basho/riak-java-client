@@ -31,9 +31,9 @@ import com.basho.riak.newapi.convert.RiakKey;
  * 
  */
 public class DefaultRiakObject implements RiakObject {
-    
+
     public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
-    
+
     private final Bucket bucket;
     @RiakKey private final String key;
     private final VClock vclock;

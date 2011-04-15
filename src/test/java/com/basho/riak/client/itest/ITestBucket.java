@@ -21,7 +21,9 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -205,6 +207,44 @@ public abstract class ITestBucket {
         assertNull(carts.fetch(userId).execute());
     }
 
+    @Test public void storeMap() throws Exception {
+        final String bucketName = UUID.randomUUID().toString() + "_maps";
+        final String key = UUID.randomUUID().toString();
+
+        final Bucket maps = client.createBucket(bucketName).allowSiblings(true).execute();
+        
+        final Map<String, String> myMap = new HashMap<String, String>();
+        myMap.put("size", "s");
+        myMap.put("colour", "red");
+        myMap.put("style", "short-sleeve");
+        
+        maps.store(key, myMap).returnBody(false).w(2).execute();
+        
+        @SuppressWarnings("unchecked") final Map<String, String> fetchedMap = maps.fetch(key, Map.class).execute();
+        
+        assertEquals(myMap, fetchedMap);
+    }
+    
+    @Test public void storeList() throws Exception {
+        final String bucketName = UUID.randomUUID().toString() + "_lists";
+        final String key = UUID.randomUUID().toString();
+
+        final Bucket lists = client.createBucket(bucketName).allowSiblings(true).execute();
+        
+        final Collection<String> myList = new ArrayList<String>();
+        myList.add("red");
+        myList.add("yellow");
+        myList.add("pink");
+        myList.add("green");
+        
+        lists.store(key, myList).returnBody(false).w(2).execute();
+        
+        @SuppressWarnings("unchecked") final Collection<String> fetchedList = lists.fetch(key, Collection.class).execute();
+        
+        assertEquals(myList, fetchedList);
+    }
+    
+    // List Keys
     @Test public void listKeys() throws Exception {
         final Set<String> keys = new LinkedHashSet<String>();
 

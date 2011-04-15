@@ -2,10 +2,9 @@ package com.basho.riak.newapi.cap;
 
 import java.util.Collection;
 
-
 /**
- * A conflict resolver that doesn't resolve conflict.
- * If it is presented with a collection of siblings it throws.
+ * A conflict resolver that doesn't resolve conflict. If it is presented with a
+ * collection of siblings it throws.
  * 
  * @author russell
  * 

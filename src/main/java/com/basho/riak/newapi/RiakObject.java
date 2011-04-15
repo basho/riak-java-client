@@ -13,6 +13,7 @@
  */
 package com.basho.riak.newapi;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +44,8 @@ public interface RiakObject extends Iterable<RiakLink> {
     String getContentType();
 
     // links
+    Collection<RiakLink> getLinks();
+
     boolean hasLinks();
 
     int numLinks();
@@ -57,7 +60,7 @@ public interface RiakObject extends Iterable<RiakLink> {
     boolean hasUsermeta(String key);
 
     String getUsermeta(String key);
-    
+
     Iterable<Entry<String, String>> userMetaEntries();
 
     // Mutate

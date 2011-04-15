@@ -25,6 +25,8 @@ import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.DefaultResolver;
 import com.basho.riak.newapi.cap.Mutation;
 import com.basho.riak.newapi.cap.Quorum;
+import com.basho.riak.newapi.cap.VClock;
+import com.basho.riak.newapi.convert.ConversionException;
 import com.basho.riak.newapi.convert.Converter;
 import com.basho.riak.newapi.convert.JSONConverter;
 import com.basho.riak.newapi.convert.NoKeySpecifedException;
@@ -245,7 +247,7 @@ public class DefaultBucket implements Bucket {
                 return riakObject;
             }
 
-            public RiakObject fromDomain(RiakObject domainObject) {
+            public RiakObject fromDomain(RiakObject domainObject, VClock vclock) throws ConversionException {
                 return domainObject;
             }
         });
@@ -260,18 +262,16 @@ public class DefaultBucket implements Bucket {
         final Bucket b = this;
         @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) o.getClass();
         final String key = getKey(o);
-        if(key == null) {
+        if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new StoreObject<T>(client, b, key)
-            .withConverter(new JSONConverter<T>(clazz, b))
-            .withMutator(new Mutation<T>() {
-                public T apply(T original) {
-                    return o;
-                };
-            }).withResolver(new DefaultResolver<T>());
+        return new StoreObject<T>(client, b, key).withConverter(new JSONConverter<T>(clazz, b)).withMutator(new Mutation<T>() {
+                                                                                                                public T apply(T original) {
+                                                                                                                    return o;
+                                                                                                                };
+                                                                                                            }).withResolver(new DefaultResolver<T>());
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -281,14 +281,12 @@ public class DefaultBucket implements Bucket {
     public <T> StoreObject<T> store(final String key, final T o) {
         final Bucket b = this;
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
-        
-        return new StoreObject<T>(client, b, key)
-            .withConverter(new JSONConverter<T>(clazz, b, key))
-            .withMutator(new Mutation<T>() {
-                public T apply(T original) {
-                    return o;
-                };
-            }).withResolver(new DefaultResolver<T>());
+
+        return new StoreObject<T>(client, b, key).withConverter(new JSONConverter<T>(clazz, b, key)).withMutator(new Mutation<T>() {
+                                                                                                                     public T apply(T original) {
+                                                                                                                         return o;
+                                                                                                                     };
+                                                                                                                 }).withResolver(new DefaultResolver<T>());
     }
 
     /*
@@ -300,15 +298,12 @@ public class DefaultBucket implements Bucket {
         final Bucket b = this;
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
         final String key = getKey(o);
-        if(key == null) {
+        if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new FetchObject<T>(client, this, key)
-                        .withConverter(new JSONConverter<T>(clazz, b))
-                                .withResolver(new DefaultResolver<T>());
+        return new FetchObject<T>(client, this, key).withConverter(new JSONConverter<T>(clazz, b)).withResolver(new DefaultResolver<T>());
     }
 
-    
     /*
      * (non-Javadoc)
      * 
@@ -317,30 +312,29 @@ public class DefaultBucket implements Bucket {
      */
     public <T> FetchObject<T> fetch(final String key, final Class<T> type) {
         final Bucket b = this;
-        return new FetchObject<T>(client, this, key)
-            .withConverter(new JSONConverter<T>(type, b))
-            .withResolver(new DefaultResolver<T>());
+        return new FetchObject<T>(client, this, key).withConverter(new JSONConverter<T>(type, b)).withResolver(new DefaultResolver<T>());
     }
 
-    
-     /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String)
      */
     public FetchObject<RiakObject> fetch(String key) {
         final Bucket b = this;
-        
-        return new FetchObject<RiakObject>(client, b, key)
-            .withResolver(new DefaultResolver<RiakObject>())
-            .withConverter(new Converter<RiakObject>() {
 
-            public RiakObject toDomain(RiakObject riakObject) {
-                return riakObject;
-            }
+        return new FetchObject<RiakObject>(client, b, key).withResolver(new DefaultResolver<RiakObject>()).withConverter(new Converter<RiakObject>() {
 
-            public RiakObject fromDomain(RiakObject domainObject) {
-                return domainObject;
-            }
-        });
+                                                                                                                             public RiakObject toDomain(RiakObject riakObject) {
+                                                                                                                                 return riakObject;
+                                                                                                                             }
+
+                                                                                                                             public RiakObject fromDomain(RiakObject domainObject,
+                                                                                                                                                          VClock vclock)
+                                                                                                                                     throws ConversionException {
+                                                                                                                                 return RiakObjectBuilder.from(domainObject).withVClock(vclock).build();
+                                                                                                                             }
+                                                                                                                         });
     }
 
     /*
@@ -350,13 +344,12 @@ public class DefaultBucket implements Bucket {
      */
     public <T> DeleteObject delete(T o) {
         final String key = getKey(o);
-        if(key == null) {
+        if (key == null) {
             throw new NoKeySpecifedException(o);
         }
         return new DeleteObject(client, this, key);
     }
 
-    
     /*
      * (non-Javadoc)
      * 
@@ -366,5 +359,4 @@ public class DefaultBucket implements Bucket {
         return new DeleteObject(client, this, key);
     }
 
-    
 }

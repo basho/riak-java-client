@@ -33,11 +33,10 @@ import com.basho.riak.newapi.bucket.Bucket;
  * 
  */
 public abstract class ITestClientBasic {
-    
-   protected RiakClient client;
-    
-    @Before
-    public void setUp() throws RiakException {
+
+    protected RiakClient client;
+
+    @Before public void setUp() throws RiakException {
         this.client = getClient();
     }
 
@@ -56,7 +55,7 @@ public abstract class ITestClientBasic {
         assertEquals(new Integer(3), b.getNVal());
         assertFalse(b.getAllowSiblings());
     }
-    
+
     @Test public void updateBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();
 
@@ -66,15 +65,15 @@ public abstract class ITestClientBasic {
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
         assertFalse(b.getAllowSiblings());
-        
+
         b = client.updateBucket(b).nVal(4).allowSiblings(true).execute();
-        
+
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(4), b.getNVal());
         assertTrue(b.getAllowSiblings());
     }
-    
+
     @Test public void createBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();
 
@@ -88,12 +87,12 @@ public abstract class ITestClientBasic {
 
     @Test public void clientIds() throws Exception {
         final byte[] clientId = "abcd".getBytes("UTF-8");
-        
+
         client.setClientId(clientId.clone());
         assertArrayEquals(clientId, client.getClientId());
-        
+
         byte[] newId = client.generateAndSetClientId();
-        
+
         assertArrayEquals(newId, client.getClientId());
     }
 }

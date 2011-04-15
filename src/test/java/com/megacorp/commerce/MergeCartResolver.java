@@ -1,7 +1,7 @@
 package com.megacorp.commerce;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.UnresolvedConflictException;
@@ -14,11 +14,11 @@ import com.basho.riak.newapi.cap.UnresolvedConflictException;
  * @author russell
  * 
  */
-public final class MergeResolver implements ConflictResolver<ShoppingCart> {
-   
+public final class MergeCartResolver implements ConflictResolver<ShoppingCart> {
+
     public ShoppingCart resolve(Collection<ShoppingCart> siblings) throws UnresolvedConflictException {
         String userId = null;
-        final Collection<String> items = new ArrayList<String>();
+        final Collection<String> items = new HashSet<String>();
 
         for (ShoppingCart c : siblings) {
             userId = c.getUserId();
@@ -26,6 +26,8 @@ public final class MergeResolver implements ConflictResolver<ShoppingCart> {
                 items.add(item);
             }
         }
+
+        System.out.println("Merged items for " + Thread.currentThread().getName() + " " + items);
 
         final ShoppingCart resolved = new ShoppingCart(userId);
         return resolved.addItems(items);

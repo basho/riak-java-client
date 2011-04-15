@@ -34,7 +34,7 @@ public class RiakException extends Exception {
     public RiakException() {
         super();
     }
-    
+
     public RiakException(String message) {
         super(message);
     }
