@@ -29,19 +29,35 @@ public class TestStoreResponse {
     }
     
     @Test public void parses_meta_headers() {
-        final HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        final FetchResponse mockFetchResponse = mock(FetchResponse.class);
         final Map<String, String> HTTP_HEADERS = new HashMap<String, String>();
         HTTP_HEADERS.put("X-Riak-Vclock".toLowerCase(), "a85hYGBgzGDKBVIsDPKZOzKYEhnzWBlaJyw9wpcFAA==");
         HTTP_HEADERS.put("Last-Modified".toLowerCase(), "Tue, 22 Dec 2009 18:48:37 GMT");
         HTTP_HEADERS.put("ETag".toLowerCase(), "4d5y9wqQK2Do0RK5ezwCJD");
 
-        when(mockHttpResponse.getHttpHeaders()).thenReturn(HTTP_HEADERS);
-        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        when(mockFetchResponse.getHttpHeaders()).thenReturn(HTTP_HEADERS);
+        when(mockFetchResponse.isSuccess()).thenReturn(true);
 
-        StoreResponse impl = new StoreResponse(mockHttpResponse);
+        StoreResponse impl = new StoreResponse(mockFetchResponse);
 
         assertEquals("a85hYGBgzGDKBVIsDPKZOzKYEhnzWBlaJyw9wpcFAA==", impl.getVclock());
         assertEquals("Tue, 22 Dec 2009 18:48:37 GMT", impl.getLastmod());
         assertEquals("4d5y9wqQK2Do0RK5ezwCJD", impl.getVtag());
+    }
+
+    @Test public void delegates_multiimpl_to_bodyresponse() {
+        final FetchResponse mockFetchResponse = mock(FetchResponse.class);
+        StoreResponse impl = new StoreResponse(mockFetchResponse);
+
+        impl.hasObject();
+        impl.getObject();
+        impl.hasSiblings();
+        impl.getSiblings();
+
+        verify(mockFetchResponse, times(1)).hasObject();
+        verify(mockFetchResponse, times(1)).getObject();
+        verify(mockFetchResponse, times(1)).hasSiblings();
+        verify(mockFetchResponse, times(1)).getSiblings();
+
     }
 }

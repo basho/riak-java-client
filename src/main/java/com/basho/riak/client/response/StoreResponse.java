@@ -13,8 +13,10 @@
  */
 package com.basho.riak.client.response;
 
+import java.util.Collection;
 import java.util.Map;
 
+import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -22,8 +24,9 @@ import com.basho.riak.client.util.Constants;
  * interpret store responses from Riak which returns updated object metadata in
  * HTTP headers.
  */
-public class StoreResponse extends HttpResponseDecorator implements HttpResponse {
+public class StoreResponse extends HttpResponseDecorator implements WithBodyResponse {
 
+    private final FetchResponse fetchResponse;
     private String vclock = null;
     private String lastmod = null;
     private String vtag = null;
@@ -31,11 +34,13 @@ public class StoreResponse extends HttpResponseDecorator implements HttpResponse
     /**
      * On a 2xx response, parses the HTTP headers into updated object metadata.
      */
-    public StoreResponse(HttpResponse r) {
-        super(r);
+    public StoreResponse(FetchResponse fetchResponse) {
+        super(fetchResponse);
 
-        if (r != null && r.isSuccess()) {
-            Map<String, String> headers = r.getHttpHeaders();
+        this.fetchResponse = fetchResponse;
+
+        if (fetchResponse != null && fetchResponse.isSuccess()) {
+            Map<String, String> headers = fetchResponse.getHttpHeaders();
             vclock = headers.get(Constants.HDR_VCLOCK);
             lastmod = headers.get(Constants.HDR_LAST_MODIFIED);
             vtag = headers.get(Constants.HDR_ETAG);
@@ -57,5 +62,37 @@ public class StoreResponse extends HttpResponseDecorator implements HttpResponse
     /** The object's updated etag or null if Riak didn't return one. */
     public String getVtag() {
         return vtag;
+    }
+
+    /**
+     * @return
+     * @see com.basho.riak.client.response.FetchResponse#hasObject()
+     */
+    public boolean hasObject() {
+        return fetchResponse.hasObject();
+    }
+
+    /**
+     * @return
+     * @see com.basho.riak.client.response.FetchResponse#getObject()
+     */
+    public RiakObject getObject() {
+        return fetchResponse.getObject();
+    }
+
+    /**
+     * @return
+     * @see com.basho.riak.client.response.FetchResponse#hasSiblings()
+     */
+    public boolean hasSiblings() {
+        return fetchResponse.hasSiblings();
+    }
+
+    /**
+     * @return
+     * @see com.basho.riak.client.response.FetchResponse#getSiblings()
+     */
+    public Collection<RiakObject> getSiblings() {
+        return fetchResponse.getSiblings();
     }
 }
