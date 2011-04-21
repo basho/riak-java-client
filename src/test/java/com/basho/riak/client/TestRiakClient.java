@@ -214,6 +214,18 @@ public class TestRiakClient {
         assertTrue(meta.getHeader("accept").contains("multipart/mixed"));
     }
 
+    @Test public void store_adds_accept_header_for_multipart_content() {
+        final RequestMeta meta = new RequestMeta();
+        RiakObject o = new RiakObject(bucket, key);
+        impl.store(o, meta);
+        assertTrue(meta.getHeader("accept").contains("multipart/mixed"));
+
+        meta.setHeader("accept", "text/plain");
+        impl.fetch(bucket, key, meta, false);
+        assertTrue(meta.getHeader("accept").contains("text/plain"));
+        assertTrue(meta.getHeader("accept").contains("multipart/mixed"));
+    }
+
     @Test public void fetch_meta_asks_fetchresponse_to_associate_new_objects_with_client() {
         when(mockHelper.fetchMeta(anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
         when(mockHttpResponse.isSuccess()).thenReturn(true);

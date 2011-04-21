@@ -235,8 +235,21 @@ public class RiakClient {
             meta.setQueryParam(Constants.QP_RETURN_BODY, "true");
         }
 
+        setAcceptHeader(meta);
         HttpResponse r = helper.store(object, meta);
-        return new StoreResponse(r);
+        return new StoreResponse(new FetchResponse(r, this));
+    }
+
+    /**
+     * @param meta
+     */
+    private void setAcceptHeader(RequestMeta meta) {
+        String accept = meta.getHeader(Constants.HDR_ACCEPT);
+        if (accept == null) {
+            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        } else {
+            meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        }
     }
 
     public StoreResponse store(RiakObject object) {
@@ -338,13 +351,7 @@ public class RiakClient {
             meta = new RequestMeta();
         }
 
-        String accept = meta.getHeader(Constants.HDR_ACCEPT);
-        if (accept == null) {
-            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
-        } else {
-            meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
-        }
-
+        setAcceptHeader(meta);
         HttpResponse r = helper.fetch(bucket, key, meta, streamResponse);
 
         try {

@@ -31,7 +31,7 @@ import com.basho.riak.client.util.StreamedMultipart;
  * to interpret fetch and fetchMeta responses from Riak's HTTP interface which
  * returns object metadata in HTTP headers and value in the body.
  */
-public class FetchResponse extends HttpResponseDecorator implements HttpResponse {
+public class FetchResponse extends HttpResponseDecorator implements WithBodyResponse {
 
     private RiakObject object = null;
     private Collection<RiakObject> siblings = new ArrayList<RiakObject>();
@@ -71,8 +71,9 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
         if (r.getStatusCode() == 300) {
             String contentType = headers.get(Constants.HDR_CONTENT_TYPE);
 
-            if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
+            if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED))) {
                 throw new RiakResponseRuntimeException(r, "multipart/mixed content expected when object has siblings");
+            }
 
             if (r.isStreamed()) {
                 try {
