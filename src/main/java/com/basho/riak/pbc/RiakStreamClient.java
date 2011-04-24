@@ -43,7 +43,7 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 		ReaperTask (Object holder, RiakConnection conn) {
 			this.conn = conn;
 			this.ref = new WeakReference<Object>(holder);
-			RiakConnection.timer.scheduleAtFixedRate(this, 1000, 1000);
+			RiakConnection.TIMER.scheduleAtFixedRate(this, 1000, 1000);
 		}
 		
 		@Override
