@@ -13,6 +13,8 @@
  */
 package com.basho.riak.pbc.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_HOST;
+import static com.basho.riak.client.Hosts.RIAK_PORT;
 import static com.google.protobuf.ByteString.copyFromUtf8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -33,12 +35,12 @@ import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
 
 /**
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_HOST }.
  * @author russell
- *
+ * @see com.basho.riak.client.Hosts#RIAK_HOST
  */
 public class ITestBasic {
 
-    private static final String RIAK_HOST = "127.0.0.1";
     private static final String BUCKET = "__itest_java_pbc__";
 
     /*
@@ -46,7 +48,7 @@ public class ITestBasic {
      */
 
     @Test public void ping() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         c.ping();
     }
 
@@ -55,7 +57,7 @@ public class ITestBasic {
      */
 
     @Test public void bucketProperties() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         BucketProperties bucketInfo = new BucketProperties();
         bucketInfo.allowMult(true);
@@ -85,7 +87,7 @@ public class ITestBasic {
         String clid = prefs.get("client_id", null);
         assertNull(clid);
 
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         c.prepareClientID();
 
         clid = prefs.get("client_id", null);
@@ -94,7 +96,7 @@ public class ITestBasic {
 
     @Test public void clientId() throws Exception {
         final String clientId = "HUPA_PUPA";
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         c.setClientID(clientId);
         assertEquals(clientId.substring(0, Constants.RIAK_CLIENT_ID_LENGTH), c.getClientID());
@@ -102,7 +104,7 @@ public class ITestBasic {
 
     @Test public void clientIdExpiredConnection() throws Exception {
         final String clientId = "HUPA_PUPA";
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         c.setClientID(clientId);
 
@@ -113,7 +115,7 @@ public class ITestBasic {
 
     @Test public void tooShortClientId() throws Exception {
         final String clientId = "HUP";
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         try {
             c.setClientID(clientId);
@@ -125,7 +127,7 @@ public class ITestBasic {
 
     @Test public void tooLongClientId() throws Exception {
         final String clientId = "HUPA_PUPA";
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         c.setClientID(copyFromUtf8(clientId));
         assertEquals(clientId.substring(0, Constants.RIAK_CLIENT_ID_LENGTH), c.getClientID());
@@ -136,7 +138,7 @@ public class ITestBasic {
      */
 
     @Test public void getServerInfo() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         final Map<String, String> serverInfo = c.getServerInfo();
 
@@ -151,7 +153,7 @@ public class ITestBasic {
         final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
         final String content = "content";
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         
         c.store(new RiakObject(bucket, key, content));
 
@@ -180,7 +182,7 @@ public class ITestBasic {
         final String content = "value1";
         final String updatedContent = "updatedValue1";
         final String nonExistantKey = "non_existant_key";
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         c.prepareClientID();
         RiakObject o  = new RiakObject(BUCKET, key, content);
 

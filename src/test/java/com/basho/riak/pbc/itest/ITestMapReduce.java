@@ -13,6 +13,8 @@
  */
 package com.basho.riak.pbc.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_HOST;
+import static com.basho.riak.client.Hosts.RIAK_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -36,13 +38,13 @@ import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 
 /**
  * Exercises map/reduce features of the Riak client.
- * Assumes Riak is reachable at 127.0.0.1:8097.
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_HOST }.
+ * @see com.basho.riak.client.Hosts#RIAK_HOST
  */
 public class ITestMapReduce {
 
     private static final String KEY_PREFIX = "pbc_java_";
     private static final String TAG = "test";
-    public static String RIAK_HOST = "127.0.0.1";
     public static String BUCKET = "pbc_mr_test_java";
     public static int TEST_ITEMS = 200;
 

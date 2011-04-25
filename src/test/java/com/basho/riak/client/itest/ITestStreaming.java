@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_URL;
 import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
 
@@ -33,10 +34,12 @@ import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
+/**
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_URL }.
+ * @see com.basho.riak.client.Hosts#RIAK_URL
+ */
 public class ITestStreaming {
 
-    static String RIAK_URL = "http://127.0.0.1:8098/riak";
-    
     @Test public void stream_keys() {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String BUCKET = "test_stream_keys";
