@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.Hosts.RIAK_URL;
 import static com.basho.riak.client.itest.Utils.*;
 import static org.junit.Assert.*;
 
@@ -26,10 +27,12 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.response.WalkResponse;
 
+/**
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_URL }.
+ * @see com.basho.riak.client.Hosts#RIAK_URL
+ */
 public class ITestWalk {
     
-    public static String RIAK_URL = "http://127.0.0.1:8098/riak";
-
     @Test
     public void test_walk() {
         final RiakClient c = new RiakClient(RIAK_URL);

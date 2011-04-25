@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.itest;
 
+
+import static com.basho.riak.client.Hosts.RIAK_URL;
 import static org.junit.Assert.*;
 
 import java.util.Random;
@@ -25,9 +27,12 @@ import org.junit.Test;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.RiakObject;
 
+/**
+ * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_URL }.
+ * @see com.basho.riak.client.Hosts#RIAK_URL
+ */
 public class ITestDataLoad {
 
-    final String RIAK_URL = "http://127.0.0.1:8098/riak";
     final String BUCKET = "test_data_load";
     final int NUM_VALUES = 10;
     final int VALUE_LENGTH = 512;
