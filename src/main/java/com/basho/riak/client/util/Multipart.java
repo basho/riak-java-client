@@ -13,14 +13,13 @@
  */
 package com.basho.riak.client.util;
 
+import org.apache.commons.httpclient.util.EncodingUtil;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a multipart entity as described here:
@@ -29,7 +28,38 @@ import java.util.Map;
  */
 public class Multipart {
 
-    private static String HEADER_DELIM = "\r\n\r\n";
+    private static byte[] HEADER_DELIM = "\r\n\r\n".getBytes();
+
+    private static int indexOf(byte[] text, byte[] pattern, int fromIndex) {
+        if (fromIndex >= text.length || fromIndex < 0) {
+            throw new IllegalArgumentException("index not within range");
+        }
+
+        if (pattern.length == 0) {
+            throw new IllegalArgumentException("pattern must not be empty");
+        }
+
+        byte first = pattern[0];
+        int max = text.length - pattern.length;
+
+        for (int i = fromIndex; i <= max; i++) {
+            if (text[i] != first) {
+                while (i <= max && text[i] != first) {
+                    i++;
+                }
+            }
+
+            if (i <= max) {
+                int j = i + 1;
+                int end = j + pattern.length - 1;
+                for (int k = 1; j < end && text[j] == pattern[k]; j++, k++);
+                if (j == end) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
 
     /**
      * Parses a multipart message or a multipart subpart of a multipart message.
@@ -37,19 +67,25 @@ public class Multipart {
      * @return A list of the parts parsed into headers and body of this
      *         multipart message
      */
-    public static List<Multipart.Part> parse(Map<String, String> headers, String body) {
-        if (headers == null || body == null ||  body.length() == 0)
+    public static List<Multipart.Part> parse(Map<String, String> headers, byte[] body) {
+        if (headers == null || body == null ||  body.length == 0)
             return null;
 
 
-        if (!body.startsWith("\r\n")) {
+
+        if (!(body.length >= 2 && body[0] == '\r' && body[1] == '\n')) {
             // In order to parse the multipart efficiently, we want to treat the
             // first boundary identically to the others, so make sure that the
             // first boundary is preceded by a '\r\n' like the others
-            body = "\r\n" + body;
+            byte[] newBody = new byte[body.length + 2];
+            newBody[0] = '\r';
+            newBody[1] = '\n';
+            System.arraycopy(body, 0, newBody, 2, body.length);
+            body = newBody;
         }
 
         String boundary = "\r\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
+        byte[] boundaryBytes = boundary.getBytes();
         int boundarySize = boundary.length();
         if ("\r\n--".equals(boundary))
             return null;
@@ -57,29 +93,29 @@ public class Multipart {
         // While this parsing could be more efficiently done in one pass with a
         // hand written FSM, hopefully this method is more readable/intuitive.
         List<Part> parts = new ArrayList<Part>();
-        int pos = body.indexOf(boundary);
+        int pos = indexOf(body, boundaryBytes, 0);
         if (pos != -1) {
-            while (pos < body.length()) {
+            while (pos < body.length) {
                 // first char of part
                 int start = pos + boundarySize;
                 // last char of part + 1
-                int end = body.indexOf(boundary, start);
+                int end = indexOf(body, boundaryBytes, start);
                 // end of header section + 1
-                int headerEnd = body.indexOf(HEADER_DELIM, pos);
+                int headerEnd = indexOf(body, HEADER_DELIM, pos);
                 // start of body section
-                int bodyStart = headerEnd + HEADER_DELIM.length();
+                int bodyStart = headerEnd + HEADER_DELIM.length;
 
                 // check for end boundary, which is (boundary + "--")
-                if (body.substring(start).startsWith("--")) {
+                if (body.length >= (start + 2) && body[start] == '-' && body[start+1] == '-') {
                     break;
                 }
 
                 if (end == -1) {
-                    end = body.length();
+                    end = body.length;
                 }
 
                 if (headerEnd == -1) {
-                    headerEnd = body.length();
+                    headerEnd = body.length;
                     bodyStart = end;
                 }
 
@@ -87,9 +123,8 @@ public class Multipart {
                     bodyStart = end;
                 }
 
-                Map<String, String> partHeaders = parseHeaders(body.substring(start, headerEnd));
-                String partBody = body.substring(bodyStart, end);
-                parts.add(new Part(partHeaders, partBody.getBytes()));
+                Map<String, String> partHeaders = parseHeaders(EncodingUtil.getAsciiString(Arrays.copyOfRange(body, start, headerEnd)));
+                parts.add(new Part(partHeaders, Arrays.copyOfRange(body, bodyStart, end)));
 
                 pos = end;
             }
