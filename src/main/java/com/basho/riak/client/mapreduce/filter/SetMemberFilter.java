@@ -19,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONArray;
 
 public class SetMemberFilter implements MapReduceFilter {
+    private static final String NAME = "set_member";
     private MapReduceFilter.Types type = MapReduceFilter.Types.FILTER;
     private JSONArray args = new JSONArray();
     
