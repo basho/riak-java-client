@@ -109,7 +109,19 @@ public class RiakClient implements RiakMessageCodes {
 		}
 	}
 
-	/**
+    public void shutdown() {
+        RiakConnection connection = this.connections.get();
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } finally {
+            // not canceled Timer prevents JVM shutdown.
+            RiakConnection.timer.cancel();
+        }
+    }
+
+    /**
 	 * helper method to use a reasonable default client id
 	 * 
 	 * @throws IOException
