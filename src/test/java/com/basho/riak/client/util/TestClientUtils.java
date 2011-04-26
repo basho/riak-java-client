@@ -276,7 +276,7 @@ public class TestClientUtils {
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         String body = "\r\n--boundary\r\n" + "\r\n" + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
         assertEquals(1, objects.size());
         assertSame(mockRiakClient, objects.get(0).getRiakClient());
         assertEquals("b", objects.get(0).getBucket());
@@ -291,7 +291,7 @@ public class TestClientUtils {
                       + "Link: </riak/b/l>; riaktag=t\r\n" + "ETag: vtag\r\n" + "X-Riak-Meta-Test: value\r\n" + "\r\n"
                       + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
 
         assertEquals(1, objects.get(0).numLinks());
         assertTrue(objects.get(0).hasLink(new RiakLink("b", "l", "t")));
@@ -310,7 +310,7 @@ public class TestClientUtils {
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         String body = "\r\n--boundary\r\n" + "\r\n" + "foo\r\n" + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body);
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
         assertEquals("foo", objects.get(0).getValue());
     }
 
