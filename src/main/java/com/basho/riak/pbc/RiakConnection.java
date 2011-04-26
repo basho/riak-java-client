@@ -108,7 +108,7 @@ class RiakConnection {
 		}
 	}
 
-	static Timer timer = new Timer();
+	static Timer TIMER = new Timer("riak-client-timeout-thread", true);
 	TimerTask idle_timeout;
 	
 	public void beginIdle() {
@@ -120,7 +120,7 @@ class RiakConnection {
 			}
 		};
 		
-		timer.schedule(idle_timeout, 1000);
+		TIMER.schedule(idle_timeout, 1000);
 	}
 
 	synchronized void timer_fired(TimerTask fired_timer) {
