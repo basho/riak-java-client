@@ -123,14 +123,28 @@ public class Multipart {
                     bodyStart = end;
                 }
 
-                Map<String, String> partHeaders = parseHeaders(EncodingUtil.getAsciiString(Arrays.copyOfRange(body, start, headerEnd)));
-                parts.add(new Part(partHeaders, Arrays.copyOfRange(body, bodyStart, end)));
+                Map<String, String> partHeaders = parseHeaders(EncodingUtil.getAsciiString(copyOfRange(body, start, headerEnd)));
+                parts.add(new Part(partHeaders, copyOfRange(body, bodyStart, end)));
 
                 pos = end;
             }
         }
 
         return parts;
+    }
+
+    /**
+     * A Java6 Arrays.copyOfRange style method locally.
+     *
+     * @param original the array to copy
+     * @param start the start of the copy range
+     * @param end the end of the copy range
+     * @return a new array populated with the bytes from original[start] to original[end].
+     */
+    private static byte[] copyOfRange(byte[] original, int start, int end) {
+        final byte[] copy = new byte[end-start];
+        System.arraycopy(original, start, copy, 0, end-start);
+        return copy;
     }
 
     /**
