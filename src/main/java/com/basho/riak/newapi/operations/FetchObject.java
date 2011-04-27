@@ -18,13 +18,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.basho.riak.client.raw.Command;
-import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.ConflictResolver;
+import com.basho.riak.newapi.cap.DefaultRetrier;
 import com.basho.riak.newapi.cap.UnresolvedConflictException;
 import com.basho.riak.newapi.convert.ConversionException;
 import com.basho.riak.newapi.convert.Converter;

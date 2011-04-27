@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.basho.riak.client.raw.Command;
-import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -27,6 +26,7 @@ import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.ConflictResolver;
+import com.basho.riak.newapi.cap.DefaultRetrier;
 import com.basho.riak.newapi.cap.Mutation;
 import com.basho.riak.newapi.cap.UnresolvedConflictException;
 import com.basho.riak.newapi.convert.ConversionException;
@@ -113,12 +113,12 @@ public class StoreObject<T> implements RiakOperation<T> {
         return new StoreMeta(w, dw, returnBody);
     }
 
-    public StoreObject<T> w(int w) {
+    public StoreObject<T> w(Integer w) {
         this.w = w;
         return this;
     }
 
-    public StoreObject<T> dw(int dw) {
+    public StoreObject<T> dw(Integer dw) {
         this.dw = dw;
         return this;
     }

@@ -11,12 +11,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.cap;
+package com.basho.riak.newapi.query.serialize;
+
+import java.io.IOException;
 
 /**
  * @author russell
- * 
+ *
  */
-public enum CAP {
-    ALL, ONE, QUORUM;
+public interface FunctionWriter {
+    void write() throws IOException;
 }

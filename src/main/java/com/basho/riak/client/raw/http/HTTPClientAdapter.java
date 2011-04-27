@@ -13,46 +13,35 @@
  */
 package com.basho.riak.client.raw.http;
 
+import static com.basho.riak.client.raw.http.ConversionUtil.convert;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.commons.httpclient.util.DateUtil;
-
-import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
+import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.request.RequestMeta;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.FetchResponse;
 import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.MapReduceResponse;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.WithBodyResponse;
-import com.basho.riak.client.util.Constants;
-import com.basho.riak.newapi.DefaultRiakLink;
-import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
-import com.basho.riak.newapi.bucket.DefaultBucketProperties;
-import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.ClientId;
 import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.MapReduceSpec;
-import com.basho.riak.newapi.query.NamedErlangFunction;
 import com.basho.riak.newapi.query.WalkResult;
 
 /**
+ * Adapts the old {@link RiakClient} to the new {@link RawClient} interface.
+ * 
  * @author russell
  * 
  */
@@ -143,77 +132,6 @@ public class HTTPClientAdapter implements RawClient {
         return response;
     }
 
-    /**
-     * @param siblings
-     * @param bucket
-     * @return
-     */
-    private RiakObject[] convert(Collection<com.basho.riak.client.RiakObject> siblings, Bucket bucket) {
-        final Collection<RiakObject> results = new ArrayList<RiakObject>();
-
-        for (com.basho.riak.client.RiakObject object : siblings) {
-            results.add(convert(object, bucket));
-        }
-
-        return results.toArray(new RiakObject[results.size()]);
-    }
-
-    /**
-     * @param object
-     * @return
-     */
-    private RiakObject convert(final com.basho.riak.client.RiakObject o, final Bucket bucket) {
-
-        RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(bucket, o.getKey());
-
-        builder.withValue(o.getValue());
-        System.out.println("VClock into new riak object " + o.getVclock());
-        builder.withVClock(nullSafeGetBytes(o.getVclock()));
-        builder.withVtag(o.getVtag());
-
-        String lastModified = o.getLastmod();
-
-        if (lastModified != null) {
-            Date lastModDate = o.getLastmodAsDate();
-            builder.withLastModified(lastModDate.getTime());
-        }
-
-        final Collection<RiakLink> links = new ArrayList<RiakLink>();
-
-        for (com.basho.riak.client.RiakLink link : o.iterableLinks()) {
-            links.add(convert(link));
-        }
-
-        builder.withLinks(links);
-        builder.withContentType(o.getContentType());
-
-        final Map<String, String> userMetaData = new HashMap<String, String>();
-
-        for (String key : o.usermetaKeys()) {
-            userMetaData.put(key, o.getUsermetaItem(key));
-        }
-
-        builder.withUsermeta(userMetaData);
-
-        return builder.build();
-    }
-
-    /**
-     * @param link
-     * @return
-     */
-    private RiakLink convert(com.basho.riak.client.RiakLink link) {
-        return new DefaultRiakLink(link.getBucket(), link.getKey(), link.getTag());
-    }
-
-    /**
-     * @param vclock
-     * @return
-     */
-    private byte[] nullSafeGetBytes(String vclock) {
-        return vclock == null ? null : vclock.getBytes();
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -228,7 +146,7 @@ public class HTTPClientAdapter implements RawClient {
         final Bucket bucket = object.getBucket();
         RiakResponse response = RiakResponse.empty();
 
-        com.basho.riak.client.RiakObject riakObject = convert(object);
+        com.basho.riak.client.RiakObject riakObject = convert(object, client);
         RequestMeta requestMeta = convert(storeMeta);
         StoreResponse resp = client.store(riakObject, requestMeta);
 
@@ -243,91 +161,6 @@ public class HTTPClientAdapter implements RawClient {
         }
 
         return response;
-    }
-
-    /**
-     * @param storeMeta
-     * @return
-     */
-    private RequestMeta convert(StoreMeta storeMeta) {
-        RequestMeta requestMeta = RequestMeta.writeParams(storeMeta.getW(), storeMeta.getDw());
-
-        if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
-            requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(true));
-        } else {
-            requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(false));
-        }
-
-        return requestMeta;
-    }
-
-    /**
-     * @param object
-     * @return
-     */
-    private com.basho.riak.client.RiakObject convert(RiakObject object) {
-
-        System.out.println("Vclock out of new object " + object.getVClockAsString());
-
-        com.basho.riak.client.RiakObject riakObject = new com.basho.riak.client.RiakObject(
-                                                                                           client,
-                                                                                           object.getBucketName(),
-                                                                                           object.getKey(),
-                                                                                           nullSafeGetBytes(object.getValue()),
-                                                                                           object.getContentType(),
-                                                                                           getLinks(object),
-                                                                                           getUserMetaData(object),
-                                                                                           object.getVClockAsString(),
-                                                                                           formatDate(object.getLastModified()),
-                                                                                           object.getVtag());
-        return riakObject;
-    }
-
-    /**
-     * @param lastModified
-     * @return
-     */
-    private String formatDate(Date lastModified) {
-        if (lastModified == null) {
-            return null;
-        }
-        return DateUtil.formatDate(lastModified);
-    }
-
-    /**
-     * @param object
-     * @return
-     */
-    private Map<String, String> getUserMetaData(RiakObject object) {
-        final Map<String, String> userMetaData = new HashMap<String, String>();
-
-        for (Entry<String, String> entry : object.userMetaEntries()) {
-            userMetaData.put(entry.getKey(), entry.getValue());
-        }
-        return userMetaData;
-    }
-
-    /**
-     * @param object
-     * @return
-     */
-    private List<com.basho.riak.client.RiakLink> getLinks(RiakObject object) {
-
-        final List<com.basho.riak.client.RiakLink> links = new ArrayList<com.basho.riak.client.RiakLink>();
-
-        for (RiakLink link : object) {
-            links.add(convert(link));
-        }
-
-        return links;
-    }
-
-    /**
-     * @param link
-     * @return
-     */
-    private com.basho.riak.client.RiakLink convert(RiakLink link) {
-        return new com.basho.riak.client.RiakLink(link.getBucket(), link.getKey(), link.getTag());
     }
 
     /*
@@ -393,32 +226,6 @@ public class HTTPClientAdapter implements RawClient {
         return convert(response);
     }
 
-    /**
-     * @param response
-     * @return
-     */
-    private BucketProperties convert(BucketResponse response) {
-        RiakBucketInfo bucketInfo = response.getBucketInfo();
-        return new DefaultBucketProperties.Builder().allowSiblings(bucketInfo.getAllowMult()).nVal(bucketInfo.getNVal()).chashKeyFunction(convert(bucketInfo.getCHashFun())).linkWalkFunction(convert(bucketInfo.getLinkFun())).build();
-    }
-
-    /**
-     * @param cHashFun
-     * @return
-     */
-    private NamedErlangFunction convert(String funString) {
-        if (funString == null) {
-            return null;
-        }
-        String[] fun = funString.split(":");
-
-        if (fun.length != 2) {
-            return null;
-        }
-
-        return new NamedErlangFunction(fun[0], fun[1]);
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -431,34 +238,6 @@ public class HTTPClientAdapter implements RawClient {
             throw new IOException(response.getBodyAsString());
         }
 
-    }
-
-    /**
-     * @param bucketProperties
-     * @return
-     */
-    private RiakBucketInfo convert(BucketProperties bucketProperties) {
-        RiakBucketInfo rbi = new RiakBucketInfo();
-
-        if (bucketProperties.getAllowSiblings() != null) {
-            rbi.setAllowMult(bucketProperties.getAllowSiblings());
-        }
-
-        if (bucketProperties.getNVal() != null) {
-            rbi.setNVal(bucketProperties.getNVal());
-        }
-
-        final NamedErlangFunction chashKeyFun = bucketProperties.getChashKeyFunction();
-        if (chashKeyFun != null) {
-            rbi.setCHashFun(chashKeyFun.getMod(), chashKeyFun.getFun());
-        }
-
-        final NamedErlangFunction linkwalkFun = bucketProperties.getLinkWalkFunction();
-        if (linkwalkFun != null) {
-            rbi.setLinkFun(linkwalkFun.getMod(), linkwalkFun.getFun());
-        }
-
-        return rbi;
     }
 
     /*
@@ -496,7 +275,8 @@ public class HTTPClientAdapter implements RawClient {
      * .MapReduceSpec)
      */
     public MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException {
-        return null;
+        MapReduceResponse resp = client.mapReduce(spec.getJSON());
+        return convert(resp);
     }
 
     /*
@@ -531,5 +311,4 @@ public class HTTPClientAdapter implements RawClient {
     public byte[] getClientId() throws IOException {
         return client.getClientId();
     }
-
 }

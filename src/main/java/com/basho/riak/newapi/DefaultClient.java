@@ -3,22 +3,21 @@ package com.basho.riak.newapi;
 import java.io.IOException;
 
 import com.basho.riak.client.raw.Command;
-import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.FetchBucket;
 import com.basho.riak.newapi.bucket.WriteBucket;
+import com.basho.riak.newapi.cap.DefaultRetrier;
+import com.basho.riak.newapi.query.BucketKeyMapReduce;
+import com.basho.riak.newapi.query.BucketMapReduce;
 import com.basho.riak.newapi.query.LinkWalk;
-import com.basho.riak.newapi.query.MapReduce;
 
 /**
  * @author russell
  * 
  */
 public final class DefaultClient implements RiakClient {
-    /**
-     * 
-     */
+
     private final RawClient client;
 
     /**
@@ -28,17 +27,11 @@ public final class DefaultClient implements RiakClient {
         this.client = client;
     }
 
-    public LinkWalk walk(RiakObject startObject) {
-        return null;
-    }
+    // BUCKET OPS
 
     public WriteBucket updateBucket(Bucket b) {
         WriteBucket op = new WriteBucket(client, b);
         return op;
-    }
-
-    public MapReduce mapReduce() {
-        return null;
     }
 
     public FetchBucket fetchBucket(String bucketName) {
@@ -50,6 +43,8 @@ public final class DefaultClient implements RiakClient {
         WriteBucket op = new WriteBucket(client, bucketName);
         return op;
     }
+
+    // CLIENT ID
 
     public RiakClient setClientId(final byte[] clientId) throws RiakException {
         if (clientId == null || clientId.length != 4) {
@@ -84,5 +79,24 @@ public final class DefaultClient implements RiakClient {
         }, 3);
 
         return clientId;
+    }
+
+    // QUERY
+
+    public BucketKeyMapReduce mapReduce() {
+        return new BucketKeyMapReduce(client);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.newapi.RiakClient#mapReduce(java.lang.String)
+     */
+    public BucketMapReduce mapReduce(String bucket) {
+        return new BucketMapReduce(client, bucket);
+    }
+
+    public LinkWalk walk(RiakObject startObject) {
+        return null;
     }
 }

@@ -11,14 +11,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.raw;
-
-import com.basho.riak.newapi.RiakRetryFailedException;
+package com.basho.riak.newapi.query.filter;
 
 /**
  * @author russell
- * 
+ *
  */
-public interface Retrier {
-    <T> T attempt(Command<T> command, int times) throws RiakRetryFailedException;
+public interface KeyTransformFilter extends KeyFilter {
+
 }

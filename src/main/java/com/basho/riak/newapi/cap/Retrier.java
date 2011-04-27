@@ -11,35 +11,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.raw;
+package com.basho.riak.newapi.cap;
 
-import java.io.IOException;
-
+import com.basho.riak.client.raw.Command;
 import com.basho.riak.newapi.RiakRetryFailedException;
 
 /**
  * @author russell
  * 
  */
-public class DefaultRetrier implements Retrier {
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.basho.riak.client.spi.Retrier#attempt(com.basho.riak.client.spi.Command
-     * )
-     */
-    public <T> T attempt(Command<T> command, int times) throws RiakRetryFailedException {
-        try {
-            return command.execute();
-        } catch (IOException e) {
-            if (times == 0) {
-                throw new RiakRetryFailedException(e);
-            } else {
-                return attempt(command, times--);
-            }
-        }
-    }
-
+public interface Retrier {
+    <T> T attempt(Command<T> command, int times) throws RiakRetryFailedException;
 }

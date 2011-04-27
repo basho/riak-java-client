@@ -16,10 +16,10 @@ package com.basho.riak.newapi.operations;
 import java.io.IOException;
 
 import com.basho.riak.client.raw.Command;
-import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.bucket.Bucket;
+import com.basho.riak.newapi.cap.DefaultRetrier;
 
 /**
  * @author russell
@@ -66,7 +66,7 @@ public class DeleteObject implements RiakOperation<Void> {
         return null;
     }
 
-    public DeleteObject rw(int rw) {
+    public DeleteObject rw(Integer rw) {
         this.rw = rw;
         return this;
     }

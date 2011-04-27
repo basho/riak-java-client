@@ -33,8 +33,8 @@ import com.basho.riak.newapi.convert.NoKeySpecifedException;
 import com.basho.riak.newapi.operations.DeleteObject;
 import com.basho.riak.newapi.operations.FetchObject;
 import com.basho.riak.newapi.operations.StoreObject;
-import com.basho.riak.newapi.query.NamedErlangFunction;
-import com.basho.riak.newapi.query.NamedFunction;
+import com.basho.riak.newapi.query.functions.NamedErlangFunction;
+import com.basho.riak.newapi.query.functions.NamedFunction;
 
 /**
  * @author russell

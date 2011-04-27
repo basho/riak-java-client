@@ -23,7 +23,7 @@ import com.basho.riak.newapi.RiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
 import com.basho.riak.newapi.bucket.Bucket;
-import com.basho.riak.newapi.query.NamedErlangFunction;
+import com.basho.riak.newapi.query.functions.NamedErlangFunction;
 
 /**
  * @author russell

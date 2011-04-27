@@ -16,8 +16,9 @@ package com.basho.riak.newapi;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.FetchBucket;
 import com.basho.riak.newapi.bucket.WriteBucket;
+import com.basho.riak.newapi.query.BucketKeyMapReduce;
+import com.basho.riak.newapi.query.BucketMapReduce;
 import com.basho.riak.newapi.query.LinkWalk;
-import com.basho.riak.newapi.query.MapReduce;
 
 /**
  * @author russell
@@ -41,5 +42,16 @@ public interface RiakClient {
     LinkWalk walk(final RiakObject startObject);
 
     // query - m/r
-    MapReduce mapReduce();
+    
+    /**
+     * Map reduce over a set of bucket, key inputs
+     */
+    BucketKeyMapReduce mapReduce();
+    
+    /**
+     * Map reduce over a bucket
+     * @param bucket
+     * @return
+     */
+    BucketMapReduce mapReduce(String bucket);
 }

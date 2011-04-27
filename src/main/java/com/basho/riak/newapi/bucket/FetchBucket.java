@@ -16,9 +16,9 @@ package com.basho.riak.newapi.bucket;
 import java.io.IOException;
 
 import com.basho.riak.client.raw.Command;
-import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakRetryFailedException;
+import com.basho.riak.newapi.cap.DefaultRetrier;
 import com.basho.riak.newapi.operations.RiakOperation;
 
 /**
@@ -31,8 +31,6 @@ public class FetchBucket implements RiakOperation<Bucket> {
     private final String bucket;
 
     private int retry = 0;
-    private boolean fetchKeys = false;
-    private boolean fetchProperties = true;
 
     /**
      * @param client
@@ -57,15 +55,4 @@ public class FetchBucket implements RiakOperation<Bucket> {
         this.retry = i;
         return this;
     }
-
-    public FetchBucket fetchKeys(boolean fetchKeys) {
-        this.fetchKeys = fetchKeys;
-        return this;
-    }
-
-    public FetchBucket fetchProperties(boolean fetchProperties) {
-        this.fetchProperties = fetchProperties;
-        return this;
-    }
-
 }

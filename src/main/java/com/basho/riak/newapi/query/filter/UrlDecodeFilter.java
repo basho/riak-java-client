@@ -11,14 +11,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.query;
+package com.basho.riak.newapi.query.filter;
 
-/**
- * Tag interface.
- * 
- * @author russell
- * 
- */
-public interface NamedFunction {
+public class UrlDecodeFilter implements KeyTransformFilter {
 
+    private static final String[] filter = new String[] { "urldecode" };
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.newapi.query.filter.KeyFilter#asArray()
+     */
+    public String[] asArray() {
+        return filter.clone();
+    }
 }

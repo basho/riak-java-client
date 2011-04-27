@@ -17,14 +17,14 @@ import java.io.IOException;
 import java.util.Collection;
 
 import com.basho.riak.client.raw.Command;
-import com.basho.riak.client.raw.DefaultRetrier;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.bucket.DefaultBucketProperties.Builder;
-import com.basho.riak.newapi.cap.CAP;
+import com.basho.riak.newapi.cap.DefaultRetrier;
+import com.basho.riak.newapi.cap.Quora;
 import com.basho.riak.newapi.operations.RiakOperation;
-import com.basho.riak.newapi.query.NamedErlangFunction;
-import com.basho.riak.newapi.query.NamedFunction;
+import com.basho.riak.newapi.query.functions.NamedErlangFunction;
+import com.basho.riak.newapi.query.functions.NamedFunction;
 
 /**
  * @author russell
@@ -142,7 +142,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
         return this;
     }
 
-    public WriteBucket r(CAP r) {
+    public WriteBucket r(Quora r) {
         builder.r(r);
         return this;
     }
@@ -152,7 +152,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
         return this;
     }
 
-    public WriteBucket w(CAP w) {
+    public WriteBucket w(Quora w) {
         builder.w(w);
         return this;
     }
@@ -162,7 +162,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
         return this;
     }
 
-    public WriteBucket rw(CAP rw) {
+    public WriteBucket rw(Quora rw) {
         builder.rw(rw);
         return this;
     }
@@ -172,7 +172,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
         return this;
     }
 
-    public WriteBucket dw(CAP dw) {
+    public WriteBucket dw(Quora dw) {
         builder.dw(dw);
         return this;
     }

@@ -74,7 +74,15 @@ public class DomainBucket<T> {
 
     public T store(T o) throws RiakException {
         final Mutation<T> mutation = mutationProducer.produce(o);
-        return bucket.store(o).withConverter(converter).withMutator(mutation).withResolver(resolver).w(w).dw(dw).retry(retries).returnBody(returnBody).execute();
+        return bucket.store(o)
+            .withConverter(converter)
+            .withMutator(mutation)
+            .withResolver(resolver)
+            .w(w)
+            .dw(dw)
+            .retry(retries)
+            .returnBody(returnBody)
+            .execute();
     }
 
     public T fetch(String key) throws RiakException {

@@ -14,7 +14,8 @@
 package com.basho.riak.newapi.query;
 
 import java.util.Collection;
-import java.util.Map;
+
+import com.basho.riak.newapi.convert.ConversionException;
 
 /**
  * @author russell
@@ -30,15 +31,7 @@ public interface MapReduceResult {
      *            A Java type to map the result too.
      * @return a Collection of T.
      */
-    <T> Collection<T> getResult(T resultType);
-
-    /**
-     * A Collection of results bound to Map<String, Object> where each result is
-     * like a C Struct.
-     * 
-     * @return
-     */
-    Collection<Map<String, Object>> getResult();
+    <T> Collection<T> getResult(Class<T> resultType) throws ConversionException;
 
     /**
      * The raw JSON string of the result

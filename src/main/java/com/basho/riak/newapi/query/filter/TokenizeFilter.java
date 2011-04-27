@@ -11,14 +11,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.newapi.query;
+package com.basho.riak.newapi.query.filter;
 
-/**
- * A Map Reduce Query run it via {@link RiakClient#mapReduce(MapReduceSpec)}
- * 
- * @author russell
- * 
- */
-public class MapReduceSpec {
 
+public class TokenizeFilter implements KeyTransformFilter {
+
+    private static final String NAME = "tokenize";
+    private final Object[] filter;
+    
+    public TokenizeFilter(String separator, int tokenNum) {
+        filter = new Object[] {NAME, separator, tokenNum};
+    }
+    
+    public Object[] asArray() {
+        return filter.clone();
+    }
 }

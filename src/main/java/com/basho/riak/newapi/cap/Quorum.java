@@ -15,13 +15,13 @@ package com.basho.riak.newapi.cap;
 
 public final class Quorum {
     private Integer i;
-    private CAP cap;
+    private Quora quorum;
 
     public Quorum(int i) {
         this.i = i;
     }
 
-    public Quorum(CAP cap) {
-        this.cap = cap;
+    public Quorum(Quora quorum) {
+        this.quorum = quorum;
     }
 }

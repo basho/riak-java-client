@@ -13,11 +13,13 @@
  */
 package com.basho.riak.client.raw.query;
 
+import com.basho.riak.newapi.RiakException;
+
 /**
  * @author russell
  * 
  */
-public class MapReduceTimeoutException extends Exception {
+public class MapReduceTimeoutException extends RiakException {
 
     private static final long serialVersionUID = -1293682325413369755L;
 

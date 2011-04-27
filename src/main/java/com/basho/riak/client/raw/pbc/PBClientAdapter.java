@@ -13,32 +13,34 @@
  */
 package com.basho.riak.client.raw.pbc;
 
+import static com.basho.riak.client.raw.pbc.ConversionUtil.convert;
+import static com.basho.riak.client.raw.pbc.ConversionUtil.nullSafeToStringUtf8;
+
 import java.io.IOException;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.Map.Entry;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
+import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
-import com.basho.riak.newapi.RiakLink;
+import com.basho.riak.client.util.Constants;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
-import com.basho.riak.newapi.bucket.DefaultBucketProperties;
-import com.basho.riak.newapi.builders.RiakObjectBuilder;
-import com.basho.riak.newapi.cap.VClock;
 import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.MapReduceSpec;
 import com.basho.riak.newapi.query.WalkResult;
+import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.KeySource;
+import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.google.protobuf.ByteString;
 
 /**
+ * Wraps the pb {@link RiakClient} and adapts it to the {@link RawClient} interface.
+ * 
  * @author russell
  * 
  */
@@ -93,64 +95,6 @@ public class PBClientAdapter implements RawClient {
         return convert(client.fetch(bucket.getName(), key, readQuorum), bucket);
     }
 
-    /**
-     * @param fetch
-     * @return
-     */
-    private RiakResponse convert(com.basho.riak.pbc.RiakObject[] pbcObjects, final Bucket bucket) {
-        RiakResponse response = RiakResponse.empty();
-
-        if (pbcObjects != null && pbcObjects.length > 0) {
-            RiakObject[] converted = new RiakObject[pbcObjects.length];
-            for (int i = 0; i < pbcObjects.length; i++) {
-                converted[i] = convert(pbcObjects[i], bucket);
-            }
-            response = new RiakResponse(pbcObjects[0].getVclock().toByteArray(), converted);
-        }
-
-        return response;
-    }
-
-    /**
-     * @param o
-     * @return
-     */
-    private RiakObject convert(com.basho.riak.pbc.RiakObject o, final Bucket bucket) {
-        RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(bucket, o.getKey());
-
-        builder.withValue(nullSafeToStringUtf8(o.getValue()));
-        builder.withVClock(nullSafeToBytes(o.getVclock()));
-        builder.withVtag(o.getVtag());
-
-        Date lastModified = o.getLastModified();
-
-        if (lastModified != null) {
-            builder.withLastModified(lastModified.getTime());
-        }
-
-        return builder.build();
-    }
-
-    /**
-     * @param vclock
-     * @return
-     */
-    private byte[] nullSafeToBytes(ByteString value) {
-        return value == null ? null : value.toByteArray();
-    }
-
-    /**
-     * @param value
-     * @return
-     */
-    private String nullSafeToStringUtf8(ByteString value) {
-        return value == null ? null : value.toStringUtf8();
-    }
-
-    private ByteString nullSafeToByteString(String value) {
-        return value == null ? null : ByteString.copyFromUtf8(value);
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -165,72 +109,6 @@ public class PBClientAdapter implements RawClient {
         }
 
         return convert(client.store(convert(riakObject), convert(storeMeta, riakObject)), riakObject.getBucket());
-    }
-
-    /**
-     * Convert a {@link StoreMeta} to a pbc {@link RequestMeta}
-     * 
-     * @param storeMeta
-     *            a {@link StoreMeta} for the store operation.
-     * @return a {@link RequestMeta} populated from the storeMeta's values.
-     */
-    private RequestMeta convert(StoreMeta storeMeta, RiakObject riakObject) {
-        RequestMeta requestMeta = new RequestMeta();
-        if (storeMeta.hasW()) {
-            requestMeta.w(storeMeta.getW());
-        }
-        if (storeMeta.hasDW()) {
-            requestMeta.dw(storeMeta.getDw());
-        }
-        if (storeMeta.hasReturnBody()) {
-            requestMeta.returnBody(storeMeta.getReturnBody());
-        }
-        String contentType = riakObject.getContentType();
-        if (contentType != null) {
-            requestMeta.contentType(contentType);
-        }
-        return requestMeta;
-    }
-
-    /**
-     * Convert a {@link RiakObject} to a pbc
-     * {@link com.basho.riak.pbc.RiakObject}
-     * 
-     * @param riakObject
-     *            the RiakObject to convert
-     * @return a {@link com.basho.riak.pbc.RiakObject} populated from riakObject
-     */
-    private com.basho.riak.pbc.RiakObject convert(RiakObject riakObject) {
-        VClock vc = riakObject.getVClock();
-        ByteString bucketName = nullSafeToByteString(riakObject.getBucketName());
-        ByteString key = nullSafeToByteString(riakObject.getKey());
-        ByteString content = nullSafeToByteString(riakObject.getValue());
-
-        ByteString vclock = null;
-        if (vc != null) {
-            vclock = nullSafeFromBytes(vc.getBytes());
-        }
-
-        com.basho.riak.pbc.RiakObject result = new com.basho.riak.pbc.RiakObject(vclock, bucketName, key, content);
-
-        for (RiakLink link : riakObject) {
-            result.addLink(link.getTag(), link.getBucket(), link.getKey());
-        }
-
-        for (Entry<String, String> metaDataItem : riakObject.userMetaEntries()) {
-            result.addUsermetaItem(metaDataItem.getKey(), metaDataItem.getValue());
-        }
-
-        result.setContentType(riakObject.getContentType());
-        return result;
-    }
-
-    /**
-     * @param bytes
-     * @return
-     */
-    private ByteString nullSafeFromBytes(byte[] bytes) {
-        return ByteString.copyFrom(bytes);
     }
 
     /*
@@ -285,14 +163,6 @@ public class PBClientAdapter implements RawClient {
         return convert(properties);
     }
 
-    /**
-     * @param properties
-     * @return
-     */
-    private BucketProperties convert(com.basho.riak.pbc.BucketProperties properties) {
-        return new DefaultBucketProperties.Builder().allowSiblings(properties.getAllowMult()).nVal(properties.getNValue()).build();
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -304,14 +174,6 @@ public class PBClientAdapter implements RawClient {
         com.basho.riak.pbc.BucketProperties properties = convert(bucketProperties);
         client.setBucketProperties(ByteString.copyFromUtf8(name), properties);
 
-    }
-
-    /**
-     * @param bucketProperties
-     * @return
-     */
-    private com.basho.riak.pbc.BucketProperties convert(BucketProperties p) {
-        return new com.basho.riak.pbc.BucketProperties().nValue(p.getNVal()).allowMult(p.getAllowSiblings());
     }
 
     /*
@@ -369,7 +231,10 @@ public class PBClientAdapter implements RawClient {
      * .MapReduceSpec)
      */
     public MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException {
-        return null;
+        IRequestMeta meta = new RequestMeta();
+        meta.contentType(Constants.CTYPE_JSON);
+        MapReduceResponseSource resp = client.mapReduce(spec.getJSON(), meta);
+        return convert(resp);
     }
 
     /*
@@ -408,5 +273,4 @@ public class PBClientAdapter implements RawClient {
             throw new IOException("null clientId returned by client");
         }
     }
-
 }

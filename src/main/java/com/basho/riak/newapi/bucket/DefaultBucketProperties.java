@@ -16,10 +16,10 @@ package com.basho.riak.newapi.bucket;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.basho.riak.newapi.cap.CAP;
+import com.basho.riak.newapi.cap.Quora;
 import com.basho.riak.newapi.cap.Quorum;
-import com.basho.riak.newapi.query.NamedErlangFunction;
-import com.basho.riak.newapi.query.NamedFunction;
+import com.basho.riak.newapi.query.functions.NamedErlangFunction;
+import com.basho.riak.newapi.query.functions.NamedFunction;
 
 /**
  * Since not all interfaces to Riak are equal in terms of what they provide not
@@ -244,7 +244,7 @@ public class DefaultBucketProperties implements BucketProperties {
         public String backend;
         public int nVal = 3;
         public Boolean lastWriteWins;
-        public Boolean allowSiblings;
+        public boolean allowSiblings = false;
 
         public BucketProperties build() {
             return new DefaultBucketProperties(this);
@@ -372,7 +372,7 @@ public class DefaultBucketProperties implements BucketProperties {
          * @param r
          * @return
          */
-        public Builder r(CAP r) {
+        public Builder r(Quora r) {
             this.r = new Quorum(r);
             return this;
         }
@@ -386,7 +386,7 @@ public class DefaultBucketProperties implements BucketProperties {
          * @param w
          * @return
          */
-        public Builder w(CAP w) {
+        public Builder w(Quora w) {
             this.w = new Quorum(w);
             return this;
         }
@@ -400,7 +400,7 @@ public class DefaultBucketProperties implements BucketProperties {
          * @param rw
          * @return
          */
-        public Builder rw(CAP rw) {
+        public Builder rw(Quora rw) {
             this.rw = new Quorum(rw);
             return this;
         }
@@ -414,7 +414,7 @@ public class DefaultBucketProperties implements BucketProperties {
          * @param dw
          * @return
          */
-        public Builder dw(CAP dw) {
+        public Builder dw(Quora dw) {
             this.dw = new Quorum(dw);
             return this;
         }

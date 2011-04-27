@@ -27,8 +27,6 @@ public final class MergeCartResolver implements ConflictResolver<ShoppingCart> {
             }
         }
 
-        System.out.println("Merged items for " + Thread.currentThread().getName() + " " + items);
-
         final ShoppingCart resolved = new ShoppingCart(userId);
         return resolved.addItems(items);
     }

@@ -16,8 +16,8 @@ package com.basho.riak.newapi.bucket;
 import java.util.Collection;
 
 import com.basho.riak.newapi.cap.Quorum;
-import com.basho.riak.newapi.query.NamedErlangFunction;
-import com.basho.riak.newapi.query.NamedFunction;
+import com.basho.riak.newapi.query.functions.NamedErlangFunction;
+import com.basho.riak.newapi.query.functions.NamedFunction;
 
 /**
  * @author russell

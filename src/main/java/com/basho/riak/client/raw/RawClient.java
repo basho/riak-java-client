@@ -17,12 +17,12 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import com.basho.riak.client.raw.query.LinkWalkSpec;
+import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.MapReduceSpec;
 import com.basho.riak.newapi.query.WalkResult;
 
 /**
