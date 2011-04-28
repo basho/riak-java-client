@@ -66,11 +66,13 @@ public class TestWalkResponse {
         final String BODY = "\r\n" + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU\r\n"
                             + "Content-Type: multipart/mixed; boundary=7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
                             + "\r\n"
-                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
+                            + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n"
+                            + "X-Riak-Vclock: vclock1\r\n"
                             + "Location: /riak/b/k1\r\n" 
                             + "\r\n" 
                             + "foo\r\n"
                             + "--7Ymillu08Tqzwb9Cm6Bs8OewFd5\r\n" 
+                            + "X-Riak-Vclock: vclock2\r\n"
                             + "Location: /riak/b/k2\r\n" 
                             + "\r\n"
                             + "bar\r\n"
@@ -90,11 +92,13 @@ public class TestWalkResponse {
         assertEquals("b", impl.getSteps().get(0).get(0).getBucket());
         assertEquals("k1", impl.getSteps().get(0).get(0).getKey());
         assertEquals("foo", impl.getSteps().get(0).get(0).getValue());
+        assertEquals("vclock1", impl.getSteps().get(0).get(0).getVclock());
 
         assertSame(mockRiakClient, impl.getSteps().get(0).get(1).getRiakClient());
         assertEquals("b", impl.getSteps().get(0).get(1).getBucket());
         assertEquals("k2", impl.getSteps().get(0).get(1).getKey());
         assertEquals("bar", impl.getSteps().get(0).get(1).getValue());
+        assertEquals("vclock2", impl.getSteps().get(0).get(1).getVclock());
     }
 
     @Test(expected = RiakResponseRuntimeException.class) public void throws_on_invalid_subpart_content_type() {
