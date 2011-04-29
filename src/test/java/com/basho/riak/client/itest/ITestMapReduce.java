@@ -33,6 +33,9 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.mapreduce.ErlangFunction;
 import com.basho.riak.client.mapreduce.JavascriptFunction;
+import com.basho.riak.client.mapreduce.filter.LessThanFilter;
+import com.basho.riak.client.mapreduce.filter.StringToIntFilter;
+import com.basho.riak.client.mapreduce.filter.TokenizeFilter;
 import com.basho.riak.client.request.MapReduceBuilder;
 import com.basho.riak.client.response.MapReduceResponse;
 
@@ -113,5 +116,24 @@ public class ITestMapReduce {
        assertEquals(0, results.getInt(0));
        assertEquals(73, results.getInt(73));
        assertEquals(197, results.getInt(197));       
+    }
+
+    @Test public void doKeyFilterMapReduce() throws HttpException, IOException, JSONException {
+        RiakClient c = new RiakClient(RIAK_URL);
+        MapReduceBuilder builder = new MapReduceBuilder(c);
+        builder.setBucket(BUCKET_NAME);
+        builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
+        builder.reduce(JavascriptFunction.named("Riak.reduceNumericSort"), true);
+        builder.keyFilter(new TokenizeFilter("_", 2));
+        builder.keyFilter(new StringToIntFilter());
+        builder.keyFilter(new LessThanFilter(50));
+        MapReduceResponse response = builder.submit();
+
+        assertTrue(response.isSuccess());
+        JSONArray results = response.getResults();
+        assertEquals(50, results.length());
+        assertEquals(0, results.getInt(0));
+        assertEquals(23, results.getInt(23));
+        assertEquals(49, results.getInt(49));
     }
 }

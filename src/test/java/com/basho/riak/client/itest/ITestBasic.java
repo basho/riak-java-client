@@ -227,28 +227,4 @@ public class ITestBasic {
         assertTrue(storeresp.hasSiblings());
         assertEquals(2, storeresp.getSiblings().size());
     }
-
-    @Test public void deleteQuorumIsApplied() {
-        final RiakClient c = new RiakClient(RIAK_URL);
-
-        final String bucket = UUID.randomUUID().toString();
-        final String key = UUID.randomUUID().toString();
-        final byte[] value = "value".getBytes();
-
-        RiakBucketInfo bucketInfo = new RiakBucketInfo();
-        bucketInfo.setNVal(3);
-
-        c.setBucketSchema(bucket, bucketInfo);
-        RiakObject o = new RiakObject(bucket, key, value);
-
-        final RequestMeta rm = WRITE_3_REPLICAS();
-
-        StoreResponse storeresp = c.store(o, rm);
-        assertSuccess(storeresp);
-
-        HttpResponse deleteResponse = c.delete(bucket, key, RequestMeta.deleteParams(4));
-
-        assertEquals(500, deleteResponse.getStatusCode());
-        assertTrue(deleteResponse.getBodyAsString().contains("n_val_violation"));
-    }
 }
