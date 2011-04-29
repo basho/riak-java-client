@@ -97,6 +97,6 @@ public final class DefaultClient implements RiakClient {
     }
 
     public LinkWalk walk(RiakObject startObject) {
-        return null;
+        return new LinkWalk(client, startObject);
     }
 }

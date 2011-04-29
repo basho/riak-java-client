@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.VClock;
 import com.basho.riak.newapi.convert.RiakKey;
@@ -34,7 +33,7 @@ public class DefaultRiakObject implements RiakObject {
 
     public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
-    private final Bucket bucket;
+    private final String bucket;
     @RiakKey private final String key;
     private final VClock vclock;
     private final String vtag;
@@ -63,7 +62,7 @@ public class DefaultRiakObject implements RiakObject {
      * @param links
      * @param userMeta
      */
-    public DefaultRiakObject(Bucket bucket, String key, VClock vclock, String vtag, final Date lastModified,
+    public DefaultRiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
             String contentType, String value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
 
         if (bucket == null) {
@@ -131,7 +130,7 @@ public class DefaultRiakObject implements RiakObject {
         return links.iterator();
     }
 
-    public Bucket getBucket() {
+    public String getBucket() {
         return bucket;
     }
 
@@ -163,10 +162,6 @@ public class DefaultRiakObject implements RiakObject {
 
     public Map<String, String> getMeta() {
         return new HashMap<String, String>(userMeta);
-    }
-
-    public String getBucketName() {
-        return bucket.getName();
     }
 
     public String getValue() {

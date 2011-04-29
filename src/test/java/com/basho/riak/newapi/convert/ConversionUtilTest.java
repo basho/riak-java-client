@@ -34,7 +34,7 @@ public class ConversionUtilTest {
 
         };
 
-        assertEquals(expected, ConversionUtil.getKey(o));
+        assertEquals(expected, KeyUtil.getKey(o));
     }
 
     @Test public void getNonStringKey() {
@@ -44,7 +44,7 @@ public class ConversionUtilTest {
 
         };
 
-        assertEquals(expected.toString(), ConversionUtil.getKey(o));
+        assertEquals(expected.toString(), KeyUtil.getKey(o));
     }
 
     @Test public void noKeyField() {
@@ -53,7 +53,7 @@ public class ConversionUtilTest {
 
         };
 
-        assertNull(ConversionUtil.getKey(o));
+        assertNull(KeyUtil.getKey(o));
     }
 
     @Test public void nullKeyField() {
@@ -62,7 +62,7 @@ public class ConversionUtilTest {
 
         };
 
-        assertNull(ConversionUtil.getKey(o));
+        assertNull(KeyUtil.getKey(o));
     }
 
 }

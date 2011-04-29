@@ -20,7 +20,6 @@ import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.query.MapReduceResult;
 import com.basho.riak.newapi.query.WalkResult;
@@ -33,17 +32,17 @@ public interface RawClient {
 
     // RiakObject
 
-    RiakResponse fetch(Bucket bucket, String key) throws IOException;
+    RiakResponse fetch(String bucket, String key) throws IOException;
 
-    RiakResponse fetch(Bucket bucket, String key, int readQuorum) throws IOException;
+    RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException;
 
     RiakResponse store(RiakObject object, StoreMeta storeMeta) throws IOException;
 
     void store(RiakObject object) throws IOException;
 
-    void delete(Bucket bucket, String key) throws IOException;
+    void delete(String bucket, String key) throws IOException;
 
-    void delete(Bucket bucket, String key, int deleteQuorum) throws IOException;
+    void delete(String bucket, String key, int deleteQuorum) throws IOException;
 
     // Bucket
     Iterator<String> listBuckets() throws IOException;
@@ -55,9 +54,9 @@ public interface RawClient {
     Iterable<String> listKeys(String bucketName) throws IOException;
 
     // Query
-    WalkResult linkWalk(RiakObject startObject, LinkWalkSpec linkWalkSpec) throws IOException;
+    WalkResult linkWalk(final LinkWalkSpec linkWalkSpec) throws IOException;
 
-    MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException;
+    MapReduceResult mapReduce(final MapReduceSpec spec) throws IOException, MapReduceTimeoutException;
 
     /**
      * If you don't set a client id explicitly at least call this to set one. It

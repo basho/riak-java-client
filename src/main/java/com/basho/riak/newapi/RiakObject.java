@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.VClock;
 
 /**
@@ -27,9 +26,7 @@ import com.basho.riak.newapi.cap.VClock;
  */
 public interface RiakObject extends Iterable<RiakLink> {
 
-    Bucket getBucket();
-
-    String getBucketName();
+    String getBucket();
 
     String getValue();
 

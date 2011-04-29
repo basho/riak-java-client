@@ -33,6 +33,7 @@ public class DomainBucketBuilder<T> {
     private final Bucket bucket;
     private final Class<T> clazz;
 
+    // The default resolver, it doesn't resolve
     private ConflictResolver<T> resolver = new DefaultResolver<T>();
     private Converter<T> converter;
     private Mutation<T> mutation;
@@ -52,8 +53,8 @@ public class DomainBucketBuilder<T> {
     public DomainBucketBuilder(Bucket bucket, Class<T> clazz) {
         this.bucket = bucket;
         this.clazz = clazz;
-        // create a default converter
-        converter = new JSONConverter<T>(clazz, bucket);
+        // create a default converter (the JSONConverter)
+        converter = new JSONConverter<T>(clazz, bucket.getName());
     }
 
     public DomainBucket<T> build() {
@@ -130,6 +131,11 @@ public class DomainBucketBuilder<T> {
 
     public DomainBucketBuilder<T> mutationProducer(MutationProducer<T> mutationProducer) {
         this.mutationProducer = mutationProducer;
+        return this;
+    }
+
+    public DomainBucketBuilder<T> withConverter(final Converter<T> converter) {
+        this.converter = converter;
         return this;
     }
 }

@@ -19,10 +19,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.basho.riak.newapi.DefaultRiakLink;
 import com.basho.riak.newapi.DefaultRiakObject;
 import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.BasicVClock;
 import com.basho.riak.newapi.cap.VClock;
 
@@ -31,7 +31,7 @@ import com.basho.riak.newapi.cap.VClock;
  * 
  */
 public class RiakObjectBuilder {
-    private final Bucket bucket;
+    private final String bucket;
     private final String key;
     private String value;
     private VClock vclock;
@@ -41,12 +41,12 @@ public class RiakObjectBuilder {
     private Map<String, String> userMeta = new HashMap<String, String>();
     private String contentType;
 
-    private RiakObjectBuilder(Bucket bucket, String key) {
+    private RiakObjectBuilder(String bucket, String key) {
         this.bucket = bucket;
         this.key = key;
     }
 
-    public static RiakObjectBuilder newBuilder(Bucket bucket, String key) {
+    public static RiakObjectBuilder newBuilder(String bucket, String key) {
         return new RiakObjectBuilder(bucket, key);
     }
 
@@ -86,12 +86,30 @@ public class RiakObjectBuilder {
     }
 
     public RiakObjectBuilder withLinks(Collection<RiakLink> links) {
-        this.links = new ArrayList<RiakLink>(links);
+        if(links != null) {
+            this.links = new ArrayList<RiakLink>(links);
+        }
+        return this;
+    }
+
+    public RiakObjectBuilder addLink(String bucket, String key, String tag) {
+        synchronized (links) {
+            links.add(new DefaultRiakLink(bucket, key, tag));
+        }
         return this;
     }
 
     public RiakObjectBuilder withUsermeta(Map<String, String> usermeta) {
-        this.userMeta = new HashMap<String, String>(usermeta);
+        if(usermeta != null) {
+            this.userMeta = new HashMap<String, String>(usermeta);
+        }
+        return this;
+    }
+
+    public RiakObjectBuilder addUsermeta(String key, String value) {
+        synchronized (userMeta) {
+            userMeta.put(key, value);
+        }
         return this;
     }
 
@@ -100,12 +118,9 @@ public class RiakObjectBuilder {
         return this;
     }
 
-    /**
-     * @param vclock
-     * @return
-     */
     public RiakObjectBuilder withVClock(VClock vclock) {
         this.vclock = vclock;
         return this;
     }
+
 }

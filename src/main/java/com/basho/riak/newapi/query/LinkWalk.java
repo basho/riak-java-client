@@ -13,9 +13,15 @@
  */
 package com.basho.riak.newapi.query;
 
+import java.io.IOException;
+import java.util.LinkedList;
+
+import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.operations.RiakOperation;
+import com.basho.riak.newapi.query.LinkWalkStep.Accumulate;
 
 /**
  * 
@@ -24,13 +30,18 @@ import com.basho.riak.newapi.operations.RiakOperation;
  */
 public class LinkWalk implements RiakOperation<WalkResult> {
 
-    private final RiakObject startObject;
+    private final RawClient client;
+    private final String startBucket;
+    private final String startKey;
+    private final LinkedList<LinkWalkStep> steps = new LinkedList<LinkWalkStep>();
 
     /**
      * @param startObject
      */
-    public LinkWalk(final RiakObject startObject) {
-        this.startObject = startObject;
+    public LinkWalk(final RawClient client, final RiakObject startObject) {
+        this.client = client;
+        this.startBucket = startObject.getBucket();
+        this.startKey = startObject.getKey();
     }
 
     /*
@@ -39,7 +50,66 @@ public class LinkWalk implements RiakOperation<WalkResult> {
      * @see com.basho.riak.client.RiakOperation#execute()
      */
     public WalkResult execute() throws RiakException {
-        return null;
+        try {
+            return client.linkWalk(new LinkWalkSpec(steps, startBucket, startKey));
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
     }
 
+    /**
+     * Add a link walking step to this link walk
+     *
+     * @param bucket
+     *            the bucket, a null, or empty string is treated as the wildcard
+     * @param tag
+     *            the tag of the link, a null or empty string is treated as the
+     *            wildcard
+     * @param accumulate
+     *            to keep the result of this step or not
+     * @return this
+     */
+    public LinkWalk addStep(String bucket, String tag, Accumulate accumulate) {
+        synchronized (steps) {
+            steps.add(new LinkWalkStep(bucket, tag, accumulate));
+        }
+        return this;
+    }
+
+    /**
+     * Add a link walking step to this link walk
+     *
+     * @param bucket
+     *            the bucket, a null, or empty string is treated as the wildcard _
+     * @param tag
+     *            the tag of the link, a null or empty string is treated as the
+     *            wildcard
+     * @param accumulate
+     *            to keep the result of this step or not
+     * @return this
+     */
+    public LinkWalk addStep(String bucket, String tag, boolean keep) {
+        synchronized (steps) {
+            steps.add(new LinkWalkStep(bucket, tag, keep));
+        }
+        return this;
+    }
+
+    /**
+     * Add a link walking step to this link walk using the default accumulate
+     * value for the step (NO for all steps accept last step)
+     *
+     * @param bucket
+     *            the bucket, a null, or empty string is treated as the wildcard _
+     * @param tag
+     *            the tag of the link, a null or empty string is treated as the
+     *            wildcard
+     * @return this
+     */
+    public LinkWalk addStep(String bucket, String tag) {
+        synchronized (steps) {
+            steps.add(new LinkWalkStep(bucket, tag));
+        }
+        return this;
+    }
 }

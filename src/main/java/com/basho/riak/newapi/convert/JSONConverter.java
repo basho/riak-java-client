@@ -13,7 +13,7 @@
  */
 package com.basho.riak.newapi.convert;
 
-import static com.basho.riak.newapi.convert.ConversionUtil.getKey;
+import static com.basho.riak.newapi.convert.KeyUtil.getKey;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -22,7 +22,6 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.VClock;
 
@@ -37,10 +36,10 @@ public class JSONConverter<T> implements Converter<T> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Class<T> clazz;
-    private final Bucket bucket;
+    private final String bucket;
     private String defaultKey;
 
-    public JSONConverter(Class<T> clazz, final Bucket bucket) {
+    public JSONConverter(Class<T> clazz, String bucket) {
         this.clazz = clazz;
         this.bucket = bucket;
     }
@@ -50,7 +49,7 @@ public class JSONConverter<T> implements Converter<T> {
      * @param b
      * @param defaultKey
      */
-    public JSONConverter(Class<T> clazz, Bucket b, String defaultKey) {
+    public JSONConverter(Class<T> clazz, String b, String defaultKey) {
         this(clazz, b);
         this.defaultKey = defaultKey;
     }

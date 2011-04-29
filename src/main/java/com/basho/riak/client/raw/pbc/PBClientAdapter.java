@@ -14,10 +14,14 @@
 package com.basho.riak.client.raw.pbc;
 
 import static com.basho.riak.client.raw.pbc.ConversionUtil.convert;
+import static com.basho.riak.client.raw.pbc.ConversionUtil.linkAccumulateToLinkPhaseKeep;
 import static com.basho.riak.client.raw.pbc.ConversionUtil.nullSafeToStringUtf8;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
@@ -26,11 +30,16 @@ import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.util.Constants;
+import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
+import com.basho.riak.newapi.convert.ConversionException;
+import com.basho.riak.newapi.query.BucketKeyMapReduce;
+import com.basho.riak.newapi.query.LinkWalkStep;
 import com.basho.riak.newapi.query.MapReduceResult;
 import com.basho.riak.newapi.query.WalkResult;
+import com.basho.riak.newapi.query.functions.JSSourceFunction;
+import com.basho.riak.newapi.query.functions.NamedErlangFunction;
 import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.MapReduceResponseSource;
@@ -62,17 +71,17 @@ public class PBClientAdapter implements RawClient {
      * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String,
      * java.lang.String)
      */
-    public RiakResponse fetch(Bucket bucket, String key) throws IOException {
-        if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
+    public RiakResponse fetch(String bucket, String key) throws IOException {
+        if (bucket == null || bucket.trim().equals("")) {
             throw new IllegalArgumentException(
-                                               "bucket must not be null and bucket.getName() must not be null or empty "
+                                               "bucket must not be null or empty "
                                                        + "or just whitespace.");
         }
 
         if (key == null || key.trim().equals("")) {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
-        return convert(client.fetch(bucket.getName(), key), bucket);
+        return convert(client.fetch(bucket, key));
     }
 
     /*
@@ -82,17 +91,17 @@ public class PBClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String, int)
      */
-    public RiakResponse fetch(Bucket bucket, String key, int readQuorum) throws IOException {
-        if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
+    public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
+        if (bucket == null || bucket.trim().equals("")) {
             throw new IllegalArgumentException(
-                                               "bucket must not be null and bucket.getName() must not be null or empty "
+                                               "bucket must not be null or empty "
                                                        + "or just whitespace.");
         }
 
         if (key == null || key.trim().equals("")) {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
-        return convert(client.fetch(bucket.getName(), key, readQuorum), bucket);
+        return convert(client.fetch(bucket, key, readQuorum));
     }
 
     /*
@@ -108,7 +117,7 @@ public class PBClientAdapter implements RawClient {
                                                "object cannot be null, object's key cannot be null, object's bucket cannot be null");
         }
 
-        return convert(client.store(convert(riakObject), convert(storeMeta, riakObject)), riakObject.getBucket());
+        return convert(client.store(convert(riakObject), convert(storeMeta, riakObject)));
     }
 
     /*
@@ -127,8 +136,8 @@ public class PBClientAdapter implements RawClient {
      * 
      * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String)
      */
-    public void delete(Bucket bucket, String key) throws IOException {
-        client.delete(bucket.getName(), key);
+    public void delete(String bucket, String key) throws IOException {
+        client.delete(bucket, key);
     }
 
     /*
@@ -136,8 +145,8 @@ public class PBClientAdapter implements RawClient {
      * 
      * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String, int)
      */
-    public void delete(Bucket bucket, String key, int deleteQuorum) throws IOException {
-        client.delete(bucket.getName(), key, deleteQuorum);
+    public void delete(String bucket, String key, int deleteQuorum) throws IOException {
+        client.delete(bucket, key, deleteQuorum);
     }
 
     /*
@@ -212,15 +221,89 @@ public class PBClientAdapter implements RawClient {
         };
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * This is a bit of a hack. The pb interface doesn't really have a Link Walker
+     * like the REST interface does. This method runs (maximum) 2 map reduce
+     * requests to get the same results the link walk would for the given spec.
      * 
-     * @see
-     * com.basho.riak.client.raw.RawClient#linkWalk(com.basho.riak.client.RiakObject
-     * , com.basho.riak.client.raw.query.LinkWalkSpec)
+     * The first m/r job gets the end of the link walk and the inputs for second m/r job.
+     * The second job gets all those inputs values.
+     * Then some client side massaging occurs to massage the result into the correct format.
      */
-    public WalkResult linkWalk(RiakObject startObject, LinkWalkSpec linkWalkSpec) throws IOException {
-        return null;
+    public WalkResult linkWalk(final LinkWalkSpec linkWalkSpec) throws IOException {
+        MapReduceResult firstPhaseResult = linkWalkFirstPhase(linkWalkSpec);
+        MapReduceResult secondPhaseResult = linkWalkSecondPhase(firstPhaseResult);
+        WalkResult result = convert(secondPhaseResult);
+        return result;
+    }
+
+    /**
+     * Creates an m/r job from the supplied link spec and executes it
+     *
+     * @param linkWalkSpec
+     *            the Link Walk spec
+     * @return {@link MapReduceResult} containing the end of the link and any
+     *         intermediate bkeys for a second pass
+     * @throws IOException
+     */
+    private MapReduceResult linkWalkFirstPhase(final LinkWalkSpec linkWalkSpec) throws IOException {
+        BucketKeyMapReduce mr = new BucketKeyMapReduce(this);
+        mr.addInput(linkWalkSpec.getStartBucket(), linkWalkSpec.getStartKey());
+        int size = linkWalkSpec.size();
+        int cnt = 0;
+
+        for (LinkWalkStep step : linkWalkSpec) {
+            cnt++;
+            boolean keep = linkAccumulateToLinkPhaseKeep(step.getKeep(), cnt == size);
+            mr.addLinkPhase(step.getBucket(), step.getKey(), keep);
+        }
+
+        // this is a bit of a hack. The low level API is using the high level
+        // API so must strip out the exception.
+        try {
+            return mr.execute();
+        } catch (RiakException e) {
+            throw (IOException) e.getCause();
+        }
+    }
+
+    /**
+     * Takes the results of running linkWalkFirstPhase and creates an m/r job
+     * from them
+     *
+     * @param firstPhaseResult
+     *            the results of running linkWalkfirstPhase.
+     * @return the results from the intermediate bkeys of phase one.
+     * @throws IOException
+     */
+    private MapReduceResult linkWalkSecondPhase(final MapReduceResult firstPhaseResult) throws IOException {
+        try {
+            @SuppressWarnings("rawtypes") Collection<LinkedList> bkeys = firstPhaseResult.getResult(LinkedList.class);
+
+            BucketKeyMapReduce mr = new BucketKeyMapReduce(this);
+            int stepCnt = 0;
+
+            for (LinkedList<List<String>> step : bkeys) {
+                // TODO find a way to *enforce* order here (custom
+                // deserializer?)
+                stepCnt++;
+                for (List<String> input : step) {
+                    // use the step count as key data so we can aggregate the
+                    // results into the correct steps when they come back
+                    mr.addInput(input.get(0), input.get(1), Integer.toString(stepCnt));
+                }
+            }
+
+            mr.addReducePhase(new NamedErlangFunction("riak_kv_mapreduce", "reduce_set_union"), false);
+            mr.addMapPhase(new JSSourceFunction("function(v, keyData) { return [{\"step\": keyData, \"v\": v}]; }"),
+                           true);
+
+            return mr.execute();
+        } catch (ConversionException e) {
+            throw new IOException(e.getMessage());
+        } catch (RiakException e) {
+            throw (IOException) e.getCause();
+        }
     }
 
     /*

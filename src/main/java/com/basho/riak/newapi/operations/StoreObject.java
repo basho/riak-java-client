@@ -24,7 +24,6 @@ import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.DefaultRetrier;
 import com.basho.riak.newapi.cap.Mutation;
@@ -43,7 +42,7 @@ import com.basho.riak.newapi.convert.Converter;
 public class StoreObject<T> implements RiakOperation<T> {
 
     private final RawClient client;
-    private final Bucket bucket;
+    private final String bucket;
 
     // TODO populate
     private Integer r;
@@ -58,7 +57,7 @@ public class StoreObject<T> implements RiakOperation<T> {
 
     private final String key;
 
-    public StoreObject(final RawClient client, Bucket bucket, String key) {
+    public StoreObject(final RawClient client, String bucket, String key) {
         this.client = client;
         this.bucket = bucket;
         this.key = key;

@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,20 +31,25 @@ import org.codehaus.jackson.map.type.TypeFactory;
 import com.basho.riak.client.RiakBucketInfo;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.request.RequestMeta;
+import com.basho.riak.client.request.RiakWalkSpec;
 import com.basho.riak.client.response.BucketResponse;
 import com.basho.riak.client.response.MapReduceResponse;
+import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 import com.basho.riak.newapi.DefaultRiakLink;
 import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.bucket.DefaultBucketProperties;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.convert.ConversionException;
+import com.basho.riak.newapi.query.LinkWalkStep;
 import com.basho.riak.newapi.query.MapReduceResult;
+import com.basho.riak.newapi.query.WalkResult;
 import com.basho.riak.newapi.query.functions.NamedErlangFunction;
+import com.basho.riak.newapi.util.UnmodifiableIterator;
 
 /**
  * @author russell
@@ -54,11 +61,11 @@ public class ConversionUtil {
      * @param bucket
      * @return
      */
-    static RiakObject[] convert(Collection<com.basho.riak.client.RiakObject> siblings, Bucket bucket) {
+    static RiakObject[] convert(Collection<com.basho.riak.client.RiakObject> siblings) {
         final Collection<RiakObject> results = new ArrayList<RiakObject>();
 
         for (com.basho.riak.client.RiakObject object : siblings) {
-            results.add(convert(object, bucket));
+            results.add(convert(object));
         }
 
         return results.toArray(new RiakObject[results.size()]);
@@ -68,9 +75,9 @@ public class ConversionUtil {
      * @param object
      * @return
      */
-    static RiakObject convert(final com.basho.riak.client.RiakObject o, final Bucket bucket) {
+    static RiakObject convert(final com.basho.riak.client.RiakObject o) {
 
-        RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(bucket, o.getKey());
+        RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(o.getBucket(), o.getKey());
 
         builder.withValue(o.getValue());
         builder.withVClock(nullSafeGetBytes(o.getVclock()));
@@ -142,7 +149,7 @@ public class ConversionUtil {
     static com.basho.riak.client.RiakObject convert(RiakObject object, final RiakClient client) {
         com.basho.riak.client.RiakObject riakObject = new com.basho.riak.client.RiakObject(
                                                                                            client,
-                                                                                           object.getBucketName(),
+                                                                                           object.getBucket(),
                                                                                            object.getKey(),
                                                                                            nullSafeGetBytes(object.getValue()),
                                                                                            object.getContentType(),
@@ -284,4 +291,38 @@ public class ConversionUtil {
         return result;
     }
 
+    /**
+     * @param linkWalkSpec
+     * @return a String representation of this walk spec useful to the http.RiakClient
+     */
+    static String convert(LinkWalkSpec linkWalkSpec) {
+        RiakWalkSpec riakWalkSpec = new RiakWalkSpec();
+        for(LinkWalkStep step : linkWalkSpec) {
+            riakWalkSpec.addStep(step.getBucket(), step.getKey(), step.getKeep().toString());
+        }
+        return riakWalkSpec.toString();
+    }
+
+    /**
+     * Converts a WalkResponse -> WalkResult
+     * @param walkResponse An http RiakClient WalkResponse
+     * @return a new api WalkResult
+     */
+    static WalkResult convert(WalkResponse walkResponse) {
+       final Collection<Collection<RiakObject>> convertedSteps = new LinkedList<Collection<RiakObject>>();
+
+       for(List<com.basho.riak.client.RiakObject> step : walkResponse.getSteps()) {
+            final LinkedList<RiakObject> objects = new LinkedList<RiakObject>();
+            for(com.basho.riak.client.RiakObject o : step) {
+                objects.add(convert(o));
+            }
+            convertedSteps.add(objects);
+        }
+
+       return new WalkResult() {
+            public Iterator<Collection<RiakObject>> iterator() {
+                return  new UnmodifiableIterator<Collection<RiakObject>>( convertedSteps.iterator() );
+            }
+        };
+    }
 }

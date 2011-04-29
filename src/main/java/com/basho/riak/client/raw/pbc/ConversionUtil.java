@@ -14,23 +14,34 @@
 package com.basho.riak.client.raw.pbc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
+import org.apache.commons.httpclient.util.DateParseException;
+import org.apache.commons.httpclient.util.DateUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.bucket.DefaultBucketProperties;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.VClock;
 import com.basho.riak.newapi.convert.ConversionException;
+import com.basho.riak.newapi.query.LinkWalkStep.Accumulate;
 import com.basho.riak.newapi.query.MapReduceResult;
+import com.basho.riak.newapi.query.WalkResult;
+import com.basho.riak.newapi.util.UnmodifiableIterator;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.mapreduce.MapReduceResponse;
@@ -45,13 +56,13 @@ public class ConversionUtil {
      * @param fetch
      * @return
      */
-    static RiakResponse convert(com.basho.riak.pbc.RiakObject[] pbcObjects, final Bucket bucket) {
+    static RiakResponse convert(com.basho.riak.pbc.RiakObject[] pbcObjects) {
         RiakResponse response = RiakResponse.empty();
 
         if (pbcObjects != null && pbcObjects.length > 0) {
             RiakObject[] converted = new RiakObject[pbcObjects.length];
             for (int i = 0; i < pbcObjects.length; i++) {
-                converted[i] = convert(pbcObjects[i], bucket);
+                converted[i] = convert(pbcObjects[i]);
             }
             response = new RiakResponse(pbcObjects[0].getVclock().toByteArray(), converted);
         }
@@ -63,8 +74,8 @@ public class ConversionUtil {
      * @param o
      * @return
      */
-    static RiakObject convert(com.basho.riak.pbc.RiakObject o, final Bucket bucket) {
-        RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(bucket, o.getKey());
+    static RiakObject convert(com.basho.riak.pbc.RiakObject o) {
+        RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(o.getBucket(), o.getKey());
 
         builder.withValue(nullSafeToStringUtf8(o.getValue()));
         builder.withVClock(nullSafeToBytes(o.getVclock()));
@@ -134,7 +145,7 @@ public class ConversionUtil {
      */
     static com.basho.riak.pbc.RiakObject convert(RiakObject riakObject) {
         final VClock vc = riakObject.getVClock();
-        ByteString bucketName = nullSafeToByteString(riakObject.getBucketName());
+        ByteString bucketName = nullSafeToByteString(riakObject.getBucket());
         ByteString key = nullSafeToByteString(riakObject.getKey());
         ByteString content = nullSafeToByteString(riakObject.getValue());
 
@@ -184,22 +195,23 @@ public class ConversionUtil {
     /**
      * @param resp
      * @return
+     * @throws IOException
      */
-    static MapReduceResult convert(final MapReduceResponseSource resp) {
+    static MapReduceResult convert(final MapReduceResponseSource resp) throws IOException {
         final ObjectMapper om = new ObjectMapper();
-        final StringBuilder sb = new StringBuilder();
+        final LinkedList<String> results = new LinkedList<String>();
 
         for (MapReduceResponse mrr : resp) {
             // TODO investigate pb client null returns from MRRS
             if (mrr != null && mrr.response != null) {
-                sb.append(mrr.response.toStringUtf8());
+                results.add(mrr.response.toStringUtf8());
             }
         }
 
         final MapReduceResult result = new MapReduceResult() {
 
             public String getResultRaw() {
-                return sb.toString();
+                return toJSONArray(results);
             }
 
             public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
@@ -211,5 +223,152 @@ public class ConversionUtil {
             }
         };
         return result;
+    }
+
+    /**
+     * @param results
+     * @return
+     */
+    static String toJSONArray(LinkedList<String> results) {
+        if (results.size() > 1) {
+            final StringBuilder sb = new StringBuilder("[");
+            sb.append(join(results, ",")).append("]");
+            return sb.toString();
+        } else {
+            return results.get(0);
+        }
+    }
+
+    /**
+     * Joins a collection of strings into a string, separated by delimiter.
+     * @param strings The collection of strings
+     * @param delimiter the separator to use
+     * @return the contents of Collection as a single string, each element separated by delimiter
+     */
+    static String join(Collection<String> strings, String delimiter) {
+        final StringBuilder sb = new StringBuilder();
+
+        final Iterator<String> it = strings.iterator();
+
+        while (it.hasNext()) {
+            sb.append(it.next());
+            if (it.hasNext()) {
+                sb.append(delimiter);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Converts an Http {@link Accumulate} value into a boolean
+     *
+     * @param accumulate
+     *            the {@link Accumulate} value
+     * @param isFinalStep
+     *            is the {@link Accumulate} value for the final step
+     * @return true if a m/r link phase should keep the result or false
+     *         otherwise
+     */
+    static boolean linkAccumulateToLinkPhaseKeep(Accumulate accumulate, boolean isFinalStep) {
+        // (in m/r terms we *always* want to keep the final step since its
+        // output
+        // is the input to the final map stage which we *do* keep)
+        boolean keep = true;
+        if (!isFinalStep) {
+            switch (accumulate) {
+            case YES:
+                keep = true;
+                break;
+            case NO:
+            case DEFAULT:
+                keep = false;
+                break;
+            default:
+                break;
+            }
+        }
+        return keep;
+    }
+
+    /**
+     * Take a link walked m/r result and make it into a WalkResult.
+     *
+     * This is a little bit nasty since the JSON is parsed to a Map.
+     *
+     * @param secondPhaseResult
+     *            the contents of which *must* be a json array of {step: int, v:
+     *            riakObjectMap}
+     * @return a WalkResult of RiakObjects grouped by first-phase step
+     * @throws IOException
+     */
+    @SuppressWarnings({ "rawtypes" }) static WalkResult convert(MapReduceResult secondPhaseResult) throws IOException {
+        final SortedMap<Integer, Collection<RiakObject>> steps = new TreeMap<Integer, Collection<RiakObject>>();
+
+        try {
+            Collection<Map> results = secondPhaseResult.getResult(Map.class);
+            for (Map o : results) {
+                final int step = Integer.parseInt((String) o.get("step"));
+                Collection<RiakObject> stepAccumulator = steps.get(step);
+
+                if (stepAccumulator == null) {
+                    stepAccumulator = new ArrayList<RiakObject>();
+                    steps.put(step, stepAccumulator);
+                }
+
+                final Map data = (Map) o.get("v");
+
+                stepAccumulator.add(mapToRiakObject(data));
+            }
+        } catch (ConversionException e) {
+            throw new IOException(e.getMessage());
+        }
+        // create a result instance
+        return new WalkResult() {
+            public Iterator<Collection<RiakObject>> iterator() {
+                return new UnmodifiableIterator<Collection<RiakObject>>(steps.values().iterator());
+            }
+        };
+    }
+
+    /**
+     * Copy the data from the map into a RiakObject.
+     *
+     * @param data
+     *            a valid Map from JSON.
+     * @return A RiakObject populated from the map.
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" }) private static RiakObject mapToRiakObject(Map data) {
+        RiakObjectBuilder b = RiakObjectBuilder.newBuilder((String) data.get("bucket"), (String) data.get("key"));
+        b.withVClock(((String) data.get("vclock")).getBytes());
+
+        final List values = (List) data.get("values");
+        // TODO figure out what to do about multiple values here,
+        // I say take the first for now (that is what the link walk interface
+        // does)
+        if (values.size() != 0) {
+            final Map value = (Map) values.get(0);
+
+            b.withValue((String) value.get("data"));
+            final Map meta = (Map) value.get("metadata");
+            b.withContentType((String) meta.get("content-type"));
+            b.withVtag((String) meta.get("X-Riak-VTag"));
+
+            try {
+                Date lastModDate = DateUtil.parseDate((String) meta.get("X-Riak-Last-Modified"));
+                b.withLastModified(lastModDate.getTime());
+            } catch (DateParseException e) {
+                // NO-OP
+            }
+
+            List<List<String>> links = (List<List<String>>) meta.get("Links");
+            for (List<String> link : links) {
+                b.addLink(link.get(0), link.get(1), link.get(2));
+            }
+
+            Map<String, String> userMetaData = (Map<String, String>) meta.get("X-Riak-Meta");
+            b.withUsermeta(userMetaData);
+        }
+        return b.build();
     }
 }

@@ -33,7 +33,6 @@ import com.basho.riak.client.response.MapReduceResponse;
 import com.basho.riak.client.response.StoreResponse;
 import com.basho.riak.client.response.WithBodyResponse;
 import com.basho.riak.newapi.RiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.cap.ClientId;
 import com.basho.riak.newapi.query.MapReduceResult;
@@ -71,8 +70,8 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String)
      */
-    public RiakResponse fetch(Bucket bucket, String key) throws IOException {
-        if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
+    public RiakResponse fetch(String bucket, String key) throws IOException {
+        if (bucket == null ||  bucket.trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
                                                        + "or just whitespace.");
@@ -82,9 +81,9 @@ public class HTTPClientAdapter implements RawClient {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
 
-        FetchResponse resp = client.fetch(bucket.getName(), key);
+        FetchResponse resp = client.fetch(bucket, key);
 
-        return handleBodyResponse(bucket, resp);
+        return handleBodyResponse(resp);
     }
 
     /*
@@ -94,8 +93,8 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#fetch(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String, int)
      */
-    public RiakResponse fetch(Bucket bucket, String key, int readQuorum) throws IOException {
-        if (bucket == null || bucket.getName() == null || bucket.getName().trim().equals("")) {
+    public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
+        if (bucket == null ||  bucket.trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
                                                        + "or just whitespace.");
@@ -105,9 +104,9 @@ public class HTTPClientAdapter implements RawClient {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
 
-        FetchResponse resp = client.fetch(bucket.getName(), key, RequestMeta.readParams(readQuorum));
+        FetchResponse resp = client.fetch(bucket, key, RequestMeta.readParams(readQuorum));
 
-        return handleBodyResponse(bucket, resp);
+        return handleBodyResponse(resp);
     }
 
     /**
@@ -115,14 +114,14 @@ public class HTTPClientAdapter implements RawClient {
      * @param resp
      * @return
      */
-    private RiakResponse handleBodyResponse(Bucket bucket, WithBodyResponse resp) {
+    private RiakResponse handleBodyResponse(WithBodyResponse resp) {
         RiakResponse response = RiakResponse.empty();
         RiakObject[] values = new RiakObject[] {};
 
         if (resp.hasSiblings()) {
-            values = convert(resp.getSiblings(), bucket);
+            values = convert(resp.getSiblings());
         } else if (resp.hasObject()) {
-            values = new RiakObject[] { convert(resp.getObject(), bucket) };
+            values = new RiakObject[] { convert(resp.getObject()) };
         }
 
         if (values.length > 0) {
@@ -143,7 +142,6 @@ public class HTTPClientAdapter implements RawClient {
         if (object == null || object.getBucket() == null) {
             throw new IllegalArgumentException("cannot store a null RiakObject, or a RiakObject without a bucket");
         }
-        final Bucket bucket = object.getBucket();
         RiakResponse response = RiakResponse.empty();
 
         com.basho.riak.client.RiakObject riakObject = convert(object, client);
@@ -157,7 +155,7 @@ public class HTTPClientAdapter implements RawClient {
         }
 
         if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
-            response = handleBodyResponse(bucket, resp);
+            response = handleBodyResponse(resp);
         }
 
         return response;
@@ -181,8 +179,8 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#delete(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String)
      */
-    public void delete(Bucket bucket, String key) throws IOException {
-        HttpResponse resp = client.delete(bucket.getName(), key);
+    public void delete(String bucket, String key) throws IOException {
+        HttpResponse resp = client.delete(bucket, key);
         if (!resp.isSuccess()) {
             throw new IOException(resp.getBodyAsString());
         }
@@ -195,8 +193,8 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#delete(com.basho.riak.newapi.bucket
      * .Bucket, java.lang.String, int)
      */
-    public void delete(Bucket bucket, String key, int deleteQuorum) throws IOException {
-        HttpResponse resp = client.delete(bucket.getName(), key, RequestMeta.deleteParams(deleteQuorum));
+    public void delete(String bucket, String key, int deleteQuorum) throws IOException {
+        HttpResponse resp = client.delete(bucket, key, RequestMeta.deleteParams(deleteQuorum));
         if (!resp.isSuccess()) {
             throw new IOException(resp.getBodyAsString());
         }
@@ -260,11 +258,11 @@ public class HTTPClientAdapter implements RawClient {
      * (non-Javadoc)
      * 
      * @see
-     * com.basho.riak.client.raw.RawClient#linkWalk(com.basho.riak.newapi.RiakObject
-     * , com.basho.riak.client.raw.query.LinkWalkSpec)
+     * com.basho.riak.client.raw.RawClient#linkWalk(com.basho.riak.client.raw.query.LinkWalkSpec)
      */
-    public WalkResult linkWalk(RiakObject startObject, LinkWalkSpec linkWalkSpec) throws IOException {
-        return null;
+    public WalkResult linkWalk(final LinkWalkSpec linkWalkSpec) throws IOException {
+        final String walkSpecString = convert(linkWalkSpec);
+        return convert(client.walk(linkWalkSpec.getStartBucket(), linkWalkSpec.getStartKey(), walkSpecString));
     }
 
     /*

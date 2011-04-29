@@ -13,7 +13,7 @@
  */
 package com.basho.riak.newapi.bucket;
 
-import static com.basho.riak.newapi.convert.ConversionUtil.getKey;
+import static com.basho.riak.newapi.convert.KeyUtil.getKey;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -22,6 +22,7 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
+import com.basho.riak.newapi.cap.ClobberMutation;
 import com.basho.riak.newapi.cap.DefaultResolver;
 import com.basho.riak.newapi.cap.Mutation;
 import com.basho.riak.newapi.cap.Quorum;
@@ -233,10 +234,10 @@ public class DefaultBucket implements Bucket {
     public StoreObject<RiakObject> store(final String key, final String value) {
         final Bucket b = this;
 
-        return new StoreObject<RiakObject>(client, b, key).withMutator(new Mutation<RiakObject>() {
+        return new StoreObject<RiakObject>(client, name, key).withMutator(new Mutation<RiakObject>() {
             public RiakObject apply(RiakObject original) {
                 if (original == null) {
-                    return RiakObjectBuilder.newBuilder(b, key).withValue(value).build();
+                    return RiakObjectBuilder.newBuilder(b.getName(), key).withValue(value).build();
                 } else {
                     return original.setValue(value);
                 }
@@ -259,17 +260,15 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#store(java.lang.Object)
      */
     public <T> StoreObject<T> store(final T o) {
-        final Bucket b = this;
         @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) o.getClass();
         final String key = getKey(o);
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new StoreObject<T>(client, b, key).withConverter(new JSONConverter<T>(clazz, b)).withMutator(new Mutation<T>() {
-                                                                                                                public T apply(T original) {
-                                                                                                                    return o;
-                                                                                                                };
-                                                                                                            }).withResolver(new DefaultResolver<T>());
+        return new StoreObject<T>(client, name, key)
+            .withConverter(new JSONConverter<T>(clazz, name))
+                .withMutator(new ClobberMutation<T>(o))
+                  .withResolver(new DefaultResolver<T>());
     }
 
     /*
@@ -279,14 +278,11 @@ public class DefaultBucket implements Bucket {
      * java.lang.Object)
      */
     public <T> StoreObject<T> store(final String key, final T o) {
-        final Bucket b = this;
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
 
-        return new StoreObject<T>(client, b, key).withConverter(new JSONConverter<T>(clazz, b, key)).withMutator(new Mutation<T>() {
-                                                                                                                     public T apply(T original) {
-                                                                                                                         return o;
-                                                                                                                     };
-                                                                                                                 }).withResolver(new DefaultResolver<T>());
+        return new StoreObject<T>(client, name, key).
+        withConverter(new JSONConverter<T>(clazz, name, key))
+            .withMutator(new ClobberMutation<T>(o)).withResolver(new DefaultResolver<T>());
     }
 
     /*
@@ -295,13 +291,14 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.Object)
      */
     public <T> FetchObject<T> fetch(T o) {
-        final Bucket b = this;
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
         final String key = getKey(o);
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new FetchObject<T>(client, this, key).withConverter(new JSONConverter<T>(clazz, b)).withResolver(new DefaultResolver<T>());
+        return new FetchObject<T>(client, name, key)
+            .withConverter(new JSONConverter<T>(clazz, name))
+            .withResolver(new DefaultResolver<T>());
     }
 
     /*
@@ -311,8 +308,9 @@ public class DefaultBucket implements Bucket {
      * java.lang.Class)
      */
     public <T> FetchObject<T> fetch(final String key, final Class<T> type) {
-        final Bucket b = this;
-        return new FetchObject<T>(client, this, key).withConverter(new JSONConverter<T>(type, b)).withResolver(new DefaultResolver<T>());
+        return new FetchObject<T>(client, name, key)
+            .withConverter(new JSONConverter<T>(type, name))
+            .withResolver(new DefaultResolver<T>());
     }
 
     /*
@@ -321,20 +319,20 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String)
      */
     public FetchObject<RiakObject> fetch(String key) {
-        final Bucket b = this;
+        return new FetchObject<RiakObject>(client, name, key)
+        .withResolver(new DefaultResolver<RiakObject>())
+        .withConverter(new Converter<RiakObject>() {
 
-        return new FetchObject<RiakObject>(client, b, key).withResolver(new DefaultResolver<RiakObject>()).withConverter(new Converter<RiakObject>() {
+            public RiakObject toDomain(RiakObject riakObject) {
+                return riakObject;
+            }
 
-                                                                                                                             public RiakObject toDomain(RiakObject riakObject) {
-                                                                                                                                 return riakObject;
-                                                                                                                             }
-
-                                                                                                                             public RiakObject fromDomain(RiakObject domainObject,
-                                                                                                                                                          VClock vclock)
-                                                                                                                                     throws ConversionException {
-                                                                                                                                 return RiakObjectBuilder.from(domainObject).withVClock(vclock).build();
-                                                                                                                             }
-                                                                                                                         });
+            public RiakObject fromDomain(RiakObject domainObject,
+                                         VClock vclock)
+            throws ConversionException {
+                return RiakObjectBuilder.from(domainObject).withVClock(vclock).build();
+            }
+        });
     }
 
     /*
@@ -347,7 +345,7 @@ public class DefaultBucket implements Bucket {
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new DeleteObject(client, this, key);
+        return new DeleteObject(client, name, key);
     }
 
     /*
@@ -356,7 +354,7 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#delete(java.lang.String)
      */
     public DeleteObject delete(String key) {
-        return new DeleteObject(client, this, key);
+        return new DeleteObject(client, name, key);
     }
 
 }

@@ -18,7 +18,6 @@ import java.io.IOException;
 import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakRetryFailedException;
-import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.DefaultRetrier;
 
 /**
@@ -28,7 +27,7 @@ import com.basho.riak.newapi.cap.DefaultRetrier;
 public class DeleteObject implements RiakOperation<Void> {
 
     private final RawClient client;
-    private final Bucket bucket;
+    private final String bucket;
     private final String key;
 
     private Integer rw;
@@ -39,7 +38,7 @@ public class DeleteObject implements RiakOperation<Void> {
      * @param bucket
      * @param key
      */
-    public DeleteObject(RawClient client, Bucket bucket, String key) {
+    public DeleteObject(RawClient client, String bucket, String key) {
         this.client = client;
         this.bucket = bucket;
         this.key = key;

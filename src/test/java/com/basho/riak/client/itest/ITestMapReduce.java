@@ -35,13 +35,10 @@ import com.basho.riak.newapi.RiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
 import com.basho.riak.newapi.RiakLink;
-import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.DomainBucket;
+import com.basho.riak.newapi.bucket.RiakBucket;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
-import com.basho.riak.newapi.cap.VClock;
-import com.basho.riak.newapi.convert.ConversionException;
-import com.basho.riak.newapi.convert.Converter;
 import com.basho.riak.newapi.query.MapReduceResult;
 import com.basho.riak.newapi.query.filter.LessThanFilter;
 import com.basho.riak.newapi.query.filter.StringToIntFilter;
@@ -67,15 +64,16 @@ public abstract class ITestMapReduce {
      */
     protected abstract RiakClient getClient() throws RiakException;
 
-    public static String BUCKET_NAME = "mr_test_java";
-    public static int TEST_ITEMS = 200;
+    public static final String BUCKET_NAME = "mr_test_java";
+    public static final int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() throws RiakException {
         final RiakClient client = RiakFactory.pbcClient();
-        final Bucket b = client.createBucket(BUCKET_NAME).execute();
+        final Bucket bucket = client.createBucket(BUCKET_NAME).execute();
+        final RiakBucket b = RiakBucket.newRiakBucket(bucket);
 
         for (int i = 0; i < TEST_ITEMS; i++) {
-            RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(b, "java_" + Integer.toString(i));
+            RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(BUCKET_NAME, "java_" + Integer.toString(i));
             builder.withContentType("text/plain").withValue(Integer.toString(i));
             if (i < TEST_ITEMS - 1) {
                 RiakLink link = new DefaultRiakLink(BUCKET_NAME, "java_" + Integer.toString(i + 1), "test");
@@ -84,16 +82,7 @@ public abstract class ITestMapReduce {
                 builder.withLinks(links);
             }
 
-            b.store(builder.build()).withConverter(new Converter<RiakObject>() {
-
-                public RiakObject toDomain(RiakObject riakObject) throws ConversionException {
-                    return riakObject;
-                }
-
-                public RiakObject fromDomain(RiakObject domainObject, VClock vclock) throws ConversionException {
-                    return domainObject;
-                }
-            }).execute();
+            b.store(builder.build());
         }
     }
 
@@ -184,7 +173,6 @@ public abstract class ITestMapReduce {
         }
         
         // perform test
-        
         MapReduceResult result = client.mapReduce()
         .addInput("goog","2010-01-04")
         .addInput("goog","2010-01-05")

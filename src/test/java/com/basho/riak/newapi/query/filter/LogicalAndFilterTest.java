@@ -13,7 +13,7 @@
  */
 package com.basho.riak.newapi.query.filter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
 
 import org.junit.Test;
 

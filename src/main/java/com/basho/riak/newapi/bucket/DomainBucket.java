@@ -18,8 +18,8 @@ import com.basho.riak.newapi.builders.DomainBucketBuilder;
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.Mutation;
 import com.basho.riak.newapi.cap.MutationProducer;
-import com.basho.riak.newapi.convert.ConversionUtil;
 import com.basho.riak.newapi.convert.Converter;
+import com.basho.riak.newapi.convert.KeyUtil;
 
 /**
  * A domain bucket is a wrapper around a bucket that is strongly typed uses a
@@ -94,7 +94,7 @@ public class DomainBucket<T> {
     }
 
     public void delete(T o) throws RiakException {
-        final String key = ConversionUtil.getKey(o);
+        final String key = KeyUtil.getKey(o);
         delete(key);
     }
 
