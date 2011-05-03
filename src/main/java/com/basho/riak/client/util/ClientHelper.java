@@ -46,7 +46,16 @@ import com.basho.riak.client.response.StreamHandler;
  * This class performs the actual HTTP requests underlying the operations in
  * RiakClient and returns the resulting HTTP responses. It is up to RiakClient
  * to interpret the responses and translate them into the appropriate format.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.util.ClientHelper
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.util.ClientHelper
  */
+@Deprecated
 public class ClientHelper {
 
     private RiakConfig config;

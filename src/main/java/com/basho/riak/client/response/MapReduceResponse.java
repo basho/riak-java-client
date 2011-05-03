@@ -19,7 +19,16 @@ import org.json.JSONException;
 /**
  * Response from a map-reduce query (POST to /mapred). Decorates an HttpResponse
  * and parses returned JSON array returned from Riak.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.MapReduceResponse
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.MapReduceResponse
  */
+@Deprecated
 public class MapReduceResponse extends HttpResponseDecorator implements HttpResponse {
 
     JSONArray result = null;

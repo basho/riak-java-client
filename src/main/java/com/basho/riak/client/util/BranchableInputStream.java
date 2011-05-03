@@ -20,10 +20,19 @@ import java.io.InputStream;
 /**
  * An input stream that can be branched into other InputStreams, each
  * maintaining its own location, with the main read() method always returning
- * bytes from the furthest advanced branch.
+ * bytes from the farthest advanced branch.
  * 
  * @author jlee <jonjlee@gmail.com>
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.util.BranchableInputStream
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.util.BranchableInputStream
  */
+@Deprecated
 public class BranchableInputStream extends InputStream {
 
     static final int DEFAULT_BASE_CHUNK_SIZE = 1024;

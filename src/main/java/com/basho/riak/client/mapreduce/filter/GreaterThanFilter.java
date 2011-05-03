@@ -16,6 +16,16 @@ package com.basho.riak.client.mapreduce.filter;
 import org.json.JSONException;
 import org.json.JSONArray;
 
+/**
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.mapreduce.filter.GreaterThanFilter
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.mapreduce.filter.GreaterThanFilter
+ */
+@Deprecated
 public class GreaterThanFilter implements MapReduceFilter {
     private MapReduceFilter.Types type = MapReduceFilter.Types.FILTER;
     private JSONArray args = new JSONArray();

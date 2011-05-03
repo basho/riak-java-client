@@ -8,7 +8,7 @@ import static com.google.protobuf.ByteString.copyFromUtf8;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.pbc.RPB.RpbLink;
 import com.basho.riak.pbc.RPB.RpbPair;
 import com.google.protobuf.ByteString;

@@ -21,7 +21,16 @@ import org.apache.commons.httpclient.HttpMethod;
 /**
  * Thrown when the Riak server returns a malformed response. The HTTP response
  * is returned in the exception.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.RiakResponseRuntimeException
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.RiakResponseRuntimeException
  */
+@Deprecated
 public class RiakResponseRuntimeException extends RuntimeException implements HttpResponse {
 
     private static final long serialVersionUID = 2853253336513247178L;

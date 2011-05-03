@@ -13,6 +13,16 @@ import com.basho.riak.client.util.Constants;
 import com.basho.riak.client.util.Multipart;
 import com.basho.riak.client.util.StreamedMultipart;
 
+/**
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.StreamedSiblingsCollections
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.StreamedSiblingsCollection
+ */
+@Deprecated
 public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
 
     String bucket;

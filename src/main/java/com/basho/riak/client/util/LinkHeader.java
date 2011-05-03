@@ -32,7 +32,16 @@ import java.util.regex.Pattern;
  * http://gist.github.com/210535
  * 
  * @author jlee <jonjlee@gmail.com>
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.util.LinkHeader
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.util.LinkHeader
  */
+@Deprecated
 public class LinkHeader {
 
     private static String TOKEN = "(?:[^\\(\\)<>@,;:\\\\\"/\\[\\]\\?={} \\t]+?)";

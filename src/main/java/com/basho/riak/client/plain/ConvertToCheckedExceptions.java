@@ -24,7 +24,16 @@ import com.basho.riak.client.util.ClientUtils;
  * RiakResponseRuntimeException to checked exceptions RiakIOException and
  * RiakRuntimeException. Be careful that everywhere calling a {@link RiakClient}
  * with this handler installed contains the appropriate throws declaration.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.plain.ConvertToCheckedExceptions
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.plain.ConvertToCheckedExceptions
  */
+@Deprecated
 public class ConvertToCheckedExceptions implements RiakExceptionHandler {
 
     /**

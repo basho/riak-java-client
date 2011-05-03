@@ -30,7 +30,16 @@ import com.basho.riak.client.util.StreamedMultipart;
  * Response from a HEAD or GET request for an object. Decorates an HttpResponse
  * to interpret fetch and fetchMeta responses from Riak's HTTP interface which
  * returns object metadata in HTTP headers and value in the body.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.FetchResponse
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.FetchResponse
  */
+@Deprecated
 public class FetchResponse extends HttpResponseDecorator implements WithBodyResponse {
 
     private RiakObject object = null;

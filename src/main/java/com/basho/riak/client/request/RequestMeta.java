@@ -25,7 +25,16 @@ import com.basho.riak.client.util.Constants;
 
 /**
  * Extra headers and query parameters to send with a Riak operation.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.request.RequestMeta
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.request.RequestMeta
  */
+@Deprecated
 public class RequestMeta {
 
     private Map<String, String> queryParams = new LinkedHashMap<String, String>();

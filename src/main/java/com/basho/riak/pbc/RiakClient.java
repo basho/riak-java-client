@@ -32,7 +32,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import org.json.JSONObject;
 
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.pbc.RPB.RpbDelReq;
 import com.basho.riak.pbc.RPB.RpbGetClientIdResp;
 import com.basho.riak.pbc.RPB.RpbGetReq;
