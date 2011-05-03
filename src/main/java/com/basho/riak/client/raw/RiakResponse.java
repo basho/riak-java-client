@@ -16,7 +16,7 @@ package com.basho.riak.client.raw;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.cap.BasicVClock;
 import com.basho.riak.newapi.cap.VClock;
 
@@ -25,17 +25,17 @@ import com.basho.riak.newapi.cap.VClock;
  * 
  * @author russell
  */
-public class RiakResponse implements Iterable<RiakObject> {
+public class RiakResponse implements Iterable<IRiakObject> {
 
-    private static final RiakObject[] NO_OBJECTS = new RiakObject[] {};
+    private static final IRiakObject[] NO_OBJECTS = new IRiakObject[] {};
     private final VClock vclock;
-    private final RiakObject[] riakObjects;
+    private final IRiakObject[] riakObjects;
 
     /**
      * @param vclock
      * @param riakObjects
      */
-    public RiakResponse(byte[] vclock, RiakObject[] riakObjects) {
+    public RiakResponse(byte[] vclock, IRiakObject[] riakObjects) {
         this.vclock = new BasicVClock(vclock);
         if (riakObjects == null) {
             this.riakObjects = NO_OBJECTS;
@@ -69,7 +69,7 @@ public class RiakResponse implements Iterable<RiakObject> {
     /**
      * @return the riakObjects
      */
-    public RiakObject[] getRiakObjects() {
+    public IRiakObject[] getRiakObjects() {
         return riakObjects;
     }
 
@@ -90,7 +90,7 @@ public class RiakResponse implements Iterable<RiakObject> {
      * 
      * @see java.lang.Iterable#iterator()
      */
-    public Iterator<RiakObject> iterator() {
+    public Iterator<IRiakObject> iterator() {
         return Arrays.asList(riakObjects).iterator();
     }
 

@@ -14,7 +14,7 @@
 package com.basho.riak.newapi.bucket;
 
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.builders.DomainBucketBuilder;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.VClock;
@@ -28,19 +28,19 @@ import com.basho.riak.newapi.convert.Converter;
  */
 public class RiakBucket {
 
-    private final DomainBucket<RiakObject> delegate;
+    private final DomainBucket<IRiakObject> delegate;
     private final Bucket bucket;
 
     public static RiakBucket newRiakBucket(final Bucket b) {
         // create a DomainBucket as a delegate
-        DomainBucketBuilder<RiakObject> builder = DomainBucket.builder(b, RiakObject.class);
-        builder.withConverter(new Converter<RiakObject>() {
+        DomainBucketBuilder<IRiakObject> builder = DomainBucket.builder(b, IRiakObject.class);
+        builder.withConverter(new Converter<IRiakObject>() {
             // no conversion required
-            public RiakObject toDomain(RiakObject riakObject) throws ConversionException {
+            public IRiakObject toDomain(IRiakObject riakObject) throws ConversionException {
                 return riakObject;
             }
 
-            public RiakObject fromDomain(RiakObject domainObject, VClock vclock) throws ConversionException {
+            public IRiakObject fromDomain(IRiakObject domainObject, VClock vclock) throws ConversionException {
                 return domainObject;
             }
         });
@@ -48,7 +48,7 @@ public class RiakBucket {
         return new RiakBucket(builder.build(), b);
     }
 
-    private RiakBucket(final DomainBucket<RiakObject> delegate, final Bucket bucket) {
+    private RiakBucket(final DomainBucket<IRiakObject> delegate, final Bucket bucket) {
         this.delegate = delegate;
         this.bucket = bucket;
     }
@@ -59,7 +59,7 @@ public class RiakBucket {
      * @throws RiakException
      * @see com.basho.riak.newapi.bucket.DomainBucket#store(java.lang.Object)
      */
-    public RiakObject store(RiakObject o) throws RiakException {
+    public IRiakObject store(IRiakObject o) throws RiakException {
         return delegate.store(o);
     }
 
@@ -70,7 +70,7 @@ public class RiakBucket {
      * @return
      * @throws RiakException
      */
-    public RiakObject store(String key, String value) throws RiakException {
+    public IRiakObject store(String key, String value) throws RiakException {
         return delegate.store(RiakObjectBuilder.newBuilder(bucket.getName(), key).withValue(value).build());
     }
     /**
@@ -79,7 +79,7 @@ public class RiakBucket {
      * @throws RiakException
      * @see com.basho.riak.newapi.bucket.DomainBucket#fetch(java.lang.String)
      */
-    public RiakObject fetch(String key) throws RiakException {
+    public IRiakObject fetch(String key) throws RiakException {
         return delegate.fetch(key);
     }
 
@@ -89,7 +89,7 @@ public class RiakBucket {
      * @throws RiakException
      * @see com.basho.riak.newapi.bucket.DomainBucket#fetch(java.lang.Object)
      */
-    public RiakObject fetch(RiakObject o) throws RiakException {
+    public IRiakObject fetch(IRiakObject o) throws RiakException {
         return delegate.fetch(o);
     }
 
@@ -98,7 +98,7 @@ public class RiakBucket {
      * @throws RiakException
      * @see com.basho.riak.newapi.bucket.DomainBucket#delete(java.lang.Object)
      */
-    public void delete(RiakObject o) throws RiakException {
+    public void delete(IRiakObject o) throws RiakException {
         delegate.delete(o);
     }
 

@@ -13,7 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
 
@@ -28,7 +28,7 @@ public class ITestPBClient extends ITestClientBasic {
      * 
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
-    @Override protected RiakClient getClient() throws RiakException {
+    @Override protected IRiakClient getClient() throws RiakException {
         return RiakFactory.pbcClient();
     }
 

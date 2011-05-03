@@ -18,21 +18,21 @@ import static com.basho.riak.client.raw.http.ConversionUtil.convert;
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
-import com.basho.riak.client.request.RequestMeta;
-import com.basho.riak.client.response.BucketResponse;
-import com.basho.riak.client.response.FetchResponse;
-import com.basho.riak.client.response.HttpResponse;
-import com.basho.riak.client.response.MapReduceResponse;
-import com.basho.riak.client.response.StoreResponse;
-import com.basho.riak.client.response.WithBodyResponse;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.client.http.request.RequestMeta;
+import com.basho.riak.client.http.response.BucketResponse;
+import com.basho.riak.client.http.response.FetchResponse;
+import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.MapReduceResponse;
+import com.basho.riak.client.http.response.StoreResponse;
+import com.basho.riak.client.http.response.WithBodyResponse;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.cap.ClientId;
 import com.basho.riak.newapi.query.MapReduceResult;
@@ -116,12 +116,12 @@ public class HTTPClientAdapter implements RawClient {
      */
     private RiakResponse handleBodyResponse(WithBodyResponse resp) {
         RiakResponse response = RiakResponse.empty();
-        RiakObject[] values = new RiakObject[] {};
+        IRiakObject[] values = new IRiakObject[] {};
 
         if (resp.hasSiblings()) {
             values = convert(resp.getSiblings());
         } else if (resp.hasObject()) {
-            values = new RiakObject[] { convert(resp.getObject()) };
+            values = new IRiakObject[] { convert(resp.getObject()) };
         }
 
         if (values.length > 0) {
@@ -138,13 +138,13 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.newapi.RiakObject
      * , com.basho.riak.client.raw.StoreMeta)
      */
-    public RiakResponse store(RiakObject object, StoreMeta storeMeta) throws IOException {
+    public RiakResponse store(IRiakObject object, StoreMeta storeMeta) throws IOException {
         if (object == null || object.getBucket() == null) {
             throw new IllegalArgumentException("cannot store a null RiakObject, or a RiakObject without a bucket");
         }
         RiakResponse response = RiakResponse.empty();
 
-        com.basho.riak.client.RiakObject riakObject = convert(object, client);
+        com.basho.riak.client.http.RiakObject riakObject = convert(object, client);
         RequestMeta requestMeta = convert(storeMeta);
         StoreResponse resp = client.store(riakObject, requestMeta);
 
@@ -168,7 +168,7 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.newapi.RiakObject
      * )
      */
-    public void store(RiakObject object) throws IOException {
+    public void store(IRiakObject object) throws IOException {
         store(object, new StoreMeta(null, null, false));
     }
 
@@ -235,7 +235,6 @@ public class HTTPClientAdapter implements RawClient {
         if (!response.isSuccess()) {
             throw new IOException(response.getBodyAsString());
         }
-
     }
 
     /*

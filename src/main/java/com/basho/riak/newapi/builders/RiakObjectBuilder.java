@@ -19,10 +19,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.basho.riak.newapi.DefaultRiakLink;
-import com.basho.riak.newapi.DefaultRiakObject;
 import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.cap.BasicVClock;
 import com.basho.riak.newapi.cap.VClock;
 
@@ -50,7 +49,7 @@ public class RiakObjectBuilder {
         return new RiakObjectBuilder(bucket, key);
     }
 
-    public static RiakObjectBuilder from(RiakObject o) {
+    public static RiakObjectBuilder from(IRiakObject o) {
         RiakObjectBuilder rob = new RiakObjectBuilder(o.getBucket(), o.getKey());
         rob.vclock = o.getVClock();
         rob.contentType = o.getContentType();
@@ -61,8 +60,8 @@ public class RiakObjectBuilder {
         return rob;
     }
 
-    public RiakObject build() {
-        return new DefaultRiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta);
+    public IRiakObject build() {
+        return new RiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta);
     }
 
     public RiakObjectBuilder withValue(String value) {
@@ -94,7 +93,7 @@ public class RiakObjectBuilder {
 
     public RiakObjectBuilder addLink(String bucket, String key, String tag) {
         synchronized (links) {
-            links.add(new DefaultRiakLink(bucket, key, tag));
+            links.add(new RiakLink(bucket, key, tag));
         }
         return this;
     }

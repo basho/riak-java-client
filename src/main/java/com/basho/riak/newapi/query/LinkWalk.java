@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.operations.RiakOperation;
 import com.basho.riak.newapi.query.LinkWalkStep.Accumulate;
 
@@ -38,7 +38,7 @@ public class LinkWalk implements RiakOperation<WalkResult> {
     /**
      * @param startObject
      */
-    public LinkWalk(final RawClient client, final RiakObject startObject) {
+    public LinkWalk(final RawClient client, final IRiakObject startObject) {
         this.client = client;
         this.startBucket = startObject.getBucket();
         this.startKey = startObject.getKey();

@@ -24,10 +24,10 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.RiakBucket;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
@@ -40,7 +40,7 @@ import com.basho.riak.newapi.query.WalkResult;
 public class ITestLinkWalk {
 
     @Test public void test_walk() throws RiakException {
-        final RiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient();
 
         final String fooVal = "fooer";
         final String barVal = "barrer";
@@ -58,26 +58,26 @@ public class ITestLinkWalk {
         final Bucket b = client.createBucket(bucketName).execute();
         final RiakBucket bucket = RiakBucket.newRiakBucket(b);
 
-        RiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, first[0]).withValue(first[1]).addLink(bucketName,
+        IRiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, first[0]).withValue(first[1]).addLink(bucketName,
                                                                                                        second[0],
                                                                                                        fooTag).addLink(bucketName,
                                                                                                                        third[0],
                                                                                                                        barTag).build();
 
-        RiakObject o2 = RiakObjectBuilder.newBuilder(bucketName, second[0]).withValue(second[1]).addLink(bucketName,
+        IRiakObject o2 = RiakObjectBuilder.newBuilder(bucketName, second[0]).withValue(second[1]).addLink(bucketName,
                                                                                                          fourth[0],
                                                                                                          fooTag).build();
 
-        RiakObject o3 = RiakObjectBuilder.newBuilder(bucketName, third[0]).withValue(third[1]).addLink(bucketName,
+        IRiakObject o3 = RiakObjectBuilder.newBuilder(bucketName, third[0]).withValue(third[1]).addLink(bucketName,
                                                                                                        fourth[0],
                                                                                                        fooTag).build();
 
-        RiakObject o4 = RiakObjectBuilder.newBuilder(bucketName, fourth[0]).withValue(fourth[1]).addLink(bucketName,
+        IRiakObject o4 = RiakObjectBuilder.newBuilder(bucketName, fourth[0]).withValue(fourth[1]).addLink(bucketName,
                                                                                                          fith[0],
                                                                                                          barTag).
                                                                                                          addUsermeta("metaKey", "123").build();
 
-        RiakObject o5 = RiakObjectBuilder.newBuilder(bucketName, fith[0]).withValue(fith[1]).build();
+        IRiakObject o5 = RiakObjectBuilder.newBuilder(bucketName, fith[0]).withValue(fith[1]).build();
 
         bucket.store(o1);
         bucket.store(o2);
@@ -91,9 +91,9 @@ public class ITestLinkWalk {
 
         int stepsCnt = 0;
         List<String> keys = new ArrayList<String>();
-        for (Collection<RiakObject> s : result) {
+        for (Collection<IRiakObject> s : result) {
 
-            for (RiakObject object : s) {
+            for (IRiakObject object : s) {
                 keys.add(object.getKey());
                 assertEquals(fooVal, object.getValue());
             }

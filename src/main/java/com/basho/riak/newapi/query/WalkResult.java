@@ -15,12 +15,12 @@ package com.basho.riak.newapi.query;
 
 import java.util.Collection;
 
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 
 /**
  * 
  * @author russell
  * 
  */
-public interface WalkResult extends Iterable<Collection<RiakObject>> {
+public interface WalkResult extends Iterable<Collection<IRiakObject>> {
 }

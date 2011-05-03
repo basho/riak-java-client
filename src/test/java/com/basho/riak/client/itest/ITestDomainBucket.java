@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.DomainBucket;
@@ -44,13 +44,13 @@ import com.megacorp.commerce.ShoppingCart;
  */
 public abstract class ITestDomainBucket {
 
-    protected RiakClient client;
+    protected IRiakClient client;
 
     @Before public void setUp() throws RiakException {
         this.client = getClient();
     }
 
-    public abstract RiakClient getClient() throws RiakException;
+    public abstract IRiakClient getClient() throws RiakException;
 
     @Test public void useDomainBucket() throws Exception {
         final String bucketName = UUID.randomUUID().toString() + "_carts";

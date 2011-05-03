@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.basho.riak.client.response.BucketResponse;
+import com.basho.riak.client.http.response.BucketResponse;
 
 /**
  * Wraps the stream of keys from BucketResponse.getBucketInfo.getKeys in an

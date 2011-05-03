@@ -32,7 +32,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.bucket.DefaultBucketProperties;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
@@ -60,7 +60,7 @@ public class ConversionUtil {
         RiakResponse response = RiakResponse.empty();
 
         if (pbcObjects != null && pbcObjects.length > 0) {
-            RiakObject[] converted = new RiakObject[pbcObjects.length];
+            IRiakObject[] converted = new IRiakObject[pbcObjects.length];
             for (int i = 0; i < pbcObjects.length; i++) {
                 converted[i] = convert(pbcObjects[i]);
             }
@@ -74,7 +74,7 @@ public class ConversionUtil {
      * @param o
      * @return
      */
-    static RiakObject convert(com.basho.riak.pbc.RiakObject o) {
+    static IRiakObject convert(com.basho.riak.pbc.RiakObject o) {
         RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(o.getBucket(), o.getKey());
 
         builder.withValue(nullSafeToStringUtf8(o.getValue()));
@@ -117,7 +117,7 @@ public class ConversionUtil {
      *            a {@link StoreMeta} for the store operation.
      * @return a {@link RequestMeta} populated from the storeMeta's values.
      */
-    static RequestMeta convert(StoreMeta storeMeta, RiakObject riakObject) {
+    static RequestMeta convert(StoreMeta storeMeta, IRiakObject riakObject) {
         RequestMeta requestMeta = new RequestMeta();
         if (storeMeta.hasW()) {
             requestMeta.w(storeMeta.getW());
@@ -136,14 +136,14 @@ public class ConversionUtil {
     }
 
     /**
-     * Convert a {@link RiakObject} to a pbc
+     * Convert a {@link IRiakObject} to a pbc
      * {@link com.basho.riak.pbc.RiakObject}
      * 
      * @param riakObject
      *            the RiakObject to convert
      * @return a {@link com.basho.riak.pbc.RiakObject} populated from riakObject
      */
-    static com.basho.riak.pbc.RiakObject convert(RiakObject riakObject) {
+    static com.basho.riak.pbc.RiakObject convert(IRiakObject riakObject) {
         final VClock vc = riakObject.getVClock();
         ByteString bucketName = nullSafeToByteString(riakObject.getBucket());
         ByteString key = nullSafeToByteString(riakObject.getKey());
@@ -303,16 +303,16 @@ public class ConversionUtil {
      * @throws IOException
      */
     @SuppressWarnings({ "rawtypes" }) static WalkResult convert(MapReduceResult secondPhaseResult) throws IOException {
-        final SortedMap<Integer, Collection<RiakObject>> steps = new TreeMap<Integer, Collection<RiakObject>>();
+        final SortedMap<Integer, Collection<IRiakObject>> steps = new TreeMap<Integer, Collection<IRiakObject>>();
 
         try {
             Collection<Map> results = secondPhaseResult.getResult(Map.class);
             for (Map o : results) {
                 final int step = Integer.parseInt((String) o.get("step"));
-                Collection<RiakObject> stepAccumulator = steps.get(step);
+                Collection<IRiakObject> stepAccumulator = steps.get(step);
 
                 if (stepAccumulator == null) {
-                    stepAccumulator = new ArrayList<RiakObject>();
+                    stepAccumulator = new ArrayList<IRiakObject>();
                     steps.put(step, stepAccumulator);
                 }
 
@@ -325,8 +325,8 @@ public class ConversionUtil {
         }
         // create a result instance
         return new WalkResult() {
-            public Iterator<Collection<RiakObject>> iterator() {
-                return new UnmodifiableIterator<Collection<RiakObject>>(steps.values().iterator());
+            public Iterator<Collection<IRiakObject>> iterator() {
+                return new UnmodifiableIterator<Collection<IRiakObject>>(steps.values().iterator());
             }
         };
     }
@@ -338,7 +338,7 @@ public class ConversionUtil {
      *            a valid Map from JSON.
      * @return A RiakObject populated from the map.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" }) private static RiakObject mapToRiakObject(Map data) {
+    @SuppressWarnings({ "rawtypes", "unchecked" }) private static IRiakObject mapToRiakObject(Map data) {
         RiakObjectBuilder b = RiakObjectBuilder.newBuilder((String) data.get("bucket"), (String) data.get("key"));
         b.withVClock(((String) data.get("vclock")).getBytes());
 

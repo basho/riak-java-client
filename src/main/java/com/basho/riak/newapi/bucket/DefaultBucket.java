@@ -20,7 +20,7 @@ import java.util.Collection;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.ClobberMutation;
 import com.basho.riak.newapi.cap.DefaultResolver;
@@ -231,24 +231,24 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.client.bucket.Bucket#store(java.lang.String,
      * java.lang.String)
      */
-    public StoreObject<RiakObject> store(final String key, final String value) {
+    public StoreObject<IRiakObject> store(final String key, final String value) {
         final Bucket b = this;
 
-        return new StoreObject<RiakObject>(client, name, key).withMutator(new Mutation<RiakObject>() {
-            public RiakObject apply(RiakObject original) {
+        return new StoreObject<IRiakObject>(client, name, key).withMutator(new Mutation<IRiakObject>() {
+            public IRiakObject apply(IRiakObject original) {
                 if (original == null) {
                     return RiakObjectBuilder.newBuilder(b.getName(), key).withValue(value).build();
                 } else {
                     return original.setValue(value);
                 }
             }
-        }).withResolver(new DefaultResolver<RiakObject>()).withConverter(new Converter<RiakObject>() {
+        }).withResolver(new DefaultResolver<IRiakObject>()).withConverter(new Converter<IRiakObject>() {
 
-            public RiakObject toDomain(RiakObject riakObject) {
+            public IRiakObject toDomain(IRiakObject riakObject) {
                 return riakObject;
             }
 
-            public RiakObject fromDomain(RiakObject domainObject, VClock vclock) throws ConversionException {
+            public IRiakObject fromDomain(IRiakObject domainObject, VClock vclock) throws ConversionException {
                 return domainObject;
             }
         });
@@ -318,16 +318,16 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String)
      */
-    public FetchObject<RiakObject> fetch(String key) {
-        return new FetchObject<RiakObject>(client, name, key)
-        .withResolver(new DefaultResolver<RiakObject>())
-        .withConverter(new Converter<RiakObject>() {
+    public FetchObject<IRiakObject> fetch(String key) {
+        return new FetchObject<IRiakObject>(client, name, key)
+        .withResolver(new DefaultResolver<IRiakObject>())
+        .withConverter(new Converter<IRiakObject>() {
 
-            public RiakObject toDomain(RiakObject riakObject) {
+            public IRiakObject toDomain(IRiakObject riakObject) {
                 return riakObject;
             }
 
-            public RiakObject fromDomain(RiakObject domainObject,
+            public IRiakObject fromDomain(IRiakObject domainObject,
                                          VClock vclock)
             throws ConversionException {
                 return RiakObjectBuilder.from(domainObject).withVClock(vclock).build();

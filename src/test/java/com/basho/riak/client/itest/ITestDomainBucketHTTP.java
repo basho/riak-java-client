@@ -13,7 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
 
@@ -28,7 +28,7 @@ public class ITestDomainBucketHTTP extends ITestDomainBucket {
      * 
      * @see com.basho.riak.client.itest.ITestDomainBucket#getClient()
      */
-    @Override public RiakClient getClient() throws RiakException {
+    @Override public IRiakClient getClient() throws RiakException {
         // com.basho.riak.client.RiakClient riakClient = new
         // com.basho.riak.client.RiakClient("http://127.0.0.1:8098/riak");
         // riakClient.getHttpClient().getHostConfiguration().setProxy("127.0.0.1",

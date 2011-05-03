@@ -13,7 +13,7 @@
  */
 package com.basho.riak.newapi.convert;
 
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.cap.VClock;
 
 /**
@@ -28,7 +28,7 @@ public interface Converter<T> {
      * @param domainObject
      * @return a RiakObject populated from domainObject
      */
-    RiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException;
+    IRiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException;
 
     /**
      * Convert from a riakObject to a domain specific instance
@@ -37,6 +37,6 @@ public interface Converter<T> {
      *            the RiakObject to convert
      * @return an instance of type T
      */
-    T toDomain(RiakObject riakObject) throws ConversionException;
+    T toDomain(IRiakObject riakObject) throws ConversionException;
 
 }

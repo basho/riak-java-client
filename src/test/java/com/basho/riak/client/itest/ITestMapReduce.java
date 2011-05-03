@@ -30,11 +30,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.basho.riak.newapi.DefaultRiakLink;
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.RiakLink;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
-import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.bucket.DomainBucket;
 import com.basho.riak.newapi.bucket.RiakBucket;
@@ -52,7 +51,7 @@ import com.megacorp.commerce.GoogleStockDataItem;
  * 
  */
 public abstract class ITestMapReduce {
-    protected RiakClient client;
+    protected IRiakClient client;
 
     @Before public void setUp() throws RiakException {
         client = getClient();
@@ -62,13 +61,13 @@ public abstract class ITestMapReduce {
      * @return
      * @throws RiakException
      */
-    protected abstract RiakClient getClient() throws RiakException;
+    protected abstract IRiakClient getClient() throws RiakException;
 
     public static final String BUCKET_NAME = "mr_test_java";
     public static final int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() throws RiakException {
-        final RiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient();
         final Bucket bucket = client.createBucket(BUCKET_NAME).execute();
         final RiakBucket b = RiakBucket.newRiakBucket(bucket);
 
@@ -76,7 +75,7 @@ public abstract class ITestMapReduce {
             RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(BUCKET_NAME, "java_" + Integer.toString(i));
             builder.withContentType("text/plain").withValue(Integer.toString(i));
             if (i < TEST_ITEMS - 1) {
-                RiakLink link = new DefaultRiakLink(BUCKET_NAME, "java_" + Integer.toString(i + 1), "test");
+                RiakLink link = new RiakLink(BUCKET_NAME, "java_" + Integer.toString(i + 1), "test");
                 List<RiakLink> links = new ArrayList<RiakLink>(1);
                 links.add(link);
                 builder.withLinks(links);
@@ -87,7 +86,7 @@ public abstract class ITestMapReduce {
     }
 
     @AfterClass public static void teardown() throws RiakException {
-        final RiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient();
         final Bucket b = client.fetchBucket(BUCKET_NAME).execute();
 
         for (int i = 0; i < TEST_ITEMS; i++) {

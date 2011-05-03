@@ -21,7 +21,7 @@ import java.io.StringWriter;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.builders.RiakObjectBuilder;
 import com.basho.riak.newapi.cap.VClock;
 
@@ -60,7 +60,7 @@ public class JSONConverter<T> implements Converter<T> {
      * @see com.basho.riak.newapi.convert.Converter#fromDomain(java.lang.Object,
      * VClock)
      */
-    public RiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException {
+    public IRiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException {
         try {
             String key = getKey(domainObject, this.defaultKey);
 
@@ -87,7 +87,7 @@ public class JSONConverter<T> implements Converter<T> {
      * com.basho.riak.newapi.convert.Converter#toDomain(com.basho.riak.newapi
      * .RiakObject)
      */
-    public T toDomain(RiakObject riakObject) throws ConversionException {
+    public T toDomain(IRiakObject riakObject) throws ConversionException {
         if (riakObject == null) {
             return null;
         }

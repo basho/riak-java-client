@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.bucket.Bucket;
 
@@ -34,7 +34,7 @@ import com.basho.riak.newapi.bucket.Bucket;
  */
 public abstract class ITestClientBasic {
 
-    protected RiakClient client;
+    protected IRiakClient client;
 
     @Before public void setUp() throws RiakException {
         this.client = getClient();
@@ -43,7 +43,7 @@ public abstract class ITestClientBasic {
     /**
      * @return
      */
-    protected abstract RiakClient getClient() throws RiakException;
+    protected abstract IRiakClient getClient() throws RiakException;
 
     @Test public void fetchBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();

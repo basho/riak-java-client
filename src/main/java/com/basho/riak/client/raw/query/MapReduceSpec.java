@@ -14,7 +14,7 @@
 package com.basho.riak.client.raw.query;
 
 /**
- * A Map Reduce Query run it via {@link RiakClient#mapReduce(MapReduceSpec)}
+ * A Map Reduce Query run it via {@link IRiakClient#mapReduce(MapReduceSpec)}
  * 
  * @author russell
  * 

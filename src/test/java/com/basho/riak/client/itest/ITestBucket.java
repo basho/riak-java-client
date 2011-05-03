@@ -35,9 +35,9 @@ import java.util.concurrent.Future;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.bucket.Bucket;
 import com.basho.riak.newapi.cap.UnresolvedConflictException;
 import com.basho.riak.newapi.convert.NoKeySpecifedException;
@@ -50,22 +50,22 @@ import com.megacorp.commerce.ShoppingCart;
  */
 public abstract class ITestBucket {
 
-    protected RiakClient client;
+    protected IRiakClient client;
 
     @Before public void setUp() throws RiakException {
         client = getClient();
     }
 
-    protected abstract RiakClient getClient() throws RiakException;
+    protected abstract IRiakClient getClient() throws RiakException;
 
     @Test public void basicStore() throws Exception {
         final String bucketName = UUID.randomUUID().toString();
 
         Bucket b = client.fetchBucket(bucketName).execute();
-        RiakObject o = b.store("k", "v").execute();
+        IRiakObject o = b.store("k", "v").execute();
         assertNull(o);
 
-        RiakObject fetched = b.fetch("k").execute();
+        IRiakObject fetched = b.fetch("k").execute();
         assertEquals("v", fetched.getValue());
 
         // now update that riak object
@@ -94,7 +94,7 @@ public abstract class ITestBucket {
         final ExecutorService es = Executors.newFixedThreadPool(numThreads);
 
         for (int i = 0; i < numThreads; i++) {
-            final RiakClient c = getClient();
+            final IRiakClient c = getClient();
             c.generateAndSetClientId();
             final Bucket bucket = c.fetchBucket(bucketName).execute();
 

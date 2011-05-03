@@ -14,15 +14,113 @@
 package com.basho.riak.newapi;
 
 /**
+ * Immutable RiakLink
+ *
  * @author russell
  * 
  */
-public interface RiakLink {
+public class RiakLink {
 
-    String getTag();
+    private final String bucket;
+    private final String key;
+    private final String tag;
 
-    String getBucket();
+    /**
+     * Create a RiakLink from the specified parameters.
+     *
+     * @param bucket the name of the bucket
+     * @param key the key name
+     * @param tag the link tag
+     */
+    public RiakLink(String bucket, String key, String tag) {
+        this.bucket = bucket;
+        this.key = key;
+        this.tag = tag;
+    }
 
-    String getKey();
+    /**
+     * Create a RiakLink that is a copy of another RiakLink.
+     * @param riakLink the RiakLink to copy
+     */
+    public RiakLink(final RiakLink riakLink) {
+        this.bucket = riakLink.getBucket();
+        this.key = riakLink.getKey();
+        this.tag = riakLink.getTag();
+    }
+
+    public String getBucket() {
+        return bucket;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#hashCode()
+     */
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((bucket == null) ? 0 : bucket.hashCode());
+        result = prime * result + ((key == null) ? 0 : key.hashCode());
+        result = prime * result + ((tag == null) ? 0 : tag.hashCode());
+        return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof RiakLink)) {
+            return false;
+        }
+        RiakLink other = (RiakLink) obj;
+        if (bucket == null) {
+            if (other.bucket != null) {
+                return false;
+            }
+        } else if (!bucket.equals(other.bucket)) {
+            return false;
+        }
+        if (key == null) {
+            if (other.key != null) {
+                return false;
+            }
+        } else if (!key.equals(other.key)) {
+            return false;
+        }
+        if (tag == null) {
+            if (other.tag != null) {
+                return false;
+            }
+        } else if (!tag.equals(other.tag)) {
+            return false;
+        }
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override public String toString() {
+        return String.format("DefaultRiakLink [tag=%s, bucket=%s, key=%s]", tag, bucket, key);
+    }
 
 }

@@ -23,8 +23,8 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
-import com.basho.riak.client.RiakBucketInfo;
-import com.basho.riak.client.response.BucketResponse;
+import com.basho.riak.client.http.RiakBucketInfo;
+import com.basho.riak.client.http.response.BucketResponse;
 
 /**
  * @author russell

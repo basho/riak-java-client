@@ -20,7 +20,7 @@ import java.util.Collection;
 import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.DefaultRetrier;
@@ -74,7 +74,7 @@ public class FetchObject<T> implements RiakOperation<T> {
         final RiakResponse ros = new DefaultRetrier().attempt(command, retries);
         final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
 
-        for (RiakObject o : ros) {
+        for (IRiakObject o : ros) {
             siblings.add(converter.toDomain(o));
         }
 

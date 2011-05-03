@@ -13,6 +13,11 @@
  */
 package com.basho.riak.newapi.cap;
 
+/**
+ * TODO needs further definition and accessor methods.
+ *
+ * @author russell
+ */
 public final class Quorum {
     private Integer i;
     private Quora quorum;

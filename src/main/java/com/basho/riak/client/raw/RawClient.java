@@ -19,7 +19,7 @@ import java.util.Iterator;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.query.MapReduceResult;
 import com.basho.riak.newapi.query.WalkResult;
@@ -36,9 +36,9 @@ public interface RawClient {
 
     RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException;
 
-    RiakResponse store(RiakObject object, StoreMeta storeMeta) throws IOException;
+    RiakResponse store(IRiakObject object, StoreMeta storeMeta) throws IOException;
 
-    void store(RiakObject object) throws IOException;
+    void store(IRiakObject object) throws IOException;
 
     void delete(String bucket, String key) throws IOException;
 

@@ -22,7 +22,7 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.RiakRetryFailedException;
 import com.basho.riak.newapi.cap.ConflictResolver;
 import com.basho.riak.newapi.cap.DefaultRetrier;
@@ -82,13 +82,13 @@ public class StoreObject<T> implements RiakOperation<T> {
         final RiakResponse ros = new DefaultRetrier().attempt(command, retries);
         final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
 
-        for (RiakObject o : ros) {
+        for (IRiakObject o : ros) {
             siblings.add(converter.toDomain(o));
         }
 
         final T resolved = resolver.resolve(siblings);
         final T mutated = mutation.apply(resolved);
-        final RiakObject o = converter.fromDomain(mutated, ros.getVclock());
+        final IRiakObject o = converter.fromDomain(mutated, ros.getVclock());
 
         final RiakResponse stored = new DefaultRetrier().attempt(new Command<RiakResponse>() {
             public RiakResponse execute() throws IOException {
@@ -98,7 +98,7 @@ public class StoreObject<T> implements RiakOperation<T> {
 
         final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
 
-        for (RiakObject s : stored) {
+        for (IRiakObject s : stored) {
             storedSiblings.add(converter.toDomain(s));
         }
 

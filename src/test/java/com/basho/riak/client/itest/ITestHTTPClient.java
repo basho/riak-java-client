@@ -19,10 +19,11 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakClient;
+import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
 import com.basho.riak.newapi.bucket.Bucket;
+import com.basho.riak.newapi.cap.Quora;
 import com.basho.riak.newapi.query.functions.NamedErlangFunction;
 
 /**
@@ -36,7 +37,7 @@ public class ITestHTTPClient extends ITestClientBasic {
      * 
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
-    @Override protected RiakClient getClient() throws RiakException {
+    @Override protected IRiakClient getClient() throws RiakException {
         return RiakFactory.httpClient();
     }
 
@@ -79,10 +80,22 @@ public class ITestHTTPClient extends ITestClientBasic {
 
         final String bucketName = UUID.randomUUID().toString();
 
-        Bucket b = client.createBucket(bucketName).chashKeyFunction(newChashkeyFun).linkWalkFunction(newLinkwalkFun).execute();
+        Bucket b = client.createBucket(bucketName)
+            .chashKeyFunction(newChashkeyFun)
+            .linkWalkFunction(newLinkwalkFun)
+            .r(Quora.ALL)
+            .w(2)
+            .dw(Quora.QUORUM)
+            .rw(1)
+            .execute();
 
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());
+        // TODO add extra properties to underlying transports, and expose them
+        // assertEquals(Quora.ALL, b.getR());
+        // assertEquals(2, b.getW());
+        // assertEquals(Quora.QUORUM, b.getDW());
+        // assertEquals(1, b.getRW());
     }
 
 }

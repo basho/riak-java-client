@@ -29,9 +29,9 @@ import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakObject;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.convert.ConversionException;
 import com.basho.riak.newapi.query.BucketKeyMapReduce;
@@ -63,6 +63,14 @@ public class PBClientAdapter implements RawClient {
      */
     public PBClientAdapter(String host, int port) throws IOException {
         this.client = new RiakClient(host, port);
+    }
+
+    /**
+     * Wrap a pre-created/configured pb client as a RawClient
+     * @param delegate the {@link RiakClient} to adapt.
+     */
+    public PBClientAdapter(com.basho.riak.pbc.RiakClient delegate) {
+        this.client = delegate;
     }
 
     /*
@@ -111,7 +119,7 @@ public class PBClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.RiakObject
      * , com.basho.riak.client.raw.StoreMeta)
      */
-    public RiakResponse store(RiakObject riakObject, StoreMeta storeMeta) throws IOException {
+    public RiakResponse store(IRiakObject riakObject, StoreMeta storeMeta) throws IOException {
         if (riakObject == null || riakObject.getKey() == null || riakObject.getBucket() == null) {
             throw new IllegalArgumentException(
                                                "object cannot be null, object's key cannot be null, object's bucket cannot be null");
@@ -127,7 +135,7 @@ public class PBClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.RiakObject
      * )
      */
-    public void store(RiakObject object) throws IOException {
+    public void store(IRiakObject object) throws IOException {
         store(object, new StoreMeta(null, null, false));
     }
 
