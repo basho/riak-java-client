@@ -274,6 +274,7 @@ public class TestClientUtils {
     @Test public void parse_multipart_returns_correct_riak_and_bucket_and_key() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
+        headers.put("x-riak-vclock", "vclock");
         String body = "\r\n--boundary\r\n" + "\r\n" + "--boundary--";
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
@@ -308,6 +309,7 @@ public class TestClientUtils {
     @Test public void parse_multipart_returns_value() {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "multipart/mixed; boundary=boundary");
+        headers.put("x-riak-vclock", "vclock");
         String body = "\r\n--boundary\r\n" + "\r\n" + "foo\r\n" + "--boundary--";
 
         List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());

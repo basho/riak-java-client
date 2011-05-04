@@ -404,9 +404,13 @@ public class ClientUtils {
                                                   Map<String, String> docHeaders, byte[] docBody) {
 
         String vclock = null;
+        boolean siblingVclock = false;
 
         if (docHeaders != null) {
             vclock = docHeaders.get(Constants.HDR_VCLOCK);
+            if( vclock != null) {
+                siblingVclock = true;
+            }
         }
 
         List<Multipart.Part> parts = Multipart.parse(docHeaders, docBody);
@@ -414,6 +418,19 @@ public class ClientUtils {
         if (parts != null) {
             for (Multipart.Part part : parts) {
                 Map<String, String> headers = part.getHeaders();
+
+                // handles the case of link walk multi part responses where the vclock header is in the part not the top response
+                if (!siblingVclock) {
+                    vclock = headers.get(Constants.HDR_VCLOCK);
+                }
+
+                if(vclock == null) {
+                    // this should never happen
+                    // exception here to shorten path from bug occurrence
+                    // to bug manifestation
+                    throw new IllegalStateException("no vclock found");
+                }
+
                 List<RiakLink> links = parseLinkHeader(headers.get(Constants.HDR_LINK));
                 Map<String, String> usermeta = parseUsermeta(headers);
                 String location = headers.get(Constants.HDR_LOCATION);
