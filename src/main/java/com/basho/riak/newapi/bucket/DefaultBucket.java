@@ -239,7 +239,8 @@ public class DefaultBucket implements Bucket {
                 if (original == null) {
                     return RiakObjectBuilder.newBuilder(b.getName(), key).withValue(value).build();
                 } else {
-                    return original.setValue(value);
+                    original.setValue(value);
+                    return original;
                 }
             }
         }).withResolver(new DefaultResolver<IRiakObject>()).withConverter(new Converter<IRiakObject>() {

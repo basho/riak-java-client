@@ -13,11 +13,12 @@
  */
 package com.basho.riak.newapi;
 
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.newapi.cap.VClock;
 
 /**
@@ -27,7 +28,7 @@ import com.basho.riak.newapi.cap.VClock;
  * laid claim to the best name real estate. 
  * This class will be named RiakObject in subsequent releases.
  * 
- * @see RiakObject in the legacy project
+ * @see DefaultRiakObject in the legacy project
  * @author russell
  * 
  */
@@ -48,7 +49,7 @@ public interface IRiakObject extends Iterable<RiakLink> {
     String getContentType();
 
     // links
-    Collection<RiakLink> getLinks();
+    List<RiakLink> getLinks();
 
     boolean hasLinks();
 
@@ -69,9 +70,9 @@ public interface IRiakObject extends Iterable<RiakLink> {
 
     // Mutate
 
-    IRiakObject setValue(String value);
+    void setValue(String value);
 
-    IRiakObject setContentType(String contentType);
+    void setContentType(String contentType);
 
     /**
      * Add link to this RiakObject's links.

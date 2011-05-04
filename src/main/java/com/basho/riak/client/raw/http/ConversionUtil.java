@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.util.DateUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.raw.StoreMeta;
@@ -38,7 +39,6 @@ import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.Constants;
-import com.basho.riak.newapi.RiakLink;
 import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.bucket.BucketProperties;
 import com.basho.riak.newapi.bucket.DefaultBucketProperties;

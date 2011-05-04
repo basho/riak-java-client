@@ -19,8 +19,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.basho.riak.newapi.RiakLink;
-import com.basho.riak.newapi.RiakObject;
+import com.basho.riak.client.RiakLink;
+import com.basho.riak.newapi.DefaultRiakObject;
 import com.basho.riak.newapi.IRiakObject;
 import com.basho.riak.newapi.cap.BasicVClock;
 import com.basho.riak.newapi.cap.VClock;
@@ -61,7 +61,7 @@ public class RiakObjectBuilder {
     }
 
     public IRiakObject build() {
-        return new RiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta);
+        return new DefaultRiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta);
     }
 
     public RiakObjectBuilder withValue(String value) {

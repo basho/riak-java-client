@@ -39,7 +39,7 @@ public class RiakFactory {
         try {
             final RawClient client = new PBClientAdapter("127.0.0.1", 8087);
 
-            return new RiakClient(client);
+            return new DefaultRiakClient(client);
         } catch (IOException e) {
             throw new RiakException(e);
         }
@@ -52,7 +52,7 @@ public class RiakFactory {
      */
     public static IRiakClient pbcClient(com.basho.riak.pbc.RiakClient delegate) {
         final RawClient client = new PBClientAdapter(delegate);
-        return new RiakClient(client);
+        return new DefaultRiakClient(client);
     }
 
     /**
@@ -60,7 +60,7 @@ public class RiakFactory {
      */
     public static IRiakClient httpClient() throws RiakException {
         final RawClient client = new HTTPClientAdapter(DEFAULT_RIAK_URL);
-        return new RiakClient(client);
+        return new DefaultRiakClient(client);
     }
 
     /**
@@ -68,7 +68,7 @@ public class RiakFactory {
      */
     public static IRiakClient httpClient(com.basho.riak.client.http.RiakClient delegate) throws RiakException {
         final RawClient client = new HTTPClientAdapter(delegate);
-        return new RiakClient(client);
+        return new DefaultRiakClient(client);
     }
 
 }

@@ -156,7 +156,7 @@ public class ConversionUtil {
 
         com.basho.riak.pbc.RiakObject result = new com.basho.riak.pbc.RiakObject(vclock, bucketName, key, content);
 
-        for (com.basho.riak.newapi.RiakLink link : riakObject) {
+        for (com.basho.riak.client.RiakLink link : riakObject) {
             result.addLink(link.getTag(), link.getBucket(), link.getKey());
         }
 

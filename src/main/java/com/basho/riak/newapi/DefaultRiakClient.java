@@ -25,14 +25,14 @@ import com.basho.riak.newapi.query.LinkWalk;
  * @author russell
  * 
  */
-public final class RiakClient implements IRiakClient {
+public final class DefaultRiakClient implements IRiakClient {
 
     private final RawClient client;
 
     /**
      * @param client
      */
-    RiakClient(RawClient client) {
+    DefaultRiakClient(RawClient client) {
         this.client = client;
     }
 

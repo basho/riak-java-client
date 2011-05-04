@@ -19,11 +19,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-import com.basho.riak.client.http.HttpRiakObject;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.newapi.cap.VClock;
 import com.basho.riak.newapi.convert.RiakKey;
+import com.basho.riak.newapi.util.UnmodifiableIterator;
 
 /**
  * An implementation of {@link IRiakObject} that also contains the deprecated
@@ -34,7 +36,7 @@ import com.basho.riak.newapi.convert.RiakKey;
  * 
  * @author russell
  */
-public class RiakObject implements IRiakObject {
+public class DefaultRiakObject implements IRiakObject {
 
     public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
@@ -67,7 +69,7 @@ public class RiakObject implements IRiakObject {
      * @param links
      * @param userMeta
      */
-    public RiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
+    public DefaultRiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
             String contentType, String value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
 
         if (bucket == null) {
@@ -119,10 +121,6 @@ public class RiakObject implements IRiakObject {
         }
     }
 
-    public Iterator<RiakLink> iterator() {
-        return links.iterator();
-    }
-
     public String getBucket() {
         return bucket;
     }
@@ -163,16 +161,22 @@ public class RiakObject implements IRiakObject {
 
     // mutate
 
-    public IRiakObject setValue(String value) {
+    public void setValue(String value) {
         this.value = value;
-        return this;
     }
 
-    public IRiakObject setContentType(String contentType) {
+    public void setContentType(String contentType) {
         this.contentType = contentType;
-        return this;
     }
 
+    /**
+     * an UnmodifiableIterator view on the RiakLinks
+     */
+    public Iterator<RiakLink> iterator() {
+        return new UnmodifiableIterator<RiakLink>(getLinks().iterator());
+    }
+
+    
     /**
      * Add link to this RiakObject's links.
      * 
@@ -225,7 +229,10 @@ public class RiakObject implements IRiakObject {
         }
     }
 
-    public Collection<RiakLink> getLinks() {
+    /**
+     * Return a copy of the links.
+     */
+    public List<RiakLink> getLinks() {
         synchronized (linksLock) {
             return new ArrayList<RiakLink>(links);
         }

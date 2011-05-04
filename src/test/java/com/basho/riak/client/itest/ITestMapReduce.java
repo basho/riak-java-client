@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.basho.riak.newapi.RiakLink;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.newapi.IRiakClient;
 import com.basho.riak.newapi.RiakException;
 import com.basho.riak.newapi.RiakFactory;
