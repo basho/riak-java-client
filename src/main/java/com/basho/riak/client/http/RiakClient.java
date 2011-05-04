@@ -41,7 +41,7 @@ import com.basho.riak.client.http.util.Constants;
 /**
  * Primary interface for interacting with Riak via HTTP.
  */
-public class RiakClient implements HttpRiakClient {
+public class RiakClient {
 
     private ClientHelper helper;
 

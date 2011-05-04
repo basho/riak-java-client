@@ -27,10 +27,9 @@ import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
- * An implementation of {@link IRiakObject} that also contains the deprecated
- * http.RiakObject methods to facilitate transition between versions.
+ * An implementation of {@link IRiakObject}
  *
- * A RiakObject models the meta data and data stored at a bucket/key location in
+ * Models the meta data and data stored at a bucket/key location in
  * Riak.
  * 
  * @author russell

@@ -41,8 +41,20 @@ import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 
 /**
- * A Riak object.
+ * A (legacy REST) Riak object.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.RiakObject
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ *             <p>Please see also IRiakClient, IRiakObject for the new API</p>
+ * @see com.basho.riak.client.http.RiakObject
+ * @see IRiakClient 
+ * @see IRiakObject
  */
+@Deprecated
 public class RiakObject {
 
     private RiakClient riak;

@@ -15,13 +15,9 @@ import com.basho.riak.client.raw.RawClient;
 /**
  * A default implementation of IRiakClient.
  *
- * The class also includes the deprecated http.RiakClient methods to
- * ease the transition between versions.
- * 
- * RiakClient provides convenient, transport agnostic ways to perform perform
+ * Provides convenient, transport agnostic ways to perform
  * bucket and query operations on Riak.
  *
- * In the next release this class will be renamed and all deprecated methods removed.
  * @author russell
  * 
  */

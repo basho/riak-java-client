@@ -43,7 +43,7 @@ import com.basho.riak.client.http.util.Constants;
 /**
  * A Riak object.
  */
-public class RiakObject implements HttpRiakObject {
+public class RiakObject {
 
     private RiakClient riak;
     private String bucket;
