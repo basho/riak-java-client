@@ -14,88 +14,117 @@
 package com.basho.riak.client;
 
 /**
- * Represents a link to a Riak object. The target object is identified by its
- * bucket and key and the link is classified by a tag.
+ * Immutable RiakLink
+ * 
+ * @author russell
+ * 
  */
 public class RiakLink {
 
-    private String bucket;
-    private String key;
-    private String tag;
+    private final String bucket;
+    private final String key;
+    private final String tag;
 
+    /**
+     * Create a RiakLink from the specified parameters.
+     * 
+     * @param bucket
+     *            the name of the bucket
+     * @param key
+     *            the key name
+     * @param tag
+     *            the link tag
+     */
     public RiakLink(String bucket, String key, String tag) {
         this.bucket = bucket;
         this.key = key;
         this.tag = tag;
     }
 
-    /** Copy constructor */
-    public RiakLink(RiakLink link) {
-        bucket = link.bucket;
-        key = link.key;
-        tag = link.tag;
+    /**
+     * Create a RiakLink that is a copy of another RiakLink.
+     * 
+     * @param riakLink
+     *            the RiakLink to copy
+     */
+    public RiakLink(final RiakLink riakLink) {
+        this.bucket = riakLink.getBucket();
+        this.key = riakLink.getKey();
+        this.tag = riakLink.getTag();
     }
 
-    /**
-     * Bucket of the target object being linked to.
-     */
     public String getBucket() {
         return bucket;
     }
 
-    /**
-     * @deprecated will be removed in future versions to make RiakLink immutable.
-     * @param bucket
-     */
-    @Deprecated
-    public void setBucket(String bucket) {
-        this.bucket = bucket;
-    }
-
-    /**
-     * Key of the target object being linked to.
-     */
     public String getKey() {
         return key;
     }
 
-    /**
-     * @deprecated will be removed in future versions to make RiakLink immutable.
-     * @param key
-     */
-    @Deprecated
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    /**
-     * Tag to classify the link.
-     */
     public String getTag() {
         return tag;
     }
 
-    /**
-     * @deprecated will be removed in future versions to make RiakLink immutable.
-     * @param tag
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
      */
-    @Deprecated
-    public void setTag(String tag) {
-        this.tag = tag;
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((bucket == null) ? 0 : bucket.hashCode());
+        result = prime * result + ((key == null) ? 0 : key.hashCode());
+        result = prime * result + ((tag == null) ? 0 : tag.hashCode());
+        return result;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override public boolean equals(Object obj) {
-        if (!(obj instanceof RiakLink))
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
             return false;
+        }
+        if (!(obj instanceof RiakLink)) {
+            return false;
+        }
         RiakLink other = (RiakLink) obj;
-
-        boolean bucketEq = (bucket != null && bucket.equals(other.bucket)) || (bucket == null && other.bucket == null);
-        boolean keyEq = (key != null && key.equals(other.key)) || (key == null && other.key == null);
-        boolean tagEq = (tag != null && tag.equals(other.tag)) || (tag == null && other.tag == null);
-        return bucketEq && keyEq && tagEq;
+        if (bucket == null) {
+            if (other.bucket != null) {
+                return false;
+            }
+        } else if (!bucket.equals(other.bucket)) {
+            return false;
+        }
+        if (key == null) {
+            if (other.key != null) {
+                return false;
+            }
+        } else if (!key.equals(other.key)) {
+            return false;
+        }
+        if (tag == null) {
+            if (other.tag != null) {
+                return false;
+            }
+        } else if (!tag.equals(other.tag)) {
+            return false;
+        }
+        return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
     @Override public String toString() {
-        return new StringBuilder("[").append(bucket).append(",").append(key).append(",").append(tag).append("]").toString();
+        return String.format("DefaultRiakLink [tag=%s, bucket=%s, key=%s]", tag, bucket, key);
     }
 }

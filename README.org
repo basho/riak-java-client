@@ -1,0 +1,196 @@
+* A New Riak Java Client API
+
+** What's wrong?
+
+Accusations have been made against the current riak-java-client. Certainly it
+leaks implementation details (Apache HttpClient, JSONArray, JSONObject,
+ByteString etc) into client code. And there are 3 different possible client
+interfaces:
+
++ An Http style client
++ A more OO client that uses the Http client
++ A protocol buffers client
+
+All of these leak their abstractions and force the user to make an upfront
+choice about transport/features and then code to that decision.
+
+Some people don't like Apache HttpClient, and that is fair enough, so it would
+be ideal if we didn't force it on those people. Better yet make it easy to
+create new implementations for the transport (using Netty or RestTemplate or
+what-have-you).
+
+More than that, though, it doesn't make it any easier to work with a fault
+tolerant, distributed KV store (like Riak).
+
+** What's new?
+
+Well it *is* Java, so I added some more layers.
+
+*** New boss, same as the old boss
+
+Underneath is the same HTTP RiakClient and pbc.RiakClient that you know and
+love. They have a couple more fixes and an accessor or two but fundamentally
+uncchanged.
+
+*** Wrapper
+
+There's a new interface, that is currently called RawClient, and two adapters
+that wrap the existing clients and adapt them to the new API.  So if all you
+want is to write code against a low level client then use the RawClient
+interface and you don't have to chose upfront HTTP or PBC anymore. And if you
+want to add your own Netty client, or Spring REST Template, then implement this
+interface, please.
+
+*** Riak, Buckets, Objects
+
+On top of the RawClient there is a higher level API that attempts to make it
+easier to deal with eventual consitency. All the ideas for this layer came from
+the Coda Hale's talk [[http://blog.basho.com/2011/03/28/Riak-and-Scala-at-Yammer/][Riak and Scala at Yammer]] and a subsequent email
+conversation he was kind enough to have with me. And also from [[http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-March/003662.html][this post]] to the
+Riak mailing list from Kresten Krab Thorup. Not that they are in anyway to blame
+for all this.
+
+**** Simpler client
+
+The high level Riak client lets you work with buckets and map reduce. The map
+reduce/link walking stuff is incomplete so I'll skip that (for now).
+
+Have a look at
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/basho/riak/client/itest/ITestClientBasic.java][ITestClientBasic]]
+and
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/RiakClient.java][RiakClient]].
+All Riak access to a riak objects is done through the Bucket interface, the
+client just creates/updates and fetches buckets.
+
+**** Buckets
+
+A test is worth a 100 words so have a look at
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/basho/riak/client/itest/ITestBucket.java][ITestBucket]]
+and the interface
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/bucket/Bucket.java][Bucket]]
+Bucket methods return
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/operations/RiakOperation.java][RiakOperation's]]
+which are implemented as fluent builders to save the proliferation of methods
+that occur when you have a lot of optional arguments.
+
+**** Riak Opertaions
+
+A RiakOpertaion is configured and then it is executed. This is how to fetch,
+store or delete data. It can be configured to be retried N times. By default
+that N is 0 (IE try once and fail at once.) An operation accepts the parameters
+it needs. So a [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/operations/DeleteObject.java][Delete Operation]] accepts an optional RW param, for example.
+
+**** Conflict resolution, Mutation and Converstion 
+
+***** Conflict 
+
+Conflict happens in Dynamo style systems. It is best to have a strategy in mind
+to deal with it. The strategy is highly dependant on your domain. A classic
+example is the 
+[[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/megacorp/commerce/ShoppingCart.java][shopping cart]], conflicting shopping carts
+can be merged by a union of their contents, sure you might reinstate a deleted
+toaster but that is better than losing money... 
+
+See [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/megacorp/commerce/MergeCartResolver.java][MergeCartResolver]].
+
+Both fetch and store make use of a ConflictResolver to handle siblings. The
+default conflict resolver right now does not resolve conflicts, it blows up with
+an UnresolvedConflictException (which gives you access to the siblings).
+
+Using the basic bucket interface you can provide an anonymous inner class as a
+conflict resolver to either a fetch or a store operation.
+
+***** Conversion 
+
+Since conflict resolution is a very domain specific thing it makes sense to
+convert the Riak data into a domain specific object before conflict is
+resolved. You provide an implementation of the [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/convert/Converter.java][Converter]] interface to any
+fetch/store operation. By default, if you are working with a <RiakObject>
+operation the converter does nothing. If you are working with a <T> generic
+operation then there is a basic [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/convert/JSONConverter.java][JSONConverter]] that is the simplest
+possible use of [[http://wiki.fasterxml.com/JacksonHome][Jackson JSON converter]]. It will attempt to coherce a
+RiakObject's JSON payload into a domain class of your chosing. It can also
+return Map, Collection etc if you are yet to decide on a domain.
+
+***** Mutation 
+
+With conflict resolution comes Mutation. When you perform a store you may be
+
++ Creating a new value with a new key
++ Updating an existing value
+
+And *you don't know in advance*. You may think you're creating a new value but
+many people may have beaten you to it. Using the Shopping Cart as an example
+again, you don't want to overwrite the existing value with your own new value,
+so a Mutation that merges the current value with your new value makes sense
+here.
+
+You provide an implementation of [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/cap/Mutation.java][Mutation<T>]] that accepts the old value
+and returns the new value. The [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/cap/ClobberMutation.java][default]] current mutation clobbers the old value,
+that is it ignores the old value and returns your new value.
+
+***** Fetch then Store All together a Fetch operation now entails
+
+1. Fetch the object from Riak
+2. Run the Converter
+3. Run the ConflictResolver
+4. Return the converted object
+
+a store
+
+1. Run a fetch
+2. Run the mutation on the result
+3. Store the new object
+4. Optionally (if return body is true) run the Converter and ConflictResolver
+   and return the resolved value.
+
+
+**** Domain Buckets
+
+ If you are working with ShoppingCarts you're working with Shopping Carts. It is
+ a lot of faff providing the Converter, Mutation and ConflictResolver to the
+ Bucket operation over and over again. So there
+ are
+ [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/main/java/com/basho/riak/newapi/bucket/DomainBucket.java][Domain Buckets]]. A DomainBucket is a wrapper around a bucket (you see,
+ *another* layer) that is configured at creation time with a ConflictResolver,
+ MutationProvider and a Converter. Thereafter you can work with the DomainBucket
+ and deal solely with your ShoppingCart. Look at
+ [[https://github.com/russelldb/riak-java-client-api/blob/hl/src/test/java/com/basho/riak/client/itest/ITestDomainBucket.java][this test]]
+ for an example.
+
+There well very soon be a default RiakObject DomainBucket preconfigured with a
+ClobberMutation, no resolution ConflictResolver and do nothing converter in the
+library for convenience.
+
+*** Workflow 
+
+The API makes it easy to start experimenting with Riak and start to create
+anonymous inner classes for ConflictResolution/Mutation/Conversion and then, as
+your application firms up, you can codify the your strategies into solid,
+testable, resusable classes and DomainBuckets.
+
+*** Flexible
+
+ If you need raw speed pumping 1000s of objects in go right down to the lowest
+ level and use the pbc.RiakClient. If you want to start off with HTTP but later
+ implement your own transport use RawClient. If you want to work at a higher
+ level of abstraction use Bucket and DomainBucket.
+
+*** State of play
+
+ This is very much an early release work in progress but it covers the KV store
+ and has integration test coverage of ~65%. Don't use it in production but
+ please play with it and feedback.
+
+*** TODO So much. A small snippet of which is:
+
+- Add tests to verify Links and UserMeta work
+- MapReduce and LinkWalking for a start.
+- Tidy the code and vet it for Thread Safety
+- An simple method for registering and configuring RawClient implementations
+- Many more unit tests
+- Sort out the package names
+- Stop leaking Jackson annotations
+- A default RiakObject DomaonBucket (as described above)
+- Lots more
+
