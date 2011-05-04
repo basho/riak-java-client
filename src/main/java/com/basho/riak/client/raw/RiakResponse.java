@@ -16,9 +16,9 @@ package com.basho.riak.client.raw;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.basho.riak.newapi.IRiakObject;
-import com.basho.riak.newapi.cap.BasicVClock;
-import com.basho.riak.newapi.cap.VClock;
+import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.cap.BasicVClock;
+import com.basho.riak.client.cap.VClock;
 
 /**
  * What riak returns: a VClock and bunch of siblings.

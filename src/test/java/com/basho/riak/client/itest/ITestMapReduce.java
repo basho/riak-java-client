@@ -30,20 +30,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.RiakException;
+import com.basho.riak.client.RiakFactory;
 import com.basho.riak.client.RiakLink;
-import com.basho.riak.newapi.IRiakClient;
-import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakFactory;
-import com.basho.riak.newapi.bucket.Bucket;
-import com.basho.riak.newapi.bucket.DomainBucket;
-import com.basho.riak.newapi.bucket.RiakBucket;
-import com.basho.riak.newapi.builders.RiakObjectBuilder;
-import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.filter.LessThanFilter;
-import com.basho.riak.newapi.query.filter.StringToIntFilter;
-import com.basho.riak.newapi.query.filter.TokenizeFilter;
-import com.basho.riak.newapi.query.functions.NamedErlangFunction;
-import com.basho.riak.newapi.query.functions.NamedJSFunction;
+import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.bucket.DomainBucket;
+import com.basho.riak.client.bucket.RiakBucket;
+import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.filter.LessThanFilter;
+import com.basho.riak.client.query.filter.StringToIntFilter;
+import com.basho.riak.client.query.filter.TokenizeFilter;
+import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.megacorp.commerce.GoogleStockDataItem;
 
 /**

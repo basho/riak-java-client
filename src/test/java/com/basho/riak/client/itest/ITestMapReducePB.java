@@ -13,9 +13,9 @@
  */
 package com.basho.riak.client.itest;
 
-import com.basho.riak.newapi.IRiakClient;
-import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.RiakFactory;
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.RiakException;
+import com.basho.riak.client.RiakFactory;
 
 /**
  * @author russell

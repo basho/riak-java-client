@@ -16,13 +16,13 @@ package com.basho.riak.client.raw;
 import java.io.IOException;
 import java.util.Iterator;
 
+import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.bucket.BucketProperties;
+import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
-import com.basho.riak.newapi.IRiakObject;
-import com.basho.riak.newapi.bucket.BucketProperties;
-import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.WalkResult;
 
 /**
  * @author russell

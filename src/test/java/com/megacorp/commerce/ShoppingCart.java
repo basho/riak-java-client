@@ -21,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.basho.riak.newapi.convert.RiakKey;
+import com.basho.riak.client.convert.RiakKey;
 
 /**
  * A simple domain object for the sake of ITests.

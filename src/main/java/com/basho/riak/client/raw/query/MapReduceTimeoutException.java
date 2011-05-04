@@ -13,7 +13,7 @@
  */
 package com.basho.riak.client.raw.query;
 
-import com.basho.riak.newapi.RiakException;
+import com.basho.riak.client.RiakException;
 
 /**
  * @author russell

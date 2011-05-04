@@ -13,7 +13,7 @@
  */
 package com.megacorp.kv.exceptions;
 
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.client.cap.UnresolvedConflictException;
 
 /**
  * @author russell

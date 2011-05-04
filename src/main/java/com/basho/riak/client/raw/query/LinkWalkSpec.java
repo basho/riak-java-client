@@ -16,8 +16,8 @@ package com.basho.riak.client.raw.query;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.basho.riak.newapi.query.LinkWalkStep;
-import com.basho.riak.newapi.util.UnmodifiableIterator;
+import com.basho.riak.client.query.LinkWalkStep;
+import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
  * An immutable class that represents a link walk specification

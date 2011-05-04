@@ -3,8 +3,8 @@ package com.megacorp.commerce;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.basho.riak.newapi.cap.ConflictResolver;
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
+import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.UnresolvedConflictException;
 
 /**
  * A simple example of a conflict resolver for the ShoppingCart domain type.

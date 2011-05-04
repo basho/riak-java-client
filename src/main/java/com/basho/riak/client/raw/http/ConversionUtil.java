@@ -28,27 +28,27 @@ import org.apache.commons.httpclient.util.DateUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 
+import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
+import com.basho.riak.client.bucket.BucketProperties;
+import com.basho.riak.client.bucket.DefaultBucketProperties;
+import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.query.LinkWalkStep;
+import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
+import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.Constants;
-import com.basho.riak.newapi.IRiakObject;
-import com.basho.riak.newapi.bucket.BucketProperties;
-import com.basho.riak.newapi.bucket.DefaultBucketProperties;
-import com.basho.riak.newapi.builders.RiakObjectBuilder;
-import com.basho.riak.newapi.convert.ConversionException;
-import com.basho.riak.newapi.query.LinkWalkStep;
-import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.WalkResult;
-import com.basho.riak.newapi.query.functions.NamedErlangFunction;
-import com.basho.riak.newapi.util.UnmodifiableIterator;
 
 /**
  * @author russell

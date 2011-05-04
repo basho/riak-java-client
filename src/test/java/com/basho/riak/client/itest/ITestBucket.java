@@ -35,12 +35,12 @@ import java.util.concurrent.Future;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.basho.riak.newapi.IRiakClient;
-import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.IRiakObject;
-import com.basho.riak.newapi.bucket.Bucket;
-import com.basho.riak.newapi.cap.UnresolvedConflictException;
-import com.basho.riak.newapi.convert.NoKeySpecifedException;
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.RiakException;
+import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.megacorp.commerce.LegacyCart;
 import com.megacorp.commerce.ShoppingCart;
 

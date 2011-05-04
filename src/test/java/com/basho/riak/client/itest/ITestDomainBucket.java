@@ -28,10 +28,10 @@ import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.basho.riak.newapi.IRiakClient;
-import com.basho.riak.newapi.RiakException;
-import com.basho.riak.newapi.bucket.Bucket;
-import com.basho.riak.newapi.bucket.DomainBucket;
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.RiakException;
+import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.bucket.DomainBucket;
 import com.megacorp.commerce.MergeCartResolver;
 import com.megacorp.commerce.ShoppingCart;
 

@@ -18,7 +18,12 @@ import static com.basho.riak.client.raw.http.ConversionUtil.convert;
 import java.io.IOException;
 import java.util.Iterator;
 
+import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.bucket.BucketProperties;
+import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -32,11 +37,6 @@ import com.basho.riak.client.http.response.HttpResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.WithBodyResponse;
-import com.basho.riak.newapi.IRiakObject;
-import com.basho.riak.newapi.bucket.BucketProperties;
-import com.basho.riak.newapi.cap.ClientId;
-import com.basho.riak.newapi.query.MapReduceResult;
-import com.basho.riak.newapi.query.WalkResult;
 
 /**
  * Adapts the old {@link RiakClient} to the new {@link RawClient} interface.
