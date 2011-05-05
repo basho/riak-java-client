@@ -32,6 +32,7 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
+import com.basho.riak.client.cap.DefaultRetrier;
 import com.megacorp.commerce.MergeCartResolver;
 import com.megacorp.commerce.ShoppingCart;
 
@@ -60,7 +61,15 @@ public abstract class ITestDomainBucket {
 
         final Bucket b = client.createBucket(bucketName).allowSiblings(true).nVal(3).execute();
 
-        final DomainBucket<ShoppingCart> carts = DomainBucket.builder(b, ShoppingCart.class).withResolver(new MergeCartResolver()).returnBody(true).retry(3).w(1).dw(1).r(1).rw(1).build();
+        final DomainBucket<ShoppingCart> carts = DomainBucket.builder(b, ShoppingCart.class)
+            .withResolver(new MergeCartResolver())
+            .returnBody(true)
+            .retrier(DefaultRetrier.attempts(3))
+            .w(1)
+            .dw(1)
+            .r(1)
+            .rw(1)
+            .build();
 
         final ShoppingCart cart = new ShoppingCart(userId);
 

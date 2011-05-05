@@ -39,6 +39,7 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.megacorp.commerce.LegacyCart;
@@ -143,7 +144,7 @@ public abstract class ITestBucket {
         cart.addItem("fixie");
         cart.addItem("moleskine");
 
-        carts.store(cart).returnBody(false).retry(3).execute();
+        carts.store(cart).returnBody(false).retrier(DefaultRetrier.attempts(2)).execute();
 
         final ShoppingCart fetchedCart = carts.fetch(cart).execute();
 
@@ -172,16 +173,16 @@ public abstract class ITestBucket {
         cart.addItem("moleskine");
 
         try {
-            carts.store(cart).returnBody(false).retry(3).execute();
+            carts.store(cart).returnBody(false).retrier(new DefaultRetrier(3)).execute();
             fail("Expected NoKeySpecifiedException");
         } catch (NoKeySpecifedException e) {
             // NO-OP
         }
 
-        carts.store(userId, cart).returnBody(false).retry(3).execute();
+        carts.store(userId, cart).returnBody(false).execute();
 
         try {
-            carts.fetch(cart).retry(3).execute();
+            carts.fetch(cart).execute();
             fail("Expected NoKeySpecifiedException");
         } catch (NoKeySpecifedException e) {
             // NO-OP
@@ -194,7 +195,7 @@ public abstract class ITestBucket {
         assertEquals(cart, fetchedCart);
 
         try {
-            carts.delete(cart).retry(3).execute();
+            carts.delete(cart).execute();
             fail("Expected NoKeySpecifiedException");
         } catch (NoKeySpecifedException e) {
             // NO-OP

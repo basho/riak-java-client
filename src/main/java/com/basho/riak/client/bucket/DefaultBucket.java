@@ -25,6 +25,7 @@ import com.basho.riak.client.cap.ClobberMutation;
 import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
@@ -46,15 +47,17 @@ public class DefaultBucket implements Bucket {
     private final String name;
     private final BucketProperties properties;
     private final RawClient client;
+    private final Retrier retrier;
 
     /**
      * @param properties
      * @param client
      */
-    protected DefaultBucket(String name, BucketProperties properties, RawClient client) {
+    protected DefaultBucket(String name, BucketProperties properties, RawClient client, final Retrier retrier) {
         this.name = name;
         this.properties = properties;
         this.client = client;
+        this.retrier = retrier;
     }
 
     // / BUCKET PROPS
@@ -234,7 +237,7 @@ public class DefaultBucket implements Bucket {
     public StoreObject<IRiakObject> store(final String key, final String value) {
         final Bucket b = this;
 
-        return new StoreObject<IRiakObject>(client, name, key).withMutator(new Mutation<IRiakObject>() {
+        return new StoreObject<IRiakObject>(client, name, key, retrier).withMutator(new Mutation<IRiakObject>() {
             public IRiakObject apply(IRiakObject original) {
                 if (original == null) {
                     return RiakObjectBuilder.newBuilder(b.getName(), key).withValue(value).build();
@@ -266,7 +269,7 @@ public class DefaultBucket implements Bucket {
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new StoreObject<T>(client, name, key)
+        return new StoreObject<T>(client, name, key, retrier)
             .withConverter(new JSONConverter<T>(clazz, name))
                 .withMutator(new ClobberMutation<T>(o))
                   .withResolver(new DefaultResolver<T>());
@@ -281,7 +284,7 @@ public class DefaultBucket implements Bucket {
     public <T> StoreObject<T> store(final String key, final T o) {
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
 
-        return new StoreObject<T>(client, name, key).
+        return new StoreObject<T>(client, name, key, retrier).
         withConverter(new JSONConverter<T>(clazz, name, key))
             .withMutator(new ClobberMutation<T>(o)).withResolver(new DefaultResolver<T>());
     }
@@ -297,7 +300,7 @@ public class DefaultBucket implements Bucket {
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new FetchObject<T>(client, name, key)
+        return new FetchObject<T>(client, name, key, retrier)
             .withConverter(new JSONConverter<T>(clazz, name))
             .withResolver(new DefaultResolver<T>());
     }
@@ -309,7 +312,7 @@ public class DefaultBucket implements Bucket {
      * java.lang.Class)
      */
     public <T> FetchObject<T> fetch(final String key, final Class<T> type) {
-        return new FetchObject<T>(client, name, key)
+        return new FetchObject<T>(client, name, key, retrier)
             .withConverter(new JSONConverter<T>(type, name))
             .withResolver(new DefaultResolver<T>());
     }
@@ -320,7 +323,7 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String)
      */
     public FetchObject<IRiakObject> fetch(String key) {
-        return new FetchObject<IRiakObject>(client, name, key)
+        return new FetchObject<IRiakObject>(client, name, key, retrier)
         .withResolver(new DefaultResolver<IRiakObject>())
         .withConverter(new Converter<IRiakObject>() {
 
@@ -346,7 +349,7 @@ public class DefaultBucket implements Bucket {
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
-        return new DeleteObject(client, name, key);
+        return new DeleteObject(client, name, key, retrier);
     }
 
     /*
@@ -355,7 +358,7 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.newapi.bucket.Bucket#delete(java.lang.String)
      */
     public DeleteObject delete(String key) {
-        return new DeleteObject(client, name, key);
+        return new DeleteObject(client, name, key, retrier);
     }
 
 }

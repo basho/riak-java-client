@@ -18,8 +18,10 @@ import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.ClobberMutation;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.DefaultResolver;
+import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.MutationProducer;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
 
@@ -38,13 +40,13 @@ public class DomainBucketBuilder<T> {
     private Converter<T> converter;
     private Mutation<T> mutation;
     private MutationProducer<T> mutationProducer;
+    private Retrier retrier = DefaultRetrier.attempts(3);
 
     private Integer w;
     private Integer dw;
     private Integer r;
     private Integer rw;
     private boolean returnBody = false;
-    private int retries = 0;
 
     /**
      * @param bucket
@@ -74,8 +76,8 @@ public class DomainBucketBuilder<T> {
             };
         }
 
-        return new DomainBucket<T>(bucket, resolver, converter, mutationProducer, w, dw, r, rw, returnBody, retries,
-                                   clazz);
+        return new DomainBucket<T>(bucket, resolver, converter, mutationProducer, w, dw, r, rw, returnBody, clazz,
+                                   retrier);
     }
 
     /**
@@ -100,8 +102,8 @@ public class DomainBucketBuilder<T> {
      * @param i
      * @return
      */
-    public DomainBucketBuilder<T> retry(int times) {
-        this.retries = times;
+    public DomainBucketBuilder<T> retrier(final Retrier retrier) {
+        this.retrier = retrier;
         return this;
     }
 

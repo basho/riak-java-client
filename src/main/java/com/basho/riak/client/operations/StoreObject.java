@@ -13,20 +13,19 @@
  */
 package com.basho.riak.client.operations;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Mutation;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -44,23 +43,25 @@ public class StoreObject<T> implements RiakOperation<T> {
     private final RawClient client;
     private final String bucket;
 
+    private Retrier retrier;
+
     // TODO populate
     private Integer r;
     private Integer w;
     private Integer dw;
     private boolean returnBody = false;
 
-    private int retries = 0;
     private Mutation<T> mutation;
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
 
     private final String key;
 
-    public StoreObject(final RawClient client, String bucket, String key) {
+    public StoreObject(final RawClient client, String bucket, String key, final Retrier retrier) {
         this.client = client;
         this.bucket = bucket;
         this.key = key;
+        this.retrier = retrier;
     }
 
     /**
@@ -69,8 +70,8 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
         // fetch, mutate, put
-        Command<RiakResponse> command = new Command<RiakResponse>() {
-            public RiakResponse execute() throws IOException {
+        Callable<RiakResponse> command = new Callable<RiakResponse>() {
+            public RiakResponse call() throws Exception {
                 if (r != null) {
                     return client.fetch(bucket, key, r);
                 } else {
@@ -79,7 +80,7 @@ public class StoreObject<T> implements RiakOperation<T> {
             }
         };
 
-        final RiakResponse ros = new DefaultRetrier().attempt(command, retries);
+        final RiakResponse ros = retrier.attempt(command);
         final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
 
         for (IRiakObject o : ros) {
@@ -90,11 +91,11 @@ public class StoreObject<T> implements RiakOperation<T> {
         final T mutated = mutation.apply(resolved);
         final IRiakObject o = converter.fromDomain(mutated, ros.getVclock());
 
-        final RiakResponse stored = new DefaultRetrier().attempt(new Command<RiakResponse>() {
-            public RiakResponse execute() throws IOException {
+        final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
+            public RiakResponse call() throws Exception {
                 return client.store(o, generateStoreMeta());
             }
-        }, retries);
+        });
 
         final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
 
@@ -127,8 +128,8 @@ public class StoreObject<T> implements RiakOperation<T> {
         return this;
     }
 
-    public StoreObject<T> retry(int times) {
-        this.retries = times;
+    public StoreObject<T> retrier(final Retrier retrier) {
+        this.retrier = retrier;
         return this;
     }
 

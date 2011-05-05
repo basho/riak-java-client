@@ -18,6 +18,7 @@ import com.basho.riak.client.builders.DomainBucketBuilder;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.MutationProducer;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.KeyUtil;
 
@@ -40,8 +41,8 @@ public class DomainBucket<T> {
     private final Integer r;
     private final Integer rw;
     private final boolean returnBody;
-    private final int retries;
     private final Class<T> clazz;
+    private final Retrier retrier;
 
     /**
      * @param bucket
@@ -58,7 +59,7 @@ public class DomainBucket<T> {
      */
     public DomainBucket(Bucket bucket, ConflictResolver<T> resolver, Converter<T> converter,
             MutationProducer<T> mutationProducer, Integer w, Integer dw, Integer r, Integer rw, boolean returnBody,
-            int retries, Class<T> clazz) {
+            Class<T> clazz, final Retrier retrier) {
         this.bucket = bucket;
         this.resolver = resolver;
         this.converter = converter;
@@ -68,8 +69,8 @@ public class DomainBucket<T> {
         this.r = r;
         this.rw = rw;
         this.returnBody = returnBody;
-        this.retries = retries;
         this.clazz = clazz;
+        this.retrier = retrier;
     }
 
     public T store(T o) throws RiakException {
@@ -80,17 +81,17 @@ public class DomainBucket<T> {
             .withResolver(resolver)
             .w(w)
             .dw(dw)
-            .retry(retries)
+            .retrier(retrier)
             .returnBody(returnBody)
             .execute();
     }
 
     public T fetch(String key) throws RiakException {
-        return bucket.fetch(key, clazz).withConverter(converter).withResolver(resolver).r(r).retry(retries).execute();
+        return bucket.fetch(key, clazz).withConverter(converter).withResolver(resolver).r(r).retrier(retrier).execute();
     }
 
     public T fetch(T o) throws RiakException {
-        return bucket.fetch(o).withConverter(converter).withResolver(resolver).r(r).retry(retries).execute();
+        return bucket.fetch(o).withConverter(converter).withResolver(resolver).r(r).retrier(retrier).execute();
     }
 
     public void delete(T o) throws RiakException {

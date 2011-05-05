@@ -13,13 +13,14 @@
  */
 package com.basho.riak.client.cap;
 
+import java.util.concurrent.Callable;
+
 import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.raw.Command;
 
 /**
  * @author russell
  * 
  */
 public interface Retrier {
-    <T> T attempt(Command<T> command, int times) throws RiakRetryFailedException;
+    <T> T attempt(Callable<T> command) throws RiakRetryFailedException;
 }

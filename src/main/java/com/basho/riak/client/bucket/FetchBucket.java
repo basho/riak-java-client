@@ -13,12 +13,11 @@
  */
 package com.basho.riak.client.bucket;
 
-import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.cap.DefaultRetrier;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.operations.RiakOperation;
-import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.RawClient;
 
 /**
@@ -30,29 +29,39 @@ public class FetchBucket implements RiakOperation<Bucket> {
     private final RawClient client;
     private final String bucket;
 
-    private int retry = 0;
+    private Retrier retrier;
 
     /**
      * @param client
      * @param bucket
      */
-    public FetchBucket(RawClient client, String bucket) {
+    public FetchBucket(RawClient client, String bucket, final Retrier retrier) {
         this.client = client;
         this.bucket = bucket;
+        this.retrier = retrier;
     }
 
+    /**
+     * Execute the fetch operation using the RawClient
+     */
     public Bucket execute() throws RiakRetryFailedException {
-        BucketProperties properties = new DefaultRetrier().attempt(new Command<BucketProperties>() {
-            public BucketProperties execute() throws IOException {
+        BucketProperties properties = retrier.attempt(new Callable<BucketProperties>() {
+            public BucketProperties call() throws Exception {
                 return client.fetchBucket(bucket);
             }
-        }, retry);
+        });
 
-        return new DefaultBucket(bucket, properties, client);
+        return new DefaultBucket(bucket, properties, client, retrier);
     }
 
-    public FetchBucket retry(int i) {
-        this.retry = i;
+    /**
+     * Provide a retrier to use for the fetch operation.
+     *
+     * @param retrier the Retrier to use
+     * @return this
+     */
+    public FetchBucket retrier(final Retrier retrier) {
+        this.retrier = retrier;
         return this;
     }
-}
+ }

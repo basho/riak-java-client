@@ -13,28 +13,58 @@
  */
 package com.basho.riak.client.cap;
 
-import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.raw.Command;
 
 /**
- * @author russell
+ * A basic retrier implementation. Construct it with the number of times a
+ * {@link Callable} should be attempted. When <code>attempt</code> is called
+ * with a {@link Callable} then {@link Callable#call()} is run
+ * <code>attempts</code> times before throwing a
+ * {@link RiakRetryFailedException}. It is important to note that there is no
+ * backoff between attempts.
  * 
+ * @author russell
  */
 public class DefaultRetrier implements Retrier {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.basho.riak.client.spi.Retrier#attempt(com.basho.riak.client.spi.Command
-     * )
+    private final int attempts;
+
+    /**
+     * @param attempts
+     *            how many times the retrier should attempt the call before
+     *            throwing a {@link RiakRetryFailedException}
      */
-    public <T> T attempt(Command<T> command, int times) throws RiakRetryFailedException {
+    public DefaultRetrier(int attempts) {
+        this.attempts = attempts;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.cap.Retrier#attempt(java.util.concurrent.Callable)
+     */
+    public <T> T attempt(Callable<T> command) throws RiakRetryFailedException {
+        return attempt(command, attempts);
+    }
+
+    /**
+     * Calls {@link Callable#call()} <code>times</code> before giving up and
+     * throwing a {@link RiakRetryFailedException} There is no back off.
+     *
+     * @param <T>
+     *            the {@link Callable}'s return type.
+     * @param command
+     *            the {@link Callable} to attempt
+     * @param times
+     *            how many times to try before we throw
+     * @return the result of command
+     * @throws RiakRetryFailedException
+     *             if the Callable throws an exception <code>times</code> times
+     */
+    public static <T> T attempt(final Callable<T> command, int times) throws RiakRetryFailedException {
         try {
-            return command.execute();
-        } catch (IOException e) {
+            return command.call();
+        } catch (Exception e) {
             if (times == 0) {
                 throw new RiakRetryFailedException(e);
             } else {
@@ -43,4 +73,17 @@ public class DefaultRetrier implements Retrier {
         }
     }
 
+    /**
+     * Static factory method to create a default retrier
+     *
+     * @param attempts
+     *            how many times the {@link DefaultRetrier} will attempt to call
+     *            a {@link Callable} supplied to
+     *            {@link Retrier#attempt(Callable)}
+     * @return a {@link DefaultRetrier} configured for <code>attempts</code>
+     *         retries
+     */
+    public static Retrier attempts(int attempts) {
+        return new DefaultRetrier(attempts);
+    }
 }

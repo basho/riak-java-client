@@ -13,11 +13,10 @@
  */
 package com.basho.riak.client.operations;
 
-import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.cap.DefaultRetrier;
-import com.basho.riak.client.raw.Command;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.raw.RawClient;
 
 /**
@@ -30,18 +29,20 @@ public class DeleteObject implements RiakOperation<Void> {
     private final String bucket;
     private final String key;
 
+    private Retrier retrier;
+
     private Integer rw;
-    private int retries = 0;
 
     /**
      * @param client
      * @param bucket
      * @param key
      */
-    public DeleteObject(RawClient client, String bucket, String key) {
+    public DeleteObject(RawClient client, String bucket, String key, final Retrier retrier) {
         this.client = client;
         this.bucket = bucket;
         this.key = key;
+        this.retrier = retrier;
     }
 
     /*
@@ -50,8 +51,8 @@ public class DeleteObject implements RiakOperation<Void> {
      * @see com.basho.riak.client.RiakOperation#execute()
      */
     public Void execute() throws RiakRetryFailedException {
-        Command<Void> command = new Command<Void>() {
-            public Void execute() throws IOException {
+        Callable<Void> command = new Callable<Void>() {
+            public Void call() throws Exception {
                 if (rw == null) {
                     client.delete(bucket, key);
                 } else {
@@ -61,7 +62,7 @@ public class DeleteObject implements RiakOperation<Void> {
             }
         };
 
-        new DefaultRetrier().attempt(command, retries);
+       retrier.attempt(command);
         return null;
     }
 
@@ -70,9 +71,8 @@ public class DeleteObject implements RiakOperation<Void> {
         return this;
     }
 
-    public DeleteObject retry(int times) {
-        this.retries = times;
+    public DeleteObject retrier(final Retrier retrier) {
+        this.retrier = retrier;
         return this;
     }
-
 }

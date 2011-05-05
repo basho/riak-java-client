@@ -13,17 +13,15 @@
  */
 package com.basho.riak.client.bucket;
 
-import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.bucket.DefaultBucketProperties.Builder;
-import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
-import com.basho.riak.client.raw.Command;
 import com.basho.riak.client.raw.RawClient;
 
 /**
@@ -33,19 +31,15 @@ import com.basho.riak.client.raw.RawClient;
 public class WriteBucket implements RiakOperation<Bucket> {
 
     private final RawClient client;
+    private Retrier retrier;
     private String name;
 
-    private Builder builder = new Builder();
-    private int retries = 0;
+    private DefaultBucketProperties.Builder builder = new DefaultBucketProperties.Builder();
 
-    public WriteBucket(final RawClient client, Bucket b) {
-        this.name = b.getName();
-        this.client = client;
-    }
-
-    public WriteBucket(final RawClient client, String name) {
+    public WriteBucket(final RawClient client, String name, final Retrier retrier) {
         this.name = name;
         this.client = client;
+        this.retrier = retrier;
     }
 
     /*
@@ -56,20 +50,20 @@ public class WriteBucket implements RiakOperation<Bucket> {
     public Bucket execute() throws RiakRetryFailedException {
         final BucketProperties propsToStore = builder.build();
 
-        new DefaultRetrier().attempt(new Command<Void>() {
-            public Void execute() throws IOException {
+        retrier.attempt(new Callable<Void>() {
+            public Void call() throws Exception {
                 client.updateBucket(name, propsToStore);
                 return null;
             }
-        }, retries);
+        });
 
-        BucketProperties properties = new DefaultRetrier().attempt(new Command<BucketProperties>() {
-            public BucketProperties execute() throws IOException {
+        BucketProperties properties = retrier.attempt(new Callable<BucketProperties>() {
+            public BucketProperties call() throws Exception {
                 return client.fetchBucket(name);
             }
-        }, retries);
+        });
 
-        return new DefaultBucket(name, properties, client);
+        return new DefaultBucket(name, properties, client, retrier);
     }
 
     public WriteBucket allowSiblings(boolean allowSiblings) {
@@ -182,8 +176,15 @@ public class WriteBucket implements RiakOperation<Bucket> {
         return this;
     }
 
-    public WriteBucket retry(int n) {
-        this.retries = n;
+    /**
+     * Specify the retrier to use for this operation.
+     * If non-provided will use the client configured default.
+     *
+     * @param retrier a Retrier to use for the execute operation
+     * @return this
+     */
+    public WriteBucket retrier(final Retrier retrier) {
+        this.retrier = retrier;
         return this;
     }
 
