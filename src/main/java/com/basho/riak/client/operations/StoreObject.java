@@ -33,8 +33,7 @@ import com.basho.riak.client.raw.StoreMeta;
 /**
  * Stores a given object into riak. Fetches first.
  * 
- * @TODO figure out if you *should* fetch first, and if you should, what about
- *       R?
+ * @TODO Should fetch first be optional? What about the vclock if not?
  * @author russell
  * 
  */
@@ -42,10 +41,9 @@ public class StoreObject<T> implements RiakOperation<T> {
 
     private final RawClient client;
     private final String bucket;
+    private final String key;
 
     private Retrier retrier;
-
-    // TODO populate
     private Integer r;
     private Integer w;
     private Integer dw;
@@ -55,8 +53,14 @@ public class StoreObject<T> implements RiakOperation<T> {
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
 
-    private final String key;
-
+    /**
+     * Create a new StoreObject operation for the object in <code>bucket</code> at <code>key</code>.
+     *
+     * @param client the RawClient to use
+     * @param bucket
+     * @param key
+     * @param retrier the Retrier to use for this operation
+     */
     public StoreObject(final RawClient client, String bucket, String key, final Retrier retrier) {
         this.client = client;
         this.bucket = bucket;
@@ -111,6 +115,17 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     private StoreMeta generateStoreMeta() {
         return new StoreMeta(w, dw, returnBody);
+    }
+
+    /**
+     * A store performs a fetch first (to get a vclock and resolve any conflicts)
+     *
+     * @param r the read quorum for the pre-store fetch
+     * @return this
+     */
+    public StoreObject<T> r(Integer r) {
+        this.r = r;
+        return this;
     }
 
     public StoreObject<T> w(Integer w) {

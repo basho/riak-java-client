@@ -24,7 +24,7 @@ import com.basho.riak.client.convert.KeyUtil;
 
 /**
  * A domain bucket is a wrapper around a bucket that is strongly typed uses a
- * preset resolver, mutation producer, converter, r, w, dw, rw, retries,
+ * preset resolver, mutation producer, converter, r, w, dw, rw, retrier,
  * returnBody etc
  * 
  * @author russell
@@ -79,6 +79,7 @@ public class DomainBucket<T> {
             .withConverter(converter)
             .withMutator(mutation)
             .withResolver(resolver)
+            .r(r)
             .w(w)
             .dw(dw)
             .retrier(retrier)
