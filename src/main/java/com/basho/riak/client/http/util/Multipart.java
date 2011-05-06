@@ -89,7 +89,7 @@ public class Multipart {
         }
 
         String boundary = "\r\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
-        byte[] boundaryBytes = CharsetUtils.utf8StringToBytes(boundary);
+        byte[] boundaryBytes = CharsetUtils.asBytes(boundary, CharsetUtils.ISO_8859_1);
         int boundarySize = boundary.length();
         if ("\r\n--".equals(boundary))
             return null;
