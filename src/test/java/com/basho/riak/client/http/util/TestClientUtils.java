@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.util;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -278,7 +279,7 @@ public class TestClientUtils {
         headers.put("x-riak-vclock", "vclock");
         String body = "\r\n--boundary\r\n" + "\r\n" + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, utf8StringToBytes(body));
         assertEquals(1, objects.size());
         assertSame(mockRiakClient, objects.get(0).getRiakClient());
         assertEquals("b", objects.get(0).getBucket());
@@ -293,7 +294,7 @@ public class TestClientUtils {
                       + "Link: </riak/b/l>; riaktag=t\r\n" + "ETag: vtag\r\n" + "X-Riak-Meta-Test: value\r\n" + "\r\n"
                       + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, utf8StringToBytes(body));
 
         assertEquals(1, objects.get(0).numLinks());
         assertTrue(objects.get(0).hasLink(new RiakLink("b", "l", "t")));
@@ -313,7 +314,7 @@ public class TestClientUtils {
         headers.put("x-riak-vclock", "vclock");
         String body = "\r\n--boundary\r\n" + "\r\n" + "foo\r\n" + "--boundary--";
 
-        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, body.getBytes());
+        List<RiakObject> objects = ClientUtils.parseMultipart(mockRiakClient, "b", "k", headers, utf8StringToBytes(body));
         assertEquals("foo", objects.get(0).getValue());
     }
 

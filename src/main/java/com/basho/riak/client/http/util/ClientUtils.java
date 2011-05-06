@@ -44,6 +44,7 @@ import com.basho.riak.client.http.RiakConfig;
 import com.basho.riak.client.http.RiakLink;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.response.RiakExceptionHandler;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * Utility functions.
@@ -196,7 +197,7 @@ public class ClientUtils {
     }
 
     public static String encodeClientId(String clientId) {
-        return encodeClientId(clientId.getBytes());
+        return encodeClientId(CharsetUtils.asBytes(clientId, CharsetUtils.ISO_8859_1));
     }
 
     /**

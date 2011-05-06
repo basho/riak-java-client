@@ -47,6 +47,7 @@ import com.basho.riak.client.http.response.StreamHandler;
 import com.basho.riak.client.http.util.ClientHelper;
 import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.util.CharsetUtils;
 
 public class TestClientHelper {
 
@@ -74,7 +75,7 @@ public class TestClientHelper {
     }
     
     @Test public void client_helper_uses_passed_in_client_id() throws UnsupportedEncodingException {
-        assertEquals(clientId, new String(impl.getClientId()));
+        assertEquals(clientId, CharsetUtils.asUTF8String(impl.getClientId()));
     }
 
     @Test public void client_helper_generates_client_id_if_null() {

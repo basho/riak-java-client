@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.cap;
 
+import com.basho.riak.client.util.CharsetUtils;
+
 /**
  * @author russell
  * 
@@ -33,6 +35,6 @@ public class BasicVClock implements VClock {
     }
 
     public String asString() {
-        return new String(value);
+        return CharsetUtils.asUTF8String(value);
     }
 }

@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.raw.pbc;
 
+import static com.basho.riak.client.util.CharsetUtils.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +42,7 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.LinkWalkStep.Accumulate;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
@@ -77,7 +79,7 @@ public class ConversionUtil {
     static IRiakObject convert(com.basho.riak.pbc.RiakObject o) {
         RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(o.getBucket(), o.getKey());
 
-        builder.withValue(nullSafeToStringUtf8(o.getValue()));
+        builder.withValue(nullSafeToBytes(o.getValue()));
         builder.withVClock(nullSafeToBytes(o.getVclock()));
         builder.withVtag(o.getVtag());
 
@@ -147,7 +149,7 @@ public class ConversionUtil {
         final VClock vc = riakObject.getVClock();
         ByteString bucketName = nullSafeToByteString(riakObject.getBucket());
         ByteString key = nullSafeToByteString(riakObject.getKey());
-        ByteString content = nullSafeToByteString(riakObject.getValue());
+        ByteString content = ByteString.copyFrom(riakObject.getValue());
 
         ByteString vclock = null;
         if (vc != null) {
@@ -340,7 +342,8 @@ public class ConversionUtil {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" }) private static IRiakObject mapToRiakObject(Map data) {
         RiakObjectBuilder b = RiakObjectBuilder.newBuilder((String) data.get("bucket"), (String) data.get("key"));
-        b.withVClock(((String) data.get("vclock")).getBytes());
+        String vclock = (String) data.get("vclock");
+        b.withVClock(CharsetUtils.utf8StringToBytes(vclock));
 
         final List values = (List) data.get("values");
         // TODO figure out what to do about multiple values here,
@@ -348,10 +351,11 @@ public class ConversionUtil {
         // does)
         if (values.size() != 0) {
             final Map value = (Map) values.get(0);
-
-            b.withValue((String) value.get("data"));
             final Map meta = (Map) value.get("metadata");
-            b.withContentType((String) meta.get("content-type"));
+            final String contentType = (String) meta.get("content-type");
+
+            b.withValue(asBytes((String) value.get("data"), getCharset(contentType)));
+            b.withContentType(contentType);
             b.withVtag((String) meta.get("X-Riak-VTag"));
 
             try {

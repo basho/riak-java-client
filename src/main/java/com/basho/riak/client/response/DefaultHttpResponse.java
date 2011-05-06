@@ -13,6 +13,9 @@
  */
 package com.basho.riak.client.response;
 
+import static com.basho.riak.client.util.CharsetUtils.asString;
+import static com.basho.riak.client.util.CharsetUtils.getCharset;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +91,7 @@ public class DefaultHttpResponse implements HttpResponse {
        if (body == null) {
           return null;
        }
-       return new String(body);
+       return asString(body, getCharset(headers));
     }
 
     public InputStream getStream() {

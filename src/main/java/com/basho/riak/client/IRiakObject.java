@@ -35,7 +35,9 @@ public interface IRiakObject extends Iterable<RiakLink> {
 
     String getBucket();
 
-    String getValue();
+    byte[] getValue();
+
+    String getValueAsString();
 
     VClock getVClock();
 
@@ -69,7 +71,7 @@ public interface IRiakObject extends Iterable<RiakLink> {
 
     // Mutate
 
-    void setValue(String value);
+    void setValue(byte[] value);
 
     void setContentType(String contentType);
 

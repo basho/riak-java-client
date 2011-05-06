@@ -96,6 +96,6 @@ public class OneTokenInputStream extends InputStream {
                 offset += bytesRead;
             }
         }
-        buf = new StringBuilder(new String(headStart));
+        buf = new StringBuilder(CharsetUtils.asString(headStart, CharsetUtils.ISO_8859_1));
     }
 }

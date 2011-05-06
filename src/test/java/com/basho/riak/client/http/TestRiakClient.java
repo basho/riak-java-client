@@ -42,6 +42,7 @@ import com.basho.riak.client.http.response.StreamHandler;
 import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.ClientHelper;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.util.CharsetUtils;
 
 public class TestRiakClient {
 
@@ -274,7 +275,7 @@ public class TestRiakClient {
     
         when(mockHelper.walk(anyString(), anyString(), anyString(), any(RequestMeta.class))).thenReturn(mockHttpResponse);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(CharsetUtils.utf8StringToBytes(BODY));
         when(mockHttpResponse.getBodyAsString()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         

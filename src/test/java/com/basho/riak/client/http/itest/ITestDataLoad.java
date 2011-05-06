@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_URL }.
@@ -60,10 +61,10 @@ public class ITestDataLoad {
                     Random rnd = new Random();
                     for (int i = 0; i < NUM_OBJECTS / NUM_THREADS; i++) {
                         String key = "data-load-" + idx.getAndIncrement();
-                        String value = new String(data[rnd.nextInt(NUM_VALUES)]);
+                        String value = CharsetUtils.asUTF8String(data[rnd.nextInt(NUM_VALUES)]);
                         RiakObject o = riak.fetch(BUCKET, key).getObject();
                         if (o == null) {
-                            o = new RiakObject(riak, BUCKET, key, value.getBytes());
+                            o = new RiakObject(riak, BUCKET, key, CharsetUtils.utf8StringToBytes(value));
                         } else {
                             o.setValue(value);
                         }

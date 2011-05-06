@@ -37,6 +37,7 @@ import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.util.Constants;
@@ -335,7 +336,7 @@ public class PBClientAdapter implements RawClient {
      */
     public byte[] generateAndSetClientId() throws IOException {
         client.prepareClientID();
-        return client.getClientID().getBytes();
+        return CharsetUtils.utf8StringToBytes(client.getClientID());
     }
 
     /*
@@ -359,7 +360,7 @@ public class PBClientAdapter implements RawClient {
         final String clientId = client.getClientID();
 
         if (clientId != null) {
-            return clientId.getBytes();
+            return CharsetUtils.utf8StringToBytes(clientId);
         } else {
             throw new IOException("null clientId returned by client");
         }

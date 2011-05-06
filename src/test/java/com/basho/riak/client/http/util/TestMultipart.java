@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.util;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import org.junit.Test;
 
 import com.basho.riak.client.http.util.Constants;
@@ -32,7 +33,7 @@ public class TestMultipart {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("content-type", "text/plain");
         String body = "abc";
-        assertNull(Multipart.parse(headers, body.getBytes()));
+        assertNull(Multipart.parse(headers, utf8StringToBytes(body)));
     }
 
     @Test public void null_result_if_not_content_type_missing_boundary_parameter() {
@@ -40,7 +41,7 @@ public class TestMultipart {
         headers.put("content-type", "multipart/mixed");
         String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "\r\n" + "subpart\r\n" + "--boundary--";
 
-        assertNull(Multipart.parse(headers, body.getBytes()));
+        assertNull(Multipart.parse(headers, utf8StringToBytes(body)));
     }
 
     @Test public void parses_multipart_with_1_empty_part() {
@@ -48,7 +49,7 @@ public class TestMultipart {
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         String body = "\r\n--boundary\r\n" + "\r\n" + "--boundary--";
 
-        List<Multipart.Part> parts = Multipart.parse(headers, body.getBytes());
+        List<Multipart.Part> parts = Multipart.parse(headers, utf8StringToBytes(body));
         assertEquals(1, parts.size());
         assertEquals(0, parts.get(0).getHeaders().size());
         assertEquals("", parts.get(0).getBodyAsString());
@@ -59,7 +60,7 @@ public class TestMultipart {
         headers.put("content-type", "multipart/mixed; boundary=boundary");
         String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "\r\n" + "subpart\r\n" + "--boundary--";
 
-        List<Multipart.Part> parts = Multipart.parse(headers, body.getBytes());
+        List<Multipart.Part> parts = Multipart.parse(headers, utf8StringToBytes(body));
         assertEquals(1, parts.size());
         assertEquals(1, parts.get(0).getHeaders().size());
         assertEquals("text/plain", parts.get(0).getHeaders().get(Constants.HDR_CONTENT_TYPE));
@@ -99,7 +100,7 @@ public class TestMultipart {
         String body = "\r\n--boundary\r\n" + "Content-Type: text/plain\r\n" + "\r\n" + "part1\r\n" + "--boundary\r\n" + "\r\n"
                       + "part2\r\n" + "--boundary--";
 
-        List<Multipart.Part> parts = Multipart.parse(headers, body.getBytes());
+        List<Multipart.Part> parts = Multipart.parse(headers, utf8StringToBytes(body));
         assertEquals(2, parts.size());
         assertEquals("part1", parts.get(0).getBodyAsString());
         assertEquals("part2", parts.get(1).getBodyAsString());
@@ -113,7 +114,7 @@ public class TestMultipart {
                       + "subpart1\r\n" + "--5hgaasMxj1NIcoxJBpWd4j9IuaW\r\n" + "Content-Type: application/octet-stream\r\n"
                       + "\r\n" + "subpart2\r\n" + "--5hgaasMxj1NIcoxJBpWd4j9IuaW--\r\n" + "\r\n" + "--boundary--\r\n";
 
-        List<Multipart.Part> parts = Multipart.parse(headers, body.getBytes());
+        List<Multipart.Part> parts = Multipart.parse(headers, utf8StringToBytes(body));
         assertEquals(1, parts.size());
 
         List<Multipart.Part> subparts = Multipart.parse(parts.get(0).getHeaders(), parts.get(0).getBody());
@@ -130,7 +131,7 @@ public class TestMultipart {
                       "Location: /riak/test/key\r\n" + "Content-Type: application/octet-stream\r\n" + "\r\n" + PART_BODY +
                       "\r\n--boundary--";
 
-        List<Multipart.Part> parts = Multipart.parse(headers, body.getBytes());
+        List<Multipart.Part> parts = Multipart.parse(headers, utf8StringToBytes(body));
         assertEquals(3, parts.get(0).getHeaders().size());
         assertEquals("a85hYGBgzGDKBVIsLOLmazKYEhnzWBkmzFt4hC8LAA==",
                      parts.get(0).getHeaders().get(Constants.HDR_VCLOCK));
@@ -148,7 +149,7 @@ public class TestMultipart {
                                                                                   // \x"
         String body = "\r\n--\\x\"\r\n" + "\r\n" + "part\r\n" + "--\\x\"--";
 
-        List<Multipart.Part> parts = Multipart.parse(headers, body.getBytes());
+        List<Multipart.Part> parts = Multipart.parse(headers, utf8StringToBytes(body));
         assertEquals(1, parts.size());
         assertEquals(0, parts.get(0).getHeaders().size());
         assertEquals("part", parts.get(0).getBodyAsString());

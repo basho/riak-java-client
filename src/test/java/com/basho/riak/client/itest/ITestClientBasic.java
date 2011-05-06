@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * @author russell
@@ -86,7 +87,7 @@ public abstract class ITestClientBasic {
     }
 
     @Test public void clientIds() throws Exception {
-        final byte[] clientId = "abcd".getBytes("UTF-8");
+        final byte[] clientId = CharsetUtils.utf8StringToBytes("abcd");
 
         client.setClientId(clientId.clone());
         assertArrayEquals(clientId, client.getClientId());

@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RPB.RpbContent;
 
 
@@ -41,7 +42,7 @@ public class TestRiakObject {
     }
     
     @Test public void constuctFromStringsAndBytes() {
-        final RiakObject riakObject = new RiakObject(BUCKET, KEY, CONTENT.getBytes());
+        final RiakObject riakObject = new RiakObject(BUCKET, KEY, CharsetUtils.utf8StringToBytes(CONTENT));
         assertBasicValues(riakObject);
     }
     

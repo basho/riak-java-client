@@ -14,6 +14,7 @@
 package com.basho.riak.client.convert;
 
 import static com.basho.riak.client.convert.KeyUtil.getKey;
+import static com.basho.riak.client.util.CharsetUtils.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -24,6 +25,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.http.util.Constants;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -70,8 +72,8 @@ public class JSONConverter<T> implements Converter<T> {
 
             final StringWriter sw = new StringWriter();
             objectMapper.writeValue(sw, domainObject);
-
-            return RiakObjectBuilder.newBuilder(bucket, key).withValue(sw.toString()).withVClock(vclock).build();
+            return RiakObjectBuilder.newBuilder(bucket, key).withValue(utf8StringToBytes(sw.toString())).withVClock(vclock).
+                withContentType(Constants.CTYPE_JSON_UTF8).build();
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);
         } catch (IOException e) {
@@ -92,7 +94,7 @@ public class JSONConverter<T> implements Converter<T> {
             return null;
         }
 
-        String json = riakObject.getValue();
+        String json = asString(riakObject.getValue(), getCharset(riakObject.getContentType()));
 
         try {
             T domainObject = objectMapper.readValue(json, clazz);
@@ -103,5 +105,4 @@ public class JSONConverter<T> implements Converter<T> {
             throw new ConversionException(e);
         }
     }
-
 }

@@ -27,6 +27,20 @@ public interface Bucket extends BucketProperties {
 
     String getName();
 
+    /**
+     * Convenience method to create a RiakObject with a payload of application/octect-stream
+     * @param key
+     * @param value
+     * @return
+     */
+    StoreObject<IRiakObject> store(String key, byte[] value);
+
+    /**
+     * Convenience methods will assume payload is taxt/plain:charset=utf-8
+     * @param key
+     * @param value
+     * @return
+     */
     StoreObject<IRiakObject> store(String key, String value);
 
     <T> StoreObject<T> store(T o);

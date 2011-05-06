@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.util;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -69,11 +70,7 @@ public class ClientHelper {
      * See {@link RiakClient#getClientId()}
      */
     public byte[] getClientId() {
-        try {
-            return Base64.decodeBase64(clientId.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 support required in JVM");
-        }
+        return Base64.decodeBase64(utf8StringToBytes(clientId));
     }
 
     public void setClientId(String clientId) {
@@ -99,7 +96,7 @@ public class ClientHelper {
         meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
         PutMethod put = new PutMethod(ClientUtils.makeURI(config, bucket));
-        put.setRequestEntity(new ByteArrayRequestEntity(schema.toString().getBytes(), Constants.CTYPE_JSON));
+        put.setRequestEntity(new ByteArrayRequestEntity(utf8StringToBytes(schema.toString()), Constants.CTYPE_JSON));
 
         return executeMethod(bucket, null, put, meta);
     }

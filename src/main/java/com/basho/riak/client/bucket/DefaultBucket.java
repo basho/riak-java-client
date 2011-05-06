@@ -31,12 +31,14 @@ import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
 import com.basho.riak.client.convert.NoKeySpecifedException;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * @author russell
@@ -234,15 +236,40 @@ public class DefaultBucket implements Bucket {
      * @see com.basho.riak.client.bucket.Bucket#store(java.lang.String,
      * java.lang.String)
      */
-    public StoreObject<IRiakObject> store(final String key, final String value) {
-        final Bucket b = this;
+    public StoreObject<IRiakObject> store(final String key, final byte[] value) {
 
         return new StoreObject<IRiakObject>(client, name, key, retrier).withMutator(new Mutation<IRiakObject>() {
             public IRiakObject apply(IRiakObject original) {
                 if (original == null) {
-                    return RiakObjectBuilder.newBuilder(b.getName(), key).withValue(value).build();
+                    return RiakObjectBuilder.newBuilder(name, key).withValue(value).withContentType(Constants.CTYPE_OCTET_STREAM).build();
                 } else {
                     original.setValue(value);
+                    return original;
+                }
+            }
+        }).withResolver(new DefaultResolver<IRiakObject>()).withConverter(new Converter<IRiakObject>() {
+
+            public IRiakObject toDomain(IRiakObject riakObject) {
+                return riakObject;
+            }
+
+            public IRiakObject fromDomain(IRiakObject domainObject, VClock vclock) throws ConversionException {
+                return domainObject;
+            }
+        });
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.Bucket#store(java.lang.String, java.lang.String)
+     */
+    public StoreObject<IRiakObject> store(final String key, final String value) {
+        return new StoreObject<IRiakObject>(client, name, key, retrier).withMutator(new Mutation<IRiakObject>() {
+            public IRiakObject apply(IRiakObject original) {
+                if (original == null) {
+                    return RiakObjectBuilder.newBuilder(name, key).withValue(value).withContentType(Constants.CTYPE_TEXT_UTF8).build();
+                } else {
+                    original.setValue(CharsetUtils.utf8StringToBytes(value));
+                    original.setContentType(Constants.CTYPE_TEXT_UTF8);
                     return original;
                 }
             }
@@ -360,5 +387,4 @@ public class DefaultBucket implements Bucket {
     public DeleteObject delete(String key) {
         return new DeleteObject(client, name, key, retrier);
     }
-
 }

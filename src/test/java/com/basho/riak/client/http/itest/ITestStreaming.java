@@ -33,6 +33,7 @@ import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_URL }.
@@ -47,7 +48,7 @@ public class ITestStreaming {
         
         // Add objects
         for (int i = 0; i < NUM_KEYS; i++) {
-            assertSuccess(c.store(new RiakObject(BUCKET, "key" + Integer.toString(i), "v".getBytes()),
+            assertSuccess(c.store(new RiakObject(BUCKET, "key" + Integer.toString(i), CharsetUtils.utf8StringToBytes("v")),
                   WRITE_3_REPLICAS()));
         }
 

@@ -70,7 +70,7 @@ public class RiakBucket {
      * @return
      * @throws RiakException
      */
-    public IRiakObject store(String key, String value) throws RiakException {
+    public IRiakObject store(String key, byte[] value) throws RiakException {
         return delegate.store(RiakObjectBuilder.newBuilder(bucket.getName(), key).withValue(value).build());
     }
     /**

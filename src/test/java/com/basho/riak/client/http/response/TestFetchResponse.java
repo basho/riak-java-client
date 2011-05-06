@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.response;
 
+import  static com.basho.riak.client.util.CharsetUtils.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -101,7 +102,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SINGLE_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(SINGLE_BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(utf8StringToBytes(SINGLE_BODY));
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         FetchResponse impl = new FetchResponse(mockHttpResponse, mockRiakClient);
@@ -123,7 +124,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(utf8StringToBytes(SIBLING_BODY));
         when(mockHttpResponse.getBodyAsString()).thenReturn(SIBLING_BODY);
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
@@ -163,7 +164,7 @@ public class TestFetchResponse {
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
         when(mockHttpResponse.getKey()).thenReturn(KEY);
         when(mockHttpResponse.getHttpHeaders()).thenReturn(SIBLING_HEADERS);
-        when(mockHttpResponse.getBody()).thenReturn(SIBLING_BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(utf8StringToBytes(SIBLING_BODY));
         when(mockHttpResponse.getBodyAsString()).thenReturn(SIBLING_BODY);
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         
@@ -192,7 +193,7 @@ public class TestFetchResponse {
     }
 
     @Test public void returns_streamed_collection_on_streaming_300_response() throws IOException {
-        final ByteArrayInputStream is = new ByteArrayInputStream(SIBLING_BODY.getBytes());
+        final ByteArrayInputStream is = new ByteArrayInputStream(utf8StringToBytes(SIBLING_BODY));
 
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);
@@ -240,7 +241,7 @@ public class TestFetchResponse {
     }
 
     @Test public void does_not_close_stream_on_streaming_300_response() throws IOException {
-        final ByteArrayInputStream is = new ByteArrayInputStream(SIBLING_BODY.getBytes());
+        final ByteArrayInputStream is = new ByteArrayInputStream(utf8StringToBytes(SIBLING_BODY));
 
         when(mockHttpResponse.getStatusCode()).thenReturn(300);
         when(mockHttpResponse.getBucket()).thenReturn(BUCKET);

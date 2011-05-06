@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.response;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -32,7 +33,7 @@ public class TestHttpResponseDecorator {
         
         final String BUCKET = "bucket";
         final String KEY = "key";
-        final byte[] BODY = "body".getBytes();
+        final byte[] BODY = utf8StringToBytes("body");
         final int STATUS_CODE = 1;
         final Map<String, String> HTTP_HEADERS = new HashMap<String, String>();
         final HttpMethod HTTP_METHOD = mock(HttpMethod.class);

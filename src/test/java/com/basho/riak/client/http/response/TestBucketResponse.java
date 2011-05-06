@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.util.CharsetUtils;
 
 public class TestBucketResponse {
 
@@ -47,9 +48,9 @@ public class TestBucketResponse {
             "\"young_vclock\":20}," +
             "\"keys\":" +
                 "[\"j\",\"k\",\"l\"]}";
-    final byte[] BODY = TEXT_BODY.getBytes();
+    final byte[] BODY = CharsetUtils.utf8StringToBytes(TEXT_BODY);
     final InputStream STREAM = new ByteArrayInputStream( 
-        ("{\"props\":" +
+        (CharsetUtils.utf8StringToBytes("{\"props\":" +
             "{\"name\":\"b\"," +
             "\"allow_mult\":false," +
             "\"big_vclock\":50," +
@@ -64,7 +65,7 @@ public class TestBucketResponse {
             "\"small_vclock\":10," +
             "\"young_vclock\":20}}" +
         "{\"keys\":[\"j\"]}{\"keys\":[]}{\"keys\":[]}{\"keys\":[\"k\",\"l\"]}")
-        .getBytes());
+        ));
 
     @Test public void doesnt_throw_on_null_impl() throws JSONException, IOException {
         new BucketResponse(null);
@@ -129,10 +130,10 @@ public class TestBucketResponse {
     }
     
     @Test public void returns_empty_keys_list_if_keys_element_not_in_response() throws JSONException, IOException {
-        final byte[] body = "{\"props\": {\"name\":\"b\"}}".getBytes();
+        final byte[] body = CharsetUtils.utf8StringToBytes("{\"props\": {\"name\":\"b\"}}");
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
         when(mockHttpResponse.getBody()).thenReturn(body);
-        when(mockHttpResponse.getBodyAsString()).thenReturn(new String(body));
+        when(mockHttpResponse.getBodyAsString()).thenReturn(CharsetUtils.asUTF8String(body));
         when(mockHttpResponse.isSuccess()).thenReturn(true);
         
         BucketResponse impl = new BucketResponse(mockHttpResponse);

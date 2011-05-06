@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.util;
 
+import static com.basho.riak.client.util.CharsetUtils.*;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
@@ -33,7 +34,7 @@ public class TestBranchableInputStream {
     BranchableInputStream impl;
     
     @Test public void behaves_as_standard_input_stream_for_short_inputs() throws IOException {
-        byte[] bytes = "short buffer".getBytes();
+        byte[] bytes = utf8StringToBytes("short buffer");
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         impl = new BranchableInputStream(is);
@@ -88,7 +89,7 @@ public class TestBranchableInputStream {
     }
 
     @Test public void read_position_updates_when_reading() throws IOException {
-        byte[] bytes = "012345678901234567890123456789".getBytes();
+        byte[] bytes = utf8StringToBytes("012345678901234567890123456789");
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
         impl = new BranchableInputStream(is);
         
@@ -99,7 +100,7 @@ public class TestBranchableInputStream {
     }
 
     @Test public void primary_and_branch_positions_updates_when_reading_from_branch() throws IOException {
-        byte[] bytes = "012345678901234567890123456789".getBytes();
+        byte[] bytes = utf8StringToBytes("012345678901234567890123456789");
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
         InputStreamBranch[] branches = new InputStreamBranch[5];
         impl = new BranchableInputStream(is);

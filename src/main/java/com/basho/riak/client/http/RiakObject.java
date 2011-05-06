@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.http;
 
+import static com.basho.riak.client.util.CharsetUtils.*;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,6 +46,8 @@ import com.basho.riak.client.http.util.Constants;
  * A Riak object.
  */
 public class RiakObject {
+
+    private static final byte[] EMPTY = new byte[] {};
 
     private RiakClient riak;
     private String bucket;
@@ -254,7 +258,7 @@ public class RiakObject {
      * @see com.basho.riak.client.HttpRiakObject#getValue()
      */
     public String getValue() {
-        return (value == null ? null : new String(value));
+        return (value == null ? null : asString(value, getCharset(contentType)));
     }
 
     /* (non-Javadoc)
@@ -269,7 +273,7 @@ public class RiakObject {
      */
     public void setValue(String value) {
         if (value != null) {
-            this.value = value.getBytes();
+            this.value = asBytes(value, getCharset(contentType));
         } else {
             this.value = null;
         }
@@ -692,7 +696,7 @@ public class RiakObject {
             } else if (value != null) {
                 entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(value, contentType));
             } else {
-                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity("".getBytes(), contentType));
+                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(EMPTY, contentType));
             }
         }
     }

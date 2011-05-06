@@ -68,7 +68,7 @@ public class DefaultRetrier implements Retrier {
             if (times == 0) {
                 throw new RiakRetryFailedException(e);
             } else {
-                return attempt(command, times--);
+                return attempt(command, --times);
             }
         }
     }

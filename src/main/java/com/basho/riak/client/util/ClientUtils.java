@@ -205,7 +205,7 @@ public class ClientUtils {
     }
 
     public static String encodeClientId(String clientId) {
-        return encodeClientId(clientId.getBytes());
+        return encodeClientId(CharsetUtils.utf8StringToBytes(clientId));
     }
 
     /**

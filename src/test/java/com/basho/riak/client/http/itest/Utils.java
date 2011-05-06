@@ -19,6 +19,7 @@ import org.apache.commons.httpclient.URIException;
 
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.util.CharsetUtils;
 
 public class Utils {
 
@@ -36,7 +37,7 @@ public class Utils {
             msg.append(" -- ")
                 .append(response.getHttpMethod().getStatusLine()).append("; ")
                 .append("Response headers: ").append(response.getHttpHeaders().toString()).append("; ")
-                .append("Response body: ").append(new String(response.getBody()));
+                .append("Response body: ").append(CharsetUtils.asUTF8String(response.getBody()));
             fail(msg.toString());
         }
     }

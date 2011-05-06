@@ -27,9 +27,11 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
@@ -68,7 +70,7 @@ public class ITestDataLoad {
         Random rnd = new Random();
         for (int i = 0; i < NUM_OBJECTS; i++) {
             String key = "data-load-" + idx;
-            String value = new String(data[rnd.nextInt(NUM_VALUES)]);
+            String value = CharsetUtils.asString(data[rnd.nextInt(NUM_VALUES)], CharsetUtils.ISO_8859_1);;
             RiakObject o = new RiakObject(bucket, key, value);
             objects[i] = o;
             idx++;
@@ -113,7 +115,7 @@ public class ITestDataLoad {
                         Random rnd = new Random();
                         for (int i = 0; i < NUM_OBJECTS / NUM_THREADS; i++) {
                             String key = "data-load-" + idx.getAndIncrement();
-                            String value = new String(data[rnd.nextInt(NUM_VALUES)]);
+                            String value = CharsetUtils.asString(data[rnd.nextInt(NUM_VALUES)], CharsetUtils.ISO_8859_1);
                             RiakObject[] objects = riak.fetch(BUCKET, key);
                             RiakObject o = null;
                             if (objects.length == 0) {

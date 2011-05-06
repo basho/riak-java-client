@@ -42,6 +42,7 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
@@ -78,7 +79,7 @@ public class ConversionUtil {
 
         RiakObjectBuilder builder = RiakObjectBuilder.newBuilder(o.getBucket(), o.getKey());
 
-        builder.withValue(o.getValue());
+        builder.withValue(o.getValueAsBytes());
         builder.withVClock(nullSafeGetBytes(o.getVclock()));
         builder.withVtag(o.getVtag());
 
@@ -122,7 +123,7 @@ public class ConversionUtil {
      * @return
      */
     static byte[] nullSafeGetBytes(String vclock) {
-        return vclock == null ? null : vclock.getBytes();
+        return vclock == null ? null : CharsetUtils.utf8StringToBytes(vclock);
     }
 
     /**
@@ -150,7 +151,7 @@ public class ConversionUtil {
                                                                                            client,
                                                                                            object.getBucket(),
                                                                                            object.getKey(),
-                                                                                           nullSafeGetBytes(object.getValue()),
+                                                                                           object.getValue(),
                                                                                            object.getContentType(),
                                                                                            getLinks(object),
                                                                                            getUserMetaData(object),

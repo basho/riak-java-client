@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.util;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,7 +37,7 @@ public class TestOneTokenInputStream {
             part1 +
     		delim + "\r\n" +
     		part2;
-        InputStream stream = new ByteArrayInputStream(body.getBytes());
+        InputStream stream = new ByteArrayInputStream(utf8StringToBytes(body));
         impl = new OneTokenInputStream(stream, delim);
         
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -47,7 +48,7 @@ public class TestOneTokenInputStream {
     @Test public void no_content_if_stream_starts_with_delimiter() throws IOException {
         String delim = "\r\n--boundary";
         String body = delim + "abcdef";
-        InputStream stream = new ByteArrayInputStream(body.getBytes());
+        InputStream stream = new ByteArrayInputStream(utf8StringToBytes(body));
         impl = new OneTokenInputStream(stream, delim);
         
         assertEquals(-1, impl.read());
@@ -57,7 +58,7 @@ public class TestOneTokenInputStream {
         String delim = "\r\n--boundary";
         String part1 = "abcdefghijklmnop";
         String body = part1 + delim;
-        InputStream stream = new ByteArrayInputStream(body.getBytes());
+        InputStream stream = new ByteArrayInputStream(utf8StringToBytes(body));
         impl = new OneTokenInputStream(stream, delim);
         
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -69,7 +70,7 @@ public class TestOneTokenInputStream {
         String delim = "\r\n--boundary";
         String part1 = "abcdefghijklmnop";
         String body = part1;
-        InputStream stream = new ByteArrayInputStream(body.getBytes());
+        InputStream stream = new ByteArrayInputStream(utf8StringToBytes(body));
         impl = new OneTokenInputStream(stream, delim);
         
         ByteArrayOutputStream os = new ByteArrayOutputStream();

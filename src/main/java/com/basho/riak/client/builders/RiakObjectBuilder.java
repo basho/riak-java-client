@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.builders;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -24,6 +26,7 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * @author russell
@@ -32,7 +35,7 @@ import com.basho.riak.client.cap.VClock;
 public class RiakObjectBuilder {
     private final String bucket;
     private final String key;
-    private String value;
+    private byte[] value;
     private VClock vclock;
     private String vtag;
     private Date lastModified;
@@ -64,8 +67,19 @@ public class RiakObjectBuilder {
         return new DefaultRiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta);
     }
 
+    public RiakObjectBuilder withValue(byte[] value) {
+        this.value =  value==null? null : value.clone();
+        return this;
+    }
+
+    /**
+     * Convenience method assumes a UTF-8 encoded string
+     * @param value a UTF-8 encoded string
+     * @return this
+     */
     public RiakObjectBuilder withValue(String value) {
-        this.value = value;
+        this.value = utf8StringToBytes(value);
+        this.contentType = CharsetUtils.addUtf8Charset(contentType);
         return this;
     }
 

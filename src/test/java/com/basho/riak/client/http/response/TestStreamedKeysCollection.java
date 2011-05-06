@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.response;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
@@ -31,7 +32,7 @@ public class TestStreamedKeysCollection {
     
     @Test public void gets_all_keys() {
         final String keys = "{\"keys\":[\"key1\"]}{\"keys\":[]}{\"keys\":[]}{\"keys\":[\"key2\",\"key3\"]}{\"keys\":[]}";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        final InputStream stream = new ByteArrayInputStream(utf8StringToBytes(keys));
         impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
         Iterator<String> iter = impl.iterator();
 
@@ -44,7 +45,7 @@ public class TestStreamedKeysCollection {
 
     @Test public void iterator_iterates_all_keys() {
         final String keys = "{\"keys\":[\"key1\"]}{\"keys\":[]}{\"keys\":[]}{\"keys\":[\"key2\",\"key3\"]}{\"keys\":[]}";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        final InputStream stream = new ByteArrayInputStream(utf8StringToBytes(keys));
         StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
 
         int i = 0;
@@ -56,7 +57,7 @@ public class TestStreamedKeysCollection {
     
     @Test public void reads_an_input_array() {
         final String keys = "[\"key1\", \"key2\"]";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        final InputStream stream = new ByteArrayInputStream(utf8StringToBytes(keys));
         StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
         Iterator<String> iter = impl.iterator();
         
@@ -66,7 +67,7 @@ public class TestStreamedKeysCollection {
     
     @Test public void cacheNext_finds_first_embedded_array() {
         final String keys = "{\"keys\":[\"key1\",\"key2\",\"key3\"]}";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        final InputStream stream = new ByteArrayInputStream(utf8StringToBytes(keys));
         StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
 
         assertEquals("key1", impl.iterator().next());
@@ -74,7 +75,7 @@ public class TestStreamedKeysCollection {
 
     @Test public void finds_next_array() {
         final String keys = "{\"keys\":[\"key1\"]}{\"j\": 1, \"k\": \"v\", \"l\": [ ]}[\"key2\", \"key3\"]";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        final InputStream stream = new ByteArrayInputStream(utf8StringToBytes(keys));
         StreamedKeysCollection impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
         Iterator<String> iter = impl.iterator();
         
@@ -85,7 +86,7 @@ public class TestStreamedKeysCollection {
 
     @Test public void cache_next_returns_false_after_calling_close_backend() {
         final String keys = "[\"key1\", \"key2\"]";
-        final InputStream stream = new ByteArrayInputStream(keys.getBytes());
+        final InputStream stream = new ByteArrayInputStream(utf8StringToBytes(keys));
 
         impl = new StreamedKeysCollection(new JSONTokener(new InputStreamReader(stream)));
         assertTrue(impl.cacheNext());

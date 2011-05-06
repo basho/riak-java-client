@@ -24,6 +24,7 @@ import java.util.Map;
 
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.RiakKey;
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
@@ -50,7 +51,7 @@ public class DefaultRiakObject implements IRiakObject {
     private final Map<String, String> userMeta;
 
     private volatile String contentType;
-    private volatile String value;
+    private volatile byte[] value;
 
     /**
      * Use the builder.
@@ -68,7 +69,7 @@ public class DefaultRiakObject implements IRiakObject {
      * @param userMeta
      */
     public DefaultRiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
-            String contentType, String value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
+            String contentType, byte[] value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
 
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
@@ -84,9 +85,21 @@ public class DefaultRiakObject implements IRiakObject {
         this.vtag = vtag;
         this.lastModified = lastModified == null ? 0 : lastModified.getTime();
         safeSetContentType(contentType);
-        this.value = value;
+        this.value = copy(value);
         this.links = copy(links);
         this.userMeta = copy(userMeta);
+    }
+
+    /**
+     * @param value
+     * @return
+     */
+    private byte[] copy(byte[] value) {
+        if (value == null) {
+            return null;
+        } else {
+            return value.clone();
+        }
     }
 
     private Map<String, String> copy(Map<String, String> userMeta) {
@@ -153,14 +166,14 @@ public class DefaultRiakObject implements IRiakObject {
         return new HashMap<String, String>(userMeta);
     }
 
-    public String getValue() {
+    public byte[] getValue() {
         return value;
     }
 
     // mutate
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setValue(byte[] value) {
+        this.value = copy(value);
     }
 
     public void setContentType(String contentType) {
@@ -325,6 +338,13 @@ public class DefaultRiakObject implements IRiakObject {
             return vclock.asString();
         }
         return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getValueAsString()
+     */
+    public String getValueAsString() {
+        return CharsetUtils.asString(value, CharsetUtils.getCharset(contentType));
     }
 
 }

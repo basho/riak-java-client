@@ -67,12 +67,12 @@ public abstract class ITestBucket {
         assertNull(o);
 
         IRiakObject fetched = b.fetch("k").execute();
-        assertEquals("v", fetched.getValue());
+        assertEquals("v", fetched.getValueAsString());
 
         // now update that riak object
         b.store("k", "my new value").execute();
         fetched = b.fetch("k").execute();
-        assertEquals("my new value", fetched.getValue());
+        assertEquals("my new value", fetched.getValueAsString());
 
         b.delete("k").execute();
 

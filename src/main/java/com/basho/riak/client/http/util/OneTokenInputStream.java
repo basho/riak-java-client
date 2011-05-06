@@ -3,6 +3,8 @@ package com.basho.riak.client.http.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.basho.riak.client.util.CharsetUtils;
+
 /**
  * A wrapper that reads a single element an underlying {@link InputStream}
  * containing contains a delimited list
@@ -87,6 +89,6 @@ public class OneTokenInputStream extends InputStream {
                 offset += bytesRead;
             }
         }
-        buf = new StringBuilder(new String(headStart));
+        buf = new StringBuilder(CharsetUtils.asString(headStart, CharsetUtils.ISO_8859_1));
     }
 }

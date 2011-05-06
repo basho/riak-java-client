@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.response;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -54,7 +55,7 @@ public class TestWalkResponse {
     }
 
     @Test public void returns_empty_list_on_no_content() {
-        when(mockHttpResponse.getBody()).thenReturn("".getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(utf8StringToBytes(""));
         when(mockHttpResponse.isSuccess()).thenReturn(true);
 
         WalkResponse impl = new WalkResponse(mockHttpResponse, mockRiakClient);
@@ -81,7 +82,7 @@ public class TestWalkResponse {
                             + "\r\n"
                             + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\r\n";
 
-        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(utf8StringToBytes(BODY));
         when(mockHttpResponse.getBodyAsString()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
 
@@ -113,7 +114,7 @@ public class TestWalkResponse {
             + "\r\n"
             + "--BCVLGEKnH0gY7KsH5nW3xnzhYbU--\r\n";
 
-        when(mockHttpResponse.getBody()).thenReturn(BODY.getBytes());
+        when(mockHttpResponse.getBody()).thenReturn(utf8StringToBytes(BODY));
         when(mockHttpResponse.getBodyAsString()).thenReturn(BODY);
         when(mockHttpResponse.isSuccess()).thenReturn(true);
 

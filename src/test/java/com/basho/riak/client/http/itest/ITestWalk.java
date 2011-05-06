@@ -26,6 +26,7 @@ import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakLink;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.response.WalkResponse;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_URL }.
@@ -41,8 +42,8 @@ public class ITestWalk {
         final String LEAF1 = "leaf1";
         final String LEAF2 = "leaf2";
         final String EXCLUDED_LEAF = "excluded_leaf";
-        final byte[] INCLUDED_VALUE = "included".getBytes();
-        final byte[] EXCLUDED_VALUE = "excluded".getBytes();
+        final byte[] INCLUDED_VALUE = CharsetUtils.utf8StringToBytes("included");
+        final byte[] EXCLUDED_VALUE = CharsetUtils.utf8StringToBytes("excluded");
         final String TAG_INCLUDE = "tag_include";
         final String TAG_EXCLUDE = "tag_exclude";
 

@@ -22,6 +22,7 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.RawClient;
@@ -30,6 +31,7 @@ import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
@@ -124,8 +126,10 @@ public class HTTPClientAdapter implements RawClient {
             values = new IRiakObject[] { convert(resp.getObject()) };
         }
 
+        // we have at least an object, get a vclock for the response
         if (values.length > 0) {
-            response = new RiakResponse(resp.getObject().getVclock().getBytes(), values);
+            final RiakObject obj = resp.getObject();
+            response = new RiakResponse(CharsetUtils.utf8StringToBytes(obj.getVclock()), values);
         }
 
         return response;
@@ -282,9 +286,7 @@ public class HTTPClientAdapter implements RawClient {
      * @see com.basho.riak.client.raw.RawClient#generateAndSetClientId()
      */
     public byte[] generateAndSetClientId() throws IOException {
-        byte[] clientId = ClientId.generate();
-
-        client.setClientId(new String(clientId));
+        setClientId(ClientId.generate());
         return client.getClientId();
     }
 
@@ -297,7 +299,7 @@ public class HTTPClientAdapter implements RawClient {
         if (clientId == null || clientId.length != 4) {
             throw new IllegalArgumentException("clientId must be 4 bytes. generateAndSetClientId() can do this for you");
         }
-        client.setClientId(new String(clientId));
+        client.setClientId(CharsetUtils.asString(clientId, CharsetUtils.ISO_8859_1));
     }
 
     /*

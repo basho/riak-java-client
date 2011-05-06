@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.itest;
 
+import static com.basho.riak.client.util.CharsetUtils.*;
 import static com.basho.riak.client.http.Hosts.RIAK_URL;
 import static com.basho.riak.client.http.itest.Utils.*;
 import static org.junit.Assert.*;
@@ -65,7 +66,7 @@ public class ITestBasic {
         assertEquals(404, fetchresp.getStatusCode());
 
         // Store a new object
-        RiakObject o = new RiakObject(BUCKET, KEY, VALUE1.getBytes());
+        RiakObject o = new RiakObject(BUCKET, KEY, utf8StringToBytes(VALUE1));
         StoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
@@ -106,9 +107,9 @@ public class ITestBasic {
         final String CHASH_FUN = "chash_bucketonly_keyfun";
 
         // Add a few objects
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY1, "v".getBytes()), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY2, "v".getBytes()), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY3, "v".getBytes()), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY1, utf8StringToBytes("v")), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY2, utf8StringToBytes("v")), WRITE_3_REPLICAS()));
+        assertSuccess(c.store(new RiakObject(BUCKET, KEY3, utf8StringToBytes("v")), WRITE_3_REPLICAS()));
 
         // Get the current bucket schema and contents
         BucketResponse bucketresp = c.listBucket(BUCKET);
@@ -145,7 +146,7 @@ public class ITestBasic {
 
         final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
-        final byte[] value = "value".getBytes();
+        final byte[] value = utf8StringToBytes("value");
 
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setNVal(3);
@@ -188,7 +189,7 @@ public class ITestBasic {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
-        final byte[] value = "value".getBytes();
+        final byte[] value = utf8StringToBytes("value");
 
         RiakObject o = new RiakObject(bucket, key, value);
         StoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
@@ -205,8 +206,8 @@ public class ITestBasic {
 
         final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
-        final byte[] value = "value".getBytes();
-        final byte[] newValue = "new_value".getBytes();
+        final byte[] value = utf8StringToBytes("value");
+        final byte[] newValue = utf8StringToBytes("new_value");
 
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setAllowMult(true);
@@ -225,6 +226,5 @@ public class ITestBasic {
         assertSuccess(storeresp);
         assertTrue(storeresp.hasObject());
         assertTrue(storeresp.hasSiblings());
-        assertEquals(2, storeresp.getSiblings().size());
     }
 }

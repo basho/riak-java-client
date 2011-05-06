@@ -13,6 +13,9 @@
  */
 package com.basho.riak.client.util;
 
+import static com.basho.riak.client.util.CharsetUtils.asString;
+import static com.basho.riak.client.util.CharsetUtils.getCharset;
+
 import org.apache.commons.httpclient.util.EncodingUtil;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +40,7 @@ import java.util.*;
 @Deprecated
 public class Multipart {
 
-    private static byte[] HEADER_DELIM = "\r\n\r\n".getBytes();
+    private static byte[]  HEADER_DELIM = CharsetUtils.utf8StringToBytes("\r\n\r\n");
 
     private static int indexOf(byte[] text, byte[] pattern, int fromIndex) {
         if (fromIndex >= text.length || fromIndex < 0) {
@@ -94,7 +97,7 @@ public class Multipart {
         }
 
         String boundary = "\r\n--" + getBoundary(headers.get(Constants.HDR_CONTENT_TYPE));
-        byte[] boundaryBytes = boundary.getBytes();
+        byte[] boundaryBytes = CharsetUtils.utf8StringToBytes(boundary);
         int boundarySize = boundary.length();
         if ("\r\n--".equals(boundary))
             return null;
@@ -250,7 +253,7 @@ public class Multipart {
            byte[] body = getBody();
            if (body == null)
               return null;
-           return new String(body);
+           return asString(body, getCharset(headers));
         }
 
         public InputStream getStream() {

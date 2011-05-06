@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.http.util.CollectionWrapper;
+import com.basho.riak.client.util.CharsetUtils;
 
 public class TestCollectionWrapper {
 
@@ -62,7 +63,7 @@ public class TestCollectionWrapper {
                 return false;
             byte[] bytes = new byte[10];
             new Random().nextBytes(bytes);
-            String el = new String(bytes);
+            String el = CharsetUtils.asUTF8String(bytes);
             els.add(el);
             impl.cache(el);
             return true;

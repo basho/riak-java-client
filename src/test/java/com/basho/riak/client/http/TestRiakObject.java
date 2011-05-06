@@ -13,7 +13,10 @@
  */
 package com.basho.riak.client.http;
 
+import static com.basho.riak.client.util.CharsetUtils.*;
+
 import static org.junit.Assert.*;
+
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -82,7 +85,7 @@ public class TestRiakObject {
         final String value = "value";
         final InputStream valueStream = mock(InputStream.class);
         final long valueStreamLength = 10;
-        final String ctype = "ctype";
+        final String ctype = Constants.CTYPE_JSON_UTF8;
         final List<RiakLink> links = new ArrayList<RiakLink>();
         final Map<String, String> usermeta = new HashMap<String, String>();
         usermeta.put("testKey", "testValue");
@@ -92,7 +95,7 @@ public class TestRiakObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        RiakObject copy = new RiakObject("b", "k2", value.getBytes(), ctype, links, usermeta, vclock, lastmod, vtag);
+        RiakObject copy = new RiakObject("b", "k2", utf8StringToBytes(value), ctype, links, usermeta, vclock, lastmod, vtag);
         copy.setValueStream(valueStream, valueStreamLength);
         impl.copyData(copy);
 
@@ -147,7 +150,7 @@ public class TestRiakObject {
 
     @Test public void copyData_copies_null_data() {
         final String value = "value";
-        final String ctype = "ctype";
+        final String ctype = Constants.CTYPE_JSON_UTF8;
         final List<RiakLink> links = new ArrayList<RiakLink>();
         final Map<String, String> usermeta = new HashMap<String, String>();
         final String vclock = "vclock";
@@ -156,7 +159,7 @@ public class TestRiakObject {
         final RiakLink link = new RiakLink("b", "l", "t");
         links.add(link);
 
-        impl = new RiakObject("b", "k", value.getBytes(), ctype, links, usermeta, vclock, lastmod, vtag);
+        impl = new RiakObject("b", "k", utf8StringToBytes(value), ctype, links, usermeta, vclock, lastmod, vtag);
         impl.copyData(new RiakObject(null, null));
 
         assertEquals("b", impl.getBucket());
@@ -191,7 +194,7 @@ public class TestRiakObject {
 
     @Test public void value_stream_is_separate_from_value() {
         final String value = "value";
-        final byte[] isvalue = "isbytes".getBytes();
+        final byte[] isvalue = utf8StringToBytes("isbytes");
         final InputStream is = new ByteArrayInputStream(isvalue);
 
         impl.setValue(value);
@@ -387,7 +390,7 @@ public class TestRiakObject {
 
     @SuppressWarnings("unchecked") @Test public void write_to_http_method_gives_value_stream_priority_over_value() {
         final String value = "value";
-        final byte[] isvalue = "isbytes".getBytes();
+        final byte[] isvalue = utf8StringToBytes("isbytes");
         final InputStream is = new ByteArrayInputStream(isvalue);
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
@@ -512,7 +515,7 @@ public class TestRiakObject {
         final List<RiakLink> links = Arrays.asList(new RiakLink("b", "l", "t"), new RiakLink("b", "e", "c"),
                                                    new RiakLink("g", "c", "s"), new RiakLink("q", "p", "c"));
 
-        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes(), "", links, (Map<String, String>) null, "", "", "");
+        final RiakObject riakObject = new RiakObject("b", "k", utf8StringToBytes("v"), "", links, (Map<String, String>) null, "", "", "");
 
         assertEquals(links.size(), riakObject.numLinks());
         assertTrue(riakObject.hasLinks());
@@ -576,7 +579,7 @@ public class TestRiakObject {
         userMeta.put("acl", "admin");
         userMeta.put("my-meta", "my-value");
 
-        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes(), "", null, userMeta, "", "", "");
+        final RiakObject riakObject = new RiakObject("b", "k", utf8StringToBytes("v"), "", null, userMeta, "", "", "");
 
         assertTrue(riakObject.hasUsermeta());
         assertTrue(riakObject.hasUsermetaItem("acl"));
@@ -608,7 +611,7 @@ public class TestRiakObject {
     }
 
     @Test public void modifyLinksAndWriteToMethodConcurrently() throws InterruptedException {
-        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes());
+        final RiakObject riakObject = new RiakObject("b", "k", utf8StringToBytes("v"));
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
         when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
@@ -646,7 +649,7 @@ public class TestRiakObject {
     }
 
     @Test public void modifyUserMetaAndWriteToMethodConcurrently() throws InterruptedException {
-        final RiakObject riakObject = new RiakObject("b", "k", "v".getBytes());
+        final RiakObject riakObject = new RiakObject("b", "k", utf8StringToBytes("v"));
         final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
 
         when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
@@ -683,16 +686,16 @@ public class TestRiakObject {
     }
 
     @Test public void valueByteArraySafelyEncapsulated() {
-        final byte[] value = "vvvv".getBytes();
+        final byte[] value = utf8StringToBytes("vvvv");
         final RiakObject riakObject = new RiakObject("b", "k", value);
 
-        assertArrayEquals("vvvv".getBytes(), riakObject.getValueAsBytes());
+        assertArrayEquals(utf8StringToBytes("vvvv"), riakObject.getValueAsBytes());
         value[0] = 'b';
-        assertArrayEquals("vvvv".getBytes(), riakObject.getValueAsBytes());
+        assertArrayEquals(utf8StringToBytes("vvvv"), riakObject.getValueAsBytes());
 
         byte[] roInternalValue = riakObject.getValueAsBytes();
         roInternalValue[0] = 'z';
 
-        assertArrayEquals("vvvv".getBytes(), riakObject.getValueAsBytes());
+        assertArrayEquals(utf8StringToBytes("vvvv"), riakObject.getValueAsBytes());
     }
 }

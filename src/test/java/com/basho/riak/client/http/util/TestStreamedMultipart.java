@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.util;
 
+import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
@@ -57,7 +58,7 @@ public class TestStreamedMultipart {
         "--boundary--\r\n" +
         "postlude\n" +
         "\r\n";
-    InputStream stream = new ByteArrayInputStream(body.getBytes());
+    InputStream stream = new ByteArrayInputStream(utf8StringToBytes(body));
         
     StreamedMultipart impl;
     
@@ -67,7 +68,7 @@ public class TestStreamedMultipart {
             "--boundary\r\n" +
             "message\r\n" +
             "--boundary--";
-        stream = new ByteArrayInputStream(body.getBytes());
+        stream = new ByteArrayInputStream(utf8StringToBytes(body));
         
         new StreamedMultipart(headers, stream);
     }
@@ -77,7 +78,7 @@ public class TestStreamedMultipart {
             "--boundary\r\n" +
             "message\r\n" +
             "--boundary--";
-        stream = new ByteArrayInputStream(body.getBytes());
+        stream = new ByteArrayInputStream(utf8StringToBytes(body));
         
         new StreamedMultipart(headers, stream);
     }
@@ -87,7 +88,7 @@ public class TestStreamedMultipart {
             "--wrong\r\n" +
             "message\r\n" +
             "--wrong--";
-        stream = new ByteArrayInputStream(body.getBytes());
+        stream = new ByteArrayInputStream(utf8StringToBytes(body));
         
         new StreamedMultipart(headers, stream);
     }

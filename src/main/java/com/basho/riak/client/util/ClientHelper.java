@@ -108,7 +108,7 @@ public class ClientHelper {
         meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
         PutMethod put = new PutMethod(ClientUtils.makeURI(config, bucket));
-        put.setRequestEntity(new ByteArrayRequestEntity(schema.toString().getBytes(), Constants.CTYPE_JSON));
+        put.setRequestEntity(new ByteArrayRequestEntity(CharsetUtils.utf8StringToBytes(schema.toString()), Constants.CTYPE_JSON));
 
         return executeMethod(bucket, null, put, meta);
     }

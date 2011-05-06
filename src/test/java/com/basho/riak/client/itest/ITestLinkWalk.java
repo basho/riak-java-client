@@ -32,6 +32,7 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.RiakBucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * @author russell
@@ -44,7 +45,7 @@ public class ITestLinkWalk {
 
         final String fooVal = "fooer";
         final String barVal = "barrer";
-        
+
         final String bucketName = "test_walk_" + UUID.randomUUID().toString();
         final String[] first = { "first", "the first" };
         final String[] second = { "second", fooVal };
@@ -95,7 +96,7 @@ public class ITestLinkWalk {
 
             for (IRiakObject object : s) {
                 keys.add(object.getKey());
-                assertEquals(fooVal, object.getValue());
+                assertEquals(fooVal, CharsetUtils.asString(object.getValue(), CharsetUtils.UTF_8));
             }
 
             assertEquals(1, s.size());

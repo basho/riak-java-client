@@ -33,6 +33,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
 
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RPB.RpbDelReq;
 import com.basho.riak.pbc.RPB.RpbGetClientIdResp;
 import com.basho.riak.pbc.RPB.RpbGetReq;
@@ -111,6 +112,8 @@ public class RiakClient implements RiakMessageCodes {
 
 	/**
 	 * helper method to use a reasonable default client id
+	 * beware, it caches the client id. If you call it multiple times on the same client
+	 * you get the *same* id (not good for reusing a client with different ids)
 	 * 
 	 * @throws IOException
 	 */
@@ -127,7 +130,7 @@ public class RiakClient implements RiakMessageCodes {
 			}
 			byte[] data = new byte[6];
 			sr.nextBytes(data);
-			clid = new String(Base64.encodeBase64Chunked(data));
+			clid = CharsetUtils.asString(Base64.encodeBase64Chunked(data), CharsetUtils.ISO_8859_1);
 			prefs.put("client_id", clid);
 			try {
 				prefs.flush();
@@ -149,11 +152,19 @@ public class RiakClient implements RiakMessageCodes {
 		}
 	}
 
+	/**
+	 * Warning: the riak client id is 4 bytes. This method silently truncates anymore bytes than that.
+	 * Be aware that if you have two client Ids, "boris1" and "boris2" this method will leave you with 1 client id, "bori".
+	 * Use {@link RiakClient#prepareClientID()} to generate a reasonably unique Id.
+	 * @see RiakClient#prepareClientID()
+	 * @param id
+	 * @throws IOException
+	 */
 	public void setClientID(String id) throws IOException {
 	    if(id == null || id.length() < Constants.RIAK_CLIENT_ID_LENGTH) {
 	        throw new IllegalArgumentException("Client ID must be at least " + Constants.RIAK_CLIENT_ID_LENGTH + " bytes long");
 	    }
-		setClientID(ByteString.copyFrom(id.getBytes(), 0, Constants.RIAK_CLIENT_ID_LENGTH));
+		setClientID(ByteString.copyFrom(CharsetUtils.utf8StringToBytes(id), 0, Constants.RIAK_CLIENT_ID_LENGTH));
 	}
 
 	// /////////////////////
