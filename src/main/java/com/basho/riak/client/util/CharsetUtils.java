@@ -23,10 +23,10 @@ import java.util.regex.Pattern;
 /**
  * Utils for dealing with byte[], String charset issues, especially since Java 5
  * is less cool than Java 6 in this respect.
- * 
+ *
  * This code is all from the Trifork fork of the client and was written by
  * Krestan Krab, Christian Hvitved and Erik Søe Sørensen.
- * 
+ *
  * @author russell
  * 
  */
