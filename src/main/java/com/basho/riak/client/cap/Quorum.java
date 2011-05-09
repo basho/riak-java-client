@@ -29,4 +29,42 @@ public final class Quorum {
     public Quorum(Quora quorum) {
         this.quorum = quorum;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((i == null) ? 0 : i.hashCode());
+        result = prime * result + ((quorum == null) ? 0 : quorum.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Quorum)) {
+            return false;
+        }
+        Quorum other = (Quorum) obj;
+        if (i == null) {
+            if (other.i != null) {
+                return false;
+            }
+        } else if (!i.equals(other.i)) {
+            return false;
+        }
+        if (quorum != other.quorum) {
+            return false;
+        }
+        return true;
+    }
 }

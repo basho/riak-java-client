@@ -227,30 +227,18 @@ public class RiakClient {
         return fetchMeta(bucket, key, null);
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.HttpRiakClient#fetch(java.lang.String, java.lang.String, com.basho.riak.client.request.RequestMeta)
-     */
     public FetchResponse fetch(String bucket, String key, RequestMeta meta) {
         return fetch(bucket, key, meta, false);
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.HttpRiakClient#fetch(java.lang.String, java.lang.String)
-     */
     public FetchResponse fetch(String bucket, String key) {
         return fetch(bucket, key, null, false);
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.HttpRiakClient#stream(java.lang.String, java.lang.String, com.basho.riak.client.request.RequestMeta)
-     */
     public FetchResponse stream(String bucket, String key, RequestMeta meta) {
         return fetch(bucket, key, meta, true);
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.HttpRiakClient#stream(java.lang.String, java.lang.String)
-     */
     public FetchResponse stream(String bucket, String key) {
         return fetch(bucket, key, null, true);
     }

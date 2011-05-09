@@ -31,7 +31,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.BucketProperties;
-import com.basho.riak.client.bucket.DefaultBucketProperties;
+import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.RiakBucketInfo;
@@ -214,7 +214,7 @@ public class ConversionUtil {
      */
     static BucketProperties convert(BucketResponse response) {
         RiakBucketInfo bucketInfo = response.getBucketInfo();
-        return new DefaultBucketProperties.Builder()
+        return new BucketPropertiesBuilder()
             .allowSiblings(bucketInfo.getAllowMult())
             .nVal(bucketInfo.getNVal())
             .chashKeyFunction(convert(bucketInfo.getCHashFun()))

@@ -13,10 +13,9 @@
  */
 package com.basho.riak.client.bucket;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
-import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
@@ -65,7 +64,7 @@ public class DefaultBucketProperties implements BucketProperties {
      * @param chashKeyFunction
      * @param linkWalkFunction
      */
-    private DefaultBucketProperties(Builder builder) {
+    public DefaultBucketProperties(final BucketPropertiesBuilder builder) {
         this.allowSiblings = builder.allowSiblings;
         this.lastWriteWins = builder.lastWriteWins;
         this.nVal = builder.nVal;
@@ -208,7 +207,7 @@ public class DefaultBucketProperties implements BucketProperties {
      * 
      * @return a Builder populated from this BucketProperties' values.
      */
-    public DefaultBucketProperties.Builder fromMe() {
+    public BucketPropertiesBuilder fromMe() {
         return DefaultBucketProperties.from(this);
     }
 
@@ -217,212 +216,161 @@ public class DefaultBucketProperties implements BucketProperties {
      * @param properties
      * @return a Builder populated with properties values.
      */
-    public static DefaultBucketProperties.Builder from(DefaultBucketProperties properties) {
-        return DefaultBucketProperties.Builder.from(properties);
+    public static BucketPropertiesBuilder from(DefaultBucketProperties properties) {
+        return BucketPropertiesBuilder.from(properties);
     }
 
-    /**
-     * Use to create instances of BucketProperties.
-     * 
-     * @author russell
-     * 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
      */
-    public static final class Builder {
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((allowSiblings == null) ? 0 : allowSiblings.hashCode());
+        result = prime * result + ((backend == null) ? 0 : backend.hashCode());
+        result = prime * result + ((bigVClock == null) ? 0 : bigVClock.hashCode());
+        result = prime * result + ((chashKeyFunction == null) ? 0 : chashKeyFunction.hashCode());
+        result = prime * result + ((dw == null) ? 0 : dw.hashCode());
+        result = prime * result + ((lastWriteWins == null) ? 0 : lastWriteWins.hashCode());
+        result = prime * result + ((linkWalkFunction == null) ? 0 : linkWalkFunction.hashCode());
+        result = prime * result + ((nVal == null) ? 0 : nVal.hashCode());
+        result = prime * result + ((oldVClock == null) ? 0 : oldVClock.hashCode());
+        result = prime * result + ((postcommitHooks == null) ? 0 : postcommitHooks.hashCode());
+        result = prime * result + ((precommitHooks == null) ? 0 : precommitHooks.hashCode());
+        result = prime * result + ((r == null) ? 0 : r.hashCode());
+        result = prime * result + ((rw == null) ? 0 : rw.hashCode());
+        result = prime * result + ((smallVClock == null) ? 0 : smallVClock.hashCode());
+        result = prime * result + ((w == null) ? 0 : w.hashCode());
+        result = prime * result + ((youngVClock == null) ? 0 : youngVClock.hashCode());
+        return result;
+    }
 
-        public NamedErlangFunction linkWalkFunction;
-        public NamedErlangFunction chashKeyFunction;
-        public Quorum rw;
-        public Quorum dw;
-        public Quorum w;
-        public Quorum r;
-        public Collection<NamedErlangFunction> postcommitHooks = new ArrayList<NamedErlangFunction>();
-        public Collection<NamedFunction> precommitHooks = new ArrayList<NamedFunction>();
-        public Long oldVClock;
-        public Long youngVClock;
-        public Integer bigVClock;
-        public Integer smallVClock;
-        public String backend;
-        public int nVal = 3;
-        public Boolean lastWriteWins;
-        public boolean allowSiblings = false;
-
-        public BucketProperties build() {
-            return new DefaultBucketProperties(this);
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-
-        /**
-         * @param p
-         *            the BucketProperties to copy to the builder
-         * @return a builder with all values set from p
-         */
-        public static Builder from(DefaultBucketProperties p) {
-            Builder b = new Builder();
-            b.allowSiblings = p.getAllowSiblings();
-            b.lastWriteWins = p.getLastWriteWins();
-            b.nVal = p.getNVal();
-            b.backend = p.getBackend();
-            b.smallVClock = p.getSmallVClock();
-            b.bigVClock = p.getBigVClock();
-            b.youngVClock = p.getYoungVClock();
-            b.oldVClock = p.getOldVClock();
-            b.postcommitHooks.addAll(p.getPostcommitHooks());
-            b.precommitHooks.addAll(p.getPrecommitHooks());
-            b.r = p.getR();
-            b.w = p.getW();
-            b.dw = p.getDW();
-            b.rw = p.getRW();
-            b.chashKeyFunction = p.getChashKeyFunction();
-            b.linkWalkFunction = p.getLinkWalkFunction();
-            return b;
+        if (obj == null) {
+            return false;
         }
-
-        public Builder allowSiblings(boolean allowSiblings) {
-            this.allowSiblings = allowSiblings;
-            return this;
+        if (!(obj instanceof DefaultBucketProperties)) {
+            return false;
         }
-
-        public Builder lastWriteWins(boolean lastWriteWins) {
-            this.lastWriteWins = lastWriteWins;
-            return this;
-        }
-
-        public Builder nVal(int nVal) {
-            this.nVal = nVal;
-            return this;
-        }
-
-        public Builder backend(String backend) {
-            this.backend = backend;
-            return this;
-        }
-
-        public Builder precommitHooks(Collection<NamedFunction> precommitHooks) {
-            this.precommitHooks = new ArrayList<NamedFunction>(precommitHooks);
-            return this;
-        }
-
-        public Builder addPrecommitHook(NamedFunction preCommitHook) {
-            if (this.precommitHooks == null) {
-                this.precommitHooks = new ArrayList<NamedFunction>();
+        DefaultBucketProperties other = (DefaultBucketProperties) obj;
+        if (allowSiblings == null) {
+            if (other.allowSiblings != null) {
+                return false;
             }
-            this.precommitHooks.add(preCommitHook);
-            return this;
+        } else if (!allowSiblings.equals(other.allowSiblings)) {
+            return false;
         }
-
-        public Builder postcommitHooks(Collection<NamedErlangFunction> postCommitHooks) {
-            this.postcommitHooks = new ArrayList<NamedErlangFunction>(postCommitHooks);
-            return this;
-        }
-
-        public Builder addPostcommitHook(NamedErlangFunction postcommitHook) {
-            if (this.postcommitHooks == null) {
-                this.postcommitHooks = new ArrayList<NamedErlangFunction>();
+        if (backend == null) {
+            if (other.backend != null) {
+                return false;
             }
-            this.precommitHooks.add(postcommitHook);
-            return this;
+        } else if (!backend.equals(other.backend)) {
+            return false;
         }
-
-        public Builder chashKeyFunction(NamedErlangFunction chashKeyFunction) {
-            this.chashKeyFunction = chashKeyFunction;
-            return this;
+        if (bigVClock == null) {
+            if (other.bigVClock != null) {
+                return false;
+            }
+        } else if (!bigVClock.equals(other.bigVClock)) {
+            return false;
         }
-
-        public Builder linkWalkFunction(NamedErlangFunction linkWalkFunction) {
-            this.linkWalkFunction = linkWalkFunction;
-            return this;
+        if (chashKeyFunction == null) {
+            if (other.chashKeyFunction != null) {
+                return false;
+            }
+        } else if (!chashKeyFunction.equals(other.chashKeyFunction)) {
+            return false;
         }
-
-        /**
-         * @param smallVClock
-         * @return
-         */
-        public Builder smallVClock(int smallVClock) {
-            this.smallVClock = smallVClock;
-            return this;
+        if (dw == null) {
+            if (other.dw != null) {
+                return false;
+            }
+        } else if (!dw.equals(other.dw)) {
+            return false;
         }
-
-        /**
-         * @param bigVClock
-         * @return
-         */
-        public Builder bigVClock(int bigVClock) {
-            this.bigVClock = bigVClock;
-            return this;
+        if (lastWriteWins == null) {
+            if (other.lastWriteWins != null) {
+                return false;
+            }
+        } else if (!lastWriteWins.equals(other.lastWriteWins)) {
+            return false;
         }
-
-        /**
-         * @param youngVClock
-         * @return
-         */
-        public Builder youngVClock(long youngVClock) {
-            this.youngVClock = youngVClock;
-            return this;
+        if (linkWalkFunction == null) {
+            if (other.linkWalkFunction != null) {
+                return false;
+            }
+        } else if (!linkWalkFunction.equals(other.linkWalkFunction)) {
+            return false;
         }
-
-        /**
-         * @param oldVClock
-         * @return
-         */
-        public Builder oldVClock(long oldVClock) {
-            this.oldVClock = oldVClock;
-            return this;
+        if (nVal == null) {
+            if (other.nVal != null) {
+                return false;
+            }
+        } else if (!nVal.equals(other.nVal)) {
+            return false;
         }
-
-        /**
-         * @param r
-         * @return
-         */
-        public Builder r(Quora r) {
-            this.r = new Quorum(r);
-            return this;
+        if (oldVClock == null) {
+            if (other.oldVClock != null) {
+                return false;
+            }
+        } else if (!oldVClock.equals(other.oldVClock)) {
+            return false;
         }
-
-        public Builder r(int r) {
-            this.r = new Quorum(r);
-            return this;
+        if (postcommitHooks == null) {
+            if (other.postcommitHooks != null) {
+                return false;
+            }
+        } else if (!postcommitHooks.equals(other.postcommitHooks)) {
+            return false;
         }
-
-        /**
-         * @param w
-         * @return
-         */
-        public Builder w(Quora w) {
-            this.w = new Quorum(w);
-            return this;
+        if (precommitHooks == null) {
+            if (other.precommitHooks != null) {
+                return false;
+            }
+        } else if (!precommitHooks.equals(other.precommitHooks)) {
+            return false;
         }
-
-        public Builder w(int w) {
-            this.w = new Quorum(w);
-            return this;
+        if (r == null) {
+            if (other.r != null) {
+                return false;
+            }
+        } else if (!r.equals(other.r)) {
+            return false;
         }
-
-        /**
-         * @param rw
-         * @return
-         */
-        public Builder rw(Quora rw) {
-            this.rw = new Quorum(rw);
-            return this;
+        if (rw == null) {
+            if (other.rw != null) {
+                return false;
+            }
+        } else if (!rw.equals(other.rw)) {
+            return false;
         }
-
-        public Builder rw(int rw) {
-            this.rw = new Quorum(rw);
-            return this;
+        if (smallVClock == null) {
+            if (other.smallVClock != null) {
+                return false;
+            }
+        } else if (!smallVClock.equals(other.smallVClock)) {
+            return false;
         }
-
-        /**
-         * @param dw
-         * @return
-         */
-        public Builder dw(Quora dw) {
-            this.dw = new Quorum(dw);
-            return this;
+        if (w == null) {
+            if (other.w != null) {
+                return false;
+            }
+        } else if (!w.equals(other.w)) {
+            return false;
         }
-
-        public Builder dw(int dw) {
-            this.dw = new Quorum(dw);
-            return this;
+        if (youngVClock == null) {
+            if (other.youngVClock != null) {
+                return false;
+            }
+        } else if (!youngVClock.equals(other.youngVClock)) {
+            return false;
         }
-
+        return true;
     }
 }

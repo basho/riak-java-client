@@ -23,23 +23,23 @@ import com.basho.riak.client.raw.RawClient;
  */
 public final class DefaultRiakClient implements IRiakClient {
 
-    private final RawClient client;
+    private final RawClient rawClient;
     private final Retrier retrier;
 
     /**
-     * @param client
+     * @param rawClient
      * @param defaultRetrier
      */
-    DefaultRiakClient(final RawClient client, final Retrier defaultRetrier) {
-        this.client = client;
+    DefaultRiakClient(final RawClient rawClient, final Retrier defaultRetrier) {
+        this.rawClient = rawClient;
         this.retrier = defaultRetrier;
     }
 
     /**
      * @param client
      */
-    DefaultRiakClient(final RawClient client) {
-        this(client, new DefaultRetrier(3));
+    DefaultRiakClient(final RawClient rawClient) {
+        this(rawClient, DefaultRetrier.attempts(3));
     }
 
     // BUCKET OPS
@@ -48,21 +48,21 @@ public final class DefaultRiakClient implements IRiakClient {
      * @see com.basho.riak.client.IRiakClient#updateBucket(com.basho.riak.client.bucket.Bucket)
      */
     public WriteBucket updateBucket(final Bucket b) {
-        return new WriteBucket(client, b.getName(), retrier);
+        return new WriteBucket(rawClient, b.getName(), retrier);
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.IRiakClient#fetchBucket(java.lang.String)
      */
     public FetchBucket fetchBucket(String bucketName) {
-        return new FetchBucket(client, bucketName, retrier);
+        return new FetchBucket(rawClient, bucketName, retrier);
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.IRiakClient#createBucket(java.lang.String)
      */
     public WriteBucket createBucket(String bucketName) {
-        return new WriteBucket(client, bucketName, retrier);
+        return new WriteBucket(rawClient, bucketName, retrier);
     }
 
     // CLIENT ID
@@ -77,7 +77,7 @@ public final class DefaultRiakClient implements IRiakClient {
         final byte[] cloned = clientId.clone();
         retrier.attempt(new Callable<Void>() {
             public Void call() throws Exception {
-                client.setClientId(cloned);
+                rawClient.setClientId(cloned);
                 return null;
             }
         });
@@ -91,7 +91,7 @@ public final class DefaultRiakClient implements IRiakClient {
     public byte[] generateAndSetClientId() throws RiakException {
         final byte[] clientId = retrier.attempt(new Callable<byte[]>() {
             public byte[] call() throws Exception {
-                return client.generateAndSetClientId();
+                return rawClient.generateAndSetClientId();
             }
         });
 
@@ -104,7 +104,7 @@ public final class DefaultRiakClient implements IRiakClient {
     public byte[] getClientId() throws RiakException {
         final byte[] clientId = retrier.attempt(new Callable<byte[]>() {
             public byte[] call() throws Exception {
-                return client.getClientId();
+                return rawClient.getClientId();
             }
         });
 
@@ -117,7 +117,7 @@ public final class DefaultRiakClient implements IRiakClient {
      * @see com.basho.riak.client.IRiakClient#mapReduce()
      */
     public BucketKeyMapReduce mapReduce() {
-        return new BucketKeyMapReduce(client);
+        return new BucketKeyMapReduce(rawClient);
     }
 
     /*
@@ -126,7 +126,7 @@ public final class DefaultRiakClient implements IRiakClient {
      * @see com.basho.riak.newapi.RiakClient#mapReduce(java.lang.String)
      */
     public BucketMapReduce mapReduce(String bucket) {
-        return new BucketMapReduce(client, bucket);
+        return new BucketMapReduce(rawClient, bucket);
     }
 
     /*
@@ -134,6 +134,6 @@ public final class DefaultRiakClient implements IRiakClient {
      * @see com.basho.riak.client.IRiakClient#walk(com.basho.riak.client.IRiakObject)
      */
     public LinkWalk walk(IRiakObject startObject) {
-        return new LinkWalk(client, startObject);
+        return new LinkWalk(rawClient, startObject);
     }
 }

@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
+import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.operations.RiakOperation;
@@ -34,7 +35,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
     private Retrier retrier;
     private String name;
 
-    private DefaultBucketProperties.Builder builder = new DefaultBucketProperties.Builder();
+    private BucketPropertiesBuilder builder = new BucketPropertiesBuilder();
 
     public WriteBucket(final RawClient client, String name, final Retrier retrier) {
         this.name = name;
@@ -187,5 +188,4 @@ public class WriteBucket implements RiakOperation<Bucket> {
         this.retrier = retrier;
         return this;
     }
-
 }

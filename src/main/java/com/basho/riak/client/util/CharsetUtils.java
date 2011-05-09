@@ -14,7 +14,6 @@
 package com.basho.riak.client.util;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -25,7 +24,7 @@ import java.util.regex.Pattern;
  * is less cool than Java 6 in this respect.
  *
  * This code is mainly from the Trifork fork of the client and was written by
- * Krestan Krab, Christian Hvitved and Erik Søe Sørensen.
+ * Krestan Krab and/or Erik Søe Sørensen.
  *
  * @author russell
  * 
@@ -36,6 +35,9 @@ public class CharsetUtils {
     public static Charset UTF_8 = Charset.forName("UTF-8");
 
     public static Charset getCharset(Map<String, String> headers) {
+        if(headers == null) {
+            return ISO_8859_1;
+        }
         return getCharset(headers.get(com.basho.riak.client.http.util.Constants.HDR_CONTENT_TYPE));
     }
 
@@ -102,7 +104,19 @@ public class CharsetUtils {
      * @return a String
      */
     public static String asString(byte[] bytes, Charset charset) {
-        return charset.decode(ByteBuffer.wrap(bytes)).toString();
+        if(bytes == null) {
+            return null;
+        }
+
+        if(charset == null) {
+            throw new IllegalArgumentException("Cannot get bytes without a Charset");
+        }
+
+        try {
+            return new String(bytes, charset.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(charset.name() + " must be present", e);
+        }
     }
     
     /**
@@ -112,11 +126,7 @@ public class CharsetUtils {
      * @return a String
      */
     public static String asUTF8String(byte[] bytes) {
-        try {
-            return new String(bytes, UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF8 must be present", e);
-        }
+        return asString(bytes, UTF_8);
     }
     
     /**
@@ -126,6 +136,14 @@ public class CharsetUtils {
      * @return a byte[] array
      */
     public static byte[] asBytes(String string, Charset charset) {
+        if(string == null) {
+            return null;
+        }
+
+        if(charset == null) {
+            throw new IllegalArgumentException("Cannot get bytes without a Charset");
+        }
+
         try {
             return string.getBytes(charset.name());
         } catch (UnsupportedEncodingException e) {

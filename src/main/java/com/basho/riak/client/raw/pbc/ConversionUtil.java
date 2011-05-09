@@ -33,7 +33,7 @@ import org.codehaus.jackson.map.type.TypeFactory;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
-import com.basho.riak.client.bucket.DefaultBucketProperties;
+import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
@@ -191,7 +191,7 @@ public class ConversionUtil {
      * @return
      */
     static BucketProperties convert(com.basho.riak.pbc.BucketProperties properties) {
-        return new DefaultBucketProperties.Builder().allowSiblings(properties.getAllowMult()).nVal(properties.getNValue()).build();
+        return new BucketPropertiesBuilder().allowSiblings(properties.getAllowMult()).nVal(properties.getNValue()).build();
     }
 
     /**
