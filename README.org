@@ -19,39 +19,39 @@ objects in Riak and returning domain objects from map reduce queries.
 * Using riak-java-client
 ** Including riak-java-client in your project
 Riak-java-client is available from maven central. Add the dependency to your pom.xml
-
+#+BEGIN_SRC xml
     <dependency>
         <groupId>com.basho.riak</groupId>
         <artifactId>riak-client</artifactId>
         <version>0.15.0</version>
         <type>pom</type>
     </dependency>
-
+#+END_SRC
 To build and install from source, first install [[http://maven.apache.org/download.html][Apache Maven]]. With Maven installed, run:
-
-    mvn clean install
-
+#+BEGIN_SRC shell
+mvn clean install
+#+END_SRC
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
-#+BEGIN_SRC Java
-    // create a client
-    IRiakClient riakClient = RiakFactory.pbcClient(); //or RiakFactory.httpClient();
+#+BEGIN_SRC java
+// create a client
+IRiakClient riakClient = RiakFactory.pbcClient(); //or RiakFactory.httpClient();
 
-    // create a new bucket
-    Bucket myBucket = riakClient.createBucket("myBucket").execute();
+// create a new bucket
+Bucket myBucket = riakClient.createBucket("myBucket").execute();
 
-    // add data to the bucket
-    myBucket.store("key1", "value1").execute();
+// add data to the bucket
+myBucket.store("key1", "value1").execute();
 
-    //fetch it back
-    IRiakObject myData = myBucket.fetch("key1").execute();
+//fetch it back
+IRiakObject myData = myBucket.fetch("key1").execute();
 
-    // you can specify extra parameters to the store operation using the
-    // fluid builder style API
-    myData = myBucket.store("key1", "value2").returnBody(true).execute();
+// you can specify extra parameters to the store operation using the
+// fluid builder style API
+myData = myBucket.store("key1", "value2").returnBody(true).execute();
 
-    // delete
-    myBucket.delete("key1").rw(3).execute();
+// delete
+myBucket.delete("key1").rw(3).execute();
 #+END_SRC
 ** Some History
 This riak-java-client API is new. Prior to this version there were two separate
@@ -60,18 +60,18 @@ both with quite different APIs.
 
 *** Deprecated
 The REST client (which you can still use directly) has been moved to
-
-    com.basho.riak.client.http.RiakClient
-
+#+BEGIN_SRC java
+com.basho.riak.client.http.RiakClient
+#+END_SRC
 Though a deprecated RiakClient still exists at
-
-    com.basho.riak.client.RiakClient
-
+#+BEGIN_SRC java
+com.basho.riak.client.RiakClient
+#+END_SRC
 for another release or two to ease transition. All the REST client's HTTP
 specific classes have been moved to 
-
-    com.basho.riak.client.http.*
-
+#+BEGIN_SRC java
+com.basho.riak.client.http.*
+#+END_SRC
 and the originals retained *but deprecated*. If you want to use the legacy,
 low-level client directly please use the newly packaged version. The
 deprecated classes will be deleted in the next or following release to
@@ -84,9 +84,9 @@ conventions in the short term.
 ** What's new?
 *** Builders
 To avoid the profusion of constructors and setters there is a builder
-
-    com.basho.riak.client.builders.RiakObjectBuilder
-
+#+BEGIN_SRC java
+com.basho.riak.client.builders.RiakObjectBuilder
+#+END_SRC
 to simplify creating and updating IRiakObjects.
 
 In fact most classes are as immutable as possible and are created
@@ -96,9 +96,9 @@ across multiple threads but the immutable value objects they create are.
 *** Layers
 **** Low
 There is a low-level interface, RawClient
-
-    com.basho.riak.client.raw.RawClient
-
+#+BEGIN_SRC java
+com.basho.riak.client.raw.RawClient
+#+END_SRC
 and two adapters that adapt the legacy protocol buffers and REST clients to the
 RawClient interface. RawClient provides access to Riak's APIs. If you don't want
 any of the higher level features to deal with domain objects, eventual
@@ -106,53 +106,53 @@ consistency and fault tolerance (see below) then at least
 use RawClient over the underlying legacy clients so your code will not need to
 change if you decide to move from REST to protocol buffers or
 back. For example:
+#+BEGIN_SRC java
+RiakClient pbcClient = new RiakClient("127.0.0.1");
+// OR
+// com.basho.riak.client.http.RiakClient httpClient = new
+// com.basho.riak.client.http.RiakClient("http://127.0.0.1:8098/riak");
+RawClient rawClient = new PBClientAdapter(pbcClient); 
+// OR new HTTPClientAdapter(httpClient);
 
-    RiakClient pbcClient = new RiakClient("127.0.0.1");
-    // OR
-    // com.basho.riak.client.http.RiakClient httpClient = new
-    // com.basho.riak.client.http.RiakClient("http://127.0.0.1:8098/riak");
-    RawClient rawClient = new PBClientAdapter(pbcClient); 
-    // OR new HTTPClientAdapter(httpClient);
-   
-    IRiakObject riakObject = RiakObjectBuilder.newBuilder(bucketName, "key1").withValue("value1").build();
-    rawClient.store(riakObject, new StoreMeta(2, 1, false));
-    RiakResponse fetched = rawClient.fetch(bucketName, "key1");
-    IRiakObject result = null;
-       
-    if(fetched.hasValue()) {
-        if(fetched.hasSiblings()) {
-            //do what you must to resolve conflicts
-         } else {
-            result = fetched.getRiakObjects()[0];
-         }
-     }
-     
-     result.addLink(new RiakLink("otherBucket", "otherKey", "tag"));
-     result.setValue("newValue");
-        
-     RiakResponse stored = rawClient.store(result, new StoreMeta(2, 1, true));
-        
-     IRiakObject updated = null;
-        
-     if(stored.hasValue()) {
-         if(stored.hasSiblings()) {
-             //do what you must to resolve conflicts
-         } else {
-             updated = stored.getRiakObjects()[0];
-         }
-     }
-        
-     rawClient.delete(bucketName, "key1");
+IRiakObject riakObject = RiakObjectBuilder.newBuilder(bucketName, "key1").withValue("value1").build();
+rawClient.store(riakObject, new StoreMeta(2, 1, false));
+RiakResponse fetched = rawClient.fetch(bucketName, "key1");
+IRiakObject result = null;
 
+if(fetched.hasValue()) {
+if(fetched.hasSiblings()) {
+//do what you must to resolve conflicts
+} else {
+result = fetched.getRiakObjects()[0];
+}
+}
+
+result.addLink(new RiakLink("otherBucket", "otherKey", "tag"));
+result.setValue("newValue");
+
+RiakResponse stored = rawClient.store(result, new StoreMeta(2, 1, true));
+
+IRiakObject updated = null;
+
+if(stored.hasValue()) {
+if(stored.hasSiblings()) {
+//do what you must to resolve conflicts
+} else {
+updated = stored.getRiakObjects()[0];
+}
+}
+
+rawClient.delete(bucketName, "key1");
+#+END_SRC
 
 If *you* want to add a client transport to Riak (say you hate Apache HTTP client
 but love Netty) implementing RawClient is the way to do it.
 
 **** High
 All the code so far elides somes rather important details:
-
-    // handle conflict here
-
+#+BEGIN_SRC java
+// handle conflict here
+#+END_SRC
 If your bucket allows siblings at some point you may have to deal with
 conflict. Likewise, if you are running in the real world you may have to deal
 with temporary failure. 
@@ -164,39 +164,39 @@ you some tools to deal with eventual consistency and temporary failure.
 Talking to Riak is modelled as a set of operations. An operation is
 a fluid builder for setting operation parameters (like the tunable CAP
 quorum for a read) and an execute method to carry out the operation. EG
-
+#+BEGIN_SRC java
     Bucket b = client.createBucket(bucketName)
         .nVal(1)
         .allowSiblings(true)
         .execute();
-
+#+END_SRC
 or
-
+#+BEGIN_SRC java
     b.store("k", "v").w(2).dw(1).returnBody(false).execute();
-
+#+END_SRC
 All the operations implement RiakOperation<T>, which has a single method:
-
+#+BEGIN_SRC java
      T execute() throws RiakException;
-
+#+END_SRC
 ***** Retry
 Each operation needs a Retrier. You can specify a default retrier
 implementation when you create an IRiakClient or you can provide one
 to each operation when you build it. There is a simple retrier
 provided with this library that retries the given operation *n* times
 before throwing an exception.
-
+#+BEGIN_SRC java
     b.store("k", "v").retrier(DefaultRetrier.attempts(3)).execute();    
-
+#+END_SRC
 The DefaultRiakClient implementation provides a 3 times retrier to all it's
 operations. You can override this from the constructor or
 provide your own per operation (or per bucket, see below). The Retrier interface
 accepts Callable<T> for its "attempt" method. Internally, operations are
 built around that interface.
-
+#+BEGIN_SRC java
     public interface Retrier {
         <T> T attempt(Callable<T> command) throws RiakRetryFailedException;
     }
-
+#+END_SRC
 ***** Buckets
 To simplify the Riak client all value related operations are performed via the
 Bucket interface. The Bucket also provides access to the set of bucket
@@ -213,11 +213,11 @@ objects in Riak. Please see Conversion below for details.
 
 Although it is expensive and somewhat ill advised, you may list a bucket's keys
 with:
-
+#+BEGIN_SRC java
     for(String k : bucket.keys()) {
          // do your key thing
     }
-
+#+END_SRC
 The keys are streamed, and the stream closed by a reaper thread when the
 iterator is weakly reachable.
 
@@ -249,9 +249,9 @@ throws an exception of conflict cannot be
 resolved. UnresolvedConflictException contains all the siblings. In
 cases were logic fails to resolve the conflict you can push the
 decision to a user:
-
+#+BEGIN_SRC java
     T resolve(final Collection<T> siblings) throws UnresolvedConflictException;
-
+#+END_SRC
 Since conflict resolution requires domain knowledge it makes sense to convert
 riak data into domain objects.
 
@@ -266,35 +266,35 @@ easier to reason about siblings and conflict with the domain knowledge
 of your application, and easier still with the actual domain objects. 
 
 Each operation provided by Bucket can accept an implementation of 
-
+#+BEGIN_SRC java
    com.basho.riak.client.convert.Converter
-
+#+END_SRC
 Converter has two methods 
-
+#+BEGIN_SRC java
     IRiakObject fromDomain(T domainObject, VClock vclock)
     T toDomain(IRiakObject riakObject)
-
+#+END_SRC
 Implement these and pass to a bucket operation to convert riak data into POJOs
 and back.
 
 This library currently provides a JSONConverter that uses the [[http://wiki.fasterxml.com/JacksonHome][Jackson]] JSON
 library. Jackson requires your classes to be either simple Java Bean types
 (getter, setter, no arg constructor) or annotated. Please see
-
+#+BEGIN_SRC java
     com.megacorp.commerce.ShoppingCart
-
+#+END_SRC
 for an example of Jackson annotated domain class and LegacyCart in the same
 package for an unannotated class.
 
 You can annotate a field of your class with 
-
+#+BEGIN_SRC java
    @RiakKey
-
+#+END_SRC
 and the client will use the value of that field as the key for fetch and store
 operations. If you do not or cannot annotate a key field then you must use the 
-
+#+BEGIN_SRC java
     bucket.store("key", myObject);
-
+#+END_SRC
 Implementing your own converter is pretty simple, so if you want to store XML,
 go ahead. Be aware that the converter should write the content-type when
 serializing and also check the content-type when deserializing.
@@ -311,17 +311,17 @@ creating a new key/value but you may well be updating an existing
 value and *you don't know in advance*. If you model your data to be
 logically monotonic then you can provide a Mutation<T> that accepts the old value
 and returns the new value based on some logic.
-
+#+BEGIN_SRC java
      b.store("k", myObject).withMutation(new Mutation<MyClass>() {
           MyClass apply(MyClass original) {
                myObject.setCounter(orignal.getCounter() +1 );
                return myObject;
           }).execute();
-
+#+END_SRC
 The Mutation<T> interface has a single method:
-
+#+BEGIN_SRC java
      T apply(T original);
-
+#+END_SRC
 Which accepts the conflict resolved value from a fetch and returns it
 updated.
 
@@ -358,7 +358,7 @@ a few types and a few buckets, so you ShoppingCarts will always require that you
 use you MergedCartResolver and your CartConverter and your CartMutation.
 
 Creating a DomainBucket is easy:
-
+#+BEGIN_SRC java
     final DomainBucket<ShoppingCart> carts = DomainBucket.builder(b, ShoppingCart.class)
         .withResolver(new MergeCartResolver())
         .returnBody(true)
@@ -369,9 +369,9 @@ Creating a DomainBucket is easy:
         .rw(1)
         .mutationProducer(new CartMutator())
     .build();
-
+#+END_SRC
 Thereafter there is less noise when working with your ShoppingCart data:
-
+#+BEGIN_SRC java
     final ShoppingCart cart = new ShoppingCart(userId);
     cart.addItem("coffee");
     cart.addItem("fixie");
@@ -382,7 +382,7 @@ Thereafter there is less noise when working with your ShoppingCart data:
     cart.addItem("bowtie");
     cart.addItem("nail gun");
     carts.delete(cart);
-
+#+END_SRC
 (NOTE: by default a DomainBucket is configured with the
 DefaultResolver, ClobberMutation and JSONConverter)
 
@@ -395,31 +395,31 @@ Performing map reduce is very much as it was for the legacy RiakClient:
 Refer to the [[http://wiki.basho.com/MapReduce.html][Riak Map/Reduce documentation ]]for a detailed explanation of how
 map/reduce works in Riak. Map/Reduce is just another RiakOperation and so a
 fluid builder:
-
+#+BEGIN_SRC java
     MapReduceResult result = client.mapReduce("myBucket")
         .addLinkPhase("bucketX", "test", false)
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), false)
         .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
     .execute();
-
+#+END_SRC
 The Map reduce operation lets you build up a number of phases. The
 MapReduceResult uses Jackson (again) to provide you query results as either Java
 Collection types, a raw JSON string or (again) as a Java Bean type that you
 provide to the getResult method:
-
+#+BEGIN_SRC java
     Collection<GoogleStockDataItem> stockItems =
                     result.getResult(GoogleStockDataItem.class);
-
+#+END_SRC
 The inputs to a Map/Reduce are either a bucket, or bucket/key pairs.
 
 ******* Bucket Map Reduce
 A BucketMapReduce extends MapReduce. To create a BucketMapReduce operation call
-
+#+BEGIN_SRC java
     client.mapReduce("myBucket");
-
+#+END_SRC
 BucketMapReduce also allows the addition of Key Filters to limit the results.
 Adding Key Filters is just like adding phases:
-
+#+BEGIN_SRC java
     MapReduceResult result = client.mapReduce("myBucket")
     .addKeyFilter(new TokenizeFilter("_", 2))
     .addKeyFilter(new StringToIntFilter())
@@ -429,18 +429,18 @@ Adding Key Filters is just like adding phases:
     .execute();
 
     Collection<Integer> items = result.getResult(Integer.class);
-
+#+END_SRC
 Please see the [[http://wiki.basho.com/Key-Filters.html][Key Filters documentation]] for more details about key filters and
 the 
-
+#+BEGIN_SRC java
     com.basho.riak.client.query.filters.*
-
+#+END_SRC
 package for the available filters.
 
 ******* BucketKeyMapReduce
 A BucketKeyMapReduce can be built with many inputs, they're added just like
 phases.
-
+#+BEGIN_SRC java
     MapReduceResult result = client.mapReduce()
         .addInput("goog","2010-01-04")
         .addInput("goog","2010-01-05")
@@ -449,16 +449,16 @@ phases.
         .addInput("goog","2010-01-08")
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
     .execute();
-
+#+END_SRC
 ****** Link Walking
 Links provide a light weight graph database-like feature to Riak. See the [[http://wiki.basho.com/Links-and-Link-Walking.html][Link
 Walking documentation]] for full details. 
 
 Adding links to an IRiakObject is done via the builder
-
+#+BEGIN_SRC java
     IRiakObject o = RiakObjectBuilder.newBuilder("myBucket",
     "myKey").withValue("value").addLink("bucketX", "keyY", "tagZ").build();
-
+#+END_SRC
 Link Walking is just another RiakOperation. You start at a IRiakObject and add
 steps to walk and call execute. Adding a step is matter of specifying the
 bucket, tag and whether to keep the output for the step. A null, empty string or
@@ -467,12 +467,12 @@ either a boolean or the Accumulate enum. Not specifying keep will result in the
 default for that step being used.
 
 An example link walk:
-
+#+BEGIN_SRC java
     WalkResult result = client.walk(riakObject)
         .addStep(bucketName, fooTag, true)
         .addStep(bucketName, fooTag)
       .execute();
-
+#+END_SRC
 
 The result is always a Collection of IRiakObjects. In the next version
 conversion and conflict resolution will also be available to link
@@ -489,9 +489,9 @@ REST link walking interface.
 
 ** Next Steps
 Have a look at the 
-
+#+BEGIN_SRC java
     com.basho.riak.client.itest
-
+#+END_SRC
 package for examples of all the features described above.
 
 Start storing data in Riak using IRiakObject and anonymous inner
