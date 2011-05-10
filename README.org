@@ -94,7 +94,7 @@ using fluid builders. The builders are *not* designed to be used
 across multiple threads but the immutable value objects they create are.
 
 *** Layers
-**** Low
+*** Low
 There is a low-level interface, RawClient
 #+BEGIN_SRC java
 com.basho.riak.client.raw.RawClient
@@ -148,7 +148,7 @@ rawClient.delete(bucketName, "key1");
 If *you* want to add a client transport to Riak (say you hate Apache HTTP client
 but love Netty) implementing RawClient is the way to do it.
 
-**** High
+*** High
 All the code so far elides somes rather important details:
 #+BEGIN_SRC java
 // handle conflict here
@@ -160,7 +160,7 @@ with temporary failure.
 The higher level API (built on top of RawClient) gives
 you some tools to deal with eventual consistency and temporary failure.
 
-***** Operations
+*** Operations
 Talking to Riak is modelled as a set of operations. An operation is
 a fluid builder for setting operation parameters (like the tunable CAP
 quorum for a read) and an execute method to carry out the operation. EG
@@ -178,7 +178,7 @@ All the operations implement RiakOperation<T>, which has a single method:
 #+BEGIN_SRC java
      T execute() throws RiakException;
 #+END_SRC
-***** Retry
+**** Retry
 Each operation needs a Retrier. You can specify a default retrier
 implementation when you create an IRiakClient or you can provide one
 to each operation when you build it. There is a simple retrier
@@ -197,7 +197,7 @@ built around that interface.
         <T> T attempt(Callable<T> command) throws RiakRetryFailedException;
     }
 #+END_SRC
-***** Buckets
+*** Buckets
 To simplify the Riak client all value related operations are performed via the
 Bucket interface. The Bucket also provides access to the set of bucket
 properties (nval, allow_mult etc). 
@@ -224,7 +224,7 @@ iterator is weakly reachable.
 There is a further wrapper to bucket (see DomainBucket below) that simplifies
 calling  operations further. 
 
-***** Conflict Resolution
+*** Conflict Resolution
 Conflict happens in Dynamo style systems. It is best to have a strategy in mind
 to deal with it. The strategy you employ is highly dependant on your domain. One
 example is a shopping cart. Conflicting shopping carts should be merged by a
@@ -255,7 +255,7 @@ decision to a user:
 Since conflict resolution requires domain knowledge it makes sense to convert
 riak data into domain objects.
 
-***** Conversion
+*** Conversion
 Data in riak is made up of the value, its content-type, links and user meta
 data. There is then some riak meta data along with that (for example,
 the VClock, last update time etc.) 
@@ -305,7 +305,7 @@ You may also use the JSONConverter to store Java Collection types (like Map,
 List or Map<List> and List<Map<String, List<String>>>) as JSON in Riak. Which is
 pretty cool.
 
-***** Mutation
+*** Mutation
 With conflict resolution comes Mutation. When you perform a store you might be
 creating a new key/value but you may well be updating an existing
 value and *you don't know in advance*. If you model your data to be
@@ -328,7 +328,7 @@ updated.
 The default mutation replaces the old value with the new
 value. (See ClobberMutation.)
 
-***** The order of events
+*** The order of events
 When a fetch operation is executed the order of execution is as follows:
 
 1. RawClient fetch
@@ -345,7 +345,7 @@ For a store operation
 5. if returnBody is true the siblings are iterated, converted and conflict
    resolved and the value is returned
 
-***** Domain Buckets
+*** Domain Buckets
 A domain bucket is a wrapper around a bucket that simplifies the amount of
 typing and repetition required to work with that bucket. A DomainBucket is an
 abstraction that allows you to store and fetch specific types in Riak.
@@ -386,10 +386,10 @@ Thereafter there is less noise when working with your ShoppingCart data:
 (NOTE: by default a DomainBucket is configured with the
 DefaultResolver, ClobberMutation and JSONConverter)
 
-***** Queries
+*** Queries
 The Riak-java-client currently supports map reduce and link walking.
 
-****** Map reduce
+**** Map reduce
 Performing map reduce is very much as it was for the legacy RiakClient:
 
 Refer to the [[http://wiki.basho.com/MapReduce.html][Riak Map/Reduce documentation ]]for a detailed explanation of how
@@ -412,7 +412,7 @@ provide to the getResult method:
 #+END_SRC
 The inputs to a Map/Reduce are either a bucket, or bucket/key pairs.
 
-******* Bucket Map Reduce
+**** Bucket Map Reduce
 A BucketMapReduce extends MapReduce. To create a BucketMapReduce operation call
 #+BEGIN_SRC java
     client.mapReduce("myBucket");
@@ -437,7 +437,7 @@ the
 #+END_SRC
 package for the available filters.
 
-******* BucketKeyMapReduce
+**** BucketKeyMapReduce
 A BucketKeyMapReduce can be built with many inputs, they're added just like
 phases.
 #+BEGIN_SRC java
@@ -450,7 +450,7 @@ phases.
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
     .execute();
 #+END_SRC
-****** Link Walking
+*** Link Walking
 Links provide a light weight graph database-like feature to Riak. See the [[http://wiki.basho.com/Links-and-Link-Walking.html][Link
 Walking documentation]] for full details. 
 
