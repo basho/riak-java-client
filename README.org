@@ -20,7 +20,6 @@ objects in Riak and returning domain objects from map reduce queries.
 ** Including riak-java-client in your project
 Riak-java-client is available from maven central. Add the dependency to your pom.xml
 
-
     <dependency>
         <groupId>com.basho.riak</groupId>
         <artifactId>riak-client</artifactId>
@@ -28,14 +27,13 @@ Riak-java-client is available from maven central. Add the dependency to your pom
         <type>pom</type>
     </dependency>
 
-
 To build and install from source, first install [[http://maven.apache.org/download.html][Apache Maven]]. With Maven installed, run:
 
     mvn clean install
 
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
-
+#+BEGIN_SRC Java
     // create a client
     IRiakClient riakClient = RiakFactory.pbcClient(); //or RiakFactory.httpClient();
 
@@ -54,7 +52,7 @@ Assuming you're running Riak on localhost on the default ports getting started i
 
     // delete
     myBucket.delete("key1").rw(3).execute();
-
+#+END_SRC
 ** Some History
 This riak-java-client API is new. Prior to this version there were two separate
 clients, one for protocol buffers, one for REST, both in the same library and
