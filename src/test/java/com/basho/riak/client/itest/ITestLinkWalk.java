@@ -27,7 +27,6 @@ import org.junit.Test;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.RiakBucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
@@ -38,10 +37,10 @@ import com.basho.riak.client.util.CharsetUtils;
  * @author russell
  * 
  */
-public class ITestLinkWalk {
+public abstract class ITestLinkWalk {
 
     @Test public void test_walk() throws RiakException {
-        final IRiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = getClient();
 
         final String fooVal = "fooer";
         final String barVal = "barrer";
@@ -108,4 +107,10 @@ public class ITestLinkWalk {
         assertTrue(keys.contains("second"));
         assertTrue(keys.contains("fourth"));
     }
+
+    /**
+     * @return
+     * @throws RiakException
+     */
+    protected abstract IRiakClient getClient() throws RiakException;
 }
