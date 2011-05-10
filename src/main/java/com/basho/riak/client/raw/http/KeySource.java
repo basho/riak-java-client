@@ -29,7 +29,7 @@ import com.basho.riak.client.http.response.BucketResponse;
  */
 public class KeySource implements Iterator<String> {
 
-    private static final Timer timer = new Timer();
+    private static final Timer timer = new Timer("riak-client-key-stream-timeout-thread", true);
     private final BucketResponse bucketResponse;
     private final Iterator<String> keys;
     private ReaperTask reaper;
