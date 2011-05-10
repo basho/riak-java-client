@@ -176,6 +176,14 @@ public class DefaultRiakObject implements IRiakObject {
         this.value = copy(value);
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#setValue(java.lang.String)
+     */
+    public void setValue(String value) {
+        this.value = CharsetUtils.utf8StringToBytes(value);
+        this.contentType = CharsetUtils.addUtf8Charset(contentType);
+    }
+
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
@@ -346,5 +354,4 @@ public class DefaultRiakObject implements IRiakObject {
     public String getValueAsString() {
         return CharsetUtils.asString(value, CharsetUtils.getCharset(contentType));
     }
-
 }

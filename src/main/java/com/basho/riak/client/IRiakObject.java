@@ -73,6 +73,15 @@ public interface IRiakObject extends Iterable<RiakLink> {
 
     void setValue(byte[] value);
 
+    /**
+     * Convenience method that basically will result in
+     * value being turned into a byte[] array using charset utf-8 and also
+     * will result in charset=utf-8 being appended to the content-type for this object
+     *
+     * @param value the String value
+     */
+    void setValue(String value);
+
     void setContentType(String contentType);
 
     /**
