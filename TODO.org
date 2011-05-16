@@ -10,7 +10,6 @@ Include things like TCP_NODELAY etc
 * TODO reimplement JSONConverter as less of an example and more for production
 * TODO key discovery from domain objects needs to be a strategy
 * TODO moar unit tests
-* TODO detailed JavaDoc throughout
 * TODO Add a DomainBucket.store(String key, T o) method
 * TODO per op. cap on RiakBucket
 * TODO Retrier, Mutator, Conflict resolver on RiakBucket
