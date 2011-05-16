@@ -41,7 +41,7 @@ import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.WithBodyResponse;
 
 /**
- * Adapts the old {@link RiakClient} to the new {@link RawClient} interface.
+ * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.
  * 
  * @author russell
  * 
@@ -51,15 +51,20 @@ public class HTTPClientAdapter implements RawClient {
     private final RiakClient client;
 
     /**
-     * @param client
+     * Create an instance of the adapter that delegates all API calls to <code>client</code>
+     * @param client the {@link RiakClient} to delegate to.
      */
-    public HTTPClientAdapter(RiakClient client) {
+    public HTTPClientAdapter(final RiakClient client) {
         this.client = client;
     }
 
     /**
-     * @param string
-     * @param i
+     * Convenience constructor that delegates to
+     * {@link RiakClient#RiakClient(String)} to create a {@link RiakClient} to
+     * adapt
+     * 
+     * @param url
+     *            of the riak REST interface
      */
     public HTTPClientAdapter(String url) {
         this(new RiakClient(url));
@@ -112,9 +117,10 @@ public class HTTPClientAdapter implements RawClient {
     }
 
     /**
-     * @param bucket
-     * @param resp
-     * @return
+     * For all those fetch/store methods that may return an actual data payload.
+     * @param resp a {@link WithBodyResponse}
+     * @return a {@link RiakResponse} with the data items copied from <code>resp</code>
+     * @see ConversionUtil#convert(java.util.Collection)
      */
     private RiakResponse handleBodyResponse(WithBodyResponse resp) {
         RiakResponse response = RiakResponse.empty();

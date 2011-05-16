@@ -28,9 +28,18 @@ public class MapPhase implements MapReducePhase {
     private final Object arg; // TODO object? you sure?
 
     /**
+     * Create a MapPhase
+     * 
      * @param phaseFunction
+     *            the {@link Function}
      * @param arg
+     *            an argument that will be passed to the phase verbatim
+     *            (Object#toString)
      * @param keepResult
+     *            if the result should be returned or merely provide input for
+     *            the next phase.
+     * 
+     * @see MapReduce#addMapPhase(Function, Object, boolean)
      */
     public MapPhase(Function phaseFunction, Object arg, boolean keepResult) {
         this.phaseFunction = phaseFunction;
@@ -39,8 +48,14 @@ public class MapPhase implements MapReducePhase {
     }
 
     /**
+     * Create a MapPhase
+     * 
      * @param phaseFunction
+     *            the {@link Function}
      * @param arg
+     *            an argument that will be passed to the phase verbatim
+     *            (Object#toString)
+     * @see MapReduce#addMapPhase(Function, Object)
      */
     public MapPhase(Function phaseFunction, Object arg) {
         this.phaseFunction = phaseFunction;
@@ -49,8 +64,12 @@ public class MapPhase implements MapReducePhase {
     }
     
     /**
+     * Create a MapPhase
+     * 
      * @param phaseFunction
-     * @param arg
+     *            the {@link Function}
+     * 
+     * @see MapReduce#addMapPhase(Function)
      */
     public MapPhase(Function phaseFunction) {
         this.phaseFunction = phaseFunction;
@@ -59,8 +78,15 @@ public class MapPhase implements MapReducePhase {
     }
     
     /**
+     * Create a MapPhase
+     * 
      * @param phaseFunction
-     * @param arg
+     *            the {@link Function}
+     * @param keepResult
+     *            if the result should be returned or merely provide input for
+     *            the next phase.
+     * 
+     * @see MapReduce#addMapPhase(Function, Object, boolean)
      */
     public MapPhase(Function phaseFunction, boolean keep) {
         this.phaseFunction = phaseFunction;

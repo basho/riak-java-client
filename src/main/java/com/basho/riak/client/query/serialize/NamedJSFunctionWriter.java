@@ -20,6 +20,7 @@ import org.codehaus.jackson.JsonGenerator;
 import com.basho.riak.client.query.functions.NamedJSFunction;
 
 /**
+ * Writes a {@link NamedJSFunction} to a {@link JsonGenerator}
  * @author russell
  *
  */

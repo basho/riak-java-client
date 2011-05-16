@@ -14,6 +14,7 @@
 package com.basho.riak.client.query.functions;
 
 /**
+ * Top level tag interface for all function types
  * @author russell
  *
  */

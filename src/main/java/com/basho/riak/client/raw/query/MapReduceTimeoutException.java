@@ -13,11 +13,18 @@
  */
 package com.basho.riak.client.raw.query;
 
+import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.raw.RawClient;
 
 /**
+ * Checked exception thrown when an Map Reduce job takes longer than the
+ * specified timeout.
+ * 
  * @author russell
  * 
+ * @see IRiakClient#mapReduce()
+ * @see RawClient#mapReduce(MapReduceSpec)
  */
 public class MapReduceTimeoutException extends RiakException {
 

@@ -14,6 +14,11 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Transform filter that lower cases the key.
+ * @author russell
+ *
+ */
 public class ToLowerFilter extends AbstractKeyFilter {
     
     private static final String FILTER = "to_lower";

@@ -13,6 +13,11 @@
  */
 package com.basho.riak.client.query.filter;
 
+/**
+ * Transforms the input key from a float to a string.
+ * @author russell
+ *
+ */
 public class FloatToStringFilter extends AbstractKeyFilter {
 
     private static final String NAME = "float_to_string";

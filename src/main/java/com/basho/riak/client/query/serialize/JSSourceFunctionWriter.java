@@ -20,6 +20,7 @@ import org.codehaus.jackson.JsonGenerator;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 
 /**
+ * Writes a {@link JSSourceFunction} to a {@link JsonGenerator}
  * @author russell
  *
  */

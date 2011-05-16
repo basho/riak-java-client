@@ -16,6 +16,7 @@ package com.basho.riak.client.query.serialize;
 import java.io.IOException;
 
 /**
+ * All function writers need to do is implement a write method
  * @author russell
  *
  */

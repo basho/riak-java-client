@@ -19,7 +19,6 @@ import java.util.Iterator;
  * Decorates an iterator so that remove throws {@link UnsupportedOperationException}
  * @author russell
  * @param <E>
- *
  */
 public class UnmodifiableIterator<E> implements Iterator<E> {
     
@@ -27,6 +26,7 @@ public class UnmodifiableIterator<E> implements Iterator<E> {
     
 
     /**
+     * Create a new {@link UnmodifiableIterator} for the given <code>delegate</code>
      * @param delegate the iterator to decorate
      */
     public UnmodifiableIterator(Iterator<E> delegate) {
@@ -47,8 +47,9 @@ public class UnmodifiableIterator<E> implements Iterator<E> {
         return delegate.next();
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#remove()
+    /**
+     * Always throws (as this is an UnmodifiableIterator).
+     * @throws UnsupportedOperationException
      */
     public void remove() {
         throw new UnsupportedOperationException();

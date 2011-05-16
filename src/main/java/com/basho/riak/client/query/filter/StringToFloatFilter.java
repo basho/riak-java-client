@@ -14,6 +14,11 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Transform the key from a string to a float
+ * @author russell
+ *
+ */
 public class StringToFloatFilter extends AbstractKeyFilter {
     private static final String NAME = "string_to_float";
 

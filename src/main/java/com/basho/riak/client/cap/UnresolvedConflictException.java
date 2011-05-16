@@ -18,8 +18,11 @@ import java.util.Collection;
 import com.basho.riak.client.RiakException;
 
 /**
- * @author russell
+ * Thrown by {@link Retrier#attempt(java.util.concurrent.Callable)} when it finally fails.
  * 
+ * Holds the Collection of siblings so they can be presented for further resolution attempts.
+ * 
+ * @author russell
  */
 public class UnresolvedConflictException extends RiakException {
 
@@ -28,27 +31,41 @@ public class UnresolvedConflictException extends RiakException {
      */
     private static final long serialVersionUID = -219858468775752064L;
 
-    private final String reason;
     private final Collection<? extends Object> siblings;
 
-    public UnresolvedConflictException(String reason, Collection<? extends Object> siblings) {
-        this.reason = reason;
+    /**
+     * For when a collection of siblings cannot be whittled down to one.
+     * 
+     * @param cause
+     *            the exception that broke the camels back
+     * @param message
+     *            a String message
+     * @param siblings
+     *            the collection of siblings
+     */
+    public UnresolvedConflictException(Throwable cause, String message, Collection<? extends Object> siblings) {
+        super(message, cause);
         this.siblings = siblings;
     }
 
     /**
-     * @return the reason
+     * For when a collection of siblings cannot be whittled down to one.
+     * 
+     * @param message
+     *            a String message
+     * @param siblings
+     *            the collection of siblings
      */
-    public String getReason() {
-        return reason;
+    public UnresolvedConflictException(String message, Collection<? extends Object> siblings) {
+        super(message);
+        this.siblings = siblings;
     }
 
     /**
-     * @param <T>
+     * Get the siblings that could not be resolved.
      * @return the siblings
      */
     public Collection<? extends Object> getSiblings() {
         return siblings;
     }
-
 }

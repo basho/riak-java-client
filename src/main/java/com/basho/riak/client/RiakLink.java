@@ -14,8 +14,14 @@
 package com.basho.riak.client;
 
 /**
- * Immutable RiakLink
- * 
+ * Models a link from one object to another in Riak.
+ * <p>
+ * Links are unidirectional and enable lightweight graph semantics in Riak.
+ * See <a href="http://wiki.basho.com/Links.html">the basho wiki</a> for more details on links.
+ * </p>
+ * <p>
+ * Immutable.
+ * </p>
  * @author russell
  * 
  */
@@ -29,9 +35,9 @@ public class RiakLink {
      * Create a RiakLink from the specified parameters.
      * 
      * @param bucket
-     *            the name of the bucket
+     *            the bucket
      * @param key
-     *            the key name
+     *            the key
      * @param tag
      *            the link tag
      */
@@ -53,14 +59,23 @@ public class RiakLink {
         this.tag = riakLink.getTag();
     }
 
+    /**
+     * @return the bucket
+     */
     public String getBucket() {
         return bucket;
     }
 
+    /**
+     * @return the key
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * @return the tag
+     */
     public String getTag() {
         return tag;
     }

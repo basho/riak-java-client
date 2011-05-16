@@ -14,11 +14,19 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that start with the provided argument
+ * @author russell
+ *
+ */
 public class StartsWithFilter implements KeyFilter {
     
     private static final String NAME = "starts_with";
     private final String[] filter;
 
+    /**
+     * @param startsWithFilter
+     */
     public StartsWithFilter(String startsWithFilter) {
         filter = new String[] { NAME, startsWithFilter };
     }

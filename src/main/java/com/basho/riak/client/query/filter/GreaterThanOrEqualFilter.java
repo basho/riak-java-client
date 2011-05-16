@@ -13,23 +13,39 @@
  */
 package com.basho.riak.client.query.filter;
 
-
+/**
+ * Filter in keys that are >= to the configured value
+ * 
+ * @author russell
+ */
 public class GreaterThanOrEqualFilter implements KeyFilter {
     private static final String NAME = "greater_than_or_eq";
     private final Object[] filter;
 
+    /**
+     * @param greaterThanOrEq
+     */
     public GreaterThanOrEqualFilter(String greaterThanOrEq) {
         filter = new String[] {NAME, greaterThanOrEq};
     }
 
+    /**
+     * @param greaterThanOrEq
+     */
     public GreaterThanOrEqualFilter(int greaterThanOrEq) {
         filter = new Object[] {NAME, greaterThanOrEq};
     }
 
+    /**
+     * @param greaterThanOrEq
+     */
     public GreaterThanOrEqualFilter(double greaterThanOrEq) {
         filter = new Object[] {NAME, greaterThanOrEq};
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public Object[] asArray() {
         return filter.clone();
     }

@@ -16,12 +16,59 @@ package com.basho.riak.client.convert;
 import java.lang.reflect.Field;
 
 /**
- * Static method to get the annotated key from a domain object.
+ * Static methods to get /set the annotated key from/on a domain object.
  * @author russell
- * 
+ * @see RiakKey
+ * @see JSONConverter
  */
 public class KeyUtil {
 
+    /**
+     * Attempts to inject <code>key</code> as the value of the {@link RiakKey}
+     * annotated field of <code>domainObject</code>
+     * 
+     * @param <T> the type of <code>domainObject</code>
+     * @param domainObject the object to inject the key into
+     * @param key the key to inject
+     * @return <code>domainObject</code> with {@link RiakKey} annotated field set to <code>key</code>
+     * @throws ConversionException if there is a {@link RiakKey} annotated field but it cannot be set to the value of <code>key</code>
+     */
+    public static <T> T setKey(T domainObject, String key) throws ConversionException {
+        final Field[] fields = domainObject.getClass().getDeclaredFields();
+
+        for (Field field : fields) {
+
+            if (field.isAnnotationPresent(RiakKey.class)) {
+                boolean oldAccessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    field.set(domainObject, key);
+                } catch (IllegalAccessException e) {
+                    throw new ConversionException(e);
+                } finally {
+                    field.setAccessible(oldAccessible);
+                }
+
+            }
+        }
+        return domainObject;
+    }
+
+    /**
+     * Attempts to get a key from <code>domainObject</code> by looking for a
+     * {@link RiakKey} annotated field. If non-present it simply returns
+     * <code>defaultKey</code>
+     * 
+     * @param <T>
+     *            the type of <code>domainObject</code>
+     * @param domainObject
+     *            the object to search for a key
+     * @param defaultKey
+     *            the pass through value that will get returned if no key found
+     *            on <code>domainObject</code>
+     * @return either the value found on <code>domainObject</code>;s
+     *         {@link RiakKey} field or <code>defaultkey</code>
+     */
     public static <T> String getKey(T domainObject, String defaultKey) {
         String key = getKey(domainObject);
         if (key == null) {
@@ -30,6 +77,18 @@ public class KeyUtil {
         return key;
     }
 
+    /**
+     * Attempts to get a key from <code>domainObject</code> by looking for a
+     * {@link RiakKey} annotated field. If non-present it simply returns
+     * <code>null</code>
+     * 
+     * @param <T>
+     *            the type of <code>domainObject</code>
+     * @param domainObject
+     *            the object to search for a key
+     * @return either the value found on <code>domainObject</code>;s
+     *         {@link RiakKey} field or <code>null</code>
+     */
     public static <T> String getKey(T domainObject) {
         final Field[] fields = domainObject.getClass().getDeclaredFields();
 
@@ -53,5 +112,4 @@ public class KeyUtil {
 
         return key == null ? null : key.toString();
     }
-
 }

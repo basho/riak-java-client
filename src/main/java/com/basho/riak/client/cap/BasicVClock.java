@@ -16,6 +16,7 @@ package com.basho.riak.client.cap;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
+ * An implementation of {@link VClock} that wraps a <code>byte[]</code>
  * @author russell
  * 
  */
@@ -23,6 +24,11 @@ public class BasicVClock implements VClock {
 
     private final byte[] value;
 
+    /**
+     * Create BasicVclock
+     * @param value the vector clock bytes. NOTE: clones the value
+     * @throws IllegalArgumentException if <code>value</code> is null
+     */
     public BasicVClock(final byte[] value) {
         if (value == null) {
             throw new IllegalArgumentException("VClock value cannot be null");
@@ -30,10 +36,16 @@ public class BasicVClock implements VClock {
         this.value = value.clone();
     }
 
+    /**
+     * @return a copy of this vector clocks bytes
+     */
     public byte[] getBytes() {
         return value.clone();
     }
 
+    /**
+     * @return a UTF-8 String of this vector clocks bytes
+     */
     public String asString() {
         return CharsetUtils.asUTF8String(value);
     }

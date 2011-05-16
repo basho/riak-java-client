@@ -14,18 +14,28 @@
 package com.basho.riak.client.cap;
 
 /**
- * TODO needs further definition and accessor methods.
- *
+ * Encapsulates a buckets r/w/dw/rw quora as either the symbolic Quora or an int.
+ * <p>
+ * TODO: usage and accessors.
+ * </p>
  * @author russell
  */
 public final class Quorum {
     private Integer i;
     private Quora quorum;
 
+    /**
+     * Construct an instance that wraps an int value
+     * @param i
+     */
     public Quorum(int i) {
         this.i = i;
     }
 
+    /**
+     * Construct and instance that wraps a symbolic Quora
+     * @param quorum
+     */
     public Quorum(Quora quorum) {
         this.quorum = quorum;
     }

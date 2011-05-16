@@ -19,21 +19,41 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.basho.riak.client.http.util.Constants;
+
 /**
- * Utils for dealing with byte[], String charset issues, especially since Java 5
- * is less cool than Java 6 in this respect.
- *
+ * Utils for dealing with <code>byte[]</code>, <code>String</code> charset
+ * issues, especially since Java 5 is less cool than Java 6 in this respect.
+ * 
  * This code is mainly from the Trifork fork of the client and was written by
  * Krestan Krab and/or Erik Søe Sørensen.
- *
- * @author russell
  * 
+ * @author russell
  */
 public class CharsetUtils {
     public static Charset ASCII = Charset.forName("ASCII");
     public static Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
     public static Charset UTF_8 = Charset.forName("UTF-8");
 
+    /**
+     * RegEx pattern to get the charset from a content-type value.
+     */
+    private static final Pattern CHARSET_PATT = Pattern.compile("\\bcharset *= *\"?([^ ;\"]+)\"?", Pattern.CASE_INSENSITIVE);
+
+
+    /**
+     * Attempt to extract a charset from a <code>Map</code> of <code>HTTP</code>
+     * headers. Really just pulls a the entry
+     * {@link Constants#HDR_CONTENT_LENGTH} from the map and passes it to
+     * {@link CharsetUtils#getCharset(String)}
+     * 
+     * @param headers
+     *            a {@link Map} of HTTP headers (or anything, really).
+     * @return {@link CharsetUtils#ISO_8859_1} if <code>headers</code> is null,
+     *         or result of calling {@link CharsetUtils#getCharset(String)} with
+     *         the <code>content-type</code> header from <code>headers</code>
+     * @see CharsetUtils#getCharset(String)
+     */
     public static Charset getCharset(Map<String, String> headers) {
         if(headers == null) {
             return ISO_8859_1;
@@ -41,15 +61,16 @@ public class CharsetUtils {
         return getCharset(headers.get(com.basho.riak.client.http.util.Constants.HDR_CONTENT_TYPE));
     }
 
-    static Pattern CHARSET_PATT = Pattern.compile("\\bcharset *= *\"?([^ ;\"]+)\"?", Pattern.CASE_INSENSITIVE);
-
     /**
      * Attempts to parse the {@link Charset} from a contentType string.
      * 
-     * If contentType is null or no charset declaration found, then UTF-8 is returned.
-     * If the found Charset declaration is unknown on this platform then a runtime exception is thrown.
+     * If contentType is null or no charset declaration found, then UTF-8 is
+     * returned. If the found Charset declaration is unknown on this platform
+     * then a runtime exception is thrown.
+     * 
      * @param contentType
-     * @return a {@link Charset} parsed from a charset declaration in a contentType strng.
+     * @return a {@link Charset} parsed from a charset declaration in a
+     *         <code>contentType</code> String.
      */
     public static Charset getCharset(String contentType) {
         if (contentType == null) {
@@ -80,8 +101,9 @@ public class CharsetUtils {
 
     /**
      * Adds the utf-8 charset to a content type.
+     * 
      * @param contentType
-     * @return the contentType with ;charset=utf-8 appended.
+     * @return the <code>contentType</code> with ;charset=utf-8 appended.
      */
     public static String addUtf8Charset(String contentType) {
         if (contentType == null) {
@@ -99,6 +121,7 @@ public class CharsetUtils {
     
     /**
      * Turns a byte[] array into a string in the provided {@link Charset}
+     * 
      * @param bytes
      * @param charset
      * @return a String
@@ -121,6 +144,7 @@ public class CharsetUtils {
     
     /**
      * Turns a byte[] array into a UTF8 string
+     * 
      * @param bytes
      * @param charset
      * @return a String
@@ -131,6 +155,7 @@ public class CharsetUtils {
     
     /**
      * Turn a string into an array of bytes using the passed {@link Charset}
+     * 
      * @param string
      * @param charset
      * @return a byte[] array
@@ -155,11 +180,11 @@ public class CharsetUtils {
 
     /**
      * Turn a UTF-8 encoded string into an array of bytes
+     * 
      * @param string
      * @return
      */
     public static byte[] utf8StringToBytes(String string) {
         return asBytes(string, UTF_8);
     }
-
 }

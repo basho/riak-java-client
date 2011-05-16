@@ -18,13 +18,20 @@ import java.util.Collection;
 import com.basho.riak.client.convert.ConversionException;
 
 /**
- * @author russell
+ * Defines a way to access the results of a Map/reduce query.
  * 
+ * @author russell
+ * @see MapReduce#execute()
  */
 public interface MapReduceResult {
 
     /**
-     * Mapped results to a simple java type
+     * Mapped results to a simple java type, can be a Collection type (Map, List
+     * etc) or a Java Bean style class.
+     * 
+     * NOTE: You can annotate a class with Jackson annotations, too, but that is
+     * an implementation detail that may change. Expect a set of annotations
+     * that are API specific soon.
      * 
      * @param <T>
      * @param resultType
@@ -36,7 +43,7 @@ public interface MapReduceResult {
     /**
      * The raw JSON string of the result
      * 
-     * @return
+     * @return a String of JSON, useful if you need to do your own de-serialization.
      */
     String getResultRaw();
 }

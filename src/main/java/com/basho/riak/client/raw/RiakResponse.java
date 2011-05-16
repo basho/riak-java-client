@@ -21,7 +21,9 @@ import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 
 /**
- * What riak returns: a VClock and bunch of siblings.
+ * A data response from Riak separated into a single vector clock and an array of sibling values.
+ * 
+ * Immutable
  * 
  * @author russell
  */
@@ -32,11 +34,18 @@ public class RiakResponse implements Iterable<IRiakObject> {
     private final IRiakObject[] riakObjects;
 
     /**
+     * Create a response from the given vector clock and array. Array maybe
+     * empty or null as may the vector clock (which implies no data, right.)
+     * 
      * @param vclock
      * @param riakObjects
      */
     public RiakResponse(byte[] vclock, IRiakObject[] riakObjects) {
-        this.vclock = new BasicVClock(vclock);
+        if (vclock == null) {
+            this.vclock = null;
+        } else {
+            this.vclock = new BasicVClock(vclock);
+        }
         if (riakObjects == null) {
             this.riakObjects = NO_OBJECTS;
         } else {
@@ -45,7 +54,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
     }
 
     /**
-     * 
+     * Create THE empty response
      */
     private RiakResponse() {
         this.riakObjects = NO_OBJECTS;
@@ -53,6 +62,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
     }
 
     /**
+     * Get the vector clock bytes
      * @return the vclock
      */
     public byte[] getVclockBytes() {
@@ -60,45 +70,57 @@ public class RiakResponse implements Iterable<IRiakObject> {
     }
 
     /**
-     * @return the vclock
+     * Get the vector clock as a {@link VClock}
+     * @return the vector clock
      */
     public VClock getVclock() {
         return vclock;
     }
 
     /**
+     * Gets the actual array of {@link IRiakObject} (not a clone or copy, so treat it well)
      * @return the riakObjects
      */
     public IRiakObject[] getRiakObjects() {
         return riakObjects;
     }
 
+    /**
+     * Does the response have sibling values?
+     * @return
+     */
     public boolean hasSiblings() {
         return riakObjects.length > 1;
     }
 
+    /**
+     * Does the response hav *any* values?
+     * @return
+     */
     public boolean hasValue() {
         return riakObjects.length > 0;
     }
 
+    /**
+     * How many values?
+     * @return
+     */
     public int numberOfValues() {
         return riakObjects.length;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Iterable#iterator()
+    /**
+     * Unmodifiable iterator view of the values returned from Riak.
      */
     public Iterator<IRiakObject> iterator() {
         return Arrays.asList(riakObjects).iterator();
     }
 
     /**
-     * @return
+     * Generate the empty response
+     * @return THE empty response
      */
     public static RiakResponse empty() {
         return new RiakResponse();
     }
-
 }

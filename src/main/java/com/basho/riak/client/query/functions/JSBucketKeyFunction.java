@@ -22,6 +22,7 @@ public class JSBucketKeyFunction implements AnonymousFunction {
 
     private final String bucket;
     private final String key;
+
     /**
      * @param bucket
      * @param key

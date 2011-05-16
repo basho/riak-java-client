@@ -15,6 +15,11 @@ package com.basho.riak.client.query.filter;
 
 
 
+/**
+ * Transform filter that uppercases the key
+ * @author russell
+ *
+ */
 public class ToUpperFilter extends AbstractKeyFilter {
     
     private static final String FILTER = "to_upper";

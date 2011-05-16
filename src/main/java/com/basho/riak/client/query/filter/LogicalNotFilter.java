@@ -14,6 +14,11 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that aren't caught by the group
+ * @author russell
+ *
+ */
 public class LogicalNotFilter extends AbstractLogicalFilter {
     private static final String NAME = "not";
 

@@ -16,6 +16,11 @@ package com.basho.riak.client.query.filter;
 import java.util.Collection;
 import java.util.LinkedList;
 
+/**
+ * Group a collection of filters
+ * @author russell
+ *
+ */
 public class LogicalFilterGroup implements LogicalFilter {
 
     private final Collection<Object[]> filters = new LinkedList<Object[]>();

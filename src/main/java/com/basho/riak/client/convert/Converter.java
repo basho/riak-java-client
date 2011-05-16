@@ -15,13 +15,14 @@ package com.basho.riak.client.convert;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.operations.RiakOperation;
 
 /**
+ * Implement this and pass to a {@link RiakOperation} for serializing/deserializing your domain objects to IRiakObject
  * @author russell
  * 
  */
 public interface Converter<T> {
-
     /**
      * Convert from domain specific type to RiakObject
      * 
@@ -38,5 +39,4 @@ public interface Converter<T> {
      * @return an instance of type T
      */
     T toDomain(IRiakObject riakObject) throws ConversionException;
-
 }

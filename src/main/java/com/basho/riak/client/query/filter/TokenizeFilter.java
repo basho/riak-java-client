@@ -14,11 +14,20 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that match the <code>tokenNum</code> token of the key when tokenized by <code>separator</code>
+ * @author russell
+ *
+ */
 public class TokenizeFilter implements KeyTransformFilter {
 
     private static final String NAME = "tokenize";
     private final Object[] filter;
     
+    /**
+     * @param separator
+     * @param tokenNum
+     */
     public TokenizeFilter(String separator, int tokenNum) {
         filter = new Object[] {NAME, separator, tokenNum};
     }

@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 /**
+ * Shared code for the set of "logical" filters.
  * @author russell
  *
  */

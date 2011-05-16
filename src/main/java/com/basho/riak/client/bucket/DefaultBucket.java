@@ -18,6 +18,8 @@ import static com.basho.riak.client.convert.KeyUtil.getKey;
 import java.io.IOException;
 import java.util.Collection;
 
+import com.basho.riak.client.DefaultRiakClient;
+import com.basho.riak.client.DefaultRiakObject;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.builders.RiakObjectBuilder;
@@ -26,14 +28,16 @@ import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.Retrier;
-import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.convert.ConversionException;
+import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
 import com.basho.riak.client.convert.NoKeySpecifedException;
+import com.basho.riak.client.convert.PassThroughConverter;
+import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
@@ -41,8 +45,39 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
- * @author russell
+ * Default implementation of {@link Bucket} for creating {@link RiakOperation}s
+ * on k/v data and accessing {@link BucketProperties}.
  * 
+ * <p>
+ * Obtain a {@link DefaultBucket} from {@link FetchBucket} or
+ * {@link WriteBucket} operations from
+ * {@link DefaultRiakClient#fetchBucket(String)},
+ * {@link DefaultRiakClient#createBucket(String)}
+ * </p>
+ * <p>
+ * <code><pre>
+ *   final String bucketName = UUID.randomUUID().toString();
+ *   
+ *   Bucket b = client.createBucket(bucketName).execute();
+ *   //store something
+ *   IRiakObject o = b.store("k", "v").execute();
+ *   //fetch it back
+ *   IRiakObject fetched = b.fetch("k").execute();
+ *   // now update that riak object
+ *   b.store("k", "my new value").execute();
+ *   //fetch it back again
+ *   fetched = b.fetch("k").execute();
+ *   //delete it
+ *   b.delete("k").execute();
+ * </pre></code>
+ * <p>
+ * All operations created by instances of this class are configured with the
+ * {@link Retrier} and {@link RawClient} passed at construction.
+ * </p>
+ * 
+ * @author russell
+ * @see DomainBucket
+ * @see RiakBucket
  */
 public class DefaultBucket implements Bucket {
 
@@ -52,17 +87,22 @@ public class DefaultBucket implements Bucket {
     private final Retrier retrier;
 
     /**
-     * @param properties
-     * @param client
+     * All {@link RiakOperation}s created by this instance will use the
+     * {@link RawClient} and {@link Retrier} provided here.
+     * 
+     * @param name this bucket's name
+     * @param properties the {@link BucketProperties} for this bucket
+     * @param client a {@link RawClient} to use for all {@link RiakOperation}s
+     * @param retrier a {@link Retrier} to use for all {@link RiakOperation}s
      */
-    protected DefaultBucket(String name, BucketProperties properties, RawClient client, final Retrier retrier) {
+    protected DefaultBucket(String name, final BucketProperties properties, final RawClient client, final Retrier retrier) {
         this.name = name;
         this.properties = properties;
         this.client = client;
         this.retrier = retrier;
     }
 
-    // / BUCKET PROPS
+    // BUCKET PROPS
 
     /*
      * (non-Javadoc)
@@ -114,7 +154,7 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.BucketProperties#getSmallVClock()
      */
-    public int getSmallVClock() {
+    public Integer getSmallVClock() {
         return properties.getSmallVClock();
     }
 
@@ -123,7 +163,7 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.BucketProperties#getBigVClock()
      */
-    public int getBigVClock() {
+    public Integer getBigVClock() {
         return properties.getBigVClock();
     }
 
@@ -132,7 +172,7 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.BucketProperties#getYoungVClock()
      */
-    public long getYoungVClock() {
+    public Long getYoungVClock() {
         return properties.getYoungVClock();
     }
 
@@ -141,7 +181,7 @@ public class DefaultBucket implements Bucket {
      * 
      * @see com.basho.riak.newapi.bucket.BucketProperties#getOldVClock()
      */
-    public long getOldVClock() {
+    public Long getOldVClock() {
         return properties.getOldVClock();
     }
 
@@ -217,10 +257,16 @@ public class DefaultBucket implements Bucket {
         return properties.getLinkWalkFunction();
     }
 
-    // / BUCKET
+    // BUCKET
 
     /**
-     * Iterate over the keys for this bucket (Expensive, are you sure?)
+     * Iterate over the keys for this bucket (Expensive, are you sure?) Beware:
+     * at present all {@link RawClient#listKeys(String)} operations return a
+     * stream of keys. The stream is closed automatically when the iteratore is
+     * weakly reachable. Do not retain a reference to this {@link Iterable}
+     * after you have used it.
+     * 
+     * @see RawClient#listKeys(String)
      */
     public Iterable<String> keys() throws RiakException {
         try {
@@ -230,11 +276,41 @@ public class DefaultBucket implements Bucket {
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Convenience method to create a RiakObject with a payload of
+     * application/octect-stream
+     * <p>
+     * For example, to get a new {@link IRiakObject} into Riak. <code><pre>
+     * IRiakObject myNewObject = bucket.store("k", myByteArray)
+     *                              .w(2)  // tunable CAP write quorum
+     *                              .returnBody(true) // return the IRiakObject from the store
+     *                              .execute(); // perform the operation.
+     * </pre></code>
+     * </p>
+     * <p>
+     * Creates a {@link StoreObject} operation configured with a
+     * {@link Mutation} that copies <code>value</code> and
+     * {@link DefaultRiakObject#DEFAULT_CONTENT_TYPE} over the any existing
+     * value at <code>key</code> or creates a new {@link DefaultRiakObject} with
+     * <code>value</code> and {@link DefaultRiakObject#DEFAULT_CONTENT_TYPE}.
+     * </p>
+     * <p>
+     * The {@link StoreObject} is configured with the {@link DefaultResolver}
+     * which means the presence of siblings triggers a
+     * {@link UnresolvedConflictException}
+     * </p>
+     * <p>
+     * The {@link StoreObject} is configured with a {@link Converter} that
+     * simply returns what it is given (IE does no conversion).
+     * </p>
      * 
-     * @see com.basho.riak.client.bucket.Bucket#store(java.lang.String,
-     * java.lang.String)
+     * @param key
+     *            the key to store the object under.
+     * @param value
+     *            a byte[] of the objects value.
+     * @return a {@link StoreObject} configured to store <code>value</code> at
+     *         <code>key</code> on <code>execute()</code>.
+     * @see StoreObject
      */
     public StoreObject<IRiakObject> store(final String key, final byte[] value) {
 
@@ -247,23 +323,48 @@ public class DefaultBucket implements Bucket {
                     return original;
                 }
             }
-        }).withResolver(new DefaultResolver<IRiakObject>()).withConverter(new Converter<IRiakObject>() {
-
-            public IRiakObject toDomain(IRiakObject riakObject) {
-                return riakObject;
-            }
-
-            public IRiakObject fromDomain(IRiakObject domainObject, VClock vclock) throws ConversionException {
-                return domainObject;
-            }
-        });
+        }).withResolver(new DefaultResolver<IRiakObject>()).withConverter(new PassThroughConverter());
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.bucket.Bucket#store(java.lang.String, java.lang.String)
+    /**
+     * Convenience methods will create an {@link IRiakObject} with
+     * <code>value</code> as the data payload and
+     * <code>text/plain:charset=utf-8</code> as the <code>contentType</code>
+     * <p>
+     * For example, to get a new {@link IRiakObject} into Riak. <code><pre>
+     * IRiakObject myNewObject = bucket.store("k", "myValue")
+     *                              .w(2)  // tunable CAP write quorum
+     *                              .returnBody(true) // return the IRiakObject from the store
+     *                              .execute(); // perform the operation.
+     * </pre></code>
+     * </p>
+      * <p>
+     * Creates a {@link StoreObject} operation configured with a
+     * {@link Mutation} that copies <code>value</code> and
+     * {@link Constants#CTYPE_TEXT_UTF8} over the any existing
+     * value at <code>key</code> or creates a new {@link DefaultRiakObject} with
+     * <code>value</code> and {@link Constants#CTYPE_TEXT_UTF8}.
+     * </p>
+     * <p>
+     * The {@link StoreObject} is configured with the {@link DefaultResolver}
+     * which means the presence of siblings triggers a
+     * {@link UnresolvedConflictException}
+     * </p>
+     * <p>
+     * The {@link StoreObject} is configured with a {@link Converter} that
+     * simply returns what it is given (IE does no conversion).
+     * </p>
+     * 
+     * @param key
+     *            the key to store the object under.
+     * @param value
+     *            a String of the data to store
+     * @return a {@link StoreObject} configured to store <code>value</code> at
+     *         <code>key</code> on <code>execute()</code>.
+     * @see StoreObject
      */
     public StoreObject<IRiakObject> store(final String key, final String value) {
-        return new StoreObject<IRiakObject>(client, name, key, retrier).withMutator(new Mutation<IRiakObject>() {
+        final Mutation<IRiakObject> m = new Mutation<IRiakObject>() {
             public IRiakObject apply(IRiakObject original) {
                 if (original == null) {
                     return RiakObjectBuilder.newBuilder(name, key).withValue(value).withContentType(Constants.CTYPE_TEXT_UTF8).build();
@@ -273,22 +374,35 @@ public class DefaultBucket implements Bucket {
                     return original;
                 }
             }
-        }).withResolver(new DefaultResolver<IRiakObject>()).withConverter(new Converter<IRiakObject>() {
+        };
 
-            public IRiakObject toDomain(IRiakObject riakObject) {
-                return riakObject;
-            }
-
-            public IRiakObject fromDomain(IRiakObject domainObject, VClock vclock) throws ConversionException {
-                return domainObject;
-            }
-        });
+        return store(key, CharsetUtils.utf8StringToBytes(value)).withMutator(m);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Store an instance of <code>T</code> in Riak. Depends on the
+     * {@link Converter} provided to {@link StoreObject} to convert
+     * <code>o</code> from <code>T</code> to {@link IRiakObject}.
+     * <p>
+     * <code>T</code> must have a field annotated with {@link RiakKey} as the
+     * Key to store this data under.
+     * </p>
      * 
-     * @see com.basho.riak.newapi.bucket.Bucket#store(java.lang.Object)
+     * <p>
+     * Creates a {@link StoreObject} operation configured with the
+     * {@link JSONConverter} the {@link ClobberMutation} and
+     * {@link DefaultResolver}.
+     * </p>
+     * 
+     * @param <T>
+     *            the Type of <code>o</code>
+     * @param o
+     *            the data to store
+     * @return a {@link StoreObject} configured to store <code>o</code> at the
+     *         {@link RiakKey} annotated <code>key</code> on
+     *         <code>execute()</code>.
+     * @see StoreObject
+     * @see DomainBucket
      */
     public <T> StoreObject<T> store(final T o) {
         @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) o.getClass();
@@ -302,11 +416,26 @@ public class DefaultBucket implements Bucket {
                   .withResolver(new DefaultResolver<T>());
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Store an instance of <code>T</code> in Riak. Depends on the
+     * {@link Converter} provided to {@link StoreObject} to convert
+     * <code>o</code> from <code>T</code> to {@link IRiakObject}.
      * 
-     * @see com.basho.riak.newapi.bucket.Bucket#store(java.lang.String,
-     * java.lang.Object)
+     * <p>
+     * Creates a {@link StoreObject} operation configured with the
+     * {@link JSONConverter} the {@link ClobberMutation} and
+     * {@link DefaultResolver}.
+     * </p>
+     * 
+     * @param <T>
+     *            the Type of <code>o</code>
+     * @param o
+     *            the data to store
+     * @return a {@link StoreObject} configured to store <code>o</code> at the
+     *         {@link RiakKey} annotated <code>key</code> on
+     *         <code>execute()</code>.
+     * @see StoreObject
+     * @see DomainBucket
      */
     public <T> StoreObject<T> store(final String key, final T o) {
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
@@ -316,10 +445,23 @@ public class DefaultBucket implements Bucket {
             .withMutator(new ClobberMutation<T>(o)).withResolver(new DefaultResolver<T>());
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Creates a {@link FetchObject} operation that returns the data at
+     * <code>o</code>'s annotated {@link RiakKey} field as an instance of type
+     * <code>T</code> on <code>execute()</code>.
+     * <p>
+     * Creates a {@link FetchObject} operation configured with the
+     * {@link JSONConverter} and
+     * {@link DefaultResolver}.
+     * </p>
      * 
-     * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.Object)
+     * @param <T>
+     *            the Type to return
+     * @param o
+     *            an instance ot <code>T</code> that has the key annotated with
+     *            {@link RiakKey}
+     * @return a {@link FetchObject}
+     * @see FetchObject
      */
     public <T> FetchObject<T> fetch(T o) {
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
@@ -332,11 +474,25 @@ public class DefaultBucket implements Bucket {
             .withResolver(new DefaultResolver<T>());
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Creates a {@link FetchObject} operation that returns the data at
+     * <code>key</code> as an instance of type <code>T</code> on
+     * <code>execute()</code>.
      * 
-     * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String,
-     * java.lang.Class)
+     * <p>
+     * Creates a {@link FetchObject} operation configured with the
+     * {@link JSONConverter} and
+     * {@link DefaultResolver}.
+     * </p>
+     * 
+     * @param <T>
+     *            the Type to return
+     * @param key
+     *            the key under which the data is stored
+     * @param type
+     *            the Class of the type to return
+     * @return a {@link FetchObject}
+     * @see FetchObject
      */
     public <T> FetchObject<T> fetch(final String key, final Class<T> type) {
         return new FetchObject<T>(client, name, key, retrier)
@@ -344,26 +500,23 @@ public class DefaultBucket implements Bucket {
             .withResolver(new DefaultResolver<T>());
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Creates a {@link FetchObject} that returns the data at <code>key</code>
+     * as an {@link IRiakObject} on <code>execute()</code>.
      * 
-     * @see com.basho.riak.newapi.bucket.Bucket#fetch(java.lang.String)
+     * <p>
+     * Creates a {@link FetchObject} with the {@link DefaultResolver} and a {@link Converter}
+     * that does nothing to the {@link IRiakObject}.
+     * </p>
+     * 
+     * @param key the key
+     * @return a {@link FetchObject}
+     * @see FetchObject
      */
     public FetchObject<IRiakObject> fetch(String key) {
         return new FetchObject<IRiakObject>(client, name, key, retrier)
         .withResolver(new DefaultResolver<IRiakObject>())
-        .withConverter(new Converter<IRiakObject>() {
-
-            public IRiakObject toDomain(IRiakObject riakObject) {
-                return riakObject;
-            }
-
-            public IRiakObject fromDomain(IRiakObject domainObject,
-                                         VClock vclock)
-            throws ConversionException {
-                return RiakObjectBuilder.from(domainObject).withVClock(vclock).build();
-            }
-        });
+        .withConverter(new PassThroughConverter());
     }
 
     /*

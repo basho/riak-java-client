@@ -49,7 +49,8 @@ import com.basho.riak.pbc.RiakClient;
 import com.google.protobuf.ByteString;
 
 /**
- * Wraps the pb {@link RiakClient} and adapts it to the {@link RawClient} interface.
+ * Wraps the pbc.{@link RiakClient} and adapts it to the {@link RawClient}
+ * interface.
  * 
  * @author russell
  * 
@@ -59,7 +60,13 @@ public class PBClientAdapter implements RawClient {
     private final RiakClient client;
 
     /**
-     * @param client
+     * Create an instance of the adapter that creates a {@link RiakClient} using
+     * {@link RiakClient#RiakClient(String, int)}
+     * 
+     * @param host
+     *            the address of the Riak pb interface
+     * @param port
+     *            the port number of the Riak pb interface
      * @throws IOException
      */
     public PBClientAdapter(String host, int port) throws IOException {
@@ -67,8 +74,11 @@ public class PBClientAdapter implements RawClient {
     }
 
     /**
-     * Wrap a pre-created/configured pb client as a RawClient
-     * @param delegate the {@link RiakClient} to adapt.
+     * Adapt the given pre-created/configured pb client to the {@link RawClient}
+     * interface
+     * 
+     * @param delegate
+     *            the {@link RiakClient} to adapt.
      */
     public PBClientAdapter(com.basho.riak.pbc.RiakClient delegate) {
         this.client = delegate;
@@ -231,13 +241,20 @@ public class PBClientAdapter implements RawClient {
     }
 
     /**
-     * This is a bit of a hack. The pb interface doesn't really have a Link Walker
-     * like the REST interface does. This method runs (maximum) 2 map reduce
-     * requests to get the same results the link walk would for the given spec.
+     * <p>
+     * This is a bit of a hack. The pb interface doesn't really have a Link
+     * Walker like the REST interface does. This method runs (maximum) 2 map
+     * reduce requests to get the same results the link walk would for the given
+     * spec.
+     * </p>
+     * <p>
+     * The first m/r job gets the end of the link walk and the inputs for second
+     * m/r job. The second job gets all those inputs values. Then some client
+     * side massaging occurs to massage the result into the correct format.
+     * </p>
      * 
-     * The first m/r job gets the end of the link walk and the inputs for second m/r job.
-     * The second job gets all those inputs values.
-     * Then some client side massaging occurs to massage the result into the correct format.
+     * @param linkWalkSpec
+     *            the {@link LinkWalkSpec} to execute.
      */
     public WalkResult linkWalk(final LinkWalkSpec linkWalkSpec) throws IOException {
         MapReduceResult firstPhaseResult = linkWalkFirstPhase(linkWalkSpec);
@@ -264,7 +281,7 @@ public class PBClientAdapter implements RawClient {
         for (LinkWalkStep step : linkWalkSpec) {
             cnt++;
             boolean keep = linkAccumulateToLinkPhaseKeep(step.getKeep(), cnt == size);
-            mr.addLinkPhase(step.getBucket(), step.getKey(), keep);
+            mr.addLinkPhase(step.getBucket(), step.getTag(), keep);
         }
 
         // this is a bit of a hack. The low level API is using the high level

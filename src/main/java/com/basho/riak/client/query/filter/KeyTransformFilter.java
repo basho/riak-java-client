@@ -14,6 +14,7 @@
 package com.basho.riak.client.query.filter;
 
 /**
+ * Marker interface for the type of filter that, uh, transforms a key from one thing to, uh, another
  * @author russell
  *
  */

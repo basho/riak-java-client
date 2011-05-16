@@ -36,10 +36,12 @@ import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.query.LinkWalkStep;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.util.CharsetUtils;
@@ -52,14 +54,28 @@ import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.Constants;
 
 /**
+ * Static methods used internally by {@link HTTPClientAdapter} for converting
+ * between http.{@link RiakClient} value classes and {@link RawClient} value
+ * classes
+ * 
  * @author russell
  * 
  */
-public class ConversionUtil {
+public final class ConversionUtil {
+
     /**
+     * All static methods so we don't want any instances created
+     */
+    private ConversionUtil() {}
+
+    /**
+     * Converts a Collection from legacy http {@link RiakObject} to
+     * {@link IRiakObject}
+     * 
      * @param siblings
-     * @param bucket
-     * @return
+     *            the siblings from the http client
+     * @return an array of {@link IRiakObject}, one for each member of
+     *         <code>siblings</code>
      */
     static IRiakObject[] convert(Collection<com.basho.riak.client.http.RiakObject> siblings) {
         final Collection<IRiakObject> results = new ArrayList<IRiakObject>();
@@ -72,7 +88,10 @@ public class ConversionUtil {
     }
 
     /**
+     * Convert a {@link RiakObject} to an {@link IRiakObject}
+     * 
      * @param object
+     *            the {@link RiakObject} to convert
      * @return
      */
     static IRiakObject convert(final com.basho.riak.client.http.RiakObject o) {
@@ -111,24 +130,34 @@ public class ConversionUtil {
     }
 
     /**
+     * Convert a {@link com.basho.riak.client.http.RiakLink} to a
+     * {@link RiakLink}
+     * 
      * @param link
-     * @return
+     *            the {@link com.basho.riak.client.http.RiakLink} to convert
+     * @return a {@link RiakLink} with the same bucket/key/tag values
      */
     static RiakLink convert(com.basho.riak.client.http.RiakLink link) {
         return new RiakLink(link.getBucket(), link.getKey(), link.getTag());
     }
 
     /**
-     * @param vclock
-     * @return
+     * Get the <code>byte[]</code> of a vector clock string, in a null safe way.
+     * @param vclock the String representation of a vector clock
+     * @return <code>vclock</code> as an array of bytes or null (if <code>vclock</code> was null)
      */
     static byte[] nullSafeGetBytes(String vclock) {
         return vclock == null ? null : CharsetUtils.utf8StringToBytes(vclock);
     }
 
     /**
+     * Convert a {@link StoreMeta} into a {@link RequestMeta} for use with the
+     * legacy http client
+     * 
      * @param storeMeta
-     * @return
+     *            the {@link StoreMeta} to convert
+     * @return a {@link RequestMeta} populated with <code>w/dw/returnBody</code>
+     *         params from <code>storeMeta</code>
      */
     static RequestMeta convert(StoreMeta storeMeta) {
         RequestMeta requestMeta = RequestMeta.writeParams(storeMeta.getW(), storeMeta.getDw());
@@ -143,8 +172,9 @@ public class ConversionUtil {
     }
 
     /**
-     * @param object
-     * @return
+     * Convert an {@link IRiakObject} to an http.{@link RiakObject}, requires a {@link RiakClient}
+     * @param object the {@link IRiakObject} to convert
+     * @return a {@link RiakObject} populate with {@link IRiakObject}'s data
      */
     static com.basho.riak.client.http.RiakObject convert(IRiakObject object, final RiakClient client) {
         com.basho.riak.client.http.RiakObject riakObject = new com.basho.riak.client.http.RiakObject(
@@ -162,8 +192,9 @@ public class ConversionUtil {
     }
 
     /**
-     * @param lastModified
-     * @return
+     * {@link RiakObject} expects the date as a string in a certain format
+     * @param lastModified the date to format
+     * @return null (if <code>lastModified</code> was null) or a String of the date
      */
     static String formatDate(Date lastModified) {
         if (lastModified == null) {
@@ -173,8 +204,9 @@ public class ConversionUtil {
     }
 
     /**
-     * @param object
-     * @return
+     * Copies the user meta data from an {@link IRiakObject} into a {@link Map}
+     * @param object the {@link IRiakObject} whose meta data we want
+     * @return the map of user meta (may be empty, won't be null)
      */
     static Map<String, String> getUserMetaData(IRiakObject object) {
         final Map<String, String> userMetaData = new HashMap<String, String>();
@@ -186,8 +218,13 @@ public class ConversionUtil {
     }
 
     /**
+     * Copy the {@link RiakLink}s from an {@link IRiakObject} into a
+     * {@link List}
+     * 
      * @param object
-     * @return
+     *            the {@link IRiakObject}s whose links we want
+     * @return a {@link List} of {@link com.basho.riak.client.http.RiakLink},
+     *         maybe empty, won't be null
      */
     static List<com.basho.riak.client.http.RiakLink> getLinks(IRiakObject object) {
 
@@ -201,16 +238,25 @@ public class ConversionUtil {
     }
 
     /**
+     * Convert an http {@link com.basho.riak.client.http.RiakLink} to a
+     * {@link RiakLink}
+     * 
      * @param link
-     * @return
+     *            the {@link com.basho.riak.client.http.RiakLink} to convert
+     * @return a {@link RiakLink} with the same <code>bucket/key/tag</code>
+     *         data.
      */
     static com.basho.riak.client.http.RiakLink convert(RiakLink link) {
         return new com.basho.riak.client.http.RiakLink(link.getBucket(), link.getKey(), link.getTag());
     }
 
     /**
+     * Copy the data from a {@link BucketResponse} into a
+     * {@link BucketProperties}
+     * 
      * @param response
-     * @return
+     *            the {@link BucketResponse} to copy
+     * @return a {@link BucketProperties} populated from <code>response</code>
      */
     static BucketProperties convert(BucketResponse response) {
         RiakBucketInfo bucketInfo = response.getBucketInfo();
@@ -223,8 +269,13 @@ public class ConversionUtil {
     }
 
     /**
-     * @param cHashFun
-     * @return
+     * Parse a http client chash_fun string into a {@link NamedErlangFunction}
+     * 
+     * @param funString
+     *            a String of the format "mod:fun"
+     * @return a {@link NamedErlangFunction} populated from
+     *         <code>funString</code> or <code>null</code> if the string cannot
+     *         be parsed.
      */
     static NamedErlangFunction convert(String funString) {
         if (funString == null) {
@@ -240,8 +291,13 @@ public class ConversionUtil {
     }
 
     /**
+     * Turn a {@link BucketProperties} into a {@link RiakBucketInfo} for
+     * persisting.
+     * 
      * @param bucketProperties
-     * @return
+     *            the {@link BucketProperties} to convert
+     * @return a {@link RiakBucketInfo} populated from the
+     *         {@link BucketProperties}
      */
     static RiakBucketInfo convert(BucketProperties bucketProperties) {
         RiakBucketInfo rbi = new RiakBucketInfo();
@@ -268,8 +324,14 @@ public class ConversionUtil {
     }
 
     /**
+     * Turn a {@link MapReduceResponse} into a {@link MapReduceResult} Creates
+     * an anonymous inner class implementation of {@link MapReduceResult} and
+     * uses Jackson's ObjectMapper to convert the response payload.
+     * 
      * @param resp
-     * @return
+     *            the {@link MapReduceResponse}
+     * @return a {@link MapReduceResult} view of the results in
+     *         <code>resp</code>
      */
     static MapReduceResult convert(final MapReduceResponse resp) throws IOException {
         final ObjectMapper om = new ObjectMapper();
@@ -292,21 +354,31 @@ public class ConversionUtil {
     }
 
     /**
+     * Convert a {@link LinkWalkSpec} to a String for execution by the http.
+     * {@link RiakClient}
+     * 
      * @param linkWalkSpec
-     * @return a String representation of this walk spec useful to the http.RiakClient
+     *            the {@link LinkWalkSpec}
+     * @return a String representation of <code>linkWalkSpec</code> useful to
+     *         the http.{@link RiakClient}
      */
     static String convert(LinkWalkSpec linkWalkSpec) {
         RiakWalkSpec riakWalkSpec = new RiakWalkSpec();
         for(LinkWalkStep step : linkWalkSpec) {
-            riakWalkSpec.addStep(step.getBucket(), step.getKey(), step.getKeep().toString());
+            riakWalkSpec.addStep(step.getBucket(), step.getTag(), step.getKeep().toString());
         }
         return riakWalkSpec.toString();
     }
 
     /**
-     * Converts a WalkResponse -> WalkResult
-     * @param walkResponse An http RiakClient WalkResponse
-     * @return a new api WalkResult
+     * Converts a {@link WalkResponse} -> {@link WalkResult}
+     * 
+     * Creates an anonymous implementation of {@link WalkResult} that exposes an
+     * {@link UnmodifiableIterator} view of the results.
+     * 
+     * @param walkResponse
+     *            An http.{@link RiakClient} {@link WalkResponse}
+     * @return a new {@link WalkResult}
      */
     static WalkResult convert(WalkResponse walkResponse) {
        final Collection<Collection<IRiakObject>> convertedSteps = new LinkedList<Collection<IRiakObject>>();

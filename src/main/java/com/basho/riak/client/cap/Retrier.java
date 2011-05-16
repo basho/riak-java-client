@@ -16,11 +16,21 @@ package com.basho.riak.client.cap;
 import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
+import com.basho.riak.client.operations.RiakOperation;
 
 /**
- * @author russell
+ * Fault tolerant systems need fault tolerant clients, implement to retry failed operations.
  * 
+ * @author russell
  */
 public interface Retrier {
+    /**
+     * Called by {@link RiakOperation} execute methods to give some measure of fault tolerance.
+     * 
+     * @param <T> the Type the {@link Callable#call()} returns
+     * @param command the {@link Callable}
+     * @return the value of {@link Callable#call()}
+     * @throws RiakRetryFailedException if the retrier exceeds its bounds.
+     */
     <T> T attempt(Callable<T> command) throws RiakRetryFailedException;
 }

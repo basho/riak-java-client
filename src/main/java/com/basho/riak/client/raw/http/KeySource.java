@@ -18,14 +18,14 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.response.BucketResponse;
 
 /**
  * Wraps the stream of keys from BucketResponse.getBucketInfo.getKeys in an
- * iterator that handles closing the underlying http stream when finished with.
+ * iterator, handles closing the underlying http stream when finished.
  * 
  * @author russell
- * 
  */
 public class KeySource implements Iterator<String> {
 
@@ -35,7 +35,14 @@ public class KeySource implements Iterator<String> {
     private ReaperTask reaper;
 
     /**
+     * Create a Key Source from an http.{@link BucketResponse} in response to
+     * {@link RiakClient#streamBucket(String)} request. The bucket response
+     * contains a stream which this key source will close when this key source
+     * becomes weakly reachable. When you have finsihed iterating over the keys
+     * do not retain the key source.
+     * 
      * @param bucketResponse
+     *            the {@link BucketResponse} with a List of keys.
      */
     public KeySource(BucketResponse bucketResponse) {
         this.bucketResponse = bucketResponse;
@@ -82,10 +89,9 @@ public class KeySource implements Iterator<String> {
 
     /**
      * The underlying stream is not exposed to the caller (it is an
-     * implementation detail) This time task ensures that the underlying HTTP
+     * implementation detail) This timer task ensures that the underlying HTTP
      * resource is closed when the iterator is no longer reachable.
      * 
-     * @author russell
      */
     static class ReaperTask extends TimerTask {
         private final BucketResponse bucketResponse;

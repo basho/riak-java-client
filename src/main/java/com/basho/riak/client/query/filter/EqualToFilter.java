@@ -14,22 +14,44 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that equal the configured value
+ * @author russell
+ *
+ */
 public class EqualToFilter implements KeyFilter {
     private final static String NAME = "eq";
     private final Object[] filter;
 
+    /**
+     * Filter in keys whose name is <code>equalTo</code>
+     * @param equalTo
+     */
     public EqualToFilter(String equalTo) {
         filter = new String[] { NAME, equalTo };
     }
 
+    /**
+     * Filter in keys that are equal to <code>equalTo</code>
+     * 
+     * @param equalTo
+     */
     public EqualToFilter(int equalTo) {
         filter = new Object[] { NAME, equalTo };
     }
 
+    /**
+     * Filter in keys that are equal to <code>equalTo</code>
+     * 
+     * @param equalTo
+     */
     public EqualToFilter(double equalTo) {
         filter = new Object[] { NAME, equalTo };
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public Object[] asArray() {
         return filter.clone();
     }

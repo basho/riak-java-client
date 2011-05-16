@@ -13,12 +13,13 @@
  */
 package com.basho.riak.client.cap;
 
+import com.basho.riak.client.bucket.DomainBucket;
+
 /**
- * Maybe you want to produce a mutation at will? Say if you are using a domain
- * bucket?
+ * Maybe you want to produce a {@link Mutation} at will? Say if you are using a {@link DomainBucket}.
  * 
  * @author russell
- * @param <T>
+ * @param <T> the type that produced {@link Mutation}s will mutate.
  * 
  */
 public interface MutationProducer<T> {

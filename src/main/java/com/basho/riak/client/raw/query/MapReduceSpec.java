@@ -13,25 +13,45 @@
  */
 package com.basho.riak.client.raw.query;
 
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.query.MapReduce;
+import com.basho.riak.client.raw.RawClient;
+
 /**
- * A Map Reduce Query run it via {@link IRiakClient#mapReduce(MapReduceSpec)}
+ * An immutable representation of a Map Reduce Query, run it via
+ * {@link IRiakClient#mapReduce(MapReduceSpec)}, used internally.
+ * 
+ * <p>
+ * This is a just a tag class wrapped around a string. Use a {@link MapReduce}
+ * operation to generate and execute a Map/Reduce job. Obtain a
+ * {@link MapReduce} from either {@link IRiakClient#mapReduce()} or
+ * {@link IRiakClient#mapReduce(String)}.
+ * 
+ * </p>
  * 
  * @author russell
- * 
+ * @see RawClient#mapReduce(MapReduceSpec)
+ * @see MapReduce
+ * @see IRiakClient#mapReduce()
+ * @see IRiakClient#mapReduce(String)
  */
 public class MapReduceSpec {
 
     private final String mapReduceSpecJSON;
 
     /**
-     * @param mapReduceSpecJSON
+     * Create a MapReduceSpec by providing a map reduce job JSON string.
+     * @param mapReduceSpecJSON a String of JSON describing the m/r job.
      */
     public MapReduceSpec(String mapReduceSpecJSON) {
         this.mapReduceSpecJSON = mapReduceSpecJSON;
     }
 
+    /**
+     * Get the JSON of the m/r job spec
+     * @return a JSON String of m/r job spec.
+     */
     public String getJSON() {
         return mapReduceSpecJSON;
     }
-
 }

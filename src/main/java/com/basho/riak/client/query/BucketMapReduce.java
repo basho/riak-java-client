@@ -22,12 +22,16 @@ import java.util.LinkedList;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.query.filter.KeyFilter;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
+ * Map/Reduce over a bucket, optionally add Key Filters to narrow the inputs.
  * @author russell
  * 
+ * @see IRiakClient#mapReduce(String)
  */
 public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
 
@@ -35,26 +39,21 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
     private final Object keyFiltersLock = new Object();
     private final Collection<KeyFilter> keyFilters;
 
+    /**
+     * Create a Map Reduce job over the specified <code>bucket</code> to be executed by the specified {@link RawClient}.
+     * 
+     * Use {@link IRiakClient#mapReduce(String)} to create your BucketMapReduce
+     * @param client the {@link RawClient} to use
+     * @param bucket the input to the M/R job
+     */
     public BucketMapReduce(final RawClient client, String bucket) {
         super(client);
         this.bucket = bucket;
         this.keyFilters = new LinkedList<KeyFilter>();
     }
 
-    public BucketMapReduce(final RawClient client, String bucket, KeyFilter keyFilter) {
-        super(client);
-        this.bucket = bucket;
-        this.keyFilters = new LinkedList<KeyFilter>();
-        this.keyFilters.add(keyFilter);
-    }
-
-    public BucketMapReduce(final RawClient client, String bucket, Collection<KeyFilter> keyFilters) {
-        super(client);
-        this.bucket = bucket;
-        this.keyFilters = new LinkedList<KeyFilter>(keyFilters);
-    }
-
     /**
+     * Get the bucket input for the M/R job
      * @return the bucket
      */
     public String getBucket() {
@@ -62,8 +61,9 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
     }
 
     /**
-     * Copy iterator. Does not read or write through to internal BucketInput
-     * state.
+     * Unmodifiable copy iterator view of the list of {@link KeyFilter}s for
+     * this M/R operation. Does not read or write through to internal
+     * BucketInput state.
      */
     public Iterator<KeyFilter> iterator() {
         final Collection<KeyFilter> copyFilters = new LinkedList<KeyFilter>();
@@ -72,9 +72,14 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
             copyFilters.addAll(keyFilters);
         }
 
-        return copyFilters.iterator();
+        return new UnmodifiableIterator<KeyFilter>( copyFilters.iterator() );
     }
 
+    /**
+     * Add one or some {@link KeyFilter}s to this map/reduce operations inputs
+     * @param keyFilters var arg of {@link KeyFilter}s
+     * @return this
+     */
     public BucketMapReduce addKeyFilters(KeyFilter... keyFilters) {
         final Collection<KeyFilter> filters = Arrays.asList(keyFilters);
 
@@ -85,6 +90,11 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
         return this;
     }
 
+    /**
+     * Add a {@link KeyFilter} to the inputs for the Map/Reduce job
+     * @param keyFilter the {@link KeyFilter} to add
+     * @return this
+     */
     public BucketMapReduce addKeyFilter(KeyFilter keyFilter) {
         synchronized (keyFiltersLock) {
             this.keyFilters.add(keyFilter);
@@ -94,7 +104,9 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
     }
 
     /**
-     * @return
+     * Are there any key filters in the inputs to this Map/reduce operation.
+     * 
+     * @return true if there are any {@link KeyFilter}s, false otherwise
      */
     private boolean hasFilters() {
         synchronized (keyFiltersLock) {
@@ -102,6 +114,10 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
         }
     }
 
+    /**
+     * Create a collection of {@link KeyFilter}s as Object[]s
+     * @return the {@link KeyFilter}s copied into a collection as Object[] arrays
+     */
     private Collection<Object[]> getKeyFilters() {
         final Collection<Object[]> filters = new LinkedList<Object[]>();
 

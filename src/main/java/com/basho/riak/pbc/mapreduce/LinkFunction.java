@@ -16,6 +16,9 @@ package com.basho.riak.pbc.mapreduce;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * A MapReduceFunction for a Link Phase of a Map/Reduce query.
+ */
 public class LinkFunction implements MapReduceFunction {
    
    private String bucket = null;

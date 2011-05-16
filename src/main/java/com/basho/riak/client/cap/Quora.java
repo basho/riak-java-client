@@ -14,6 +14,8 @@
 package com.basho.riak.client.cap;
 
 /**
+ * An enum that models the set of symbolic quora.
+ * 
  * @author russell
  * 
  */

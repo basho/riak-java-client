@@ -49,6 +49,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 //import com.trifork.riak.RPB.RpbListKeysResp;
 //import com.trifork.riak.RPB.RpbMapRedResp;
 
+/**
+ * Low level protocol buffers client.
+ */
 public class RiakClient implements RiakMessageCodes {
 
 	private static final RiakObject[] NO_RIAK_OBJECTS = new RiakObject[0];

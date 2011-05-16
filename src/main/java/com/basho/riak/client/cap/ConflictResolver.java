@@ -16,11 +16,18 @@ package com.basho.riak.client.cap;
 import java.util.Collection;
 
 /**
- * @author russell
+ * Implement to encode your conflict resolution strategy when faced with sibling values.
  * 
+ * @author russell
  */
 public interface ConflictResolver<T> {
 
+    /**
+     * Applies encoded logic to produce a single value from a Collection of sibling values.
+     * @param siblings
+     * @return a single value of type <code>T</code>
+     * @throws UnresolvedConflictException if it cannot determine a single value.
+     */
     T resolve(final Collection<T> siblings) throws UnresolvedConflictException;
 
 }

@@ -14,22 +14,39 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filetr in keys that don't equal the configured argument
+ * @author russell
+ *
+ */
 public class NotEqualToFilter implements KeyFilter {
     private final static String NAME = "neq";
     private final Object[] filter;
 
+    /**
+     * @param equalTo
+     */
     public NotEqualToFilter(String equalTo) {
         filter = new String[] { NAME, equalTo };
     }
 
+    /**
+     * @param equalTo
+     */
     public NotEqualToFilter(int equalTo) {
         filter = new Object[] { NAME, equalTo };
     }
 
+    /**
+     * @param equalTo
+     */
     public NotEqualToFilter(double equalTo) {
         filter = new Object[] { NAME, equalTo };
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public Object[] asArray() {
         return filter.clone();
     }

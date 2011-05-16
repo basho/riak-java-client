@@ -17,12 +17,21 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.builders.DomainBucketBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
 
 /**
- * A DomainBucket<RiakObject> for convenience.
+ * Wraps a {@link DomainBucket} strongly typed for IRiakObject.
+ * 
+ * <p>
+ * A convenience class stroring , retrieving {@link IRiakObject} from Riak
+ * without specifying a pass through {@link Converter} for each operation.
+ * </p>
+ * 
+ * TODO add per operation CAP properties. Add {@link Retrier} and {@link ConflictResolver}.
  * @author russell
  * 
  */

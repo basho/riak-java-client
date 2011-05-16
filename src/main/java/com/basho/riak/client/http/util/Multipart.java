@@ -13,8 +13,6 @@
  */
 package com.basho.riak.client.http.util;
 
-import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
-
 import org.apache.commons.httpclient.util.EncodingUtil;
 
 import com.basho.riak.client.util.CharsetUtils;

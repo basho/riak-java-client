@@ -17,6 +17,7 @@ import java.security.SecureRandom;
 
 
 /**
+ * A random clientId generator. Thanks Krestan Krab of Trifork.
  * @author russell
  * 
  */

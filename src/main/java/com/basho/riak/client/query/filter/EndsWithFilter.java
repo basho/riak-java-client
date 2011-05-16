@@ -14,15 +14,27 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * A filter that matches keys whose name ends with the configured String argument
+ * @author russell
+ *
+ */
 public class EndsWithFilter implements KeyFilter {
 
     private static final String NAME = "ends_with";
     private final String[] filter;
     
+    /**
+     * Filter in keys that end with <code>endsWith</code>
+     * @param endsWith
+     */
     public EndsWithFilter(String endsWith) {
         filter = new String[] {NAME, endsWith};
     }
     
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public String[] asArray() {
         return filter.clone();
     }

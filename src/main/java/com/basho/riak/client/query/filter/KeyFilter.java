@@ -15,9 +15,15 @@ package com.basho.riak.client.query.filter;
 
 
 /**
+ * Top level interface for Key Filters.
+ * 
  * @author russell
  * 
  */
 public interface KeyFilter {
+    /**
+     * A view of the key filter as an Object array.
+     * @return an Object[]
+     */
     Object[] asArray();
 }

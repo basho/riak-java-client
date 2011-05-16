@@ -16,6 +16,7 @@ package com.basho.riak.client.query;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.operations.RiakOperation;
@@ -24,9 +25,11 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 
 /**
+ * A Link Walk operation, build the operation by adding steps, then execute.
  * 
  * @author russell
  * 
+ * @see IRiakClient#walk(IRiakObject)
  */
 public class LinkWalk implements RiakOperation<WalkResult> {
 
@@ -36,7 +39,13 @@ public class LinkWalk implements RiakOperation<WalkResult> {
     private final LinkedList<LinkWalkStep> steps = new LinkedList<LinkWalkStep>();
 
     /**
+     * Create a Link Walk operation that will be executed with
+     * <code>client</code>, starting from <code>startObject</code>
+     * 
+     * @param client
+     *            the {@link RawClient} to use
      * @param startObject
+     *            the {@link IRiakObject} to start from
      */
     public LinkWalk(final RawClient client, final IRiakObject startObject) {
         this.client = client;
@@ -44,10 +53,10 @@ public class LinkWalk implements RiakOperation<WalkResult> {
         this.startKey = startObject.getKey();
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Run the Link Walk query on the {@link RawClient} the operation was constructed with.
      * 
-     * @see com.basho.riak.client.RiakOperation#execute()
+     * @return a {@link WalkResult}
      */
     public WalkResult execute() throws RiakException {
         try {

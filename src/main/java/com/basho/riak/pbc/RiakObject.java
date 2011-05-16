@@ -30,6 +30,9 @@ import com.basho.riak.pbc.RPB.RpbPair;
 import com.basho.riak.pbc.RPB.RpbContent.Builder;
 import com.google.protobuf.ByteString;
 
+/**
+ * PBC model of the data/meta data for a bucket/key entry in Riak
+ */
 public class RiakObject {
 
 	private ByteString vclock;

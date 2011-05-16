@@ -14,6 +14,7 @@
 package com.basho.riak.client.query.filter;
 
 /**
+ * marker interface for the logical filters
  * @author russell
  *
  */

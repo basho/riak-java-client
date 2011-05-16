@@ -14,11 +14,19 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that match the regular expression argument
+ * @author russell
+ *
+ */
 public class MatchFilter implements KeyFilter {
 
     private static final String NAME = "matches";
     private final String[] filter;
 
+    /**
+     * @param matchFilter a Reg Exp
+     */
     public MatchFilter(String matchFilter) {
         filter = new String[] { NAME, matchFilter };
     }

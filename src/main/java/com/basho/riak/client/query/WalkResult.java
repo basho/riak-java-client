@@ -18,6 +18,12 @@ import java.util.Collection;
 import com.basho.riak.client.IRiakObject;
 
 /**
+ * Interface defining results from a walk operation, basically an iteration of
+ * steps, each step contains some {@link IRiakObject}s.
+ * 
+ * <p>
+ * Expect this to be added to in the near future with siblings and conversion
+ * <p/>
  * 
  * @author russell
  * 

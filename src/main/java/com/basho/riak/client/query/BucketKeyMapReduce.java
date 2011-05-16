@@ -20,11 +20,14 @@ import java.util.LinkedList;
 
 import org.codehaus.jackson.JsonGenerator;
 
+import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
+ * Map/Reduce over a set of bucket/key/keydata inputs.
  * @author russell
- * 
+ * @see IRiakClient#mapReduce()
  */
 
 public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> {
@@ -33,6 +36,8 @@ public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> 
     private final Collection<String[]> inputs = new LinkedList<String[]>();
 
     /**
+     * The {@link RawClient} to execute the Map/Reduce query
+     * Use {@link IRiakClient#mapReduce()} as a factory to create your map/reduce operation.
      * @param client
      */
     public BucketKeyMapReduce(RawClient client) {
@@ -70,11 +75,9 @@ public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> 
         return this;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Iterable#iterator()
-     */
+   /**
+    * An {@link UnmodifiableIterator} view of the inputs for this Map/Reduce job.
+    */
     public Iterator<String[]> iterator() {
         final Collection<String[]> inputsCopy = new LinkedList<String[]>();
 
@@ -82,13 +85,13 @@ public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> 
             inputsCopy.addAll(inputs);
         }
 
-        return inputsCopy.iterator();
+        return  new UnmodifiableIterator<String[]>(inputsCopy.iterator());
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.newapi.query.MapReduce#writeInput(org.codehaus.jackson.JsonGenerator)
      */
-    @Override protected void writeInput(JsonGenerator jsonGenerator) throws IOException {
+    @Override protected void writeInput(final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeObject(this);
     }
 }

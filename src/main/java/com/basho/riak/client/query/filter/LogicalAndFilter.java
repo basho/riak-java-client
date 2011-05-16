@@ -14,6 +14,11 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Group a bunch of filters together and filter in keys that match all
+ * @author russell
+ *
+ */
 public class LogicalAndFilter extends AbstractLogicalFilter {
 
     private static final String NAME = "and";

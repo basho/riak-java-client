@@ -13,9 +13,12 @@
  */
 package com.basho.riak.client.operations;
 
+import java.util.concurrent.Callable;
+
 import com.basho.riak.client.RiakException;
 
 /**
+ * Just like {@link Callable}, hey, wait, maybe it *should* just be replaced with {@link Callable}
  * @author russell
  * 
  */

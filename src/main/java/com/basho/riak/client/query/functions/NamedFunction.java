@@ -14,7 +14,7 @@
 package com.basho.riak.client.query.functions;
 
 /**
- * Tag interface.
+ * Tag interface for named functions
  * 
  * @author russell
  * 

@@ -18,6 +18,9 @@
 
 package com.basho.riak.pbc;
 
+/**
+ * PBC API message code constants.
+ */
 interface RiakMessageCodes {
 	public static final int MSG_ErrorResp = 0;
 	public static final int MSG_PingReq = 1;

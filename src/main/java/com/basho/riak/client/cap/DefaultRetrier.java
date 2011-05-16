@@ -18,12 +18,16 @@ import java.util.concurrent.Callable;
 import com.basho.riak.client.RiakRetryFailedException;
 
 /**
- * A basic retrier implementation. Construct it with the number of times a
- * {@link Callable} should be attempted. When <code>attempt</code> is called
- * with a {@link Callable} then {@link Callable#call()} is run
- * <code>attempts</code> times before throwing a
+ * A basic retrier implementation that attempts *n* times before throwing a
+ * {@link UnresolvedConflictException}.
+ * 
+ * <p>
+ * Construct it with the number of times a {@link Callable} should be attempted.
+ * When <code>attempt</code> is called with a {@link Callable} then
+ * {@link Callable#call()} is run <code>attempts</code> times before throwing a
  * {@link RiakRetryFailedException}. It is important to note that there is no
  * backoff between attempts.
+ * </p>
  * 
  * @author russell
  */

@@ -24,6 +24,7 @@ import com.basho.riak.client.query.functions.Function;
 public class ReducePhase extends MapPhase {
 
     /**
+     * Create a Reduce Phase
      * @param phaseFunction
      * @param arg
      * @param keepResult

@@ -23,13 +23,19 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.http.util.Constants;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
- * annotated with {@link RiakKey}. RiakObject's value *must* be a JSON string.
+ * annotated with {@link RiakKey} or you must construct the converter with a key to use. RiakObject's value *must* be a JSON string.
+ * 
+ * <p>
+ * At present user meta data and {@link RiakLink}s are not converted. This means
+ * they are essentially lost in translation.
+ * </p>
  * 
  * @author russell
  * 
@@ -41,26 +47,45 @@ public class JSONConverter<T> implements Converter<T> {
     private final String bucket;
     private String defaultKey;
 
+    /**
+     * Create a JSONConverter for creating instances of <code>clazz</code> from
+     * JSON and instances of {@link IRiakObject} with a JSON paylaod from
+     * instances of <code>clazz</code>
+     * 
+     * @param clazz the type to convert to/from
+     * @param b the bucket
+     */
     public JSONConverter(Class<T> clazz, String bucket) {
         this.clazz = clazz;
         this.bucket = bucket;
     }
 
     /**
-     * @param clazz
-     * @param b
+     * Create a JSONConverter for creating instances of <code>clazz</code> from
+     * JSON and instances of {@link IRiakObject} with a JSON paylaod from
+     * instances of <code>clazz</code>
+     * 
+     * @param clazz the type to convert to/from
+     * @param b the bucket
      * @param defaultKey
+     *            for cases where <code>clazz</code> does not have a
+     *            {@link RiakKey} annotated field, pass the key to use in this
+     *            conversion.
      */
     public JSONConverter(Class<T> clazz, String b, String defaultKey) {
         this(clazz, b);
         this.defaultKey = defaultKey;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Converts <code>domainObject</code> to a JSON string and sets that as the
+     * payload of a {@link IRiakObject}. Also set the <code>content-type</code>
+     * to <code>application/json;charset=UTF-8</code>
      * 
-     * @see com.basho.riak.newapi.convert.Converter#fromDomain(java.lang.Object,
-     * VClock)
+     * @param domainObject
+     *            to be converted
+     * @param vclock
+     *            the vector clock from Riak
      */
     public IRiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException {
         try {
@@ -82,12 +107,17 @@ public class JSONConverter<T> implements Converter<T> {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.basho.riak.newapi.convert.Converter#toDomain(com.basho.riak.newapi
-     * .RiakObject)
+    /**
+     * Converts the <code>value</code> of <code>riakObject</code> to an instance
+     * of <code>T</code>.
+     * <p>
+     * Beware: at present links and user meta are not converted at present: this is on the way.
+     * </p>
+     * @param riakObject
+     *            the {@link IRiakObject} to convert to instance of
+     *            <code>T</code>. NOTE: <code>riakObject.getValue()</code> must be a
+     *            JSON string. The charset from
+     *            <code>riakObject.getContentType()</code> is used.
      */
     public T toDomain(IRiakObject riakObject) throws ConversionException {
         if (riakObject == null) {
@@ -98,6 +128,7 @@ public class JSONConverter<T> implements Converter<T> {
 
         try {
             T domainObject = objectMapper.readValue(json, clazz);
+            KeyUtil.setKey(domainObject, riakObject.getKey());
             return domainObject;
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);

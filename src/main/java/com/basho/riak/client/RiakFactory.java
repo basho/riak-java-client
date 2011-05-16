@@ -18,11 +18,18 @@ import java.io.IOException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
+import com.basho.riak.pbc.RiakClient;
 
 /**
- * A very basic factory for getting an IRiakClient implementation wrapping
+ * A *very* basic factory for getting an IRiakClient implementation wrapping
  * the {@link RawClient} of your choice.
- *
+ * <p>
+ * Also provides convenience methods for grabbing a default configuration pb or http client.
+ * </p>
+ * <p>
+ * NOTE: This class is under change, a single factory method that accepts a <code>Configuration</code> object will
+ * be available soon
+ * </p>
  * @author russell 
  */
 public class RiakFactory {
@@ -30,7 +37,7 @@ public class RiakFactory {
     private static final String DEFAULT_RIAK_URL = "http://127.0.0.1:8098/riak";
 
     /**
-     * 
+     * Wraps a {@link PBClientAdapter} connected to 127.0.0.1:8087 in a {@link DefaultRiakClient}.
      * @return a default configuration PBC client
      * @throws RiakException
      */
@@ -46,9 +53,9 @@ public class RiakFactory {
     }
 
     /**
-     * Wraps the given pb client in IRiakFactory clothes.
-     * @param delegate
-     * @return a wrapped pb client
+     * Wraps the given {@link RiakClient} client in a {@link DefaultRiakClient}.
+     * @param delegate the pbc.{@link RiakClient} to wrap.
+     * @return a {@link DefaultRiakClient} that delegates to <code>delegate</code>
      */
     public static IRiakClient pbcClient(com.basho.riak.pbc.RiakClient delegate) {
         final RawClient client = new PBClientAdapter(delegate);
@@ -56,7 +63,8 @@ public class RiakFactory {
     }
 
     /**
-     * @return a default configuration HTTP client
+     * Wraps a {@link HTTPClientAdapter} connecting to 127.0.0.1:8098/riak in a {@link DefaultRiakClient}
+     * @return a default configuration {@link DefaultRiakClient} delegating to the HTTP client
      */
     public static IRiakClient httpClient() throws RiakException {
         final RawClient client = new HTTPClientAdapter(DEFAULT_RIAK_URL);
@@ -64,7 +72,9 @@ public class RiakFactory {
     }
 
     /**
-     * @return a wrapped http RiakClient
+     * Wraps the given {@link com.basho.riak.client.http.RiakClient} in a {@link DefaultRiakClient}
+     * @param delegate the http.{@link com.basho.riak.client.http.RiakClient} to wrap.
+     * @return a {@link DefaultRiakClient} that delegates to <code>delegate</code>
      */
     public static IRiakClient httpClient(com.basho.riak.client.http.RiakClient delegate) throws RiakException {
         final RawClient client = new HTTPClientAdapter(delegate);

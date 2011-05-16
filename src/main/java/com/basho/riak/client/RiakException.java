@@ -38,4 +38,12 @@ public class RiakException extends Exception {
     public RiakException(String message) {
         super(message);
     }
+
+    /**
+     * @param message String
+     * @param cause
+     */
+    public RiakException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -19,6 +19,6 @@ package com.basho.riak.client.query.functions;
  * @author russell
  *
  */
-public interface AnonymousFunction  extends Function {
+public interface AnonymousFunction extends Function {
 
 }

@@ -2,6 +2,9 @@ package com.basho.riak.pbc;
 
 import com.google.protobuf.ByteString;
 
+/**
+ * PBC model of request meta data (<code>w, dw, content-type, returnBody?</code>)
+ */
 public interface IRequestMeta {
 
 	public abstract void preparePut(RPB.RpbPutReq.Builder builder);

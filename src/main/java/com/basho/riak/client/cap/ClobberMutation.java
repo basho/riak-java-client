@@ -14,10 +14,10 @@
 package com.basho.riak.client.cap;
 
 /**
- * A dumb mutation that overwrites the original value with a new one.
+ * A mutation that overwrites the original value with a new one.
  * 
  * @author russell
- * @param <T>
+ * @param <T> the type of the value
  * 
  */
 public class ClobberMutation<T> implements Mutation<T> {
@@ -25,16 +25,15 @@ public class ClobberMutation<T> implements Mutation<T> {
     final T newValue;
 
     /**
+     * Create a clobber mutation that will return <code>newValue</code> from <code>apply(T)</code>
      * @param newValue
      */
     public ClobberMutation(T newValue) {
         this.newValue = newValue;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.newapi.cap.Mutation#apply(java.lang.Object)
+    /**
+     * @return simply returns whatever the argument to the constructor was.
      */
     public T apply(T original) {
         return newValue;

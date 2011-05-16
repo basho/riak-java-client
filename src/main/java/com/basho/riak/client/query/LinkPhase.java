@@ -14,8 +14,13 @@
 package com.basho.riak.client.query;
 
 /**
+ * {@link MapReducePhase} implementation that models a Link Phase
+ * 
  * @author russell
  * 
+ * @see MapReduce
+ * @see MapPhase
+ * @see ReducePhase
  */
 public class LinkPhase implements MapReducePhase {
 
@@ -24,9 +29,16 @@ public class LinkPhase implements MapReducePhase {
     private final boolean keep;
 
     /**
+     * Create a Link Phase that points to <code>bucket</code> / <code>tag</code>
+     * .
+     * 
      * @param bucket
+     *            the bucket at the end of the link (or "_" or "" for wildcard)
      * @param tag
+     *            the tag (or ("_", or "" for wildcard)
      * @param keep
+     *            to keep the result of this phase and return it at the end of
+     *            the operation
      */
     public LinkPhase(String bucket, String tag, boolean keep) {
         this.bucket = bucket;
@@ -35,8 +47,13 @@ public class LinkPhase implements MapReducePhase {
     }
 
     /**
+     * Create a Link Phase that points to <code>bucket</code> / <code>tag</code>
+     * <code>keep</code> will be <code>false</code>
+     * 
      * @param bucket
+     *            the bucket at the end of the link (or "_" or "" for wildcard)
      * @param tag
+     *            the tag (or ("_", or "" for wildcard)
      */
     public LinkPhase(String bucket, String tag) {
         this.bucket = bucket;
@@ -45,6 +62,7 @@ public class LinkPhase implements MapReducePhase {
     }
 
     /**
+     * The bucket for this link phase
      * @return the bucket
      */
     public String getBucket() {
@@ -52,6 +70,7 @@ public class LinkPhase implements MapReducePhase {
     }
 
     /**
+     * The tag for this link phase
      * @return the tag
      */
     public String getTag() {
@@ -59,6 +78,7 @@ public class LinkPhase implements MapReducePhase {
     }
 
     /**
+     * Keep the result or just use as input to the next phase?
      * @return whether the result is kept or just passed to the next phase.
      */
     public boolean isKeep() {

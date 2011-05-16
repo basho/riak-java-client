@@ -13,6 +13,11 @@
  */
 package com.basho.riak.client.query.filter;
 
+/**
+ * Filter in keys that match any of the filters specified
+ * @author russell
+ *
+ */
 public class LogicalOrFilter extends AbstractLogicalFilter {
 
     private static final String NAME = "or";

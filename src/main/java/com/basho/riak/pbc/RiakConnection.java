@@ -31,6 +31,11 @@ import java.util.TimerTask;
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
 
+/**
+ * Wraps the {@link Socket} used to send/receive data to Riak's protocol buffers interface.
+ * 
+ * See <a href="http://wiki.basho.com/PBC-API.html">Basho Wiki</a> for more details.
+ */
 class RiakConnection {
 
 	static final int DEFAULT_RIAK_PB_PORT = 8087;

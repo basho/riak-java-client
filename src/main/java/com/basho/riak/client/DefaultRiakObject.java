@@ -22,21 +22,29 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
- * An implementation of {@link IRiakObject}
- *
- * Models the meta data and data stored at a bucket/key location in
- * Riak.
+ * The default implementation of {@link IRiakObject}
+ * <p>
+ * Is as immutable as possible. <code>Value</code>, <code>content-type</code>, <code>links</code> and <code>user meta data</code> are all mutable.
+ * It is safe to use the instances of this class from multiple threads.
+ * </p>
+ * <p>
+ * Due to the large number of arguments to the constructor the *best* way to create instances is with a {@link RiakObjectBuilder}.
+ * </p>
  * 
  * @author russell
  */
 public class DefaultRiakObject implements IRiakObject {
 
+    /**
+     * The default content type assigned when persisted in Riak if non is provided.
+     */
     public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
     private final String bucket;
@@ -54,19 +62,17 @@ public class DefaultRiakObject implements IRiakObject {
     private volatile byte[] value;
 
     /**
-     * Use the builder.
-     *
-     * @param bucket
-     * @param key
-     * @param vclock
-     * @param conflict
-     * @param vtag
-     * @param lastModified
-     * @param contentType
-     * @param value
-     * @param siblings
-     * @param links
-     * @param userMeta
+     * Large number of arguments due to largely immutable nature. Use {@link RiakObjectBuilder} to create instances.
+     * 
+     * @param bucket the bucket the object is stored in
+     * @param key the key it is stored under
+     * @param vclock the vclock, if available
+     * @param vtag the version tag, if relevant
+     * @param lastModified the last modified date from Riak (if relevant)
+     * @param contentType the content-type of the value
+     * @param value a byte[] of the data payload to store in Riak. Note: this is cloned on construction of this instance.
+     * @param links the List of {@link RiakLink}s from this object. Note: this is copied.
+     * @param userMeta the {@link Map} of user meta data to store/stored with this object. Note: this is copied.
      */
     public DefaultRiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
             String contentType, byte[] value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
@@ -91,8 +97,9 @@ public class DefaultRiakObject implements IRiakObject {
     }
 
     /**
+     * Copy the value array.
      * @param value
-     * @return
+     * @return a clone of value or null (if value was null)
      */
     private byte[] copy(byte[] value) {
         if (value == null) {
@@ -102,6 +109,11 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
+    /**
+     * Copy the user meta data
+     * @param userMeta
+     * @return a copy of user meta data or any empty map
+     */
     private Map<String, String> copy(Map<String, String> userMeta) {
         Map<String, String> copy;
 
@@ -114,6 +126,11 @@ public class DefaultRiakObject implements IRiakObject {
         return copy;
     }
 
+    /**
+     * Copy the {@link RiakLink}
+     * @param links
+     * @return a copy of links or an empty {@link ArrayList}
+     */
     private Collection<RiakLink> copy(Collection<RiakLink> links) {
         Collection<RiakLink> copy;
         if (links == null) {
@@ -124,6 +141,10 @@ public class DefaultRiakObject implements IRiakObject {
         return copy;
     }
 
+    /**
+     * If content-type is null set the content-type to DEFAULT_CONTENT_TYPE
+     * @param contentType
+     */
     private void safeSetContentType(String contentType) {
         if (contentType == null) {
             this.contentType = DEFAULT_CONTENT_TYPE;
@@ -132,22 +153,37 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getBucket()
+     */
     public String getBucket() {
         return bucket;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getVClock()
+     */
     public VClock getVClock() {
         return vclock;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getKey()
+     */
     public String getKey() {
         return key;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getVtag()
+     */
     public String getVtag() {
         return vtag;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getLastModified()
+     */
     public Date getLastModified() {
         Date lastModified = null;
 
@@ -158,20 +194,35 @@ public class DefaultRiakObject implements IRiakObject {
         return lastModified;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getContentType()
+     */
     public String getContentType() {
         return contentType;
     }
 
+    /**
+     * NOTE: a copy is returned. Mutating the return value will not effect the state of this instance.
+     * @see com.basho.riak.client.IRiakObject#getMeta()
+     */
     public Map<String, String> getMeta() {
         return new HashMap<String, String>(userMeta);
     }
 
+    /**
+     * @return a *cop* of this object's data payload.
+     * @see com.basho.riak.client.IRiakObject#getValue()
+     */
     public byte[] getValue() {
-        return value;
+        return copy(value);
     }
 
     // mutate
-
+    /**
+     * Note: Copies the value.
+     * 
+     * @param a byte[] to store in Riak.
+     */
     public void setValue(byte[] value) {
         this.value = copy(value);
     }
@@ -184,24 +235,22 @@ public class DefaultRiakObject implements IRiakObject {
         this.contentType = CharsetUtils.addUtf8Charset(contentType);
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#setContentType(java.lang.String)
+     */
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
 
     /**
-     * an UnmodifiableIterator view on the RiakLinks
+     * an {@link UnmodifiableIterator} view on the RiakLinks
      */
     public Iterator<RiakLink> iterator() {
         return new UnmodifiableIterator<RiakLink>(getLinks().iterator());
     }
 
-    
-    /**
-     * Add link to this RiakObject's links.
-     * 
-     * @param link
-     *            a {@link RiakLink} to add.
-     * @return this RiakObject.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#addLink(com.basho.riak.client.RiakLink)
      */
     public IRiakObject addLink(RiakLink link) {
         if (link != null) {
@@ -212,12 +261,8 @@ public class DefaultRiakObject implements IRiakObject {
         return this;
     }
 
-    /**
-     * Remove a {@link RiakLink} from this RiakObject.
-     * 
-     * @param link
-     *            the {@link RiakLink} to remove
-     * @return this RiakObject
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#removeLink(com.basho.riak.client.RiakLink)
      */
     public IRiakObject removeLink(final RiakLink link) {
         synchronized (linksLock) {
@@ -226,10 +271,8 @@ public class DefaultRiakObject implements IRiakObject {
         return this;
     }
 
-    /**
-     * Does this RiakObject have any {@link RiakLink}s?
-     *
-     * @return true if there are links, false otherwise
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#hasLinks()
      */
     public boolean hasLinks() {
         synchronized (linksLock) {
@@ -237,10 +280,8 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
-    /**
-     * How many {@link RiakLink}s does this RiakObject have?
-     *
-     * @return the number of {@link RiakLink}s this object has.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#numLinks()
      */
     public int numLinks() {
         synchronized (linksLock) {
@@ -248,8 +289,8 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
-    /**
-     * Return a copy of the links.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getLinks()
      */
     public List<RiakLink> getLinks() {
         synchronized (linksLock) {
@@ -257,12 +298,8 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
-    /**
-     * Checks if the collection of RiakLinks contains the one passed in.
-     * 
-     * @param riakLink
-     *            a RiakLink
-     * @return true if the RiakObject's link collection contains riakLink.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#hasLink(com.basho.riak.client.RiakLink)
      */
     public boolean hasLink(final RiakLink riakLink) {
         synchronized (linksLock) {
@@ -270,12 +307,8 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
-    /**
-     * Adds the key, value to the collection of user meta for this object.
-     * 
-     * @param key
-     * @param value
-     * @return this RiakObject.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#addUsermeta(java.lang.String, java.lang.String)
      */
     public IRiakObject addUsermeta(String key, String value) {
         synchronized (userMetaLock) {
@@ -284,8 +317,8 @@ public class DefaultRiakObject implements IRiakObject {
         return this;
     }
 
-    /**
-     * @return true if there are any user meta data set on this RiakObject.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#hasUsermeta()
      */
     public boolean hasUsermeta() {
         synchronized (userMetaLock) {
@@ -293,9 +326,8 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
-    /**
-     * @param key
-     * @return
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#hasUsermeta(java.lang.String)
      */
     public boolean hasUsermeta(String key) {
         synchronized (userMetaLock) {
@@ -303,12 +335,8 @@ public class DefaultRiakObject implements IRiakObject {
         }
     }
 
-    /**
-     * Get an item of user meta data.
-     *
-     * @param key
-     *            the user meta data item key
-     * @return The value for the given key or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#getUsermeta(java.lang.String)
      */
     public String getUsermeta(String key) {
         synchronized (userMetaLock) {
@@ -317,9 +345,8 @@ public class DefaultRiakObject implements IRiakObject {
 
     }
 
-    /**
-     * @param key
-     *            the key of the item to remove
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#removeUsermeta(java.lang.String)
      */
     public IRiakObject removeUsermeta(String key) {
         synchronized (userMetaLock) {

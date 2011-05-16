@@ -17,12 +17,28 @@ import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.cap.Retrier;
+import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.raw.RawClient;
 
 /**
- * @author russell
+ * A {@link RiakOperation} that gets a {@link Bucket} from Riak.
  * 
+ * <p>
+ * Calls the underlying {@link RiakClient}s fetch method via the {@link Retrier}
+ * attempt method, builds a {@link Bucket} from the response.
+ * </p>
+ * <p>
+ * Example:
+ * <code><pre>
+ *   final String bucketName = "userAccounts";
+ *   // fetch a bucket
+ *   Bucket b = client.fetchBucket(bucketName).execute();
+ *   // use the bucket
+ *   IRiakObject o = b.store("k", "v").execute();
+ * </pre></code>
+ * </p>
+ * @author russell
  */
 public class FetchBucket implements RiakOperation<Bucket> {
 
@@ -32,10 +48,13 @@ public class FetchBucket implements RiakOperation<Bucket> {
     private Retrier retrier;
 
     /**
-     * @param client
-     * @param bucket
+     * Create a FetchBucket that delegates to the provided {@link RawClient}.
+     * 
+     * @param client the {@link RawClient} to use when fetching the bucket data.
+     * @param bucket the name of the bucket to fetch.
+     * @param retrier the {@link Retrier} to use when fetching bucket data.
      */
-    public FetchBucket(RawClient client, String bucket, final Retrier retrier) {
+    public FetchBucket(final RawClient client, String bucket, final Retrier retrier) {
         this.client = client;
         this.bucket = bucket;
         this.retrier = retrier;
@@ -43,6 +62,8 @@ public class FetchBucket implements RiakOperation<Bucket> {
 
     /**
      * Execute the fetch operation using the RawClient
+     * @return a {@link Bucket} configured to use this instances {@link RawClient} and {@link Retrier} for its operations
+     * @throws RiakRetryFailedException if the {@link Retrier} throws {@link RiakRetryFailedException}
      */
     public Bucket execute() throws RiakRetryFailedException {
         BucketProperties properties = retrier.attempt(new Callable<BucketProperties>() {
@@ -55,9 +76,9 @@ public class FetchBucket implements RiakOperation<Bucket> {
     }
 
     /**
-     * Provide a retrier to use for the fetch operation.
+     * Provide a {@link Retrier} to use for the fetch operation.
      *
-     * @param retrier the Retrier to use
+     * @param retrier the {@link Retrier} to use
      * @return this
      */
     public FetchBucket retrier(final Retrier retrier) {

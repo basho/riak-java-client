@@ -26,6 +26,16 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
 
 /**
+ * For creating a {@link DomainBucket}
+ * 
+ * <p>
+ * Defaults are as follows:
+ * <ul>
+ * <li> {@link ConflictResolver} : {@link DefaultResolver} </li>
+ * <li> {@link Converter} : {@link JSONConverter} </li>
+ * <li> {@link Retrier} : {@link DefaultRetrier#attempts(int)} configured for 3 attempts </li>
+ * <li> {@link MutationProducer} : anonymous instance that produces a {@link ClobberMutation} for {@link MutationProducer#produce(Object)}</li>
+ * </p>
  * @author russell
  * @param <T>
  *            the type of the DomainBucket to be built
@@ -49,6 +59,7 @@ public class DomainBucketBuilder<T> {
     private boolean returnBody = false;
 
     /**
+     * Create a {@link DomainBucket} that stores instance of <code>clazz</code> in <code>bucket</code>
      * @param bucket
      * @param clazz
      */
@@ -59,6 +70,10 @@ public class DomainBucketBuilder<T> {
         converter = new JSONConverter<T>(clazz, bucket.getName());
     }
 
+    /**
+     * Generate the {@link DomainBucket}
+     * @return a {@link DomainBucket} configured from this builder
+     */
     public DomainBucket<T> build() {
         // if there is no Mutation or MutationProducer create a default one.
         if (mutation != null && mutationProducer == null) {
@@ -81,8 +96,9 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
-     * @param mergeResolver
-     * @return
+     * the {@link ConflictResolver} the {@link DomainBucket} will use.
+     * @param resolver a {@link ConflictResolver}
+     * @return this
      */
     public DomainBucketBuilder<T> withResolver(ConflictResolver<T> resolver) {
         this.resolver = resolver;
@@ -90,8 +106,9 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
+     * Should store operations on the built {@link DomainBucket} have return a body?
      * @param returnBody
-     * @return
+     * @return this
      */
     public DomainBucketBuilder<T> returnBody(boolean returnBody) {
         this.returnBody = returnBody;
@@ -99,8 +116,9 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
-     * @param i
-     * @return
+     * The {@link Retrier} to use on operations on the built {@link DomainBucket}
+     * @param retrier a {@link Retrier}
+     * @return this
      */
     public DomainBucketBuilder<T> retrier(final Retrier retrier) {
         this.retrier = retrier;
@@ -108,34 +126,60 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
-     * @param i
-     * @return
+     * The write quorum for store operations on the built {@link DomainBucket}
+     * @param w
+     * @return this
      */
     public DomainBucketBuilder<T> w(int w) {
         this.w = w;
         return this;
     }
 
+    /**
+     * The read quorum for fetch/store operations on the built {@link DomainBucket}
+     * @param r
+     * @return this
+     */
     public DomainBucketBuilder<T> r(int r) {
         this.r = r;
         return this;
     }
 
+    /**
+     *The read write quorum for delete operations on the built {@link DomainBucket}
+     * @param rw
+     * @return this
+     */
     public DomainBucketBuilder<T> rw(int rw) {
         this.rw = rw;
         return this;
     }
 
+    /**
+     * The durabel write quorum for store operations on the built {@link DomainBucket}
+     * @param dw
+     * @return this
+     */
     public DomainBucketBuilder<T> dw(int dw) {
         this.dw = dw;
         return this;
     }
 
+    /**
+     * A {@link MutationProducer} to provide the {@link Mutation} to use in store operations.
+     * @param mutationProducer
+     * @return this
+     */
     public DomainBucketBuilder<T> mutationProducer(MutationProducer<T> mutationProducer) {
         this.mutationProducer = mutationProducer;
         return this;
     }
 
+    /**
+     * The {@link Converter} to use on fetch and store operations on the built {@link DomainBucket}
+     * @param converter
+     * @return this
+     */
     public DomainBucketBuilder<T> withConverter(final Converter<T> converter) {
         this.converter = converter;
         return this;

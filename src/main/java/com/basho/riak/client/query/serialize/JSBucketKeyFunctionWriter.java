@@ -20,6 +20,7 @@ import org.codehaus.jackson.JsonGenerator;
 import com.basho.riak.client.query.functions.JSBucketKeyFunction;
 
 /**
+ * Writes a {@link JSBucketKeyFunction} to a {@link JsonGenerator}
  * @author russell
  *
  */

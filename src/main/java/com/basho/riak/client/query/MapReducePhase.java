@@ -14,11 +14,18 @@
 package com.basho.riak.client.query;
 
 /**
+ * Shared common interface for Map/Reduce phase definitions.
  * @author russell
  * 
+ * @see MapReduce#addMapPhase(com.basho.riak.client.query.functions.Function)
+ * @see MapReduce#addLinkPhase(String, String)
+ * @see MapReduce#addReducePhase(com.basho.riak.client.query.functions.Function)
  */
 public interface MapReducePhase {
 
+    /**
+     * Possible phase typess.
+     */
     public enum PhaseType {
         LINK("link"), MAP("map"), REDUCE("reduce");
 
@@ -33,7 +40,15 @@ public interface MapReducePhase {
         }
     };
 
+    /**
+     * Is this phase's output to be returned or only passed as input to the next phase.
+     * @return trure if the results are returned, false otherwise.
+     */
     boolean isKeep();
 
+    /**
+     * The PhaseType of this {@link MapReducePhase} implementation.
+     * @return a PhaseType.
+     */
     PhaseType getType();
 }

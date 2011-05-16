@@ -11,7 +11,11 @@ import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 
 /**
- * Use to create instances of BucketProperties.
+ * Used to create instances of {@link BucketProperties}.
+ * 
+ * <p>
+ * All parameters are optional, only nVal has a default value (3)
+ * </p>
  * 
  * @author russell
  * 

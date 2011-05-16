@@ -20,6 +20,7 @@ import org.codehaus.jackson.JsonGenerator;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 
 /**
+ * Writes a {@link NamedErlangFunction} to a {@link JsonGenerator}
  * @author russell
  * 
  */

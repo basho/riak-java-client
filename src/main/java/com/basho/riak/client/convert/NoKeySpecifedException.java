@@ -13,25 +13,39 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.bucket.DefaultBucket;
+
 /**
- * @author russell
+ * Thrown by an operation that requires a key but doesn't have one.
  * 
+ * @author russell
+ * @see JSONConverter
+ * @see DefaultBucket
  */
 public class NoKeySpecifedException extends RuntimeException {
 
     /**
-     * 
+     * eclipse generated id
      */
     private static final long serialVersionUID = 8973356637885359438L;
     private final Object domainObject;
 
     /**
+     * Construct an exception, pass the domainObject for which the key cannot be
+     * found.
+     * 
      * @param domainObject
+     *            some object that was attempted to be stored/fetched/deleted
+     *            from Riak but has no {@link RiakKey} field.
      */
     public NoKeySpecifedException(final Object domainObject) {
         this.domainObject = domainObject;
     }
 
+    /**
+     * Get the object that triggered the exception
+     * @return the offending instance.
+     */
     public Object getDomainObject() {
         return domainObject;
     }

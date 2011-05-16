@@ -14,6 +14,11 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Transforms a key from an int to a string.
+ * @author russell
+ *
+ */
 public class IntToStringFilter extends AbstractKeyFilter {
 
     private static final String NAME = "int_to_string";

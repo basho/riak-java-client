@@ -1,6 +1,20 @@
+* TODO Check MapReduceTimeException is actually thrown when a time out occurs 
+Write a timing out test
 * TODO Configure a RawClient from RiakFactory (config object, map?)
+Include things like TCP_NODELAY etc
+* TODO Conversion needs more thought, especially around the key
+* TODO Have store/fetch/delete Object operations use the pass through non converter if the type they are working with is IRiakObject
+* DONE Set the *key* on the converted domain object if RiakKey annotation present
+* TODO Have key as a parameter to convert?
+* TODO remove vclock as param to convert?
+* TODO reimplement JSONConverter as less of an example and more for production
+* TODO key discovery from domain objects needs to be a strategy
 * TODO moar unit tests
 * TODO detailed JavaDoc throughout
+* TODO Add a DomainBucket.store(String key, T o) method
+* TODO per op. cap on RiakBucket
+* TODO Retrier, Mutator, Conflict resolver on RiakBucket
+* TODO some sort of registry/lookup based on type/content type for Converters
 * TODO Code audit for safety/oddness
 EG Builders for use from single thread so remove sync from builder collections
 * TODO Look at client id in a more thorough and logical way

@@ -15,17 +15,25 @@ package com.basho.riak.client.bucket;
 
 import java.util.Collection;
 
+import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 
 /**
- * Since not all interfaces to Riak are equal in terms of what they provide not
- * all RawClients can be expected to set all values. Which means that *any* of
- * the getters may return null.
+ * An immutable implementation of {@link BucketProperties}.
  * 
+ * <p>
+ * Use {@link BucketPropertiesBuilder} if you really have to make one, but your
+ * better to fetch one like with {@link IRiakClient#fetchBucket(String)} or create one with
+ * {@link IRiakClient#createBucket(String)}
+ * </p>
  * @author russell
+ * 
+ * @see IRiakClient
+ * @see WriteBucket
+ * @see FetchBucket
  */
 public class DefaultBucketProperties implements BucketProperties {
 
@@ -47,22 +55,8 @@ public class DefaultBucketProperties implements BucketProperties {
     private final NamedErlangFunction linkWalkFunction;
 
     /**
-     * @param allowSiblings
-     * @param lastWriteWins
-     * @param nVal
-     * @param backend
-     * @param smallVClock
-     * @param bigVClock
-     * @param youngVClock
-     * @param oldVClock
-     * @param precommitHooks
-     * @param postcommitHooks
-     * @param r
-     * @param w
-     * @param dw
-     * @param rw
-     * @param chashKeyFunction
-     * @param linkWalkFunction
+     * Construct from the given {@link BucketPropertiesBuilder}
+     * @param builder
      */
     public DefaultBucketProperties(final BucketPropertiesBuilder builder) {
         this.allowSiblings = builder.allowSiblings;
@@ -83,128 +77,120 @@ public class DefaultBucketProperties implements BucketProperties {
         this.linkWalkFunction = builder.linkWalkFunction;
     }
 
-    /**
-     * @return the allowSiblings if set, or null if not
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getAllowSiblings()
      */
     public Boolean getAllowSiblings() {
         return allowSiblings;
     }
 
-    /**
-     * @return the lastWriteWins if set or null if not
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getLastWriteWins()
      */
     public Boolean getLastWriteWins() {
         return lastWriteWins;
     }
 
-    /**
-     * @return the nVal if set or null if not
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getNVal()
      */
     public Integer getNVal() {
         return nVal;
     }
 
-    /**
-     * @return the backend if set, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getBackend()
      */
     public String getBackend() {
         return backend;
     }
 
-    /**
-     * 
-     * @return the small vclock pruning property if set, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getSmallVClock()
      */
-    public int getSmallVClock() {
+    public Integer getSmallVClock() {
         return smallVClock;
     }
 
-    /**
-     * 
-     * @return the big vclock pruning size property if set, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getBigVClock()
      */
-    public int getBigVClock() {
+    public Integer getBigVClock() {
         return bigVClock;
     }
 
-    /**
-     * 
-     * @return the young vclock prune property if set, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getYoungVClock()
      */
-    public long getYoungVClock() {
+    public Long getYoungVClock() {
         return youngVClock;
     }
 
-    /**
-     * 
-     * @return the old vclock prune property if set, or null
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getOldVClock()
      */
-    public long getOldVClock() {
+    public Long getOldVClock() {
         return oldVClock;
     }
 
-    /**
-     * @return the pre commit hooks, if any, or an empty collection.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getPrecommitHooks()
      */
     public Collection<NamedFunction> getPrecommitHooks() {
         return precommitHooks;
     }
 
-    /**
-     * @return the post commit hooks, if ant, or an empty collection.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getPostcommitHooks()
      */
     public Collection<NamedErlangFunction> getPostcommitHooks() {
         return postcommitHooks;
     }
 
-    /**
-     * 
-     * @return the default CAP read quorum for this bucket, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getR()
      */
     public Quorum getR() {
         return r;
     }
 
-    /**
-     * 
-     * @return the default CAP write quorum for this bucket, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getW()
      */
     public Quorum getW() {
         return w;
     }
 
-    /**
-     * 
-     * @return the default CAP RW (delete) quorum for this bucket, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getRW()
      */
     public Quorum getRW() {
         return rw;
     }
 
-    /**
-     * 
-     * @return the default CAP durable write quorum for this bucket, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getDW()
      */
     public Quorum getDW() {
         return dw;
     }
 
-    /**
-     * @return the key hashing function for the bucket, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getChashKeyFunction()
      */
     public NamedErlangFunction getChashKeyFunction() {
         return chashKeyFunction;
     }
 
-    /**
-     * @return the link walking function for the bucket, or null.
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getLinkWalkFunction()
      */
     public NamedErlangFunction getLinkWalkFunction() {
         return linkWalkFunction;
     }
 
     /**
-     * 
+     * Create a {@link BucketPropertiesBuilder} populated with my values.
      * @return a Builder populated from this BucketProperties' values.
      */
     public BucketPropertiesBuilder fromMe() {
@@ -212,6 +198,8 @@ public class DefaultBucketProperties implements BucketProperties {
     }
 
     /**
+     * Create a {@link BucketPropertiesBuilder} populated from the given
+     * {@link DefaultBucketProperties}.
      * 
      * @param properties
      * @return a Builder populated with properties values.

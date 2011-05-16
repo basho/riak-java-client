@@ -14,6 +14,8 @@
 package com.basho.riak.client.cap;
 
 /**
+ * Access the opaque Riak vector clock as either a String or array of bytes.
+ * 
  * @author russell
  * 
  */

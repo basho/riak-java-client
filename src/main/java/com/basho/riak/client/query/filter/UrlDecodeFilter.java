@@ -13,6 +13,11 @@
  */
 package com.basho.riak.client.query.filter;
 
+/**
+ * Transform filter that urldecodes the key
+ * @author russell
+ *
+ */
 public class UrlDecodeFilter implements KeyTransformFilter {
 
     private static final String[] filter = new String[] { "urldecode" };

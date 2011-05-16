@@ -14,14 +14,24 @@
 package com.basho.riak.client.cap;
 
 /**
- * Interface for a mutation.
+ * A Mutation is some encapsulated logic that generates a new value from some previous value
+ * 
+ * <p>
+ * Big thanks to Coda Hale from Yammer for this. Modelling your data as
+ * logically monotonic makes store operations more predictable in a distributed
+ * environment. Basically changing data *based on its
+ * contents* and your logic. As the simplest example:
+ * 
+ * Rather than creating a riak object with a value of (say 25) you create a
+ * Mutation that adds 1 to whatever value comes from Riak
+ * </p>
  * 
  * @author russell
  * 
  */
 public interface Mutation<T> {
     /**
-     * Applies a mutation to the "original" value passed in
+     * Applies a mutation to the <code>original</code> value passed in
      * 
      * @param original
      *            the value to mutate.

@@ -14,22 +14,40 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that =< than the configured value.
+ * 
+ * @author russell
+ *
+ */
 public class LessThanOrEqualFilter implements KeyFilter {
     private static final String NAME = "less_than_eq";
     private final Object[] filter;
 
+    /**
+     * @param lessThanOrEqualTo
+     */
     public LessThanOrEqualFilter(String lessThanOrEqualTo) {
         filter = new String[] { NAME, lessThanOrEqualTo };
     }
 
+    /**
+     * @param lessThanOrEqualTo
+     */
     public LessThanOrEqualFilter(int lessThanOrEqualTo) {
         filter = new Object[] { NAME, lessThanOrEqualTo };
     }
 
+    /**
+     * @param lessThanOrEqualTo
+     */
     public LessThanOrEqualFilter(double lessThanOrEqualTo) {
         filter = new Object[] { NAME, lessThanOrEqualTo };
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public Object[] asArray() {
         return filter.clone();
     }

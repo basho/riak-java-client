@@ -17,12 +17,21 @@ import java.util.Set;
 
 import org.json.JSONException;
 
+/**
+ * Filter in keys that are a member of the provided set
+ * @author russell
+ *
+ */
 public class SetMemberFilter implements KeyFilter {
 
     private static final String NAME = "set_member";
     private final Object[] filter;
 
     
+    /**
+     * Creates a set from a String var arg
+     * @param setMembers
+     */
     public SetMemberFilter(String...setMembers) {
         filter = new String[setMembers.length + 1];
         int cnt = 0;
@@ -33,6 +42,10 @@ public class SetMemberFilter implements KeyFilter {
         }
     }
     
+    /**
+     * Set of Strings
+     * @param setMembers
+     */
     public SetMemberFilter(Set<String> setMembers) {
         filter = new String[setMembers.size() + 1];
         int cnt = 0;
@@ -43,6 +56,10 @@ public class SetMemberFilter implements KeyFilter {
         }
     }
 
+    /**
+     * Set of ints
+     * @param setMembers
+     */
     public SetMemberFilter(int[] setMembers) {
         filter = new Object[setMembers.length + 1];
         int cnt = 0;
@@ -53,6 +70,10 @@ public class SetMemberFilter implements KeyFilter {
         }
     }
 
+    /**
+     * Set of doubles
+     * @param setMembers
+     */
     public SetMemberFilter(double[] setMembers) throws JSONException {
         filter = new Object[setMembers.length + 1];
         int cnt = 0;
@@ -63,6 +84,9 @@ public class SetMemberFilter implements KeyFilter {
         }
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public Object[] asArray() {
         return filter.clone();
     }

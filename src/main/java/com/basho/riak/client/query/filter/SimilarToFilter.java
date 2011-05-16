@@ -14,14 +14,27 @@
 package com.basho.riak.client.query.filter;
 
 
+/**
+ * Filter in keys that are within a specified Levenshtein edit distance of the provided string
+ * 
+ * @author russell
+ *
+ */
 public class SimilarToFilter implements KeyFilter {
     private static final String NAME = "similar_to";
     private final Object[] filter;
 
+    /**
+     * @param similarTo the string to compare to
+     * @param maxEditDistance
+     */
     public SimilarToFilter(String similarTo, int maxEditDistance) {
         filter = new Object[] { NAME, similarTo, maxEditDistance };
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
+     */
     public Object[] asArray() {
         return filter.clone();
     }

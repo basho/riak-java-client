@@ -14,6 +14,7 @@
 package com.basho.riak.client.query.filter;
 
 /**
+ * Abstract implementation that provides a skeletal getFilter implementation.
  * @author russell
  *
  */

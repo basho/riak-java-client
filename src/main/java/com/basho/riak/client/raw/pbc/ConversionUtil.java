@@ -50,10 +50,17 @@ import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 import com.google.protobuf.ByteString;
 
 /**
+ * 
  * @author russell
  * 
  */
-public class ConversionUtil {
+public final class ConversionUtil {
+
+    /**
+     * All static methods, don't allow any instances to be created.
+     */
+    private ConversionUtil() {}
+
     /**
      * @param fetch
      * @return

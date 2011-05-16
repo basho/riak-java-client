@@ -16,14 +16,25 @@ package com.basho.riak.client.raw.query;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.LinkWalkStep;
 import com.basho.riak.client.util.UnmodifiableIterator;
 
 /**
- * An immutable class that represents a link walk specification
- *
- * @author russell
+ * An immutable class that represents a link walk specification, built by a
+ * {@link LinkWalk} operation, used internally.
  * 
+ * <p>
+ * There is no need to create an instance of this class. The {@link LinkWalk}
+ * operation (obtained from
+ * {@link IRiakClient#walk(com.basho.riak.client.IRiakObject)})is the correct
+ * way to generate and submit a LinkWalk spec.
+ * </p>
+ * 
+ * @author russell
+ * @see IRiakClient#walk(com.basho.riak.client.IRiakObject)
+ * @see LinkWalk#execute()
  */
 public class LinkWalkSpec implements Iterable<LinkWalkStep> {
 
@@ -32,9 +43,13 @@ public class LinkWalkSpec implements Iterable<LinkWalkStep> {
     private final String startKey;
 
     /**
+     * Create the link walk spec.
+     * 
      * @param steps
      * @param startBucket
      * @param startKey
+     * @see LinkWalk#execute()
+     * @see IRiakClient#walk(com.basho.riak.client.IRiakObject)
      */
     public LinkWalkSpec(final LinkedList<LinkWalkStep> steps, String startBucket, String startKey) {
         this.steps = new LinkedList<LinkWalkStep>(steps);
@@ -43,6 +58,7 @@ public class LinkWalkSpec implements Iterable<LinkWalkStep> {
     }
 
     /**
+     * The bucket of the object to walk from.
      * @return the startBucket
      */
     public String getStartBucket() {
@@ -50,6 +66,7 @@ public class LinkWalkSpec implements Iterable<LinkWalkStep> {
     }
 
     /**
+     * The key of the object to walk from.
      * @return the startKey
      */
     public String getStartKey() {
@@ -67,6 +84,8 @@ public class LinkWalkSpec implements Iterable<LinkWalkStep> {
     }
 
     /**
+     * How many steps in this link walk spec?
+     * 
      * @return how many steps in this link spec
      */
     public int size() {

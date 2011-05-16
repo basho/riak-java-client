@@ -19,6 +19,8 @@ import java.util.concurrent.Callable;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakRetryFailedException;
+import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
@@ -28,8 +30,15 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 
 /**
- * @author russell
+ * An operation to get some data from Riak.
+ * <p>
+ * Use {@link Bucket#fetch(String)} methods to create a fetch operation. Also
+ * look at {@link DomainBucket#fetch(Object)}.
+ * </p>
  * 
+ * @author russell
+ * @see Bucket
+ * @see DomainBucket
  */
 public class FetchObject<T> implements RiakOperation<T> {
 
@@ -44,8 +53,21 @@ public class FetchObject<T> implements RiakOperation<T> {
     private Converter<T> converter;
 
     /**
-     * @param bucket
+     * Create a new FetchOperation that delegates to the given
+     * <code>client</code> to fetch the data from <code>bucket</code> at
+     * <code>key</code> using <code>retrier</code>
+     * <p>
+     * Use {@link Bucket} to create a Fetch operation, also consider using
+     * {@link DomainBucket}
+     * 
      * @param client
+     *            the {@link RawClient} to use for the operation
+     * @param bucket
+     *            the name of the bucket to get the data item from
+     * @param key
+     *            the name of the key to get the data item from
+     * @param retrier
+     *            the {@link Retrier} to use when executing the operation.
      */
     public FetchObject(final RawClient client, final String bucket, final String key, final Retrier retrier) {
         this.bucket = bucket;
@@ -54,10 +76,21 @@ public class FetchObject<T> implements RiakOperation<T> {
         this.retrier = retrier;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Attempts to fetch the data at <code>bucket/key</code>, convert it with
+     * {@link Converter} and resolve any siblings with {@link ConflictResolver}
      * 
-     * @see com.basho.riak.client.RiakOperation#execute()
+     * @return an instance of<code>T</code> that was stored at
+     *         <code>bucket/key</code> or null if not found.
+     * @throws UnresolvedConflictException
+     *             if the {@link ConflictResolver} used cannot get a single
+     *             value from any siblings
+     * @throws RiakRetryFailedException
+     *             if the {@link Retrier} fails to execute the operation beyond
+     *             some internal bound
+     * @throws ConversionException
+     *             if the supplied {@link Converter} throws trying to convert
+     *             the retrieved value.
      */
     public T execute() throws UnresolvedConflictException, RiakRetryFailedException, ConversionException {
         // fetch, resolve
@@ -86,16 +119,31 @@ public class FetchObject<T> implements RiakOperation<T> {
         return this;
     }
 
+    /**
+     * The read quorum for this fetch operation
+     * @param r an int for the read quorum
+     * @return this
+     */
     public FetchObject<T> r(int r) {
         this.r = r;
         return this;
     }
 
+    /**
+     * A {@link Converter} to use to convert the data fetched to some other type
+     * @param converter
+     * @return this
+     */
     public FetchObject<T> withConverter(Converter<T> converter) {
         this.converter = converter;
         return this;
     }
 
+    /**
+     * A {@link Retrier} to use
+     * @param retrier
+     * @return
+     */
     public FetchObject<T> retrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;

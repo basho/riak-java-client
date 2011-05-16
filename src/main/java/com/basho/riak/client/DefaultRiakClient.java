@@ -7,19 +7,36 @@ import com.basho.riak.client.bucket.FetchBucket;
 import com.basho.riak.client.bucket.WriteBucket;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Retrier;
+import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.BucketMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.http.HTTPClientAdapter;
+import com.basho.riak.client.raw.pbc.PBClientAdapter;
 
 /**
- * A default implementation of IRiakClient.
+ * The default implementation of IRiakClient.
  *
  * Provides convenient, transport agnostic ways to perform
  * bucket and query operations on Riak.
+ * 
+ * <p>
+ * This class is a wrapper around a {@link RawClient} of your choice. The {@link RawClient} wrapped is passed to all
+ * {@link RiakOperation}s created by this class, so it really needs to be Thread Safe and reusable.
+ * <br/>
+ * This class provides a {@link Retrier} to each {@link RiakOperation} it creates. If you provide one please make sure it is
+ * Thread safe and reusable.
+ * <br/>
+ * If you do not provide a {@link Retrier} a {@link DefaultRetrier} configured for 3 attempts is created.
+ * </p>
  *
  * @author russell
  * 
+ * @see RawClient
+ * @see PBClientAdapter
+ * @see HTTPClientAdapter
+ * @see DefaultRetrier
  */
 public final class DefaultRiakClient implements IRiakClient {
 
@@ -27,8 +44,11 @@ public final class DefaultRiakClient implements IRiakClient {
     private final Retrier retrier;
 
     /**
-     * @param rawClient
-     * @param defaultRetrier
+     * Create an instance that wraps the provided {@link RawClient} and passes it and the {@link Retrier}
+     * to created operations.
+     * 
+     * @param rawClient the {@link RawClient} to wrap.
+     * @param defaultRetrier the {@link Retrier} that will be set as the default on all {@link RiakOperation}s created by this instance.
      */
     DefaultRiakClient(final RawClient rawClient, final Retrier defaultRetrier) {
         this.rawClient = rawClient;
@@ -36,7 +56,8 @@ public final class DefaultRiakClient implements IRiakClient {
     }
 
     /**
-     * @param client
+     * Create an instance that wraps the provided {@link RawClient}. A {@link DefaultRetrier} configured for 3 attempts is also created.
+     * @param rawClient the {@link RawClient} to wrap.
      */
     DefaultRiakClient(final RawClient rawClient) {
         this(rawClient, DefaultRetrier.attempts(3));
