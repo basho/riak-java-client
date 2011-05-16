@@ -1,5 +1,7 @@
 package com.basho.riak.client;
 
+import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.basho.riak.client.bucket.Bucket;
@@ -64,6 +66,19 @@ public final class DefaultRiakClient implements IRiakClient {
     }
 
     // BUCKET OPS
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakClient#listBuckets()
+     */
+    public Set<String> listBuckets() throws RiakException {
+        try {
+            return rawClient.listBuckets();
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
+    }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.IRiakClient#updateBucket(com.basho.riak.client.bucket.Bucket)

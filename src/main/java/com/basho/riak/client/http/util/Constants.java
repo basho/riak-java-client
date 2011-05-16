@@ -30,6 +30,7 @@ public interface Constants {
     public static String FL_SCHEMA_LINKFUN_MOD = "mod";
     public static String FL_SCHEMA_LINKFUN_FUN = "fun";
     public static String FL_SCHEMA_NVAL = "n_val";
+    public static String FL_BUCKETS = "buckets";
 
     // Header directives used by Riak
     public static String LINK_TAG = "riaktag";
@@ -82,6 +83,7 @@ public interface Constants {
     public static String QP_DW = "dw";
     public static String QP_RW = "rw";
     public static String QP_KEYS = "keys";
+    public static String QP_BUCKETS = "buckets";
 
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";
@@ -91,4 +93,7 @@ public interface Constants {
 
     // Riak magic numbers
     public static int RIAK_CLIENT_ID_LENGTH = 4;
+
+    // List bucket operation parameters
+    public static String LIST_BUCKETS = "true";
 }

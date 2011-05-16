@@ -21,12 +21,14 @@ import org.apache.commons.httpclient.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.http.request.MapReduceBuilder;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.RiakExceptionHandler;
 import com.basho.riak.client.http.response.RiakIORuntimeException;
@@ -391,5 +393,33 @@ public class RiakClient {
 
     MapReduceResponse getMapReduceResponse(HttpResponse r) throws JSONException {
         return new MapReduceResponse(r);
+    }
+
+    /**
+     * Fetch a list of all the buckets in Riak
+     * 
+     * @return a {@link ListBucketsResponse}
+     * @throws IOException
+     * @throws JSONException
+     */
+    public ListBucketsResponse listBuckets() {
+        HttpResponse r = helper.listBuckets();
+        try {
+            return new ListBucketsResponse(r);
+        } catch (JSONException e) {
+            try {
+                return new ListBucketsResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to parse it or throw");
+            }
+        } catch (IOException e) {
+            try {
+                return new ListBucketsResponse(helper.toss(new RiakIORuntimeException(e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to read it or throw");
+            }
+        }
     }
 }

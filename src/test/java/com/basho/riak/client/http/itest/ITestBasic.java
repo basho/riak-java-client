@@ -18,6 +18,7 @@ import static com.basho.riak.client.http.Hosts.RIAK_URL;
 import static com.basho.riak.client.http.itest.Utils.*;
 import static org.junit.Assert.*;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -33,6 +34,7 @@ import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.util.Constants;
 
@@ -226,5 +228,30 @@ public class ITestBasic {
         assertSuccess(storeresp);
         assertTrue(storeresp.hasObject());
         assertTrue(storeresp.hasSiblings());
+    }
+
+    @Test public void listBuckets() throws Exception {
+        // we can't know about all the *other* buckets in riak
+        // so create a couple and check that they are included in the response
+        final RiakClient c = new RiakClient(RIAK_URL);
+
+        final String bucket1 = UUID.randomUUID().toString();
+        final String bucket2 = UUID.randomUUID().toString();
+        final String key = UUID.randomUUID().toString();
+
+        RiakObject o1 = new RiakObject(bucket1, key);
+        StoreResponse storeresp = c.store(o1, WRITE_3_REPLICAS());
+        assertSuccess(storeresp);
+
+        RiakObject o2 = new RiakObject(bucket2, key);
+        storeresp = c.store(o2, WRITE_3_REPLICAS());
+        assertSuccess(storeresp);
+
+        ListBucketsResponse resp = c.listBuckets();
+
+        Set<String> buckets = resp.getBuckets();
+
+        assertTrue(buckets.contains(bucket1));
+        assertTrue(buckets.contains(bucket2));
     }
 }

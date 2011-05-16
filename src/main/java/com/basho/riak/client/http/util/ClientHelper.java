@@ -116,6 +116,19 @@ public class ClientHelper {
     }
 
     /**
+     * List the buckets in Riak
+     * 
+     * @return an {@link HttpResponse} whose body should be the result of asking
+     *         Riak to list buckets.
+     */
+    public HttpResponse listBuckets() {
+        final RequestMeta  meta = new RequestMeta();
+        meta.setQueryParam(Constants.QP_BUCKETS, Constants.LIST_BUCKETS);
+        GetMethod get = new GetMethod(config.getUrl());
+        return executeMethod(null, null, get, meta);
+    }
+
+    /**
      * Same as {@link RiakClient}, except only returning the HTTP response, and
      * if streamResponse==true, the response will be streamed back, so the user
      * is responsible for calling {@link BucketResponse#close()}

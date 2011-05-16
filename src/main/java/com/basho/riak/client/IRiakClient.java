@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client;
 
+import java.util.Set;
+
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.FetchBucket;
 import com.basho.riak.client.bucket.WriteBucket;
@@ -82,12 +84,19 @@ public interface IRiakClient {
     byte[] getClientId() throws RiakException;
 
     /**
+     * Set view of buckets in Riak
+     * @return a Set<String> of buckets (or empty)
+     * @throws RiakException 
+     */
+    Set<String> listBuckets() throws RiakException;
+
+    /**
      * Create a new {@link FetchBucket} operation, and return it.
      * 
      * @param bucketName
      * @return a {@link FetchBucket} configured to return the {@link Bucket} called bucketName
      *  for further configuration and execution.
-     *  @see FetchBucket
+     * @see FetchBucket
      */
     FetchBucket fetchBucket(String bucketName);
 

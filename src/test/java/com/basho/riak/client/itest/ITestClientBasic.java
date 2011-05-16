@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -95,5 +96,21 @@ public abstract class ITestClientBasic {
         byte[] newId = client.generateAndSetClientId();
 
         assertArrayEquals(newId, client.getClientId());
+    }
+
+    @Test public void listBuckets() throws RiakException {
+        final String bucket1 = UUID.randomUUID().toString();
+        final String bucket2 = UUID.randomUUID().toString();
+
+        Bucket b1 = client.createBucket(bucket1).execute();
+        Bucket b2 = client.createBucket(bucket2).execute();
+
+        b1.store("key", "value").execute();
+        b2.store("key", "value").execute();
+
+        Set<String> buckets = client.listBuckets();
+
+        assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
+        assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
     }
 }

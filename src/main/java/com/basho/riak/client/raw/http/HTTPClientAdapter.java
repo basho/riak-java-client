@@ -16,7 +16,9 @@ package com.basho.riak.client.raw.http;
 import static com.basho.riak.client.raw.http.ConversionUtil.convert;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
@@ -36,6 +38,7 @@ import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.WithBodyResponse;
@@ -215,8 +218,13 @@ public class HTTPClientAdapter implements RawClient {
      * 
      * @see com.basho.riak.client.raw.RawClient#listBuckets()
      */
-    public Iterator<String> listBuckets() throws IOException {
-        return null;
+    public Set<String> listBuckets() throws IOException {
+        final ListBucketsResponse lbr = client.listBuckets();
+
+        if (!lbr.isSuccess()) {
+            throw new IOException("List Buckets failed with status code: " + lbr.getStatusCode());
+        }
+        return new HashSet<String>(lbr.getBuckets());
     }
 
     /*

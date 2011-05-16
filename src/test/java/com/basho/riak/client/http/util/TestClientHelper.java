@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.ReferenceQueue;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -31,6 +32,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -114,6 +116,16 @@ public class TestClientHelper {
         when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
         impl.listBucket(bucket, meta, false);
         verify(mockHttpClient).executeMethod(any(GetMethod.class));
+    }
+
+    @Test public void listBuckets_GET_adds_qp() throws HttpException, IOException {
+        impl = spy(impl);
+        impl.listBuckets();
+        ArgumentCaptor<RequestMeta> metaCaptor = ArgumentCaptor.forClass(RequestMeta.class);
+        verify(impl).executeMethod(eq((String) null), eq((String) null), any(GetMethod.class), metaCaptor.capture());
+
+        RequestMeta capturedMeta = metaCaptor.getValue();
+        assertEquals(capturedMeta.getQueryParam(Constants.QP_BUCKETS), Constants.LIST_BUCKETS);
     }
     
     @Test public void listBucket_adds_keys_qp_when_streaming_response() {

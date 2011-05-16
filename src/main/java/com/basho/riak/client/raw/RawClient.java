@@ -15,6 +15,7 @@ package com.basho.riak.client.raw;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Set;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
@@ -113,7 +114,7 @@ public interface RawClient {
     /**
      * An Unmodifiable {@link Iterator} view of the all the Buckets in Riak
      */
-    Iterator<String> listBuckets() throws IOException;
+    Set<String> listBuckets() throws IOException;
 
     /**
      * The set of properties for the given bucket

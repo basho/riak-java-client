@@ -19,12 +19,17 @@ import static com.basho.riak.client.raw.pbc.ConversionUtil.nullSafeToStringUtf8;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.bucket.BucketProperties;
+import com.basho.riak.client.convert.ConversionException;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.LinkWalkStep;
 import com.basho.riak.client.query.MapReduceResult;
@@ -38,9 +43,6 @@ import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.util.CharsetUtils;
-import com.basho.riak.client.bucket.BucketProperties;
-import com.basho.riak.client.convert.ConversionException;
-import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.MapReduceResponseSource;
@@ -173,8 +175,14 @@ public class PBClientAdapter implements RawClient {
      * 
      * @see com.basho.riak.client.raw.RawClient#listBuckets()
      */
-    public Iterator<String> listBuckets() throws IOException {
-        return null;
+    public Set<String> listBuckets() throws IOException {
+        final Set<String> response = new HashSet<String>();
+        final ByteString[] buckets = client.listBuckets();
+
+        for (ByteString b : buckets) {
+            response.add(b.toStringUtf8());
+        }
+        return response;
     }
 
     /*

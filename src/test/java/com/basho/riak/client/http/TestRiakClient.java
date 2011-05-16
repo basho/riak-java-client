@@ -100,6 +100,9 @@ public class TestRiakClient {
         
         impl.mapReduce(mrJob, meta);
         verify(mockHelper).mapReduce(mrJob, meta);
+
+        impl.listBuckets();
+        verify(mockHelper).listBuckets();
     }
     
     @Test public void convenience_methods_defer_to_main_methods_with_null_meta() {
