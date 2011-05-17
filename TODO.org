@@ -1,4 +1,4 @@
-* TODO Check MapReduceTimeException is actually thrown when a time out occurs 
+* TODO Check MapReduceTimeException is actually thrown when a timeout occurs 
 Write a timing out test
 * TODO Configure a RawClient from RiakFactory (config object, map?)
 Include things like TCP_NODELAY etc
