@@ -13,13 +13,14 @@
  */
 package com.basho.riak.client.raw.pbc;
 
-import static com.basho.riak.client.util.CharsetUtils.*;
+import static com.basho.riak.client.util.CharsetUtils.asBytes;
+import static com.basho.riak.client.util.CharsetUtils.getCharset;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,9 +38,9 @@ import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
+import com.basho.riak.client.query.LinkWalkStep.Accumulate;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
-import com.basho.riak.client.query.LinkWalkStep.Accumulate;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.util.CharsetUtils;
@@ -206,67 +207,8 @@ public final class ConversionUtil {
      * @return
      * @throws IOException
      */
-    static MapReduceResult convert(final MapReduceResponseSource resp) throws IOException {
-        final ObjectMapper om = new ObjectMapper();
-        final LinkedList<String> results = new LinkedList<String>();
-
-        for (MapReduceResponse mrr : resp) {
-            // TODO investigate pb client null returns from MRRS
-            if (mrr != null && mrr.response != null) {
-                results.add(mrr.response.toStringUtf8());
-            }
-        }
-
-        final MapReduceResult result = new MapReduceResult() {
-
-            public String getResultRaw() {
-                return toJSONArray(results);
-            }
-
-            public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
-                try {
-                    return om.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
-                } catch (IOException e) {
-                    throw new ConversionException(e);
-                }
-            }
-        };
-        return result;
-    }
-
-    /**
-     * @param results
-     * @return
-     */
-    static String toJSONArray(LinkedList<String> results) {
-        if (results.size() > 1) {
-            final StringBuilder sb = new StringBuilder("[");
-            sb.append(join(results, ",")).append("]");
-            return sb.toString();
-        } else {
-            return results.get(0);
-        }
-    }
-
-    /**
-     * Joins a collection of strings into a string, separated by delimiter.
-     * @param strings The collection of strings
-     * @param delimiter the separator to use
-     * @return the contents of Collection as a single string, each element separated by delimiter
-     */
-    static String join(Collection<String> strings, String delimiter) {
-        final StringBuilder sb = new StringBuilder();
-
-        final Iterator<String> it = strings.iterator();
-
-        while (it.hasNext()) {
-            sb.append(it.next());
-            if (it.hasNext()) {
-                sb.append(delimiter);
-            }
-        }
-
-        return sb.toString();
+    static MapReduceResult convert(final MapReduceResponseSource response) throws IOException {
+        return PBMapReduceResult.newResult(response);
     }
 
     /**
