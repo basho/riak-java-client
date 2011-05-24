@@ -96,7 +96,7 @@ public class JSONErrorParser {
     }
 
     /**
-     * Does the map of exception data represent an m/r tieout exception?
+     * Does the map of exception data represent an m/r timeout exception?
      * 
      * @param exceptionData
      * @return true if <code>exceptionData</code> contains key "error" with

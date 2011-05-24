@@ -1,4 +1,3 @@
-* TODO If the phase (whatever phase) is the last phase then keep=true must default to true
 * TODO Configure a RawClient from RiakFactory (config object, map?)
 Include things like TCP_NODELAY etc
 * TODO Push retrier down the stack to Raw level

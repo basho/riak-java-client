@@ -141,8 +141,11 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
      * @param jg
      */
     private void writeMapReducePhases(JsonGenerator jg) throws IOException {
+        int cnt = 0;
         synchronized (phases) {
+            final int lastPhase = phases.size();
             for (MapReducePhase phase : phases) {
+                cnt++;
                 jg.writeStartObject();
                 jg.writeFieldName(phase.getType().toString());
                 jg.writeStartObject();
@@ -157,8 +160,13 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
                     jg.writeStringField("tag", ((LinkPhase) phase).getTag());
                     break;
                 }
+                //the final phase results should always be returned
+                if(cnt == lastPhase) {
+                    jg.writeBooleanField("keep", true);
+                } else {
+                    jg.writeBooleanField("keep", phase.isKeep());
+                }
 
-                jg.writeBooleanField("keep", phase.isKeep());
                 jg.writeEndObject();
                 jg.writeEndObject();
             }
