@@ -1,12 +1,12 @@
 /**
- * This file is part of riak-java-pb-client 
+ * This file is part of riak-java-pb-client
  *
  * Copyright (c) 2010 by Trifork
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -56,7 +56,7 @@ public class RiakObject {
 		this.charset = str(content.getCharset());
 		this.contentEncoding = str(content.getContentEncoding());
 		this.vtag = str(content.getVtag());
-		this.links = content.getLinksCount() == 0 
+		this.links = content.getLinksCount() == 0
 			? Collections.synchronizedList(new ArrayList<RiakLink>())
 			: Collections.synchronizedList(RiakLink.decode(content.getLinksList()));
 		
@@ -133,7 +133,7 @@ public class RiakObject {
     }
 
 	RpbContent buildContent() {
-		Builder b = 
+		Builder b =
 			RpbContent.newBuilder()
 				.setValue(value);
 		
@@ -195,6 +195,10 @@ public class RiakObject {
 
     public void addLink(ByteString tag, ByteString bucket, ByteString key) {
         links.add(new RiakLink(bucket, key, tag));
+    }
+    
+    public List<RiakLink> getLinks() {
+       return links != null ? Collections.unmodifiableList(links) : Collections.EMPTY_LIST;
     }
 
 }
