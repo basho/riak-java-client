@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
 
@@ -83,20 +84,20 @@ class RiakConnection {
 		int len = din.readInt();
 		int get_code = din.read();
 
-		if (code == RiakClient.MSG_ErrorResp) {
-			RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(din);
+		byte[] data = null;
+        if (len > 1) {
+            data = new byte[len - 1];
+            din.readFully(data);
+        }
+
+        if (get_code == RiakClient.MSG_ErrorResp) {
+			RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
 			throw new RiakError(err);
 		}
 
-		byte[] data = null;
-		if (len > 1) {
-			data = new byte[len - 1];
-			din.readFully(data);
-		}
-
 		if (code != get_code) {
-			throw new IOException("bad message code");
-		}
+            throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
+        }
 
 		return data;
 	}

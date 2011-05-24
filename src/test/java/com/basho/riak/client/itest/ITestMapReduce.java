@@ -16,6 +16,7 @@ package com.basho.riak.client.itest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,8 +45,10 @@ import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.filter.LessThanFilter;
 import com.basho.riak.client.query.filter.StringToIntFilter;
 import com.basho.riak.client.query.filter.TokenizeFilter;
+import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
+import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.megacorp.commerce.GoogleStockDataItem;
 
 /**
@@ -195,7 +198,7 @@ public abstract class ITestMapReduce {
         }
     }
 
-    @Test public void zeroResultsEmptyCollection() throws Exception {
+    @SuppressWarnings("rawtypes") @Test public void zeroResultsEmptyCollection() throws Exception {
         final String bucketName = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
         // perform test
@@ -230,5 +233,46 @@ public abstract class ITestMapReduce {
         assertEquals(new Integer(0), items2.get(0));
         assertEquals(new Integer(23), items2.get(23));
         assertEquals(new Integer(49), items2.get(49));
+    }
+
+    @Test public void timeoutMapReduceThrowsTimeoutException() throws Exception {
+        // set up data
+        final String json = "[{\"Date\":\"2010-01-04\",\"Open\":626.95,\"High\":629.51,\"Low\":624.24,\"Close\":626.75,\"Volume\":1956200,\"Adj. Close\":626.75}," +
+                "{\"Date\":\"2010-01-05\",\"Open\":627.18,\"High\":627.84,\"Low\":621.54,\"Close\":623.99,\"Volume\":3004700,\"Adj. Close\":623.99}," +
+                "{\"Date\":\"2010-01-06\",\"Open\":625.86,\"High\":625.86,\"Low\":606.36,\"Close\":608.26,\"Volume\":3978700,\"Adj. Close\":608.26}," +
+                "{\"Date\":\"2010-01-07\",\"Open\":609.4,\"High\":610,\"Low\":592.65,\"Close\":594.1,\"Volume\":6414300,\"Adj. Close\":594.1}," +
+                "{\"Date\":\"2010-01-08\",\"Open\":592,\"High\":603.25,\"Low\":589.11,\"Close\":602.02,\"Volume\":4724300,\"Adj. Close\":602.02}]";
+
+        final LinkedList<GoogleStockDataItem> expected = new ObjectMapper()
+                                    .readValue(json,
+                                               TypeFactory.collectionType(LinkedList.class, GoogleStockDataItem.class));
+
+        final Bucket b = client.createBucket("goog").execute();
+        final DomainBucket<GoogleStockDataItem> bucket = DomainBucket.builder(b, GoogleStockDataItem.class).build();
+
+        for(GoogleStockDataItem i : expected) {
+            bucket.store(i);
+        }
+
+        try {
+            client.mapReduce("goog").addMapPhase(new JSSourceFunction(sleepJs()), true).execute();
+            fail("expected MapReduceTimeoutException");
+        } catch (MapReduceTimeoutException e) {
+            // NO-OP
+        }
+
+        // teardown
+        for (String k : b.keys()) {
+            bucket.delete(k);
+        }
+    }
+
+    /**
+     * A JS function that will cause a m/r timeout
+     * @return String of js sleep function
+     */
+    private static final String sleepJs() {
+        return "function(v) { " + "var millis=12000; var d=new Date();  var c=null; do { "
+               + "c = new Date();  }  while(c-d < millis); }";
     }
 }
