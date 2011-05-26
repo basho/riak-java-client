@@ -91,9 +91,9 @@ class RiakConnection {
         }
 
         if (get_code == RiakClient.MSG_ErrorResp) {
-			RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
-			throw new RiakError(err);
-		}
+            RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
+            throw new RiakError(err);
+        }
 
 		if (code != get_code) {
             throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
