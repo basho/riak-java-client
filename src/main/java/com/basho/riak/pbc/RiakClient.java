@@ -24,8 +24,10 @@ import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.apache.commons.codec.binary.Base64;
@@ -128,6 +130,9 @@ public class RiakClient implements RiakMessageCodes {
 			SecureRandom sr;
 			try {
 				sr = SecureRandom.getInstance("SHA1PRNG");
+				// Not totally secure, but doesn't need to be
+				// and 100% less prone to 30 second hangs on linux jdk5
+				sr.setSeed(UUID.randomUUID().getLeastSignificantBits() + new Date().getTime());
 			} catch (NoSuchAlgorithmException e) {
 				throw new RuntimeException(e);
 			}
