@@ -16,6 +16,7 @@ package com.basho.riak.client.itest;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.http.Hosts;
 
 /**
  * @author russell
@@ -29,6 +30,6 @@ public class ITestMapReduceHTTP extends ITestMapReduce {
      * @see com.basho.riak.client.itest.ITestMapReduce#getClient()
      */
     protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.httpClient();
+        return RiakFactory.httpClient(Hosts.RIAK_URL);
     }
 }

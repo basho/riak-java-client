@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.bucket.RiakBucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.filter.LessThanFilter;
 import com.basho.riak.client.query.filter.StringToIntFilter;
@@ -72,7 +74,7 @@ public abstract class ITestMapReduce {
     public static final int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() throws RiakException {
-        final IRiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
         final Bucket bucket = client.createBucket(BUCKET_NAME).execute();
         final RiakBucket b = RiakBucket.newRiakBucket(bucket);
 
@@ -91,7 +93,7 @@ public abstract class ITestMapReduce {
     }
 
     @AfterClass public static void teardown() throws RiakException {
-        final IRiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
         final Bucket b = client.fetchBucket(BUCKET_NAME).execute();
 
         for (int i = 0; i < TEST_ITEMS; i++) {
@@ -201,9 +203,10 @@ public abstract class ITestMapReduce {
     @SuppressWarnings("rawtypes") @Test public void zeroResultsEmptyCollection() throws Exception {
         final String bucketName = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
+
+        assertNull(client.fetchBucket(bucketName).execute().fetch(key).execute());
         // perform test
-        MapReduceResult result = client.mapReduce()
-        .addInput(bucketName,key)
+        MapReduceResult result = client.mapReduce(bucketName)
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
         .execute();
 
