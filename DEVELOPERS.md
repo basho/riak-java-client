@@ -73,6 +73,9 @@ The integration tests perform each of the basic operations (store bucket schema,
     mvn -Pitest clean verify
 
 Riak must be running on `127.0.0.1:8098` with the HTTP interface located at `/riak`.  Note that prior to Riak 0.9, the HTTP interface was located at `/raw` by default. The integration tests expect to find the protobuffers interface at '127.0.0.1:8087'
+If you want to run the integrattion tests against a Riak that is running on a different host/ports then you can do so by specifying host/port information in the "argLine" argument. You only need to specify
+
+   mvn -Pitest clean verify -DargLine="-Dcom.basho.riak.host=10.0.1.5 -Dcom.basho.riak.http.port=8091 -Dcom.basho.riak.pbc.port=8081"
 
 ## Code Format ##
 
