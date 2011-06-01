@@ -16,6 +16,7 @@ package com.basho.riak.client.itest;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.http.Hosts;
 
 /**
  * @author russell
@@ -29,7 +30,7 @@ public class ITestDomainBucketPB extends ITestDomainBucket {
      * @see com.basho.riak.client.itest.ITestDomainBucket#getClient()
      */
     @Override public IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient();
+        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
     }
 
 }

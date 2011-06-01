@@ -60,7 +60,7 @@ public class ITestDataLoad {
         final String bucket = UUID.randomUUID().toString();
         final int NUM_OBJECTS = 200;
         int idx = 0;
-        final RiakClient riak = new RiakClient(RIAK_HOST);
+        final RiakClient riak = new RiakClient(RIAK_HOST, RIAK_PORT);
         riak.setClientID("PMDL");
         final RiakObject[] objects = new RiakObject[NUM_OBJECTS];
         final RequestMeta meta = new RequestMeta();
@@ -103,7 +103,7 @@ public class ITestDataLoad {
         final Thread[] threads = new Thread[NUM_THREADS];
         final AtomicInteger idx = new AtomicInteger(0);
 
-        final RiakClient riak = new RiakClient(RIAK_HOST);
+        final RiakClient riak = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(new Runnable() {
@@ -145,7 +145,7 @@ public class ITestDataLoad {
     }
 
     @Test public void vclockDoesntExplodeUsingSingleClient() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         c.setClientID("TVCS");
         final Random rnd = new Random();
         final String bucket = UUID.randomUUID().toString();

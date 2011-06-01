@@ -53,6 +53,24 @@ public class RiakFactory {
     }
 
     /**
+     * Wraps a {@link PBClientAdapter} connected to <code>host</code> and
+     * <code>port</code> in a {@link DefaultRiakClient}.
+     * 
+     * @return a default configuration PBC client
+     * @throws RiakException
+     */
+    public static IRiakClient pbcClient(String host, int port) throws RiakException {
+
+        try {
+            final RawClient client = new PBClientAdapter(host, port);
+
+            return new DefaultRiakClient(client);
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
+    }
+
+    /**
      * Wraps the given {@link RiakClient} client in a {@link DefaultRiakClient}.
      * @param delegate the pbc.{@link RiakClient} to wrap.
      * @return a {@link DefaultRiakClient} that delegates to <code>delegate</code>
@@ -68,6 +86,20 @@ public class RiakFactory {
      */
     public static IRiakClient httpClient() throws RiakException {
         final RawClient client = new HTTPClientAdapter(DEFAULT_RIAK_URL);
+        return new DefaultRiakClient(client);
+    }
+
+    /**
+     * Wraps a {@link HTTPClientAdapter} connecting to the given
+     * <code>url</code> in a {@link DefaultRiakClient}
+     * 
+     * @param url
+     *            a String of the url for Riak's REST iterface
+     * @return a default configuration {@link DefaultRiakClient} delegating to
+     *         the HTTP client
+     */
+    public static IRiakClient httpClient(String url) throws RiakException {
+        final RawClient client = new HTTPClientAdapter(url);
         return new DefaultRiakClient(client);
     }
 
