@@ -44,7 +44,7 @@ public interface MapReducePhase {
      * Is this phase's output to be returned or only passed as input to the next phase.
      * @return true if the results are returned, false otherwise.
      */
-    boolean isKeep();
+    Boolean isKeep();
 
     /**
      * The PhaseType of this {@link MapReducePhase} implementation.

@@ -160,11 +160,12 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
                     jg.writeStringField("tag", ((LinkPhase) phase).getTag());
                     break;
                 }
-                //the final phase results should always be returned
+
+                //the final phase results should be returned, unless specifically set otherwise
                 if(cnt == lastPhase) {
-                    jg.writeBooleanField("keep", true);
+                    jg.writeBooleanField("keep", isKeepResult(true, phase.isKeep()));
                 } else {
-                    jg.writeBooleanField("keep", phase.isKeep());
+                    jg.writeBooleanField("keep", isKeepResult(false, phase.isKeep()));
                 }
 
                 jg.writeEndObject();
@@ -172,6 +173,25 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
             }
         }
     }
+
+	/**
+	 * Decide if a map/reduce phase result should be kept (returned) or not.
+	 *
+	 * @param isLastPhase
+	 *            is the phase being considered the last phase in an m/r job?
+	 * @param phaseKeepValue
+	 *            the Boolean value from a {@link MapPhase} (null|true|false)
+	 * @return <code>phaseKeepValue</code> if not null, otherwise
+	 *         <code>true</code> if <code>isLastPhase</code> is true, false
+	 *         otherwise.
+	 */
+	private boolean isKeepResult(boolean isLastPhase, Boolean phaseKeepValue) {
+		if (phaseKeepValue != null) {
+			return phaseKeepValue;
+		} else {
+			return isLastPhase;
+		}
+	}
 
     /**
      * Set the operations timeout

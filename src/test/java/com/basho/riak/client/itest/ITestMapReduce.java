@@ -141,7 +141,20 @@ public abstract class ITestMapReduce {
         assertEquals(new Integer(73), items.get(73));
         assertEquals(new Integer(197), items.get(197));
     }
-    
+
+	@Test public void ignoreLastPhaseMapReduce() throws RiakException {
+		MapReduceResult result = client
+				.mapReduce(BUCKET_NAME)
+				.addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
+				.addReducePhase(new NamedJSFunction("Riak.reduceNumericSort"),
+						false).execute();
+
+		assertNotNull(result);
+		List<Integer> items = new LinkedList<Integer>(
+				result.getResult(Integer.class));
+		assertEquals(0, items.size());
+	}
+
     @Test public void doKeyFilterMapReduce() throws RiakException {
         MapReduceResult result = client.mapReduce(BUCKET_NAME)
         .addKeyFilter(new TokenizeFilter("_", 2))
