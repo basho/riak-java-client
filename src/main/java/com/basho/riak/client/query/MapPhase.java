@@ -24,7 +24,7 @@ import com.basho.riak.client.query.functions.Function;
 public class MapPhase implements MapReducePhase {
 
     private final Function phaseFunction;
-    private final boolean keep;
+    private final Boolean keep;
     private final Object arg; // TODO object? you sure?
 
     /**
@@ -60,7 +60,7 @@ public class MapPhase implements MapReducePhase {
     public MapPhase(Function phaseFunction, Object arg) {
         this.phaseFunction = phaseFunction;
         this.arg = arg;
-        this.keep = false;
+        this.keep = null;
     }
     
     /**
@@ -74,7 +74,7 @@ public class MapPhase implements MapReducePhase {
     public MapPhase(Function phaseFunction) {
         this.phaseFunction = phaseFunction;
         this.arg = null;
-        this.keep = false;
+        this.keep = null;
     }
     
     /**
@@ -104,7 +104,7 @@ public class MapPhase implements MapReducePhase {
     /**
      * @return the keep
      */
-    public boolean isKeep() {
+    public Boolean isKeep() {
         return keep;
     }
 

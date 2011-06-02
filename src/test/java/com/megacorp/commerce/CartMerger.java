@@ -11,26 +11,37 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.itest;
+package com.megacorp.commerce;
 
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.http.Hosts;
+import com.basho.riak.client.cap.Mutation;
 
 /**
  * @author russell
  * 
  */
-public class ITestDomainBucketPB extends ITestDomainBucket {
+public class CartMerger implements Mutation<ShoppingCart> {
+    private final ShoppingCart newCart;
+
+    /**
+     * @param newCart
+     */
+    public CartMerger(ShoppingCart newCart) {
+        this.newCart = newCart;
+    }
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.basho.riak.client.itest.ITestDomainBucket#getClient()
+     * @see com.basho.riak.client.cap.Mutation#apply(java.lang.Object)
      */
-    @Override public IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
+    public ShoppingCart apply(ShoppingCart original) {
+        if(original == null) {
+            return newCart;
+        }
+        for (String item : original) {
+            newCart.addItem(item);
+        }
+        return newCart;
     }
 
 }

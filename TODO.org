@@ -1,4 +1,7 @@
-* TODO If the phase (whatever phase) is the last phase then keep=true must default to true
+* TODO Test for multiphase return m/r being serialized correctly
+* TODO Test for multiphase return m/r working AT ALL on pb
+** TODO tests for mulitphase returns with some found, and some not found results
+** TODO A way to filter out not founds, or someway add them to the result set as null or empty or something????
 * TODO Configure a RawClient from RiakFactory (config object, map?)
 Include things like TCP_NODELAY etc
 * TODO Push retrier down the stack to Raw level
