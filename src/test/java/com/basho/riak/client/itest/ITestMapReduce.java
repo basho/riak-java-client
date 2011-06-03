@@ -197,10 +197,8 @@ public abstract class ITestMapReduce {
 
     @Test public void zeroResultsEmptyCollection() throws Exception {
         final String bucketName = UUID.randomUUID().toString();
-        final String key = UUID.randomUUID().toString();
         // perform test
-        MapReduceResult result = client.mapReduce()
-        .addInput(bucketName,key)
+        MapReduceResult result = client.mapReduce(bucketName)
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
         .execute();
 
