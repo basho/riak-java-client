@@ -82,7 +82,6 @@ public class PBMapReduceResult implements MapReduceResult {
                 // ensure that the result is an array of JSON values, unless
                 // there was a single MapReduceResponse returned
                 if (resultCount != 1) {
-                    System.out.println("adding brackets");
                     sb.insert(0, "[");
                     sb.append("]");
                 }

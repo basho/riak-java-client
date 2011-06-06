@@ -1,8 +1,4 @@
-* TODO real errors from map/reduce (not puke through exceptions)
-* TODO Zero length array return for pbc results in an Array Index Out of Bounds from JSON
 * TODO If the phase (whatever phase) is the last phase then keep=true must default to true
-* TODO Check MapReduceTimeException is actually thrown when a timeout occurs 
-Write a timing out test
 * TODO Configure a RawClient from RiakFactory (config object, map?)
 Include things like TCP_NODELAY etc
 * TODO Push retrier down the stack to Raw level
@@ -56,3 +52,7 @@ multlple hosts?)
 ** TODO Rest interface is capable of more than the REST client abstraction exposes
 expose all properties
 ** TODO PB interface for bucket props
+* TODO streaming
+** TODO Stream in
+** TODO stream out
+** TODO stream m/r

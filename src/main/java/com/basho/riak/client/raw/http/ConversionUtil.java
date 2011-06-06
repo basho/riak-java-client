@@ -29,6 +29,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
@@ -41,9 +42,11 @@ import com.basho.riak.client.query.LinkWalkStep;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
+import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.client.http.request.RequestMeta;
@@ -332,8 +335,16 @@ public final class ConversionUtil {
      *            the {@link MapReduceResponse}
      * @return a {@link MapReduceResult} view of the results in
      *         <code>resp</code>
+     * @throws MapReduceTimeoutException
      */
-    static MapReduceResult convert(final MapReduceResponse resp) throws IOException {
+    static MapReduceResult convert(final MapReduceResponse resp) throws IOException, MapReduceTimeoutException {
+        if(resp.isError()) {
+            if(JSONErrorParser.isTimeoutException(resp.getBodyAsString())) {
+                throw new MapReduceTimeoutException();
+            } else {
+                throw new IOException(resp.getBodyAsString());
+            }
+        }
         final ObjectMapper om = new ObjectMapper();
 
         final MapReduceResult result = new MapReduceResult() {

@@ -29,8 +29,6 @@ import java.util.TreeMap;
 
 import org.apache.commons.httpclient.util.DateParseException;
 import org.apache.commons.httpclient.util.DateUtil;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
@@ -203,7 +201,7 @@ public final class ConversionUtil {
     }
 
     /**
-     * @param resp
+     * @param response
      * @return
      * @throws IOException
      */
