@@ -26,7 +26,7 @@ public class LinkPhase implements MapReducePhase {
 
     private final String bucket;
     private final String tag;
-    private final boolean keep;
+    private final Boolean keep;
 
     /**
      * Create a Link Phase that points to <code>bucket</code> / <code>tag</code>
@@ -58,7 +58,7 @@ public class LinkPhase implements MapReducePhase {
     public LinkPhase(String bucket, String tag) {
         this.bucket = bucket;
         this.tag = tag;
-        this.keep = false;
+        this.keep = null;
     }
 
     /**
@@ -81,7 +81,7 @@ public class LinkPhase implements MapReducePhase {
      * Keep the result or just use as input to the next phase?
      * @return whether the result is kept or just passed to the next phase.
      */
-    public boolean isKeep() {
+    public Boolean isKeep() {
         return keep;
     }
 

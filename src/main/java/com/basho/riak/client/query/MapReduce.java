@@ -141,8 +141,11 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
      * @param jg
      */
     private void writeMapReducePhases(JsonGenerator jg) throws IOException {
+        int cnt = 0;
         synchronized (phases) {
+            final int lastPhase = phases.size();
             for (MapReducePhase phase : phases) {
+                cnt++;
                 jg.writeStartObject();
                 jg.writeFieldName(phase.getType().toString());
                 jg.writeStartObject();
@@ -158,12 +161,37 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
                     break;
                 }
 
-                jg.writeBooleanField("keep", phase.isKeep());
+                //the final phase results should be returned, unless specifically set otherwise
+                if(cnt == lastPhase) {
+                    jg.writeBooleanField("keep", isKeepResult(true, phase.isKeep()));
+                } else {
+                    jg.writeBooleanField("keep", isKeepResult(false, phase.isKeep()));
+                }
+
                 jg.writeEndObject();
                 jg.writeEndObject();
             }
         }
     }
+
+	/**
+	 * Decide if a map/reduce phase result should be kept (returned) or not.
+	 *
+	 * @param isLastPhase
+	 *            is the phase being considered the last phase in an m/r job?
+	 * @param phaseKeepValue
+	 *            the Boolean value from a {@link MapPhase} (null|true|false)
+	 * @return <code>phaseKeepValue</code> if not null, otherwise
+	 *         <code>true</code> if <code>isLastPhase</code> is true, false
+	 *         otherwise.
+	 */
+	private boolean isKeepResult(boolean isLastPhase, Boolean phaseKeepValue) {
+		if (phaseKeepValue != null) {
+			return phaseKeepValue;
+		} else {
+			return isLastPhase;
+		}
+	}
 
     /**
      * Set the operations timeout

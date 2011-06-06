@@ -16,6 +16,7 @@ package com.basho.riak.client.itest;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.http.Hosts;
 
 /**
  * @author russell
@@ -29,6 +30,6 @@ public class ITestHTTPBucket extends ITestBucket {
      * @see com.basho.riak.client.itest.ITestBucket#getClient()
      */
     @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.httpClient();
+        return RiakFactory.httpClient(Hosts.RIAK_URL);
     }
 }

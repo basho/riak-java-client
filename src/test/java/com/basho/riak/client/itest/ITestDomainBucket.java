@@ -14,25 +14,24 @@
 package com.basho.riak.client.itest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.DefaultRetrier;
+import com.basho.riak.client.cap.Mutation;
+import com.basho.riak.client.cap.MutationProducer;
+import com.megacorp.commerce.CartMerger;
 import com.megacorp.commerce.MergeCartResolver;
 import com.megacorp.commerce.ShoppingCart;
 
@@ -57,11 +56,78 @@ public abstract class ITestDomainBucket {
         final String bucketName = UUID.randomUUID().toString() + "_carts";
         final String userId = UUID.randomUUID().toString();
 
+        //get two clients with different IDs
         client.generateAndSetClientId();
+        // create the bucket we're to use, allow siblings
+        client.createBucket(bucketName).allowSiblings(true).nVal(3).execute();
 
-        final Bucket b = client.createBucket(bucketName).allowSiblings(true).nVal(3).execute();
+        IRiakClient client2 = getClient();
+        client2.generateAndSetClientId();
 
-        final DomainBucket<ShoppingCart> carts = DomainBucket.builder(b, ShoppingCart.class)
+        // get the domain buckets, 2 buckets with different client ids simulates
+        // two web server nodes or some such scenario
+        final DomainBucket<ShoppingCart> carts = getDomainBucket(client, bucketName);
+        final DomainBucket<ShoppingCart> carts2 = getDomainBucket(client2, bucketName);
+
+        // create the initial cart
+        final ShoppingCart cart = new ShoppingCart(userId);
+
+        cart.addItem("coffee");
+        cart.addItem("fixie");
+        cart.addItem("moleskine");
+
+        // store it
+        final ShoppingCart storedCart = carts.store(cart);
+
+        assertNotNull(storedCart);
+        assertEquals(cart.getUserId(), storedCart.getUserId());
+        assertEquals(cart, storedCart);
+
+        // Fetch it and add things to it
+        final ShoppingCart cart1 = carts.fetch(userId);
+        final ShoppingCart cart2 = carts2.fetch(userId);
+
+        assertEquals(cart1, cart2);
+
+        cart1.addItem("bowtie");
+        cart1.addItem("nail gun");
+
+        cart2.addItem("hippo");
+        cart2.addItem("jasmin tea");
+
+        assertFalse(cart1.equals(cart2));
+
+        carts.store(cart1);
+        carts2.store(cart2);
+
+        final String[] expectedMergedCart = { "coffee", "fixie", "moleskine", "hippo", "jasmin tea", "nail gun",
+                                             "bowtie" };
+
+        // this should contain the merged items
+        final ShoppingCart finalCart = carts.fetch(userId);
+
+        for (String item : expectedMergedCart) {
+            assertTrue("Expected cart to contain: " + item, finalCart.hasItem(item));
+        }
+    }
+
+    /**
+     * Generate a domain bucket.
+     * 
+     * @param client
+     * @param bucketName
+     * @return
+     * @throws RiakRetryFailedException
+     */
+    private DomainBucket<ShoppingCart> getDomainBucket(final IRiakClient client, String bucketName) throws RiakRetryFailedException {
+        final Bucket b = client.fetchBucket(bucketName).execute();
+
+        return DomainBucket.builder(b, ShoppingCart.class)
+            .mutationProducer(new MutationProducer<ShoppingCart>() {
+                public Mutation<ShoppingCart> produce(ShoppingCart o) {
+                    return new CartMerger(o);
+                }
+            })
             .withResolver(new MergeCartResolver())
             .returnBody(true)
             .retrier(DefaultRetrier.attempts(3))
@@ -70,47 +136,5 @@ public abstract class ITestDomainBucket {
             .r(1)
             .rw(1)
             .build();
-
-        final ShoppingCart cart = new ShoppingCart(userId);
-
-        cart.addItem("coffee");
-        cart.addItem("fixie");
-        cart.addItem("moleskine");
-
-        final ShoppingCart storedCart = carts.store(cart);
-
-        assertNotNull(storedCart);
-        assertEquals(cart.getUserId(), storedCart.getUserId());
-        assertEquals(cart, storedCart);
-
-        final ExecutorService es = Executors.newFixedThreadPool(2);
-        final Collection<Callable<ShoppingCart>> tasks = new ArrayList<Callable<ShoppingCart>>();
-
-        tasks.add(new Callable<ShoppingCart>() {
-            public ShoppingCart call() throws Exception {
-                final ShoppingCart cart = carts.fetch(userId);
-                cart.addItem("bowtie");
-                cart.addItem("nail gun");
-                return carts.store(cart);
-            }
-        });
-
-        tasks.add(new Callable<ShoppingCart>() {
-            public ShoppingCart call() throws Exception {
-                final ShoppingCart cart = carts.fetch(userId);
-                cart.addItem("hippo");
-                cart.addItem("jasmin tea");
-                return carts.store(cart);
-            }
-        });
-
-        es.invokeAll(tasks);
-
-        final String[] expectedMergesCart = { "coffee", "fixie", "moleskine", "hippo", "jasmin tea", "nail gun",
-                                             "bowtie" };
-
-        final ShoppingCart finalCart = carts.fetch(userId);
-
-        assertTrue(finalCart.hasAll(Arrays.asList(expectedMergesCart)));
     }
 }

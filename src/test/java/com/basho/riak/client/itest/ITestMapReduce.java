@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.bucket.RiakBucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.filter.LessThanFilter;
 import com.basho.riak.client.query.filter.StringToIntFilter;
@@ -72,7 +74,7 @@ public abstract class ITestMapReduce {
     public static final int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() throws RiakException {
-        final IRiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
         final Bucket bucket = client.createBucket(BUCKET_NAME).execute();
         final RiakBucket b = RiakBucket.newRiakBucket(bucket);
 
@@ -91,7 +93,7 @@ public abstract class ITestMapReduce {
     }
 
     @AfterClass public static void teardown() throws RiakException {
-        final IRiakClient client = RiakFactory.pbcClient();
+        final IRiakClient client = RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
         final Bucket b = client.fetchBucket(BUCKET_NAME).execute();
 
         for (int i = 0; i < TEST_ITEMS; i++) {
@@ -101,9 +103,9 @@ public abstract class ITestMapReduce {
 
     @Test public void doLinkMapReduce() throws RiakException {
         MapReduceResult result = client.mapReduce(BUCKET_NAME)
-        .addLinkPhase(BUCKET_NAME, "test", false)
-        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), false)
-        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
+        .addLinkPhase(BUCKET_NAME, "test")
+        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
+        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce", "reduce_sort"))
         .execute();
 
         assertNotNull(result);
@@ -115,7 +117,7 @@ public abstract class ITestMapReduce {
         MapReduceResult result = client.mapReduce(BUCKET_NAME)
         .addMapPhase(new NamedErlangFunction("riak_kv_mapreduce","map_object_value"))
         .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_string_to_integer"))
-        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"),true)
+        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"))
         .execute();
 
         assertNotNull(result);
@@ -128,8 +130,8 @@ public abstract class ITestMapReduce {
 
     @Test public void doJavascriptMapReduce() throws RiakException {
         MapReduceResult result = client.mapReduce(BUCKET_NAME)
-            .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), false)
-            .addReducePhase(new NamedJSFunction("Riak.reduceNumericSort"), true)
+            .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
+            .addReducePhase(new NamedJSFunction("Riak.reduceNumericSort"))
             .execute();
 
         assertNotNull(result);
@@ -139,14 +141,27 @@ public abstract class ITestMapReduce {
         assertEquals(new Integer(73), items.get(73));
         assertEquals(new Integer(197), items.get(197));
     }
-    
+
+	@Test public void ignoreLastPhaseMapReduce() throws RiakException {
+		MapReduceResult result = client
+				.mapReduce(BUCKET_NAME)
+				.addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
+				.addReducePhase(new NamedJSFunction("Riak.reduceNumericSort"),
+						false).execute();
+
+		assertNotNull(result);
+		List<Integer> items = new LinkedList<Integer>(
+				result.getResult(Integer.class));
+		assertEquals(0, items.size());
+	}
+
     @Test public void doKeyFilterMapReduce() throws RiakException {
         MapReduceResult result = client.mapReduce(BUCKET_NAME)
         .addKeyFilter(new TokenizeFilter("_", 2))
         .addKeyFilter(new StringToIntFilter())
         .addKeyFilter(new LessThanFilter(50))
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
-        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"), true)
+        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"))
         .execute();
         
         assertNotNull(result);
@@ -183,7 +198,7 @@ public abstract class ITestMapReduce {
         .addInput("goog","2010-01-06")
         .addInput("goog","2010-01-07")
         .addInput("goog","2010-01-08")
-        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
+        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
         .execute();
         
         LinkedList<GoogleStockDataItem> actual = new LinkedList<GoogleStockDataItem>( result.getResult(GoogleStockDataItem.class) );
@@ -216,7 +231,7 @@ public abstract class ITestMapReduce {
         .addKeyFilter(new StringToIntFilter())
         .addKeyFilter(new LessThanFilter(50))
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
-        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"), true)
+        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"))
         .execute();
 
         assertNotNull(result);
@@ -253,7 +268,7 @@ public abstract class ITestMapReduce {
         }
 
         try {
-            client.mapReduce("goog").addMapPhase(new JSSourceFunction(sleepJs()), true).execute();
+            client.mapReduce("goog").addMapPhase(new JSSourceFunction(sleepJs())).execute();
             fail("expected MapReduceTimeoutException");
         } catch (MapReduceTimeoutException e) {
             // NO-OP
