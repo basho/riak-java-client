@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
@@ -191,5 +193,40 @@ public abstract class ITestMapReduce {
         for(String k : b.keys()) {
             bucket.delete(k);
         }
+    }
+
+    @Test public void zeroResultsEmptyCollection() throws Exception {
+        final String bucketName = UUID.randomUUID().toString();
+        // perform test
+        MapReduceResult result = client.mapReduce(bucketName)
+        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
+        .execute();
+
+        LinkedList<Map> actual = new LinkedList<Map>( result.getResult(Map.class) );
+        assertNotNull(actual);
+        assertEquals(0, actual.size());
+    }
+
+    @Test public void resultCanBeCalledManyTimes() throws RiakException {
+        MapReduceResult result = client.mapReduce(BUCKET_NAME)
+        .addKeyFilter(new TokenizeFilter("_", 2))
+        .addKeyFilter(new StringToIntFilter())
+        .addKeyFilter(new LessThanFilter(50))
+        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
+        .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce","reduce_sort"), true)
+        .execute();
+
+        assertNotNull(result);
+        List<Integer> items = new LinkedList<Integer>(result.getResult(Integer.class));
+        assertEquals(50, items.size());
+        assertEquals(new Integer(0), items.get(0));
+        assertEquals(new Integer(23), items.get(23));
+        assertEquals(new Integer(49), items.get(49));
+
+        List<Integer> items2 = new LinkedList<Integer>(result.getResult(Integer.class));
+        assertEquals(50, items.size());
+        assertEquals(new Integer(0), items2.get(0));
+        assertEquals(new Integer(23), items2.get(23));
+        assertEquals(new Integer(49), items2.get(49));
     }
 }
