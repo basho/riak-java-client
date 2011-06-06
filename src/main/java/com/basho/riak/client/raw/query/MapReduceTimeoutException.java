@@ -30,7 +30,7 @@ public class MapReduceTimeoutException extends RiakException {
 
     private static final long serialVersionUID = -1293682325413369755L;
 
-    private MapReduceTimeoutException() {
+    public MapReduceTimeoutException() {
         super();
     }
 

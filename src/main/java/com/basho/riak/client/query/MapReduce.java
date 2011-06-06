@@ -28,8 +28,11 @@ import com.basho.riak.client.RiakException;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.serialize.FunctionToJson;
+import com.basho.riak.client.raw.ErlangTermErrorParser;
+import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.MapReduceSpec;
+import com.basho.riak.pbc.RiakError;
 
 /**
  * An operation for defining and runnig a Map/Reduce query on Riak.
@@ -73,6 +76,8 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
         MapReduceSpec spec = new MapReduceSpec(strSpec);
         try {
             return client.mapReduce(spec);
+        } catch(RiakError e) {
+            throw ErlangTermErrorParser.parseErlangError(e.getMessage());
         } catch (IOException e) {
             throw new RiakException(e);
         }
