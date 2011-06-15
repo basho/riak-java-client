@@ -28,7 +28,6 @@ import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
 
@@ -45,24 +44,16 @@ class RiakConnection {
 	 private DataOutputStream dout;
 	 private DataInputStream din;
 
-	public RiakConnection(String host) throws IOException {
-		this(host, DEFAULT_RIAK_PB_PORT);
-	}
+	public RiakConnection(InetAddress addr, int port, int bufferSizeKb) throws IOException {
+	    sock = new Socket(addr, port);
 
-	public RiakConnection(String host, int port) throws IOException {
-		this(InetAddress.getByName(host), port);
-	}
+	    sock.setSendBufferSize(1024 * bufferSizeKb);
 
-	public RiakConnection(InetAddress addr, int port) throws IOException {
-		sock = new Socket(addr, port);
-		
-		sock.setSendBufferSize(1024 * 200);
-		
-		dout = new DataOutputStream(new BufferedOutputStream(sock
-				.getOutputStream(), 1024 * 200));
-		din = new DataInputStream(
-				new BufferedInputStream(sock.getInputStream(), 1024 * 200));
-	}
+	    dout = new DataOutputStream(new BufferedOutputStream(sock
+                .getOutputStream(), 1024 * bufferSizeKb));
+        din = new DataInputStream(
+                new BufferedInputStream(sock.getInputStream(), 1024 * bufferSizeKb));
+    }
 
 	///////////////////////
 

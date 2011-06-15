@@ -56,7 +56,13 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 public class RiakClient implements RiakMessageCodes {
 
-	private static final RiakObject[] NO_RIAK_OBJECTS = new RiakObject[0];
+    private static final int BUFFER_SIZE_KB;
+
+    static {
+        BUFFER_SIZE_KB = Integer.parseInt(System.getProperty("com.basho.riak.client.pbc,buffer", "16"));
+    }
+
+    private static final RiakObject[] NO_RIAK_OBJECTS = new RiakObject[0];
 	private static final ByteString[] NO_BYTE_STRINGS = new ByteString[0];
 	//private static final String[] NO_STRINGS = new String[0];
 	//private static final MapReduceResponse[] NO_MAP_REDUCE_RESPONSES = new MapReduceResponse[0];
@@ -65,6 +71,7 @@ public class RiakClient implements RiakMessageCodes {
 	private String serverVersion;
 	private InetAddress addr;
 	private int port;
+	private int bufferSizeKb;
 
 	/**
 	 * if this has been set (or gotten) then it will be applied to new
@@ -83,6 +90,13 @@ public class RiakClient implements RiakMessageCodes {
 	public RiakClient(InetAddress addr, int port) throws IOException {
 		this.addr = addr;
 		this.port = port;
+		this.bufferSizeKb = BUFFER_SIZE_KB;
+	}
+
+	public RiakClient(String host, int port, int bufferSizeKb)  throws IOException {
+	    this.addr = InetAddress.getByName(host);
+	    this.port = port;
+	    this.bufferSizeKb = bufferSizeKb;
 	}
 
 	private ThreadLocal<RiakConnection> connections = new ThreadLocal<RiakConnection>();
@@ -94,7 +108,7 @@ public class RiakClient implements RiakMessageCodes {
 	RiakConnection getConnection(boolean setClientId) throws IOException {
         RiakConnection c = connections.get();
         if (c == null || !c.endIdleAndCheckValid()) {
-            c = new RiakConnection(addr, port);
+            c = new RiakConnection(addr, port, bufferSizeKb);
 
             if (this.clientID != null && setClientId) {
                 connections.set(c);
