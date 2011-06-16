@@ -3,8 +3,20 @@
 This document describes how to use this client to interact with Riak.  See the [DEVELOPERS](https://github.com/basho/riak-java-client/blob/master/DEVELOPERS.md) document for a technical overview of the project.
 
 # Overview #
+There are two interfaces to Riak: HTTP and Protocol Buffers.
 
-This Java-based Riak client uses Commons HttpClient to perform HTTP requests. It provides:
+There are two client implementations in this library: an Apache HTTPClient based REST client and (since 0.14.0), a Protocol buffers client.
+
+# Protocol Buffers client #
+
+An example of how to use the protocol buffers client can be seen in the integration tests [here](https://github.com/basho/riak-java-client/tree/master/src/test/java/com/basho/riak/pbc/itest).
+A quick primer for get/put is [here](https://github.com/basho/riak-java-client/blob/master/src/test/java/com/basho/riak/pbc/itest/ITestBasic.java#L180).
+
+The protocol buffers interface is far faster than the REST interface.
+
+# REST client #
+
+The HTTP Riak client uses Commons HttpClient to perform HTTP requests. It provides:
 
 *   **HttpClient**-provided functionality such as connection pooling, timeouts, and retries, which is not provided by `HttpURLConnection`.
 
@@ -23,7 +35,7 @@ To use `riak-client` in a [Maven](http://maven.apache.org/) project, add the fol
 	<dependency>
 	  <groupId>com.basho.riak</groupId>
 	  <artifactId>riak-client</artifactId>
-	  <version>0.14.0</version>
+	  <version>0.14.1</version>
 	  <type>pom</type>
 	</dependency>
 
