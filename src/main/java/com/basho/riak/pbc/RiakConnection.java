@@ -25,11 +25,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 /**
  * Wraps the {@link Socket} used to send/receive data to Riak's protocol buffers interface.
@@ -43,8 +42,13 @@ class RiakConnection {
 	 private Socket sock;
 	 private DataOutputStream dout;
 	 private DataInputStream din;
+	 private final RiakConnectionPool pool;
+	 private volatile byte[] clientId;
 
-	public RiakConnection(InetAddress addr, int port, int bufferSizeKb) throws IOException {
+    private long idleStart;
+
+	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool) throws IOException {
+	    this.pool = pool;
 	    sock = new Socket(addr, port);
 
 	    sock.setSendBufferSize(1024 * bufferSizeKb);
@@ -105,29 +109,6 @@ class RiakConnection {
 		}
 	}
 
-	static Timer TIMER = new Timer("riak-client-timeout-thread", true);
-	TimerTask idle_timeout;
-	
-	public void beginIdle() {
-		idle_timeout = new TimerTask() {
-			
-			@Override
-			public void run() {
-				RiakConnection.this.timer_fired(this);
-			}
-		};
-		
-		TIMER.schedule(idle_timeout, 1000);
-	}
-
-	synchronized void timer_fired(TimerTask fired_timer) {
-		if (idle_timeout != fired_timer) {
-			// if it is not our current timer, then ignore
-			return;
-		}
-		
-		close();
-	}
 
 	void close() {
 		if (isClosed())
@@ -144,16 +125,8 @@ class RiakConnection {
 		}
 	}
 
-	synchronized boolean endIdleAndCheckValid() {
-		TimerTask tt = idle_timeout;
-		if (tt != null) { tt.cancel(); }
-		idle_timeout = null;
-		
-		if (isClosed()) {
-			return false;
-		} else {
-			return true;
-		}
+	boolean checkValid() {
+	    return isClosed();
 	}
 
 	public DataOutputStream getOutputStream() {
@@ -163,6 +136,33 @@ class RiakConnection {
 	public boolean isClosed() {
 		return sock == null || sock.isClosed();
 	}
+
+	public synchronized void beginIdle() {
+	    this.idleStart = System.currentTimeMillis();
+	}
 	
+	public synchronized long getIdleStartTimeMillis() {
+       return this.idleStart;
+    }
 	
+    /**
+     * 
+     */
+    public void release() {
+        pool.releaseConnection(this);
+    }
+
+    /**
+     * @return the clientId
+     */
+    public synchronized byte[] getClientId() {
+        return clientId == null? null : clientId.clone();
+    }
+
+    /**
+     * @param clientId the clientId to set
+     */
+    public synchronized void setClientId(byte[] clientId) {
+        this.clientId = clientId == null? null : clientId.clone();
+    }
 }

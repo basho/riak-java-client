@@ -45,11 +45,8 @@ import com.basho.riak.pbc.RPB.RpbListBucketsResp;
 import com.basho.riak.pbc.RPB.RpbMapRedReq;
 import com.basho.riak.pbc.RPB.RpbPutReq;
 import com.basho.riak.pbc.RPB.RpbPutResp;
-import com.basho.riak.pbc.RPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-//import com.trifork.riak.RPB.RpbListKeysResp;
-//import com.trifork.riak.RPB.RpbMapRedResp;
 
 /**
  * Low level protocol buffers client.
@@ -69,15 +66,13 @@ public class RiakClient implements RiakMessageCodes {
 
 	private String node;
 	private String serverVersion;
-	private InetAddress addr;
-	private int port;
-	private int bufferSizeKb;
 
 	/**
 	 * if this has been set (or gotten) then it will be applied to new
 	 * connections
 	 */
-	private volatile ByteString clientID;
+	private volatile byte[] clientId;
+	private final RiakConnectionPool pool;
 
 	public RiakClient(String host) throws IOException {
 		this(host, RiakConnection.DEFAULT_RIAK_PB_PORT);
@@ -87,46 +82,27 @@ public class RiakClient implements RiakMessageCodes {
 		this(InetAddress.getByName(host), port);
 	}
 
+	public RiakClient(RiakConnectionPool pool) {
+	    this.pool = pool;
+	}
+
 	public RiakClient(InetAddress addr, int port) throws IOException {
-		this.addr = addr;
-		this.port = port;
-		this.bufferSizeKb = BUFFER_SIZE_KB;
+		this.pool = new RiakConnectionPool(0, -1, addr, port, 1000, BUFFER_SIZE_KB, 1000);
+		this.pool.start();
 	}
 
 	public RiakClient(String host, int port, int bufferSizeKb)  throws IOException {
-	    this.addr = InetAddress.getByName(host);
-	    this.port = port;
-	    this.bufferSizeKb = bufferSizeKb;
+	    this.pool = new RiakConnectionPool(0, -1, InetAddress.getByName(host), port, 1000, bufferSizeKb, 1000);
+	    this.pool.start();
 	}
-
-	private ThreadLocal<RiakConnection> connections = new ThreadLocal<RiakConnection>();
 
 	RiakConnection getConnection() throws IOException {
-		return getConnection(true);
-	}
-
-	RiakConnection getConnection(boolean setClientId) throws IOException {
-        RiakConnection c = connections.get();
-        if (c == null || !c.endIdleAndCheckValid()) {
-            c = new RiakConnection(addr, port, bufferSizeKb);
-
-            if (this.clientID != null && setClientId) {
-                connections.set(c);
-                setClientID(clientID);
-            }
-        }
-        connections.set(null);
+        RiakConnection c = pool.getConnection(clientId);
         return c;
     }
 
 	void release(RiakConnection c) {
-		RiakConnection cc = connections.get();
-		if (cc == null) {
-			c.beginIdle();
-			connections.set(c);
-		} else {
-			c.close();
-		}
+		pool.releaseConnection(c);
 	}
 
 	/**
@@ -195,17 +171,8 @@ public class RiakClient implements RiakMessageCodes {
 	    if(id.size() > Constants.RIAK_CLIENT_ID_LENGTH) {
 	        id = ByteString.copyFrom(id.toByteArray(), 0, Constants.RIAK_CLIENT_ID_LENGTH);
 	    }
-		RpbSetClientIdReq req = RPB.RpbSetClientIdReq.newBuilder().setClientId(
-				id).build();
-		RiakConnection c = getConnection(false);
-		try {
-			c.send(MSG_SetClientIdReq, req);
-			c.receive_code(MSG_SetClientIdResp);
-		} finally {
-			release(c);
-		}
 
-		this.clientID = id;
+		this.clientId = id.toByteArray();
 	}
 
 	public String getClientID() throws IOException {
@@ -216,8 +183,8 @@ public class RiakClient implements RiakMessageCodes {
 			if (data == null)
 				return null;
 			RpbGetClientIdResp res = RPB.RpbGetClientIdResp.parseFrom(data);
-			clientID = res.getClientId();
-			return clientID.toStringUtf8();
+			clientId = res.getClientId().toByteArray();
+			return CharsetUtils.asUTF8String(clientId);
 		} finally {
 			release(c);
 		}
