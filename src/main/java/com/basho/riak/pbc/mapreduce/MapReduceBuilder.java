@@ -45,6 +45,7 @@ public class MapReduceBuilder {
     }
 
     private String bucket = null;
+    private String search = null;
     private Map<String, Set<String>> objects = new LinkedHashMap<String, Set<String>>();
     private List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
     private int timeout = -1;
@@ -92,6 +93,25 @@ public class MapReduceBuilder {
         bucket = newBucket;
         return this;
     }
+    
+    /**
+     * Gets the search query the map/reduce job will process
+     */
+    public String getSearch() {
+    	return search;
+    }
+    
+    /**
+     * Sets the name of the Riak bucket that will be searched and the query that will be executed
+     * 
+     * @throws IllegalStateException - If objects or bucket has already been added
+     */
+    public MapReduceBuilder setSearch(String search) {
+    	if (objects.size() > 0)
+    		throw new IllegalStateException("Cannot map/reduce over objects and search");
+    	this.search = search;
+    	return this;
+    }
 
     /**
      * Adds a Riak object (bucket name/key pair) to the map/reduce job as inputs
@@ -100,6 +120,8 @@ public class MapReduceBuilder {
      *             - If a bucket name has already been set on the job
      */
     public void addRiakObject(String bucket, String key) {
+        if (search != null)
+            throw new IllegalStateException("Cannot map/reduce over objects and search");
         if (this.bucket != null)
             throw new IllegalStateException("Cannot map/reduce over buckets and objects");
         Set<String> keys = objects.get(bucket);
@@ -138,6 +160,8 @@ public class MapReduceBuilder {
      *             - If a bucket name has already been set on the job
      */
     public MapReduceBuilder setRiakObjects(Map<String, Set<String>> objects) {
+        if (search != null)
+            throw new IllegalStateException("Cannot map/reduce over objects and search");
         if (bucket != null)
             throw new IllegalStateException("Cannot map/reduce over buckets and objects");
 
@@ -151,6 +175,8 @@ public class MapReduceBuilder {
     }
 
     public MapReduceBuilder setRiakObjects(Collection<RiakObject> objects) {
+        if (search != null)
+            throw new IllegalStateException("Cannot map/reduce over objects and search");
         if (bucket != null)
             throw new IllegalStateException("Cannot map/reduce over buckets and objects");
 
@@ -366,7 +392,20 @@ public class MapReduceBuilder {
     }
     
     private void buildInputs(JSONObject job) {
-        if (bucket != null) {
+    	if (search != null) {
+            try {
+                JSONObject jobInputs = new JSONObject();
+                jobInputs.put("module", "riak_search");
+                jobInputs.put("function", "mapred_search");
+                JSONArray jobArgs = new JSONArray();
+                jobArgs.put(bucket);
+                jobArgs.put(search);
+                jobInputs.put("arg", jobArgs);
+                job.put("inputs", jobInputs);
+            } catch (JSONException e) {
+                throw new RuntimeException("Can always assemble a query");
+            }
+    	} else if (bucket != null) {
             try {
                 job.put("inputs", bucket);
             } catch (JSONException e) {
