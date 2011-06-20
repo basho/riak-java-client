@@ -512,9 +512,22 @@ public class RiakClient {
      * @param objects
      *            A set of objects represented as a map of { bucket : [ list of
      *            keys in bucket ] }
+     * @return A {@link MapReduceBuilder} to build the map reduce job
      */
     public MapReduceBuilder mapReduceOverObjects(Map<String, Set<String>> objects) {
         return new MapReduceBuilder(this).setRiakObjects(objects);
+    }
+    
+    /**
+     * Same as {@link RiakClient#mapReduceOverBucket(String)}, except over a 
+     * riak-search query instead of a bucket.
+     * 
+     * @param bucket The bucket to perform the riak-search over
+     * @param search The query that riak-search will execute
+     * @return A {@link MapReduceBuilder} to build the map reduce job
+     */
+    public MapReduceBuilder mapReduceOverSearch(String bucket, String search) {
+    	return new MapReduceBuilder(this).setBucket(bucket).setSearch(search);
     }
 
     /**
