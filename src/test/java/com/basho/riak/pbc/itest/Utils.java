@@ -17,8 +17,8 @@ import static org.junit.Assert.*;
 
 import org.apache.commons.httpclient.URIException;
 
-import com.basho.riak.client.request.RequestMeta;
-import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.http.request.RequestMeta;
+import com.basho.riak.client.http.response.HttpResponse;
 
 public class Utils {
 

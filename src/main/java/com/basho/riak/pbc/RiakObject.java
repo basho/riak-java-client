@@ -20,6 +20,7 @@ package com.basho.riak.pbc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,9 @@ import com.basho.riak.pbc.RPB.RpbPair;
 import com.basho.riak.pbc.RPB.RpbContent.Builder;
 import com.google.protobuf.ByteString;
 
+/**
+ * PBC model of the data/meta data for a bucket/key entry in Riak
+ */
 public class RiakObject {
 
 	private ByteString vclock;
@@ -42,7 +46,8 @@ public class RiakObject {
 	private String vtag;
 	private String contentEncoding;
 	private String charset;
-	private Map<String,String> userMeta;
+	private Object userMetaDataLock = new Object();
+	private Map<String,String> userMetaData = new LinkedHashMap<String, String>();
 	private Integer lastModified;
 	private Integer lastModifiedUsec;
 	
@@ -65,15 +70,17 @@ public class RiakObject {
 			this.lastModifiedUsec = new Integer(content.getLastModUsecs());
 		}
 
-		if (content.getUsermetaCount() == 0) {
-			userMeta = Collections.emptyMap();
-		} else {
-			userMeta = new LinkedHashMap<String, String>();
+		if (content.getUsermetaCount() > 0) {
+			Map<String, String> tmpUserMetaData = new LinkedHashMap<String, String>();
 			for (int i = 0; i < content.getUsermetaCount(); i++) {
 				RpbPair um = content.getUsermeta(i);
-				userMeta.put(um.getKey().toStringUtf8(),
+				tmpUserMetaData.put(um.getKey().toStringUtf8(),
 							 str(um.getValue()));
 			}
+
+			synchronized (userMetaDataLock) {
+			    userMetaData.putAll(tmpUserMetaData);
+            }
 		}
 	}
 
@@ -171,8 +178,14 @@ public class RiakObject {
 			b.setLastModUsecs(lastModifiedUsec);
 		}
 		
-		if (userMeta != null && !userMeta.isEmpty()) {
-			for (Map.Entry<String, String> ent : userMeta.entrySet()) {
+		final Map<String, String> tmpUserMetaData = new LinkedHashMap<String, String>();
+
+		synchronized (userMetaDataLock) {
+		    tmpUserMetaData.putAll(userMetaData);
+        }
+
+		if (tmpUserMetaData != null && !tmpUserMetaData.isEmpty()) {
+			for (Map.Entry<String, String> ent : tmpUserMetaData.entrySet()) {
 				ByteString key = ByteString.copyFromUtf8(ent.getKey());
 				com.basho.riak.pbc.RPB.RpbPair.Builder pb = RPB.RpbPair.newBuilder().setKey(key);
 				if (ent.getValue() != null) {
@@ -183,6 +196,10 @@ public class RiakObject {
 		}
 		
 		return b.build();
+	}
+
+	public String getVtag() {
+	    return this.vtag;
 	}
 
 	public void setContentType(String contentType) {
@@ -199,6 +216,32 @@ public class RiakObject {
     
     public List<RiakLink> getLinks() {
        return links != null ? Collections.unmodifiableList(links) : Collections.EMPTY_LIST;
+    }
+
+    /**
+     * Add an item to the user meta data for this RiakObject.
+     * @param key the key of the user meta data item
+     * @param value the user meta data item
+     * @return this RiakObject
+     */
+    public RiakObject addUsermetaItem(String key, String value) {
+        synchronized (userMetaDataLock) {
+            userMetaData.put(key, value);
+        }
+        return this;
+    }
+
+    /**
+     * @return the lastModified
+     */
+    public Date getLastModified() {
+        Date d = null;
+
+        if (lastModified != null && lastModifiedUsec != null) {
+            long t = (lastModified * 1000L ) + (lastModifiedUsec / 100L);
+            d = new Date(t);
+        }
+        return d;
     }
 
 }

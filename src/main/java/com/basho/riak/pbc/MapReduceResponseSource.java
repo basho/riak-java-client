@@ -25,6 +25,9 @@ import com.basho.riak.pbc.RPB.RpbMapRedResp;
 import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 import com.google.protobuf.ByteString;
 
+/**
+ * Wraps a stream of m/r responses as an iterator.
+ */
 public class MapReduceResponseSource extends
 		RiakStreamClient<MapReduceResponse> {
 

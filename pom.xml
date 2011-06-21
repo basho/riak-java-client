@@ -72,6 +72,16 @@
                   <artifactId>protobuf-java</artifactId>
                   <version>2.3.0</version>
                 </dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.7.5</version>
+		</dependency>
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -122,7 +132,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
 	<profiles>
 		<profile>
 			<id>itest</id>
@@ -186,5 +195,4 @@
 			  </plugin>
 		</plugins>
 	</reporting>
-
 </project>

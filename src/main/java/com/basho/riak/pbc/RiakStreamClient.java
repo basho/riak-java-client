@@ -23,6 +23,10 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.TimerTask;
 
+/**
+ * A general purpose stream -> iterator adaptor.
+ * @param <T>
+ */
 abstract class RiakStreamClient<T> implements Iterable<T> {
 
 	private RiakClient client;

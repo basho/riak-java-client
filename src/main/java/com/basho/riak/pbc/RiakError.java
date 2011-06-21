@@ -22,6 +22,9 @@ import java.io.IOException;
 
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 
+/**
+ * Exception created from a PBC error response message
+ */
 @SuppressWarnings("serial")
 public class RiakError extends IOException {
 

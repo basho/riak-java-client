@@ -24,6 +24,9 @@ import org.json.JSONException;
 import com.basho.riak.pbc.RPB.RpbMapRedResp;
 import com.google.protobuf.ByteString;
 
+/**
+ * The results of executing a map/reduce query, wraps the PBC message response
+ */
 public class MapReduceResponse {
 
 	static final ByteString APPLICATION_JSON = ByteString.copyFromUtf8("application/json");

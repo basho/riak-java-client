@@ -20,6 +20,9 @@ package com.basho.riak.pbc;
 
 import com.google.protobuf.ByteString;
 
+/**
+ * Concrete implementation of the PBC request meta.
+ */
 public class RequestMeta implements IRequestMeta {
 
 	Boolean returnBody;

@@ -39,8 +39,20 @@ import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
 
 /**
- * Primary interface for interacting with Riak via HTTP.
+ * Legacy interface for interacting with Riak via HTTP.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.RiakClient
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ *             <p>Please see also IRiakClient, IRiakObject for the new API</p>
+ * @see com.basho.riak.client.http.RiakClient
+ * @see IRiakClient 
+ * @see IRiakObject
  */
+@Deprecated
 public class RiakClient {
 
     private ClientHelper helper;

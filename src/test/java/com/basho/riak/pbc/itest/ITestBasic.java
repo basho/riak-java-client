@@ -13,8 +13,8 @@
  */
 package com.basho.riak.pbc.itest;
 
-import static com.basho.riak.client.Hosts.RIAK_HOST;
-import static com.basho.riak.client.Hosts.RIAK_PORT;
+import static com.basho.riak.client.http.Hosts.RIAK_HOST;
+import static com.basho.riak.client.http.Hosts.RIAK_PORT;
 import static com.google.protobuf.ByteString.copyFromUtf8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,16 +28,16 @@ import java.util.prefs.Preferences;
 
 import org.junit.Test;
 
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.pbc.BucketProperties;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
 
 /**
- * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_HOST }.
+ * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_HOST }.
  * @author russell
- * @see com.basho.riak.client.Hosts#RIAK_HOST
+ * @see com.basho.riak.client.http.Hosts#RIAK_HOST
  */
 public class ITestBasic {
 

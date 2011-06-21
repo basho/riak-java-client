@@ -13,6 +13,9 @@
  */
 package com.basho.riak.client.response;
 
+import static com.basho.riak.client.util.CharsetUtils.asString;
+import static com.basho.riak.client.util.CharsetUtils.getCharset;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +27,16 @@ import com.basho.riak.client.util.Constants;
 /**
  * Simple implementation of HttpResponse interface. Simply stores and returns
  * the various fields.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.DefaultHttpResponse
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.DefaultHttpResponse
  */
+@Deprecated
 public class DefaultHttpResponse implements HttpResponse {
 
     private String bucket;
@@ -79,7 +91,7 @@ public class DefaultHttpResponse implements HttpResponse {
        if (body == null) {
           return null;
        }
-       return new String(body);
+       return asString(body, getCharset(headers));
     }
 
     public InputStream getStream() {

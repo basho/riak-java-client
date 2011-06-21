@@ -13,8 +13,8 @@
  */
 package com.basho.riak.pbc.itest;
 
-import static com.basho.riak.client.Hosts.RIAK_HOST;
-import static com.basho.riak.client.Hosts.RIAK_PORT;
+import static com.basho.riak.client.http.Hosts.RIAK_HOST;
+import static com.basho.riak.client.http.Hosts.RIAK_PORT;
 import static com.google.protobuf.ByteString.copyFrom;
 import static com.google.protobuf.ByteString.copyFromUtf8;
 import static org.junit.Assert.assertEquals;
@@ -27,9 +27,11 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
@@ -37,8 +39,8 @@ import com.basho.riak.test.util.ExpectedValues;
 import com.google.protobuf.ByteString;
 
 /**
- * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_HOST }.
- * @see com.basho.riak.client.Hosts#RIAK_HOST
+ * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_HOST }.
+ * @see com.basho.riak.client.http.Hosts#RIAK_HOST
  */
 public class ITestDataLoad {
 
@@ -58,7 +60,7 @@ public class ITestDataLoad {
         final String bucket = UUID.randomUUID().toString();
         final int NUM_OBJECTS = 200;
         int idx = 0;
-        final RiakClient riak = new RiakClient(RIAK_HOST);
+        final RiakClient riak = new RiakClient(RIAK_HOST, RIAK_PORT);
         riak.setClientID("PMDL");
         final RiakObject[] objects = new RiakObject[NUM_OBJECTS];
         final RequestMeta meta = new RequestMeta();
@@ -68,7 +70,7 @@ public class ITestDataLoad {
         Random rnd = new Random();
         for (int i = 0; i < NUM_OBJECTS; i++) {
             String key = "data-load-" + idx;
-            String value = new String(data[rnd.nextInt(NUM_VALUES)]);
+            String value = CharsetUtils.asString(data[rnd.nextInt(NUM_VALUES)], CharsetUtils.ISO_8859_1);;
             RiakObject o = new RiakObject(bucket, key, value);
             objects[i] = o;
             idx++;
@@ -101,7 +103,7 @@ public class ITestDataLoad {
         final Thread[] threads = new Thread[NUM_THREADS];
         final AtomicInteger idx = new AtomicInteger(0);
 
-        final RiakClient riak = new RiakClient(RIAK_HOST);
+        final RiakClient riak = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(new Runnable() {
@@ -113,7 +115,7 @@ public class ITestDataLoad {
                         Random rnd = new Random();
                         for (int i = 0; i < NUM_OBJECTS / NUM_THREADS; i++) {
                             String key = "data-load-" + idx.getAndIncrement();
-                            String value = new String(data[rnd.nextInt(NUM_VALUES)]);
+                            String value = CharsetUtils.asString(data[rnd.nextInt(NUM_VALUES)], CharsetUtils.ISO_8859_1);
                             RiakObject[] objects = riak.fetch(BUCKET, key);
                             RiakObject o = null;
                             if (objects.length == 0) {
@@ -143,7 +145,7 @@ public class ITestDataLoad {
     }
 
     @Test public void vclockDoesntExplodeUsingSingleClient() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         c.setClientID("TVCS");
         final Random rnd = new Random();
         final String bucket = UUID.randomUUID().toString();

@@ -25,6 +25,9 @@ import com.basho.riak.pbc.RPB.RpbLink;
 import com.basho.riak.pbc.RPB.RpbLink.Builder;
 import com.google.protobuf.ByteString;
 
+/**
+ * PBC specific model of a Riak Link.
+ */
 public class RiakLink {
 
 	private final ByteString bucket;

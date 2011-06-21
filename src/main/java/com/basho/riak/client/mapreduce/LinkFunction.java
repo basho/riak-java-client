@@ -16,6 +16,16 @@ package com.basho.riak.client.mapreduce;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.mapreduce.LinkFunction
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.mapreduce.LinkFunction
+ */
+@Deprecated
 public class LinkFunction implements MapReduceFunction {
    
    private String bucket = null;

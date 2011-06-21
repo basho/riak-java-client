@@ -22,7 +22,16 @@ import com.basho.riak.client.util.CollectionWrapper;
  * Presents the stream of keys from a Riak bucket response with query parameter
  * keys=stream as a collection. Keys are read from the stream as needed. Note,
  * this class is NOT thread-safe!
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.StreamedKeysCollection
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.StreamedKeysCollection
  */
+@Deprecated
 public class StreamedKeysCollection extends CollectionWrapper<String> {
 
     JSONTokener tokens;

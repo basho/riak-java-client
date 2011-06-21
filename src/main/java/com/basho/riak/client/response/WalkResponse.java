@@ -27,7 +27,16 @@ import com.basho.riak.client.util.Multipart;
  * Response from a GET request for an object with link walking. Decorates an
  * HttpResponse to interpret walk responses from Riak which returns
  * multipart/mixed documents.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.WalkResponse
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.WalkResponse
  */
+@Deprecated
 public class WalkResponse extends HttpResponseDecorator implements HttpResponse {
 
     private List<? extends List<RiakObject>> steps = new ArrayList<List<RiakObject>>();

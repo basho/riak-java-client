@@ -4,6 +4,9 @@ import com.basho.riak.pbc.RPB.RpbBucketProps;
 import com.basho.riak.pbc.RPB.RpbGetBucketResp;
 import com.basho.riak.pbc.RPB.RpbBucketProps.Builder;
 
+/**
+ * PBC's limited model of Riak Bucket properties.
+ */
 public class BucketProperties {
 
 	private Boolean allowMult;

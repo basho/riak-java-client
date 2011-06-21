@@ -24,6 +24,9 @@ import java.util.NoSuchElementException;
 import com.basho.riak.pbc.RPB.RpbListKeysResp;
 import com.google.protobuf.ByteString;
 
+/**
+ * Wraps a stream of keys as an iterator.
+ */
 public class KeySource extends RiakStreamClient<ByteString> {
 
 	private RpbListKeysResp r;

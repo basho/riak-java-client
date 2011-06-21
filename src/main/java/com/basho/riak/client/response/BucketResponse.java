@@ -31,7 +31,16 @@ import com.basho.riak.client.util.Constants;
  * Response from a GET request at a bucket's URL. Decorates an HttpResponse to
  * interpret listBucket response from Riak, which is a JSON object with the keys
  * "props" and "keys".
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.BucketResponse
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.BucketResponse
  */
+@Deprecated
 public class BucketResponse extends HttpResponseDecorator implements HttpResponse {
 
     private RiakBucketInfo bucketInfo = null;

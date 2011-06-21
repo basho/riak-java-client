@@ -21,7 +21,16 @@ import org.apache.commons.httpclient.HttpMethod;
 /**
  * Used with RiakClient.stream() to process the HTTP responses for fetch
  * requests as a stream.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.response.StreamHandler
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.response.StreamHandler
  */
+@Deprecated
 public interface StreamHandler {
 
     /**

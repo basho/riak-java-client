@@ -47,7 +47,16 @@ import com.basho.riak.client.response.RiakExceptionHandler;
 
 /**
  * Utility functions.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.util.ClientUtils
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ * @see com.basho.riak.client.http.util.ClientUtils
  */
+@Deprecated
 public class ClientUtils {
 
     // Matches the scheme, host and port of a URL
@@ -196,7 +205,7 @@ public class ClientUtils {
     }
 
     public static String encodeClientId(String clientId) {
-        return encodeClientId(clientId.getBytes());
+        return encodeClientId(CharsetUtils.utf8StringToBytes(clientId));
     }
 
     /**

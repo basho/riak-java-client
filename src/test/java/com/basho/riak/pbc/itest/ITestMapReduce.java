@@ -13,12 +13,14 @@
  */
 package com.basho.riak.pbc.itest;
 
-import static com.basho.riak.client.Hosts.RIAK_HOST;
-import static com.basho.riak.client.Hosts.RIAK_PORT;
+import static com.basho.riak.client.http.Hosts.RIAK_HOST;
+import static com.basho.riak.client.http.Hosts.RIAK_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import org.apache.commons.httpclient.HttpException;
 import org.json.JSONArray;
@@ -38,8 +40,8 @@ import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 
 /**
  * Exercises map/reduce features of the Riak client.
- * Assumes Riak is reachable at {@link com.basho.riak.client.Hosts#RIAK_HOST }.
- * @see com.basho.riak.client.Hosts#RIAK_HOST
+ * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_HOST }.
+ * @see com.basho.riak.client.http.Hosts#RIAK_HOST
  */
 public class ITestMapReduce {
 
@@ -49,7 +51,7 @@ public class ITestMapReduce {
     public static int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         for (int i = 0; i < TEST_ITEMS; i++) {
             RiakObject object = new RiakObject(BUCKET, KEY_PREFIX + Integer.toString(i), Integer.toString(i));
             object.setContentType("text/plain");
@@ -62,7 +64,7 @@ public class ITestMapReduce {
     }
 
     @AfterClass public static void teardown() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         for (int i = 0; i < TEST_ITEMS; i++) {
             c.delete(BUCKET, KEY_PREFIX + Integer.toString(i));
@@ -70,7 +72,7 @@ public class ITestMapReduce {
     }
 
     @Test public void doLinkMapReduce() throws HttpException, IOException, JSONException {
-       final RiakClient c = new RiakClient(RIAK_HOST);
+       final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         MapReduceBuilder mrb = new MapReduceBuilder(c)
             .setBucket(BUCKET).link(BUCKET, TAG, false)
@@ -87,7 +89,7 @@ public class ITestMapReduce {
     }
 
     @Test public void doErlangMapReduce() throws HttpException, IOException, JSONException {
-        RiakClient c = new RiakClient(RIAK_HOST);
+        RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         MapReduceBuilder builder = new MapReduceBuilder(c);
         builder.setBucket(BUCKET);
         builder.map(new ErlangFunction("riak_kv_mapreduce", "map_object_value"), false);
@@ -103,7 +105,7 @@ public class ITestMapReduce {
     }
 
     @Test public void doJavascriptMapReduce() throws HttpException, IOException, JSONException {
-        RiakClient c = new RiakClient(RIAK_HOST);
+        RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         MapReduceBuilder builder = new MapReduceBuilder(c);
         builder.setBucket(BUCKET);
         builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);
@@ -118,7 +120,7 @@ public class ITestMapReduce {
     }
 
     @Test public void doJavascriptMapReduceFromJSON() throws HttpException, IOException, JSONException {
-        RiakClient c = new RiakClient(RIAK_HOST);
+        RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         MapReduceBuilder builder = new MapReduceBuilder();
         builder.setBucket(BUCKET);
         builder.map(JavascriptFunction.named("Riak.mapValuesJson"), false);

@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client;
 
+import static com.basho.riak.client.util.CharsetUtils.*;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,10 +42,23 @@ import com.basho.riak.client.response.WalkResponse;
 import com.basho.riak.client.util.Constants;
 
 /**
- * A Riak object.
+ * A (legacy REST) Riak object.
+ *
+ * @deprecated with the addition of a protocol buffers client in 0.14 all the
+ *             existing REST client code should be in client.http.* this class
+ *             has therefore been moved. Please use
+ *             com.basho.riak.client.http.RiakObject
+ *             instead.
+ *             <p>WARNING: This class will be REMOVED in the next version.</p>
+ *             <p>Please see also IRiakClient, IRiakObject for the new API</p>
+ * @see com.basho.riak.client.http.RiakObject
+ * @see IRiakClient 
+ * @see IRiakObject
  */
+@Deprecated
 public class RiakObject {
 
+    private static final byte[] EMPTY = new byte[] {};
     private RiakClient riak;
     private String bucket;
     private String key;
@@ -266,7 +280,7 @@ public class RiakObject {
      * The object's value
      */
     public String getValue() {
-        return (value == null ? null : new String(value));
+        return (value == null ? null : asString(value, getCharset(contentType)));
     }
 
     public byte[] getValueAsBytes() {
@@ -275,7 +289,7 @@ public class RiakObject {
 
     public void setValue(String value) {
         if (value != null) {
-            this.value = value.getBytes();
+            this.value = asBytes(value, getCharset(contentType));
         } else {
             this.value = null;
         }
@@ -752,7 +766,7 @@ public class RiakObject {
             } else if (value != null) {
                 entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(value, contentType));
             } else {
-                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity("".getBytes(), contentType));
+                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(EMPTY, contentType));
             }
         }
     }
