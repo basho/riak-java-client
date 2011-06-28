@@ -13,24 +13,37 @@ providing strategies for:
 - Retrying requests
 - Value mutation
 
-The client also provides some lightweight ORM like capability for storing domain
+The client provides some lightweight ORM like capability for storing domain
 objects in Riak and returning domain objects from map reduce queries.
 
 * Using riak-java-client
 ** Including riak-java-client in your project
-Riak-java-client is available from maven central. Add the dependency to your pom.xml
+The current riak-java-client is available from maven central. Add the dependency to your pom.xml
 #+BEGIN_SRC xml
     <dependency>
         <groupId>com.basho.riak</groupId>
         <artifactId>riak-client</artifactId>
-        <version>0.15.0</version>
+        <version>0.14.1</version>
         <type>pom</type>
     </dependency>
 #+END_SRC
-To build and install from source, first install [[http://maven.apache.org/download.html][Apache Maven]]. With Maven installed, run:
+However, that does *not* include all the new stuff here in master. To
+get an early feel for the new API you need to build and install from
+source, first install [[http://maven.apache.org/download.html][Apache Maven]]. With Maven installed, run:
 #+BEGIN_SRC shell
 mvn clean install
 #+END_SRC
+
+And set the dependency in your projects pom.xml to
+#+BEGIN_SRC xml
+    <dependency>
+        <groupId>com.basho.riak</groupId>
+        <artifactId>riak-client</artifactId>
+        <version>0.14.2-SNAPSHOT</version>
+        <type>pom</type>
+    </dependency>
+#+END_SRC
+
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
 #+BEGIN_SRC java
@@ -47,7 +60,7 @@ myBucket.store("key1", "value1").execute();
 IRiakObject myData = myBucket.fetch("key1").execute();
 
 // you can specify extra parameters to the store operation using the
-// fluid builder style API
+// fluent builder style API
 myData = myBucket.store("key1", "value2").returnBody(true).execute();
 
 // delete
@@ -90,7 +103,7 @@ com.basho.riak.client.builders.RiakObjectBuilder
 to simplify creating and updating IRiakObjects.
 
 In fact most classes are as immutable as possible and are created
-using fluid builders. The builders are *not* designed to be used
+using fluent builders. The builders are *not* designed to be used
 across multiple threads but the immutable value objects they create are.
 
 *** Layers
@@ -120,11 +133,11 @@ RiakResponse fetched = rawClient.fetch(bucketName, "key1");
 IRiakObject result = null;
 
 if(fetched.hasValue()) {
-if(fetched.hasSiblings()) {
-//do what you must to resolve conflicts
-} else {
-result = fetched.getRiakObjects()[0];
-}
+    if(fetched.hasSiblings()) {
+    //do what you must to resolve conflicts
+    } else {
+        result = fetched.getRiakObjects()[0];
+    }
 }
 
 result.addLink(new RiakLink("otherBucket", "otherKey", "tag"));
@@ -135,11 +148,11 @@ RiakResponse stored = rawClient.store(result, new StoreMeta(2, 1, true));
 IRiakObject updated = null;
 
 if(stored.hasValue()) {
-if(stored.hasSiblings()) {
-//do what you must to resolve conflicts
-} else {
-updated = stored.getRiakObjects()[0];
-}
+    if(stored.hasSiblings()) {
+    //do what you must to resolve conflicts
+    } else {
+        updated = stored.getRiakObjects()[0];
+    }
 }
 
 rawClient.delete(bucketName, "key1");
@@ -162,7 +175,7 @@ you some tools to deal with eventual consistency and temporary failure.
 
 *** Operations
 Talking to Riak is modelled as a set of operations. An operation is
-a fluid builder for setting operation parameters (like the tunable CAP
+a fluent builder for setting operation parameters (like the tunable CAP
 quorum for a read) and an execute method to carry out the operation. EG
 #+BEGIN_SRC java
     Bucket b = client.createBucket(bucketName)
@@ -346,7 +359,7 @@ For a store operation
    resolved and the value is returned
 
 *** Domain Buckets
-A domain bucket is a wrapper around a bucket that simplifies the amount of
+A DomainBucket is a wrapper around a bucket that simplifies the amount of
 typing and repetition required to work with that bucket. A DomainBucket is an
 abstraction that allows you to store and fetch specific types in Riak.
 BEWARE there is no enforcement of any schema on the Riak side, if you
@@ -394,7 +407,7 @@ Performing map reduce is very much as it was for the legacy RiakClient:
 
 Refer to the [[http://wiki.basho.com/MapReduce.html][Riak Map/Reduce documentation ]]for a detailed explanation of how
 map/reduce works in Riak. Map/Reduce is just another RiakOperation and so a
-fluid builder:
+fluent builder:
 #+BEGIN_SRC java
     MapReduceResult result = client.mapReduce("myBucket")
         .addLinkPhase("bucketX", "test", false)
@@ -495,7 +508,7 @@ Have a look at the
 package for examples of all the features described above.
 
 Start storing data in Riak using IRiakObject and anonymous inner
-classes for Mutation, ConflictResolution and Retrier. As you use case
+classes for Mutation, ConflictResolution and Retrier. As your use case
 and application firm you can create concrete, testable, reusable
 implementations to act on your own domain objects.
 
