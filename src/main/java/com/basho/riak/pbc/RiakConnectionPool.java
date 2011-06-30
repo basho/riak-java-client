@@ -75,7 +75,6 @@ public class RiakConnectionPool {
                             // is this safe? maybe the connection was used and returned to the queue in the time the above executed?
                             boolean removed = available.remove(c);
                             if (removed) {
-                                System.out.println("reaped a connection");
                                 permits.release();
                             }
                             c = available.peek();
@@ -123,7 +122,6 @@ public class RiakConnectionPool {
         RpbSetClientIdReq req = RPB.RpbSetClientIdReq.newBuilder().setClientId(ByteString.copyFrom(clientId)).build();
 
         try {
-            System.out.println("setting clientId");
             c.send(RiakMessageCodes.MSG_SetClientIdReq, req);
             c.receive_code(RiakMessageCodes.MSG_SetClientIdResp);
             c.setClientId(clientId);
@@ -145,7 +143,6 @@ public class RiakConnectionPool {
 
                 if (c == null) {
                     c = new RiakConnection(host, port, bufferSizeKb, this);
-                    System.out.println("made a new connection");
                 }
 
                 inUse.offer(c);
