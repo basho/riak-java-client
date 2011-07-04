@@ -17,8 +17,13 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Not really a semaphore at all. Always returns at once, has no state. For the
+ * case where you may or may not need a semaphore and you can make that choice
+ * once rather than at every semaphore acquire/release point. Used by
+ * {@link RiakConnectionPool} to implement a boundless pool.
+ * 
  * @author russell
- *
+ * 
  */
 public class LimitlessSemaphore extends Semaphore {
 
@@ -34,20 +39,17 @@ public class LimitlessSemaphore extends Semaphore {
         super(arg0);
     }
 
-    /* (non-Javadoc)
-     * @see java.util.concurrent.Semaphore#release()
+    /**
+     * A NO-OP
      */
     @Override public void release() {
-        //NO-OP;
+        // NO-OP;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.concurrent.Semaphore#tryAcquire(int, long, java.util.concurrent.TimeUnit)
+    /**
+     * Always returns true at once.
      */
     @Override public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
         return true;
     }
-    
-    
-
 }

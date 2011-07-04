@@ -28,7 +28,6 @@ import java.net.Socket;
 
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 /**
  * Wraps the {@link Socket} used to send/receive data to Riak's protocol buffers interface.
@@ -43,7 +42,8 @@ class RiakConnection {
 	 private DataOutputStream dout;
 	 private DataInputStream din;
 	 private final RiakConnectionPool pool;
-	 private volatile byte[] clientId;
+	 // Guarded by the intrinsic lock 'this'
+	 private byte[] clientId;
 
     private long idleStart;
 
@@ -164,5 +164,13 @@ class RiakConnection {
      */
     public synchronized void setClientId(byte[] clientId) {
         this.clientId = clientId == null? null : clientId.clone();
+    }
+
+    /**
+     * @return true if a clientId has been *explicitly set* (IE not default from
+     *         Riak server) on this connection
+     */
+    public synchronized boolean hasClientId() {
+        return clientId != null && clientId.length > 0;
     }
 }
