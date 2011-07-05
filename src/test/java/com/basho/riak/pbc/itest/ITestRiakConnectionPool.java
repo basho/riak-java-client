@@ -30,7 +30,7 @@ import com.basho.riak.pbc.RiakConnectionPool;
  * @author russell
  * 
  */
-public class ITestRiakConnectionPoolTest {
+public class ITestRiakConnectionPool {
 
     private static final int PORT = 8087;
     private static final String HOST = "127.0.0.1";
