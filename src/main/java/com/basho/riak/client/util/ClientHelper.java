@@ -171,10 +171,10 @@ public class ClientHelper {
         String bucket = object.getBucket();
         String key = object.getKey();
         String url = ClientUtils.makeURI(config, bucket, key);
-        PutMethod put = new PutMethod(url);
-
-        object.writeToHttpMethod(put);
-        return executeMethod(bucket, key, put, meta);
+        HttpMethod method = key == null ? new PostMethod(url) : new PutMethod(url);
+        
+        object.writeToHttpMethod(method);
+        return executeMethod(bucket, key, method, meta);
     }
 
     /**
