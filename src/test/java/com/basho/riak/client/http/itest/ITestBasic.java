@@ -163,8 +163,8 @@ public class ITestBasic {
 
         HttpResponse deleteResponse = c.delete(bucket, key, RequestMeta.deleteParams(4));
 
-        assertEquals(500, deleteResponse.getStatusCode());
-        assertTrue(deleteResponse.getBodyAsString().contains("n_val_violation"));
+        assertEquals(400, deleteResponse.getStatusCode());
+        assertTrue("Unexpected error message", deleteResponse.getBodyAsString().contains("Specified w/dw/pw values invalid for bucket n value of 3"));
     }
 
     @Test public void fetchNonExistant() {
