@@ -24,12 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.http.impl.cookie.DateUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
@@ -203,7 +202,7 @@ public final class ConversionUtil {
         if (lastModified == null) {
             return null;
         }
-        return DateUtil.formatDate(lastModified);
+        return DateUtils.formatDate(lastModified);
     }
 
     /**

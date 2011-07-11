@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.http.impl.cookie.DateUtils;
 
 import com.basho.riak.client.util.ClientUtils;
 import com.basho.riak.client.util.Constants;
@@ -161,6 +161,16 @@ public class RequestMeta {
     }
 
     /**
+     * Get a copy of the query params in a map
+     * 
+     * @return a {@link LinkedHashMap} of the query params (copy, does not
+     *         read/write through)
+     */
+    public Map<String, String> getQueryParamMap() {
+        return new LinkedHashMap<String, String>(queryParams);
+    }
+
+    /**
      * A string containing all the specified query parameters in this
      * {@link RequestMeta} in the form: p1=v1&p2=v2
      */
@@ -196,7 +206,7 @@ public class RequestMeta {
     }
 
     public RequestMeta setIfModifiedSince(Date lastmod) {
-        return setHeader(Constants.HDR_IF_MODIFIED_SINCE, DateUtil.formatDate(lastmod));
+        return setHeader(Constants.HDR_IF_MODIFIED_SINCE, DateUtils.formatDate(lastmod));
     }
 
     /** Convenience method for the If-Unmodified-Since HTTP header */
@@ -209,7 +219,7 @@ public class RequestMeta {
     }
 
     public RequestMeta setIfUnmodifiedSince(Date lastmod) {
-        return setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, DateUtil.formatDate(lastmod));
+        return setHeader(Constants.HDR_IF_UNMODIFIED_SINCE, DateUtils.formatDate(lastmod));
     }
 
     /** Convenience method for the If-Match HTTP header */

@@ -24,9 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodRetryHandler;
-import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.params.AllClientPNames;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +51,7 @@ public class TestClientUtils {
     @Test public void newHttpClient_uses_configs_http_client_if_exists() {
         MockitoAnnotations.initMocks(this);
 
-        HttpClient httpClient = new HttpClient();
+        HttpClient httpClient = new DefaultHttpClient();
         config.setHttpClient(httpClient);
         assertSame(httpClient, ClientUtils.newHttpClient(config));
     }
@@ -60,7 +62,7 @@ public class TestClientUtils {
 
         HttpClient httpClient = ClientUtils.newHttpClient(config);
 
-        assertEquals(maxConnections, httpClient.getHttpConnectionManager().getParams().getMaxTotalConnections());
+        assertEquals(maxConnections, ((ThreadSafeClientConnManager) httpClient.getConnectionManager()).getMaxTotal());
     }
 
     @Test public void newHttpClient_sets_connection_timeout() {
@@ -69,18 +71,17 @@ public class TestClientUtils {
 
         HttpClient httpClient = ClientUtils.newHttpClient(config);
 
-        assertEquals(timeout, httpClient.getParams().getConnectionManagerTimeout());
-        assertEquals(timeout, httpClient.getParams().getSoTimeout());
-        assertEquals(timeout, httpClient.getHttpConnectionManager().getParams().getConnectionTimeout());
+        assertEquals(timeout, httpClient.getParams().getIntParameter(AllClientPNames.CONNECTION_TIMEOUT, 1));
+        assertEquals(timeout, httpClient.getParams().getIntParameter(AllClientPNames.SO_TIMEOUT, 1));
     }
 
     @Test public void newHttpClient_sets_retry_handler() {
-        final HttpMethodRetryHandler handler = mock(HttpMethodRetryHandler.class);
+        final HttpRequestRetryHandler handler = mock(HttpRequestRetryHandler.class);
         config.setRetryHandler(handler);
 
         HttpClient httpClient = ClientUtils.newHttpClient(config);
 
-        assertSame(handler, httpClient.getParams().getParameter(HttpClientParams.RETRY_HANDLER));
+        assertSame(handler, ((DefaultHttpClient)httpClient).getHttpRequestRetryHandler());
     }
 
     @Test public void makeURI_url_encodes_bucket() {

@@ -16,7 +16,7 @@ package com.basho.riak.client.http.response;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
 
 /**
  * HTTP response information resulting from some HTTP operation
@@ -66,7 +66,7 @@ public interface HttpResponse {
      * note that the connection will already be closed, so calling
      * getHttpMethod().getResponseBodyAsStream() will return null.
      */
-    public HttpMethod getHttpMethod();
+    public HttpRequestBase getHttpMethod();
 
     /**
      * Whether the HTTP response is considered a success. Generally this
@@ -84,4 +84,9 @@ public interface HttpResponse {
      * Releases the underlying the HTTP connection when the response is streamed
      */
     public void close();
+
+    /**
+     * @return
+     */
+    public org.apache.http.HttpResponse getHttpResponse();
 }

@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,14 +29,13 @@ import java.util.Random;
 import java.util.Map.Entry;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnectionManager;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.params.AllClientPNames;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -44,6 +44,7 @@ import com.basho.riak.client.RiakConfig;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.response.RiakExceptionHandler;
+import com.basho.riak.client.response.RiakIORuntimeException;
 
 /**
  * Utility functions.
@@ -73,29 +74,27 @@ public class ClientUtils {
     public static HttpClient newHttpClient(RiakConfig config) {
 
         HttpClient http = config.getHttpClient();
-        HttpConnectionManager m;
+        ClientConnectionManager m;
 
         if (http == null) {
-            m = new MultiThreadedHttpConnectionManager();
-            http = new HttpClient(m);
+            m = new ThreadSafeClientConnManager();
+            if (config.getMaxConnections() != null) {
+                ((ThreadSafeClientConnManager) m).setMaxTotal(config.getMaxConnections());
+                ((ThreadSafeClientConnManager) m).setDefaultMaxPerRoute(config.getMaxConnections());
+            }
+            http = new DefaultHttpClient(m);
+
+            if (config.getRetryHandler() != null) {
+                ((DefaultHttpClient) http).setHttpRequestRetryHandler(config.getRetryHandler());
+            }
         } else {
-            m = http.getHttpConnectionManager();
+            m = http.getConnectionManager();
         }
 
-        HttpConnectionManagerParams mp = m.getParams();
-        if (config.getMaxConnections() != null) {
-        	mp.setMaxTotalConnections(config.getMaxConnections());
-        	mp.setMaxConnectionsPerHost(HostConfiguration.ANY_HOST_CONFIGURATION, config.getMaxConnections());
-        }
-
-        HttpClientParams cp = http.getParams();
+        HttpParams cp = http.getParams();
         if (config.getTimeout() != null) {
-            mp.setConnectionTimeout(config.getTimeout().intValue());
-            cp.setConnectionManagerTimeout(config.getTimeout());
-            cp.setSoTimeout(config.getTimeout().intValue());
-        }
-        if (config.getRetryHandler() != null) {
-            cp.setParameter(HttpMethodParams.RETRY_HANDLER, config.getRetryHandler());
+            cp.setIntParameter(AllClientPNames.CONNECTION_TIMEOUT, config.getTimeout());
+            cp.setIntParameter(AllClientPNames.SO_TIMEOUT, config.getTimeout());
         }
 
         return http;
@@ -205,7 +204,7 @@ public class ClientUtils {
     }
 
     public static String encodeClientId(String clientId) {
-        return encodeClientId(CharsetUtils.utf8StringToBytes(clientId));
+        return encodeClientId(CharsetUtils.asBytes(clientId, CharsetUtils.ISO_8859_1));
     }
 
     /**
@@ -302,8 +301,8 @@ public class ClientUtils {
 
         buf.append(arr[0]);
         for (int i = 1; i < arr.length; i++) {
-        	buf.append(delimiter);
-        	buf.append(arr[i]);
+            buf.append(delimiter);
+            buf.append(arr[i]);
         }
         return buf.toString();
     }
@@ -341,11 +340,11 @@ public class ClientUtils {
         List<RiakLink> links = new ArrayList<RiakLink>();
         Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
         for (Entry<String, Map<String, String>> e: parsedLinks.entrySet()) {
-        	String url = e.getKey();
-        	RiakLink link = parseOneLink(url, e.getValue());
-        	if (link != null) {
-        		links.add(link);
-        	}
+            String url = e.getKey();
+            RiakLink link = parseOneLink(url, e.getValue());
+            if (link != null) {
+                links.add(link);
+            }
         }
         return links;
     }
@@ -383,12 +382,12 @@ public class ClientUtils {
     public static Map<String, String> parseUsermeta(Map<String, String> headers) {
         Map<String, String> usermeta = new HashMap<String, String>();
         if (headers != null) {
-        	for (Entry<String, String> e : headers.entrySet()) { 
-        		String header = e.getKey();
-        		if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
-        			usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), e.getValue());
-        		}
-        	}
+            for (Entry<String, String> e : headers.entrySet()) {
+                String header = e.getKey();
+                if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
+                    usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), e.getValue());
+                }
+            }
         }
         return usermeta;
     }
@@ -474,6 +473,29 @@ public class ClientUtils {
      */
     public static void throwChecked(final Throwable exception) {
         new CheckedThrower<RuntimeException>().throwChecked(exception);
+    }
+
+    /**
+     * Buffers an input stream into a byte array
+     * @param valueStream the stream to read into an array
+     * @return the byte array of the consumed stream
+     */
+    public static byte[] bufferStream(InputStream valueStream) {
+        if (valueStream == null) {
+            return new byte[] {};
+        }
+
+        try {
+            ByteArrayOutputStream tmp = new ByteArrayOutputStream();
+            byte[] data = new byte[4096];
+            int l = 0;
+            while ((l = valueStream.read(data)) >= 0) {
+                tmp.write(data, 0, l);
+            }
+            return tmp.toByteArray();
+        } catch (IOException e) {
+            throw new RiakIORuntimeException(e);
+        }
     }
 }
 

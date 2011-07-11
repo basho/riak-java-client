@@ -25,12 +25,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.util.DateParseException;
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.cookie.DateParseException;
+import org.apache.http.impl.cookie.DateUtils;
 
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
@@ -40,6 +41,7 @@ import com.basho.riak.client.http.response.RiakIORuntimeException;
 import com.basho.riak.client.http.response.RiakResponseRuntimeException;
 import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.WalkResponse;
+import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.http.util.Constants;
 
 /**
@@ -522,7 +524,7 @@ public class RiakObject {
      */
     public Date getLastmodAsDate() {
         try {
-            return DateUtil.parseDate(lastmod);
+            return DateUtils.parseDate(lastmod);
         } catch (DateParseException e) {
             return null;
         }
@@ -669,39 +671,42 @@ public class RiakObject {
     /* (non-Javadoc)
      * @see com.basho.riak.client.HttpRiakObject#writeToHttpMethod(org.apache.commons.httpclient.HttpMethod)
      */
-    public void writeToHttpMethod(HttpMethod httpMethod) {
+    public void writeToHttpMethod(HttpRequestBase httpMethod) {
         // Serialize headers
         String basePath = getBasePathFromHttpMethod(httpMethod);
         writeLinks(httpMethod, basePath);
         for (String name : userMetaData.keySet()) {
-            httpMethod.setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, userMetaData.get(name));
+            httpMethod.addHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, userMetaData.get(name));
         }
         if (vclock != null) {
-            httpMethod.setRequestHeader(Constants.HDR_VCLOCK, vclock);
+            httpMethod.addHeader(Constants.HDR_VCLOCK, vclock);
         }
 
         // Serialize body
-        if (httpMethod instanceof EntityEnclosingMethod) {
-            EntityEnclosingMethod entityEnclosingMethod = (EntityEnclosingMethod) httpMethod;
-
+        if (httpMethod instanceof HttpEntityEnclosingRequestBase) {
+            HttpEntityEnclosingRequestBase entityEnclosingMethod = (HttpEntityEnclosingRequestBase) httpMethod;
+            AbstractHttpEntity entity = null;
             // Any value set using setValueAsStream() has precedent over value
             // set using setValue()
             if (valueStream != null) {
                 if (valueStreamLength != null && valueStreamLength >= 0) {
-                    entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, valueStreamLength,
-                                                                                        contentType));
+                    entity = new InputStreamEntity(valueStream, valueStreamLength);
                 } else {
-                    entityEnclosingMethod.setRequestEntity(new InputStreamRequestEntity(valueStream, contentType));
+                    // since apache http client 4.1 no longer supports buffering stream entities, but we can't change API
+                    // behaviour, here we have to buffer the whole content
+                    entity = new ByteArrayEntity(ClientUtils.bufferStream(valueStream));
                 }
             } else if (value != null) {
-                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(value, contentType));
+                entity = new ByteArrayEntity(value);
             } else {
-                entityEnclosingMethod.setRequestEntity(new ByteArrayRequestEntity(EMPTY, contentType));
+                entity = new ByteArrayEntity(EMPTY);
             }
+            entity.setContentType(contentType);
+            entityEnclosingMethod.setEntity(entity);
         }
     }
     
-    private void writeLinks(HttpMethod httpMethod, String basePath) {
+    private void writeLinks(HttpRequestBase httpMethod, String basePath) {
         StringBuilder linkHeader = new StringBuilder();
 
         for (RiakLink link : this.links) {
@@ -723,20 +728,20 @@ public class RiakObject {
             // To avoid (MochiWeb) problems with too long headers, flush if
             // it grows too big:
             if (linkHeader.length() > 2000) {
-                httpMethod.addRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+                httpMethod.addHeader(Constants.HDR_LINK, linkHeader.toString());
                 linkHeader = new StringBuilder();
             }
         }
         if (linkHeader.length() > 0) {
-            httpMethod.addRequestHeader(Constants.HDR_LINK, linkHeader.toString());
+            httpMethod.addHeader(Constants.HDR_LINK, linkHeader.toString());
         }
     }
 
-    String getBasePathFromHttpMethod(HttpMethod httpMethod) {
-        if (httpMethod == null || httpMethod.getPath() == null)
+    String getBasePathFromHttpMethod(HttpRequestBase httpMethod) {
+        if (httpMethod == null || httpMethod.getURI() == null)
             return "";
 
-        String path = httpMethod.getPath();
+        String path = httpMethod.getURI().getPath();
         int idx = path.length() - 1;
 
         // ignore any trailing slash

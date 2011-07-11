@@ -27,8 +27,8 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.httpclient.util.DateParseException;
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.http.impl.cookie.DateParseException;
+import org.apache.http.impl.cookie.DateUtils;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
@@ -45,7 +45,6 @@ import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
-import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 import com.google.protobuf.ByteString;
 
 /**
@@ -306,7 +305,7 @@ public final class ConversionUtil {
             b.withVtag((String) meta.get("X-Riak-VTag"));
 
             try {
-                Date lastModDate = DateUtil.parseDate((String) meta.get("X-Riak-Last-Modified"));
+                Date lastModDate = DateUtils.parseDate((String) meta.get("X-Riak-Last-Modified"));
                 b.withLastModified(lastModDate.getTime());
             } catch (DateParseException e) {
                 // NO-OP

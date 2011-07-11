@@ -13,8 +13,6 @@
  */
 package com.basho.riak.client.http.util;
 
-import org.apache.commons.httpclient.util.EncodingUtil;
-
 import com.basho.riak.client.util.CharsetUtils;
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+
+import org.apache.http.util.EncodingUtils;
 
 /**
  * Represents a multipart entity as described here:
@@ -125,7 +125,7 @@ public class Multipart {
                     bodyStart = end;
                 }
 
-                Map<String, String> partHeaders = parseHeaders(EncodingUtil.getAsciiString(copyOfRange(body, start, headerEnd)));
+                Map<String, String> partHeaders = parseHeaders(EncodingUtils.getAsciiString(copyOfRange(body, start, headerEnd)));
                 parts.add(new Part(partHeaders, copyOfRange(body, bodyStart, end)));
 
                 pos = end;

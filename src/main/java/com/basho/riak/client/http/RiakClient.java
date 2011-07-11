@@ -17,11 +17,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.client.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.http.request.MapReduceBuilder;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
@@ -37,7 +36,6 @@ import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.StreamHandler;
 import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.ClientHelper;
-import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.http.util.Constants;
 
 /**

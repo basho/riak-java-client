@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.AfterClass;
@@ -75,7 +74,7 @@ public class ITestMapReduce {
        }              
     }
     
-    @Test public void doLinkMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doLinkMapReduce() throws IOException, JSONException {
        RiakClient c = new RiakClient(RIAK_URL);
        MapReduceResponse response = c.mapReduceOverBucket(BUCKET_NAME)
            .link(BUCKET_NAME, "test", false)
@@ -87,7 +86,7 @@ public class ITestMapReduce {
        assertEquals(TEST_ITEMS - 1, results.length());
     }
     
-    @Test public void doErlangMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doErlangMapReduce() throws IOException, JSONException {
        RiakClient c = new RiakClient(RIAK_URL);
        MapReduceBuilder builder = new MapReduceBuilder(c);
        builder.setBucket(BUCKET_NAME);
@@ -103,7 +102,7 @@ public class ITestMapReduce {
        assertEquals(197, results.getInt(197));       
     }
     
-    @Test public void doJavascriptMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doJavascriptMapReduce() throws IOException, JSONException {
        RiakClient c = new RiakClient(RIAK_URL);
        MapReduceBuilder builder = new MapReduceBuilder(c);
        builder.setBucket(BUCKET_NAME);
@@ -118,7 +117,7 @@ public class ITestMapReduce {
        assertEquals(197, results.getInt(197));       
     }
 
-    @Test public void doKeyFilterMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doKeyFilterMapReduce() throws IOException, JSONException {
         RiakClient c = new RiakClient(RIAK_URL);
         MapReduceBuilder builder = new MapReduceBuilder(c);
         builder.setBucket(BUCKET_NAME);

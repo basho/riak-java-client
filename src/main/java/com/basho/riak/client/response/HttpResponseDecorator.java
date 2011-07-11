@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
 
 /**
  * A default decorator implementation for HttpResponse
@@ -81,7 +81,7 @@ public class HttpResponseDecorator implements HttpResponse {
         return impl.getHttpHeaders();
     }
 
-    public HttpMethod getHttpMethod() {
+    public HttpRequestBase getHttpMethod() {
         if (impl == null)
             return null;
         return impl.getHttpMethod();
@@ -109,5 +109,14 @@ public class HttpResponseDecorator implements HttpResponse {
         if (impl != null) {
             impl.close();
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.http.response.HttpResponse#getHttpResponse()
+     */
+    public org.apache.http.HttpResponse getHttpResponse() {
+        return impl.getHttpResponse();
     }
 }
