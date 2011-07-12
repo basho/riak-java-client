@@ -405,9 +405,10 @@ public class ClientHelper {
                     newURI = URIUtils.createURI(originalURI.getScheme(),
                                                            originalURI.getHost(),
                                                            originalURI.getPort(),
-                                                           originalURI.getPath(),
+                                                           originalURI.getRawPath(),
                                                            URLEncodedUtils.format(newQuery, "UTF-8"), null);
                 } catch (URISyntaxException e) {
+                    e.printStackTrace();
                     throw new RiakIORuntimeException(e);
                 }
                 httpMethod.setURI(newURI);
