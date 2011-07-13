@@ -97,6 +97,9 @@ public class DefaultHttpResponse implements HttpResponse {
         return stream != null;
     }
 
+    /**
+     * Get the original, underlying http request base method executed to form this repsonse
+     */
     public HttpRequestBase getHttpMethod() {
         return httpMethod;
     }

@@ -61,10 +61,9 @@ public interface HttpResponse {
     public boolean isStreamed();
 
     /**
-     * The actual {@link HttpMethod} used to make the HTTP request. Most of the
-     * data here can be retrieved more simply using methods in this class. Also,
-     * note that the connection will already be closed, so calling
-     * getHttpMethod().getResponseBodyAsStream() will return null.
+     * The actual {@link HttpRequestBase} used to make the HTTP request. Most of
+     * the data here can be retrieved more simply using methods in this class.
+     * The method will already be in a finished state.
      */
     public HttpRequestBase getHttpMethod();
 
@@ -86,7 +85,7 @@ public interface HttpResponse {
     public void close();
 
     /**
-     * @return
+     * @return the original {@link org.apache.http.HttpResponse} returned by http client
      */
     public org.apache.http.HttpResponse getHttpResponse();
 }

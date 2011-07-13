@@ -21,6 +21,7 @@ import org.apache.http.client.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.request.MapReduceBuilder;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
@@ -235,6 +236,26 @@ public class RiakClient {
         return fetch(bucket, key, null, false);
     }
 
+    /**
+     * Similar to fetch(), except the HTTP connection is left open for
+     * successful responses, and the Riak response is provided as a stream.
+     * The user must remember to call {@link FetchResponse#close()} on the
+     * return value.
+     * 
+     * @param bucket
+     *            The bucket containing the {@link RiakObject} to fetch.
+     * @param key
+     *            The key of the {@link RiakObject} to fetch.
+     * @param meta
+     *            Extra metadata to attach to the request such as an r- value
+     *            for the request, HTTP headers, and other query parameters. See
+     *            RequestMeta.readParams().
+     * 
+     * @return A streaming {@link FetchResponse} containing HTTP response
+     *         information and the response stream. The HTTP connection must be
+     *         closed manually by the user by calling
+     *         {@link FetchResponse#close()}.
+     */
     public FetchResponse stream(String bucket, String key, RequestMeta meta) {
         return fetch(bucket, key, meta, true);
     }

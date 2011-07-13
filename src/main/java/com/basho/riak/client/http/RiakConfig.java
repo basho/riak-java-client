@@ -168,15 +168,23 @@ public class RiakConfig {
     }
 
     /**
-     * Value to set for the HttpClientParams.RETRY_HANDLER property: the default
-     * retry handler for requests.
+     * Get value set for the http client retry handler, the default retry
+     * handler for requests.
      * 
-     * @see org.apache.commons.httpclient.DefaultHttpMethodRetryHandler
+     * @see org.apache.http.client.HttpRequestRetryHandler
+     * @see org.apache.http.impl.client.DefaultHttpRequestRetryHandler
      */
     public HttpRequestRetryHandler getRetryHandler() {
         return retryHandler;
     }
 
+    /**
+     * Value to set for the http client retry handler, the default retry handler
+     * for requests.
+     * 
+     * @see org.apache.http.client.HttpRequestRetryHandler
+     * @see org.apache.http.impl.client.DefaultHttpRequestRetryHandler
+     */
     public void setRetryHandler(HttpRequestRetryHandler retryHandler) {
         this.retryHandler = retryHandler;
     }

@@ -374,7 +374,7 @@ public class ClientUtils {
     public static Map<String, String> parseUsermeta(Map<String, String> headers) {
         Map<String, String> usermeta = new HashMap<String, String>();
         if (headers != null) {
-        	for (Entry<String, String> e : headers.entrySet()) {
+            for (Entry<String, String> e : headers.entrySet()) {
         		String header = e.getKey();
         		if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
         			usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), e.getValue());

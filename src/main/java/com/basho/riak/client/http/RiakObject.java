@@ -33,6 +33,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.cookie.DateParseException;
 import org.apache.http.impl.cookie.DateUtils;
 
+import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.FetchResponse;
@@ -668,8 +669,14 @@ public class RiakObject {
         return new LinkBuilder().walk(keep);
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.HttpRiakObject#writeToHttpMethod(org.apache.commons.httpclient.HttpMethod)
+    /**
+     * Serializes this object to an existing {@link HttpRequestBase} which can
+     * be sent as an HTTP request. Specifically, sends the object's link,
+     * user-defined metadata and vclock as HTTP headers and the value as the
+     * body. Used by {@link RiakClient} to create PUT requests.
+     * 
+     * if the this RiakObject's value is a stream, and no length is set, the
+     * stream is first buffered into a byte array before being written
      */
     public void writeToHttpMethod(HttpRequestBase httpMethod) {
         // Serialize headers
