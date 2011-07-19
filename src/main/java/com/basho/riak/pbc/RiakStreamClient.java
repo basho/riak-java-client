@@ -21,6 +21,7 @@ package com.basho.riak.pbc;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
+import java.util.Timer;
 import java.util.TimerTask;
 
 /**
@@ -28,6 +29,8 @@ import java.util.TimerTask;
  * @param <T>
  */
 abstract class RiakStreamClient<T> implements Iterable<T> {
+
+    static Timer TIMER = new Timer("riak-stream-timeout-thread", true);
 
 	private RiakClient client;
 	protected RiakConnection conn;
@@ -40,14 +43,13 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 	}
 
 	static class ReaperTask extends TimerTask {
-
 		private final RiakConnection conn;
 		private WeakReference<?> ref;
 
 		ReaperTask (Object holder, RiakConnection conn) {
 			this.conn = conn;
 			this.ref = new WeakReference<Object>(holder);
-			RiakConnection.TIMER.scheduleAtFixedRate(this, 1000, 1000);
+			TIMER.scheduleAtFixedRate(this, 1000, 1000);
 		}
 		
 		@Override
@@ -59,7 +61,7 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 				// the reference was lost; cancel this timer and
 				// close the connection
 				cancel();
-				conn.close();
+				conn.release();
 			} else if (conn.isClosed()) {
 				cancel();
 			}

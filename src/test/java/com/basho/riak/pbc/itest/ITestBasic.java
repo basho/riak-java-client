@@ -178,7 +178,7 @@ public class ITestBasic {
      */
 
     @Test public void storeAndRetrieve() throws Exception {
-        final String key = "key1";
+        final String key = UUID.randomUUID().toString();
         final String content = "value1";
         final String updatedContent = "updatedValue1";
         final String nonExistantKey = "non_existant_key";
