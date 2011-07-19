@@ -26,6 +26,8 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.http.HTTPClientConfig;
+import com.basho.riak.client.raw.http.HTTPClusterConfig;
 
 /**
  * @author russell
@@ -39,7 +41,10 @@ public class ITestHTTPClient extends ITestClientBasic {
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
     @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.httpClient(Hosts.RIAK_URL);
+        HTTPClientConfig config = new HTTPClientConfig.Builder().withUrl(Hosts.RIAK_URL).build();
+        HTTPClusterConfig conf = new HTTPClusterConfig(50);
+        conf.addNode(config);
+        return RiakFactory.newClient(conf);
     }
 
     @Test public void fetchBucket() throws RiakException {

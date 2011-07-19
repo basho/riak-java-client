@@ -38,6 +38,7 @@ import com.google.protobuf.ByteString;
  */
 public class RiakConnectionPool {
 
+    public static final int LIMITLESS = 0;
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
@@ -92,6 +93,44 @@ public class RiakConnectionPool {
     }
 
     /**
+     * Crate a new host connection pool. NOTE: before using you must call
+     * start()
+     * 
+     * @param initialSize
+     *            the number of connections to create at pool creation time
+     * @param clusterSemaphore
+     *            a {@link Semaphore} set with the number of permits for the cluster and pool
+     * @param host
+     *            the host this pool holds connections to
+     * @param port
+     *            the port on host that this pool holds connections to
+     * @param connectionWaitTimeoutMillis
+     *            the connection timeout
+     * @param bufferSizeKb
+     *            the size of the socket/stream read/write buffers (3 buffers,
+     *            each of this size)
+     * @param idleConnectionTTLMillis
+     *            How long for an idle connection to exist before it is reaped,
+     *            0 mean forever
+     * @throws IOException
+     *             If the initial connection creation throws an IOException
+     */
+    public RiakConnectionPool(int initialSize, Semaphore poolSemaphore, InetAddress host, int port,
+            long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis) throws IOException {
+        this.permits = poolSemaphore;
+        this.available = new ConcurrentLinkedQueue<RiakConnection>();
+        this.inUse = new ConcurrentLinkedQueue<RiakConnection>();
+        this.bufferSizeKb = bufferSizeKb;
+        this.host = host;
+        this.port = port;
+        this.connectionWaitTimeoutMillis = connectionWaitTimeoutMillis;
+        this.initialSize = initialSize;
+        this.idleConnectionTTLMillis = idleConnectionTTLMillis;
+        this.idleReaper = Executors.newScheduledThreadPool(1);
+        warmUp();
+    }
+
+    /**
      * Starts the reaper thread
      */
     public synchronized void start() {
@@ -128,9 +167,9 @@ public class RiakConnectionPool {
      * @return a {@link Semaphore} with <code>maxSize</code> permits, or a
      *         {@link LimitlessSemaphore} is <code>maxSize</code> is zero.
      */
-    private Semaphore getSemaphore(int maxSize) {
-        if (maxSize < 0) {
-            return new LimitlessSemaphore(0);
+    public static Semaphore getSemaphore(int maxSize) {
+        if (maxSize <= LIMITLESS) {
+            return new LimitlessSemaphore();
         }
         return new Semaphore(maxSize, true);
     }
