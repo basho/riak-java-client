@@ -33,10 +33,10 @@ public class LimitlessSemaphore extends Semaphore {
     private static final long serialVersionUID = -4752538034544754767L;
 
     /**
-     * @param arg0
+     * Create a semaphore with infinite permits
      */
-    public LimitlessSemaphore(int arg0) {
-        super(arg0);
+    public LimitlessSemaphore() {
+        super(0);
     }
 
     /**

@@ -38,6 +38,7 @@ import com.google.protobuf.ByteString;
  */
 public class RiakConnectionPool {
 
+    private static final int CONNECTION_ACQUIRE_ATTEMPS = 3;
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
@@ -59,7 +60,7 @@ public class RiakConnectionPool {
      *            the number of connections to create at pool creation time
      * @param maxSize
      *            the maximum number of connections this pool will have at any
-     *            one time, 0 means limitless (IE creates a new connection if
+     *            one time, 0 means limitless (i.e. creates a new connection if
      *            none are available)
      * @param host
      *            the host this pool holds connections to
@@ -101,7 +102,8 @@ public class RiakConnectionPool {
                     RiakConnection c = available.peek();
                     while (c != null) {
                         if (c.getIdleStartTimeMillis() + idleConnectionTTLMillis < System.currentTimeMillis()) {
-                            // is this safe? maybe the connection was used and returned to the queue in the time the above executed?
+                            // is this safe? maybe the connection was used and returned to the queue
+                            // in the time the above executed?
                             boolean removed = available.remove(c);
                             if (removed) {
                                 c.close();
@@ -130,7 +132,7 @@ public class RiakConnectionPool {
      */
     private Semaphore getSemaphore(int maxSize) {
         if (maxSize < 0) {
-            return new LimitlessSemaphore(0);
+            return new LimitlessSemaphore();
         }
         return new Semaphore(maxSize, true);
     }
@@ -157,7 +159,7 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     public RiakConnection getConnection(byte[] clientId) throws IOException {
-        RiakConnection c = getConnection(3);
+        RiakConnection c = getConnection(CONNECTION_ACQUIRE_ATTEMPS);
         if (clientId != null && !Arrays.equals(clientId, c.getClientId())) {
             setClientIdOnConnection(c, clientId);
         }
@@ -219,7 +221,7 @@ public class RiakConnectionPool {
                 inUse.offer(c);
                 return c;
             } else {
-                throw new AcquireConnectionTimeoutException("timeout aquiring connection permit from pool");
+                throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

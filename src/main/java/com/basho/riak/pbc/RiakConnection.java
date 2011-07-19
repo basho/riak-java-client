@@ -48,15 +48,13 @@ class RiakConnection {
     private long idleStart;
 
 	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool) throws IOException {
-	    this.pool = pool;
-	    sock = new Socket(addr, port);
+        this.pool = pool;
+        sock = new Socket(addr, port);
 
-	    sock.setSendBufferSize(1024 * bufferSizeKb);
+        sock.setSendBufferSize(1024 * bufferSizeKb);
 
-	    dout = new DataOutputStream(new BufferedOutputStream(sock
-                .getOutputStream(), 1024 * bufferSizeKb));
-        din = new DataInputStream(
-                new BufferedInputStream(sock.getInputStream(), 1024 * bufferSizeKb));
+        dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream(), 1024 * bufferSizeKb));
+        din = new DataInputStream(new BufferedInputStream(sock.getInputStream(), 1024 * bufferSizeKb));
     }
 
 	///////////////////////
