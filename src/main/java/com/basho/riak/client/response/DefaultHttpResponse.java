@@ -16,12 +16,16 @@ package com.basho.riak.client.response;
 import static com.basho.riak.client.util.CharsetUtils.asString;
 import static com.basho.riak.client.util.CharsetUtils.getCharset;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.util.EntityUtils;
 
+import com.basho.riak.client.response.HttpResponse;
+import com.basho.riak.client.response.RiakIORuntimeException;
 import com.basho.riak.client.util.Constants;
 
 /**
@@ -45,10 +49,11 @@ public class DefaultHttpResponse implements HttpResponse {
     private Map<String, String> headers = null;
     private byte[] body = null;
     private InputStream stream = null;
-    private HttpMethod httpMethod = null;
+    private org.apache.http.HttpResponse httpResponse = null;
+    private HttpRequestBase httpMethod = null;
 
     public DefaultHttpResponse(String bucket, String key, int status, Map<String, String> headers, byte[] body,
-            InputStream stream, HttpMethod httpMethod) {
+            InputStream stream, org.apache.http.HttpResponse httpResponse, HttpRequestBase httpMethod) {
         if (headers == null) {
             headers = new HashMap<String, String>();
         }
@@ -61,6 +66,7 @@ public class DefaultHttpResponse implements HttpResponse {
             this.body = body.clone();
         }
         this.stream = stream;
+        this.httpResponse = httpResponse;
         this.httpMethod = httpMethod;
     }
 
@@ -102,14 +108,14 @@ public class DefaultHttpResponse implements HttpResponse {
         return stream != null;
     }
 
-    public HttpMethod getHttpMethod() {
+    public HttpRequestBase getHttpMethod() {
         return httpMethod;
     }
 
     public boolean isSuccess() {
         String method = null;
         if (httpMethod != null) {
-            method = httpMethod.getName();
+            method = httpMethod.getMethod();
         }
 
         return (status >= 200 && status < 300) ||
@@ -121,16 +127,27 @@ public class DefaultHttpResponse implements HttpResponse {
 
     public boolean isError() {
         String method = null;
-        if (httpMethod != null) {
-            method = httpMethod.getName();
+        if (httpResponse != null) {
+            method = httpMethod.getMethod();
         }
 
         return (status < 100 || status >= 400) && !((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
     }
 
     public void close() {
-        if (httpMethod != null) {
-            httpMethod.releaseConnection();
+        if (httpResponse != null) {
+            try {
+                EntityUtils.consume(httpResponse.getEntity());
+            } catch (IOException e) {
+                throw new RiakIORuntimeException(e);
+            }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.http.response.HttpResponse#getHttpResponse()
+     */
+    public org.apache.http.HttpResponse getHttpResponse() {
+        return httpResponse;
     }
 }

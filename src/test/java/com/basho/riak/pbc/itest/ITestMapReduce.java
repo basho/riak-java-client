@@ -17,12 +17,9 @@ import static com.basho.riak.client.http.Hosts.RIAK_HOST;
 import static com.basho.riak.client.http.Hosts.RIAK_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.util.UUID;
 
-import org.apache.commons.httpclient.HttpException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,7 +68,7 @@ public class ITestMapReduce {
         }
     }
 
-    @Test public void doLinkMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doLinkMapReduce() throws IOException, JSONException {
        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
         MapReduceBuilder mrb = new MapReduceBuilder(c)
@@ -88,7 +85,7 @@ public class ITestMapReduce {
         assertEquals(TEST_ITEMS - 1, results.length());
     }
 
-    @Test public void doErlangMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doErlangMapReduce() throws IOException, JSONException {
         RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         MapReduceBuilder builder = new MapReduceBuilder(c);
         builder.setBucket(BUCKET);
@@ -104,7 +101,7 @@ public class ITestMapReduce {
         assertEquals(197, results.getInt(197));
     }
 
-    @Test public void doJavascriptMapReduce() throws HttpException, IOException, JSONException {
+    @Test public void doJavascriptMapReduce() throws IOException, JSONException {
         RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         MapReduceBuilder builder = new MapReduceBuilder(c);
         builder.setBucket(BUCKET);
@@ -119,7 +116,7 @@ public class ITestMapReduce {
         assertEquals(197, results.getInt(197));
     }
 
-    @Test public void doJavascriptMapReduceFromJSON() throws HttpException, IOException, JSONException {
+    @Test public void doJavascriptMapReduceFromJSON() throws IOException, JSONException {
         RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         MapReduceBuilder builder = new MapReduceBuilder();
         builder.setBucket(BUCKET);

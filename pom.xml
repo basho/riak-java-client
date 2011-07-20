@@ -4,7 +4,7 @@
 	<groupId>com.basho.riak</groupId>
 	<artifactId>riak-client</artifactId>
 	<packaging>jar</packaging>
-	<version>0.14.2-SNAPSHOT</version>
+	<version>0.15-SNAPSHOT</version>
 	<name>Riak Client for Java</name>
 	<description>HttpClient-based client for Riak</description>
 	<url>https://github.com/basho/riak-java-client</url>
@@ -61,11 +61,11 @@
 
 	<dependencies>
 		<!-- Apache Commons -->
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-		</dependency>
+	<dependency>
+		<groupId>org.apache.httpcomponents</groupId>
+		<artifactId>httpclient</artifactId>
+		<version>4.1.1</version>
+	</dependency>
                 <!-- Protocol BUffers -->
                 <dependency>
                   <groupId>com.google.protobuf</groupId>

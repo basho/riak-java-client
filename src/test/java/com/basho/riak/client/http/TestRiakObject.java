@@ -23,6 +23,8 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -388,20 +390,20 @@ public class TestRiakObject {
         impl.walk().run();
     }
 
-    @SuppressWarnings("unchecked") @Test public void write_to_http_method_gives_value_stream_priority_over_value() {
+    @SuppressWarnings("unchecked") @Test public void write_to_http_method_gives_value_stream_priority_over_value() throws URISyntaxException {
         final String value = "value";
         final byte[] isvalue = utf8StringToBytes("isbytes");
         final InputStream is = new ByteArrayInputStream(isvalue);
         final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/path/to/object");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("http://host:9999/path/to/object"));
         doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((RequestEntity) invocation.getArguments()[0]).writeRequest(os);
+                ((HttpEntity) invocation.getArguments()[0]).writeTo(os);
                 return null;
             }
-        }).when(mockHttpMethod).setRequestEntity(any(RequestEntity.class));
+        }).when(mockHttpMethod).setEntity(any(HttpEntity.class));
 
         impl.setValue(value);
         impl.setValueStream(is);
@@ -411,99 +413,99 @@ public class TestRiakObject {
     }
 
     @Test public void write_to_http_method_always_sets_entity_even_if_value_is_null() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
         impl.setValue((String) null);
         impl.setValueStream(null);
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).setRequestEntity((RequestEntity) notNull());
+        verify(mockHttpMethod).setEntity((HttpEntity) notNull());
     }
 
-    @Test public void write_to_http_method_sets_link_header() {
+    @Test public void write_to_http_method_sets_link_header() throws URISyntaxException {
         final RiakLink link = new RiakLink("b", "l", "t");
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/riak/b/k"));
 
         impl.addLink(link);
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).addRequestHeader(eq(Constants.HDR_LINK), contains("</riak/b/l>; riaktag=\"t\""));
+        verify(mockHttpMethod).addHeader(eq(Constants.HDR_LINK), contains("</riak/b/l>; riaktag=\"t\""));
     }
 
     @Test public void write_to_http_method_doesnt_sets_link_header_if_no_links() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod, never()).addRequestHeader(eq(Constants.HDR_LINK), anyString());
+        verify(mockHttpMethod, never()).addHeader(eq(Constants.HDR_LINK), anyString());
     }
 
     @Test public void write_to_http_method_sets_user_meta_headers() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
         impl.addUsermetaItem("k", "v");
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).setRequestHeader(Constants.HDR_USERMETA_REQ_PREFIX + "k", "v");
+        verify(mockHttpMethod).addHeader(Constants.HDR_USERMETA_REQ_PREFIX + "k", "v");
     }
 
     @Test public void write_to_http_method_doesnt_sets_user_meta_headers_if_no_usermeta() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod, never()).setRequestHeader(contains(Constants.HDR_USERMETA_REQ_PREFIX), anyString());
+        verify(mockHttpMethod, never()).addHeader(contains(Constants.HDR_USERMETA_REQ_PREFIX), anyString());
     }
 
     @Test public void write_to_http_method_sets_vclock() {
         final String vclock = "vclock";
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
         impl = new RiakObject("b", "k", null, null, null, null, vclock, null, null);
         impl.writeToHttpMethod(mockHttpMethod);
 
-        verify(mockHttpMethod).setRequestHeader(Constants.HDR_VCLOCK, vclock);
+        verify(mockHttpMethod).addHeader(Constants.HDR_VCLOCK, vclock);
     }
 
-    @Test public void get_base_path_finds_empty_base_path() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+    @Test public void get_base_path_finds_empty_base_path() throws URISyntaxException {
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn(null);
+        when(mockHttpMethod.getURI()).thenReturn(null);
         assertEquals("", impl.getBasePathFromHttpMethod(mockHttpMethod));
 
-        when(mockHttpMethod.getPath()).thenReturn("");
+        when(mockHttpMethod.getURI()).thenReturn(new URI(""));
         assertEquals("", impl.getBasePathFromHttpMethod(mockHttpMethod));
 
-        when(mockHttpMethod.getPath()).thenReturn("/");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/"));
         assertEquals("", impl.getBasePathFromHttpMethod(mockHttpMethod));
 
-        when(mockHttpMethod.getPath()).thenReturn("/b");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/b"));
         assertEquals("", impl.getBasePathFromHttpMethod(mockHttpMethod));
 
-        when(mockHttpMethod.getPath()).thenReturn("/b/k");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/b/k"));
         assertEquals("", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 
-    @Test public void get_base_path_finds_one_element_base_path() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+    @Test public void get_base_path_finds_one_element_base_path() throws URISyntaxException {
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/riak/b/k"));
         assertEquals("/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 
-    @Test public void get_base_path_finds_multiple_element_base_path() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+    @Test public void get_base_path_finds_multiple_element_base_path() throws URISyntaxException {
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/path/to/riak/b/k");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/path/to/riak/b/k"));
         assertEquals("/path/to/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 
-    @Test public void get_base_path_handles_trailing_slash() {
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+    @Test public void get_base_path_handles_trailing_slash() throws URISyntaxException {
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k/");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/riak/b/k/"));
         assertEquals("/riak", impl.getBasePathFromHttpMethod(mockHttpMethod));
     }
 
@@ -610,11 +612,11 @@ public class TestRiakObject {
         assertEquals("my-value3", riakObject.getUsermetaItem("my-meta3"));
     }
 
-    @Test public void modifyLinksAndWriteToMethodConcurrently() throws InterruptedException {
+    @Test public void modifyLinksAndWriteToMethodConcurrently() throws InterruptedException, URISyntaxException {
         final RiakObject riakObject = new RiakObject("b", "k", utf8StringToBytes("v"));
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/riak/b/k"));
 
         final int cnt = 20;
         Thread[] threads = new Thread[cnt];
@@ -648,11 +650,11 @@ public class TestRiakObject {
         riakObject.writeToHttpMethod(mockHttpMethod);
     }
 
-    @Test public void modifyUserMetaAndWriteToMethodConcurrently() throws InterruptedException {
+    @Test public void modifyUserMetaAndWriteToMethodConcurrently() throws InterruptedException, URISyntaxException {
         final RiakObject riakObject = new RiakObject("b", "k", utf8StringToBytes("v"));
-        final EntityEnclosingMethod mockHttpMethod = mock(EntityEnclosingMethod.class);
+        final HttpEntityEnclosingRequestBase mockHttpMethod = mock(HttpEntityEnclosingRequestBase.class);
 
-        when(mockHttpMethod.getPath()).thenReturn("/riak/b/k");
+        when(mockHttpMethod.getURI()).thenReturn(new URI("/riak/b/k"));
 
         final int cnt = 20;
         Thread[] threads = new Thread[cnt];

@@ -16,10 +16,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodRetryHandler;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
 
 /**
  * Configuration settings for connecting to a Riak instance such as the base
@@ -36,7 +34,7 @@ public class RiakConfig {
     private HttpClient httpClient = null;
     private Integer timeout = null;
     private Integer maxConnections = null;
-    private HttpMethodRetryHandler retryHandler = null;
+    private HttpRequestRetryHandler retryHandler = null;
 
     public RiakConfig() {}
 
@@ -170,16 +168,24 @@ public class RiakConfig {
     }
 
     /**
-     * Value to set for the HttpClientParams.RETRY_HANDLER property: the default
-     * retry handler for requests.
+     * Get value set for the http client retry handler, the default retry
+     * handler for requests.
      * 
-     * @see org.apache.commons.httpclient.DefaultHttpMethodRetryHandler
+     * @see org.apache.http.client.HttpRequestRetryHandler
+     * @see org.apache.http.impl.client.DefaultHttpRequestRetryHandler
      */
-    public HttpMethodRetryHandler getRetryHandler() {
+    public HttpRequestRetryHandler getRetryHandler() {
         return retryHandler;
     }
 
-    public void setRetryHandler(HttpMethodRetryHandler retryHandler) {
+    /**
+     * Value to set for the http client retry handler, the default retry handler
+     * for requests.
+     * 
+     * @see org.apache.http.client.HttpRequestRetryHandler
+     * @see org.apache.http.impl.client.DefaultHttpRequestRetryHandler
+     */
+    public void setRetryHandler(HttpRequestRetryHandler retryHandler) {
         this.retryHandler = retryHandler;
     }
 }

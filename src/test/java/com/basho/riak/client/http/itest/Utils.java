@@ -15,11 +15,8 @@ package com.basho.riak.client.http.itest;
 
 import static org.junit.Assert.*;
 
-import org.apache.commons.httpclient.URIException;
-
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.HttpResponse;
-import com.basho.riak.client.util.CharsetUtils;
 
 public class Utils {
 
@@ -28,16 +25,12 @@ public class Utils {
     public static void assertSuccess(HttpResponse response) {
         if (!response.isSuccess()) {
             StringBuilder msg = new StringBuilder("Failed ");
-            msg.append(response.getHttpMethod().getName()).append(" ");
-            try {
-                msg.append(response.getHttpMethod().getURI().toString());
-            } catch (URIException e) {
-                msg.append(response.getHttpMethod().getPath());
-            }
+            msg.append(response.getHttpMethod().getMethod()).append(" ");
+            msg.append(response.getHttpMethod().getURI().toString());
             msg.append(" -- ")
-                .append(response.getHttpMethod().getStatusLine()).append("; ")
+                .append(response.getHttpResponse().getStatusLine()).append("; ")
                 .append("Response headers: ").append(response.getHttpHeaders().toString()).append("; ")
-                .append("Response body: ").append(CharsetUtils.asUTF8String(response.getBody()));
+                .append("Response body: ").append(response.getBody());
             fail(msg.toString());
         }
     }

@@ -90,6 +90,7 @@ public interface Constants {
     public static String QP_DW = "dw";
     public static String QP_RW = "rw";
     public static String QP_KEYS = "keys";
+    public static String QP_BUCKETS = "buckets";
 
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";
@@ -99,4 +100,7 @@ public interface Constants {
 
     // Riak magic numbers
     public static int RIAK_CLIENT_ID_LENGTH = 4;
+
+    // List bucket operation parameters
+    public static String LIST_BUCKETS = "true";
 }

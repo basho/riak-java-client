@@ -16,7 +16,7 @@ package com.basho.riak.client.http.response;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
 
 /**
  * Thrown when the Riak server returns a malformed response. The HTTP response
@@ -83,7 +83,7 @@ public class RiakResponseRuntimeException extends RuntimeException implements Ht
         return response.getHttpHeaders();
     }
 
-    public HttpMethod getHttpMethod() {
+    public HttpRequestBase getHttpMethod() {
         if (response == null)
             return null;
         return response.getHttpMethod();
@@ -112,5 +112,12 @@ public class RiakResponseRuntimeException extends RuntimeException implements Ht
     public void close() {
         if (response != null)
             response.close();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.http.response.HttpResponse#getHttpResponse()
+     */
+    public org.apache.http.HttpResponse getHttpResponse() {
+        return response.getHttpResponse();
     }
 }

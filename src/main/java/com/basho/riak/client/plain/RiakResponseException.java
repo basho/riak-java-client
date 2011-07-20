@@ -16,7 +16,7 @@ package com.basho.riak.client.plain;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
 
 import com.basho.riak.client.response.HttpResponse;
 import com.basho.riak.client.response.RiakResponseRuntimeException;
@@ -67,7 +67,7 @@ public class RiakResponseException extends Exception implements HttpResponse {
         return impl.getHttpHeaders();
     }
 
-    public HttpMethod getHttpMethod() {
+    public HttpRequestBase getHttpMethod() {
         return impl.getHttpMethod();
     }
 
@@ -89,5 +89,12 @@ public class RiakResponseException extends Exception implements HttpResponse {
 
     public void close() {
         impl.close();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.http.response.HttpResponse#getHttpResponse()
+     */
+    public org.apache.http.HttpResponse getHttpResponse() {
+        return impl.getHttpResponse();
     }
 }

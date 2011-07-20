@@ -17,18 +17,23 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.ReferenceQueue;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.http.HttpEntity;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.message.BasicStatusLine;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +58,7 @@ import com.basho.riak.client.util.CharsetUtils;
 
 public class TestClientHelper {
 
-    final RiakConfig config = new RiakConfig();
+    final RiakConfig config = new RiakConfig("http://127.0.0.1:8098/riak");
     final String bucket = "bucket";
     final String key = "key";
     final String walkSpec = "walkSpec";
@@ -64,6 +69,8 @@ public class TestClientHelper {
     @Mock HttpClient mockHttpClient;
     @Mock JSONObject schema;
     @Mock RiakObject object;
+    @Mock org.apache.http.HttpResponse mockHttpResponse;
+    @Mock HttpEntity mockHttpEntity;
     ClientHelper impl;
     
     @Before public void setup() {
@@ -86,145 +93,167 @@ public class TestClientHelper {
         assertEquals(4, impl.getClientId().length);
     }
 
-    @Test public void fetch_defaults_to_not_streaming() {
+    @Test public void fetch_defaults_to_not_streaming() throws IOException {
+        stubResponse(true);
         impl = spy(impl);
         impl.fetch(bucket, key, meta);
         verify(impl).fetch(bucket, key, meta, false);
     }
 
-    @Test public void setBucketSchema_PUTs_to_bucket_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
+    @Test public void setBucketSchema_PUTs_to_bucket_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket));
+        stubResponse(false);
         impl.setBucketSchema(bucket, schema, meta);
-        verify(mockHttpClient).executeMethod(any(PutMethod.class));
+        verify(mockHttpClient).execute(any(HttpPut.class));
     }
 
-    @Test public void getBucketSchema_GETs_bucket_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
+    @Test public void getBucketSchema_GETs_bucket_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket));
+        stubResponse(false);
         impl.getBucketSchema(bucket, meta);
-        verify(mockHttpClient).executeMethod(any(GetMethod.class));
+        verify(mockHttpClient).execute(any(HttpGet.class));
     }
 
-    @Test public void getBucketSchema_adds_no_keys_qp() throws HttpException, IOException {
+    @Test public void getBucketSchema_adds_no_keys_qp() throws IOException {
         RequestMeta meta = spy(new RequestMeta());
+        stubResponse(true);
         impl = spy(impl);
         impl.getBucketSchema(bucket, meta);
         verify(meta).setQueryParam(Constants.QP_KEYS, Constants.NO_KEYS);
-        verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(false));
+        verify(impl).executeMethod(eq(bucket), anyString(), any(HttpGet.class), same(meta), eq(false));
     }
 
-    @Test public void listBucket_GETs_bucket_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket));
+    @Test public void listBucket_GETs_bucket_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket));
+        stubResponse(false);
         impl.listBucket(bucket, meta, false);
-        verify(mockHttpClient).executeMethod(any(GetMethod.class));
+        verify(mockHttpClient).execute(any(HttpGet.class));
     }
 
-    @Test public void listBuckets_GET_adds_qp() throws HttpException, IOException {
+    @Test public void listBuckets_GET_adds_qp() throws IOException {
         impl = spy(impl);
+        stubResponse(true);
         impl.listBuckets();
         ArgumentCaptor<RequestMeta> metaCaptor = ArgumentCaptor.forClass(RequestMeta.class);
-        verify(impl).executeMethod(eq((String) null), eq((String) null), any(GetMethod.class), metaCaptor.capture());
+        verify(impl).executeMethod(eq((String) null), eq((String) null), any(HttpGet.class), metaCaptor.capture());
 
         RequestMeta capturedMeta = metaCaptor.getValue();
         assertEquals(capturedMeta.getQueryParam(Constants.QP_BUCKETS), Constants.LIST_BUCKETS);
     }
     
-    @Test public void listBucket_adds_keys_qp_when_streaming_response() {
+    @Test public void listBucket_adds_keys_qp_when_streaming_response() throws IOException {
         RequestMeta meta = spy(new RequestMeta());
         impl = spy(impl);
+        stubResponse(true);
         impl.listBucket(bucket, meta, true);
         verify(meta).setQueryParam(Constants.QP_KEYS, Constants.STREAM_KEYS);
-        verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(true));
+        verify(impl).executeMethod(eq(bucket), anyString(), any(HttpGet.class), same(meta), eq(true));
     }
     
-    @Test public void listBucket_add_keys_equals_true_qp_if_not_streaming_response() {
+    @Test public void listBucket_add_keys_equals_true_qp_if_not_streaming_response() throws IOException {
         RequestMeta meta = spy(new RequestMeta());
         impl = spy(impl);
+        stubResponse(true);
         impl.listBucket(bucket, meta, false);
         verify(meta).setQueryParam(eq(Constants.QP_KEYS), eq(Constants.INCLUDE_KEYS));
-        verify(impl).executeMethod(eq(bucket), anyString(), any(GetMethod.class), same(meta), eq(false));
+        verify(impl).executeMethod(eq(bucket), anyString(), any(HttpGet.class), same(meta), eq(false));
     }
     
-    @Test public void store_PUTs_object_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+    @Test public void store_PUTs_object_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+        stubResponse(false);
         impl.store(object, meta);
-        verify(mockHttpClient).executeMethod(any(PutMethod.class));
+        verify(mockHttpClient).execute(any(HttpPut.class));
     }
     
-    @Test public void store_sets_client_id() {
+    @Test public void store_sets_client_id() throws IOException {
+        stubResponse(true);
         impl.store(object, meta);
         assertEquals(ClientUtils.encodeClientId(clientId), meta.getClientId());
     }
     
-    @Test public void store_doesnt_overwrite_client_id() {
+    @Test public void store_doesnt_overwrite_client_id() throws IOException {
+        stubResponse(true);
         meta.setClientId("clientId");
         impl.store(object, meta);
         assertEquals("clientId", meta.getClientId());
     }
 
-    @Test public void store_sets_connection_header() {
+    @Test public void store_sets_connection_header() throws IOException {
+        stubResponse(true);
         impl.store(object, meta);
         assertEquals("keep-alive", meta.getHeader(Constants.HDR_CONNECTION));
     }
 
-    @Test public void store_doesnt_overwrite_connection_header() {
+    @Test public void store_doesnt_overwrite_connection_header() throws IOException {
+        stubResponse(true);
         meta.setHeader(Constants.HDR_CONNECTION, "connection");
         impl.store(object, meta);
         assertEquals("connection", meta.getHeader(Constants.HDR_CONNECTION));
     }
 
-    @Test public void fetchMeta_HEADs_object_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+    @Test public void fetchMeta_HEADs_object_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+        stubResponse(false);
         impl.fetchMeta(bucket, key, meta);
-        verify(mockHttpClient).executeMethod(any(HeadMethod.class));
+        verify(mockHttpClient).execute(any(HttpHead.class));
     }
 
-    @Test public void fetchMeta_adds_default_R_value() {
+    @Test public void fetchMeta_adds_default_R_value() throws IOException {
+        stubResponse(true);
         impl.fetchMeta(bucket, key, meta);
         assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
     }
 
-    @Test public void fetch_GETs_object_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+    @Test public void fetch_GETs_object_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+        stubResponse(false);
         impl.fetch(bucket, key, meta);
-        verify(mockHttpClient).executeMethod(any(GetMethod.class));
+        verify(mockHttpClient).execute(any(HttpGet.class));
     }
     
-    @Test public void fetch_adds_default_R_value() {
+    @Test public void fetch_adds_default_R_value() throws IOException {
+        stubResponse(true);
         impl.fetch(bucket, key, meta);
         assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
     }
     
     @Test public void stream_GETs_object_URL() throws IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+        stubResponse(false);
         impl.stream(bucket, key, mock(StreamHandler.class), meta);
-        verify(mockHttpClient).executeMethod(any(GetMethod.class));
+        verify(mockHttpClient).execute(any(HttpGet.class));
     }
 
     @Test public void stream_adds_default_R_value() throws IOException {
+        stubResponse(true);
         impl.stream(bucket, key, mock(StreamHandler.class), meta);
         assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
     }
     
-    @Test public void delete_DELETEs_object_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
+    @Test public void delete_DELETEs_object_URL() throws IOException {
+        stubResponse(false);
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
         impl.delete(bucket, key, meta);
-        verify(mockHttpClient).executeMethod(any(DeleteMethod.class));
+        verify(mockHttpClient).execute(any(HttpDelete.class));
     }
     
-    @Test public void walk_GETs_object_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key + "/" + walkSpec));
+    @Test public void walk_GETs_object_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key + "/" + walkSpec));
+        stubResponse(false);
         impl.walk(bucket, key, walkSpec, meta);
-        verify(mockHttpClient).executeMethod(any(GetMethod.class));
+        verify(mockHttpClient).execute(any(HttpGet.class));
     }
     
-    @Test public void mapreduce_POSTs_to_mapred_URL() throws HttpException, IOException {
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenAnswer(pathVerifier("/mapred"));
+    @Test public void mapreduce_POSTs_to_mapred_URL() throws IOException {
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/mapred"));
+        stubResponse(false);
         impl.mapReduce(mrJob, meta);
-        verify(mockHttpClient).executeMethod(any(PostMethod.class));
+        verify(mockHttpClient).execute(any(HttpPost.class));
     }
 
-    @Test public void all_methods_add_query_params() throws HttpException, IOException {
-
+    @Test public void all_methods_add_query_params() throws IOException {
+        stubResponse(true);
         impl.setBucketSchema(bucket, schema, meta);
         impl.listBucket(bucket, meta, false);
         impl.store(object, meta);
@@ -235,61 +264,72 @@ public class TestClientHelper {
         impl.mapReduce(mrJob, meta);
     }
 
-    @Test public void execute_method_adds_headers() throws HttpException, IOException {
-        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
+    @Test public void execute_method_adds_headers() throws IOException {
+        stubResponse(true);
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
         meta.setHeader("p", "v");
-        
-        impl.executeMethod(null, null, mockHttpMethod, meta);
-        
-        verify(mockHttpClient).executeMethod(mockHttpMethod);
-        verify(mockHttpMethod).setRequestHeader("p", "v");
+
+        impl.executeMethod(null, null, mockHttpRequestBase, meta);
+
+        verify(mockHttpClient).execute(mockHttpRequestBase);
+        verify(mockHttpRequestBase).addHeader("p", "v");
     }
 
-    @Test public void execute_method_adds_query_params() throws HttpException, IOException {
-        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
+    @Test public void execute_method_adds_query_params() throws IOException, URISyntaxException {
+        stubResponse(true);
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
+        when(mockHttpRequestBase.getURI()).thenReturn(new URI("http://127.0.0.1:8098/riak"));
         meta.setQueryParam("p", "v");
-        
-        impl.executeMethod(null, null, mockHttpMethod, meta);
-        
-        verify(mockHttpClient).executeMethod(mockHttpMethod);
-        verify(mockHttpMethod).setQueryString(contains("p=v"));
+
+        impl.executeMethod(null, null, mockHttpRequestBase, meta);
+
+        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+
+        verify(mockHttpClient).execute(mockHttpRequestBase);
+        verify(mockHttpRequestBase).setURI(uriCaptor.capture());
+
+        assertTrue(uriCaptor.getValue().getQuery().contains("p=v"));
     }
 
     @Test public void execute_method_without_stream_response_closes_connection() throws IOException {
-        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
         
-        impl.executeMethod(null, null, mockHttpMethod, meta);
-        
-        verify(mockHttpMethod).releaseConnection();
+        InputStream is = new ByteArrayInputStream(CharsetUtils.utf8StringToBytes("a horse a horse my kingdom for a horse"));
+        stubResponse(true);
+        is = spy(is);
+        when(mockHttpEntity.getContent()).thenReturn(is);
+        impl.executeMethod(null, null, mockHttpRequestBase, meta);
+        verify(is).close(); // close releases the connection, we have to trust hc authors on that
     }
 
     @Test public void execute_method_with_stream_response_returns_null_body() throws IOException {
-        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
-        
-        HttpResponse r = impl.executeMethod(null, null, mockHttpMethod, meta, true);
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
+        stubResponse(true);
+        HttpResponse r = impl.executeMethod(null, null, mockHttpRequestBase, meta, true);
         
         assertNull(r.getBody());
     }
 
     @Test public void execute_method_with_stream_response_doesnt_consume_stream_or_close_connection() throws IOException {
-        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
+        InputStream is = new ByteArrayInputStream(CharsetUtils.utf8StringToBytes("a horse a horse my kingdom for a horse"));
+        stubResponse(true);
+        is = spy(is);
+        when(mockHttpEntity.getContent()).thenReturn(is);
+        impl.executeMethod(null, null, mockHttpRequestBase, meta, true);
         
-        impl.executeMethod(null, null, mockHttpMethod, meta, true);
-        
-        verify(mockHttpMethod, never()).getResponseBody();
-        verify(mockHttpMethod, never()).getResponseBodyAsString();
-        verify(mockHttpMethod, never()).releaseConnection();
+        verify(is, never()).close();
     }
 
-    @Test public void execute_method_defers_exceptions_to_toss() throws HttpException, IOException {
-        HttpMethod mockHttpMethod = mock(HttpMethod.class); 
+    @Test public void execute_method_defers_exceptions_to_toss() throws IOException {
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
 
         impl = spy(impl);
         doReturn(null).when(impl).toss(any(RiakIORuntimeException.class));
-        when(mockHttpClient.executeMethod(any(HttpMethod.class))).thenThrow(new IOException()).thenThrow(new HttpException());
+        when(mockHttpClient.execute(any(HttpRequestBase.class))).thenThrow(new IOException());
 
-        impl.executeMethod(null, null, mockHttpMethod, meta);
-        impl.executeMethod(null, null, mockHttpMethod, meta);
+        impl.executeMethod(null, null, mockHttpRequestBase, meta);
+        impl.executeMethod(null, null, mockHttpRequestBase, meta);
         
         verify(impl, times(2)).toss(any(RiakIORuntimeException.class));
     }
@@ -307,13 +347,21 @@ public class TestClientHelper {
         impl.toss(new RiakResponseRuntimeException(null));
     }
 
-    private Answer<Integer> pathVerifier(final String pathSuffix) {
-        return new Answer<Integer>() {
-            public Integer answer(InvocationOnMock invocation) throws Throwable {
-                String path = ((HttpMethod) invocation.getArguments()[0]).getURI().getPath();
+    private Answer<org.apache.http.HttpResponse> pathVerifier(final String pathSuffix) {
+        return new Answer<org.apache.http.HttpResponse>() {
+            public org.apache.http.HttpResponse answer(InvocationOnMock invocation) throws Throwable {
+                String path = ((HttpRequestBase) invocation.getArguments()[0]).getURI().getPath();
                 assertTrue("URL path should end with " + pathSuffix + " but was '" + path + "'", path.endsWith(pathSuffix) || path.endsWith(pathSuffix + "?"));
-                return 0;
+                return mockHttpResponse;
             }
         };
+    }
+
+    private void stubResponse(boolean stubRequest) throws IOException {
+        if(stubRequest) {
+            when(mockHttpClient.execute(any(HttpRequestBase.class))).thenReturn(mockHttpResponse);
+        }
+        when(mockHttpResponse.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"));
+        when(mockHttpResponse.getEntity()).thenReturn(mockHttpEntity);
     }
 }
