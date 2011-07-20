@@ -21,6 +21,7 @@ package com.basho.riak.pbc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -219,6 +220,18 @@ public class RiakObject {
     }
 
     /**
+     * Return a copy of the user meta data map (does not read or write through
+     * to map backing RiakObject)
+     * 
+     * @return a Map of the user map as it is at method call time
+     */
+    public Map<String, String> getUsermeta() {
+        synchronized (userMetaDataLock) {
+            return new LinkedHashMap<String, String>(userMetaData);
+        }
+    }
+
+    /**
      * Add an item to the user meta data for this RiakObject.
      * @param key the key of the user meta data item
      * @param value the user meta data item
@@ -242,6 +255,13 @@ public class RiakObject {
             d = new Date(t);
         }
         return d;
+    }
+
+    /**
+     * @return the content type
+     */
+    public String getContentType() {
+        return this.contentType;
     }
 
 }
