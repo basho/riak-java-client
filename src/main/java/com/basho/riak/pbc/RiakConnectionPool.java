@@ -38,7 +38,7 @@ import com.google.protobuf.ByteString;
  */
 public class RiakConnectionPool {
 
-    private static final int CONNECTION_ACQUIRE_ATTEMPS = 3;
+    private static final int CONNECTION_ACQUIRE_ATTEMPTS = 3;
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
@@ -216,7 +216,7 @@ public class RiakConnectionPool {
         RiakConnection c = available.poll();
 
         if (c == null) {
-           c = createConnection(CONNECTION_ACQUIRE_ATTEMPS);
+           c = createConnection(CONNECTION_ACQUIRE_ATTEMPTS);
         }
 
         inUse.offer(c);
