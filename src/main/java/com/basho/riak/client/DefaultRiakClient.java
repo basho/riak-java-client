@@ -172,4 +172,17 @@ public final class DefaultRiakClient implements IRiakClient {
     public LinkWalk walk(IRiakObject startObject) {
         return new LinkWalk(rawClient, startObject);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakClient#ping()
+     */
+    public void ping() throws RiakException {
+        try {
+            rawClient.ping();
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
+    }
 }

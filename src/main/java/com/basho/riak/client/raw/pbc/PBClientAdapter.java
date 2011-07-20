@@ -390,4 +390,11 @@ public class PBClientAdapter implements RawClient {
             throw new IOException("null clientId returned by client");
         }
     }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#ping()
+     */
+    public void ping() throws IOException {
+        client.ping();
+    }
 }

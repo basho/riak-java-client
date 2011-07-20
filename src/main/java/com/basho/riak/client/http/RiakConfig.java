@@ -33,6 +33,7 @@ public class RiakConfig {
     private String url = null;
     private String baseUrl = null;
     private String mapredPath = "/mapred";
+    private String pingPath = "/ping";
     private HttpClient httpClient = null;
     private Integer timeout = null;
     private Integer maxConnections = null;
@@ -99,6 +100,14 @@ public class RiakConfig {
     }
 
     /**
+     * The full URL of Riak map reduce resource, which is calculated by
+     * combining the host and port from the Riak URL and the map reduce path.
+     */
+    public String getPingUrl() {
+        return baseUrl + pingPath;
+    }
+
+    /**
      * The host and port of the Riak server, which is extracted from the
      * specified Riak URL.
      */
@@ -114,13 +123,25 @@ public class RiakConfig {
     }
 
     public void setMapReducePath(String path) {
+        mapredPath = cleanUpPath(path);
+    }
+
+    public String getPingPath() {
+        return pingPath;
+    }
+
+    public void setPingPath(String path) {
+        pingPath = cleanUpPath(path);
+    }
+
+    private String cleanUpPath(String path) {
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
-        mapredPath = path;
+        return path;
     }
 
     /**

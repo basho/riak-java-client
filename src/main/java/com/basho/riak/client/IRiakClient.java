@@ -151,4 +151,12 @@ public interface IRiakClient {
      * @see BucketMapReduce
      */
     BucketMapReduce mapReduce(String bucket);
+
+    /**
+     * Ping Riak, check it is available
+     * 
+     * @throws RiakException
+     *             if Riak does not respond OK
+     */
+    void ping() throws RiakException;
 }

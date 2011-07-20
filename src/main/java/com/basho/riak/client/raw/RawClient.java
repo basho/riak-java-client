@@ -197,4 +197,13 @@ public interface RawClient {
      * @throws IOException
      */
     byte[] getClientId() throws IOException;
+
+    /**
+     * Riak connection health check, is Riak reachable. Can be used for
+     * diagnostics/monitoring
+     * 
+     * @throws IOException
+     *             if Riak is not reachable or returns anything other than OK
+     */
+    public void ping() throws IOException;
 }
