@@ -136,10 +136,10 @@ class RiakConnection {
 	}
 
 	public synchronized void beginIdle() {
-	    this.idleStart = System.currentTimeMillis();
+	    this.idleStart = System.nanoTime();
 	}
 	
-	public synchronized long getIdleStartTimeMillis() {
+	public synchronized long getIdleStartTimeNanos() {
        return this.idleStart;
     }
 	
