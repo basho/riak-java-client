@@ -29,7 +29,8 @@ public class PoolSemaphore extends Semaphore {
     /**
      * Eclipse generated
      */
-    private static final long serialVersionUID = 5894540865222599689L;
+    private static final long serialVersionUID = 7060018376512789254L;
+
     private final Semaphore clusterSemaphore;
     private final Semaphore poolSemaphore;
 
@@ -75,12 +76,30 @@ public class PoolSemaphore extends Semaphore {
         if (poolPermitted) {
             return true;
         } else {
-            release(clusterSemaphore);
+            clusterSemaphore.release();
             return false;
         }
     }
 
-    private void release(Semaphore toRelease) {
-        toRelease.release();
+    /**
+     * Tries to acquire from the cluster semaphore, and only if that succeeds
+     * does it try the pool semaphore.
+     * 
+     * @see java.util.concurrent.Semaphore#tryAcquire(int)
+     */
+    @Override public boolean tryAcquire(int permits) {
+        boolean custerPermitted = clusterSemaphore.tryAcquire(permits);
+        boolean poolPermitted = false;
+
+        if (custerPermitted) {
+            poolPermitted = poolSemaphore.tryAcquire(permits);
+        }
+
+        if (poolPermitted) {
+            return true;
+        } else {
+            clusterSemaphore.release(permits);
+            return false;
+        }
     }
 }

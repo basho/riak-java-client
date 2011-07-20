@@ -30,7 +30,8 @@ public class LimitlessSemaphore extends Semaphore {
     /**
      * 
      */
-    private static final long serialVersionUID = -4752538034544754767L;
+    private static final long serialVersionUID = 2334944991749996870L;
+
     public LimitlessSemaphore() {
         super(0);
     }
@@ -46,6 +47,13 @@ public class LimitlessSemaphore extends Semaphore {
      * Always returns true at once.
      */
     @Override public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
+        return true;
+    }
+
+    /**
+     * Always returns true at once.
+     */
+    @Override public boolean tryAcquire(int permits) {
         return true;
     }
 }

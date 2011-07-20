@@ -19,6 +19,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.Test;
 
@@ -102,5 +108,69 @@ public class ITestRiakConnectionPool {
         PublicRiakConnection wrapper2 = new PublicRiakConnection(pool.getConnection(clientId));
 
         assertNotSame(wrapper2.getConn(), wrapper.getConn());
+    }
+
+    @Test public void conncurrentAcquire_toFewConnections() throws Exception {
+        int numTasks = 10;
+        int maxConnections = 7;
+
+        doConcurrentAcquire(numTasks, maxConnections);
+    }
+
+    @Test public void conncurrentAcquire_ampleConnections() throws Exception {
+        int numTasks = 10;
+        int maxConnections = 17;
+
+        doConcurrentAcquire(numTasks, maxConnections);
+    }
+
+    private void doConcurrentAcquire(int numTasks, int maxConnections) throws Exception {
+        final InetAddress host = InetAddress.getByName(HOST);
+        // create a pool
+        final RiakConnectionPool pool = new RiakConnectionPool(0, maxConnections, host, PORT, 1000, 16, 0);
+        pool.start();
+
+        Collection<Future<PublicRiakConnection>> results = Executors.newFixedThreadPool(numTasks).invokeAll(makeTasks(numTasks,
+                                                                                                                      pool));
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (Future<PublicRiakConnection> res : results) {
+            try {
+                if (res.get() != null) {
+                    successCount++;
+                }
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof AcquireConnectionTimeoutException) {
+                    failureCount++;
+                }
+            }
+        }
+
+        assertEquals("Wrong number of connections acquired", Math.min(numTasks, maxConnections), successCount);
+        assertEquals("Wrong number of failed connection acquisitions", Math.max(0, numTasks - maxConnections),
+                     failureCount);
+    }
+
+    /**
+     * @param numTasks
+     * @param pool
+     * @return
+     */
+    private Collection<Callable<PublicRiakConnection>> makeTasks(int numTasks, final RiakConnectionPool pool) {
+        Collection<Callable<PublicRiakConnection>> tasks = new ArrayList<Callable<PublicRiakConnection>>();
+        final byte[] clientId = new byte[] { 12, 12, 12, 12 };
+        for (int i = 0; i < numTasks; i++) {
+
+            tasks.add(new Callable<PublicRiakConnection>() {
+
+                public PublicRiakConnection call() throws Exception {
+                    return new PublicRiakConnection(pool.getConnection(clientId));
+                }
+            });
+
+        }
+
+        return tasks;
     }
 }
