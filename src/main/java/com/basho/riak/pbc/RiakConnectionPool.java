@@ -38,6 +38,10 @@ import com.google.protobuf.ByteString;
  */
 public class RiakConnectionPool {
 
+    /**
+     * Constant to use for <code>maxSize</code> when creating an unbounded pool
+     */
+    public static final int LIMITLESS = 0;
     private static final int CONNECTION_ACQUIRE_ATTEMPTS = 3;
     private final InetAddress host;
     private final int port;
@@ -133,10 +137,10 @@ public class RiakConnectionPool {
      * @param maxSize
      *            the number of permits to create a semaphore for
      * @return a {@link Semaphore} with <code>maxSize</code> permits, or a
-     *         {@link LimitlessSemaphore} is <code>maxSize</code> is zero.
+     *         {@link LimitlessSemaphore} if <code>maxSize</code> is zero or less.
      */
     private Semaphore getSemaphore(int maxSize) {
-        if (maxSize < 0) {
+        if (maxSize <= LIMITLESS) {
             return new LimitlessSemaphore();
         }
         return new Semaphore(maxSize, true);
