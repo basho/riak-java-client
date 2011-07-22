@@ -36,12 +36,17 @@ public class PoolSemaphore extends Semaphore {
 
     /**
      * Creates a pool {@link Semaphore} with <code>permits</code> permits and
-     * <code>fair</code> fairness. Calls to tryAcquire(long, TimeUnit) and
-     * release() call both <code>cluster</code> and pool {@link Semaphore}
+     * <code>fair</code> fairness. Calls to tryAcquire(long, TimeUnit),
+     * release() and tryAcquire(int) call both <code>cluster</code> and pool
+     * {@link Semaphore}
      * 
      * @param cluster
+     *            a {@link Semaphore} configured for the total cluster maximum
+     *            number of connections
      * @param permits
+     *            maximum connections for the pool
      * @param fair
+     *            is the {@link Semaphore} fair (see {@link Semaphore})
      */
     public PoolSemaphore(Semaphore cluster, int permits, boolean fair) {
         super(permits, fair);
@@ -61,6 +66,9 @@ public class PoolSemaphore extends Semaphore {
      * Tries to acquire on the cluster semaphore, and only if that succeeds does
      * it try the pool semaphore Warning: this means potentially double the
      * timeout
+     * 
+     * TODO configure option for timeout to be shared (i.e. pool semaphore gets
+     * remaining time after cluster acquire)
      * 
      * @see java.util.concurrent.Semaphore#tryAcquire(long,
      *      java.util.concurrent.TimeUnit)
@@ -88,10 +96,10 @@ public class PoolSemaphore extends Semaphore {
      * @see java.util.concurrent.Semaphore#tryAcquire(int)
      */
     @Override public boolean tryAcquire(int permits) {
-        boolean custerPermitted = clusterSemaphore.tryAcquire(permits);
+        boolean clusterPermitted = clusterSemaphore.tryAcquire(permits);
         boolean poolPermitted = false;
 
-        if (custerPermitted) {
+        if (clusterPermitted) {
             poolPermitted = poolSemaphore.tryAcquire(permits);
         }
 

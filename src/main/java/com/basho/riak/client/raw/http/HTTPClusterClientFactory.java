@@ -20,6 +20,8 @@ import com.basho.riak.client.raw.RiakClientFactory;
 import com.basho.riak.client.raw.config.Configuration;
 
 /**
+ * Factory for {@link HTTPClusterClient}
+ * 
  * @author russell
  * 
  */
@@ -39,6 +41,10 @@ public class HTTPClusterClientFactory implements RiakClientFactory {
      * @see com.basho.riak.client.raw.RiakClientFactory#accepts(java.lang.Class)
      */
     public boolean accepts(Class<? extends Configuration> configClass) {
+        if (configClass == null) {
+            return false;
+        }
+
         if (configClass.equals(HTTPClusterConfig.class)) {
             return true;
         }

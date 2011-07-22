@@ -47,9 +47,9 @@ public class PBClientConfig implements Configuration {
      *            the hard limit for the connection pool
      * @param initialPoolSize
      *            the initial size for the connection pool. The connection pool
-     *            will create this many connections when it the pool starts up.
+     *            will create this many connections when the pool starts up.
      * @param idleConnectionTTLMillis
-     *            how many milliseconds an idle connection waits in the pool
+     *            how many milliseconds an idle connection survives in the pool
      *            before it is closed.
      * @param connectionWaitTimeoutMillis
      *            How many milliseconds to block trying to obtain a connection
@@ -68,7 +68,7 @@ public class PBClientConfig implements Configuration {
 
     /**
      * Create an instance with all default values. See the builder for the
-     * defaults.
+     * default values.
      * 
      * @return an instance configured as per the builder defaults
      * @see Builder
@@ -150,7 +150,7 @@ public class PBClientConfig implements Configuration {
      * </tr>
      * <tr>
      * <td>poolSize</td>
-     * <td>-1(unlimited)</td>
+     * <td>0 (unlimited)</td>
      * </tr>
      * <tr>
      * <td>initialPoolSize</td>
@@ -173,7 +173,7 @@ public class PBClientConfig implements Configuration {
         private int socketBufferSizeKb = 16;
         private String host = "127.0.0.1";
         private int port = 8097;
-        private int poolSize = -1;
+        private int poolSize = 0;
         private int initialPoolSize = 0;
         private long idleConnectionTTLMillis = 1000;
         private long connectionWaitTimeoutMillis = 1000;

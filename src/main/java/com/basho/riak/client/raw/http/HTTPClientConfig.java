@@ -13,17 +13,21 @@
  */
 package com.basho.riak.client.raw.http;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 
+import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.config.Configuration;
 
 /**
  * The set of configuration parameters to use when creating an HTTP RawClient
- * instance
+ * instance.
  * 
  * @author russell
- * 
+ * @see HTTPClusterConfig
  */
 public class HTTPClientConfig implements Configuration {
 
@@ -38,22 +42,28 @@ public class HTTPClientConfig implements Configuration {
      * Create a new instance, use the {@link Builder}
      * 
      * @param url
-     *            the url for Riak's REST interface (scheme://host:port/path)
+     *            the URL for Riak's REST interface (scheme://host:port/path)
      * @param mapreducePath
-     *            the path to Riak's REST M/R interfa ce (eg /mapreduce)
+     *            the path to Riak's REST M/R interface (eg /mapreduce)
      * @param httpClient
      *            a fully configured Apache {@link HttpClient} that you want to
-     *            be used by Riak Http client
+     *            be used by Riak HTTP client
      * @param timeout
      *            the connection and socket read timeout in milliseconds
      * @param maxConnections
-     *            the maximum number of connections to Riak to create
+     *            the maximum number of connections to the Riak REST interface
+     *            at <code>url</code> to create
      * @param retryHandler
      *            an implementation of {@link HttpRequestRetryHandler} to be
      *            used by the underlying {@link HttpClient}
      */
     private HTTPClientConfig(String url, String mapreducePath, HttpClient httpClient, Integer timeout,
             Integer maxConnections, HttpRequestRetryHandler retryHandler) {
+        try {
+            new URI(url);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
         this.url = url;
         this.mapreducePath = mapreducePath;
         this.httpClient = httpClient;
@@ -66,7 +76,7 @@ public class HTTPClientConfig implements Configuration {
      * Create a config with all the default values, see {@link Builder} for the
      * defaults.
      * 
-     * @return an http client config populated with default values;
+     * @return an HTTP client config populated with default values;
      * @see Builder
      */
     public static HTTPClientConfig defaults() {
@@ -74,42 +84,43 @@ public class HTTPClientConfig implements Configuration {
     }
 
     /**
-     * @return the url
+     * @return the URL
      */
     public String getUrl() {
         return url;
     }
 
     /**
-     * @return the mapreducePath
+     * @return the mapreduce path
      */
     public String getMapreducePath() {
         return mapreducePath;
     }
 
     /**
-     * @return the httpClient
+     * @return the Apache {@link HttpClient}
      */
     public HttpClient getHttpClient() {
         return httpClient;
     }
 
     /**
-     * @return the timeout
+     * @return the timeout in milliseconds for socket connect & read (also used
+     *         by HttpClient for pooled connection blocking acquisition timeout)
      */
     public Integer getTimeout() {
         return timeout;
     }
 
     /**
-     * @return the maxConnections
+     * @return the max connections
      */
     public Integer getMaxConnections() {
         return maxConnections;
     }
 
     /**
-     * @return the retryHandler
+     * @return the {@link HttpRequestRetryHandler}
      */
     public HttpRequestRetryHandler getRetryHandler() {
         return retryHandler;
@@ -160,16 +171,13 @@ public class HTTPClientConfig implements Configuration {
      * </tr>
      * <tr>
      * <td>maxConnections</td>
-     * <td>null (will then use the HttpClient default which is a max of *2* per
-     * route)</td>
+     * <td>null (will then use the HttpClient default which is a max of *2*)</td>
      * </tr>
      * <tr>
      * <td>httpRequestRetryHandler</td>
      * <td>null (will use the HttpClient default)</td>
      * </tr>
      * </table>
-     * 
-     * @author russell
      * 
      */
     public static final class Builder {
@@ -185,6 +193,9 @@ public class HTTPClientConfig implements Configuration {
         private Integer maxConnections = null;
         private HttpRequestRetryHandler retryHandler = null;
 
+        /**
+         * @return a {@link HTTPClientConfig}
+         */
         public HTTPClientConfig build() {
             if (url == null) {
                 StringBuilder sb = new StringBuilder(scheme).append("://").append(host).append(":").append(port);
@@ -218,51 +229,139 @@ public class HTTPClientConfig implements Configuration {
             return b;
         }
 
+        /**
+         * The URL Riak REST interface.
+         * <p>
+         * NOTE: Setting this take precedence over setting <code>scheme</code>,
+         * <code>host</code>, <code>port</code> and <code>path</code>
+         * </p>
+         * 
+         * @param url
+         *            the Riak REST URL
+         * @return this
+         */
         public Builder withUrl(String url) {
             this.url = url;
             return this;
         }
 
+        /**
+         * Set the scheme.
+         * <p>
+         * NOTE: setting the <code>url</code> takes precedence.
+         * </p>
+         * 
+         * @param scheme
+         *            HTTP or HTTPS
+         * @return this
+         */
         public Builder withScheme(String scheme) {
             this.scheme = scheme;
             return this;
         }
 
+        /**
+         * Set the host.
+         * <p>
+         * NOTE: setting the <code>url</code> takes precedence.
+         * </p>
+         * 
+         * @param host
+         * @return this
+         */
         public Builder withHost(String host) {
             this.host = host;
             return this;
         }
 
+        /**
+         * Set the port.
+         * <p>
+         * NOTE: setting the <code>url</code> takes precedence.
+         * </p>
+         * 
+         * @param port
+         * @return this
+         */
         public Builder withPort(int port) {
             this.port = port;
             return this;
         }
 
+        /**
+         * Set the path to the base Riak REST resource.
+         * <p>
+         * NOTE: setting the <code>url</code> takes precedence.
+         * </p>
+         * 
+         * @param path
+         *            e.g. /riak
+         * @return this
+         */
         public Builder withRiakPath(String path) {
             this.riakPath = path;
             return this;
         }
 
+        /**
+         * The location of Riak's map reduce resource
+         * 
+         * @param path
+         *            e.g. /mapreduce
+         * @return this
+         */
         public Builder withMapreducePath(String path) {
             this.mapreducePath = path;
             return this;
         }
 
+        /**
+         * You can supply a preconfigured HttpClient that you want the
+         * {@link RawClient} to delegate to.
+         * 
+         * @param client
+         *            a implementation of {@link HttpClient}
+         * @return this
+         */
         public Builder withHttpClient(HttpClient client) {
             this.httpClient = client;
             return this;
         }
 
+        /**
+         * The connection, socket read and pooled connection acquisition timeout
+         * in milliseconds
+         * 
+         * @param timeout
+         *            in milliseconds
+         * @return this
+         */
         public Builder withTimeout(int timeout) {
             this.timeout = timeout;
             return this;
         }
 
+        /**
+         * Maximum number of connections this client may have open at any time.
+         * 
+         * @param maxConnections
+         * @return this
+         */
         public Builder withMaxConnctions(int maxConnections) {
             this.maxConnections = maxConnections;
             return this;
         }
 
+        /**
+         * Apache HttpClient treats some HTTP methods as retry-able, and
+         * provides a default implementation of {@link HttpRequestRetryHandler}
+         * to be called when a request fails. Provide an implementation here to
+         * override the default behaviour.
+         * 
+         * @param retryHandler
+         *            an {@link HttpRequestRetryHandler} implementation
+         * @return this
+         */
         public Builder withRetryHandler(HttpRequestRetryHandler retryHandler) {
             this.retryHandler = retryHandler;
             return this;

@@ -21,5 +21,4 @@ package com.basho.riak.client.raw.config;
  * 
  */
 public interface Configuration {
-
 }

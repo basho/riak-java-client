@@ -35,7 +35,7 @@ public class ITestPBClient extends ITestClientBasic {
         PBClientConfig conf = new PBClientConfig.Builder().withHost(Hosts.RIAK_HOST).withPort(Hosts.RIAK_PORT).build();
 
         PBClusterConfig clusterConf = new PBClusterConfig(200);
-        clusterConf.addNode(conf);
+        clusterConf.addClient(conf);
 
         return RiakFactory.newClient(clusterConf);
     }

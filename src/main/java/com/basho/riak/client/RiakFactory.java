@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakClientFactory;
+import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.client.raw.config.Configuration;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.http.HTTPClientConfig;
@@ -32,16 +33,33 @@ import com.basho.riak.client.raw.pbc.PBRiakClientFactory;
 import com.basho.riak.pbc.RiakClient;
 
 /**
- * A *very* basic factory for getting an IRiakClient implementation wrapping
- * the {@link RawClient} of your choice.
+ * A factory for getting an IRiakClient implementation wrapping the
+ * {@link RawClient} of your choice.
+ * 
  * <p>
- * Also provides convenience methods for grabbing a default configuration pb or http client.
+ * Use the newClient method, passing an implementation of {@link Configuration}.
+ * The factory will look up a {@link RiakClientFactory} implementation and pass
+ * your {@link Configuration} to it.
  * </p>
  * <p>
- * NOTE: This class is under change, a single factory method that accepts a <code>Configuration</code> object will
- * be available soon
+ * For example:
+ * 
+ * <code>
+ * <pre>
+ * Configuration conf = new PBClientConfig.Builder().withHost("my-riak-host.com").withPort(9000).build();
+ * IRiakClient client = RiakFactory.newClient(conf);
+ * </pre>
+ * </code>
  * </p>
- * @author russell 
+ * <p>
+ * Also provides convenience methods for grabbing a default configuration pb or
+ * http client.
+ * </p>
+ * 
+ * @author russell
+ * 
+ * @see Configuration
+ * @see ClusterConfig
  */
 public class RiakFactory {
 
@@ -150,12 +168,13 @@ public class RiakFactory {
      * @throws IOException
      * @see HTTPClientConfig
      * @see PBClientConfig
+     * @see ClusterConfig
      * @throws NoFactoryForConfigException
      *             if the {@link Configuration} type is not recognized
-     * @throws IllegalArgumentException if config is null
+     * @throws IllegalArgumentException
+     *             if config is null
      */
     public static IRiakClient newClient(Configuration config) throws RiakException {
-
         if (config == null) {
             throw new IllegalArgumentException("config cannot be null");
         }

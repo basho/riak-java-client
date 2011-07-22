@@ -16,6 +16,9 @@ package com.basho.riak.client.raw.pbc;
 import com.basho.riak.client.raw.config.ClusterConfig;
 
 /**
+ * {@link ClusterConfig} implementation that provides {@link PBClientConfig} as
+ * the generic type.
+ * 
  * @author russell
  * 
  */

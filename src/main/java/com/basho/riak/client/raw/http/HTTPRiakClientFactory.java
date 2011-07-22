@@ -21,7 +21,8 @@ import com.basho.riak.client.raw.config.Configuration;
 
 /**
  * Factory for creating {@link HTTPClientAdapter} instances configured by the
- * given {@link HTTPClientConfig}
+ * given {@link HTTPClientConfig}. Converts an {@link HTTPClientConfig} to a
+ * {@link RiakConfig}
  * 
  * @author russell
  * 

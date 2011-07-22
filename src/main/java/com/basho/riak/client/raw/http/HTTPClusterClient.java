@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpHost;
+import org.apache.http.client.HttpClient;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -31,6 +32,14 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.config.ClusterConfig;
 
 /**
+ * Cluster client that creates a collection of {@link HTTPClientAdapter}
+ * {@link RawClient} instances from a given {@link HTTPClusterConfig}
+ * <p>
+ * NOTE: to enforce the max connections creates the {@link HttpClient} delegates
+ * for the individual node clients, this means that the
+ * {@link HTTPClientConfig#getHttpClient()} values is ignored.
+ * </p>
+ * 
  * @author russell
  * 
  */
@@ -56,22 +65,22 @@ public class HTTPClusterClient extends ClusterClient<HTTPClientConfig> {
         int maxTotal = clusterConfig.getTotalMaximumConnections();
 
         // IE limitless
-        if (maxTotal == 0) {
+        if (maxTotal == ClusterConfig.UNLIMITED_CONNECTIONS) {
             // independent pools, independent clients
             HTTPRiakClientFactory fac = HTTPRiakClientFactory.getInstance();
-            for (HTTPClientConfig node : clusterConfig.getNodes()) {
+            for (HTTPClientConfig node : clusterConfig.getClients()) {
                 clients.add(fac.newClient(node));
             }
         } else {
-            // create an ThreadSafeClientConnManager to be shared by all the
+            // create a ThreadSafeClientConnManager to be shared by all the
             // RiakClient instances
             // in the cluster
             // add a route per host and a max per route
             ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
             cm.setMaxTotal(maxTotal);
 
-            for (HTTPClientConfig node : clusterConfig.getNodes()) {
-                if(node.getMaxConnections() != null) { 
+            for (HTTPClientConfig node : clusterConfig.getClients()) {
+                if (node.getMaxConnections() != null) {
                     cm.setMaxForRoute(makeRoute(node.getUrl()), node.getMaxConnections());
                 }
                 DefaultHttpClient httpClient = new DefaultHttpClient(cm);
@@ -84,7 +93,7 @@ public class HTTPClusterClient extends ClusterClient<HTTPClientConfig> {
                 riakConfig.setMapReducePath(node.getMapreducePath());
                 riakConfig.setTimeout(node.getTimeout());
                 riakConfig.setHttpClient(httpClient);
-                
+
                 clients.add(new HTTPClientAdapter(new RiakClient(riakConfig)));
             }
         }
@@ -92,8 +101,10 @@ public class HTTPClusterClient extends ClusterClient<HTTPClientConfig> {
     }
 
     /**
+     * Make an {@link HttpRoute} for the given URL
+     * 
      * @param url
-     * @return
+     * @return a {@link HttpRoute} for the given URL
      */
     private HttpRoute makeRoute(String url) throws IOException {
         try {

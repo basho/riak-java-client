@@ -20,6 +20,9 @@ import com.basho.riak.client.raw.RiakClientFactory;
 import com.basho.riak.client.raw.config.Configuration;
 
 /**
+ * {@link RiakClientFactory} implementation that creates {@link PBClusterClient}
+ * s from the given {@link PBClientConfig}
+ * 
  * @author russell
  * 
  */
@@ -39,6 +42,10 @@ public class PBClusterClientFactory implements RiakClientFactory {
      * @see com.basho.riak.client.raw.RiakClientFactory#accepts(java.lang.Class)
      */
     public boolean accepts(Class<? extends Configuration> configClass) {
+        if (configClass == null) {
+            return false;
+        }
+
         if (configClass.equals(PBClusterConfig.class)) {
             return true;
         }

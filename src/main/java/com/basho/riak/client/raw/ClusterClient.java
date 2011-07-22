@@ -22,23 +22,22 @@ import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.config.ClusterConfig;
+import com.basho.riak.client.raw.config.Configuration;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 
 /**
- * A {@link RawClient} that can be configured with a cluster of Riak nodes.
+ * A {@link RawClient} that can be configured with a cluster of Riak clients
+ * that connect to different Riak nodes.
  * 
- * It uses a very basic modulus round robin algorithm to select the node to hit.
- * 
- * Internally it is just an array of RawClients which are used in round robin.
- * 
- * Retrying *should* work against a different node.
+ * It uses a very basic modulus round robin algorithm to select the client to
+ * use.
  * 
  * @author russell
  * 
  */
-public abstract class ClusterClient<T> implements RawClient {
+public abstract class ClusterClient<T extends Configuration> implements RawClient {
 
     private final RawClient[] cluster;
     private final int clusterSize;
@@ -51,15 +50,19 @@ public abstract class ClusterClient<T> implements RawClient {
     }
 
     /**
-     * Create an array of clients from the cluster {@link ClusterConfig}.
+     * Create an array of clients for the cluster from the given
+     * {@link ClusterConfig}.
      * 
-     * @return the array of delegates that make up the cluster
+     * @return the array of {@link RawClient} delegates that make up the cluster
      */
     protected abstract RawClient[] fromConfig(ClusterConfig<T> clusterConfig) throws IOException;
 
     /**
      * Get a {@link RawClient} delegate from the array that makes up the
      * cluster, basic round robin.
+     * 
+     * TODO abstract this out to a strategy so users can provide alternative
+     * load balancing/client selection strategies
      * 
      * @return a {@link RawClient} to be a delegate for the requested operation.
      */

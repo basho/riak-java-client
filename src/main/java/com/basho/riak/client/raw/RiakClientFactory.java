@@ -21,9 +21,6 @@ import com.basho.riak.client.raw.config.Configuration;
  * Top level interface for {@link RawClient} factories
  * 
  * @author russell
- * 
- * @param <T>
- *            the {@link Configuration} type the factory will build for.
  */
 public interface RiakClientFactory {
 
@@ -31,7 +28,7 @@ public interface RiakClientFactory {
      * Is the concrete factory able to create {@link RawClient}s with
      * <code>configClass</code> {@link Configuration}s?
      * 
-     * *ALWAYS* call before newClient.
+     * Call before newClient.
      * 
      * @param configClass
      *            the {@link Configuration} implementation

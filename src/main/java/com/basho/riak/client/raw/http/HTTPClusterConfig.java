@@ -16,6 +16,8 @@ package com.basho.riak.client.raw.http;
 import com.basho.riak.client.raw.config.ClusterConfig;
 
 /**
+ * Concrete child of {@link ClusterConfig} that provides the generic type
+ * 
  * @author russell
  * 
  */

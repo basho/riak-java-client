@@ -41,9 +41,9 @@ public class ITestHTTPClient extends ITestClientBasic {
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
     @Override protected IRiakClient getClient() throws RiakException {
-        HTTPClientConfig config = new HTTPClientConfig.Builder().withUrl(Hosts.RIAK_URL).build();
-        HTTPClusterConfig conf = new HTTPClusterConfig(50);
-        conf.addNode(config);
+        HTTPClientConfig config = new HTTPClientConfig.Builder().withUrl(Hosts.RIAK_URL).withMaxConnctions(50).build();
+        HTTPClusterConfig conf = new HTTPClusterConfig(100);
+        conf.addClient(config);
         return RiakFactory.newClient(conf);
     }
 
@@ -86,14 +86,7 @@ public class ITestHTTPClient extends ITestClientBasic {
 
         final String bucketName = UUID.randomUUID().toString();
 
-        Bucket b = client.createBucket(bucketName)
-            .chashKeyFunction(newChashkeyFun)
-            .linkWalkFunction(newLinkwalkFun)
-            .r(Quora.ALL)
-            .w(2)
-            .dw(Quora.QUORUM)
-            .rw(1)
-            .execute();
+        Bucket b = client.createBucket(bucketName).chashKeyFunction(newChashkeyFun).linkWalkFunction(newLinkwalkFun).r(Quora.ALL).w(2).dw(Quora.QUORUM).rw(1).execute();
 
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());

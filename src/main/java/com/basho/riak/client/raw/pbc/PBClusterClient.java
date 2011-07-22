@@ -15,7 +15,6 @@ package com.basho.riak.client.raw.pbc;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -27,6 +26,9 @@ import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakConnectionPool;
 
 /**
+ * Concrete {@link ClusterClient} that creates a collection of
+ * {@link PBClientAdapter}s from the given {@link PBClientConfig}
+ * 
  * @author russell
  * 
  */
@@ -61,7 +63,7 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
             clusterSemaphore = RiakConnectionPool.getSemaphore(totalMaxConnections);
         }
 
-        for (PBClientConfig node : clusterConfig.getNodes()) {
+        for (PBClientConfig node : clusterConfig.getClients()) {
             final RiakConnectionPool hostPool = makePool(clusterSemaphore, node);
             clients.add(new PBClientAdapter(new RiakClient(hostPool)));
         }
@@ -69,33 +71,29 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
     }
 
     /**
+     * Creates the {@link RiakConnectionPool} for the given client config
+     * 
      * @param clusterSemaphore
-     * @return
+     *            a {@link Semaphore} or null if none required (i.e. unbounded
+     *            cluster pool)
+     * @return a {@link RiakConnectionPool} configured for the
+     *         {@link PBClientConfig}
      * @throws IOException
-     * @throws UnknownHostException
      */
     private RiakConnectionPool makePool(Semaphore clusterSemaphore, PBClientConfig node) throws IOException {
         RiakConnectionPool pool = null;
         if (clusterSemaphore == null) {
-            pool = makePool(node);
+            pool = new RiakConnectionPool(node.getInitialPoolSize(), node.getPoolSize(),
+                                          InetAddress.getByName(node.getHost()), node.getPort(),
+                                          node.getConnectionWaitTimeoutMillis(), node.getSocketBufferSizeKb(),
+                                          node.getIdleConnectionTTLMillis());
         } else {
-            pool = new RiakConnectionPool(node.getInitialPoolSize(), 
-                                          new PoolSemaphore(clusterSemaphore, node.getPoolSize(), true),
+            pool = new RiakConnectionPool(node.getInitialPoolSize(), new PoolSemaphore(clusterSemaphore,
+                                                                                       node.getPoolSize(), true),
                                           InetAddress.getByName(node.getHost()), node.getPort(),
                                           node.getConnectionWaitTimeoutMillis(), node.getSocketBufferSizeKb(),
                                           node.getIdleConnectionTTLMillis());
         }
         return pool;
-    }
-
-    /**
-     * @param node
-     * @return
-     */
-    private RiakConnectionPool makePool(PBClientConfig node) throws IOException {
-        return new RiakConnectionPool(node.getInitialPoolSize(), node.getPoolSize(),
-                                      InetAddress.getByName(node.getHost()), node.getPort(),
-                                      node.getConnectionWaitTimeoutMillis(), node.getSocketBufferSizeKb(),
-                                      node.getIdleConnectionTTLMillis());
     }
 }

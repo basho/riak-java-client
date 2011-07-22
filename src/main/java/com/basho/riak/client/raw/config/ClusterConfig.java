@@ -21,18 +21,31 @@ import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 
 /**
+ * Abstract parent {@link Configuration} for a "cluster" of clients.
+ * <p>
+ * Holds a collection of {@link Configuration}s, one for each node in a cluster.
+ * Currently only supports homogeneous clusters.
+ * </p>
+ * 
  * @author russell
  * @param <T>
+ *            concrete {@link Configuration} type
  * 
  */
-public abstract class ClusterConfig<T> implements Configuration {
+public abstract class ClusterConfig<T extends Configuration> implements Configuration {
+
+    /**
+     * Constant for specifying unlimited maximum connection
+     */
+    public static final int UNLIMITED_CONNECTIONS = 0;
 
     private final int totalMaximumConnections;
     private final List<T> nodes = new ArrayList<T>();
 
     /**
      * @param totalMaximumConnections
-     * @param maxConnectionsPerHost
+     *            the upper limit of connections for all nodes in the config
+     *            NOTE: set individual client limits in each client config
      */
     public ClusterConfig(int totalMaximumConnections) {
         this.totalMaximumConnections = totalMaximumConnections;
@@ -46,7 +59,7 @@ public abstract class ClusterConfig<T> implements Configuration {
     }
 
     /**
-     * Add a new node config to the collection of nodes in the cluster config
+     * Add a new client config to the collection of client in the cluster config
      * 
      * @param nodeConfig
      *            a node config to add
@@ -54,16 +67,17 @@ public abstract class ClusterConfig<T> implements Configuration {
      * @see HTTPClientConfig
      * @see PBClientConfig
      */
-    public synchronized ClusterConfig<T> addNode(T nodeConfig) {
-        this.nodes.add(nodeConfig);
+    public synchronized ClusterConfig<T> addClient(T clientConfig) {
+        this.nodes.add(clientConfig);
         return this;
     }
 
     /**
      * 
-     * @return an *unmodifiable* view of the node configs in the cluster config
+     * @return an *unmodifiable* view of the client {@link Configuration}s in
+     *         the cluster configuration
      */
-    public synchronized List<T> getNodes() {
+    public synchronized List<T> getClients() {
         return Collections.unmodifiableList(nodes);
     }
 }

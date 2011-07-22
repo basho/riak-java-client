@@ -33,7 +33,6 @@ public class NoFactoryForConfigException extends RuntimeException {
     private final Class<? extends Configuration> configType;
 
     /**
-     * @param e
      * @param configType
      */
     public NoFactoryForConfigException(Class<? extends Configuration> configType) {

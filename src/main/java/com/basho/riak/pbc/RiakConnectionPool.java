@@ -39,6 +39,9 @@ import com.google.protobuf.ByteString;
  */
 public class RiakConnectionPool {
 
+    /**
+     * Constant to use for <code>maxSize</code> when creating an unbounded pool
+     */
     public static final int LIMITLESS = 0;
     private static final int CONNECTION_ACQUIRE_ATTEMPTS = 3;
     private final InetAddress host;
@@ -81,7 +84,12 @@ public class RiakConnectionPool {
      */
     public RiakConnectionPool(int initialSize, int maxSize, InetAddress host, int port,
             long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis) throws IOException {
-        this(initialSize, getSemaphore(maxSize), host, port, connectionWaitTimeoutMillis, bufferSizeKb, idleConnectionTTLMillis);
+        this(initialSize, getSemaphore(maxSize), host, port, connectionWaitTimeoutMillis, bufferSizeKb,
+             idleConnectionTTLMillis);
+
+        if (initialSize > maxSize && (maxSize > 0)) {
+            throw new IllegalArgumentException("Initial pool size is greater than maximum pools size");
+        }
     }
 
     /**
@@ -144,6 +152,9 @@ public class RiakConnectionPool {
                             }
                             c = available.peek();
                         } else {
+                            // since the queue is FIFO short-circuit and stop
+                            // looking, if the first element isn't too old, the
+                            // rest can't be
                             c = null;
                         }
                     }
@@ -161,7 +172,7 @@ public class RiakConnectionPool {
      * @param maxSize
      *            the number of permits to create a semaphore for
      * @return a {@link Semaphore} with <code>maxSize</code> permits, or a
-     *         {@link LimitlessSemaphore} is <code>maxSize</code> is zero.
+     *         {@link LimitlessSemaphore} if <code>maxSize</code> is zero or less.
      */
     public static Semaphore getSemaphore(int maxSize) {
         if (maxSize <= LIMITLESS) {
@@ -265,7 +276,7 @@ public class RiakConnectionPool {
                     throw e;
                 }
             } else {
-                throw new AcquireConnectionTimeoutException("timeout aquiring connection permit from pool");
+                throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
