@@ -100,8 +100,8 @@ public class RiakConfig {
     }
 
     /**
-     * The full URL of Riak map reduce resource, which is calculated by
-     * combining the host and port from the Riak URL and the map reduce path.
+     * The full URL of the Riak ping resource, which is calculated by
+     * combining the host and port from the Riak URL and the ping path.
      */
     public String getPingUrl() {
         return baseUrl + pingPath;
