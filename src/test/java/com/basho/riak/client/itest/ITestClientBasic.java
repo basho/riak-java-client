@@ -47,6 +47,10 @@ public abstract class ITestClientBasic {
      */
     protected abstract IRiakClient getClient() throws RiakException;
 
+    @Test public void ping() throws RiakException {
+        client.ping();
+    }
+
     @Test public void fetchBucket() throws RiakException {
         final String bucketName = UUID.randomUUID().toString();
 

@@ -422,4 +422,13 @@ public class RiakClient {
             }
         }
     }
+
+    /**
+     * GET Riak's ping resource.
+     * 
+     * @return an {@link HttpResponse} with the result of GET
+     */
+    public HttpResponse ping() {
+        return helper.ping();
+   }
 }

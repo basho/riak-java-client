@@ -324,4 +324,15 @@ public class HTTPClientAdapter implements RawClient {
     public byte[] getClientId() throws IOException {
         return client.getClientId();
     }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#ping()
+     */
+    public void ping() throws IOException {
+        HttpResponse resp = client.ping();
+
+        if(!resp.isSuccess()) {
+            throw new IOException(resp.getBodyAsString());
+        }
+    }
 }

@@ -280,6 +280,15 @@ public class ClientHelper {
         return executeMethod(null, null, post, meta);
     }
 
+    /**
+     * Same as {@link RiakClient#ping}
+     * @return the ping HttpResponse
+     */
+    public HttpResponse ping() {
+        GetMethod get = new GetMethod(config.getPingUrl());
+        return executeMethod(null, null, get, null);
+    }
+
     /** @return the installed exception handler or null if not installed */
     public RiakExceptionHandler getExceptionHandler() {
         return exceptionHandler;

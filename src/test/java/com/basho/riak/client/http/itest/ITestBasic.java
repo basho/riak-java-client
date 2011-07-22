@@ -45,6 +45,12 @@ import com.basho.riak.client.http.util.Constants;
  */
 public class ITestBasic {
 
+    @Test public void ping() {
+        final RiakClient c = new RiakClient(RIAK_URL);
+        HttpResponse response = c.ping();
+        assertSuccess(response);
+    }
+
     @Test public void store_fetch_modify() {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String VALUE1 = "value1";
