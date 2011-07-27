@@ -247,7 +247,7 @@ public class RiakClient {
      * @param key
      *            The key of the {@link RiakObject} to fetch.
      * @param meta
-     *            Extra metadata to attach to the request such as an r- value
+     *            Extra metadata to attach to the request such as an r value
      *            for the request, HTTP headers, and other query parameters. See
      *            RequestMeta.readParams().
      * 
