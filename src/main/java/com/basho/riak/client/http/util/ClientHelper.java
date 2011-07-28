@@ -414,7 +414,7 @@ public class ClientHelper {
                 httpMethod.setURI(newURI);
             }
         }
-        HttpEntity entity;
+        HttpEntity entity = null;
         try {
             org.apache.http.HttpResponse response =  httpClient.execute(httpMethod);
 
@@ -436,14 +436,18 @@ public class ClientHelper {
                 }
             }
 
-            if (!streamResponse) {
-                EntityUtils.consume(entity);
-            }
-
             return new DefaultHttpResponse(bucket, key, status, headers, body, stream, response, httpMethod);
         } catch (IOException e) {
             httpMethod.abort();
             return toss(new RiakIORuntimeException(e));
+        } finally {
+            if(!streamResponse && entity != null) {
+                try {
+                    EntityUtils.consume(entity);
+                } catch (IOException e) {
+                   // NO-OP
+                }
+            }
         }
     }
 
