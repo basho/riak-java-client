@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class TestFetchResponse {
     final String CONTENT_LENGTH = "3";
     
     @Mock HttpResponse mockHttpResponse;
-    @Mock HttpMethod mockHttpMethod;
+    @Mock HttpRequestBase mockHttpMethod;
     @Mock RiakClient mockRiakClient;
     String SIBLING_BODY;
     

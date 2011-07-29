@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.json.JSONException;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class TestHttpResponseDecorator {
         final byte[] BODY = utf8StringToBytes("body");
         final int STATUS_CODE = 1;
         final Map<String, String> HTTP_HEADERS = new HashMap<String, String>();
-        final HttpMethod HTTP_METHOD = mock(HttpMethod.class);
+        final HttpRequestBase HTTP_METHOD = mock(HttpRequestBase.class);
         final boolean IS_SUCCESS = true;
         final boolean IS_ERROR = true;
         

@@ -16,7 +16,8 @@ package com.basho.riak.client.http.response;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
 
 /**
  * Used with RiakClient.stream() to process the HTTP responses for fetch
@@ -38,11 +39,11 @@ public interface StreamHandler {
      * @param in
      *            InputStream of the object's value (body)
      * @param httpMethod
-     *            The original {@link HttpMethod} used to make the request. Its
+     *            The original {@link HttpRequestBase} used to make the request. Its
      *            connection is still open and will be closed by the caller on
      *            return.
      * @return true if the object was processed; false otherwise
      */
     public boolean process(String bucket, String key, int status, Map<String, String> headers, InputStream in,
-                           HttpMethod httpMethod);
+                           HttpResponse httpMethod);
 }

@@ -17,18 +17,28 @@ import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import com.basho.riak.client.http.RiakClient;
@@ -42,6 +52,7 @@ import com.basho.riak.client.http.response.RiakExceptionHandler;
 import com.basho.riak.client.http.response.RiakIORuntimeException;
 import com.basho.riak.client.http.response.RiakResponseRuntimeException;
 import com.basho.riak.client.http.response.StreamHandler;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * This class performs the actual HTTP requests underlying the operations in
@@ -95,8 +106,10 @@ public class ClientHelper {
 
         meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
 
-        PutMethod put = new PutMethod(ClientUtils.makeURI(config, bucket));
-        put.setRequestEntity(new ByteArrayRequestEntity(utf8StringToBytes(schema.toString()), Constants.CTYPE_JSON));
+        HttpPut put = new HttpPut(ClientUtils.makeURI(config, bucket));
+        ByteArrayEntity entity = new ByteArrayEntity(utf8StringToBytes(schema.toString()));
+        entity.setContentType(Constants.CTYPE_JSON_UTF8);
+        put.setEntity(entity);
 
         return executeMethod(bucket, null, put, meta);
     }
@@ -124,7 +137,7 @@ public class ClientHelper {
     public HttpResponse listBuckets() {
         final RequestMeta  meta = new RequestMeta();
         meta.setQueryParam(Constants.QP_BUCKETS, Constants.LIST_BUCKETS);
-        GetMethod get = new GetMethod(config.getUrl());
+        HttpGet get = new HttpGet(config.getUrl());
         return executeMethod(null, null, get, meta);
     }
 
@@ -151,7 +164,7 @@ public class ClientHelper {
             meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_JSON);
         }
 
-        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket));
+        HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket));
         return executeMethod(bucket, null, get, meta, streamResponse);
     }
 
@@ -172,7 +185,7 @@ public class ClientHelper {
         String bucket = object.getBucket();
         String key = object.getKey();
         String url = ClientUtils.makeURI(config, bucket, key);
-        PutMethod put = new PutMethod(url);
+        HttpPut put = new HttpPut(url);
 
         object.writeToHttpMethod(put);
         return executeMethod(bucket, key, put, meta);
@@ -188,7 +201,7 @@ public class ClientHelper {
         if (meta.getQueryParam(Constants.QP_R) == null) {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
-        HeadMethod head = new HeadMethod(ClientUtils.makeURI(config, bucket, key));
+        HttpHead head = new HttpHead(ClientUtils.makeURI(config, bucket, key));
         return executeMethod(bucket, key, head, meta);
     }
 
@@ -216,7 +229,7 @@ public class ClientHelper {
         if (meta.getQueryParam(Constants.QP_R) == null) {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
-        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key));
+        HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, key));
         return executeMethod(bucket, key, get, meta, streamResponse);
     }
 
@@ -234,16 +247,24 @@ public class ClientHelper {
         if (meta.getQueryParam(Constants.QP_R) == null) {
             meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
         }
-        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key));
+        HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, key));
         try {
-            int status = httpClient.executeMethod(get);
-            if (handler == null)
-                return true;
+            org.apache.http.HttpResponse response = httpClient.execute(get);
+            HttpEntity entity = response.getEntity();
 
-            return handler.process(bucket, key, status, ClientUtils.asHeaderMap(get.getResponseHeaders()),
-                                   get.getResponseBodyAsStream(), get);
-        } finally {
-            get.releaseConnection();
+            boolean result = true;
+            if (handler != null) {
+
+                result = handler.process(bucket, key, response.getStatusLine().getStatusCode(),
+                                         ClientUtils.asHeaderMap(response.getAllHeaders()), entity.getContent(),
+                                         response);
+            }
+            EntityUtils.consume(entity);
+
+            return result;
+        } catch (IOException e) {
+            get.abort();
+            throw e;
         }
     }
 
@@ -255,7 +276,7 @@ public class ClientHelper {
             meta = new RequestMeta();
         }
         String url = ClientUtils.makeURI(config, bucket, key);
-        DeleteMethod delete = new DeleteMethod(url);
+        HttpDelete delete = new HttpDelete(url);
         return executeMethod(bucket, key, delete, meta);
     }
 
@@ -263,7 +284,7 @@ public class ClientHelper {
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
     public HttpResponse walk(String bucket, String key, String walkSpec, RequestMeta meta) {
-        GetMethod get = new GetMethod(ClientUtils.makeURI(config, bucket, key, walkSpec));
+        HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, key, walkSpec));
         return executeMethod(bucket, key, get, meta);
     }
 
@@ -271,11 +292,12 @@ public class ClientHelper {
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
     public HttpResponse mapReduce(String job, RequestMeta meta) {
-        PostMethod post = new PostMethod(config.getMapReduceUrl());
+        HttpPost post = new HttpPost(config.getMapReduceUrl());
         try {
-            post.setRequestEntity(new StringRequestEntity(job, Constants.CTYPE_JSON, null));
+            StringEntity entity = new StringEntity(job, Constants.CTYPE_JSON_UTF8, CharsetUtils.UTF_8.name());
+            post.setEntity(entity);
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("StringRequestEntity should always support no charset", e);
+            throw new IllegalStateException("StringEntity should always support UTF-8 charset", e);
         }
         return executeMethod(null, null, post, meta);
     }
@@ -285,7 +307,7 @@ public class ClientHelper {
      * @return the ping HttpResponse
      */
     public HttpResponse ping() {
-        GetMethod get = new GetMethod(config.getPingUrl());
+        HttpGet get = new HttpGet(config.getPingUrl());
         return executeMethod(null, null, get, null);
     }
 
@@ -312,7 +334,7 @@ public class ClientHelper {
     public HttpResponse toss(RiakIORuntimeException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
-            return new DefaultHttpResponse(null, null, 0, null, null, null, null);
+            return new DefaultHttpResponse(null, null, 0, null, null, null, null, null);
         } else
             throw e;
     }
@@ -320,7 +342,7 @@ public class ClientHelper {
     public HttpResponse toss(RiakResponseRuntimeException e) {
         if (exceptionHandler != null) {
             exceptionHandler.handle(e);
-            return new DefaultHttpResponse(null, null, 0, null, null, null, null);
+            return new DefaultHttpResponse(null, null, 0, null, null, null, null, null);
         } else
             throw e;
     }
@@ -367,54 +389,78 @@ public class ClientHelper {
      *             If an error occurs during communication with the Riak server
      *             (i.e. HttpClient threw an IOException)
      */
-    HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta,
+    HttpResponse executeMethod(String bucket, String key, HttpRequestBase httpMethod, RequestMeta meta,
                                boolean streamResponse) {
 
         if (meta != null) {
             Map<String, String> headers = meta.getHeaders();
             for (String header : headers.keySet()) {
-                httpMethod.setRequestHeader(header, headers.get(header));
+                httpMethod.addHeader(header, headers.get(header));
             }
 
-            String queryParams = meta.getQueryParams();
-            if (queryParams != null && (queryParams.length() != 0)) {
-                String currentQuery = httpMethod.getQueryString();
-                if (currentQuery != null && (currentQuery.length() != 0)) {
-                    httpMethod.setQueryString(currentQuery + "&" + queryParams);
-                } else {
-                    httpMethod.setQueryString(queryParams);
+            Map<String, String> queryParams = meta.getQueryParamMap();
+            if (!queryParams.isEmpty()) {
+                URI originalURI = httpMethod.getURI();
+                List<NameValuePair> currentQuery = URLEncodedUtils.parse(originalURI, CharsetUtils.UTF_8.name());
+                List<NameValuePair> newQuery = new LinkedList<NameValuePair>(currentQuery);
+
+                for(Map.Entry<String, String> qp : queryParams.entrySet()) {
+                    newQuery.add(new BasicNameValuePair(qp.getKey(), qp.getValue()));
                 }
+
+                // For this, HC4.1 authors, I hate you
+                URI newURI;
+                try {
+                    newURI = URIUtils.createURI(originalURI.getScheme(),
+                                                           originalURI.getHost(),
+                                                           originalURI.getPort(),
+                                                           originalURI.getRawPath(),
+                                                           URLEncodedUtils.format(newQuery, "UTF-8"), null);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                    throw new RiakIORuntimeException(e);
+                }
+                httpMethod.setURI(newURI);
             }
         }
-
+        HttpEntity entity = null;
         try {
-            httpClient.executeMethod(httpMethod);
+            org.apache.http.HttpResponse response =  httpClient.execute(httpMethod);
 
             int status = 0;
-            if (httpMethod.getStatusLine() != null) {
-                status = httpMethod.getStatusCode();
+            if (response.getStatusLine() != null) {
+                status = response.getStatusLine().getStatusCode();
             }
 
-            Map<String, String> headers = ClientUtils.asHeaderMap(httpMethod.getResponseHeaders());
+            Map<String, String> headers = ClientUtils.asHeaderMap(response.getAllHeaders());
             byte[] body = null;
             InputStream stream = null;
+            entity = response.getEntity();
+
             if (streamResponse) {
-                stream = httpMethod.getResponseBodyAsStream();
+                stream = entity.getContent();
             } else {
-                body = httpMethod.getResponseBody();
+                if(null != entity) {
+                    body = EntityUtils.toByteArray(entity);
+                }
             }
 
-            return new DefaultHttpResponse(bucket, key, status, headers, body, stream, httpMethod);
+            return new DefaultHttpResponse(bucket, key, status, headers, body, stream, response, httpMethod);
         } catch (IOException e) {
+            httpMethod.abort();
             return toss(new RiakIORuntimeException(e));
         } finally {
-            if (!streamResponse) {
-                httpMethod.releaseConnection();
+            if(!streamResponse && entity != null) {
+                try {
+                    EntityUtils.consume(entity);
+                } catch (IOException e) {
+                   // NO-OP
+                }
             }
         }
     }
 
-    HttpResponse executeMethod(String bucket, String key, HttpMethod httpMethod, RequestMeta meta) {
+    HttpResponse executeMethod(String bucket, String key, HttpRequestBase httpMethod, RequestMeta meta) {
         return executeMethod(bucket, key, httpMethod, meta, false);
     }
 }

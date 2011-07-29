@@ -6,6 +6,7 @@
 Include things like TCP_NODELAY etc
 * TODO Push retrier down the stack to Raw level
 * TODO Conversion needs more thought, especially around the key
+** TODO separate convert to and convert from domain object
 * TODO Have store/fetch/delete Object operations use the pass through non converter if the type they are working with is IRiakObject
 * TODO Have key as a parameter to convert?
 * TODO remove vclock as param to convert?
