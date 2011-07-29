@@ -87,12 +87,12 @@ public class RiakClient implements RiakMessageCodes {
 	}
 
 	public RiakClient(InetAddress addr, int port) throws IOException {
-		this.pool = new RiakConnectionPool(0, -1, addr, port, 1000, BUFFER_SIZE_KB, 1000);
+		this.pool = new RiakConnectionPool(0, RiakConnectionPool.LIMITLESS, addr, port, 1000, BUFFER_SIZE_KB, 1000);
 		this.pool.start();
 	}
 
 	public RiakClient(String host, int port, int bufferSizeKb)  throws IOException {
-	    this.pool = new RiakConnectionPool(0, -1, InetAddress.getByName(host), port, 1000, bufferSizeKb, 1000);
+	    this.pool = new RiakConnectionPool(0, RiakConnectionPool.LIMITLESS, InetAddress.getByName(host), port, 1000, bufferSizeKb, 1000);
 	    this.pool.start();
 	}
 

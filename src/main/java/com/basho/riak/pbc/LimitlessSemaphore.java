@@ -25,18 +25,21 @@ import java.util.concurrent.TimeUnit;
  * @author russell
  * 
  */
-public class LimitlessSemaphore extends Semaphore {
+class LimitlessSemaphore extends Semaphore {
 
     /**
      * 
      */
-    private static final long serialVersionUID = -4752538034544754767L;
+    private static final long serialVersionUID = 2334944991749996870L;
 
     /**
-     * @param arg0
+     * Creates a semaphore that isn't really a semaphore. Only overrides
+     * release, tryAcquire(int) and tryAcquire(long, TimeUnit)
+     * 
+     * Not for general use, but an internal class for the pbc Pool
      */
-    public LimitlessSemaphore(int arg0) {
-        super(arg0);
+    public LimitlessSemaphore() {
+        super(0);
     }
 
     /**
@@ -50,6 +53,13 @@ public class LimitlessSemaphore extends Semaphore {
      * Always returns true at once.
      */
     @Override public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
+        return true;
+    }
+
+    /**
+     * Always returns true at once.
+     */
+    @Override public boolean tryAcquire(int permits) {
         return true;
     }
 }
