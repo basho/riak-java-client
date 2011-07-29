@@ -34,7 +34,7 @@ mvn clean install
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
 #+BEGIN_SRC java
-// create a client
+// create a client (see Configuration below in this README for more details)
 IRiakClient riakClient = RiakFactory.pbcClient(); //or RiakFactory.httpClient();
 
 // create a new bucket
@@ -498,6 +498,54 @@ Start storing data in Riak using IRiakObject and anonymous inner
 classes for Mutation, ConflictResolution and Retrier. As you use case
 and application firm you can create concrete, testable, reusable
 implementations to act on your own domain objects.
+
+** Configuration
+The riak-java-client takes a layered approach to architecture. There
+are the 2 legacy clients (=http.RiakClient= and =pbc.RiakClient=)
+which are adapted to the =RawClient= interface, which itself is
+wrapped in an IRiakClient implementation when exposing the high-level
+API. In order to configure the transport at the lowest level, from the
+high-level there is the =RiakFactory= and the =Configuration=
+interface.
+
+To create a client for the transport of your choice, create a
+=Configuration= for that transport and pass it
+=RiakFactory.newClient(Configuration);=
+
+#+BEGIN_SRC java
+ PBClientConfig conf = new PBClientConfig.Builder()
+                            .withHost("127.0.0.1")
+                             .withPort(8097)
+                           .build();
+
+IRiakClient client = RiakFactory.newClient(conf);
+#+END_SRC
+
+There are =Configuration= implementations for HTTP, Protocal Buffers
+and a new =Configuration= for =ClusterClient=.
+
+A =ClusterClient= is a set of homogenous RawClients that are
+configured for many nodes in a Riak cluster and round robined between
+for requests and retries. This means that you can create your
+=DefaultRetrier= to retry as many times as you have nodes in your
+cluster to exhaustively try each node if the previous one failed to
+satisfy a request. To create a =ClusterClient= create a
+=ClusterClientConfig= and pass it to
+=RiakFactory.newClient(Configuration)=.
+
+#BEGIN_SRC java
+PBClientConfig node1 = new PBClientConfig.defaults();
+PBClientConfig node2 = PBClientConfig.Builder.from(node1).withHost("mysecond-node.com").build();
+
+PBClusterConfig clusterConf = new PBClusterConfig(200);
+clusterConf.addClient(node1);
+clusterConf.addClient(node2);
+
+RiakFactory.newClient(clusterConf);
+#END_SRC
+
+At the moment only cluster clients of homogenous transports are
+supported.
 
 ** Contributing
 Please start with the [[https://github.com/basho/riak-java-client/blob/master/DEVELOPERS.md][DEVELOPERS]] document.
