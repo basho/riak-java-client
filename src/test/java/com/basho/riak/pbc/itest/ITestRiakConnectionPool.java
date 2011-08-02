@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Test;
 
+import com.basho.riak.client.http.Hosts;
 import com.basho.riak.pbc.AcquireConnectionTimeoutException;
 import com.basho.riak.pbc.PublicRiakConnection;
 import com.basho.riak.pbc.RiakConnectionPool;
@@ -38,8 +39,8 @@ import com.basho.riak.pbc.RiakConnectionPool;
  */
 public class ITestRiakConnectionPool {
 
-    private static final int PORT = 8087;
-    private static final String HOST = "127.0.0.1";
+    private static final int PORT = Hosts.RIAK_PORT;
+    private static final String HOST = Hosts.RIAK_HOST;
 
     /**
      * Test method
