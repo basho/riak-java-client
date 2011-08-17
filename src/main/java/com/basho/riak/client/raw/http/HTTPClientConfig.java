@@ -185,7 +185,7 @@ public class HTTPClientConfig implements Configuration {
         private String url = null;
         private String scheme = "http";
         private String host = "127.0.0.1";
-        private int port = 8097;
+        private int port = 8098;
         private String riakPath = "/riak";
         private String mapreducePath = "/mapreduce";
         private HttpClient httpClient = null;
