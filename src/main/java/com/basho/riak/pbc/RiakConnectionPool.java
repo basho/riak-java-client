@@ -202,9 +202,16 @@ public class RiakConnectionPool {
      * return it, if there is no available connection and the pool is under
      * limit create a connection, set the id on it and return it.
      * 
-     * @param clientId the client id of the connection requested
+     * @param clientId
+     *            the client id of the connection requested
      * @return a RiakConnection with the clientId set
      * @throws IOException
+     * @throws AcquireConnectionTimeoutException
+     *             if unable to acquire a permit to create a *new* connection
+     *             within the timeout configured. This means that the pool has
+     *             no available connections and there are no permits available to
+     *             create new connections. Repeated incidences of this exception
+     *             probably indicate that you have sized your pool too small.
      */
     public RiakConnection getConnection(byte[] clientId) throws IOException {
         RiakConnection c = getConnection();

@@ -487,17 +487,6 @@ the links, the second returns the data). It is included to provide
 parity between the interfaces but should perform similarly to the
 REST link walking interface.
 
-** Next Steps
-Have a look at the 
-#+BEGIN_SRC java
-    com.basho.riak.client.itest
-#+END_SRC
-package for examples of all the features described above.
-
-Start storing data in Riak using IRiakObject and anonymous inner
-classes for Mutation, ConflictResolution and Retrier. As you use case
-and application firm you can create concrete, testable, reusable
-implementations to act on your own domain objects.
 
 ** Configuration
 The riak-java-client takes a layered approach to architecture. There
@@ -533,7 +522,7 @@ satisfy a request. To create a =ClusterClient= create a
 =ClusterClientConfig= and pass it to
 =RiakFactory.newClient(Configuration)=.
 
-#BEGIN_SRC java
+#+BEGIN_SRC java
 PBClientConfig node1 = new PBClientConfig.defaults();
 PBClientConfig node2 = PBClientConfig.Builder.from(node1).withHost("mysecond-node.com").build();
 
@@ -542,10 +531,38 @@ clusterConf.addClient(node1);
 clusterConf.addClient(node2);
 
 RiakFactory.newClient(clusterConf);
-#END_SRC
+#+END_SRC
 
 At the moment only cluster clients of homogenous transports are
 supported.
+
+*** Connection Pools
+The Riak HTTP Client uses Apache HTTP Client 4.1. The Apache HTTP
+Client provides connection pooling and you configure maximum
+connections per host or cluster (if you are using a =ClusterClient=)
+
+The riak-java-client provides a connection pool for the protocol
+buffers client, too. Again you configure per node and over all for the
+cluster.
+
+**** Pool Sizing
+Both transport's pools are configured with a connection wait
+timeout. If you see a lot of exceptions timing out acquiring a
+connection then the chances are you have sized your pool too small.
+The API docs have more details on this. See the [[https://github.com/basho/riak-java-client/blob/master/DEVELOPERS.md][DEVELOPERS]] document
+for instructions on building the API docs.
+
+** Next Steps
+Have a look at the
+#+BEGIN_SRC java
+    com.basho.riak.client.itest
+#+END_SRC
+package for examples of all the features described above.
+
+Start storing data in Riak using IRiakObject and anonymous inner
+classes for Mutation, ConflictResolution and Retrier. As you use case
+and application firm you can create concrete, testable, reusable
+implementations to act on your own domain objects.
 
 ** Contributing
 Please start with the [[https://github.com/basho/riak-java-client/blob/master/DEVELOPERS.md][DEVELOPERS]] document.
