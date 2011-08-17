@@ -35,9 +35,12 @@ import com.basho.riak.client.raw.config.ClusterConfig;
  * Cluster client that creates a collection of {@link HTTPClientAdapter}
  * {@link RawClient} instances from a given {@link HTTPClusterConfig}
  * <p>
- * NOTE: to enforce the max connections creates the {@link HttpClient} delegates
- * for the individual node clients, this means that the
- * {@link HTTPClientConfig#getHttpClient()} values is ignored.
+ * NOTE: In the case the the {@link HTTPClusterConfig#getMaxConnections} is NOT
+ * {@link ClusterConfig#UNLIMITED_CONNECTIONS} an {@link HttpClient} delegate is
+ * created for each node. This is to ensure that the cluster maximum connections
+ * limit is enforced. The {@link HTTPClientConfig#getHttpClient()} value for
+ * each node config is, therefore, ignored.
+ *
  * </p>
  * 
  * @author russell

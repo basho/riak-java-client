@@ -55,7 +55,7 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
         int totalMaxConnections = clusterConfig.getTotalMaximumConnections();
         Semaphore clusterSemaphore = null;
 
-        if (!(totalMaxConnections <= RiakConnectionPool.LIMITLESS)) {
+        if (totalMaxConnections > RiakConnectionPool.LIMITLESS) {
             // due to the overhead in operating a PoolSemaphore there is no
             // point in
             // creating a LimitlessSemaphore for a cluster, just create
@@ -89,7 +89,7 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
                                           node.getIdleConnectionTTLMillis());
         } else {
             pool = new RiakConnectionPool(node.getInitialPoolSize(), new PoolSemaphore(clusterSemaphore,
-                                                                                       node.getPoolSize(), true),
+                                                                                       node.getPoolSize()),
                                           InetAddress.getByName(node.getHost()), node.getPort(),
                                           node.getConnectionWaitTimeoutMillis(), node.getSocketBufferSizeKb(),
                                           node.getIdleConnectionTTLMillis());

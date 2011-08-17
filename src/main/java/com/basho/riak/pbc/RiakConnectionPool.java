@@ -49,7 +49,7 @@ public class RiakConnectionPool {
     private final Semaphore permits;
     private final ConcurrentLinkedQueue<RiakConnection> available;
     private final ConcurrentLinkedQueue<RiakConnection> inUse;
-    private final long connectionWaitTimeoutMillis;
+    private final long connectionWaitTimeoutNanos;
     private final int bufferSizeKb;
     private final int initialSize;
     private final long idleConnectionTTLNanos;
@@ -124,7 +124,7 @@ public class RiakConnectionPool {
         this.bufferSizeKb = bufferSizeKb;
         this.host = host;
         this.port = port;
-        this.connectionWaitTimeoutMillis = connectionWaitTimeoutMillis;
+        this.connectionWaitTimeoutNanos = TimeUnit.NANOSECONDS.convert(connectionWaitTimeoutMillis, TimeUnit.NANOSECONDS);
         this.initialSize = initialSize;
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
@@ -268,7 +268,7 @@ public class RiakConnectionPool {
      */
     private RiakConnection createConnection(int attempts) throws IOException {
         try {
-            if (permits.tryAcquire(connectionWaitTimeoutMillis, TimeUnit.MILLISECONDS)) {
+            if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
                 try {
                     return new RiakConnection(host, port, bufferSizeKb, this);
                 } catch (IOException e) {
@@ -284,7 +284,7 @@ public class RiakConnectionPool {
             if (attempts > 0) {
                 return createConnection(attempts - 1);
             } else {
-                throw new IOException("interrupted whilst waiting to acquire connection");
+                throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
             }
         }
     }
@@ -306,6 +306,7 @@ public class RiakConnectionPool {
                 c.beginIdle();
                 available.offer(c);
             } else {
+                // don't put a closed connection in the pool, release a permit
                permits.release();
             }
         }

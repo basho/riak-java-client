@@ -29,14 +29,14 @@ public class PoolSemaphore extends Semaphore {
     /**
      * Eclipse generated
      */
-    private static final long serialVersionUID = 7060018376512789254L;
+    private static final long serialVersionUID = -2559842472836477776L;
 
     private final Semaphore clusterSemaphore;
     private final Semaphore poolSemaphore;
 
     /**
-     * Creates a pool {@link Semaphore} with <code>permits</code> permits and
-     * <code>fair</code> fairness. Calls to tryAcquire(long, TimeUnit),
+     * Creates a pool {@link Semaphore} with <code>permits</code> permits.
+     * Calls to tryAcquire(long, TimeUnit),
      * release() and tryAcquire(int) call both <code>cluster</code> and pool
      * {@link Semaphore}
      * 
@@ -45,13 +45,11 @@ public class PoolSemaphore extends Semaphore {
      *            number of connections
      * @param permits
      *            maximum connections for the pool
-     * @param fair
-     *            is the {@link Semaphore} fair (see {@link Semaphore})
      */
-    public PoolSemaphore(Semaphore cluster, int permits, boolean fair) {
-        super(permits, fair);
-        clusterSemaphore = cluster;
-        poolSemaphore = RiakConnectionPool.getSemaphore(permits);
+    public PoolSemaphore(Semaphore clusterSemaphore, int poolPermits) {
+        super(0, true);
+        this.clusterSemaphore = clusterSemaphore;
+        this.poolSemaphore = RiakConnectionPool.getSemaphore(poolPermits);
     }
 
     /**
@@ -64,8 +62,10 @@ public class PoolSemaphore extends Semaphore {
 
     /**
      * Tries to acquire on the cluster semaphore, and only if that succeeds does
-     * it try the pool semaphore Warning: this means potentially double the
-     * timeout
+     * it try the pool semaphore.
+     * 
+     * <p>Warning: this means potentially double the
+     * timeout</p>
      * 
      * TODO configure option for timeout to be shared (i.e. pool semaphore gets
      * remaining time after cluster acquire)
@@ -78,15 +78,20 @@ public class PoolSemaphore extends Semaphore {
         boolean poolPermitted = false;
 
         if (clusterPermitted) {
-            poolPermitted = poolSemaphore.tryAcquire(timeout, unit);
+            try {
+                poolPermitted = poolSemaphore.tryAcquire(timeout, unit);
+            } catch(InterruptedException e) {
+                clusterSemaphore.release();
+                throw e;
+            }
         }
 
         if (poolPermitted) {
             return true;
-        } else {
+        } else if (clusterPermitted) {
             clusterSemaphore.release();
-            return false;
         }
+        return false;
     }
 
     /**
@@ -105,9 +110,9 @@ public class PoolSemaphore extends Semaphore {
 
         if (poolPermitted) {
             return true;
-        } else {
+        } else if (clusterPermitted) {
             clusterSemaphore.release(permits);
-            return false;
         }
+        return false;
     }
 }
