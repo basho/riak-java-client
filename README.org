@@ -560,7 +560,7 @@ Have a look at the
 package for examples of all the features described above.
 
 Start storing data in Riak using IRiakObject and anonymous inner
-classes for Mutation, ConflictResolution and Retrier. As you use case
+classes for Mutation, ConflictResolution and Retrier. As your use case
 and application firm you can create concrete, testable, reusable
 implementations to act on your own domain objects.
 
