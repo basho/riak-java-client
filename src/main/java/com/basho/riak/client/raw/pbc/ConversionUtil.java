@@ -94,6 +94,8 @@ public final class ConversionUtil {
             builder.withLastModified(lastModified.getTime());
         }
 
+        builder.withUsermeta(o.getUsermeta());
+
         return builder.build();
     }
 
