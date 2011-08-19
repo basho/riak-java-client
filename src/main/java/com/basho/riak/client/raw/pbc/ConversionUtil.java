@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import org.apache.http.impl.cookie.DateParseException;
 import org.apache.http.impl.cookie.DateUtils;
 
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
@@ -94,7 +96,29 @@ public final class ConversionUtil {
             builder.withLastModified(lastModified.getTime());
         }
 
+        final Collection<RiakLink> links = new ArrayList<RiakLink>();
+
+        for (com.basho.riak.pbc.RiakLink link : o.getLinks()) {
+            links.add(convert(link));
+        }
+
+        builder.withLinks(links);
+        builder.withContentType(o.getContentType());
+
+        final Map<String, String> userMetaData = new HashMap<String, String>(o.getUsermeta());
+
+        builder.withUsermeta(userMetaData);
+
         return builder.build();
+    }
+
+    /**
+     * @param link
+     * @return
+     */
+    private static RiakLink convert(com.basho.riak.pbc.RiakLink link) {
+        return new RiakLink(nullSafeToStringUtf8(link.getBucket()), nullSafeToStringUtf8(link.getKey()),
+                            nullSafeToStringUtf8(link.getTag()));
     }
 
     /**

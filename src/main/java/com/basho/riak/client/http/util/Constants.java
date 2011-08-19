@@ -64,7 +64,7 @@ public interface Constants {
     public static String CTYPE_OCTET_STREAM = "application/octet-stream";
     public static String CTYPE_MULTIPART_MIXED = "multipart/mixed";
     public static String CTYPE_TEXT = "text/plain";
-    public static String CTYPE_TEXT_UTF8 = "text/plain;charset=UTF-8";
+    public static String CTYPE_TEXT_UTF8 = "text/plain; charset=UTF-8";
 
     // Default r, w, and dw values to use when not specified
     public static Integer DEFAULT_R = 2;

@@ -38,10 +38,13 @@ import org.junit.Test;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.NoKeySpecifedException;
+import com.basho.riak.client.convert.PassThroughConverter;
+import com.basho.riak.client.http.util.Constants;
 import com.megacorp.commerce.LegacyCart;
 import com.megacorp.commerce.ShoppingCart;
 
@@ -73,6 +76,27 @@ public abstract class ITestBucket {
         b.store("k", "my new value").execute();
         fetched = b.fetch("k").execute();
         assertEquals("my new value", fetched.getValueAsString());
+        assertEquals(Constants.CTYPE_TEXT_UTF8, fetched.getContentType());
+
+        // add links and user meta
+        final RiakLink link1 = new RiakLink("b", "k2", "brother");
+        final RiakLink link2 = new RiakLink("b", "k3", "sister");
+        fetched.addLink(link1).addLink(link2);
+        fetched.addUsermeta("meta1", "metaValue1").addUsermeta("meta2", "metaValue2");
+        fetched.setContentType(Constants.CTYPE_JSON);
+
+        b.store(fetched).withConverter(new PassThroughConverter()).execute();
+
+        IRiakObject reFetched = b.fetch("k").execute();
+
+        assertEquals(2, reFetched.numLinks());
+        assertTrue(reFetched.hasLink(link1));
+        assertTrue(reFetched.hasLink(link2));
+
+        assertEquals("metaValue1", reFetched.getUsermeta("meta1"));
+        assertEquals("metaValue2", reFetched.getUsermeta("meta2"));
+
+        assertEquals(Constants.CTYPE_JSON, reFetched.getContentType());
 
         b.delete("k").execute();
 
