@@ -232,6 +232,15 @@ public class RiakObject {
     }
 
     /**
+     * @return the usermeta
+     */
+    public Map<String, String> getUsermeta() {
+        synchronized (userMetaDataLock) {
+            return Collections.unmodifiableMap(userMetaData);
+        }
+    }
+
+    /**
      * @return the lastModified
      */
     public Date getLastModified() {

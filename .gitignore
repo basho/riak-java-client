@@ -5,5 +5,8 @@ target
 .settings
 *.xml
 *.jar
+*.iml
+*.iws
+*.ipr
 .classpath
 .project
