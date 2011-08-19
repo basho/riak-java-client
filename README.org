@@ -47,7 +47,7 @@ And set the dependency in your projects pom.xml to
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
 #+BEGIN_SRC java
-// create a client
+// create a client (see Configuration below in this README for more details)
 IRiakClient riakClient = RiakFactory.pbcClient(); //or RiakFactory.httpClient();
 
 // create a new bucket
@@ -500,8 +500,73 @@ the links, the second returns the data). It is included to provide
 parity between the interfaces but should perform similarly to the
 REST link walking interface.
 
+
+** Configuration
+The riak-java-client takes a layered approach to architecture. There
+are the 2 legacy clients (=http.RiakClient= and =pbc.RiakClient=)
+which are adapted to the =RawClient= interface, which itself is
+wrapped in an IRiakClient implementation when exposing the high-level
+API. In order to configure the transport at the lowest level, from the
+high-level there is the =RiakFactory= and the =Configuration=
+interface.
+
+To create a client for the transport of your choice, create a
+=Configuration= for that transport and pass it
+=RiakFactory.newClient(Configuration);=
+
+#+BEGIN_SRC java
+ PBClientConfig conf = new PBClientConfig.Builder()
+                            .withHost("127.0.0.1")
+                             .withPort(8097)
+                           .build();
+
+IRiakClient client = RiakFactory.newClient(conf);
+#+END_SRC
+
+There are =Configuration= implementations for HTTP, Protocal Buffers
+and a new =Configuration= for =ClusterClient=.
+
+A =ClusterClient= is a set of homogenous RawClients that are
+configured for many nodes in a Riak cluster and round robined between
+for requests and retries. This means that you can create your
+=DefaultRetrier= to retry as many times as you have nodes in your
+cluster to exhaustively try each node if the previous one failed to
+satisfy a request. To create a =ClusterClient= create a
+=ClusterClientConfig= and pass it to
+=RiakFactory.newClient(Configuration)=.
+
+#+BEGIN_SRC java
+PBClientConfig node1 = new PBClientConfig.defaults();
+PBClientConfig node2 = PBClientConfig.Builder.from(node1).withHost("mysecond-node.com").build();
+
+PBClusterConfig clusterConf = new PBClusterConfig(200);
+clusterConf.addClient(node1);
+clusterConf.addClient(node2);
+
+RiakFactory.newClient(clusterConf);
+#+END_SRC
+
+At the moment only cluster clients of homogenous transports are
+supported.
+
+*** Connection Pools
+The Riak HTTP Client uses Apache HTTP Client 4.1. The Apache HTTP
+Client provides connection pooling and you configure maximum
+connections per host or cluster (if you are using a =ClusterClient=)
+
+The riak-java-client provides a connection pool for the protocol
+buffers client, too. Again you configure per node and over all for the
+cluster.
+
+**** Pool Sizing
+Both transport's pools are configured with a connection wait
+timeout. If you see a lot of exceptions timing out acquiring a
+connection then the chances are you have sized your pool too small.
+The API docs have more details on this. See the [[https://github.com/basho/riak-java-client/blob/master/DEVELOPERS.md][DEVELOPERS]] document
+for instructions on building the API docs.
+
 ** Next Steps
-Have a look at the 
+Have a look at the
 #+BEGIN_SRC java
     com.basho.riak.client.itest
 #+END_SRC

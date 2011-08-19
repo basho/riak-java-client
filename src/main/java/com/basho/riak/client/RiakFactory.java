@@ -14,25 +14,67 @@
 package com.basho.riak.client;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.RiakClientFactory;
+import com.basho.riak.client.raw.config.ClusterConfig;
+import com.basho.riak.client.raw.config.Configuration;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
+import com.basho.riak.client.raw.http.HTTPClientConfig;
+import com.basho.riak.client.raw.http.HTTPClusterClientFactory;
+import com.basho.riak.client.raw.http.HTTPClusterConfig;
+import com.basho.riak.client.raw.http.HTTPRiakClientFactory;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
+import com.basho.riak.client.raw.pbc.PBClientConfig;
+import com.basho.riak.client.raw.pbc.PBClusterClientFactory;
+import com.basho.riak.client.raw.pbc.PBClusterConfig;
+import com.basho.riak.client.raw.pbc.PBRiakClientFactory;
 import com.basho.riak.pbc.RiakClient;
 
 /**
- * A *very* basic factory for getting an IRiakClient implementation wrapping
- * the {@link RawClient} of your choice.
+ * A factory for getting an IRiakClient implementation wrapping the
+ * {@link RawClient} of your choice.
+ * 
  * <p>
- * Also provides convenience methods for grabbing a default configuration pb or http client.
+ * Use the newClient method, passing an implementation of {@link Configuration}.
+ * The factory will look up a {@link RiakClientFactory} implementation and pass
+ * your {@link Configuration} to it.
  * </p>
  * <p>
- * NOTE: This class is under change, a single factory method that accepts a <code>Configuration</code> object will
- * be available soon
+ * For example:
+ * 
+ * <code>
+ * <pre>
+ * Configuration conf = new PBClientConfig.Builder().withHost("my-riak-host.com").withPort(9000).build();
+ * IRiakClient client = RiakFactory.newClient(conf);
+ * </pre>
+ * </code>
  * </p>
- * @author russell 
+ * <p>
+ * Also provides convenience methods for grabbing a default configuration pb or
+ * http client.
+ * </p>
+ * 
+ * @author russell
+ * 
+ * @see Configuration
+ * @see ClusterConfig
  */
 public class RiakFactory {
+
+    private static final ConcurrentHashMap<Class<? extends Configuration>, RiakClientFactory> REGISTRY =
+            new ConcurrentHashMap<Class<? extends Configuration>, RiakClientFactory>(3);
+
+    // TODO this will change to expose a registry of
+    // Configuration implementation type -> factory to complete the SPI
+    // For now does a simple pre-populate for the library provided types
+    static {
+        REGISTRY.put(HTTPClientConfig.class, HTTPRiakClientFactory.getInstance());
+        REGISTRY.put(PBClientConfig.class, PBRiakClientFactory.getInstance());
+        REGISTRY.put(PBClusterConfig.class, PBClusterClientFactory.getInstance());
+        REGISTRY.put(HTTPClusterConfig.class, HTTPClusterClientFactory.getInstance());
+    }
 
     private static final String DEFAULT_RIAK_URL = "http://127.0.0.1:8098/riak";
 
@@ -113,4 +155,51 @@ public class RiakFactory {
         return new DefaultRiakClient(client);
     }
 
+    /**
+     * Uses the given <code>config</code> to generate an {@link IRiakClient}
+     * instance.
+     * 
+     * See the available {@link Configuration} implementations for details.
+     * 
+     * @param config
+     *            a concrete implementation of {@link Configuration}
+     * @return an {@link IRiakClient} that delegates to a {@link RawClient}
+     *         configured by <code>config</code>
+     * @throws IOException
+     * @see HTTPClientConfig
+     * @see PBClientConfig
+     * @see ClusterConfig
+     * @throws NoFactoryForConfigException
+     *             if the {@link Configuration} type is not recognized
+     * @throws IllegalArgumentException
+     *             if config is null
+     */
+    public static IRiakClient newClient(Configuration config) throws RiakException {
+        if (config == null) {
+            throw new IllegalArgumentException("config cannot be null");
+        }
+
+        final RiakClientFactory fac = getFactory(config);
+        try {
+            return new DefaultRiakClient(fac.newClient(config));
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
+    }
+
+    /**
+     * @param config
+     * @return a {@link RiakClientFactory} that will build client for the given
+     *         <code>config</code>
+     * @throws NoFactoryForConfigException
+     *             if a factory cannot be found that accepts the
+     *             {@link Configuration} type
+     */
+    private static RiakClientFactory getFactory(final Configuration config) {
+        final RiakClientFactory fac = REGISTRY.get(config.getClass());
+        if (fac == null) {
+            throw new NoFactoryForConfigException(config.getClass());
+        }
+        return fac;
+    }
 }

@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.basho.riak.client.raw.pbc.PoolSemaphore;
 import com.basho.riak.pbc.RPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
 
@@ -48,7 +49,7 @@ public class RiakConnectionPool {
     private final Semaphore permits;
     private final ConcurrentLinkedQueue<RiakConnection> available;
     private final ConcurrentLinkedQueue<RiakConnection> inUse;
-    private final long connectionWaitTimeoutMillis;
+    private final long connectionWaitTimeoutNanos;
     private final int bufferSizeKb;
     private final int initialSize;
     private final long idleConnectionTTLNanos;
@@ -83,16 +84,47 @@ public class RiakConnectionPool {
      */
     public RiakConnectionPool(int initialSize, int maxSize, InetAddress host, int port,
             long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis) throws IOException {
+        this(initialSize, getSemaphore(maxSize), host, port, connectionWaitTimeoutMillis, bufferSizeKb,
+             idleConnectionTTLMillis);
+
         if (initialSize > maxSize && (maxSize > 0)) {
             throw new IllegalArgumentException("Initial pool size is greater than maximum pools size");
         }
-        this.permits = getSemaphore(maxSize);
+    }
+
+    /**
+     * Crate a new host connection pool. NOTE: before using you must call
+     * start()
+     * 
+     * @param initialSize
+     *            the number of connections to create at pool creation time
+     * @param clusterSemaphore
+     *            a {@link Semaphore} set with the number of permits for the
+     *            pool (and maybe cluster (see {@link PoolSemaphore}))
+     * @param host
+     *            the host this pool holds connections to
+     * @param port
+     *            the port on host that this pool holds connections to
+     * @param connectionWaitTimeoutMillis
+     *            the connection timeout
+     * @param bufferSizeKb
+     *            the size of the socket/stream read/write buffers (3 buffers,
+     *            each of this size)
+     * @param idleConnectionTTLMillis
+     *            How long for an idle connection to exist before it is reaped,
+     *            0 mean forever
+     * @throws IOException
+     *             If the initial connection creation throws an IOException
+     */
+    public RiakConnectionPool(int initialSize, Semaphore poolSemaphore, InetAddress host, int port,
+            long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis) throws IOException {
+        this.permits = poolSemaphore;
         this.available = new ConcurrentLinkedQueue<RiakConnection>();
         this.inUse = new ConcurrentLinkedQueue<RiakConnection>();
         this.bufferSizeKb = bufferSizeKb;
         this.host = host;
         this.port = port;
-        this.connectionWaitTimeoutMillis = connectionWaitTimeoutMillis;
+        this.connectionWaitTimeoutNanos = TimeUnit.NANOSECONDS.convert(connectionWaitTimeoutMillis, TimeUnit.NANOSECONDS);
         this.initialSize = initialSize;
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
@@ -120,6 +152,9 @@ public class RiakConnectionPool {
                             }
                             c = available.peek();
                         } else {
+                            // since the queue is FIFO short-circuit and stop
+                            // looking, if the first element isn't too old, the
+                            // rest can't be
                             c = null;
                         }
                     }
@@ -139,7 +174,7 @@ public class RiakConnectionPool {
      * @return a {@link Semaphore} with <code>maxSize</code> permits, or a
      *         {@link LimitlessSemaphore} if <code>maxSize</code> is zero or less.
      */
-    private Semaphore getSemaphore(int maxSize) {
+    public static Semaphore getSemaphore(int maxSize) {
         if (maxSize <= LIMITLESS) {
             return new LimitlessSemaphore();
         }
@@ -167,9 +202,16 @@ public class RiakConnectionPool {
      * return it, if there is no available connection and the pool is under
      * limit create a connection, set the id on it and return it.
      * 
-     * @param clientId the client id of the connection requested
+     * @param clientId
+     *            the client id of the connection requested
      * @return a RiakConnection with the clientId set
      * @throws IOException
+     * @throws AcquireConnectionTimeoutException
+     *             if unable to acquire a permit to create a *new* connection
+     *             within the timeout configured. This means that the pool has
+     *             no available connections and there are no permits available to
+     *             create new connections. Repeated incidences of this exception
+     *             probably indicate that you have sized your pool too small.
      */
     public RiakConnection getConnection(byte[] clientId) throws IOException {
         RiakConnection c = getConnection();
@@ -233,7 +275,7 @@ public class RiakConnectionPool {
      */
     private RiakConnection createConnection(int attempts) throws IOException {
         try {
-            if (permits.tryAcquire(connectionWaitTimeoutMillis, TimeUnit.MILLISECONDS)) {
+            if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
                 try {
                     return new RiakConnection(host, port, bufferSizeKb, this);
                 } catch (IOException e) {
@@ -249,7 +291,7 @@ public class RiakConnectionPool {
             if (attempts > 0) {
                 return createConnection(attempts - 1);
             } else {
-                throw new IOException("interrupted whilst waiting to acquire connection");
+                throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
             }
         }
     }
@@ -271,6 +313,7 @@ public class RiakConnectionPool {
                 c.beginIdle();
                 available.offer(c);
             } else {
+                // don't put a closed connection in the pool, release a permit
                permits.release();
             }
         }

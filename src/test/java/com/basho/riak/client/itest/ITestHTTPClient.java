@@ -26,6 +26,8 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.http.HTTPClientConfig;
+import com.basho.riak.client.raw.http.HTTPClusterConfig;
 
 /**
  * @author russell
@@ -39,7 +41,10 @@ public class ITestHTTPClient extends ITestClientBasic {
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
     @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.httpClient(Hosts.RIAK_URL);
+        HTTPClientConfig config = new HTTPClientConfig.Builder().withUrl(Hosts.RIAK_URL).withMaxConnctions(50).build();
+        HTTPClusterConfig conf = new HTTPClusterConfig(100);
+        conf.addClient(config);
+        return RiakFactory.newClient(conf);
     }
 
     @Test public void fetchBucket() throws RiakException {
@@ -81,14 +86,7 @@ public class ITestHTTPClient extends ITestClientBasic {
 
         final String bucketName = UUID.randomUUID().toString();
 
-        Bucket b = client.createBucket(bucketName)
-            .chashKeyFunction(newChashkeyFun)
-            .linkWalkFunction(newLinkwalkFun)
-            .r(Quora.ALL)
-            .w(2)
-            .dw(Quora.QUORUM)
-            .rw(1)
-            .execute();
+        Bucket b = client.createBucket(bucketName).chashKeyFunction(newChashkeyFun).linkWalkFunction(newLinkwalkFun).r(Quora.ALL).w(2).dw(Quora.QUORUM).rw(1).execute();
 
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());
