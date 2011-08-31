@@ -71,8 +71,9 @@ public class FetchResponse extends HttpResponseDecorator implements HttpResponse
         if (r.getStatusCode() == 300) {
             String contentType = headers.get(Constants.HDR_CONTENT_TYPE);
 
-            if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED)))
+            if (contentType == null || !(contentType.trim().toLowerCase().startsWith(Constants.CTYPE_MULTIPART_MIXED))) {
                 throw new RiakResponseRuntimeException(r, "multipart/mixed content expected when object has siblings");
+            }
 
             if (r.isStreamed()) {
                 try {
