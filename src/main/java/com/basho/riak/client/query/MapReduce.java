@@ -153,7 +153,11 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
                 switch (phase.getType()) {
                 case MAP:
                 case REDUCE:
-                    FunctionToJson.newWriter(((MapPhase) phase).getPhaseFunction(), jg).write();
+                    MapPhase mapPhase = (MapPhase)phase;
+                    FunctionToJson.newWriter(mapPhase.getPhaseFunction(), jg).write();
+                    if(mapPhase.getArg() != null) {
+                        jg.writeStringField("arg", mapPhase.getArg().toString());
+                    }
                     break;
                 case LINK:
                     jg.writeStringField("bucket", ((LinkPhase) phase).getBucket());
