@@ -79,8 +79,6 @@ public class ClientUtils {
             if (config.getRetryHandler() != null) {
                 ((DefaultHttpClient) http).setHttpRequestRetryHandler(config.getRetryHandler());
             }
-        } else {
-            m = http.getConnectionManager();
         }
 
         HttpParams cp = http.getParams();

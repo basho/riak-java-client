@@ -17,6 +17,8 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
 import com.basho.riak.client.http.Hosts;
+import com.basho.riak.client.raw.pbc.PBClientConfig;
+import com.basho.riak.client.raw.pbc.PBClusterConfig;
 
 /**
  * @author russell
@@ -30,7 +32,12 @@ public class ITestPBClient extends ITestClientBasic {
      * @see com.basho.riak.client.itest.ITestClient#getClient()
      */
     @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
+        PBClientConfig conf = new PBClientConfig.Builder().withHost(Hosts.RIAK_HOST).withPort(Hosts.RIAK_PORT).build();
+
+        PBClusterConfig clusterConf = new PBClusterConfig(200);
+        clusterConf.addClient(conf);
+
+        return RiakFactory.newClient(clusterConf);
     }
 
 }

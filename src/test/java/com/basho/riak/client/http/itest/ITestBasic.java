@@ -260,4 +260,40 @@ public class ITestBasic {
         assertTrue(buckets.contains(bucket1));
         assertTrue(buckets.contains(bucket2));
     }
+
+    @Test public void fetch_meta_with_siblings() {
+        final RiakClient c1 = new RiakClient(RIAK_URL);
+        final RiakClient c2 = new RiakClient(RIAK_URL);
+        final String bucket = UUID.randomUUID().toString();
+        final String key = UUID.randomUUID().toString();
+
+        RiakBucketInfo bucketInfo = new RiakBucketInfo();
+        bucketInfo.setAllowMult(true);
+        assertSuccess(c1.setBucketSchema(bucket, bucketInfo));
+
+        c1.store(new RiakObject(c1, bucket, key, "v".getBytes()));
+
+        final FetchResponse fm1 = c1.fetchMeta(bucket, key);
+
+        assertTrue(fm1.hasObject());
+        assertNull(fm1.getObject().getValue());
+        assertFalse(fm1.hasSiblings());
+
+        final FetchResponse fr = c1.fetch(bucket, key);
+
+        RiakObject ro = fr.getObject();
+
+        RiakObject ro2 = new RiakObject(c2, bucket, key);
+        ro2.copyData(ro);
+        ro2.setValue("v2".getBytes());
+
+        c1.store(ro);
+        c2.store(ro2);
+
+        FetchResponse fm2 = c1.fetchMeta(bucket, key);
+        // since there are siblings fetchMeta will do a full fetch to get them
+        assertTrue(fm2.hasObject());
+        assertNotNull(fm2.getObject().getValue());
+        assertTrue(fm2.hasSiblings());
+    }
 }

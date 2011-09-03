@@ -280,6 +280,20 @@ public abstract class ITestMapReduce {
         }
     }
 
+    @Test public void doErlangMapReduce_notFound() throws RiakException {
+        MapReduceResult result = client.mapReduce()
+        .addInput(BUCKET_NAME, UUID.randomUUID().toString())
+        .addInput(BUCKET_NAME, UUID.randomUUID().toString())
+        .addInput(BUCKET_NAME, "java_1")
+        .addMapPhase(new NamedErlangFunction("riak_kv_mapreduce","map_object_value"), "filter_notfound")
+        .execute();
+
+        assertNotNull(result);
+        List<Integer> items = new LinkedList<Integer>(result.getResult(Integer.class));
+        assertEquals(1, items.size());
+        assertEquals(new Integer(1), items.get(0));
+    }
+
     /**
      * A JS function that will cause a m/r timeout
      * @return String of js sleep function
