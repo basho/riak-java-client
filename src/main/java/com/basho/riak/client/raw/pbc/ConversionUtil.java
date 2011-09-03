@@ -31,6 +31,7 @@ import org.apache.http.impl.cookie.DateParseException;
 import org.apache.http.impl.cookie.DateUtils;
 
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
@@ -86,7 +87,13 @@ public final class ConversionUtil {
 
         builder.withValue(nullSafeToBytes(o.getValue()));
         builder.withVClock(nullSafeToBytes(o.getVclock()));
+        builder.withContentType(o.getContentType());
         builder.withVtag(o.getVtag());
+        ArrayList<RiakLink> ar = new ArrayList<RiakLink>();
+        for(com.basho.riak.pbc.RiakLink link: o.getLinks()){
+        	ar.add(new RiakLink(link.getBucket().toStringUtf8(), link.getKey().toStringUtf8(), link.getTag().toStringUtf8()));
+        }
+        builder.withLinks(ar); 
 
         Date lastModified = o.getLastModified();
 

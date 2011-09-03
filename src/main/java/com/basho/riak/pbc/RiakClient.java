@@ -95,6 +95,10 @@ public class RiakClient implements RiakMessageCodes {
 	    this.pool = new RiakConnectionPool(0, -1, InetAddress.getByName(host), port, 1000, bufferSizeKb, 1000);
 	    this.pool.start();
 	}
+	
+	public void close(){
+		pool.close();
+	}
 
 	RiakConnection getConnection() throws IOException {
         RiakConnection c = pool.getConnection(clientId);

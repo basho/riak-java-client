@@ -244,4 +244,8 @@ public class RiakObject {
         return d;
     }
 
+	public String getContentType() {
+		return contentType;
+	}
+
 }

@@ -181,8 +181,8 @@ public class HTTPClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.newapi.RiakObject
      * )
      */
-    public void store(IRiakObject object) throws IOException {
-        store(object, new StoreMeta(null, null, false));
+    public RiakResponse store(IRiakObject object) throws IOException {
+        return store(object, new StoreMeta(null, null, false));
     }
 
     /*
@@ -335,4 +335,7 @@ public class HTTPClientAdapter implements RawClient {
             throw new IOException(resp.getBodyAsString());
         }
     }
+
+	public void close() {
+	}
 }
