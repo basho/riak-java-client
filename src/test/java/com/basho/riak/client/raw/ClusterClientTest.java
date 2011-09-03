@@ -425,6 +425,11 @@ public class ClusterClientTest {
             return cluster;
         }
 
+		public void close() {
+			// TODO Auto-generated method stub
+			
+		}
+
     }
 
 }

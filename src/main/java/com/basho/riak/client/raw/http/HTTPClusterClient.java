@@ -118,4 +118,9 @@ public class HTTPClusterClient extends ClusterClient<HTTPClientConfig> {
             throw new IOException(e.toString());
         }
     }
+
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
 }
