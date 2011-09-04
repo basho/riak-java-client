@@ -68,6 +68,23 @@ public class ITestMapReduce {
         }
     }
 
+    private JSONArray receiveAllResults(MapReduceResponseSource response)
+        throws IOException, JSONException {
+        JSONArray results = new JSONArray();
+        MapReduceResponse mrr;
+        JSONArray latest;
+
+        while(response.hasNext()) {
+            mrr = response.next();
+            latest = mrr.getJSON();
+            if (latest != null)
+                for (int i = 0; i < latest.length(); i++)
+                    results.put(latest.get(i));
+        }
+
+        return results;
+    }
+
     @Test public void doLinkMapReduce() throws IOException, JSONException {
        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
@@ -80,8 +97,7 @@ public class ITestMapReduce {
 
         assertTrue(response.hasNext());
 
-        MapReduceResponse mrr = response.next();
-        JSONArray results = mrr.getJSON();
+        JSONArray results = receiveAllResults(response);
         assertEquals(TEST_ITEMS - 1, results.length());
     }
 
@@ -94,7 +110,7 @@ public class ITestMapReduce {
         builder.reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), true);
         MapReduceResponseSource response = builder.submit();
         assertTrue(response.hasNext());
-        JSONArray results = response.next().getJSON();
+        JSONArray results = receiveAllResults(response);
         assertEquals(TEST_ITEMS, results.length());
         assertEquals(0, results.getInt(0));
         assertEquals(73, results.getInt(73));
@@ -109,7 +125,7 @@ public class ITestMapReduce {
         builder.reduce(JavascriptFunction.named("Riak.reduceNumericSort"), true);
         MapReduceResponseSource response = builder.submit();
         assertTrue(response.hasNext());
-        JSONArray results = response.next().getJSON();
+        JSONArray results = receiveAllResults(response);
         assertEquals(TEST_ITEMS, results.length());
         assertEquals(0, results.getInt(0));
         assertEquals(73, results.getInt(73));
@@ -126,7 +142,7 @@ public class ITestMapReduce {
 
         MapReduceResponseSource response = c.mapReduce(mrJob);
         assertTrue(response.hasNext());
-        JSONArray results = response.next().getJSON();
+        JSONArray results = receiveAllResults(response);
         assertEquals(TEST_ITEMS, results.length());
         assertEquals(0, results.getInt(0));
         assertEquals(73, results.getInt(73));
