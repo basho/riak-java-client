@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -13,6 +13,7 @@
  */
 package com.basho.riak.pbc.itest;
 
+import static com.basho.riak.pbc.MapReduceResponseSource.readAllResults;
 import static com.basho.riak.client.http.Hosts.RIAK_HOST;
 import static com.basho.riak.client.http.Hosts.RIAK_PORT;
 import static org.junit.Assert.assertEquals;
@@ -33,11 +34,11 @@ import com.basho.riak.pbc.RiakObject;
 import com.basho.riak.pbc.mapreduce.ErlangFunction;
 import com.basho.riak.pbc.mapreduce.JavascriptFunction;
 import com.basho.riak.pbc.mapreduce.MapReduceBuilder;
-import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 
 /**
- * Exercises map/reduce features of the Riak client.
- * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_HOST }.
+ * Exercises map/reduce features of the Riak client. Assumes Riak is reachable
+ * at {@link com.basho.riak.client.http.Hosts#RIAK_HOST }.
+ * 
  * @see com.basho.riak.client.http.Hosts#RIAK_HOST
  */
 public class ITestMapReduce {
@@ -68,36 +69,19 @@ public class ITestMapReduce {
         }
     }
 
-    private JSONArray receiveAllResults(MapReduceResponseSource response)
-        throws IOException, JSONException {
-        JSONArray results = new JSONArray();
-        MapReduceResponse mrr;
-        JSONArray latest;
-
-        while(response.hasNext()) {
-            mrr = response.next();
-            latest = mrr.getJSON();
-            if (latest != null)
-                for (int i = 0; i < latest.length(); i++)
-                    results.put(latest.get(i));
-        }
-
-        return results;
-    }
-
     @Test public void doLinkMapReduce() throws IOException, JSONException {
-       final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
+        final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
-        MapReduceBuilder mrb = new MapReduceBuilder(c)
-            .setBucket(BUCKET).link(BUCKET, TAG, false)
-                .map(JavascriptFunction.named("Riak.mapValuesJson"), false)
-                    .reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), true);
+        MapReduceBuilder mrb = new MapReduceBuilder(c).
+            setBucket(BUCKET).link(BUCKET, TAG, false)
+            .map(JavascriptFunction.named("Riak.mapValuesJson"), false)
+            .reduce(new ErlangFunction("riak_kv_mapreduce","reduce_sort"), true);
 
         MapReduceResponseSource response = mrb.submit();
 
         assertTrue(response.hasNext());
 
-        JSONArray results = receiveAllResults(response);
+        JSONArray results = readAllResults(response);
         assertEquals(TEST_ITEMS - 1, results.length());
     }
 
@@ -110,7 +94,7 @@ public class ITestMapReduce {
         builder.reduce(new ErlangFunction("riak_kv_mapreduce", "reduce_sort"), true);
         MapReduceResponseSource response = builder.submit();
         assertTrue(response.hasNext());
-        JSONArray results = receiveAllResults(response);
+        JSONArray results = readAllResults(response);
         assertEquals(TEST_ITEMS, results.length());
         assertEquals(0, results.getInt(0));
         assertEquals(73, results.getInt(73));
@@ -125,7 +109,7 @@ public class ITestMapReduce {
         builder.reduce(JavascriptFunction.named("Riak.reduceNumericSort"), true);
         MapReduceResponseSource response = builder.submit();
         assertTrue(response.hasNext());
-        JSONArray results = receiveAllResults(response);
+        JSONArray results = readAllResults(response);
         assertEquals(TEST_ITEMS, results.length());
         assertEquals(0, results.getInt(0));
         assertEquals(73, results.getInt(73));
@@ -142,10 +126,34 @@ public class ITestMapReduce {
 
         MapReduceResponseSource response = c.mapReduce(mrJob);
         assertTrue(response.hasNext());
-        JSONArray results = receiveAllResults(response);
+        JSONArray results = readAllResults(response);
         assertEquals(TEST_ITEMS, results.length());
         assertEquals(0, results.getInt(0));
         assertEquals(73, results.getInt(73));
         assertEquals(197, results.getInt(197));
+    }
+
+    @Test public void doMultiPhaseResults() throws IOException, JSONException {
+        RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
+        MapReduceBuilder builder = new MapReduceBuilder();
+        builder.setBucket(BUCKET);
+        builder.map(JavascriptFunction.named("Riak.mapValuesJson"), true);
+        builder.reduce(JavascriptFunction.named("Riak.reduceNumericSort"), true);
+        JSONObject mrJob = builder.toJSON();
+
+        MapReduceResponseSource response = c.mapReduce(mrJob);
+        assertTrue(response.hasNext());
+        JSONArray results = readAllResults(response);
+
+        assertEquals(2, results.length());
+
+        JSONArray unsorted = (JSONArray) results.get(0);
+        JSONArray sorted = (JSONArray) results.get(1);
+
+        assertEquals(TEST_ITEMS, unsorted.length());
+        assertEquals(TEST_ITEMS, sorted.length());
+        assertEquals(0, sorted.getInt(0));
+        assertEquals(73, sorted.getInt(73));
+        assertEquals(197, sorted.getInt(197));
     }
 }
