@@ -38,7 +38,7 @@ public class KeySource implements Iterator<String> {
      * Create a Key Source from an http.{@link BucketResponse} in response to
      * {@link RiakClient#streamBucket(String)} request. The bucket response
      * contains a stream which this key source will close when this key source
-     * becomes weakly reachable. When you have finsihed iterating over the keys
+     * becomes weakly reachable. When you have finished iterating over the keys
      * do not retain the key source.
      * 
      * @param bucketResponse

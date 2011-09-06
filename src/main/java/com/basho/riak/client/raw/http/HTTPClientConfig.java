@@ -159,7 +159,7 @@ public class HTTPClientConfig implements Configuration {
      * </tr>
      * <tr>
      * <td>mapreducePath</td>
-     * <td>/mapreduce</td>
+     * <td>/mapred</td>
      * </tr>
      * <tr>
      * <td>httpClient</td>
@@ -187,7 +187,7 @@ public class HTTPClientConfig implements Configuration {
         private String host = "127.0.0.1";
         private int port = 8098;
         private String riakPath = "/riak";
-        private String mapreducePath = "/mapreduce";
+        private String mapreducePath = "/mapred";
         private HttpClient httpClient = null;
         private Integer timeout = null;
         private Integer maxConnections = null;

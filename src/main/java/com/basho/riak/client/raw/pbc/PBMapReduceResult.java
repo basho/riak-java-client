@@ -21,11 +21,11 @@ import java.util.concurrent.FutureTask;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
+import org.json.JSONArray;
 
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.pbc.MapReduceResponseSource;
-import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 
 /**
  * Concrete implementation of MapReduceResult that handles PB response stream
@@ -68,24 +68,8 @@ public class PBMapReduceResult implements MapReduceResult {
         rawResultTask = new FutureTask<String>(new Callable<String>() {
 
             public String call() throws Exception {
-                int resultCount = 0;
-                final StringBuilder sb = new StringBuilder();
-                String separator = "";
-                for (MapReduceResponse mrr : response) {
-                    // TODO investigate pb client null returns from MRRS
-                    if (mrr != null && mrr.response != null) {
-                        sb.append(separator).append(mrr.response.toStringUtf8());
-                        separator = ",";
-                        resultCount++;
-                    }
-                }
-                // ensure that the result is an array of JSON values, unless
-                // there was a single MapReduceResponse returned
-                if (resultCount != 1) {
-                    sb.insert(0, "[");
-                    sb.append("]");
-                }
-                return sb.toString();
+                JSONArray results = MapReduceResponseSource.readAllResults(response);
+                return results.toString();
             }
         });
     }

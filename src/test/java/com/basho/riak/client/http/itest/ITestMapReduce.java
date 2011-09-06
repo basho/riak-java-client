@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +38,7 @@ import com.basho.riak.client.http.mapreduce.filter.StringToIntFilter;
 import com.basho.riak.client.http.mapreduce.filter.TokenizeFilter;
 import com.basho.riak.client.http.request.MapReduceBuilder;
 import com.basho.riak.client.http.response.MapReduceResponse;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * Exercises map/reduce features of the Riak client.

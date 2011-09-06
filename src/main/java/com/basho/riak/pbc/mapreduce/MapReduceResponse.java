@@ -66,4 +66,12 @@ public class MapReduceResponse {
 	public String getContentType() {
 		return contentType.toStringUtf8();
 	}
+
+    public boolean hasPhase() {
+        return this.phase != null;
+    }
+
+    public Integer getPhase() {
+        return phase;
+    }
 }

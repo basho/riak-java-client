@@ -19,7 +19,12 @@
 package com.basho.riak.pbc;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import com.basho.riak.pbc.RPB.RpbMapRedResp;
 import com.basho.riak.pbc.mapreduce.MapReduceResponse;
@@ -89,4 +94,52 @@ public class MapReduceResponseSource extends
 
 	}
 
+	/**
+	 * Buffer the full set of results into a JSONArray
+	 * @param response the {@link MapReduceResponseSource}
+	 * @return a {@link JSONArray} with all phases and all results.
+	 * @throws IOException
+	 */
+	public static JSONArray readAllResults(final MapReduceResponseSource response) throws IOException {
+	    Map<Integer, JSONArray> phases = new LinkedHashMap<Integer, JSONArray>();
+        MapReduceResponse mrr;
+        JSONArray latest;
+        int phase = 0;
+
+        while (response.hasNext()) {
+            mrr = response.next();
+            try {
+                latest = mrr.getJSON();
+
+                if (latest != null) {
+                    phase = mrr.getPhase();
+                    JSONArray results;
+                    if (phases.containsKey(phase)) {
+                        results = phases.get(phase);
+                    } else {
+                        results = new JSONArray();
+                        phases.put(phase, results);
+                    }
+                    for (int i = 0; i < latest.length(); i++) {
+                        results.put(latest.get(i));
+                    }
+                }
+            } catch (JSONException e) {
+               throw new IOException(e);
+            }
+        }
+
+        JSONArray results;
+        // flatten phases
+        if (phases.size() == 1) {
+            results = phases.get(phase);
+        } else {
+            results = new JSONArray();
+
+            for (JSONArray p : phases.values()) {
+                results.put(p);
+            }
+        }
+        return results;
+	}
 }
