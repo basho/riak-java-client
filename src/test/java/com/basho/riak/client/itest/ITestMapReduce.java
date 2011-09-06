@@ -248,6 +248,7 @@ public abstract class ITestMapReduce {
     }
 
     @Test public void timeoutMapReduceThrowsTimeoutException() throws Exception {
+        final String bucketName = UUID.randomUUID().toString();
         // set up data
         final String json = "[{\"Date\":\"2010-01-04\",\"Open\":626.95,\"High\":629.51,\"Low\":624.24,\"Close\":626.75,\"Volume\":1956200,\"Adj. Close\":626.75}," +
                 "{\"Date\":\"2010-01-05\",\"Open\":627.18,\"High\":627.84,\"Low\":621.54,\"Close\":623.99,\"Volume\":3004700,\"Adj. Close\":623.99}," +
@@ -259,7 +260,7 @@ public abstract class ITestMapReduce {
                                     .readValue(json,
                                                TypeFactory.collectionType(LinkedList.class, GoogleStockDataItem.class));
 
-        final Bucket b = client.createBucket("goog").execute();
+        final Bucket b = client.createBucket(bucketName).execute();
         final DomainBucket<GoogleStockDataItem> bucket = DomainBucket.builder(b, GoogleStockDataItem.class).build();
 
         for(GoogleStockDataItem i : expected) {
@@ -267,7 +268,7 @@ public abstract class ITestMapReduce {
         }
 
         try {
-            client.mapReduce("goog").addMapPhase(new JSSourceFunction(sleepJs())).execute();
+            client.mapReduce(bucketName).addMapPhase(new JSSourceFunction(sleepJs())).execute();
             fail("expected MapReduceTimeoutException");
         } catch (MapReduceTimeoutException e) {
             // NO-OP

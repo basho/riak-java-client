@@ -263,12 +263,17 @@ public class HTTPClientAdapter implements RawClient {
      */
     public Iterable<String> listKeys(String bucketName) throws IOException {
         final BucketResponse bucketResponse = client.streamBucket(bucketName);
-        final KeySource keyStream = new KeySource(bucketResponse);
-        return new Iterable<String>() {
-            public Iterator<String> iterator() {
-                return keyStream;
-            }
-        };
+        if (bucketResponse.isSuccess()) {
+            final KeySource keyStream = new KeySource(bucketResponse);
+            return new Iterable<String>() {
+                public Iterator<String> iterator() {
+                    return keyStream;
+                }
+            };
+        } else {
+            throw new IOException("stream keys for bucket " + bucketName + " failed with response code : " +
+                                  bucketResponse.getStatusCode() + ", body: " + bucketResponse.getBodyAsString());
+        }
     }
 
     /*
