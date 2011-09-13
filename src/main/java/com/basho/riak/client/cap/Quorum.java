@@ -13,45 +13,90 @@
  */
 package com.basho.riak.client.cap;
 
+import com.basho.riak.client.builders.BucketPropertiesBuilder;
+
 /**
- * Encapsulates a buckets r/w/dw/rw quora as either the symbolic Quora or an int.
+ * Encapsulates a buckets r/w/dw/rw/p/pr/pw quora as either the symbolic Quora or an
+ * int.
  * <p>
- * TODO: usage and accessors.
  * </p>
+ * @see BucketPropertiesBuilder
  * @author russell
  */
 public final class Quorum {
-    private Integer i;
-    private Quora quorum;
+    private final int i;
+    private final Quora quorum;
 
     /**
      * Construct an instance that wraps an int value
+     * 
      * @param i
      */
     public Quorum(int i) {
+        this.quorum = Quora.INTEGER;
         this.i = i;
     }
 
     /**
      * Construct and instance that wraps a symbolic Quora
+     * 
      * @param quorum
      */
     public Quorum(Quora quorum) {
         this.quorum = quorum;
+        this.i = quorum.getValue();
     }
 
-    /* (non-Javadoc)
+    public boolean isSymbolic() {
+        return !Quora.INTEGER.equals(quorum);
+    }
+
+    /**
+     * The int value of the quorum. Call isSymbolic to determine if you should
+     * use this.
+     * 
+     * @return the int value. Will be a negative number for symbolic values.
+     */
+    public int getIntValue() {
+        return this.i;
+    }
+
+    /**
+     * Get the Symbolic value of this quorum.
+     * 
+     * A value of {@link Quora#INTEGER} means that the quorum has a meaningful
+     * int value
+     * 
+     * @return
+     */
+    public Quora getSymbolicValue() {
+        return quorum;
+    }
+
+    /**
+     * @return the name given to this quorum's symbolic value
+     * @see Quora#getName()
+     */
+    public String getName() {
+        return quorum.getName();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((i == null) ? 0 : i.hashCode());
+        result = prime * result + i;
         result = prime * result + ((quorum == null) ? 0 : quorum.hashCode());
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override public boolean equals(Object obj) {
@@ -65,11 +110,7 @@ public final class Quorum {
             return false;
         }
         Quorum other = (Quorum) obj;
-        if (i == null) {
-            if (other.i != null) {
-                return false;
-            }
-        } else if (!i.equals(other.i)) {
+        if (i != other.i) {
             return false;
         }
         if (quorum != other.quorum) {

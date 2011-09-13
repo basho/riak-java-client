@@ -50,7 +50,7 @@ public class ITestMapReduceSearch {
 
     @BeforeClass public static void setup() {
         RiakClient c = new RiakClient(RIAK_URL);
-        
+
         indexBucket(c, SEARCH_BUCKET_NAME);
 
         for (int i = 0; i < TEST_ITEMS; i++) {

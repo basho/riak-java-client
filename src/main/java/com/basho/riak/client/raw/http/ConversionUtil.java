@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.raw.http;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,22 +26,40 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.http.impl.cookie.DateUtils;
+import org.codehaus.jackson.JsonEncoding;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.Version;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.module.SimpleModule;
 import org.codehaus.jackson.map.type.TypeFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.http.request.RequestMeta;
+import com.basho.riak.client.http.request.RiakWalkSpec;
+import com.basho.riak.client.http.response.BucketResponse;
+import com.basho.riak.client.http.response.MapReduceResponse;
+import com.basho.riak.client.http.response.WalkResponse;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.LinkWalkStep;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.query.functions.NamedFunction;
+import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
@@ -48,12 +67,6 @@ import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
-import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.request.RiakWalkSpec;
-import com.basho.riak.client.http.response.BucketResponse;
-import com.basho.riak.client.http.response.MapReduceResponse;
-import com.basho.riak.client.http.response.WalkResponse;
-import com.basho.riak.client.http.util.Constants;
 
 /**
  * Static methods used internally by {@link HTTPClientAdapter} for converting
@@ -64,6 +77,14 @@ import com.basho.riak.client.http.util.Constants;
  * 
  */
 public final class ConversionUtil {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        OBJECT_MAPPER.registerModule(new SimpleModule("http.ConversionUtil", Version.unknownVersion())
+        .addDeserializer(Quorum.class, new QuorumDeserializer())
+        .addDeserializer(NamedErlangFunction.class, new NamedErlangFunctionDeserializer())
+        .addDeserializer(NamedJSFunction.class, new NamedJSFunctionDeserializer()));
+    }
 
     /**
      * All static methods so we don't want any instances created
@@ -260,14 +281,50 @@ public final class ConversionUtil {
      *            the {@link BucketResponse} to copy
      * @return a {@link BucketProperties} populated from <code>response</code>
      */
-    static BucketProperties convert(BucketResponse response) {
-        RiakBucketInfo bucketInfo = response.getBucketInfo();
-        return new BucketPropertiesBuilder()
-            .allowSiblings(bucketInfo.getAllowMult())
-            .nVal(bucketInfo.getNVal())
-            .chashKeyFunction(convert(bucketInfo.getCHashFun()))
-            .linkWalkFunction(convert(bucketInfo.getLinkFun()))
-            .build();
+    static BucketProperties convert(BucketResponse response) throws IOException {
+        String schema = response.getBodyAsString();
+        JsonNode root = OBJECT_MAPPER.readValue(schema, JsonNode.class);
+
+        BucketPropertiesBuilder builder = new BucketPropertiesBuilder();
+        JsonNode props = root.path(Constants.FL_SCHEMA);
+
+        if (props.isMissingNode()) {
+            throw new JsonMappingException("no 'props' field found");
+        }
+
+        builder.allowSiblings(props.path(Constants.FL_SCHEMA_ALLOW_MULT).getBooleanValue());
+        builder.lastWriteWins(props.path(Constants.FL_SCHEMA_LAST_WRITE_WINS).getBooleanValue());
+        builder.nVal(props.path(Constants.FL_SCHEMA_NVAL).getIntValue());
+        builder.backend(props.path(Constants.FL_SCHEMA_BACKEND).getTextValue());
+        builder.smallVClock(props.path(Constants.FL_SCHEMA_SMALL_VCLOCK).getIntValue());
+        builder.bigVClock(props.path(Constants.FL_SCHEMA_BIG_VCLOCK).getIntValue());
+        builder.youngVClock(props.path(Constants.FL_SCHEMA_YOUNG_VCLOCK).getLongValue());
+        builder.oldVClock(props.path(Constants.FL_SCHEMA_OLD_VCLOCK).getLongValue());
+
+        for (JsonNode n : props.path(Constants.FL_SCHEMA_PRECOMMIT)) {
+            if (n.path(Constants.FL_SCHEMA_FUN_NAME).isMissingNode()) {
+                builder.addPrecommitHook(OBJECT_MAPPER.treeToValue(n, NamedErlangFunction.class));
+            } else {
+                builder.addPrecommitHook(OBJECT_MAPPER.treeToValue(n, NamedJSFunction.class));
+            }
+        }
+
+        for (JsonNode n : props.path(Constants.FL_SCHEMA_POSTCOMMIT)) {
+            builder.addPostcommitHook(OBJECT_MAPPER.treeToValue(n, NamedErlangFunction.class));
+        }
+
+        builder.r(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_R), Quorum.class));
+        builder.w(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_W), Quorum.class));
+        builder.dw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_DW), Quorum.class));
+        builder.rw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_RW), Quorum.class));
+
+        builder.chashKeyFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_CHASHFUN),
+                                                           NamedErlangFunction.class));
+        builder.linkWalkFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_LINKFUN),
+                                                           NamedErlangFunction.class));
+        builder.search(props.path(Constants.FL_SCHEMA_SEARCH).getBooleanValue());
+
+        return builder.build();
     }
 
     /**
@@ -300,29 +357,124 @@ public final class ConversionUtil {
      *            the {@link BucketProperties} to convert
      * @return a {@link RiakBucketInfo} populated from the
      *         {@link BucketProperties}
+     * @throws IOException
      */
-    static RiakBucketInfo convert(BucketProperties bucketProperties) {
-        RiakBucketInfo rbi = new RiakBucketInfo();
-
-        if (bucketProperties.getAllowSiblings() != null) {
-            rbi.setAllowMult(bucketProperties.getAllowSiblings());
-        }
-
-        if (bucketProperties.getNVal() != null) {
-            rbi.setNVal(bucketProperties.getNVal());
-        }
-
-        final NamedErlangFunction chashKeyFun = bucketProperties.getChashKeyFunction();
-        if (chashKeyFun != null) {
-            rbi.setCHashFun(chashKeyFun.getMod(), chashKeyFun.getFun());
-        }
-
-        final NamedErlangFunction linkwalkFun = bucketProperties.getLinkWalkFunction();
-        if (linkwalkFun != null) {
-            rbi.setLinkFun(linkwalkFun.getMod(), linkwalkFun.getFun());
+    static RiakBucketInfo convert(BucketProperties bucketProperties) throws IOException {
+        String bucketSchemaJson = toJSON(bucketProperties);
+        RiakBucketInfo rbi;
+        try {
+            rbi = new RiakBucketInfo(new JSONObject(bucketSchemaJson), null);
+        } catch (JSONException e) {
+            throw new IOException("Failed to create bucket schema JSON from JSON string: " + bucketSchemaJson, e);
         }
 
         return rbi;
+    }
+
+    /**
+     * Converts a {@link BucketProperties} to a JSON string
+     * @param bp
+     * @return a String of JSON that is acceptable to {@link RiakBucketInfo}
+     * @throws IOException
+     * TODO: move this to a custom serializer?
+     */
+    private static String toJSON(BucketProperties bp) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        JsonGenerator jg = new JsonFactory().createJsonGenerator(out, JsonEncoding.UTF8);
+
+        jg.writeStartObject();
+        writeIfNotNull(jg, bp.getAllowSiblings(), Constants.FL_SCHEMA_ALLOW_MULT);
+        writeIfNotNull(jg, bp.getNVal(), Constants.FL_SCHEMA_NVAL);
+        writeIfNotNull(jg, bp.getLastWriteWins(), Constants.FL_SCHEMA_LAST_WRITE_WINS);
+        writeIfNotNull(jg, bp.getBackend(), Constants.FL_SCHEMA_BACKEND);
+        writeIfNotNull(jg, bp.getSmallVClock(), Constants.FL_SCHEMA_SMALL_VCLOCK);
+        writeIfNotNull(jg, bp.getBigVClock(), Constants.FL_SCHEMA_BIG_VCLOCK);
+        writeIfNotNull(jg, bp.getYoungVClock(), Constants.FL_SCHEMA_YOUNG_VCLOCK);
+        writeIfNotNull(jg, bp.getOldVClock(), Constants.FL_SCHEMA_OLD_VCLOCK);
+        writeIfNotNull(jg, bp.getR(), Constants.FL_SCHEMA_R);
+        writeIfNotNull(jg, bp.getRW(), Constants.FL_SCHEMA_RW);
+        writeIfNotNull(jg, bp.getW(), Constants.FL_SCHEMA_W);
+        writeIfNotNull(jg, bp.getDW(), Constants.FL_SCHEMA_DW);
+        writeIfNotNull(jg, bp.getChashKeyFunction(), Constants.FL_SCHEMA_CHASHFUN);
+        writeIfNotNull(jg, bp.getLinkWalkFunction(), Constants.FL_SCHEMA_LINKFUN);
+        writeIfNotNull(jg, bp.getPostcommitHooks(), Constants.FL_SCHEMA_POSTCOMMIT);
+        writeIfNotNull(jg, bp.getPrecommitHooks(), Constants.FL_SCHEMA_PRECOMMIT);
+        writeIfNotNull(jg, bp.getSearch(), Constants.FL_SCHEMA_SEARCH);
+
+        jg.writeEndObject();
+
+        jg.flush();
+        return CharsetUtils.asUTF8String(out.toByteArray());
+    }
+
+    // TODO move to a serializer?
+
+    private static void writeIfNotNull(JsonGenerator jg, Boolean value, String fieldName) throws IOException {
+        if (value != null) {
+            jg.writeBooleanField(fieldName, value);
+        }
+    }
+
+    private static void writeIfNotNull(JsonGenerator jg, String value, String fieldName) throws IOException {
+        if (value != null) {
+            jg.writeStringField(fieldName, value);
+        }
+    }
+
+    private static void writeIfNotNull(JsonGenerator jg, NamedErlangFunction value, String fieldName)
+            throws IOException {
+        if (value != null) {
+            jg.writeFieldName(fieldName);
+            writeNamedFun(jg, value);
+        }
+    }
+
+    private static void writeNamedFun(JsonGenerator jg, NamedFunction nf) throws IOException {
+        jg.writeStartObject();
+        if(nf instanceof NamedErlangFunction) {
+            NamedErlangFunction nef = (NamedErlangFunction)nf;
+            jg.writeStringField(Constants.FL_SCHEMA_FUN_MOD, nef.getMod());
+            jg.writeStringField(Constants.FL_SCHEMA_FUN_FUN, nef.getFun());
+        } else {
+            NamedJSFunction njsf = (NamedJSFunction)nf;
+            jg.writeStringField(Constants.FL_SCHEMA_FUN_NAME, njsf.getFunction());
+        }
+        jg.writeEndObject();
+    }
+
+    private static void writeIfNotNull(JsonGenerator jg, Quorum q, String fieldName) throws IOException {
+        if (q != null) {
+            if (q.isSymbolic()) {
+                jg.writeStringField(fieldName, q.getName());
+            } else {
+                jg.writeNumberField(fieldName, q.getIntValue());
+            }
+        }
+    }
+
+    private static void writeIfNotNull(JsonGenerator jg, Integer value, String fieldName) throws IOException {
+        if (value != null) {
+            jg.writeNumberField(fieldName, value);
+        }
+    }
+
+    private static void writeIfNotNull(JsonGenerator jg, Long value, String fieldName) throws IOException {
+        if (value != null) {
+            jg.writeNumberField(fieldName, value);
+        }
+    }
+
+    private static void writeIfNotNull(JsonGenerator jg, Collection<? extends NamedFunction> value, String fieldName)
+            throws IOException {
+        if (value != null) {
+            jg.writeArrayFieldStart(fieldName);
+
+            for(NamedFunction nf : value) {
+                writeNamedFun(jg, nf);
+            }
+
+            jg.writeEndArray();
+        }
     }
 
     /**
@@ -344,8 +496,6 @@ public final class ConversionUtil {
                 throw new IOException(resp.getBodyAsString());
             }
         }
-        final ObjectMapper om = new ObjectMapper();
-
         final MapReduceResult result = new MapReduceResult() {
 
             public String getResultRaw() {
@@ -354,7 +504,7 @@ public final class ConversionUtil {
 
             public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
                 try {
-                    return om.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
+                    return OBJECT_MAPPER.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
                 } catch (IOException e) {
                     throw new ConversionException(e);
                 }

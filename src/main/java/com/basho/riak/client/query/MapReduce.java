@@ -29,7 +29,6 @@ import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.serialize.FunctionToJson;
 import com.basho.riak.client.raw.ErlangTermErrorParser;
-import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.pbc.RiakError;

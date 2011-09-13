@@ -22,25 +22,30 @@ import com.basho.riak.client.query.functions.NamedFunction;
  */
 public final class BucketPropertiesBuilder {
 
-    public NamedErlangFunction linkWalkFunction;
-    public NamedErlangFunction chashKeyFunction;
-    public Quorum rw;
-    public Quorum dw;
-    public Quorum w;
-    public Quorum r;
-    public Collection<NamedErlangFunction> postcommitHooks = new ArrayList<NamedErlangFunction>();
-    public Collection<NamedFunction> precommitHooks = new ArrayList<NamedFunction>();
-    public Long oldVClock;
-    public Long youngVClock;
-    public Integer bigVClock;
-    public Integer smallVClock;
-    public String backend;
-    public int nVal = 3;
-    public Boolean lastWriteWins;
-    public boolean allowSiblings = false;
+    private NamedErlangFunction linkWalkFunction;
+    private NamedErlangFunction chashKeyFunction;
+    private Quorum rw;
+    private Quorum dw;
+    private Quorum w;
+    private Quorum r;
+    private Collection<NamedFunction> precommitHooks;
+    private Collection<NamedErlangFunction> postcommitHooks;
+    private Long oldVClock;
+    private Long youngVClock;
+    private Integer bigVClock;
+    private Integer smallVClock;
+    private String backend;
+    private int nVal = 3;
+    private Boolean lastWriteWins;
+    private boolean allowSiblings = false;
+    private Boolean search;
 
     public BucketProperties build() {
-        return new DefaultBucketProperties(this);
+        return new DefaultBucketProperties(allowSiblings, lastWriteWins, nVal,
+                                           backend, smallVClock, bigVClock, youngVClock,
+                                           oldVClock, precommitHooks, postcommitHooks,
+                                           r, w, dw, rw, chashKeyFunction, linkWalkFunction,
+                                           search);
     }
 
     /**
@@ -58,8 +63,8 @@ public final class BucketPropertiesBuilder {
         b.bigVClock = p.getBigVClock();
         b.youngVClock = p.getYoungVClock();
         b.oldVClock = p.getOldVClock();
-        b.postcommitHooks.addAll(p.getPostcommitHooks());
-        b.precommitHooks.addAll(p.getPrecommitHooks());
+        b.precommitHooks = p.getPrecommitHooks() == null ? null : new ArrayList<NamedFunction>(p.getPrecommitHooks());
+        b.postcommitHooks = p.getPostcommitHooks() == null ? null : new ArrayList<NamedErlangFunction>(p.getPostcommitHooks());
         b.r = p.getR();
         b.w = p.getW();
         b.dw = p.getDW();
@@ -175,6 +180,11 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
+    public BucketPropertiesBuilder r(Quorum r) {
+        this.r = r;
+        return this;
+    }
+
     /**
      * @param w
      * @return
@@ -186,6 +196,11 @@ public final class BucketPropertiesBuilder {
 
     public BucketPropertiesBuilder w(int w) {
         this.w = new Quorum(w);
+        return this;
+    }
+
+    public BucketPropertiesBuilder w(Quorum w) {
+        this.w = w;
         return this;
     }
 
@@ -203,6 +218,10 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
+    public BucketPropertiesBuilder rw(Quorum rw) {
+        this.rw = rw;
+        return this;
+    }
     /**
      * @param dw
      * @return
@@ -214,6 +233,20 @@ public final class BucketPropertiesBuilder {
 
     public BucketPropertiesBuilder dw(int dw) {
         this.dw = new Quorum(dw);
+        return this;
+    }
+
+    public BucketPropertiesBuilder dw(Quorum dw) {
+        this.dw = dw;
+        return this;
+    }
+
+    /**
+     * Enable the bucket for search
+     * @param search
+     */
+    public BucketPropertiesBuilder search(boolean search) {
+        this.search = true;
         return this;
     }
 }
