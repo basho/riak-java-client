@@ -16,7 +16,6 @@ package com.basho.riak.client.itest;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.http.Hosts;
 
 /**
