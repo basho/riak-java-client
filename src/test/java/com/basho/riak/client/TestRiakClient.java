@@ -79,6 +79,7 @@ public class TestRiakClient {
         impl.store(object, meta);
         verify(mockHelper).store(object, meta);
 
+        when(mockHelper.fetchMeta(bucket, key, meta)).thenReturn(mockHttpResponse);
         impl.fetchMeta(bucket, key, meta);
         verify(mockHelper).fetchMeta(bucket, key, meta);
 
@@ -116,6 +117,7 @@ public class TestRiakClient {
         impl.store(object);
         verify(impl).store(object, null);
 
+        when(mockHelper.fetchMeta(eq(bucket), eq(key), any(RequestMeta.class))).thenReturn(mockHttpResponse);
         impl.fetchMeta(bucket, key);
         verify(impl).fetchMeta(bucket, key, null);
 
@@ -163,6 +165,7 @@ public class TestRiakClient {
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
 
+        when(mockHelper.fetchMeta(bucket, key, meta)).thenReturn(mockHttpResponse);
         impl.fetchMeta(bucket, key, meta);
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);
@@ -266,4 +269,22 @@ public class TestRiakClient {
 
         assertSame(impl, r.getSteps().get(0).get(0).getRiakClient());
    }
+
+   @Test public void fetch_meta_issues_a_fetch_if_siblings_present() {
+		when(mockHttpResponse.getStatusCode()).thenReturn(300);
+		when(mockHelper.fetchMeta(bucket, key, meta)).thenReturn(
+				mockHttpResponse);
+		impl.fetchMeta(bucket, key, meta);
+		verify(mockHelper).fetchMeta(bucket, key, meta);
+		verify(mockHelper).fetch(bucket, key, meta, false);
+	}
+
+	@Test public void fetch_meta_does_not_issue_a_fetch_if_siblings_not_present() {
+		when(mockHttpResponse.getStatusCode()).thenReturn(200);
+		when(mockHelper.fetchMeta(bucket, key, meta)).thenReturn(
+				mockHttpResponse);
+		impl.fetchMeta(bucket, key, meta);
+		verify(mockHelper).fetchMeta(bucket, key, meta);
+		verify(mockHelper, never()).fetch(bucket, key, meta, false);
+	}
 }

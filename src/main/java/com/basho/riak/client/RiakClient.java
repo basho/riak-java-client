@@ -243,34 +243,50 @@ public class RiakClient {
         return store(object, null);
     }
 
-    /**
-     * Fetch metadata (e.g. vclock, last modified, vtag) for the
-     * {@link RiakObject} stored at <code>bucket</code> and <code>key</code>.
-     * 
-     * @param bucket
-     *            The bucket containing the {@link RiakObject} to fetch.
-     * @param key
-     *            The key of the {@link RiakObject} to fetch.
-     * @param meta
-     *            Extra metadata to attach to the request such as an r- value
-     *            for the request, HTTP headers, and other query parameters. See
-     *            {@link RequestMeta#readParams(int)}.
-     * 
-     * @return {@link FetchResponse} containing HTTP response information and a
-     *         {@link RiakObject} containing only metadata and no value.
-     * 
-     * @throws RiakIORuntimeException
-     *             If an error occurs during communication with the Riak server.
-     * @throws RiakResponseRuntimeException
-     *             If the Riak server returns a malformed response.
-     */
-    public FetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
-        try {
-            return getFetchResponse(helper.fetchMeta(bucket, key, meta));
-        } catch (RiakResponseRuntimeException e) {
-            return new FetchResponse(helper.toss(e), this);
-        }
-    }
+	/**
+	 * Fetch metadata (e.g. vclock, last modified, vtag) for the
+	 * {@link RiakObject} stored at <code>bucket</code> and <code>key</code>.
+	 * <p>
+	 * NOTE: if there a sibling values (HTTP status code 300), then a full
+	 * {@link RiakClient#fetch(String, String, RequestMeta)} is executed as well
+	 * to get all meta values. Examine the {@link FetchResponse#hasSiblings()}
+	 * value to determine if you need to perform conflict resolution.
+	 * </p>
+	 * 
+	 * @param bucket
+	 *            The bucket containing the {@link RiakObject} to fetch.
+	 * @param key
+	 *            The key of the {@link RiakObject} to fetch.
+	 * @param meta
+	 *            Extra metadata to attach to the request such as an r- value
+	 *            for the request, HTTP headers, and other query parameters. See
+	 *            {@link RequestMeta#readParams(int)}.
+	 * 
+	 * @return {@link FetchResponse} containing HTTP response information and a
+	 *         {@link RiakObject} containing only metadata and no value.
+	 * 
+	 * @throws RiakIORuntimeException
+	 *             If an error occurs during communication with the Riak server.
+	 * @throws RiakResponseRuntimeException
+	 *             If the Riak server returns a malformed response.
+	 */
+	public FetchResponse fetchMeta(String bucket, String key, RequestMeta meta) {
+		try {
+			if (meta == null) {
+				meta = new RequestMeta();
+			}
+			setAcceptHeader(meta);
+			HttpResponse resp = helper.fetchMeta(bucket, key, meta);
+
+			if (resp.getStatusCode() != 300) {
+				return getFetchResponse(resp);
+			} else {
+				return fetch(bucket, key, meta);
+			}
+		} catch (RiakResponseRuntimeException e) {
+			return new FetchResponse(helper.toss(e), this);
+		}
+	}
 
     public FetchResponse fetchMeta(String bucket, String key) {
         return fetchMeta(bucket, key, null);
@@ -338,12 +354,7 @@ public class RiakClient {
             meta = new RequestMeta();
         }
 
-        String accept = meta.getHeader(Constants.HDR_ACCEPT);
-        if (accept == null) {
-            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
-        } else {
-            meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
-        }
+        setAcceptHeader(meta);
 
         HttpResponse r = helper.fetch(bucket, key, meta, streamResponse);
 
@@ -354,6 +365,15 @@ public class RiakClient {
         }
 
     }
+
+	private void setAcceptHeader(RequestMeta meta) {
+		String accept = meta.getHeader(Constants.HDR_ACCEPT);
+        if (accept == null) {
+            meta.setHeader(Constants.HDR_ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        } else {
+            meta.setHeader(Constants.HDR_ACCEPT, accept + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        }
+	}
 
     /**
      * Fetch and process the object stored at <code>bucket</code> and
