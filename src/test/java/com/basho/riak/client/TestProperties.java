@@ -11,27 +11,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.itest;
+package com.basho.riak.client;
 
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.http.Hosts;
 
 /**
  * @author russell
+ * 
  */
-public class ITestMapReduceSearchHTTP extends ITestMapReduceSearch {
+public final class TestProperties {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.itest.ITestMapReduceSearch#getClient()
-     */
-    @Override protected IRiakClient getClient() throws RiakException {
-        System.out.println(System.getProperty(Hosts.PREFIX + TestProperties.SEARCH_PROPERTY));
-        return RiakFactory.httpClient(Hosts.RIAK_URL);
+    public static final String SEARCH_PROPERTY = "search";
+    public static final boolean SEARCH_ENABLED = Boolean.parseBoolean(System.getProperty(Hosts.PREFIX + SEARCH_PROPERTY,
+                                                                                         "false"));
+
+    private TestProperties() {};
+
+    public static boolean isSearchEnabled() {
+        return SEARCH_ENABLED;
     }
 
 }

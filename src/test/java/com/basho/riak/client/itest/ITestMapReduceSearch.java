@@ -21,11 +21,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.RiakBucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
@@ -53,8 +55,7 @@ public abstract class ITestMapReduceSearch {
     public static int TEST_ITEMS = 200;
 
     @Before public  void setup() throws RiakException {
-        // TODO, something like this
-        // Assume.assumeTrue(TestProperties.isSearchEnabled());
+        Assume.assumeTrue(TestProperties.isSearchEnabled());
         client = getClient();
         final Bucket b = indexBucket(client, SEARCH_BUCKET_NAME);
         bucket = RiakBucket.newRiakBucket(b);
@@ -74,8 +75,10 @@ public abstract class ITestMapReduceSearch {
     }
 
     @After public void teardown() throws RiakException {
-        for (int i = 0; i < TEST_ITEMS; i++) {
-            bucket.delete("java_" + Integer.toString(i));
+        if (bucket != null) {
+            for (int i = 0; i < TEST_ITEMS; i++) {
+                bucket.delete("java_" + Integer.toString(i));
+            }
         }
     }
 
