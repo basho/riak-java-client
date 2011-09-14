@@ -96,4 +96,9 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
         }
         return pool;
     }
+
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
 }

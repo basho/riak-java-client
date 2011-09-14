@@ -88,6 +88,7 @@ public final class ConversionUtil {
 
         builder.withValue(nullSafeToBytes(o.getValue()));
         builder.withVClock(nullSafeToBytes(o.getVclock()));
+        builder.withContentType(o.getContentType());
         builder.withVtag(o.getVtag());
 
         Date lastModified = o.getLastModified();

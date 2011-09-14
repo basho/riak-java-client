@@ -85,9 +85,10 @@ public interface RawClient {
      * 
      * @param object
      *            the data to store as an {@link IRiakObject}
+     * @return 
      * @throws IOException
      */
-    void store(IRiakObject object) throws IOException;
+    RiakResponse store(IRiakObject object) throws IOException;
 
     /**
      * Delete the data at <code>bucket/key</code>
@@ -206,4 +207,6 @@ public interface RawClient {
      *             if Riak is not reachable or returns anything other than OK
      */
     public void ping() throws IOException;
+
+	public abstract void close();
 }

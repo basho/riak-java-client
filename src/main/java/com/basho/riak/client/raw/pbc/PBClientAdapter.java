@@ -48,6 +48,7 @@ import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
+import com.basho.riak.pbc.RiakConnectionPool;
 import com.google.protobuf.ByteString;
 
 /**
@@ -73,6 +74,17 @@ public class PBClientAdapter implements RawClient {
      */
     public PBClientAdapter(String host, int port) throws IOException {
         this.client = new RiakClient(host, port);
+    }
+    
+    public PBClientAdapter(RiakConnectionPool pool, byte[] clientId) throws IOException {
+    	this.client= new RiakClient(pool);
+    	if(clientId.length>4)
+    		throw new IllegalArgumentException("clientid length is 4 bytes");
+    	client.setClientID(ByteString.copyFrom(clientId));
+    }
+    
+	public void close(){
+    	client.close();
     }
 
     /**
@@ -148,8 +160,8 @@ public class PBClientAdapter implements RawClient {
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.RiakObject
      * )
      */
-    public void store(IRiakObject object) throws IOException {
-        store(object, new StoreMeta(null, null, false));
+    public RiakResponse store(IRiakObject object) throws IOException {
+        return store(object, new StoreMeta(null, null, false));
     }
 
     /*

@@ -15,6 +15,7 @@ package com.basho.riak.pbc;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
@@ -129,6 +130,10 @@ public class RiakConnectionPool {
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
         warmUp();
+    }
+    
+    public RiakConnectionPool(String host, int port) throws UnknownHostException, IOException {
+    	this(0, -1, InetAddress.getByName(host), port, 1000, 16, 1000);
     }
 
     /**
@@ -318,4 +323,13 @@ public class RiakConnectionPool {
             }
         }
     }
+
+	public void close() {
+		for(RiakConnection con : available){
+			try{
+				con.close();
+			}catch(Throwable e){}
+		}
+		
+	}
 }

@@ -112,9 +112,9 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * com.basho.riak.client.raw.RawClient#store(com.basho.riak.client.IRiakObject
      * )
      */
-    public void store(IRiakObject object) throws IOException {
+    public RiakResponse store(IRiakObject object) throws IOException {
         final RawClient delegate = getDelegate();
-        delegate.store(object);
+        return delegate.store(object);
     }
 
     /*
