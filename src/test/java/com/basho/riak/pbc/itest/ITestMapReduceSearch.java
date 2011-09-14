@@ -23,10 +23,12 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.http.itest.ITestMapReduceSearch.Digit;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RiakClient;
@@ -49,6 +51,7 @@ public class ITestMapReduceSearch {
     public static int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() throws Exception {
+        Assume.assumeTrue(TestProperties.isSearchEnabled());
         final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
         for (int i = 0; i < TEST_ITEMS; i++) {
 			RiakObject searchObject = new RiakObject(SEARCH_BUCKET_NAME, "java_" + Integer.toString(i), "{\"foo\":\"" + Digit.values()[i % 10].toString().toLowerCase() + "\"}");
@@ -58,10 +61,12 @@ public class ITestMapReduceSearch {
     }
 
     @AfterClass public static void teardown() throws Exception {
-        final RiakClient c = new RiakClient(RIAK_HOST);
+        if (TestProperties.isSearchEnabled()) {
+            final RiakClient c = new RiakClient(RIAK_HOST, RIAK_PORT);
 
-        for (int i = 0; i < TEST_ITEMS; i++) {
-			c.delete(SEARCH_BUCKET_NAME, "java_" + Integer.toString(i));
+            for (int i = 0; i < TEST_ITEMS; i++) {
+                c.delete(SEARCH_BUCKET_NAME, "java_" + Integer.toString(i));
+            }
         }
     }
     

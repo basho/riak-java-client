@@ -30,7 +30,6 @@ public class ITestMapReduceSearchHTTP extends ITestMapReduceSearch {
      * @see com.basho.riak.client.itest.ITestMapReduceSearch#getClient()
      */
     @Override protected IRiakClient getClient() throws RiakException {
-        System.out.println(System.getProperty(Hosts.PREFIX + TestProperties.SEARCH_PROPERTY));
         return RiakFactory.httpClient(Hosts.RIAK_URL);
     }
 
