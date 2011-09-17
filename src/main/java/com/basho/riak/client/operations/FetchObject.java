@@ -124,7 +124,7 @@ public class FetchObject<T> implements RiakOperation<T> {
      * @param r an int for the read quorum
      * @return this
      */
-    public FetchObject<T> r(int r) {
+    public FetchObject<T> r(Integer r) {
         this.r = r;
         return this;
     }

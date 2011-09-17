@@ -16,6 +16,7 @@ package com.basho.riak.client.itest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
@@ -136,5 +137,31 @@ public abstract class ITestDomainBucket {
             .r(1)
             .rw(1)
             .build();
+    }
+
+    @Test public void minimalDomainBucketWorks() throws Exception {
+        final String bucketName = UUID.randomUUID().toString() + "_db";
+        final String userId = UUID.randomUUID().toString();
+        Bucket b = client.fetchBucket(bucketName).execute();
+        DomainBucket<ShoppingCart> carts = DomainBucket.builder(b,
+                ShoppingCart.class).build();
+
+        ShoppingCart cart = new ShoppingCart(userId);
+        cart.addItem("elephant");
+        carts.store(cart);
+
+        ShoppingCart cart2 = carts.fetch(userId);
+
+        assertNotNull(cart2);
+        assertEquals(userId, cart2.getUserId());
+        assertTrue(cart2.hasItem("elephant"));
+
+        carts.delete(cart2);
+
+        Thread.sleep(500);
+
+        ShoppingCart cart3 = carts.fetch(userId);
+
+        assertNull(cart3);
     }
 }
