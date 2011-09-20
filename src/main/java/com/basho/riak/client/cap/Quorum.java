@@ -16,7 +16,7 @@ package com.basho.riak.client.cap;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 
 /**
- * Encapsulates a buckets r/w/dw/rw/p/pr/pw quora as either the symbolic Quora or an
+ * Encapsulates a bucket's r/w/dw/rw/p/pr/pw quora as either the symbolic Quora or an
  * int.
  * <p>
  * </p>
@@ -47,6 +47,10 @@ public final class Quorum {
         this.i = quorum.getValue();
     }
 
+    /**
+     * @return true if this Quorum represents a symbolic value, false if literal
+     *         integer value
+     */
     public boolean isSymbolic() {
         return !Quora.INTEGER.equals(quorum);
     }

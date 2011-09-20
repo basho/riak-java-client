@@ -56,7 +56,8 @@ public class DefaultBucketProperties implements BucketProperties {
     private final Boolean search;
 
     /**
-     * Use the Builder {@link BucketPropertiesBuilder}
+     * Use the Builder {@link BucketPropertiesBuilder} instead of calling this constructor directly
+     * 
      * @param allowSiblings
      * @param lastWriteWins
      * @param nVal

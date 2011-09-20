@@ -38,8 +38,7 @@ public class NamedErlangFunctionDeserializerTest {
      */
     @Before public void setUp() throws Exception {
         objectMapper = new ObjectMapper();
-        objectMapper.registerModule(
-                                    new SimpleModule("test_quorm_deserialzer", new Version(1, 0, 0, "SNAPSHOT"))
+        objectMapper.registerModule(new SimpleModule("test_quorm_deserialzer", new Version(1, 0, 0, "SNAPSHOT"))
                                     .addDeserializer(NamedErlangFunction.class, new NamedErlangFunctionDeserializer()));
     }
 
