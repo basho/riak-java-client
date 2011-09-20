@@ -463,6 +463,31 @@ phases.
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
     .execute();
 #+END_SRC
+
+**** SearchMapReduce
+[[http://wiki.basho.com/Riak-Search---Querying.html#Querying-Integrated-with-Map-Reduce][Riak Search]] queries can be used as inputs to Map/Reduce. To use a Riak
+Search query as input for a Map/Reduce operation with the Riak-java-client create a
+=SearchMapReduce= operation with the IRiakClient:
+#+BEGIN_SRC java
+    MapReduceResult result = client.mapReduce("my_search_bucket", "foo:zero")
+        .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"))
+        .execute();
+#+END_SRC
+
+And work with the results as before.
+
+To enable a bucket for Riak Search, there is a new method added to
+=Bucket=, just call:
+
+#+BEGIN_SRC java
+client.createBucket("bucket_name") // or updateBucket("bucket_name")
+        .enableForSearch().execute()
+#+END_SRC
+
+*Note*: At present, enabling a bucket only works if your client is an HTTP
+client. These bucket properties will soon be available via
+PB. Querying via Map/Reduce works for either transport
+
 *** Link Walking
 Links provide a light weight graph database-like feature to Riak. See the [[http://wiki.basho.com/Links-and-Link-Walking.html][Link
 Walking documentation]] for full details. 
