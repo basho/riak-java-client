@@ -257,6 +257,12 @@ public class DefaultBucket implements Bucket {
         return properties.getLinkWalkFunction();
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getSearch()
+     */
+    public Boolean getSearch() {
+        return properties.getSearch();
+    }
     // BUCKET
 
     /**

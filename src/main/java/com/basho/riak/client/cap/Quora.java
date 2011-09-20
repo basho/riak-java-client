@@ -20,5 +20,43 @@ package com.basho.riak.client.cap;
  * 
  */
 public enum Quora {
-    ALL, ONE, QUORUM;
+    ALL(Integer.MIN_VALUE, "all"), ONE(Integer.MIN_VALUE + 1, "one"), QUORUM(Integer.MIN_VALUE + 2, "quorum"), DEFAULT(
+            Integer.MIN_VALUE + 3, "default"), INTEGER(Integer.MIN_VALUE + 4, "int");
+
+    private final int value;
+    private final String name;
+
+    private Quora(int value, String name) {
+        this.value = value;
+        this.name = name;
+    }
+
+    /**
+     * @return the value
+     */
+    public int getValue() {
+        return value;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Attempt to return a {@link Quora} for the given <code>name</code>
+     * @param name
+     * @return a {@link Quora} for <code>name</name>
+     * @throws IllegalArgumentException is <code>name</code> is not a valid Quora.
+     */
+    public static Quora fromString(String name) {
+        for(Quora q : values()) {
+            if(q.getName().equals(name)) {
+                return q;
+            }
+        }
+        throw new IllegalArgumentException(name + " is not a known value for a Quorum");
+    }
 }

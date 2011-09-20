@@ -22,6 +22,22 @@ package com.basho.riak.client.query.functions;
  * 
  */
 public class NamedErlangFunction implements NamedFunction {
+
+    /**
+     * The riak_search precommit hook
+     */
+    public static final NamedErlangFunction SEARCH_PRECOMMIT_HOOK = new NamedErlangFunction("riak_search_kv_hook", "precommit");
+
+    /**
+     * The default chash_keyfun
+     */
+    public static final NamedErlangFunction STD_CHASH_FUN = new NamedErlangFunction("riak_core_util", "chash_std_keyfun");
+
+    /**
+     * The default link fun
+     */
+    public static final NamedErlangFunction STD_LINK_FUN = new NamedErlangFunction("riak_kv_wm_link_walker", "mapreduce_linkfun");
+
     private final String mod;
     private final String fun;
 

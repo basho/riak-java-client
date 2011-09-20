@@ -53,28 +53,50 @@ public class DefaultBucketProperties implements BucketProperties {
     private final Quorum rw;
     private final NamedErlangFunction chashKeyFunction;
     private final NamedErlangFunction linkWalkFunction;
+    private final Boolean search;
 
     /**
-     * Construct from the given {@link BucketPropertiesBuilder}
-     * @param builder
+     * Use the Builder {@link BucketPropertiesBuilder} instead of calling this constructor directly
+     * 
+     * @param allowSiblings
+     * @param lastWriteWins
+     * @param nVal
+     * @param backend
+     * @param smallVClock
+     * @param bigVClock
+     * @param youngVClock
+     * @param oldVClock
+     * @param precommitHooks
+     * @param postcommitHooks
+     * @param r
+     * @param w
+     * @param dw
+     * @param rw
+     * @param chashKeyFunction
+     * @param linkWalkFunction
+     * @param search
      */
-    public DefaultBucketProperties(final BucketPropertiesBuilder builder) {
-        this.allowSiblings = builder.allowSiblings;
-        this.lastWriteWins = builder.lastWriteWins;
-        this.nVal = builder.nVal;
-        this.backend = builder.backend;
-        this.smallVClock = builder.smallVClock;
-        this.bigVClock = builder.bigVClock;
-        this.youngVClock = builder.youngVClock;
-        this.oldVClock = builder.oldVClock;
-        this.precommitHooks = builder.precommitHooks;
-        this.postcommitHooks = builder.postcommitHooks;
-        this.r = builder.r;
-        this.w = builder.w;
-        this.dw = builder.dw;
-        this.rw = builder.rw;
-        this.chashKeyFunction = builder.chashKeyFunction;
-        this.linkWalkFunction = builder.linkWalkFunction;
+    public DefaultBucketProperties(Boolean allowSiblings, Boolean lastWriteWins, Integer nVal, String backend,
+            Integer smallVClock, Integer bigVClock, Long youngVClock, Long oldVClock,
+            Collection<NamedFunction> precommitHooks, Collection<NamedErlangFunction> postcommitHooks, Quorum r,
+            Quorum w, Quorum dw, Quorum rw, NamedErlangFunction chashKeyFunction, NamedErlangFunction linkWalkFunction, Boolean search) {
+        this.allowSiblings = allowSiblings;
+        this.lastWriteWins = lastWriteWins;
+        this.nVal = nVal;
+        this.backend = backend;
+        this.smallVClock = smallVClock;
+        this.bigVClock = bigVClock;
+        this.youngVClock = youngVClock;
+        this.oldVClock = oldVClock;
+        this.precommitHooks = precommitHooks;
+        this.postcommitHooks = postcommitHooks;
+        this.r = r;
+        this.w = w;
+        this.dw = dw;
+        this.rw = rw;
+        this.chashKeyFunction = chashKeyFunction;
+        this.linkWalkFunction = linkWalkFunction;
+        this.search = search;
     }
 
     /* (non-Javadoc)
@@ -209,6 +231,25 @@ public class DefaultBucketProperties implements BucketProperties {
     }
 
     /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getSearch()
+     */
+    public Boolean getSearch() {
+        return this.search;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.bucket.BucketProperties#isSearchEnabled()
+     */
+    public boolean isSearchEnabled() {
+        if (Boolean.TRUE.equals(search) || precommitHooks.contains(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK)) {
+            return true;
+        }
+        return false;
+    }
+
+    /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
     @Override public int hashCode() {
@@ -227,6 +268,7 @@ public class DefaultBucketProperties implements BucketProperties {
         result = prime * result + ((precommitHooks == null) ? 0 : precommitHooks.hashCode());
         result = prime * result + ((r == null) ? 0 : r.hashCode());
         result = prime * result + ((rw == null) ? 0 : rw.hashCode());
+        result = prime * result + ((search == null) ? 0 : search.hashCode());
         result = prime * result + ((smallVClock == null) ? 0 : smallVClock.hashCode());
         result = prime * result + ((w == null) ? 0 : w.hashCode());
         result = prime * result + ((youngVClock == null) ? 0 : youngVClock.hashCode());
@@ -338,6 +380,13 @@ public class DefaultBucketProperties implements BucketProperties {
         } else if (!rw.equals(other.rw)) {
             return false;
         }
+        if (search == null) {
+            if (other.search != null) {
+                return false;
+            }
+        } else if (!search.equals(other.search)) {
+            return false;
+        }
         if (smallVClock == null) {
             if (other.smallVClock != null) {
                 return false;
@@ -360,5 +409,16 @@ public class DefaultBucketProperties implements BucketProperties {
             return false;
         }
         return true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override public String toString() {
+        return String.format("DefaultBucketProperties [allowSiblings=%s, lastWriteWins=%s, nVal=%s, backend=%s, smallVClock=%s, "
+                                     + "bigVClock=%s, youngVClock=%s, oldVClock=%s, precommitHooks=%s, postcommitHooks=%s, r=%s, w=%s, dw=%s, rw=%s, chashKeyFunction=%s, "
+                                     + "linkWalkFunction=%s, search=%s]", allowSiblings, lastWriteWins, nVal, backend,
+                             smallVClock, bigVClock, youngVClock, oldVClock, precommitHooks, postcommitHooks, r, w, dw,
+                             rw, chashKeyFunction, linkWalkFunction, search);
     }
 }

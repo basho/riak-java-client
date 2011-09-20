@@ -36,4 +36,45 @@ public class NamedJSFunction implements NamedFunction {
     public String getFunction() {
         return function;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((function == null) ? 0 : function.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof NamedJSFunction)) {
+            return false;
+        }
+        NamedJSFunction other = (NamedJSFunction) obj;
+        if (function == null) {
+            if (other.function != null) {
+                return false;
+            }
+        } else if (!function.equals(other.function)) {
+            return false;
+        }
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override public String toString() {
+        return String.format("NamedJSFunction [function=%s]", function);
+    }
 }

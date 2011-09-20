@@ -65,7 +65,13 @@ public class TestMapReduceBuilder {
       builder.setBucket("foo");
       assertEquals(builder.getBucket(), "foo");
    }
-   
+
+    @Test public void canStoreSearch() {
+        MapReduceBuilder builder = new MapReduceBuilder();
+        builder.setSearch("foo:bar");
+        assertEquals(builder.getSearch(), "foo:bar");
+    }
+
    @Test public void canStoreObjects() {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.addRiakObject("foo", "bar");
@@ -122,7 +128,36 @@ public class TestMapReduceBuilder {
       builder.setBucket("wubba");
       builder.addRiakObject("foo", "bar");
    }
-   
+
+   @Test(expected=IllegalStateException.class)
+   public void cannotUseObjectsAndSearch() {
+       MapReduceBuilder builder = new MapReduceBuilder();
+       builder.addRiakObject("foo", "bar");
+       builder.setSearch("foo:bar");
+   }
+
+   @Test(expected=IllegalStateException.class)
+   public void cannotUseFiltersAndSearch() {
+       MapReduceBuilder builder = new MapReduceBuilder();
+       builder.keyFilter(new MatchFilter("foo"));
+       builder.setSearch("foo:bar");
+   }
+
+   @Test(expected=IllegalStateException.class)
+   public void cannotUseSearchAndFilters() {
+       MapReduceBuilder builder = new MapReduceBuilder();
+       builder.setSearch("foo:bar");
+       builder.keyFilter(new MatchFilter("foo"));
+   }
+
+   @Test public void canUseBucketAndSearch() {
+       MapReduceBuilder builder = new MapReduceBuilder();
+       builder.setBucket("foo");
+       builder.setSearch("foo:bar");
+       assertEquals(builder.getBucket(), "foo");
+       assertEquals(builder.getSearch(), "foo:bar");
+   }
+
    @Test public void canBuildJSMapOnlyJobWithBucket() throws JSONException {
       MapReduceBuilder builder = new MapReduceBuilder();
       builder.setBucket("wubba");
@@ -172,6 +207,66 @@ public class TestMapReduceBuilder {
 
       assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
    }
+
+    @Test public void canBuildJSMapOnlyJobWithSearch() throws JSONException {
+        MapReduceBuilder builder = new MapReduceBuilder();
+        builder.setBucket("gumby");
+        builder.setSearch("horse:pokey");
+        builder.map(JavascriptFunction.named("Riak.mapValuesJson"), true);
+
+        JSONObject expected = new JSONObject(
+                                             "{\"inputs\":{\"module\":\"riak_search\",\"function\":\"mapred_search\","
+                                                     + "\"arg\":[\"gumby\",\"horse:pokey\"]},\"query\":[{\"map\":{\"name\":\"Riak.mapValuesJson\","
+                                                     + "\"language\":\"javascript\",\"keep\":true}}]}");
+
+        assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
+    }
+
+    @Test public void canBuildJSMapReduceJobWithSearch() throws JSONException {
+        MapReduceBuilder builder = new MapReduceBuilder();
+        builder.setBucket("gumby");
+        builder.setSearch("horse:pokey");
+        builder.map(JavascriptFunction.anon("function(v) { return [v]; }"), false);
+        builder.reduce(JavascriptFunction.named("Riak.reduceMin"), true);
+
+        JSONObject expected = new JSONObject(
+                                             "{\"inputs\":{\"module\":\"riak_search\",\"function\":\"mapred_search\","
+                                                     + "\"arg\":[\"gumby\",\"horse:pokey\"]},\"query\":[{\"map\":{\"source\":"
+                                                     + "\"function(v) { return [v]; }\",\"language\":\"javascript\",\"keep\":false}},"
+                                                     + "{\"reduce\":{\"name\":\"Riak.reduceMin\",\"language\":\"javascript\",\"keep\":true}}]}");
+
+        assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
+    }
+
+    @Test public void canBuildErlangMapOnlyJobWithSearch() throws JSONException {
+        MapReduceBuilder builder = new MapReduceBuilder();
+        builder.setBucket("gumby");
+        builder.setSearch("horse:pokey");
+        builder.map(new ErlangFunction("foo", "bar"), true);
+
+        JSONObject expected = new JSONObject(
+                                             "{\"inputs\":{\"module\":\"riak_search\",\"function\":\"mapred_search\","
+                                                     + "\"arg\":[\"gumby\",\"horse:pokey\"]},\"query\":[{\"map\":{\"module\":\"foo\","
+                                                     + "\"language\":\"erlang\",\"keep\":true,\"function\":\"bar\"}}]}");
+
+        assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
+    }
+
+    @Test public void canBuildErlangMapReduceJobWithSearch() throws JSONException {
+        MapReduceBuilder builder = new MapReduceBuilder();
+        builder.setBucket("gumby");
+        builder.setSearch("horse:pokey");
+        builder.map(new ErlangFunction("foo", "bar"), false);
+        builder.reduce(new ErlangFunction("baz", "quux"), true);
+
+        JSONObject expected = new JSONObject(
+                                             "{\"inputs\":{\"module\":\"riak_search\",\"function\":\"mapred_search\","
+                                                     + "\"arg\":[\"gumby\",\"horse:pokey\"]},\"query\":[{\"map\":{\"module\":\"foo\","
+                                                     + "\"language\":\"erlang\",\"keep\":false,\"function\":\"bar\"}},"
+                                                     + "{\"reduce\":{\"module\":\"baz\",\"language\":\"erlang\",\"keep\":true,\"function\":\"quux\"}}]}");
+
+        assertTrue("Generated JSON not as expected", JSONEquals.equals(expected, builder.toJSON()));
+    }
 
    @Test public void canBuildJSMapOnlyJobWithObjects() throws JSONException {
       MapReduceBuilder builder = new MapReduceBuilder();

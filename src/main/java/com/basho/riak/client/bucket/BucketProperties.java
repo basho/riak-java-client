@@ -159,4 +159,9 @@ public interface BucketProperties {
      */
     NamedErlangFunction getLinkWalkFunction();
 
+    /**
+     * The search property
+     * @return true/false/null
+     */
+    Boolean getSearch();
 }

@@ -23,6 +23,7 @@ import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.BucketMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.MapReduce;
+import com.basho.riak.client.query.SearchMapReduce;
 
 /**
  * Primary high-level interface for accessing Riak.
@@ -145,12 +146,29 @@ public interface IRiakClient {
     /**
      * Create {@link MapReduce} operation that has the supplied bucket as its input.
      * 
-     * @param bucket the String name of the imput bucket to the M/R job.
+     * @param bucket the String name of the input bucket to the M/R job.
      * @return a {@link BucketMapReduce} for further configuration and execution.
      * @see MapReduce
      * @see BucketMapReduce
      */
     BucketMapReduce mapReduce(String bucket);
+
+    /**
+     * Create a {@link MapReduce} operation that uses the supplied Riak Search
+     * query as input.
+     * 
+     * See also 
+     * <a href="http://wiki.basho.com/Riak-Search---Querying.html#Querying-Integrated-with-Map-Reduce">
+     * Riak Search</a> on the basho wiki for more information.
+     * 
+     * @param bucket
+     *            the input bucket for the search query
+     * @param query
+     *            the input query for the search
+     * @return a {@link SearchMapReduce} operation for further configuration and
+     *         execution.
+     */
+    SearchMapReduce mapReduce(String bucket, String query);
 
     /**
      * Ping Riak, check it is available

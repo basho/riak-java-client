@@ -13,6 +13,7 @@ import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.BucketMapReduce;
 import com.basho.riak.client.query.LinkWalk;
+import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
@@ -165,6 +166,13 @@ public final class DefaultRiakClient implements IRiakClient {
         return new BucketMapReduce(rawClient, bucket);
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakClient#mapReduce(java.lang.String, java.lang.String)
+     */
+    public SearchMapReduce mapReduce(String bucket, String query) {
+        return new SearchMapReduce(rawClient, bucket, query);
+    }
+
     /*
      * (non-Javadoc)
      * @see com.basho.riak.client.IRiakClient#walk(com.basho.riak.client.IRiakObject)
@@ -172,6 +180,8 @@ public final class DefaultRiakClient implements IRiakClient {
     public LinkWalk walk(IRiakObject startObject) {
         return new LinkWalk(rawClient, startObject);
     }
+
+    // MISC OPS
 
     /*
      * (non-Javadoc)
