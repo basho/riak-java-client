@@ -77,9 +77,9 @@ If you want to run the integrattion tests against a Riak that is running on a di
 
     mvn -Pitest clean verify -DargLine="-Dcom.basho.riak.host=10.0.1.5 -Dcom.basho.riak.http.port=8091 -Dcom.basho.riak.pbc.port=8081"
 
-If you *do* have Riak Search enabled, then you can enable the search integration tests by adding the following property to the argLine
+If you *do* have Riak Search enabled, then you can enable the search integration tests by adding the following property to the =-DargLine=
 
-    -Dcom.basho.riak.search=true
+    -DargLine="-Dcom.basho.riak.search=true"
 
 ## Code Format ##
 
