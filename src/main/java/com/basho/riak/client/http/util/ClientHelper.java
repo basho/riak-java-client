@@ -303,6 +303,40 @@ public class ClientHelper {
     }
 
     /**
+     * Perform the fetch/query on an index
+     * 
+     * @param bucket
+     *            the bucket
+     * @param indexName
+     *            the name of the index
+     * @param values
+     *            an array of Strings, if only 1 long, then a value, if longer
+     *            the 1st 2 elements are treated as the bounds for a range
+     * @return an {@link HttpResponse}
+     */
+    public HttpResponse fetchIndex(String bucket, String indexName, String[] values) {
+        HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, indexName, values));
+        return executeMethod(bucket, null, get, null);
+    }
+
+    /**
+     * Perform the fetch/query on an index
+     * 
+     * @param bucket
+     *            the bucket
+     * @param indexName
+     *            the name of the index
+     * @param values
+     *            an array of ints, if only 1 long, then a value, if longer
+     *            the 1st 2 elements are treated as the bounds for a range
+     * @return an {@link HttpResponse}
+     */
+    public HttpResponse fetchIndex(String bucket, String indexName, int[] values) {
+        HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, indexName, values));
+        return executeMethod(bucket, null, get, null);
+    }
+
+    /**
      * Same as {@link RiakClient#ping}
      * @return the ping HttpResponse
      */

@@ -18,6 +18,7 @@ import static com.basho.riak.client.raw.http.ConversionUtil.convert;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import com.basho.riak.client.IRiakObject;
@@ -25,6 +26,15 @@ import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.http.request.RequestMeta;
+import com.basho.riak.client.http.response.BucketResponse;
+import com.basho.riak.client.http.response.FetchResponse;
+import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.IndexResponse;
+import com.basho.riak.client.http.response.ListBucketsResponse;
+import com.basho.riak.client.http.response.MapReduceResponse;
+import com.basho.riak.client.http.response.StoreResponse;
+import com.basho.riak.client.http.response.WithBodyResponse;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.RawClient;
@@ -33,15 +43,9 @@ import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.client.raw.query.indexes.IndexQuery;
+import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
-import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.response.BucketResponse;
-import com.basho.riak.client.http.response.FetchResponse;
-import com.basho.riak.client.http.response.HttpResponse;
-import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.http.response.MapReduceResponse;
-import com.basho.riak.client.http.response.StoreResponse;
-import com.basho.riak.client.http.response.WithBodyResponse;
 
 /**
  * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.
@@ -54,8 +58,11 @@ public class HTTPClientAdapter implements RawClient {
     private final RiakClient client;
 
     /**
-     * Create an instance of the adapter that delegates all API calls to <code>client</code>
-     * @param client the {@link RiakClient} to delegate to.
+     * Create an instance of the adapter that delegates all API calls to
+     * <code>client</code>
+     * 
+     * @param client
+     *            the {@link RiakClient} to delegate to.
      */
     public HTTPClientAdapter(final RiakClient client) {
         this.client = client;
@@ -81,7 +88,7 @@ public class HTTPClientAdapter implements RawClient {
      * .Bucket, java.lang.String)
      */
     public RiakResponse fetch(String bucket, String key) throws IOException {
-        if (bucket == null ||  bucket.trim().equals("")) {
+        if (bucket == null || bucket.trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
                                                        + "or just whitespace.");
@@ -104,7 +111,7 @@ public class HTTPClientAdapter implements RawClient {
      * .Bucket, java.lang.String, int)
      */
     public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
-        if (bucket == null ||  bucket.trim().equals("")) {
+        if (bucket == null || bucket.trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null and bucket.getName() must not be null or empty "
                                                        + "or just whitespace.");
@@ -121,8 +128,11 @@ public class HTTPClientAdapter implements RawClient {
 
     /**
      * For all those fetch/store methods that may return an actual data payload.
-     * @param resp a {@link WithBodyResponse}
-     * @return a {@link RiakResponse} with the data items copied from <code>resp</code>
+     * 
+     * @param resp
+     *            a {@link WithBodyResponse}
+     * @return a {@link RiakResponse} with the data items copied from
+     *         <code>resp</code>
      * @see ConversionUtil#convert(java.util.Collection)
      */
     private RiakResponse handleBodyResponse(WithBodyResponse resp) {
@@ -280,7 +290,8 @@ public class HTTPClientAdapter implements RawClient {
      * (non-Javadoc)
      * 
      * @see
-     * com.basho.riak.client.raw.RawClient#linkWalk(com.basho.riak.client.raw.query.LinkWalkSpec)
+     * com.basho.riak.client.raw.RawClient#linkWalk(com.basho.riak.client.raw
+     * .query.LinkWalkSpec)
      */
     public WalkResult linkWalk(final LinkWalkSpec linkWalkSpec) throws IOException {
         final String walkSpecString = convert(linkWalkSpec);
@@ -330,14 +341,49 @@ public class HTTPClientAdapter implements RawClient {
         return client.getClientId();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.raw.RawClient#ping()
      */
     public void ping() throws IOException {
         HttpResponse resp = client.ping();
 
-        if(!resp.isSuccess()) {
+        if (!resp.isSuccess()) {
             throw new IOException(resp.getBodyAsString());
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.raw.RawClient#fetchIndex(com.basho.riak.client.
+     * raw.query.IndexQuery)
+     */
+    public List<String> fetchIndex(IndexQuery indexQuery) throws IOException {
+        final ResultCapture<IndexResponse> res = new ResultCapture<IndexResponse>();
+
+        IndexWriter executor = new IndexWriter() {
+            public void write(String bucket, String index, String from, String to) throws IOException {
+                res.capture(client.index(bucket, index, from, to));
+            }
+
+            public void write(final String bucket, final String index, final String value) throws IOException {
+                res.capture(client.index(bucket, index, value));
+            }
+
+            public void write(final String bucket, final String index, final int value) throws IOException {
+                res.capture(client.index(bucket, index, value));
+            }
+
+            public void write(final String bucket, final String index, final int from, final int to)
+                    throws IOException {
+                res.capture(client.index(bucket, index, from, to));
+            }
+        };
+        indexQuery.write(executor);
+
+        return convert(res.get());
     }
 }

@@ -21,11 +21,13 @@ package com.basho.riak.pbc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.basho.riak.client.http.BinIndex;
+import com.basho.riak.client.http.IntIndex;
+import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.pbc.RPB.RpbContent;
 import com.basho.riak.pbc.RPB.RpbPair;
 import com.basho.riak.pbc.RPB.RpbContent.Builder;
@@ -44,6 +46,8 @@ public class RiakObject {
 
 	private String contentType;
 	private List<RiakLink> links = Collections.synchronizedList(new ArrayList<RiakLink>());
+    private final Object indexLock = new Object();
+    @SuppressWarnings("rawtypes") private List<RiakIndex> indexes = new ArrayList<RiakIndex>();
 	private String vtag;
 	private String contentEncoding;
 	private String charset;
@@ -83,6 +87,27 @@ public class RiakObject {
 			    userMetaData.putAll(tmpUserMetaData);
             }
 		}
+
+        if (content.getIndexesCount() > 0) {
+            @SuppressWarnings("rawtypes") List<RiakIndex> indexes = new ArrayList<RiakIndex>();
+
+            for (RpbPair p : content.getIndexesList()) {
+                String name = p.getKey().toStringUtf8();
+                String value = p.getValue().toStringUtf8();
+
+                if (name.endsWith(BinIndex.SUFFIX)) {
+                    indexes.add(new BinIndex(name, value));
+                } else if (name.endsWith(IntIndex.SUFFIX)) {
+                    indexes.add(new IntIndex(name, Integer.parseInt(value)));
+                } else {
+                    throw new RuntimeException("unkown index type " + name);
+                }
+            }
+
+            synchronized (indexLock) {
+                this.indexes.addAll(indexes);
+            }
+        }
 	}
 
     public RiakObject(ByteString vclock, ByteString bucket, ByteString key, ByteString content) {
@@ -195,7 +220,16 @@ public class RiakObject {
 				b.addUsermeta(pb);
 			}
 		}
-		
+
+        synchronized (indexLock) {
+            for (@SuppressWarnings("rawtypes") RiakIndex i : indexes) {
+                b.addIndexes(RpbPair.newBuilder()
+                             .setKey(ByteString.copyFromUtf8(i.getName()))
+                             .setValue(ByteString.copyFromUtf8(i.getValue().toString()))
+                             .build());
+            }
+        }
+
 		return b.build();
 	}
 
@@ -215,7 +249,7 @@ public class RiakObject {
         links.add(new RiakLink(bucket, key, tag));
     }
     
-    public List<RiakLink> getLinks() {
+    @SuppressWarnings("unchecked") public List<RiakLink> getLinks() {
        return links != null ? Collections.unmodifiableList(links) : Collections.EMPTY_LIST;
     }
 
@@ -262,6 +296,46 @@ public class RiakObject {
      */
     public String getContentType() {
         return this.contentType;
+    }
+    /**
+     * @return a *copy* of the list of {@link RiakIndex}s for this object
+     */
+    @SuppressWarnings("rawtypes") public List<RiakIndex> getIndexes() {
+        synchronized (indexLock) {
+            return new ArrayList<RiakIndex>(indexes);
+        }
+    }
+
+    /**
+     * Add a binary index to the object
+     * 
+     * @param name
+     *            of the index
+     * @param value
+     *            the value to add to the index
+     * @return this
+     */
+    public RiakObject addIndex(String name, String value) {
+        synchronized (indexLock) {
+            indexes.add(new BinIndex(name, value));
+        }
+        return this;
+    }
+
+    /**
+     * Add an int index to this object
+     * 
+     * @param name
+     *            of the index
+     * @param value
+     *            the value to add to the index
+     * @return this
+     */
+    public RiakObject addIndex(String name, int value) {
+        synchronized (indexLock) {
+            indexes.add(new IntIndex(name, value));
+        }
+        return this;
     }
 
 }

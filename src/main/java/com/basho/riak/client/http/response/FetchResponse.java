@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.client.http.RiakLink;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.util.ClientUtils;
@@ -66,6 +67,7 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
 
         Map<String, String> headers = r.getHttpHeaders();
         List<RiakLink> links = ClientUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
+        @SuppressWarnings("rawtypes") List<RiakIndex> indexes = ClientUtils.parseIndexHeaders(headers);
         Map<String, String> usermeta = ClientUtils.parseUsermeta(headers);
 
         if (r.getStatusCode() == 300) {
@@ -91,7 +93,7 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
             object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),
                                     headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta,
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
-                                    headers.get(Constants.HDR_ETAG));
+                                    headers.get(Constants.HDR_ETAG), indexes);
 
             Long contentLength = null;
             try {

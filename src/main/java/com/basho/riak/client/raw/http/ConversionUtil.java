@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.http.impl.cookie.DateUtils;
 import org.codehaus.jackson.JsonEncoding;
@@ -45,12 +46,15 @@ import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.convert.ConversionException;
+import com.basho.riak.client.http.IntIndex;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.BucketResponse;
+import com.basho.riak.client.http.response.IndexResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.Constants;
@@ -60,6 +64,7 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
+import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
@@ -139,6 +144,18 @@ public final class ConversionUtil {
         }
 
         builder.withLinks(links);
+
+        @SuppressWarnings("rawtypes") final Collection<RiakIndex> indexes = o.getIndexes();
+
+        for (@SuppressWarnings("rawtypes") RiakIndex i : indexes) {
+            if (i instanceof IntIndex) {
+                builder.addIndex(i.getName(), (Integer) i.getValue());
+            }
+            if (i instanceof com.basho.riak.client.http.BinIndex) {
+                builder.addIndex(i.getName(), (String) i.getValue());
+            }
+        }
+
         builder.withContentType(o.getContentType());
 
         final Map<String, String> userMetaData = new HashMap<String, String>();
@@ -200,6 +217,12 @@ public final class ConversionUtil {
      * @return a {@link RiakObject} populate with {@link IRiakObject}'s data
      */
     static com.basho.riak.client.http.RiakObject convert(IRiakObject object, final RiakClient client) {
+        final List<RiakIndex<Integer>> intIndexes = convertIntIndexes(object.allIntIndexes());
+        final List<RiakIndex<String>> binIndexes = convertBinIndexes(object.allBinIndexes());
+
+        @SuppressWarnings("rawtypes") final List<RiakIndex> allIndexes = new ArrayList<RiakIndex>(intIndexes);
+        allIndexes.addAll(binIndexes);
+
         com.basho.riak.client.http.RiakObject riakObject = new com.basho.riak.client.http.RiakObject(
                                                                                            client,
                                                                                            object.getBucket(),
@@ -210,8 +233,41 @@ public final class ConversionUtil {
                                                                                            getUserMetaData(object),
                                                                                            object.getVClockAsString(),
                                                                                            formatDate(object.getLastModified()),
-                                                                                           object.getVtag());
+                                                                                           object.getVtag(),
+                                                                                           allIndexes);
         return riakObject;
+    }
+
+    /**
+     * @param binIndexes
+     * @return
+     */
+    private static List<RiakIndex<String>> convertBinIndexes(Map<BinIndex, Set<String>> binIndexes) {
+        final List<RiakIndex<String>> converted = new ArrayList<RiakIndex<String>>();
+
+        for (Map.Entry<com.basho.riak.client.query.indexes.BinIndex, Set<String>> index : binIndexes.entrySet()) {
+            String name = index.getKey().getFullname();
+            for (String v : index.getValue()) {
+                converted.add(new com.basho.riak.client.http.BinIndex(name, v));
+            }
+        }
+        return converted;
+    }
+
+    /**
+     * @param allIntIndexes
+     * @return
+     */
+    private static List<RiakIndex<Integer>> convertIntIndexes(Map<com.basho.riak.client.query.indexes.IntIndex, Set<Integer>> intIndexes) {
+        final List<RiakIndex<Integer>> converted = new ArrayList<RiakIndex<Integer>>();
+
+        for (Map.Entry<com.basho.riak.client.query.indexes.IntIndex, Set<Integer>> index : intIndexes.entrySet()) {
+            String name = index.getKey().getFullname();
+            for (Integer v : index.getValue()) {
+                converted.add(new IntIndex(name, v));
+            }
+        }
+        return converted;
     }
 
     /**
@@ -556,5 +612,21 @@ public final class ConversionUtil {
                 return  new UnmodifiableIterator<Collection<IRiakObject>>( convertedSteps.iterator() );
             }
         };
+    }
+
+    /**
+     * Convert an {@link IndexResponse} to a List of Strings
+     * 
+     * @param response an {@link IndexResponse}
+     * @return a List<String> or the empty list
+     * @throws IOException
+     *             if {@link IndexResponse} isn't a success.
+     */
+    static List<String> convert(IndexResponse response) throws IOException {
+        if (response.isSuccess()) {
+            return response.getKeys();
+        } else {
+            throw new IOException(response.getBodyAsString());
+        }
     }
 }

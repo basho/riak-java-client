@@ -21,9 +21,12 @@ import com.basho.riak.client.bucket.WriteBucket;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.BucketMapReduce;
+import com.basho.riak.client.query.IndexMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.MapReduce;
 import com.basho.riak.client.query.SearchMapReduce;
+import com.basho.riak.client.query.indexes.FetchIndex;
+import com.basho.riak.client.raw.query.indexes.IndexQuery;
 
 /**
  * Primary high-level interface for accessing Riak.
@@ -169,6 +172,23 @@ public interface IRiakClient {
      *         execution.
      */
     SearchMapReduce mapReduce(String bucket, String query);
+
+    /**
+     * Create a {@link MapReduce} operation that uses the supplied
+     * {@link IndexQuery} as input
+     * 
+     * <p>
+     * Note: if you just want to fetch an index see
+     * {@link Bucket#fetchIndex(com.basho.riak.client.query.indexes.RiakIndex)}
+     * to create a {@link FetchIndex} operation
+     * </p>
+     * 
+     * @param query
+     *            the {@link IndexQuery} to use as input
+     * @return a {@link MapReduce} operation for further configuration and
+     *         execution
+     */
+    IndexMapReduce mapReduce(IndexQuery query);
 
     /**
      * Ping Riak, check it is available

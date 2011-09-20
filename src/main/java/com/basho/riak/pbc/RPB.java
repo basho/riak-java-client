@@ -166,7 +166,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbErrorResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbErrorResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbErrorResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -479,7 +479,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbGetClientIdResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbGetClientIdResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbGetClientIdResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -767,7 +767,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbSetClientIdReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbSetClientIdReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbSetClientIdReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -1068,7 +1068,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbGetServerInfoResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbGetServerInfoResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbGetServerInfoResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -1289,6 +1289,48 @@ public final class RPB {
     public boolean hasR() { return hasR; }
     public int getR() { return r_; }
     
+    // optional uint32 pr = 4;
+    public static final int PR_FIELD_NUMBER = 4;
+    private boolean hasPr;
+    private int pr_ = 0;
+    public boolean hasPr() { return hasPr; }
+    public int getPr() { return pr_; }
+    
+    // optional bool basic_quorum = 5;
+    public static final int BASIC_QUORUM_FIELD_NUMBER = 5;
+    private boolean hasBasicQuorum;
+    private boolean basicQuorum_ = false;
+    public boolean hasBasicQuorum() { return hasBasicQuorum; }
+    public boolean getBasicQuorum() { return basicQuorum_; }
+    
+    // optional bool notfound_ok = 6;
+    public static final int NOTFOUND_OK_FIELD_NUMBER = 6;
+    private boolean hasNotfoundOk;
+    private boolean notfoundOk_ = false;
+    public boolean hasNotfoundOk() { return hasNotfoundOk; }
+    public boolean getNotfoundOk() { return notfoundOk_; }
+    
+    // optional bytes if_modified = 7;
+    public static final int IF_MODIFIED_FIELD_NUMBER = 7;
+    private boolean hasIfModified;
+    private com.google.protobuf.ByteString ifModified_ = com.google.protobuf.ByteString.EMPTY;
+    public boolean hasIfModified() { return hasIfModified; }
+    public com.google.protobuf.ByteString getIfModified() { return ifModified_; }
+    
+    // optional bool head = 8;
+    public static final int HEAD_FIELD_NUMBER = 8;
+    private boolean hasHead;
+    private boolean head_ = false;
+    public boolean hasHead() { return hasHead; }
+    public boolean getHead() { return head_; }
+    
+    // optional bool deletedvclock = 9;
+    public static final int DELETEDVCLOCK_FIELD_NUMBER = 9;
+    private boolean hasDeletedvclock;
+    private boolean deletedvclock_ = false;
+    public boolean hasDeletedvclock() { return hasDeletedvclock; }
+    public boolean getDeletedvclock() { return deletedvclock_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -1308,6 +1350,24 @@ public final class RPB {
       }
       if (hasR()) {
         output.writeUInt32(3, getR());
+      }
+      if (hasPr()) {
+        output.writeUInt32(4, getPr());
+      }
+      if (hasBasicQuorum()) {
+        output.writeBool(5, getBasicQuorum());
+      }
+      if (hasNotfoundOk()) {
+        output.writeBool(6, getNotfoundOk());
+      }
+      if (hasIfModified()) {
+        output.writeBytes(7, getIfModified());
+      }
+      if (hasHead()) {
+        output.writeBool(8, getHead());
+      }
+      if (hasDeletedvclock()) {
+        output.writeBool(9, getDeletedvclock());
       }
       getUnknownFields().writeTo(output);
     }
@@ -1329,6 +1389,30 @@ public final class RPB {
       if (hasR()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, getR());
+      }
+      if (hasPr()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(4, getPr());
+      }
+      if (hasBasicQuorum()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(5, getBasicQuorum());
+      }
+      if (hasNotfoundOk()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(6, getNotfoundOk());
+      }
+      if (hasIfModified()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(7, getIfModified());
+      }
+      if (hasHead()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(8, getHead());
+      }
+      if (hasDeletedvclock()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(9, getDeletedvclock());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1413,7 +1497,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbGetReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbGetReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbGetReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -1497,6 +1581,24 @@ public final class RPB {
         if (other.hasR()) {
           setR(other.getR());
         }
+        if (other.hasPr()) {
+          setPr(other.getPr());
+        }
+        if (other.hasBasicQuorum()) {
+          setBasicQuorum(other.getBasicQuorum());
+        }
+        if (other.hasNotfoundOk()) {
+          setNotfoundOk(other.getNotfoundOk());
+        }
+        if (other.hasIfModified()) {
+          setIfModified(other.getIfModified());
+        }
+        if (other.hasHead()) {
+          setHead(other.getHead());
+        }
+        if (other.hasDeletedvclock()) {
+          setDeletedvclock(other.getDeletedvclock());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1532,6 +1634,30 @@ public final class RPB {
             }
             case 24: {
               setR(input.readUInt32());
+              break;
+            }
+            case 32: {
+              setPr(input.readUInt32());
+              break;
+            }
+            case 40: {
+              setBasicQuorum(input.readBool());
+              break;
+            }
+            case 48: {
+              setNotfoundOk(input.readBool());
+              break;
+            }
+            case 58: {
+              setIfModified(input.readBytes());
+              break;
+            }
+            case 64: {
+              setHead(input.readBool());
+              break;
+            }
+            case 72: {
+              setDeletedvclock(input.readBool());
               break;
             }
           }
@@ -1599,6 +1725,117 @@ public final class RPB {
         return this;
       }
       
+      // optional uint32 pr = 4;
+      public boolean hasPr() {
+        return result.hasPr();
+      }
+      public int getPr() {
+        return result.getPr();
+      }
+      public Builder setPr(int value) {
+        result.hasPr = true;
+        result.pr_ = value;
+        return this;
+      }
+      public Builder clearPr() {
+        result.hasPr = false;
+        result.pr_ = 0;
+        return this;
+      }
+      
+      // optional bool basic_quorum = 5;
+      public boolean hasBasicQuorum() {
+        return result.hasBasicQuorum();
+      }
+      public boolean getBasicQuorum() {
+        return result.getBasicQuorum();
+      }
+      public Builder setBasicQuorum(boolean value) {
+        result.hasBasicQuorum = true;
+        result.basicQuorum_ = value;
+        return this;
+      }
+      public Builder clearBasicQuorum() {
+        result.hasBasicQuorum = false;
+        result.basicQuorum_ = false;
+        return this;
+      }
+      
+      // optional bool notfound_ok = 6;
+      public boolean hasNotfoundOk() {
+        return result.hasNotfoundOk();
+      }
+      public boolean getNotfoundOk() {
+        return result.getNotfoundOk();
+      }
+      public Builder setNotfoundOk(boolean value) {
+        result.hasNotfoundOk = true;
+        result.notfoundOk_ = value;
+        return this;
+      }
+      public Builder clearNotfoundOk() {
+        result.hasNotfoundOk = false;
+        result.notfoundOk_ = false;
+        return this;
+      }
+      
+      // optional bytes if_modified = 7;
+      public boolean hasIfModified() {
+        return result.hasIfModified();
+      }
+      public com.google.protobuf.ByteString getIfModified() {
+        return result.getIfModified();
+      }
+      public Builder setIfModified(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasIfModified = true;
+        result.ifModified_ = value;
+        return this;
+      }
+      public Builder clearIfModified() {
+        result.hasIfModified = false;
+        result.ifModified_ = getDefaultInstance().getIfModified();
+        return this;
+      }
+      
+      // optional bool head = 8;
+      public boolean hasHead() {
+        return result.hasHead();
+      }
+      public boolean getHead() {
+        return result.getHead();
+      }
+      public Builder setHead(boolean value) {
+        result.hasHead = true;
+        result.head_ = value;
+        return this;
+      }
+      public Builder clearHead() {
+        result.hasHead = false;
+        result.head_ = false;
+        return this;
+      }
+      
+      // optional bool deletedvclock = 9;
+      public boolean hasDeletedvclock() {
+        return result.hasDeletedvclock();
+      }
+      public boolean getDeletedvclock() {
+        return result.getDeletedvclock();
+      }
+      public Builder setDeletedvclock(boolean value) {
+        result.hasDeletedvclock = true;
+        result.deletedvclock_ = value;
+        return this;
+      }
+      public Builder clearDeletedvclock() {
+        result.hasDeletedvclock = false;
+        result.deletedvclock_ = false;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:RpbGetReq)
     }
     
@@ -1657,6 +1894,13 @@ public final class RPB {
     public boolean hasVclock() { return hasVclock; }
     public com.google.protobuf.ByteString getVclock() { return vclock_; }
     
+    // optional bool unchanged = 3;
+    public static final int UNCHANGED_FIELD_NUMBER = 3;
+    private boolean hasUnchanged;
+    private boolean unchanged_ = false;
+    public boolean hasUnchanged() { return hasUnchanged; }
+    public boolean getUnchanged() { return unchanged_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -1675,6 +1919,9 @@ public final class RPB {
       if (hasVclock()) {
         output.writeBytes(2, getVclock());
       }
+      if (hasUnchanged()) {
+        output.writeBool(3, getUnchanged());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -1691,6 +1938,10 @@ public final class RPB {
       if (hasVclock()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getVclock());
+      }
+      if (hasUnchanged()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, getUnchanged());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1775,7 +2026,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbGetResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbGetResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbGetResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -1863,6 +2114,9 @@ public final class RPB {
         if (other.hasVclock()) {
           setVclock(other.getVclock());
         }
+        if (other.hasUnchanged()) {
+          setUnchanged(other.getUnchanged());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1896,6 +2150,10 @@ public final class RPB {
             }
             case 18: {
               setVclock(input.readBytes());
+              break;
+            }
+            case 24: {
+              setUnchanged(input.readBool());
               break;
             }
           }
@@ -1975,6 +2233,24 @@ public final class RPB {
         return this;
       }
       
+      // optional bool unchanged = 3;
+      public boolean hasUnchanged() {
+        return result.hasUnchanged();
+      }
+      public boolean getUnchanged() {
+        return result.getUnchanged();
+      }
+      public Builder setUnchanged(boolean value) {
+        result.hasUnchanged = true;
+        result.unchanged_ = value;
+        return this;
+      }
+      public Builder clearUnchanged() {
+        result.hasUnchanged = false;
+        result.unchanged_ = false;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:RpbGetResp)
     }
     
@@ -2021,7 +2297,7 @@ public final class RPB {
     public boolean hasBucket() { return hasBucket; }
     public com.google.protobuf.ByteString getBucket() { return bucket_; }
     
-    // required bytes key = 2;
+    // optional bytes key = 2;
     public static final int KEY_FIELD_NUMBER = 2;
     private boolean hasKey;
     private com.google.protobuf.ByteString key_ = com.google.protobuf.ByteString.EMPTY;
@@ -2063,12 +2339,39 @@ public final class RPB {
     public boolean hasReturnBody() { return hasReturnBody; }
     public boolean getReturnBody() { return returnBody_; }
     
+    // optional uint32 pw = 8;
+    public static final int PW_FIELD_NUMBER = 8;
+    private boolean hasPw;
+    private int pw_ = 0;
+    public boolean hasPw() { return hasPw; }
+    public int getPw() { return pw_; }
+    
+    // optional bool if_not_modified = 9;
+    public static final int IF_NOT_MODIFIED_FIELD_NUMBER = 9;
+    private boolean hasIfNotModified;
+    private boolean ifNotModified_ = false;
+    public boolean hasIfNotModified() { return hasIfNotModified; }
+    public boolean getIfNotModified() { return ifNotModified_; }
+    
+    // optional bool if_none_match = 10;
+    public static final int IF_NONE_MATCH_FIELD_NUMBER = 10;
+    private boolean hasIfNoneMatch;
+    private boolean ifNoneMatch_ = false;
+    public boolean hasIfNoneMatch() { return hasIfNoneMatch; }
+    public boolean getIfNoneMatch() { return ifNoneMatch_; }
+    
+    // optional bool return_head = 11;
+    public static final int RETURN_HEAD_FIELD_NUMBER = 11;
+    private boolean hasReturnHead;
+    private boolean returnHead_ = false;
+    public boolean hasReturnHead() { return hasReturnHead; }
+    public boolean getReturnHead() { return returnHead_; }
+    
     private void initFields() {
       content_ = com.basho.riak.pbc.RPB.RpbContent.getDefaultInstance();
     }
     public final boolean isInitialized() {
       if (!hasBucket) return false;
-      if (!hasKey) return false;
       if (!hasContent) return false;
       if (!getContent().isInitialized()) return false;
       return true;
@@ -2097,6 +2400,18 @@ public final class RPB {
       }
       if (hasReturnBody()) {
         output.writeBool(7, getReturnBody());
+      }
+      if (hasPw()) {
+        output.writeUInt32(8, getPw());
+      }
+      if (hasIfNotModified()) {
+        output.writeBool(9, getIfNotModified());
+      }
+      if (hasIfNoneMatch()) {
+        output.writeBool(10, getIfNoneMatch());
+      }
+      if (hasReturnHead()) {
+        output.writeBool(11, getReturnHead());
       }
       getUnknownFields().writeTo(output);
     }
@@ -2134,6 +2449,22 @@ public final class RPB {
       if (hasReturnBody()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, getReturnBody());
+      }
+      if (hasPw()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(8, getPw());
+      }
+      if (hasIfNotModified()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(9, getIfNotModified());
+      }
+      if (hasIfNoneMatch()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(10, getIfNoneMatch());
+      }
+      if (hasReturnHead()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, getReturnHead());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2218,7 +2549,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbPutReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbPutReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbPutReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -2314,6 +2645,18 @@ public final class RPB {
         if (other.hasReturnBody()) {
           setReturnBody(other.getReturnBody());
         }
+        if (other.hasPw()) {
+          setPw(other.getPw());
+        }
+        if (other.hasIfNotModified()) {
+          setIfNotModified(other.getIfNotModified());
+        }
+        if (other.hasIfNoneMatch()) {
+          setIfNoneMatch(other.getIfNoneMatch());
+        }
+        if (other.hasReturnHead()) {
+          setReturnHead(other.getReturnHead());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -2372,6 +2715,22 @@ public final class RPB {
               setReturnBody(input.readBool());
               break;
             }
+            case 64: {
+              setPw(input.readUInt32());
+              break;
+            }
+            case 72: {
+              setIfNotModified(input.readBool());
+              break;
+            }
+            case 80: {
+              setIfNoneMatch(input.readBool());
+              break;
+            }
+            case 88: {
+              setReturnHead(input.readBool());
+              break;
+            }
           }
         }
       }
@@ -2398,7 +2757,7 @@ public final class RPB {
         return this;
       }
       
-      // required bytes key = 2;
+      // optional bytes key = 2;
       public boolean hasKey() {
         return result.hasKey();
       }
@@ -2531,6 +2890,78 @@ public final class RPB {
         return this;
       }
       
+      // optional uint32 pw = 8;
+      public boolean hasPw() {
+        return result.hasPw();
+      }
+      public int getPw() {
+        return result.getPw();
+      }
+      public Builder setPw(int value) {
+        result.hasPw = true;
+        result.pw_ = value;
+        return this;
+      }
+      public Builder clearPw() {
+        result.hasPw = false;
+        result.pw_ = 0;
+        return this;
+      }
+      
+      // optional bool if_not_modified = 9;
+      public boolean hasIfNotModified() {
+        return result.hasIfNotModified();
+      }
+      public boolean getIfNotModified() {
+        return result.getIfNotModified();
+      }
+      public Builder setIfNotModified(boolean value) {
+        result.hasIfNotModified = true;
+        result.ifNotModified_ = value;
+        return this;
+      }
+      public Builder clearIfNotModified() {
+        result.hasIfNotModified = false;
+        result.ifNotModified_ = false;
+        return this;
+      }
+      
+      // optional bool if_none_match = 10;
+      public boolean hasIfNoneMatch() {
+        return result.hasIfNoneMatch();
+      }
+      public boolean getIfNoneMatch() {
+        return result.getIfNoneMatch();
+      }
+      public Builder setIfNoneMatch(boolean value) {
+        result.hasIfNoneMatch = true;
+        result.ifNoneMatch_ = value;
+        return this;
+      }
+      public Builder clearIfNoneMatch() {
+        result.hasIfNoneMatch = false;
+        result.ifNoneMatch_ = false;
+        return this;
+      }
+      
+      // optional bool return_head = 11;
+      public boolean hasReturnHead() {
+        return result.hasReturnHead();
+      }
+      public boolean getReturnHead() {
+        return result.getReturnHead();
+      }
+      public Builder setReturnHead(boolean value) {
+        result.hasReturnHead = true;
+        result.returnHead_ = value;
+        return this;
+      }
+      public Builder clearReturnHead() {
+        result.hasReturnHead = false;
+        result.returnHead_ = false;
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:RpbPutReq)
     }
     
@@ -2570,16 +3001,16 @@ public final class RPB {
       return com.basho.riak.pbc.RPB.internal_static_RpbPutResp_fieldAccessorTable;
     }
     
-    // repeated .RpbContent contents = 1;
-    public static final int CONTENTS_FIELD_NUMBER = 1;
-    private java.util.List<com.basho.riak.pbc.RPB.RpbContent> contents_ =
+    // repeated .RpbContent content = 1;
+    public static final int CONTENT_FIELD_NUMBER = 1;
+    private java.util.List<com.basho.riak.pbc.RPB.RpbContent> content_ =
       java.util.Collections.emptyList();
-    public java.util.List<com.basho.riak.pbc.RPB.RpbContent> getContentsList() {
-      return contents_;
+    public java.util.List<com.basho.riak.pbc.RPB.RpbContent> getContentList() {
+      return content_;
     }
-    public int getContentsCount() { return contents_.size(); }
-    public com.basho.riak.pbc.RPB.RpbContent getContents(int index) {
-      return contents_.get(index);
+    public int getContentCount() { return content_.size(); }
+    public com.basho.riak.pbc.RPB.RpbContent getContent(int index) {
+      return content_.get(index);
     }
     
     // optional bytes vclock = 2;
@@ -2589,10 +3020,17 @@ public final class RPB {
     public boolean hasVclock() { return hasVclock; }
     public com.google.protobuf.ByteString getVclock() { return vclock_; }
     
+    // optional bytes key = 3;
+    public static final int KEY_FIELD_NUMBER = 3;
+    private boolean hasKey;
+    private com.google.protobuf.ByteString key_ = com.google.protobuf.ByteString.EMPTY;
+    public boolean hasKey() { return hasKey; }
+    public com.google.protobuf.ByteString getKey() { return key_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
-      for (com.basho.riak.pbc.RPB.RpbContent element : getContentsList()) {
+      for (com.basho.riak.pbc.RPB.RpbContent element : getContentList()) {
         if (!element.isInitialized()) return false;
       }
       return true;
@@ -2601,11 +3039,14 @@ public final class RPB {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (com.basho.riak.pbc.RPB.RpbContent element : getContentsList()) {
+      for (com.basho.riak.pbc.RPB.RpbContent element : getContentList()) {
         output.writeMessage(1, element);
       }
       if (hasVclock()) {
         output.writeBytes(2, getVclock());
+      }
+      if (hasKey()) {
+        output.writeBytes(3, getKey());
       }
       getUnknownFields().writeTo(output);
     }
@@ -2616,13 +3057,17 @@ public final class RPB {
       if (size != -1) return size;
     
       size = 0;
-      for (com.basho.riak.pbc.RPB.RpbContent element : getContentsList()) {
+      for (com.basho.riak.pbc.RPB.RpbContent element : getContentList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, element);
       }
       if (hasVclock()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getVclock());
+      }
+      if (hasKey()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getKey());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2707,7 +3152,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbPutResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbPutResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbPutResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -2766,9 +3211,9 @@ public final class RPB {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
         }
-        if (result.contents_ != java.util.Collections.EMPTY_LIST) {
-          result.contents_ =
-            java.util.Collections.unmodifiableList(result.contents_);
+        if (result.content_ != java.util.Collections.EMPTY_LIST) {
+          result.content_ =
+            java.util.Collections.unmodifiableList(result.content_);
         }
         com.basho.riak.pbc.RPB.RpbPutResp returnMe = result;
         result = null;
@@ -2786,14 +3231,17 @@ public final class RPB {
       
       public Builder mergeFrom(com.basho.riak.pbc.RPB.RpbPutResp other) {
         if (other == com.basho.riak.pbc.RPB.RpbPutResp.getDefaultInstance()) return this;
-        if (!other.contents_.isEmpty()) {
-          if (result.contents_.isEmpty()) {
-            result.contents_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
+        if (!other.content_.isEmpty()) {
+          if (result.content_.isEmpty()) {
+            result.content_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
           }
-          result.contents_.addAll(other.contents_);
+          result.content_.addAll(other.content_);
         }
         if (other.hasVclock()) {
           setVclock(other.getVclock());
+        }
+        if (other.hasKey()) {
+          setKey(other.getKey());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -2823,11 +3271,15 @@ public final class RPB {
             case 10: {
               com.basho.riak.pbc.RPB.RpbContent.Builder subBuilder = com.basho.riak.pbc.RPB.RpbContent.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
-              addContents(subBuilder.buildPartial());
+              addContent(subBuilder.buildPartial());
               break;
             }
             case 18: {
               setVclock(input.readBytes());
+              break;
+            }
+            case 26: {
+              setKey(input.readBytes());
               break;
             }
           }
@@ -2835,54 +3287,54 @@ public final class RPB {
       }
       
       
-      // repeated .RpbContent contents = 1;
-      public java.util.List<com.basho.riak.pbc.RPB.RpbContent> getContentsList() {
-        return java.util.Collections.unmodifiableList(result.contents_);
+      // repeated .RpbContent content = 1;
+      public java.util.List<com.basho.riak.pbc.RPB.RpbContent> getContentList() {
+        return java.util.Collections.unmodifiableList(result.content_);
       }
-      public int getContentsCount() {
-        return result.getContentsCount();
+      public int getContentCount() {
+        return result.getContentCount();
       }
-      public com.basho.riak.pbc.RPB.RpbContent getContents(int index) {
-        return result.getContents(index);
+      public com.basho.riak.pbc.RPB.RpbContent getContent(int index) {
+        return result.getContent(index);
       }
-      public Builder setContents(int index, com.basho.riak.pbc.RPB.RpbContent value) {
+      public Builder setContent(int index, com.basho.riak.pbc.RPB.RpbContent value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        result.contents_.set(index, value);
+        result.content_.set(index, value);
         return this;
       }
-      public Builder setContents(int index, com.basho.riak.pbc.RPB.RpbContent.Builder builderForValue) {
-        result.contents_.set(index, builderForValue.build());
+      public Builder setContent(int index, com.basho.riak.pbc.RPB.RpbContent.Builder builderForValue) {
+        result.content_.set(index, builderForValue.build());
         return this;
       }
-      public Builder addContents(com.basho.riak.pbc.RPB.RpbContent value) {
+      public Builder addContent(com.basho.riak.pbc.RPB.RpbContent value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        if (result.contents_.isEmpty()) {
-          result.contents_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
+        if (result.content_.isEmpty()) {
+          result.content_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
         }
-        result.contents_.add(value);
+        result.content_.add(value);
         return this;
       }
-      public Builder addContents(com.basho.riak.pbc.RPB.RpbContent.Builder builderForValue) {
-        if (result.contents_.isEmpty()) {
-          result.contents_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
+      public Builder addContent(com.basho.riak.pbc.RPB.RpbContent.Builder builderForValue) {
+        if (result.content_.isEmpty()) {
+          result.content_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
         }
-        result.contents_.add(builderForValue.build());
+        result.content_.add(builderForValue.build());
         return this;
       }
-      public Builder addAllContents(
+      public Builder addAllContent(
           java.lang.Iterable<? extends com.basho.riak.pbc.RPB.RpbContent> values) {
-        if (result.contents_.isEmpty()) {
-          result.contents_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
+        if (result.content_.isEmpty()) {
+          result.content_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbContent>();
         }
-        super.addAll(values, result.contents_);
+        super.addAll(values, result.content_);
         return this;
       }
-      public Builder clearContents() {
-        result.contents_ = java.util.Collections.emptyList();
+      public Builder clearContent() {
+        result.content_ = java.util.Collections.emptyList();
         return this;
       }
       
@@ -2904,6 +3356,27 @@ public final class RPB {
       public Builder clearVclock() {
         result.hasVclock = false;
         result.vclock_ = getDefaultInstance().getVclock();
+        return this;
+      }
+      
+      // optional bytes key = 3;
+      public boolean hasKey() {
+        return result.hasKey();
+      }
+      public com.google.protobuf.ByteString getKey() {
+        return result.getKey();
+      }
+      public Builder setKey(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasKey = true;
+        result.key_ = value;
+        return this;
+      }
+      public Builder clearKey() {
+        result.hasKey = false;
+        result.key_ = getDefaultInstance().getKey();
         return this;
       }
       
@@ -2967,6 +3440,48 @@ public final class RPB {
     public boolean hasRw() { return hasRw; }
     public int getRw() { return rw_; }
     
+    // optional bytes vclock = 4;
+    public static final int VCLOCK_FIELD_NUMBER = 4;
+    private boolean hasVclock;
+    private com.google.protobuf.ByteString vclock_ = com.google.protobuf.ByteString.EMPTY;
+    public boolean hasVclock() { return hasVclock; }
+    public com.google.protobuf.ByteString getVclock() { return vclock_; }
+    
+    // optional uint32 r = 5;
+    public static final int R_FIELD_NUMBER = 5;
+    private boolean hasR;
+    private int r_ = 0;
+    public boolean hasR() { return hasR; }
+    public int getR() { return r_; }
+    
+    // optional uint32 w = 6;
+    public static final int W_FIELD_NUMBER = 6;
+    private boolean hasW;
+    private int w_ = 0;
+    public boolean hasW() { return hasW; }
+    public int getW() { return w_; }
+    
+    // optional uint32 pr = 7;
+    public static final int PR_FIELD_NUMBER = 7;
+    private boolean hasPr;
+    private int pr_ = 0;
+    public boolean hasPr() { return hasPr; }
+    public int getPr() { return pr_; }
+    
+    // optional uint32 pw = 8;
+    public static final int PW_FIELD_NUMBER = 8;
+    private boolean hasPw;
+    private int pw_ = 0;
+    public boolean hasPw() { return hasPw; }
+    public int getPw() { return pw_; }
+    
+    // optional uint32 dw = 9;
+    public static final int DW_FIELD_NUMBER = 9;
+    private boolean hasDw;
+    private int dw_ = 0;
+    public boolean hasDw() { return hasDw; }
+    public int getDw() { return dw_; }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
@@ -2986,6 +3501,24 @@ public final class RPB {
       }
       if (hasRw()) {
         output.writeUInt32(3, getRw());
+      }
+      if (hasVclock()) {
+        output.writeBytes(4, getVclock());
+      }
+      if (hasR()) {
+        output.writeUInt32(5, getR());
+      }
+      if (hasW()) {
+        output.writeUInt32(6, getW());
+      }
+      if (hasPr()) {
+        output.writeUInt32(7, getPr());
+      }
+      if (hasPw()) {
+        output.writeUInt32(8, getPw());
+      }
+      if (hasDw()) {
+        output.writeUInt32(9, getDw());
       }
       getUnknownFields().writeTo(output);
     }
@@ -3007,6 +3540,30 @@ public final class RPB {
       if (hasRw()) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, getRw());
+      }
+      if (hasVclock()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getVclock());
+      }
+      if (hasR()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(5, getR());
+      }
+      if (hasW()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(6, getW());
+      }
+      if (hasPr()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(7, getPr());
+      }
+      if (hasPw()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(8, getPw());
+      }
+      if (hasDw()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(9, getDw());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3091,7 +3648,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbDelReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbDelReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbDelReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -3175,6 +3732,24 @@ public final class RPB {
         if (other.hasRw()) {
           setRw(other.getRw());
         }
+        if (other.hasVclock()) {
+          setVclock(other.getVclock());
+        }
+        if (other.hasR()) {
+          setR(other.getR());
+        }
+        if (other.hasW()) {
+          setW(other.getW());
+        }
+        if (other.hasPr()) {
+          setPr(other.getPr());
+        }
+        if (other.hasPw()) {
+          setPw(other.getPw());
+        }
+        if (other.hasDw()) {
+          setDw(other.getDw());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -3210,6 +3785,30 @@ public final class RPB {
             }
             case 24: {
               setRw(input.readUInt32());
+              break;
+            }
+            case 34: {
+              setVclock(input.readBytes());
+              break;
+            }
+            case 40: {
+              setR(input.readUInt32());
+              break;
+            }
+            case 48: {
+              setW(input.readUInt32());
+              break;
+            }
+            case 56: {
+              setPr(input.readUInt32());
+              break;
+            }
+            case 64: {
+              setPw(input.readUInt32());
+              break;
+            }
+            case 72: {
+              setDw(input.readUInt32());
               break;
             }
           }
@@ -3274,6 +3873,117 @@ public final class RPB {
       public Builder clearRw() {
         result.hasRw = false;
         result.rw_ = 0;
+        return this;
+      }
+      
+      // optional bytes vclock = 4;
+      public boolean hasVclock() {
+        return result.hasVclock();
+      }
+      public com.google.protobuf.ByteString getVclock() {
+        return result.getVclock();
+      }
+      public Builder setVclock(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasVclock = true;
+        result.vclock_ = value;
+        return this;
+      }
+      public Builder clearVclock() {
+        result.hasVclock = false;
+        result.vclock_ = getDefaultInstance().getVclock();
+        return this;
+      }
+      
+      // optional uint32 r = 5;
+      public boolean hasR() {
+        return result.hasR();
+      }
+      public int getR() {
+        return result.getR();
+      }
+      public Builder setR(int value) {
+        result.hasR = true;
+        result.r_ = value;
+        return this;
+      }
+      public Builder clearR() {
+        result.hasR = false;
+        result.r_ = 0;
+        return this;
+      }
+      
+      // optional uint32 w = 6;
+      public boolean hasW() {
+        return result.hasW();
+      }
+      public int getW() {
+        return result.getW();
+      }
+      public Builder setW(int value) {
+        result.hasW = true;
+        result.w_ = value;
+        return this;
+      }
+      public Builder clearW() {
+        result.hasW = false;
+        result.w_ = 0;
+        return this;
+      }
+      
+      // optional uint32 pr = 7;
+      public boolean hasPr() {
+        return result.hasPr();
+      }
+      public int getPr() {
+        return result.getPr();
+      }
+      public Builder setPr(int value) {
+        result.hasPr = true;
+        result.pr_ = value;
+        return this;
+      }
+      public Builder clearPr() {
+        result.hasPr = false;
+        result.pr_ = 0;
+        return this;
+      }
+      
+      // optional uint32 pw = 8;
+      public boolean hasPw() {
+        return result.hasPw();
+      }
+      public int getPw() {
+        return result.getPw();
+      }
+      public Builder setPw(int value) {
+        result.hasPw = true;
+        result.pw_ = value;
+        return this;
+      }
+      public Builder clearPw() {
+        result.hasPw = false;
+        result.pw_ = 0;
+        return this;
+      }
+      
+      // optional uint32 dw = 9;
+      public boolean hasDw() {
+        return result.hasDw();
+      }
+      public int getDw() {
+        return result.getDw();
+      }
+      public Builder setDw(int value) {
+        result.hasDw = true;
+        result.dw_ = value;
+        return this;
+      }
+      public Builder clearDw() {
+        result.hasDw = false;
+        result.dw_ = 0;
         return this;
       }
       
@@ -3441,7 +4151,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbListBucketsResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbListBucketsResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbListBucketsResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -3755,7 +4465,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbListKeysReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbListKeysReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbListKeysReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -4066,7 +4776,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbListKeysResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbListKeysResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbListKeysResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -4405,7 +5115,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbGetBucketReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbGetBucketReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbGetBucketReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -4694,7 +5404,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbGetBucketResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbGetBucketResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbGetBucketResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -5019,7 +5729,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbSetBucketReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbSetBucketReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbSetBucketReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -5371,7 +6081,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbMapRedReq result;
       
-      // Construct using com.trifork.riak.RPB.RpbMapRedReq.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbMapRedReq.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -5714,7 +6424,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbMapRedResp result;
       
-      // Construct using com.trifork.riak.RPB.RpbMapRedResp.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbMapRedResp.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -6009,11 +6719,26 @@ public final class RPB {
       return usermeta_.get(index);
     }
     
+    // repeated .RpbPair indexes = 10;
+    public static final int INDEXES_FIELD_NUMBER = 10;
+    private java.util.List<com.basho.riak.pbc.RPB.RpbPair> indexes_ =
+      java.util.Collections.emptyList();
+    public java.util.List<com.basho.riak.pbc.RPB.RpbPair> getIndexesList() {
+      return indexes_;
+    }
+    public int getIndexesCount() { return indexes_.size(); }
+    public com.basho.riak.pbc.RPB.RpbPair getIndexes(int index) {
+      return indexes_.get(index);
+    }
+    
     private void initFields() {
     }
     public final boolean isInitialized() {
       if (!hasValue) return false;
       for (com.basho.riak.pbc.RPB.RpbPair element : getUsermetaList()) {
+        if (!element.isInitialized()) return false;
+      }
+      for (com.basho.riak.pbc.RPB.RpbPair element : getIndexesList()) {
         if (!element.isInitialized()) return false;
       }
       return true;
@@ -6048,6 +6773,9 @@ public final class RPB {
       }
       for (com.basho.riak.pbc.RPB.RpbPair element : getUsermetaList()) {
         output.writeMessage(9, element);
+      }
+      for (com.basho.riak.pbc.RPB.RpbPair element : getIndexesList()) {
+        output.writeMessage(10, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -6093,6 +6821,10 @@ public final class RPB {
       for (com.basho.riak.pbc.RPB.RpbPair element : getUsermetaList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, element);
+      }
+      for (com.basho.riak.pbc.RPB.RpbPair element : getIndexesList()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, element);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6177,7 +6909,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbContent result;
       
-      // Construct using com.trifork.riak.RPB.RpbContent.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbContent.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -6244,6 +6976,10 @@ public final class RPB {
           result.usermeta_ =
             java.util.Collections.unmodifiableList(result.usermeta_);
         }
+        if (result.indexes_ != java.util.Collections.EMPTY_LIST) {
+          result.indexes_ =
+            java.util.Collections.unmodifiableList(result.indexes_);
+        }
         com.basho.riak.pbc.RPB.RpbContent returnMe = result;
         result = null;
         return returnMe;
@@ -6292,6 +7028,12 @@ public final class RPB {
             result.usermeta_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbPair>();
           }
           result.usermeta_.addAll(other.usermeta_);
+        }
+        if (!other.indexes_.isEmpty()) {
+          if (result.indexes_.isEmpty()) {
+            result.indexes_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbPair>();
+          }
+          result.indexes_.addAll(other.indexes_);
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -6356,6 +7098,12 @@ public final class RPB {
               com.basho.riak.pbc.RPB.RpbPair.Builder subBuilder = com.basho.riak.pbc.RPB.RpbPair.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addUsermeta(subBuilder.buildPartial());
+              break;
+            }
+            case 82: {
+              com.basho.riak.pbc.RPB.RpbPair.Builder subBuilder = com.basho.riak.pbc.RPB.RpbPair.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addIndexes(subBuilder.buildPartial());
               break;
             }
           }
@@ -6606,6 +7354,57 @@ public final class RPB {
         return this;
       }
       
+      // repeated .RpbPair indexes = 10;
+      public java.util.List<com.basho.riak.pbc.RPB.RpbPair> getIndexesList() {
+        return java.util.Collections.unmodifiableList(result.indexes_);
+      }
+      public int getIndexesCount() {
+        return result.getIndexesCount();
+      }
+      public com.basho.riak.pbc.RPB.RpbPair getIndexes(int index) {
+        return result.getIndexes(index);
+      }
+      public Builder setIndexes(int index, com.basho.riak.pbc.RPB.RpbPair value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.indexes_.set(index, value);
+        return this;
+      }
+      public Builder setIndexes(int index, com.basho.riak.pbc.RPB.RpbPair.Builder builderForValue) {
+        result.indexes_.set(index, builderForValue.build());
+        return this;
+      }
+      public Builder addIndexes(com.basho.riak.pbc.RPB.RpbPair value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        if (result.indexes_.isEmpty()) {
+          result.indexes_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbPair>();
+        }
+        result.indexes_.add(value);
+        return this;
+      }
+      public Builder addIndexes(com.basho.riak.pbc.RPB.RpbPair.Builder builderForValue) {
+        if (result.indexes_.isEmpty()) {
+          result.indexes_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbPair>();
+        }
+        result.indexes_.add(builderForValue.build());
+        return this;
+      }
+      public Builder addAllIndexes(
+          java.lang.Iterable<? extends com.basho.riak.pbc.RPB.RpbPair> values) {
+        if (result.indexes_.isEmpty()) {
+          result.indexes_ = new java.util.ArrayList<com.basho.riak.pbc.RPB.RpbPair>();
+        }
+        super.addAll(values, result.indexes_);
+        return this;
+      }
+      public Builder clearIndexes() {
+        result.indexes_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:RpbContent)
     }
     
@@ -6775,7 +7574,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbPair result;
       
-      // Construct using com.trifork.riak.RPB.RpbPair.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbPair.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -7118,7 +7917,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbLink result;
       
-      // Construct using com.trifork.riak.RPB.RpbLink.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbLink.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -7475,7 +8274,7 @@ public final class RPB {
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
       private com.basho.riak.pbc.RPB.RpbBucketProps result;
       
-      // Construct using com.trifork.riak.RPB.RpbBucketProps.newBuilder()
+      // Construct using com.basho.riak.pbc.RPB.RpbBucketProps.newBuilder()
       private Builder() {}
       
       private static Builder create() {
@@ -7761,35 +8560,43 @@ public final class RPB {
       "tClientIdResp\022\021\n\tclient_id\030\001 \002(\014\"&\n\021RpbS" +
       "etClientIdReq\022\021\n\tclient_id\030\001 \002(\014\"<\n\024RpbG" +
       "etServerInfoResp\022\014\n\004node\030\001 \001(\014\022\026\n\016server" +
-      "_version\030\002 \001(\014\"3\n\tRpbGetReq\022\016\n\006bucket\030\001 " +
-      "\002(\014\022\013\n\003key\030\002 \002(\014\022\t\n\001r\030\003 \001(\r\":\n\nRpbGetRes" +
-      "p\022\034\n\007content\030\001 \003(\0132\013.RpbContent\022\016\n\006vcloc" +
-      "k\030\002 \001(\014\"\202\001\n\tRpbPutReq\022\016\n\006bucket\030\001 \002(\014\022\013\n" +
-      "\003key\030\002 \002(\014\022\016\n\006vclock\030\003 \001(\014\022\034\n\007content\030\004 ",
-      "\002(\0132\013.RpbContent\022\t\n\001w\030\005 \001(\r\022\n\n\002dw\030\006 \001(\r\022" +
-      "\023\n\013return_body\030\007 \001(\010\";\n\nRpbPutResp\022\035\n\010co" +
-      "ntents\030\001 \003(\0132\013.RpbContent\022\016\n\006vclock\030\002 \001(" +
-      "\014\"4\n\tRpbDelReq\022\016\n\006bucket\030\001 \002(\014\022\013\n\003key\030\002 " +
-      "\002(\014\022\n\n\002rw\030\003 \001(\r\"%\n\022RpbListBucketsResp\022\017\n" +
-      "\007buckets\030\001 \003(\014\" \n\016RpbListKeysReq\022\016\n\006buck" +
-      "et\030\001 \002(\014\"-\n\017RpbListKeysResp\022\014\n\004keys\030\001 \003(" +
-      "\014\022\014\n\004done\030\002 \001(\010\"!\n\017RpbGetBucketReq\022\016\n\006bu" +
-      "cket\030\001 \002(\014\"2\n\020RpbGetBucketResp\022\036\n\005props\030" +
-      "\001 \002(\0132\017.RpbBucketProps\"A\n\017RpbSetBucketRe",
-      "q\022\016\n\006bucket\030\001 \002(\014\022\036\n\005props\030\002 \002(\0132\017.RpbBu" +
-      "cketProps\"5\n\014RpbMapRedReq\022\017\n\007request\030\001 \002" +
-      "(\014\022\024\n\014content_type\030\002 \002(\014\">\n\rRpbMapRedRes" +
-      "p\022\r\n\005phase\030\001 \001(\r\022\020\n\010response\030\002 \001(\014\022\014\n\004do" +
-      "ne\030\003 \001(\010\"\311\001\n\nRpbContent\022\r\n\005value\030\001 \002(\014\022\024" +
-      "\n\014content_type\030\002 \001(\014\022\017\n\007charset\030\003 \001(\014\022\030\n" +
-      "\020content_encoding\030\004 \001(\014\022\014\n\004vtag\030\005 \001(\014\022\027\n" +
-      "\005links\030\006 \003(\0132\010.RpbLink\022\020\n\010last_mod\030\007 \001(\r" +
-      "\022\026\n\016last_mod_usecs\030\010 \001(\r\022\032\n\010usermeta\030\t \003" +
-      "(\0132\010.RpbPair\"%\n\007RpbPair\022\013\n\003key\030\001 \002(\014\022\r\n\005",
-      "value\030\002 \001(\014\"3\n\007RpbLink\022\016\n\006bucket\030\001 \001(\014\022\013" +
-      "\n\003key\030\002 \001(\014\022\013\n\003tag\030\003 \001(\014\"3\n\016RpbBucketPro" +
-      "ps\022\r\n\005n_val\030\001 \001(\r\022\022\n\nallow_mult\030\002 \001(\010B\027\n" +
-      "\020com.trifork.riakB\003RPB"
+      "_version\030\002 \001(\014\"\244\001\n\tRpbGetReq\022\016\n\006bucket\030\001" +
+      " \002(\014\022\013\n\003key\030\002 \002(\014\022\t\n\001r\030\003 \001(\r\022\n\n\002pr\030\004 \001(\r" +
+      "\022\024\n\014basic_quorum\030\005 \001(\010\022\023\n\013notfound_ok\030\006 " +
+      "\001(\010\022\023\n\013if_modified\030\007 \001(\014\022\014\n\004head\030\010 \001(\010\022\025" +
+      "\n\rdeletedvclock\030\t \001(\010\"M\n\nRpbGetResp\022\034\n\007c",
+      "ontent\030\001 \003(\0132\013.RpbContent\022\016\n\006vclock\030\002 \001(" +
+      "\014\022\021\n\tunchanged\030\003 \001(\010\"\323\001\n\tRpbPutReq\022\016\n\006bu" +
+      "cket\030\001 \002(\014\022\013\n\003key\030\002 \001(\014\022\016\n\006vclock\030\003 \001(\014\022" +
+      "\034\n\007content\030\004 \002(\0132\013.RpbContent\022\t\n\001w\030\005 \001(\r" +
+      "\022\n\n\002dw\030\006 \001(\r\022\023\n\013return_body\030\007 \001(\010\022\n\n\002pw\030" +
+      "\010 \001(\r\022\027\n\017if_not_modified\030\t \001(\010\022\025\n\rif_non" +
+      "e_match\030\n \001(\010\022\023\n\013return_head\030\013 \001(\010\"G\n\nRp" +
+      "bPutResp\022\034\n\007content\030\001 \003(\0132\013.RpbContent\022\016" +
+      "\n\006vclock\030\002 \001(\014\022\013\n\003key\030\003 \001(\014\"~\n\tRpbDelReq" +
+      "\022\016\n\006bucket\030\001 \002(\014\022\013\n\003key\030\002 \002(\014\022\n\n\002rw\030\003 \001(",
+      "\r\022\016\n\006vclock\030\004 \001(\014\022\t\n\001r\030\005 \001(\r\022\t\n\001w\030\006 \001(\r\022" +
+      "\n\n\002pr\030\007 \001(\r\022\n\n\002pw\030\010 \001(\r\022\n\n\002dw\030\t \001(\r\"%\n\022R" +
+      "pbListBucketsResp\022\017\n\007buckets\030\001 \003(\014\" \n\016Rp" +
+      "bListKeysReq\022\016\n\006bucket\030\001 \002(\014\"-\n\017RpbListK" +
+      "eysResp\022\014\n\004keys\030\001 \003(\014\022\014\n\004done\030\002 \001(\010\"!\n\017R" +
+      "pbGetBucketReq\022\016\n\006bucket\030\001 \002(\014\"2\n\020RpbGet" +
+      "BucketResp\022\036\n\005props\030\001 \002(\0132\017.RpbBucketPro" +
+      "ps\"A\n\017RpbSetBucketReq\022\016\n\006bucket\030\001 \002(\014\022\036\n" +
+      "\005props\030\002 \002(\0132\017.RpbBucketProps\"5\n\014RpbMapR" +
+      "edReq\022\017\n\007request\030\001 \002(\014\022\024\n\014content_type\030\002",
+      " \002(\014\">\n\rRpbMapRedResp\022\r\n\005phase\030\001 \001(\r\022\020\n\010" +
+      "response\030\002 \001(\014\022\014\n\004done\030\003 \001(\010\"\344\001\n\nRpbCont" +
+      "ent\022\r\n\005value\030\001 \002(\014\022\024\n\014content_type\030\002 \001(\014" +
+      "\022\017\n\007charset\030\003 \001(\014\022\030\n\020content_encoding\030\004 " +
+      "\001(\014\022\014\n\004vtag\030\005 \001(\014\022\027\n\005links\030\006 \003(\0132\010.RpbLi" +
+      "nk\022\020\n\010last_mod\030\007 \001(\r\022\026\n\016last_mod_usecs\030\010" +
+      " \001(\r\022\032\n\010usermeta\030\t \003(\0132\010.RpbPair\022\031\n\007inde" +
+      "xes\030\n \003(\0132\010.RpbPair\"%\n\007RpbPair\022\013\n\003key\030\001 " +
+      "\002(\014\022\r\n\005value\030\002 \001(\014\"3\n\007RpbLink\022\016\n\006bucket\030" +
+      "\001 \001(\014\022\013\n\003key\030\002 \001(\014\022\013\n\003tag\030\003 \001(\014\"3\n\016RpbBu",
+      "cketProps\022\r\n\005n_val\030\001 \001(\r\022\022\n\nallow_mult\030\002" +
+      " \001(\010B\031\n\022com.basho.riak.pbcB\003RPB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -7833,7 +8640,7 @@ public final class RPB {
           internal_static_RpbGetReq_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RpbGetReq_descriptor,
-              new java.lang.String[] { "Bucket", "Key", "R", },
+              new java.lang.String[] { "Bucket", "Key", "R", "Pr", "BasicQuorum", "NotfoundOk", "IfModified", "Head", "Deletedvclock", },
               com.basho.riak.pbc.RPB.RpbGetReq.class,
               com.basho.riak.pbc.RPB.RpbGetReq.Builder.class);
           internal_static_RpbGetResp_descriptor =
@@ -7841,7 +8648,7 @@ public final class RPB {
           internal_static_RpbGetResp_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RpbGetResp_descriptor,
-              new java.lang.String[] { "Content", "Vclock", },
+              new java.lang.String[] { "Content", "Vclock", "Unchanged", },
               com.basho.riak.pbc.RPB.RpbGetResp.class,
               com.basho.riak.pbc.RPB.RpbGetResp.Builder.class);
           internal_static_RpbPutReq_descriptor =
@@ -7849,7 +8656,7 @@ public final class RPB {
           internal_static_RpbPutReq_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RpbPutReq_descriptor,
-              new java.lang.String[] { "Bucket", "Key", "Vclock", "Content", "W", "Dw", "ReturnBody", },
+              new java.lang.String[] { "Bucket", "Key", "Vclock", "Content", "W", "Dw", "ReturnBody", "Pw", "IfNotModified", "IfNoneMatch", "ReturnHead", },
               com.basho.riak.pbc.RPB.RpbPutReq.class,
               com.basho.riak.pbc.RPB.RpbPutReq.Builder.class);
           internal_static_RpbPutResp_descriptor =
@@ -7857,7 +8664,7 @@ public final class RPB {
           internal_static_RpbPutResp_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RpbPutResp_descriptor,
-              new java.lang.String[] { "Contents", "Vclock", },
+              new java.lang.String[] { "Content", "Vclock", "Key", },
               com.basho.riak.pbc.RPB.RpbPutResp.class,
               com.basho.riak.pbc.RPB.RpbPutResp.Builder.class);
           internal_static_RpbDelReq_descriptor =
@@ -7865,7 +8672,7 @@ public final class RPB {
           internal_static_RpbDelReq_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RpbDelReq_descriptor,
-              new java.lang.String[] { "Bucket", "Key", "Rw", },
+              new java.lang.String[] { "Bucket", "Key", "Rw", "Vclock", "R", "W", "Pr", "Pw", "Dw", },
               com.basho.riak.pbc.RPB.RpbDelReq.class,
               com.basho.riak.pbc.RPB.RpbDelReq.Builder.class);
           internal_static_RpbListBucketsResp_descriptor =
@@ -7937,7 +8744,7 @@ public final class RPB {
           internal_static_RpbContent_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_RpbContent_descriptor,
-              new java.lang.String[] { "Value", "ContentType", "Charset", "ContentEncoding", "Vtag", "Links", "LastMod", "LastModUsecs", "Usermeta", },
+              new java.lang.String[] { "Value", "ContentType", "Charset", "ContentEncoding", "Vtag", "Links", "LastMod", "LastModUsecs", "Usermeta", "Indexes", },
               com.basho.riak.pbc.RPB.RpbContent.class,
               com.basho.riak.pbc.RPB.RpbContent.Builder.class);
           internal_static_RpbPair_descriptor =

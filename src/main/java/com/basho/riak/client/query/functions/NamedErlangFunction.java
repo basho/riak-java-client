@@ -38,6 +38,11 @@ public class NamedErlangFunction implements NamedFunction {
      */
     public static final NamedErlangFunction STD_LINK_FUN = new NamedErlangFunction("riak_kv_wm_link_walker", "mapreduce_linkfun");
 
+    /**
+     * Riak_kv_mapreduce:reduce_identity
+     */
+    public static final Function REDUCE_IDENTITY = new NamedErlangFunction("riak_kv_mapreduce", "reduce_identity");
+
     private final String mod;
     private final String fun;
 

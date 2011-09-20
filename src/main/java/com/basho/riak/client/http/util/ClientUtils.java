@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import org.apache.commons.codec.binary.Base64;
@@ -39,8 +40,11 @@ import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.basho.riak.client.http.BinIndex;
+import com.basho.riak.client.http.IntIndex;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakConfig;
+import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.client.http.RiakLink;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.response.RiakExceptionHandler;
@@ -52,9 +56,14 @@ import com.basho.riak.client.util.CharsetUtils;
  */
 public class ClientUtils {
 
+    /**
+     * 
+     */
+    private static final String COMMA = ",";
     // Matches the scheme, host and port of a URL
     private static String URL_PATH_MASK = "^(?:[A-Za-z0-9+-\\.]+://)?[^/]*";
     private static Random rng = new Random();
+
     /**
      * Construct a new {@link HttpClient} instance given a {@link RiakConfig}.
      * 
@@ -146,6 +155,59 @@ public class ClientUtils {
     }
 
     /**
+     * Return a URL to the given index
+     * 
+     * @param config
+     *            RiakConfig containing the base URL to Riak
+     * @param bucket
+     *            Bucket of the object
+     * @param index
+     *            index name
+     * @param values
+     *            the index value (or values for a range)
+     * @return URL for an index query
+     */
+    public static String makeURI(RiakConfig config, String bucket, String index, String[] values) {
+        StringBuilder url = makeBaseIndexURI(config, bucket, index).append(values[0]);
+        if (values.length > 1) {
+            url.append("/").append(values[1]);
+        }
+
+        return url.toString();
+    }
+
+    /**
+     * Return a URL to the given index
+     * 
+     * @param config
+     *            RiakConfig containing the base URL to Riak
+     * @param bucket
+     *            Bucket of the object
+     * @param index
+     *            index name
+     * @param values
+     *            the index value (or values for a range)
+     * @return URL for an index query
+     */
+    public static String makeURI(RiakConfig config, String bucket, String index, int[] values) {
+        StringBuilder url = makeBaseIndexURI(config, bucket, index).append(values[0]);
+        if (values.length > 1) {
+            url.append("/").append(values[1]);
+        }
+
+        return url.toString();
+    }
+
+    private static StringBuilder makeBaseIndexURI(RiakConfig config, String bucket, String index) {
+        return new StringBuilder(config.getBaseUrl())
+            .append("/").append("buckets")
+            .append("/").append(urlEncode(bucket))
+            .append("/").append("index")
+            .append("/").append(index)
+            .append("/");
+    }
+
+    /**
      * Return just the path portion of the given URL
      */
     public static String getPathFromUrl(String url) {
@@ -187,7 +249,8 @@ public class ClientUtils {
             throw new IllegalArgumentException("ClientId must be at least 4 bytes");
 
         try {
-            return new String(Base64.encodeBase64(new byte[] { clientId[0], clientId[1], clientId[2], clientId[3] }), "UTF-8");
+            return new String(Base64.encodeBase64(new byte[] { clientId[0], clientId[1], clientId[2], clientId[3] }),
+                              "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("UTF-8 support is required by JVM");
         }
@@ -291,8 +354,8 @@ public class ClientUtils {
 
         buf.append(arr[0]);
         for (int i = 1; i < arr.length; i++) {
-        	buf.append(delimiter);
-        	buf.append(arr[i]);
+            buf.append(delimiter);
+            buf.append(arr[i]);
         }
         return buf.toString();
     }
@@ -329,12 +392,12 @@ public class ClientUtils {
     public static List<RiakLink> parseLinkHeader(String header) {
         List<RiakLink> links = new ArrayList<RiakLink>();
         Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
-        for (Entry<String, Map<String, String>> e: parsedLinks.entrySet()) {
-        	String url = e.getKey();
-        	RiakLink link = parseOneLink(url, e.getValue());
-        	if (link != null) {
-        		links.add(link);
-        	}
+        for (Entry<String, Map<String, String>> e : parsedLinks.entrySet()) {
+            String url = e.getKey();
+            RiakLink link = parseOneLink(url, e.getValue());
+            if (link != null) {
+                links.add(link);
+            }
         }
         return links;
     }
@@ -360,6 +423,39 @@ public class ClientUtils {
     }
 
     /**
+     * Extract X-Riak-Index-* headers and create {@link List} of
+     * {@link RiakIndex}s from them
+     * 
+     * @param headers
+     *            The full HTTP headers from the response
+     * @return a List of RiakIndexs
+     */
+    @SuppressWarnings("rawtypes") public static List<RiakIndex> parseIndexHeaders(Map<String, String> headers) {
+        final List<RiakIndex> indexes = new ArrayList<RiakIndex>();
+        if (headers != null) {
+            for (Entry<String, String> e : headers.entrySet()) {
+                String header = e.getKey();
+                if (header != null && header.toLowerCase().startsWith(Constants.HDR_SEC_INDEX_PREFIX)) {
+                    String name = header.substring(Constants.HDR_SEC_INDEX_PREFIX.length());
+                    String value = e.getValue();
+                    StringTokenizer st = new StringTokenizer(value, COMMA);
+
+                    if (name.endsWith(BinIndex.SUFFIX)) {
+                        while (st.hasMoreTokens()) {
+                            indexes.add(new BinIndex(name, st.nextToken().trim()));
+                        }
+                    } else if (name.endsWith(IntIndex.SUFFIX)) {
+                        while (st.hasMoreElements()) {
+                            indexes.add(new IntIndex(name, Integer.parseInt(st.nextToken().trim())));
+                        }
+                    }
+                }
+            }
+        }
+        return indexes;
+    }
+
+    /**
      * Extract only the user-specified metadata headers from a header set: all
      * headers prefixed with X-Riak-Meta-. The prefix is removed before
      * returning.
@@ -373,11 +469,11 @@ public class ClientUtils {
         Map<String, String> usermeta = new HashMap<String, String>();
         if (headers != null) {
             for (Entry<String, String> e : headers.entrySet()) {
-        		String header = e.getKey();
-        		if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
-        			usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), e.getValue());
-        		}
-        	}
+                String header = e.getKey();
+                if (header != null && header.toLowerCase().startsWith(Constants.HDR_USERMETA_PREFIX)) {
+                    usermeta.put(header.substring(Constants.HDR_USERMETA_PREFIX.length()), e.getValue());
+                }
+            }
         }
         return usermeta;
     }
@@ -406,7 +502,7 @@ public class ClientUtils {
 
         if (docHeaders != null) {
             vclock = docHeaders.get(Constants.HDR_VCLOCK);
-            if( vclock != null) {
+            if (vclock != null) {
                 siblingVclock = true;
             }
         }
@@ -417,12 +513,13 @@ public class ClientUtils {
             for (Multipart.Part part : parts) {
                 Map<String, String> headers = part.getHeaders();
 
-                // handles the case of link walk multi part responses where the vclock header is in the part not the top response
+                // handles the case of link walk multi part responses where the
+                // vclock header is in the part not the top response
                 if (!siblingVclock) {
                     vclock = headers.get(Constants.HDR_VCLOCK);
                 }
 
-                if(vclock == null) {
+                if (vclock == null) {
                     // this should never happen
                     // exception here to shorten path from bug occurrence
                     // to bug manifestation
@@ -430,6 +527,7 @@ public class ClientUtils {
                 }
 
                 List<RiakLink> links = parseLinkHeader(headers.get(Constants.HDR_LINK));
+                @SuppressWarnings("rawtypes") List<RiakIndex> indexes = parseIndexHeaders(headers);
                 Map<String, String> usermeta = parseUsermeta(headers);
                 String location = headers.get(Constants.HDR_LOCATION);
                 String partBucket = bucket;
@@ -445,7 +543,8 @@ public class ClientUtils {
 
                 RiakObject o = new RiakObject(riak, partBucket, partKey, part.getBody(),
                                               headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta, vclock,
-                                              headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG));
+                                              headers.get(Constants.HDR_LAST_MODIFIED),
+                                              headers.get(Constants.HDR_ETAG), indexes);
                 objects.add(o);
             }
         }
@@ -467,7 +566,9 @@ public class ClientUtils {
 
     /**
      * Buffers an input stream into a byte array
-     * @param valueStream the stream to read into an array
+     * 
+     * @param valueStream
+     *            the stream to read into an array
      * @return the byte array of the consumed stream
      */
     public static byte[] bufferStream(InputStream valueStream) {

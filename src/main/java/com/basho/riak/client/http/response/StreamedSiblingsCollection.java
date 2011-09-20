@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.client.http.RiakLink;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.util.ClientUtils;
@@ -56,6 +57,7 @@ public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
         if (part != null) {
             Map<String, String> headers = part.getHeaders();
             List<RiakLink> links = ClientUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
+            @SuppressWarnings("rawtypes") List<RiakIndex> indexes = ClientUtils.parseIndexHeaders(headers);
             Map<String, String> usermeta = ClientUtils.parseUsermeta(headers);
             String location = headers.get(Constants.HDR_LOCATION);
             String partBucket = bucket;
@@ -71,7 +73,7 @@ public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
 
             RiakObject o = new RiakObject(riak, partBucket, partKey, null, headers.get(Constants.HDR_CONTENT_TYPE),
                                  links, usermeta, vclock, headers.get(Constants.HDR_LAST_MODIFIED),
-                                 headers.get(Constants.HDR_ETAG));
+                                 headers.get(Constants.HDR_ETAG), indexes);
             o.setValueStream(part.getStream());
             cache(o);
             return true;

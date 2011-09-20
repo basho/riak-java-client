@@ -15,6 +15,7 @@ package com.basho.riak.client.raw;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import com.basho.riak.client.IRiakObject;
@@ -24,6 +25,7 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.client.raw.query.indexes.IndexQuery;
 
 /**
  * Common interface for low-level clients.
@@ -205,5 +207,16 @@ public interface RawClient {
      * @throws IOException
      *             if Riak is not reachable or returns anything other than OK
      */
-    public void ping() throws IOException;
+    void ping() throws IOException;
+
+    /**
+     * Performs an 2i index query
+     * 
+     * @param <T>
+     * @param indexQuery
+     *            the query to perform
+     * @return a List of keys (or empty list)
+     * @throws IOException
+     */
+    List<String> fetchIndex(IndexQuery indexQuery) throws IOException;
 }
