@@ -30,6 +30,22 @@ public interface Constants {
     public static String FL_SCHEMA_LINKFUN_MOD = "mod";
     public static String FL_SCHEMA_LINKFUN_FUN = "fun";
     public static String FL_SCHEMA_NVAL = "n_val";
+    public static String FL_SCHEMA_FUN_MOD = "mod";
+    public static String FL_SCHEMA_FUN_FUN = "fun";
+    public static String FL_SCHEMA_FUN_NAME = "name";
+    public static String FL_SCHEMA_LAST_WRITE_WINS = "last_write_wins";
+    public static String FL_SCHEMA_BACKEND = "backend";
+    public static String FL_SCHEMA_SMALL_VCLOCK = "small_vclock";
+    public static String FL_SCHEMA_BIG_VCLOCK = "big_vclock";
+    public static String FL_SCHEMA_YOUNG_VCLOCK = "young_vclock";
+    public static String FL_SCHEMA_OLD_VCLOCK = "old_vclock";
+    public static String FL_SCHEMA_R = "r";
+    public static String FL_SCHEMA_W = "w";
+    public static String FL_SCHEMA_DW = "dw";
+    public static String FL_SCHEMA_RW = "rw";
+    public static String FL_SCHEMA_POSTCOMMIT = "postcommit";
+    public static String FL_SCHEMA_PRECOMMIT = "precommit";
+    public static String FL_SCHEMA_SEARCH = "search";
     public static String FL_BUCKETS = "buckets";
 
     // Header directives used by Riak

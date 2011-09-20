@@ -339,4 +339,15 @@ public class WriteBucket implements RiakOperation<Bucket> {
         this.retrier = retrier;
         return this;
     }
+
+    /**
+     * convenience for setting search=true **and** adding the search precommit
+     * hook (support for both pre-1.0 and 1.0 search)
+     * 
+     * @return this
+     */
+    public WriteBucket enableForSearch() {
+        builder.addPrecommitHook(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK).search(true);
+        return this;
+    }
 }
