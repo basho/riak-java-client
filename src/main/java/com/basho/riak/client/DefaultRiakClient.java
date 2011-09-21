@@ -12,11 +12,13 @@ import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.BucketMapReduce;
+import com.basho.riak.client.query.IndexMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
+import com.basho.riak.client.raw.query.indexes.IndexQuery;
 
 /**
  * The default implementation of IRiakClient.
@@ -171,6 +173,17 @@ public final class DefaultRiakClient implements IRiakClient {
      */
     public SearchMapReduce mapReduce(String bucket, String query) {
         return new SearchMapReduce(rawClient, bucket, query);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.IRiakClient#mapReduce(com.basho.riak.client.raw
+     * .query.indexes.IndexQuery)
+     */
+    public IndexMapReduce mapReduce(IndexQuery query) {
+        return new IndexMapReduce(rawClient, query);
     }
 
     /*

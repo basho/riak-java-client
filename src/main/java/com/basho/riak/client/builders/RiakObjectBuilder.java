@@ -26,6 +26,8 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.query.indexes.RiakIndex;
+import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -40,6 +42,7 @@ public class RiakObjectBuilder {
     private String vtag;
     private Date lastModified;
     private Collection<RiakLink> links = new ArrayList<RiakLink>();
+    private RiakIndexes indexes = new RiakIndexes();
     private Map<String, String> userMeta = new HashMap<String, String>();
     private String contentType;
 
@@ -80,16 +83,18 @@ public class RiakObjectBuilder {
         rob.lastModified = o.getLastModified();
         rob.value = o.getValue();
         rob.links = o.getLinks();
+        rob.indexes = new RiakIndexes(o.allBinIndexes(), o.allIntIndexes());
         rob.userMeta = o.getMeta();
         return rob;
     }
 
     /**
      * Construct a {@link DefaultRiakObject} from this builders parameters
-     * @return am {@link IRiakObject} with the values from this builder.
+     * @return an {@link IRiakObject} with the values from this builder.
      */
     public IRiakObject build() {
-        return new DefaultRiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta);
+        return new DefaultRiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta,
+                                     indexes);
     }
 
     /**
@@ -155,7 +160,7 @@ public class RiakObjectBuilder {
     }
 
     /**
-     * A Collection of {@link RiakLink}s for the new riak objct
+     * A Collection of {@link RiakLink}s for the new riak object
      * 
      * @param links
      *            the {@link Collection} of {@link RiakLink}s for the Riak
@@ -164,7 +169,7 @@ public class RiakObjectBuilder {
      * @return this
      */
     public RiakObjectBuilder withLinks(Collection<RiakLink> links) {
-        if(links != null) {
+        if (links != null) {
             this.links = new ArrayList<RiakLink>(links);
         }
         return this;
@@ -172,15 +177,57 @@ public class RiakObjectBuilder {
 
     /**
      * Add a {@link RiakLink} to the new riak object's collection.
-     * @param bucket the bucket at the end of the link
-     * @param key the key at the end of the link
-     * @param tag the link tag
+     * 
+     * @param bucket
+     *            the bucket at the end of the link
+     * @param key
+     *            the key at the end of the link
+     * @param tag
+     *            the link tag
      * @return this
      */
     public RiakObjectBuilder addLink(String bucket, String key, String tag) {
         synchronized (links) {
             links.add(new RiakLink(bucket, key, tag));
         }
+        return this;
+    }
+
+    /**
+     * A Collection of {@link RiakIndex}s for the new riak object
+     * 
+     * @param indexes
+     *            the {@link Collection} of {@link RiakIndex}s for the Riak
+     *            object, is copied over the current collection, not merged!
+     *            NOTE: this will be copied.
+     * @return this
+     */
+    public RiakObjectBuilder withIndexes(RiakIndexes indexes) {
+        indexes = RiakIndexes.from(indexes);
+        return this;
+    }
+
+    /**
+     * Add a {@link RiakIndex} to the new riak object's collection.
+     * 
+     * @param index
+     *            the {@link RiakIndex} to add
+     * @return this
+     */
+    public RiakObjectBuilder addIndex(String index, int value) {
+        indexes.add(index, value);
+        return this;
+    }
+
+    /**
+     * Add a {@link RiakIndex} to the new riak object's collection.
+     * 
+     * @param index
+     *            the {@link RiakIndex} to add
+     * @return this
+     */
+    public RiakObjectBuilder addIndex(String index, String value) {
+        indexes.add(index, value);
         return this;
     }
 

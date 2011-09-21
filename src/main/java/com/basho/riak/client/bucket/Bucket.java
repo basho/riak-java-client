@@ -20,6 +20,8 @@ import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
+import com.basho.riak.client.query.indexes.FetchIndex;
+import com.basho.riak.client.query.indexes.RiakIndex;
 
 /**
  * The primary interface for working with Key/Value data in Riak, a factory for key/value {@link RiakOperation}s.
@@ -172,4 +174,16 @@ public interface Bucket extends BucketProperties {
      * @throws RiakException
      */
     Iterable<String> keys() throws RiakException;
+
+    /**
+     * Creates a {@link FetchIndex} operation for the given index name and type
+     * 
+     * @param <T>
+     *            the index type (currently String or Integer)
+     * @param index
+     *            an index
+     * @return a {@link FetchIndex} operation for further configuration and
+     *         execution
+     */
+    <T> FetchIndex<T> fetchIndex(RiakIndex<T> index);
 }

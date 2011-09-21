@@ -28,6 +28,7 @@ import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.IndexResponse;
 import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.RiakExceptionHandler;
@@ -508,5 +509,92 @@ public class RiakClient {
      */
     public HttpResponse ping() {
         return helper.ping();
-   }
+    }
+
+    /**
+     * Fetch the keys for <code>index</code> with <code>value</code>
+     * 
+     * @param bucket
+     *            the bucket
+     * @param indexName
+     *            the name of the index (e.g. 'user_bin')
+     * @param value
+     *            the value of the index
+     * @return an {@link IndexResponse}
+     */
+    public IndexResponse index(String bucket, String indexName, String value) {
+        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new String[] { value }));
+    }
+
+    /**
+     * Fetch the keys for <code>index</code> with <code>value</code>
+     * 
+     * @param bucket
+     *            the bucket
+     * @param indexName
+     *            index name (e.g. 'age_int')
+     * @param value
+     *            an int for the index value
+     * @return {@link IndexResponse}
+     */
+    public IndexResponse index(String bucket, String indexName, int value) {
+        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new int[] { value }));
+    }
+
+    /**
+     * A range index query matching a binary index from <code>start</code> to
+     * <code>end</code>
+     * 
+     * @param bucket
+     *            the bucket
+     * @param indexName
+     *            the index (e.g. 'username_bin')
+     * @param start
+     *            the start value in a range (e.g 'a')
+     * @param end
+     *            the end value in a range (e.g. 'z')
+     * @return an {@link IndexResponse}
+     */
+    public IndexResponse index(String bucket, String indexName, String start, String end) {
+        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new String[] { start, end }));
+    }
+
+    /**
+     * A range index query matching a int index from <code>start</code> to
+     * <code>end</code>
+     * 
+     * @param bucket
+     *            the bucket
+     * @param indexName
+     *            the index (e.g. 'age_int')
+     * @param start
+     *            the start value in a range (e.g 16)
+     * @param end
+     *            the end value in a range (e.g. 32)
+     * @return an {@link IndexResponse}
+     */
+    public IndexResponse index(String bucket, String indexName, int start, int end) {
+        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new int[] { start, end }));
+
+    }
+
+    /**
+     * Create an {@link IndexResponse} from the given {@link HttpResponse}
+     * 
+     * @param r
+     *            an {@link HttpResponse} from an index query
+     * @return an {@link IndexResponse}
+     */
+    private IndexResponse makeIndexResponse(HttpResponse r) {
+        try {
+            return new IndexResponse(r);
+        } catch (JSONException e) {
+            try {
+                return new IndexResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to parse it or throw");
+            }
+        }
+    }
 }

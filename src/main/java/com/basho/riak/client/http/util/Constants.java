@@ -72,6 +72,8 @@ public interface Constants {
     // headers prefix is correctly capitalized in requests.
     public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
     public static String HDR_USERMETA_REQ_PREFIX = "X-Riak-Meta-";
+    public static String HDR_SEC_INDEX_REQ_PREFIX = "X-Riak-Index-";
+    public static String HDR_SEC_INDEX_PREFIX = "x-riak-index-";
 
     // Content types used in Riak
     public static String CTYPE_ANY = "*/*";

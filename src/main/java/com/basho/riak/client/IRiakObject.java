@@ -17,9 +17,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.LinkWalk;
+import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.query.indexes.IntIndex;
 
 /**
  * Represents the data and meta data stored in Riak at a bucket/key.
@@ -194,6 +197,46 @@ public interface IRiakObject extends Iterable<RiakLink> {
      */
     Iterable<Entry<String, String>> userMetaEntries();
 
+    /**
+     * Secondary indexes for this object.
+     * 
+     * See <a
+     * href="http://blog.basho.com/2011/09/14/Secondary-Indexes-in-Riak/">basho
+     * wiki</a> for more details.
+     * 
+     * TODO update doc link when 2i hits the wiki
+     * 
+     * @return a copy of the string indexes for this object.
+     */
+    Map<BinIndex, Set<String>> allBinIndexes();
+
+    /**
+     * Get a copy of the values for the given bin index
+     * @param string the index name
+     * @return a Set of value
+     */
+    Set<String> getBinIndex(String string);
+
+    /**
+     * Secondary indexes for this object.
+     * 
+     * See <a
+     * href="http://blog.basho.com/2011/09/14/Secondary-Indexes-in-Riak/">basho
+     * wiki</a> for more details.
+     * 
+     * TODO update doc link when 2i hits the wiki
+     * 
+     * @return a copy of the int indexes for this object
+     */
+    Map<IntIndex, Set<Integer>> allIntIndexes();
+
+    /**
+     * Get a copy of the values for the given bin index
+     * @param string the index name
+     * @return a Set of value
+     */
+    Set<Integer> getIntIndex(String string);
+
     // Mutate
     /**
      * Set this IRiakObject's value.
@@ -256,4 +299,44 @@ public interface IRiakObject extends Iterable<RiakLink> {
      *            the key of the item to remove
      */
     IRiakObject removeUsermeta(String key);
+
+    /**
+     * Add a String index to this objects indexes.
+     * 
+     * @param index
+     *            index name
+     * @param value
+     *            index value
+     * @return this RiakObject.
+     */
+    IRiakObject addIndex(String index, String value);
+
+    /**
+     * Add an int index to this objects indexes.
+     * 
+     * @param index
+     *            index name
+     * @param value
+     *            index value
+     * @return this RiakObject.
+     */
+    IRiakObject addIndex(String index, int value);
+
+    /**
+     * Remove a {@link BinIndex} from this RiakObject.
+     * 
+     * @param index
+     *            the name of the bin index to remove
+     * @return this RiakObject
+     */
+    IRiakObject removeBinIndex(String index);
+
+    /**
+     * Remove a {@link IntIndex} from this RiakObject.
+     * 
+     * @param index
+     *            the name of the int index to remove
+     * @return this RiakObject
+     */
+    IRiakObject removeIntIndex(String index);
 }

@@ -21,10 +21,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.RiakKey;
+import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 
@@ -57,6 +61,7 @@ public class DefaultRiakObject implements IRiakObject {
     private final Collection<RiakLink> links;
     private final Object userMetaLock = new Object();
     private final Map<String, String> userMeta;
+    private final RiakIndexes indexes;
 
     private volatile String contentType;
     private volatile byte[] value;
@@ -73,9 +78,11 @@ public class DefaultRiakObject implements IRiakObject {
      * @param value a byte[] of the data payload to store in Riak. Note: this is cloned on construction of this instance.
      * @param links the List of {@link RiakLink}s from this object. Note: this is copied.
      * @param userMeta the {@link Map} of user meta data to store/stored with this object. Note: this is copied.
+     * @param indexes the {@link RiakIndexes} for this object. These will be copied to a new {@link RiakIndexes}
      */
     public DefaultRiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
-            String contentType, byte[] value, final Collection<RiakLink> links, final Map<String, String> userMeta) {
+            String contentType, byte[] value, final Collection<RiakLink> links, final Map<String, String> userMeta,
+            final RiakIndexes indexes) {
 
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
@@ -94,6 +101,7 @@ public class DefaultRiakObject implements IRiakObject {
         this.value = copy(value);
         this.links = copy(links);
         this.userMeta = copy(userMeta);
+        this.indexes = RiakIndexes.from(indexes);
     }
 
     /**
@@ -127,16 +135,17 @@ public class DefaultRiakObject implements IRiakObject {
     }
 
     /**
-     * Copy the {@link RiakLink}
-     * @param links
-     * @return a copy of links or an empty {@link ArrayList}
+     * Copy the Collection
+     * @param <T> the type
+     * @param l the collection to copy
+     * @return a copy of the collection (or an empty collection if <code>l</code> is null)
      */
-    private Collection<RiakLink> copy(Collection<RiakLink> links) {
-        Collection<RiakLink> copy;
-        if (links == null) {
-            copy = new ArrayList<RiakLink>();
+    private <T> Collection<T> copy(Collection<T> l) {
+        Collection<T> copy;
+        if (l == null) {
+            copy = new ArrayList<T>();
         } else {
-            copy = new ArrayList<RiakLink>(links);
+            copy = new ArrayList<T>(l);
         }
         return copy;
     }
@@ -380,5 +389,73 @@ public class DefaultRiakObject implements IRiakObject {
      */
     public String getValueAsString() {
         return CharsetUtils.asString(value, CharsetUtils.getCharset(contentType));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakObject#allBinIndexes()
+     */
+    public Map<BinIndex, Set<String>> allBinIndexes() {
+        return indexes.getBinIndexes();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakObject#getBinIndex(java.lang.String)
+     */
+    public Set<String> getBinIndex(String name) {
+        return indexes.getBinIndex(name);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakObject#allIntIndexes()
+     */
+    public Map<IntIndex, Set<Integer>> allIntIndexes() {
+        return indexes.getIntIndexes();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakObject#getIntIndex(java.lang.String)
+     */
+    public Set<Integer> getIntIndex(String name) {
+        return indexes.getIntIndex(name);
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, java.lang.String)
+     */
+    public IRiakObject addIndex(String index, String value) {
+        indexes.add(index, value);
+        return this;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, int)
+     */
+    public IRiakObject addIndex(String index, int value) {
+        indexes.add(index, value);
+        return this;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#removeIndex(com.basho.riak.client.query.indexes.BinIndex)
+     */
+    public IRiakObject removeBinIndex(String index) {
+        indexes.removeAll(BinIndex.named(index));
+        return this;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakObject#removeIndex(com.basho.riak.client.query.indexes.IntIndex)
+     */
+    public IRiakObject removeIntIndex(String index) {
+        indexes.removeAll(IntIndex.named(index));
+        return this;
     }
 }

@@ -18,6 +18,7 @@ import static com.basho.riak.client.raw.pbc.ConversionUtil.linkAccumulateToLinkP
 import static com.basho.riak.client.raw.pbc.ConversionUtil.nullSafeToStringUtf8;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,7 +32,9 @@ import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.BucketKeyMapReduce;
+import com.basho.riak.client.query.IndexMapReduce;
 import com.basho.riak.client.query.LinkWalkStep;
+import com.basho.riak.client.query.MapReduce;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.JSSourceFunction;
@@ -42,6 +45,7 @@ import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.KeySource;
@@ -352,6 +356,33 @@ public class PBClientAdapter implements RawClient {
         meta.contentType(Constants.CTYPE_JSON);
         MapReduceResponseSource resp = client.mapReduce(spec.getJSON(), meta);
         return convert(resp);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.raw.RawClient#fetchIndex(com.basho.riak.client.
+     * raw.query.IndexQuery)
+     */
+    public List<String> fetchIndex(IndexQuery indexQuery) throws IOException {
+        final MapReduce mr = new IndexMapReduce(this, indexQuery);
+
+        mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY, new Object() {
+            @Override public String toString() {
+                return "{reduce_phase_only_1, true}";
+            }
+
+        });
+        // only return the key, to match the http rest api
+        mr.addReducePhase(new JSSourceFunction("function(v) { return v.map(function(e) { return e[1]; }); }"));
+
+        try {
+            MapReduceResult result = mr.execute();
+            return new ArrayList<String>(result.getResult(String.class));
+        } catch (RiakException e) {
+            throw new IOException(e);
+        }
     }
 
     /*

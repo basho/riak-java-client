@@ -41,6 +41,8 @@ import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
+import com.basho.riak.client.query.indexes.FetchIndex;
+import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.util.CharsetUtils;
 
@@ -545,5 +547,12 @@ public class DefaultBucket implements Bucket {
      */
     public DeleteObject delete(String key) {
         return new DeleteObject(client, name, key, retrier);
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.Bucket#fetchIndex(com.basho.riak.client.query.indexes.RiakIndex)
+     */
+    public <T> FetchIndex<T> fetchIndex(RiakIndex<T> index) {
+        return new FetchIndex<T>(client, name, index, retrier);
     }
 }
