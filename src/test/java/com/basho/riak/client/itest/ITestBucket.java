@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,6 +41,7 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
+import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.DefaultRetrier;
@@ -296,6 +298,8 @@ public abstract class ITestBucket {
 
     // fetch index
     @Test public void fetchIndex() throws Exception {
+        Assume.assumeTrue(TestProperties.is2iEnabled());
+
         final String bucketName = UUID.randomUUID().toString() + "_2i";
         final Bucket b = client.fetchBucket(bucketName).execute();
         final PassThroughConverter converter = new PassThroughConverter();

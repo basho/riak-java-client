@@ -24,6 +24,10 @@ public final class TestProperties {
     public static final String SEARCH_PROPERTY = "search";
     public static final boolean SEARCH_ENABLED = Boolean.parseBoolean(System.getProperty(Hosts.PREFIX + SEARCH_PROPERTY,
                                                                                          "false"));
+    
+    public static final String _2I_PROPERTY = "2i";
+    public static final boolean _2I_ENABLED = Boolean.parseBoolean(System.getProperty(Hosts.PREFIX + _2I_PROPERTY,
+                                                                                         "false"));
 
     private TestProperties() {};
 
@@ -31,4 +35,7 @@ public final class TestProperties {
         return SEARCH_ENABLED;
     }
 
+    public static boolean is2iEnabled() {
+        return _2I_ENABLED;
+    }
 }

@@ -20,9 +20,11 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.http.BinIndex;
 import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.http.IntIndex;
@@ -46,6 +48,7 @@ public class ITestSecondaryIndexes {
     private String bucket;
 
     @Before public void setUp() {
+        Assume.assumeTrue(TestProperties.is2iEnabled());
         client = new RiakClient(Hosts.RIAK_URL);
         bucket = UUID.randomUUID().toString();
     }
