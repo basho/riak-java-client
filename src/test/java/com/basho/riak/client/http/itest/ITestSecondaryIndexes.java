@@ -79,7 +79,7 @@ public class ITestSecondaryIndexes {
         RiakObject retrieved = fr.getObject();
 
         @SuppressWarnings("rawtypes") List<RiakIndex> indexes = retrieved.getIndexes();
-        System.out.println(indexes);
+
         assertEquals(4, indexes.size());
 
         assertTrue(indexes.contains(new IntIndex(TEST_INT, intValue1)));

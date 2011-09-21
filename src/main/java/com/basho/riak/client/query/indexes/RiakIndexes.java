@@ -69,7 +69,7 @@ public class RiakIndexes {
     }
 
     /**
-     * Add a new {@link BinIndexValue} to the set
+     * Add a new {@link BinIndex} value to the set
      * 
      * @param index
      *            the index name
@@ -95,7 +95,7 @@ public class RiakIndexes {
     }
 
     /**
-     * Add a new {@link IntIndexValue} to the set
+     * Add a new {@link IntIndex} value to the set
      * 
      * @param name
      *            name of the index
