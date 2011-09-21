@@ -463,6 +463,27 @@ phases.
         .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), true)
     .execute();
 #+END_SRC
+
+**** IndexMapReduce
+An =IndexMapReduce= can be used *if* you have the
+=riak_kv_eleveldb_backend= enabled. A secondary indexes query can then
+provide the input for a Map/Reduce job. As before, use the
+=IRiakClient= as a factory to create an =IndexMapReduce=:
+#+BEGIN_SRC java
+    IndexQuery iq = new BinValueQuery(BinIndex.named("email"),
+        "user_bucket", "user@domain.com");
+    MapReduceResult result = client.mapReduce(iq)
+                                .addReducePhase(NamedErlangFunction.REDUCE_IDENTITY)
+                                .execute();
+#+END_SRC
+There are query classes to perform a =RangeQuery= or a =ValueQuery=.
+
+You can also directly fetch and index using a =Bucket=:
+#+BEGIN_SRC java
+    // fetch int range
+    List<String> ageRange = b.fetchIndex(IntIndex.named("age")).from(16).to(64).execute();
+#+END_SRC
+
 *** Link Walking
 Links provide a light weight graph database-like feature to Riak. See the [[http://wiki.basho.com/Links-and-Link-Walking.html][Link
 Walking documentation]] for full details. 
