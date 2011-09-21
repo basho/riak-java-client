@@ -98,7 +98,9 @@ public class PBClientAdapter implements RawClient {
      */
     public RiakResponse fetch(String bucket, String key) throws IOException {
         if (bucket == null || bucket.trim().equals("")) {
-            throw new IllegalArgumentException("bucket must not be null or empty " + "or just whitespace.");
+            throw new IllegalArgumentException(
+                                               "bucket must not be null or empty "
+                                                       + "or just whitespace.");
         }
 
         if (key == null || key.trim().equals("")) {
@@ -116,7 +118,9 @@ public class PBClientAdapter implements RawClient {
      */
     public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
         if (bucket == null || bucket.trim().equals("")) {
-            throw new IllegalArgumentException("bucket must not be null or empty " + "or just whitespace.");
+            throw new IllegalArgumentException(
+                                               "bucket must not be null or empty "
+                                                       + "or just whitespace.");
         }
 
         if (key == null || key.trim().equals("")) {
@@ -273,7 +277,7 @@ public class PBClientAdapter implements RawClient {
 
     /**
      * Creates an m/r job from the supplied link spec and executes it
-     * 
+     *
      * @param linkWalkSpec
      *            the Link Walk spec
      * @return {@link MapReduceResult} containing the end of the link and any
@@ -304,7 +308,7 @@ public class PBClientAdapter implements RawClient {
     /**
      * Takes the results of running linkWalkFirstPhase and creates an m/r job
      * from them
-     * 
+     *
      * @param firstPhaseResult
      *            the results of running linkWalkfirstPhase.
      * @return the results from the intermediate bkeys of phase one.
@@ -418,9 +422,7 @@ public class PBClientAdapter implements RawClient {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#ping()
      */
     public void ping() throws IOException {

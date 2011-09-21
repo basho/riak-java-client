@@ -55,7 +55,6 @@ public class IndexMapReduce extends MapReduce {
     @Override protected void writeInput(final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeStartObject();
 
-        // co-opt the executor to write out the JSON
         IndexWriter e = new IndexWriter() {
 
             private void writeCommon(String bucket, String index) throws IOException {
@@ -85,6 +84,7 @@ public class IndexMapReduce extends MapReduce {
                 jsonGenerator.writeStringField(KEY, value);
             }
         };
+
         indexQuery.write(e);
         jsonGenerator.writeEndObject();
     }

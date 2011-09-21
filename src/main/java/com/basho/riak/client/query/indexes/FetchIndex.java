@@ -108,7 +108,6 @@ public class FetchIndex<T> implements RiakOperation<List<String>> {
         if (to.getClass().equals(String.class)) {
             return new BinRangeQuery((BinIndex) index, bucket, (String) from, (String) to);
         } else if (to.getClass().equals(Integer.class)) {
-
             return new IntRangeQuery((IntIndex) index, bucket, (Integer) from, (Integer) to);
         } else {
             throw new RuntimeException("Unkown range query type " + to.getClass());
