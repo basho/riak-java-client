@@ -5,6 +5,8 @@ import java.util.Collection;
 
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.bucket.DefaultBucketProperties;
+import com.basho.riak.client.bucket.TunableCAPProps;
+import com.basho.riak.client.bucket.VClockPruneProps;
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
@@ -28,6 +30,10 @@ public final class BucketPropertiesBuilder {
     private Quorum dw;
     private Quorum w;
     private Quorum r;
+    private Quorum pr;
+    private Quorum pw;
+    private Boolean notFoundOK;
+    private boolean basicQuorum;
     private Collection<NamedFunction> precommitHooks;
     private Collection<NamedErlangFunction> postcommitHooks;
     private Long oldVClock;
@@ -41,10 +47,11 @@ public final class BucketPropertiesBuilder {
     private Boolean search;
 
     public BucketProperties build() {
-        return new DefaultBucketProperties(allowSiblings, lastWriteWins, nVal,
-                                           backend, smallVClock, bigVClock, youngVClock,
-                                           oldVClock, precommitHooks, postcommitHooks,
-                                           r, w, dw, rw, chashKeyFunction, linkWalkFunction,
+        return new DefaultBucketProperties(allowSiblings, lastWriteWins, nVal, backend,
+                                           new VClockPruneProps(smallVClock, bigVClock, youngVClock, oldVClock),
+                                           precommitHooks, postcommitHooks,
+                                           new TunableCAPProps(r, w, dw, rw, pr, pw, basicQuorum, notFoundOK),
+                                           chashKeyFunction, linkWalkFunction,
                                            search);
     }
 
@@ -69,6 +76,11 @@ public final class BucketPropertiesBuilder {
         b.w = p.getW();
         b.dw = p.getDW();
         b.rw = p.getRW();
+        b.pr = p.getPR();
+        b.pw = p.getPW();
+        b.basicQuorum = p.getBasicQuorum();
+        b.notFoundOK = p.getNotFoundOK();
+        b.search = p.isSearchEnabled();
         b.chashKeyFunction = p.getChashKeyFunction();
         b.linkWalkFunction = p.getLinkWalkFunction();
         return b;
@@ -222,6 +234,7 @@ public final class BucketPropertiesBuilder {
         this.rw = rw;
         return this;
     }
+
     /**
      * @param dw
      * @return
@@ -238,6 +251,66 @@ public final class BucketPropertiesBuilder {
 
     public BucketPropertiesBuilder dw(Quorum dw) {
         this.dw = dw;
+        return this;
+    }
+
+    /**
+     * @param pr
+     * @return
+     */
+    public BucketPropertiesBuilder pr(Quora pr) {
+        this.pr = new Quorum(pr);
+        return this;
+    }
+
+    public BucketPropertiesBuilder pr(int pr) {
+        this.pr = new Quorum(pr);
+        return this;
+    }
+
+    public BucketPropertiesBuilder pr(Quorum pr) {
+        this.pr = pr;
+        return this;
+    }
+
+    /**
+     * @param pw
+     * @return
+     */
+    public BucketPropertiesBuilder pw(Quora pw) {
+        this.pw = new Quorum(pw);
+        return this;
+    }
+
+    public BucketPropertiesBuilder pw(int pw) {
+        this.pw = new Quorum(pw);
+        return this;
+    }
+
+    public BucketPropertiesBuilder pw(Quorum pw) {
+        this.pw = pw;
+        return this;
+    }
+
+    /**
+     * Set default basicQuorum value for bucket
+     * 
+     * @param basicQuorum
+     * @return this
+     */
+    public BucketPropertiesBuilder basicQuorum(boolean basicQuorum) {
+        this.basicQuorum = basicQuorum;
+        return this;
+    }
+
+    /**
+     * Set default notfound_ok property for bucket
+     * 
+     * @param notFoundOK
+     * @return this
+     */
+    public BucketPropertiesBuilder notFoundOK(boolean notFoundOK) {
+        this.notFoundOK = notFoundOK;
         return this;
     }
 

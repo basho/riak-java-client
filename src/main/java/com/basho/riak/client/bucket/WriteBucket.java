@@ -37,7 +37,7 @@ import com.basho.riak.client.raw.RawClient;
  * <p>
  * NOTE: all the parameters on the builder are optional. If omitted then the
  * Riak defaults will be used. Also, very few of these properties are supported
- * by either underlying API at present. They are here for completeness sake.
+ * by both underlying APIs at present. They are here for completeness sake.
  * Changes are underway to support all the properties. Check the docs for the
  * individual parameters to see what is supported.
  * </p>
@@ -100,7 +100,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Is this bucket last_write_wins?
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param lastWriteWins
      * @return this
      */
@@ -121,7 +121,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Which backend this bucket uses.
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param backend
      * @return this
      */
@@ -132,7 +132,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * A Collection of precommit hooks for this bucket
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param precommitHooks
      * @return
      */
@@ -143,7 +143,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Add a precommit hook to the Collection of hooks to be written.
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param preCommitHook
      * @return this
      */
@@ -154,7 +154,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Add a collection of postcommit hooks to the bucket to be written.
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param postCommitHooks
      * @return
      */
@@ -165,7 +165,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Add a postcommit hook to the Collection of post commit hooks for the bucket to written.
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param postcommitHook
      * @return
      */
@@ -198,7 +198,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * set the small vclock prune size
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param smallVClock
      * @return
      */
@@ -209,7 +209,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * set the big_vclock prune size
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param bigVClock
      * @return
      */
@@ -220,7 +220,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * set the young_vclock prune age
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param youngVClock
      * @return
      */
@@ -231,7 +231,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * set the old_vclock prune age
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param oldVClock
      * @return
      */
@@ -242,7 +242,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default r Quorom for the bucket
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param r
      * @return
      */
@@ -253,7 +253,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default r quorom as an int
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param r
      * @return
      */
@@ -264,7 +264,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default w quorom
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param w
      * @return
      */
@@ -275,7 +275,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default w quorom as an int
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param w
      * @return
      */
@@ -286,7 +286,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default rw quorom
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param rw
      * @return
      */
@@ -297,7 +297,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default rw quorom as an int
-     * NOTE: at present this is not supported so has no effect.
+     * NOTE: at present this is not supported by PB API so has no effect for a PB client.
      * @param rw
      * @return
      */
@@ -308,7 +308,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default dw quorom
-     * NOTE: at present this is not supported so has no effect.
+
      * @param dw
      * @return
      */
@@ -319,12 +319,78 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * The default dw quorom as an int
-     * NOTE: at present this is not supported so has no effect.
+
      * @param dw
      * @return
      */
     public WriteBucket dw(int dw) {
         builder.dw(dw);
+        return this;
+    }
+
+    /**
+     * The default pr quorom
+     * 
+     * @param pr
+     * @return
+     */
+    public WriteBucket pr(Quora pr) {
+        builder.pr(pr);
+        return this;
+    }
+
+    /**
+     * The default pr quorom as an int
+     * 
+     * @param pr
+     * @return
+     */
+    public WriteBucket pr(int pr) {
+        builder.pr(pr);
+        return this;
+    }
+
+    /**
+     * The default pw quorom
+     * 
+     * @param pw
+     * @return
+     */
+    public WriteBucket pw(Quora pw) {
+        builder.pw(pw);
+        return this;
+    }
+
+    /**
+     * The default dw quorom as an int
+     * 
+     * @param dw
+     * @return
+     */
+    public WriteBucket pw(int pw) {
+        builder.pw(pw);
+        return this;
+    }
+
+    /**
+     * The default basic_quorum value
+     * 
+     * @param basicQuorum
+     * @return
+     */
+    public WriteBucket basicQuorum(boolean basicQuorum) {
+        builder.basicQuorum(basicQuorum);
+        return this;
+    }
+
+    /**
+     * The default notfound_ok value
+     * 
+     * @param notFoundOK
+     * @return
+     */
+    public WriteBucket notFoundOK(boolean notFoundOK) {
+        builder.notFoundOK(notFoundOK);
         return this;
     }
 

@@ -146,6 +146,40 @@ public interface BucketProperties {
     Quorum getDW();
 
     /**
+     * The default <code>pr</code> quorum for this bucket.
+     * 
+     * @return the default number of partitions in the primary preference list
+     *         that must return from read request, for this bucket, or null.
+     */
+    Quorum getPR();
+
+    /**
+     * The default <code>pw</code> quorum for this bucket.
+     * 
+     * @return the default number of partitions in the primary preference list
+     *         that must return from a write request, for this bucket, or null.
+     */
+    Quorum getPW();
+
+    /**
+     * Should a read request return early in some failure cases?
+     * 
+     * E.g. If a quorum of nodes has already
+     * returned notfound/error, don't wait around for the rest.
+     * 
+     * @return the default basic_quorum value for this bucket, or null.
+     */
+    Boolean getBasicQuorum();
+
+    /**
+     * True if a vnode returning notfound for a key increments the r tally.
+     * False is higher consistency, true is higher availability.
+     * 
+     * @return the default notfound_ok value for the bucket, or null.
+     */
+    Boolean getNotFoundOK();
+
+    /**
      * The chash_keyfun for this bucket.
      * 
      * @return the key hashing function for the bucket, or null.
