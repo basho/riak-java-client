@@ -42,6 +42,7 @@ import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -427,5 +428,12 @@ public class PBClientAdapter implements RawClient {
      */
     public void ping() throws IOException {
         client.ping();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getTransport()
+     */
+    public Transport getTransport() {
+        return Transport.PB;
     }
 }

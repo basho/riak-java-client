@@ -425,6 +425,11 @@ public class ClusterClientTest {
             return cluster;
         }
 
+        /* (non-Javadoc)
+         * @see com.basho.riak.client.raw.RawClient#getTransport()
+         */
+        public Transport getTransport() {
+            return null;
+        }
     }
-
 }

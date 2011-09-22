@@ -241,6 +241,34 @@ public class DefaultBucket implements Bucket {
         return properties.getDW();
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getPR()
+     */
+    public Quorum getPR() {
+        return properties.getPR();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getPW()
+     */
+    public Quorum getPW() {
+        return properties.getPW();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#isBasicQuorum()
+     */
+    public Boolean getBasicQuorum() {
+        return properties.getBasicQuorum();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#isNotFoundOK()
+     */
+    public Boolean getNotFoundOK() {
+        return properties.getNotFoundOK();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -265,6 +293,7 @@ public class DefaultBucket implements Bucket {
     public Boolean getSearch() {
         return properties.getSearch();
     }
+
     // BUCKET
 
     /**

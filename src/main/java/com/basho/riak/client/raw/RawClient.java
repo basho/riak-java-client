@@ -219,4 +219,10 @@ public interface RawClient {
      * @throws IOException
      */
     List<String> fetchIndex(IndexQuery indexQuery) throws IOException;
+
+    /**
+     * The raw transport name.
+     * @return the {@link Transport} for the client or null if not implemented.
+     */
+    Transport getTransport();
 }

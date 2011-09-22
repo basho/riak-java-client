@@ -16,6 +16,7 @@ import com.basho.riak.client.query.IndexMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
@@ -207,5 +208,12 @@ public final class DefaultRiakClient implements IRiakClient {
         } catch (IOException e) {
             throw new RiakException(e);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakClient#getTransport()
+     */
+    public Transport getTransport() {
+        return rawClient.getTransport();
     }
 }

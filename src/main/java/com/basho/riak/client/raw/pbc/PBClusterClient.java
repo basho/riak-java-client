@@ -21,6 +21,7 @@ import java.util.concurrent.Semaphore;
 
 import com.basho.riak.client.raw.ClusterClient;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakConnectionPool;
@@ -95,5 +96,12 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
                                           node.getIdleConnectionTTLMillis());
         }
         return pool;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getTransport()
+     */
+    public Transport getTransport() {
+        return Transport.PB;
     }
 }
