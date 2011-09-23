@@ -121,10 +121,10 @@ public class FetchObject<T> implements RiakOperation<T> {
 
     /**
      * The read quorum for this fetch operation
-     * @param r an int for the read quorum
+     * @param r an Integer for the read quorum
      * @return this
      */
-    public FetchObject<T> r(int r) {
+    public FetchObject<T> r(Integer r) {
         this.r = r;
         return this;
     }
