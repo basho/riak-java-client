@@ -32,6 +32,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
     private static final IRiakObject[] NO_OBJECTS = new IRiakObject[] {};
     private final VClock vclock;
     private final IRiakObject[] riakObjects;
+    private final boolean unmodified;
 
     /**
      * Create a response from the given vector clock and array. Array maybe
@@ -51,6 +52,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
         } else {
             this.riakObjects = riakObjects;
         }
+        this.unmodified = false;
     }
 
     /**
@@ -59,6 +61,16 @@ public class RiakResponse implements Iterable<IRiakObject> {
     private RiakResponse() {
         this.riakObjects = NO_OBJECTS;
         this.vclock = null;
+        this.unmodified = false;
+    }
+
+    /**
+     * Create an empty response, with an <code>unmodified</code> value
+     */
+    private RiakResponse(boolean unmodified) {
+        this.riakObjects = NO_OBJECTS;
+        this.vclock = null;
+        this.unmodified = unmodified;
     }
 
     /**
@@ -110,6 +122,14 @@ public class RiakResponse implements Iterable<IRiakObject> {
     }
 
     /**
+     * @return true if this is an empty response because of a conditional fetch
+     *         that returned unchanged/not-modified
+     */
+    public boolean isUnmodified() {
+        return unmodified;
+    }
+
+    /**
      * Unmodifiable iterator view of the values returned from Riak.
      */
     public Iterator<IRiakObject> iterator() {
@@ -122,5 +142,22 @@ public class RiakResponse implements Iterable<IRiakObject> {
      */
     public static RiakResponse empty() {
         return new RiakResponse();
+    }
+
+    /**
+     * Generate an empty response, with a value for the conditional get 'isUnmodified' response.
+     * @return THE empty response
+     */
+    public static RiakResponse empty(boolean unmodified) {
+        return new RiakResponse(unmodified);
+    }
+
+    /**
+     * @param unmodified
+     * @return an empty response for an unmodified object (from a conditional
+     *         fetch).
+     */
+    public static RiakResponse unmodified() {
+        return new RiakResponse(true);
     }
 }

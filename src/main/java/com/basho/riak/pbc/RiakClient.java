@@ -46,7 +46,6 @@ import com.basho.riak.pbc.RPB.RpbMapRedReq;
 import com.basho.riak.pbc.RPB.RpbPutReq;
 import com.basho.riak.pbc.RPB.RpbPutResp;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * Low level protocol buffers client.
@@ -230,12 +229,31 @@ public class RiakClient implements RiakMessageCodes {
 		RiakConnection c = getConnection();
 		try {
 			c.send(MSG_GetReq, req);
-			return process_fetch_reply(c, bucket, key);
+			return processFetchReply(c, bucket, key).getObjects();
 		} finally {
 			release(c);
 		}
 
 	}
+
+    // All the fetch parameters
+    public FetchResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException {
+        return fetch(ByteString.copyFromUtf8(bucket), ByteString.copyFromUtf8(key), fetchMeta);
+    }
+
+    // All the fetch parameters
+    public FetchResponse fetch(ByteString bucket, ByteString key, FetchMeta fetchMeta) throws IOException {
+        RpbGetReq.Builder b = RPB.RpbGetReq.newBuilder().setBucket(bucket).setKey(key);
+        fetchMeta.write(b);
+        RiakConnection c = getConnection();
+
+        try {
+            c.send(MSG_GetReq, b.build());
+            return processFetchReply(c, bucket, key);
+        } finally {
+            release(c);
+        }
+    }
 
 	public RiakObject[] fetch(String bucket, String key) throws IOException {
 		return fetch(ByteString.copyFromUtf8(bucket), ByteString
@@ -250,29 +268,30 @@ public class RiakClient implements RiakMessageCodes {
 		RiakConnection c = getConnection();
 		try {
 			c.send(MSG_GetReq, req);
-			return process_fetch_reply(c, bucket, key);
+			return processFetchReply(c, bucket, key).getObjects();
 		} finally {
 			release(c);
 		}
 	}
 
-	private RiakObject[] process_fetch_reply(RiakConnection c,
-			ByteString bucket, ByteString key) throws IOException,
-			InvalidProtocolBufferException {
-		byte[] rep = c.receive(MSG_GetResp);
+	private FetchResponse processFetchReply(RiakConnection c, ByteString bucket, ByteString key) throws IOException {
+	    byte[] rep = c.receive(MSG_GetResp);
 
-		if (rep == null) {
-			return NO_RIAK_OBJECTS;
-		}
+        if (rep == null) {
+            return new FetchResponse(NO_RIAK_OBJECTS, false);
+        }
 
-		RpbGetResp resp = RPB.RpbGetResp.parseFrom(rep);
-		int count = resp.getContentCount();
-		RiakObject[] out = new RiakObject[count];
-		ByteString vclock = resp.getVclock();
-		for (int i = 0; i < count; i++) {
-			out[i] = new RiakObject(vclock, bucket, key, resp.getContent(i));
-		}
-		return out;
+        RpbGetResp resp = RPB.RpbGetResp.parseFrom(rep);
+        int count = resp.getContentCount();
+        RiakObject[] out = new RiakObject[count];
+        ByteString vclock = resp.getVclock();
+        for (int i = 0; i < count; i++) {
+            out[i] = new RiakObject(vclock, bucket, key, resp.getContent(i));
+        }
+
+        boolean unchanged = resp.getUnchanged();
+
+        return new FetchResponse(out, unchanged);
 	}
 
 	// /////////////////////
