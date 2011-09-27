@@ -40,4 +40,11 @@ public class ITestPBClient extends ITestClientBasic {
         return RiakFactory.newClient(clusterConf);
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.itest.ITestClientBasic#getLoopCount()
+     */
+    @Override protected int getDeletedVClockLoopTimes() {
+        return 10;
+    }
+
 }

@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
 import org.junit.Before;
@@ -30,9 +32,13 @@ import org.junit.Test;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.PassThroughConverter;
+import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.util.CharsetUtils;
 
@@ -49,9 +55,16 @@ public abstract class ITestClientBasic {
     }
 
     /**
-     * @return
+     * @return an {@link IRiakClient} implementation for the transport to be
+     *         tested.
      */
     protected abstract IRiakClient getClient() throws RiakException;
+
+    /**
+     * @return the number of times a get/put/delete cycle must be performed for
+     *         a very high probability of actually seeing a tombstone vclock.
+     */
+    protected abstract int getDeletedVClockLoopTimes();
 
     @Test public void ping() throws RiakException {
         client.ping();
@@ -157,7 +170,7 @@ public abstract class ITestClientBasic {
         assertTrue(b2.getSearch());
     }
 
-    @Test public void ifModified() throws Exception {
+    @Test public void conditionalFetch() throws Exception {
         final String bucket = UUID.randomUUID().toString();
         final String key = "key";
         final String originalValue = "first_value";
@@ -171,12 +184,14 @@ public abstract class ITestClientBasic {
         assertNotNull(obj);
         assertEquals(originalValue, obj.getValueAsString());
 
-        IRiakObject obj2 = b.fetch(key)
+        final FetchObject<IRiakObject> fo = b.fetch(key)
             .ifModified(obj.getVClock()) // in case of PB
-            .modifiedSince(obj.getLastModified()) // in case of HTTP
-            .execute();
+            .modifiedSince(obj.getLastModified()); // in case of HTTP
+
+        IRiakObject obj2 = fo.execute();
 
         assertNull(obj2);
+        assertTrue(fo.isUnmodified());
 
         // wait because of coarseness of last modified time update (HTTP).
         Thread.sleep(1000);
@@ -185,11 +200,90 @@ public abstract class ITestClientBasic {
         b.store(obj).withConverter(new PassThroughConverter()).execute();
 
         IRiakObject obj3 = b.fetch(key)
-        .ifModified(obj.getVClock()) // in case of PB
-        .modifiedSince(obj.getLastModified()) // in case of HTTP
-        .execute();
+            .ifModified(obj.getVClock()) // in case of PB
+            .modifiedSince(obj.getLastModified()) // in case of HTTP
+            .execute();
 
         assertNotNull(obj3);
         assertEquals(newValue, obj3.getValueAsString());
+    }
+
+    @Test public void deletedVclock() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "k";
+
+        final Bucket b = client.fetchBucket(bucket).execute();
+
+        final CountDownLatch endLatch = new CountDownLatch(1);
+
+        final Runnable putter = new Runnable() {
+
+            public void run() {
+                int cnt = 0;
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        b.store(key, String.valueOf(cnt)).execute();
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread putterThread = new Thread(putter);
+
+        final Runnable deleter = new Runnable() {
+
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        b.delete(key).execute();
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread deleterThread = new Thread(deleter);
+
+        final Runnable getter = new Runnable() {
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        FetchObject<IRiakObject> fo = b.fetch(key).returnDeletedVClock(true);
+                        IRiakObject o = fo.execute();
+
+                        if (fo.hasDeletedVclock()) {
+                            endLatch.countDown();
+                            Thread.currentThread().interrupt();
+                            putterThread.interrupt();
+                            deleterThread.interrupt();
+                            assertNull(o);
+
+                        }
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread getterThread = new Thread(getter);
+
+        putterThread.start();
+        deleterThread.start();
+        getterThread.start();
+
+        boolean sawDeletedVClock = endLatch.await(10, TimeUnit.SECONDS);
+
+        if (!sawDeletedVClock) {
+            putterThread.interrupt();
+            getterThread.interrupt();
+            deleterThread.interrupt();
+        } else {
+            assertTrue(sawDeletedVClock); // somewhat redundant, but it's a
+                                          // test.
+        }
     }
 }

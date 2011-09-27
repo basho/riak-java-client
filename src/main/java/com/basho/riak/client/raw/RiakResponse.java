@@ -19,6 +19,7 @@ import java.util.Iterator;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.operations.FetchObject;
 
 /**
  * A data response from Riak separated into a single vector clock and an array of sibling values.
@@ -33,6 +34,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
     private final VClock vclock;
     private final IRiakObject[] riakObjects;
     private final boolean unmodified;
+    private final boolean deleted;
 
     /**
      * Create a response from the given vector clock and array. Array maybe
@@ -53,6 +55,25 @@ public class RiakResponse implements Iterable<IRiakObject> {
             this.riakObjects = riakObjects;
         }
         this.unmodified = false;
+        this.deleted = false;
+    }
+
+    /**
+     * Create a response from the given vector clock. Vclock may not be null.
+     * This response is a fetch response where the vclock was returned but the
+     * item is deleted.
+     * 
+     * @param vclock
+     */
+    public RiakResponse(byte[] vclock) {
+        if (vclock == null) {
+            throw new IllegalArgumentException("vclock cannot be null");
+        } else {
+            this.vclock = new BasicVClock(vclock);
+        }
+        this.riakObjects = NO_OBJECTS;
+        this.unmodified = false;
+        this.deleted = true;
     }
 
     /**
@@ -62,6 +83,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
         this.riakObjects = NO_OBJECTS;
         this.vclock = null;
         this.unmodified = false;
+        this.deleted = false;
     }
 
     /**
@@ -71,6 +93,7 @@ public class RiakResponse implements Iterable<IRiakObject> {
         this.riakObjects = NO_OBJECTS;
         this.vclock = null;
         this.unmodified = unmodified;
+        this.deleted = false;
     }
 
     /**
@@ -124,9 +147,26 @@ public class RiakResponse implements Iterable<IRiakObject> {
     /**
      * @return true if this is an empty response because of a conditional fetch
      *         that returned unchanged/not-modified
+     * 
+     * @see FetchObject#ifModified(VClock)
+     * @see FetchObject#modifiedSince(java.util.Date)
+     * @see FetchMeta#getIfModifiedSince()
+     * @see FetchMeta#getIfModifiedVClock()
      */
     public boolean isUnmodified() {
         return unmodified;
+    }
+
+    /**
+     * @return true if this object has been deleted but there is a vclock for
+     *         it, only relevant/accurate if the fetch asked for the deleted
+     *         vclock.
+     * 
+     * @see FetchObject#returnDeletedVClock(boolean)
+     * @see FetchMeta#getReturnDeletedVClock()
+     */
+    public boolean isDeleted() {
+        return deleted;
     }
 
     /**

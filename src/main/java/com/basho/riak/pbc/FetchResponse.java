@@ -23,16 +23,24 @@ public class FetchResponse {
 
     private final RiakObject[] objects;
     private final boolean unchanged;
+    private final byte[] vclock;
 
     /**
      * @param objects
      *            the set of riak sibling values
      * @param unchanged
      *            is this an 'unchanged' response to a conditional fetch
+     * @param vclock
+     *            the vclock in the response (if any)
      */
-    protected FetchResponse(RiakObject[] objects, boolean unchanged) {
+    protected FetchResponse(RiakObject[] objects, boolean unchanged, byte[] vclock) {
         this.objects = objects;
         this.unchanged = unchanged;
+        if(vclock != null) {
+            this.vclock = vclock.clone();
+        } else {
+            this.vclock = null;
+        }
     }
 
     /**
@@ -50,4 +58,13 @@ public class FetchResponse {
         return unchanged;
     }
 
+    /**
+     * @return the vclock (if one is present) from the response.
+     */
+    public byte[] getVClock() {
+        if (this.vclock != null) {
+            return this.vclock.clone();
+        }
+        return this.vclock;
+    }
 }

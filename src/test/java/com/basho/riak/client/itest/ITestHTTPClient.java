@@ -47,6 +47,16 @@ public class ITestHTTPClient extends ITestClientBasic {
         return RiakFactory.newClient(conf);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.itest.ITestClientBasic#getDeletedVClockLoopTimes()
+     */
+    @Override protected int getDeletedVClockLoopTimes() {
+        return 10000;
+    }
+
     @Test public void fetchBucket() throws RiakException {
         super.fetchBucket();
         final String bucketName = UUID.randomUUID().toString();
@@ -96,5 +106,4 @@ public class ITestHTTPClient extends ITestClientBasic {
         // assertEquals(Quora.QUORUM, b.getDW());
         // assertEquals(1, b.getRW());
     }
-
 }

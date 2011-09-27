@@ -53,6 +53,7 @@ import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
+import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
 
 /**
@@ -92,9 +93,17 @@ public final class ConversionUtil {
      * @return a {@link RiakResponse}
      */
     static RiakResponse convert(FetchResponse fetchResponse) {
-        if(fetchResponse.isUnchanged()) {
+        if (fetchResponse.isUnchanged()) {
             return RiakResponse.unmodified();
         }
+        RiakObject[] objects = fetchResponse.getObjects();
+        byte[] vclock = fetchResponse.getVClock();
+
+        // no objects + vclock == deleted vclock
+        if ((objects == null || objects.length == 0) && vclock != null) {
+            return new RiakResponse(vclock);
+        }
+
         return convert(fetchResponse.getObjects());
     }
 

@@ -27,7 +27,6 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
-import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
@@ -167,10 +166,12 @@ public class HTTPClientAdapter implements RawClient {
             values = new IRiakObject[] { convert(resp.getObject()) };
         }
 
-        // we have at least an object, get a vclock for the response
         if (values.length > 0) {
-            final RiakObject obj = resp.getObject();
-            response = new RiakResponse(CharsetUtils.utf8StringToBytes(obj.getVclock()), values);
+            response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVClock()), values);
+        } else {
+            if(resp.getVClock() != null) { // a deleted vclock
+                response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVClock()));
+            }
         }
 
         return response;

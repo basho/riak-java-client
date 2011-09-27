@@ -49,6 +49,7 @@ public class FetchObject<T> implements RiakOperation<T> {
     private final String bucket;
     private final RawClient client;
     private final String key;
+    private RiakResponse rawResponse;
 
     private Retrier retrier;
 
@@ -105,10 +106,10 @@ public class FetchObject<T> implements RiakOperation<T> {
                 }
         };
 
-        final RiakResponse ros = retrier.attempt(command);
-        final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
+        rawResponse = retrier.attempt(command);
+        final Collection<T> siblings = new ArrayList<T>(rawResponse.numberOfValues());
 
-        for (IRiakObject o : ros) {
+        for (IRiakObject o : rawResponse) {
             siblings.add(converter.toDomain(o));
         }
 
@@ -220,5 +221,54 @@ public class FetchObject<T> implements RiakOperation<T> {
     public FetchObject<T> retrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;
+    }
+
+    // Meta information from the raw response
+
+    /**
+     * @return true if the fetch was conditional and no result was returned
+     *         since the value was unmodified
+     */
+    public boolean isUnmodified() {
+        validatePostExecute();
+        return rawResponse.isUnmodified();
+    }
+
+    /**
+     * @return true if the fetch was to a deleted key but the
+     *         returnDeletedVClock parameter was set, and the response has that
+     *         vclock
+     */
+    public boolean hasDeletedVclock() {
+        validatePostExecute();
+        return rawResponse.isDeleted();
+    }
+
+    /**
+     * @return checks that the response had a vclock (i.e. was some kind of
+     *         success)
+     */
+    public boolean hasVclock() {
+        validatePostExecute();
+        return rawResponse.getVclock() != null;
+    }
+
+    /**
+     * @return if hasDeletedVclock or hasVclock return true, this method returns
+     *         the vclock
+     */
+    public VClock getVClock() {
+        validatePostExecute();
+        return rawResponse.getVclock();
+    }
+
+    /**
+     * If the {@link RiakResponse} isn't populated then the request hasn't been
+     * executed.
+     */
+    private void validatePostExecute() {
+        if (rawResponse == null) {
+            throw new IllegalStateException("Please execute the operation before accessing the results");
+        }
     }
 }

@@ -278,7 +278,7 @@ public class RiakClient implements RiakMessageCodes {
 	    byte[] rep = c.receive(MSG_GetResp);
 
         if (rep == null) {
-            return new FetchResponse(NO_RIAK_OBJECTS, false);
+            return new FetchResponse(NO_RIAK_OBJECTS, false, null);
         }
 
         RpbGetResp resp = RPB.RpbGetResp.parseFrom(rep);
@@ -291,7 +291,7 @@ public class RiakClient implements RiakMessageCodes {
 
         boolean unchanged = resp.getUnchanged();
 
-        return new FetchResponse(out, unchanged);
+        return new FetchResponse(out, unchanged, vclock.toByteArray());
 	}
 
 	// /////////////////////
