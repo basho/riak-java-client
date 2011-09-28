@@ -618,4 +618,21 @@ public abstract class ITestBucket {
 
         assertTrue(success);
     }
+
+    @Test public void deleteWithFetchedVClock() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        Bucket b = client.fetchBucket(bucket).execute();
+        b.store("k", "v").execute();
+
+        IRiakObject fetched = b.fetch("k").execute();
+        assertEquals("v", fetched.getValueAsString());
+
+        b.delete("k").r(1).pr(1).w(1).dw(1).pw(1).fetchBeforeDelete(true).execute();
+
+        Thread.sleep(200);
+
+        fetched = b.fetch("k").execute();
+
+        assertNull(fetched);
+    }
  }

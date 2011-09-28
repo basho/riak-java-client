@@ -81,7 +81,7 @@ public class FetchMeta {
     /**
      * @return the pr
      */
-    public Integer getPR() {
+    public Integer getPr() {
         return pr;
     }
 

@@ -431,6 +431,27 @@ public class RiakClient implements RiakMessageCodes {
 
 	// /////////////////////
 
+	public void delete(String bucket, String key, DeleteMeta deleteMeta) throws IOException {
+	    delete(ByteString.copyFromUtf8(bucket), ByteString.copyFromUtf8(key), deleteMeta);
+	}
+
+	public void delete(ByteString bucket, ByteString key, DeleteMeta deleteMeta) throws IOException {
+	    RpbDelReq.Builder builder = RPB.RpbDelReq.newBuilder().setBucket(bucket)
+        .setKey(key);
+
+	    deleteMeta.write(builder);
+
+	    RiakConnection c = getConnection();
+
+	    try {
+            c.send(MSG_DelReq, builder.build());
+            c.receive_code(MSG_DelResp);
+        } finally {
+            release(c);
+        }
+
+    }
+
 	public void delete(String bucket, String key, int rw) throws IOException {
 		delete(ByteString.copyFromUtf8(bucket), ByteString.copyFromUtf8(key),
 				rw);
