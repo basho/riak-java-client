@@ -199,10 +199,24 @@ public final class ConversionUtil {
         if (storeMeta.hasReturnBody()) {
             requestMeta.returnBody(storeMeta.getReturnBody());
         }
+
         String contentType = riakObject.getContentType();
         if (contentType != null) {
             requestMeta.contentType(contentType);
         }
+
+        if (storeMeta.hasPw()) {
+            requestMeta.pw(storeMeta.getPw());
+        }
+
+        if (storeMeta.hasIfNonMatch()) {
+            requestMeta.ifNonMatch(storeMeta.getIfNonMatch());
+        }
+
+        if (storeMeta.hasIfNotModified()) {
+            requestMeta.ifNotModified(storeMeta.getIfNotModified());
+        }
+
         return requestMeta;
     }
 

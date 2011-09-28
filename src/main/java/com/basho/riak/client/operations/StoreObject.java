@@ -29,6 +29,7 @@ import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -41,7 +42,6 @@ import com.basho.riak.client.raw.StoreMeta;
  * look at {@link DomainBucket#store(Object)}.
  * </p>
  * 
- * 
  * TODO Should fetch first be optional? What about the vclock if not?
  * 
  * @author russell
@@ -51,13 +51,14 @@ import com.basho.riak.client.raw.StoreMeta;
 public class StoreObject<T> implements RiakOperation<T> {
 
     private final RawClient client;
-    private final String bucket;
-    private final String key;
+    private final FetchObject<T> fetchObject;
 
     private Retrier retrier;
-    private Integer r;
     private Integer w;
     private Integer dw;
+    private Integer pw;
+    private Boolean ifNotModified;
+    private Boolean ifNonMatch;
     private boolean returnBody = false;
 
     private Mutation<T> mutation;
@@ -82,9 +83,8 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public StoreObject(final RawClient client, String bucket, String key, final Retrier retrier) {
         this.client = client;
-        this.bucket = bucket;
-        this.key = key;
         this.retrier = retrier;
+        fetchObject = new FetchObject<T>(client, bucket, key, retrier);
     }
 
     /**
@@ -100,33 +100,28 @@ public class StoreObject<T> implements RiakOperation<T> {
      *         <code>true</code>, <code>null</code> if <code>returnBody</code>
      *         is <code>false</code>
      * @throws RiakException
+     * @throws {@link MatchFoundException} if a 'ifNonMatch' conditional store
+     *         fails because a match exists
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
-        // fetch, mutate, put
-        Callable<RiakResponse> command = new Callable<RiakResponse>() {
-            public RiakResponse call() throws Exception {
-                if (r != null) {
-                    return client.fetch(bucket, key, r);
-                } else {
-                    return client.fetch(bucket, key);
-                }
-            }
-        };
+        final T resolved = fetchObject.execute();
+        final T mutated = mutation.apply(resolved);
+        final IRiakObject o = converter.fromDomain(mutated, fetchObject.getVClock());
+        final StoreMeta storeMeta = generateStoreMeta();
 
-        final RiakResponse ros = retrier.attempt(command);
-        final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
-
-        for (IRiakObject o : ros) {
-            siblings.add(converter.toDomain(o));
+        // if non match and if not modified require extra data for the HTTP API
+        // pull that from the riak object if possible
+        if(storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch() && o != null) {
+            storeMeta.etags(new String[] {o.getVtag()});
         }
 
-        final T resolved = resolver.resolve(siblings);
-        final T mutated = mutation.apply(resolved);
-        final IRiakObject o = converter.fromDomain(mutated, ros.getVclock());
+        if(storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()  && o != null) {
+            storeMeta.lastModified(o.getLastModified());
+        }
 
         final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
             public RiakResponse call() throws Exception {
-                return client.store(o, generateStoreMeta());
+                return client.store(o, storeMeta);
             }
         });
 
@@ -140,11 +135,11 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
-     * Create a {@link StoreMeta} instance from this operations <code>w/dw/returnBody</code> params.
-     * @return a {@link StoreMeta} populated with <code>w</code>, <code>dw</code> and <code>returnBody</code>
+     * Create a {@link StoreMeta} instance from this operations.
+     * @return a {@link StoreMeta} populated with the store parameters.
      */
     private StoreMeta generateStoreMeta() {
-        return new StoreMeta(w, dw, returnBody);
+        return new StoreMeta(w, dw, pw, returnBody, ifNonMatch, ifNotModified);
     }
 
     /**
@@ -154,7 +149,68 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @return this
      */
     public StoreObject<T> r(Integer r) {
-        this.r = r;
+        this.fetchObject.r(r);
+        return this;
+    }
+
+    /**
+     * The pr for the pre-store fetch
+     * @param pr
+     * @return
+     * @see com.basho.riak.client.operations.FetchObject#pr(int)
+     */
+    public StoreObject<T> pr(int pr) {
+        this.fetchObject.pr(pr);
+        return this;
+    }
+
+    /**
+     * if notfound_ok counts towards r count (for the pre-store fetch)
+     * 
+     * @param notFoundOK
+     * @return
+     * @see com.basho.riak.client.operations.FetchObject#notFoundOK(boolean)
+     */
+    public StoreObject<T> notFoundOK(boolean notFoundOK) {
+        this.fetchObject.notFoundOK(notFoundOK);
+        return this;
+    }
+
+    /**
+     * fail early if a quorum of error/notfounds are reached before a successful
+     * read (for the pre-store fetch)
+     * 
+     * @param basicQuorum
+     * @return
+     * @see com.basho.riak.client.operations.FetchObject#basicQuorum(boolean)
+     */
+    public StoreObject<T> basicQuorum(boolean basicQuorum) {
+        this.fetchObject.basicQuorum(basicQuorum);
+        return this;
+    }
+
+    /**
+     * If the object has just been deleted, there maybe a tombstone value
+     * vclock, set to true to have this returned in the pre-store fetch.
+     * 
+     * @param returnDeletedVClock
+     * @return
+     * @see com.basho.riak.client.operations.FetchObject#returnDeletedVClock(boolean)
+     */
+    public StoreObject<T> returnDeletedVClock(boolean returnDeletedVClock) {
+        this.fetchObject.returnDeletedVClock(returnDeletedVClock);
+        return this;
+    }
+
+    /**
+     * Set the primary write quorum for the store operation, takes precedence
+     * over w.
+     * 
+     * @param pw
+     * @return this
+     */
+    public StoreObject<T> pw(Integer pw) {
+        this.pw = pw;
         return this;
     }
 
@@ -189,12 +245,78 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * Default is false (i.e. NOT a conditional store).
+     * <p>
+     * NOTE: This has different meanings depending on the underlying transport.
+     * </p>
+     * <p>
+     * In the case of the PB interface it means: Only store if there is no
+     * bucket/key entry for this object in the database already.
+     * </p>
+     * <p>
+     * For the HTTP API it means: Only store if there is no entity that matches
+     * some etags I provide you
+     * </p>
+     * <p>
+     * To make this transparent the StoreOperation will pull the etag from the
+     * object returned in the pre-store fetch, and use that as supplementary
+     * data to the HTTP Store request.
+     * </p>
+     * <p>
+     * If there is match (b/k or etag) then the operation is *not* retried by
+     * the retrier, to override this, provide a custom retrier.
+     * </p>
+     * 
+     * @param ifNonMatch
+     *            true if you want a conditional store, false otherwise,
+     *            defaults to false.
+     * @return this
+     */
+    public StoreObject<T> ifNonMatch(boolean ifNonMatch) {
+        this.ifNonMatch = ifNonMatch;
+        return this;
+    }
+
+    /**
+     * Default is false (i.e. NOT a conditional store).
+     * <p>
+     * NOTE: This has different meanings depending on the underlying transport.
+     * </p>
+     * <p>
+     * In the case of the PB interface it means: Only store if the vclock
+     * provided with the store is the same as the one in Riak for this object
+     * (i.e. the object has not been modified since you last got it), of course,
+     * since this StoreObject does a fetch before a store the window for
+     * concurrent modification is minimized, but this is an extra guard, still.
+     * </p>
+     * <p>
+     * For the HTTP API it means: Only store if there has been no modification
+     * since the provided timestamp.
+     * </p>
+     * <p>
+     * To make this transparent the StoreOperation will pull the last
+     * modified date from the object returned in the pre-store fetch, and use
+     * that as supplementary data to the HTTP Store request.
+     * </p>
+     * 
+     * @param ifNotModified
+     *            true if you want a conditional store, false otherwise,
+     *            defaults to false.
+     * @return this
+     */
+    public StoreObject<T> ifNotModified(boolean ifNotModified) {
+        this.ifNotModified = ifNotModified;
+        return this;
+    }
+
+    /**
      * The {@link Retrier} to use for the fetch and store operations.
      * @param retrier a {@link Retrier}
      * @return this
      */
     public StoreObject<T> retrier(final Retrier retrier) {
         this.retrier = retrier;
+        this.fetchObject.retrier(retrier);
         return this;
     }
 
@@ -216,6 +338,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public StoreObject<T> withResolver(ConflictResolver<T> resolver) {
         this.resolver = resolver;
+        this.fetchObject.withResolver(resolver);
         return this;
     }
 
@@ -226,6 +349,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public StoreObject<T> withConverter(Converter<T> converter) {
         this.converter = converter;
+        this.fetchObject.withConverter(converter);
         return this;
     }
 

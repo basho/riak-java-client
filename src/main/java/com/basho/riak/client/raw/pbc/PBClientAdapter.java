@@ -40,6 +40,8 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.MatchFoundException;
+import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -54,6 +56,7 @@ import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
+import com.basho.riak.pbc.RiakError;
 import com.google.protobuf.ByteString;
 
 /**
@@ -64,6 +67,9 @@ import com.google.protobuf.ByteString;
  * 
  */
 public class PBClientAdapter implements RawClient {
+
+    private static final Object MATCH_FOUND = "match_found";
+    private static final Object MODIFIED = "modified";
 
     private final RiakClient client;
 
@@ -151,7 +157,17 @@ public class PBClientAdapter implements RawClient {
                                                "object cannot be null, object's key cannot be null, object's bucket cannot be null");
         }
 
-        return convert(client.store(convert(riakObject), convert(storeMeta, riakObject)));
+        try {
+            return convert(client.store(convert(riakObject), convert(storeMeta, riakObject)));
+        } catch(RiakError e) {
+            // check for conditional store failure
+            if(MATCH_FOUND.equals(e.getMessage())) {
+               throw new MatchFoundException();
+            } else if(MODIFIED.equals(e.getMessage())) {
+                throw new ModifiedException(e);
+            }
+            throw e;
+        }
     }
 
     /*
@@ -162,7 +178,7 @@ public class PBClientAdapter implements RawClient {
      * )
      */
     public void store(IRiakObject object) throws IOException {
-        store(object, new StoreMeta(null, null, false));
+        store(object, StoreMeta.empty());
     }
 
     /*

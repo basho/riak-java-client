@@ -135,7 +135,7 @@ public class ClusterClientTest {
      */
     @Test public void storeWithMeta() throws IOException {
         IRiakObject ro = RiakObjectBuilder.newBuilder(BUCKET, KEY).build();
-        StoreMeta sm = new StoreMeta(QUORUM, QUORUM, false);
+        StoreMeta sm = new StoreMeta(QUORUM, QUORUM, QUORUM, false, false, false);
 
         for (RawClient rc : cluster) {
             when(rc.store(ro, sm)).thenReturn(RR);

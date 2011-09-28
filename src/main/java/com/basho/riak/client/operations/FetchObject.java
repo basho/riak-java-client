@@ -123,11 +123,13 @@ public class FetchObject<T> implements RiakOperation<T> {
 
     /**
      * The read quorum for this fetch operation
-     * @param r an int for the read quorum
+     * @param r an Integer for the read quorum
      * @return this
      */
-    public FetchObject<T> r(int r) {
-        builder.r(r);
+    public FetchObject<T> r(Integer r) {
+        if(r != null) {
+            builder.r(r);
+        }
         return this;
     }
 

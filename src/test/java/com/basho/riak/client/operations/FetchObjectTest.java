@@ -30,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.RiakException;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.DefaultResolver;
@@ -71,13 +70,6 @@ public class FetchObjectTest {
         fetch = new FetchObject<String>(rawClient, BUCKET, KEY, retrier);
     }
 
-    /**
-     * Test method for
-     * {@link com.basho.riak.client.operations.FetchObject#FetchObject(com.basho.riak.client.raw.RawClient, java.lang.String, java.lang.String, com.basho.riak.client.cap.Retrier)}
-     * .
-     * 
-     * @throws RiakException
-     */
     @Test public void fetch() throws Exception {
         ArgumentCaptor<FetchMeta> metaCaptor = ArgumentCaptor.forClass(FetchMeta.class);
         final String expected = "A horse! A Horse! My kingdom for a horse!";

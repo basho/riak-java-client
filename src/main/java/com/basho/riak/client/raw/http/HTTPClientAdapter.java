@@ -39,6 +39,8 @@ import com.basho.riak.client.http.response.WithBodyResponse;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.MatchFoundException;
+import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -197,7 +199,14 @@ public class HTTPClientAdapter implements RawClient {
         if (resp.isSuccess()) {
             riakObject.updateMeta(resp);
         } else {
-            throw new IOException(resp.getBodyAsString());
+            if (resp.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) {
+                if (storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch()) {
+                    throw new MatchFoundException();
+                } else if (storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()) {
+                    throw new ModifiedException();
+                }
+            }
+            throw new IOException(resp.getStatusCode() + " " + resp.getBodyAsString());
         }
 
         if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
@@ -215,7 +224,7 @@ public class HTTPClientAdapter implements RawClient {
      * )
      */
     public void store(IRiakObject object) throws IOException {
-        store(object, new StoreMeta(null, null, false));
+        store(object, StoreMeta.empty());
     }
 
     /*

@@ -11,25 +11,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.itest;
+package com.basho.riak.client.raw;
 
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.http.Hosts;
+import java.io.IOException;
 
 /**
+ * Thrown when a "if not modified" conditional store fails.
+ * 
  * @author russell
  * 
  */
-public class ITestPBBucket extends ITestBucket {
+@SuppressWarnings("serial") public class ModifiedException extends IOException {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.itest.ITestBucket#getClient()
+    /**
+     * @param cause
+     *            root exception
      */
-    @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
+    public ModifiedException(Throwable cause) {
+        super(cause);
     }
-}   
+
+    /**
+     * 
+     */
+    public ModifiedException() {
+        super();
+    }
+}

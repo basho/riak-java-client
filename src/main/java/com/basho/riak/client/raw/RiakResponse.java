@@ -200,4 +200,11 @@ public class RiakResponse implements Iterable<IRiakObject> {
     public static RiakResponse unmodified() {
         return new RiakResponse(true);
     }
+
+    /**
+     * @return
+     */
+    public static RiakResponse matchFound() {
+        return null;
+    }
 }

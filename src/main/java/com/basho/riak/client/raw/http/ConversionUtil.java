@@ -209,6 +209,18 @@ public final class ConversionUtil {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(false));
         }
 
+        if (storeMeta.hasPw()) {
+            requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().toString());
+        }
+
+        if (storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch()) {
+            requestMeta.setIfNoneMatch(storeMeta.getEtags());
+        }
+
+        if (storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()) {
+            requestMeta.setIfUnmodifiedSince(storeMeta.getLastModified());
+        }
+
         return requestMeta;
     }
 

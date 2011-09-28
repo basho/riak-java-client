@@ -11,25 +11,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.itest;
+package com.basho.riak.client.raw;
 
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.http.Hosts;
 
 /**
+ * Tag exception, thrown when an if-non-match conditional store fails because a match is found.
+ * 
  * @author russell
  * 
  */
-public class ITestPBBucket extends ITestBucket {
+@SuppressWarnings("serial") public class MatchFoundException extends RuntimeException {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.itest.ITestBucket#getClient()
-     */
-    @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
-    }
-}   
+}
