@@ -68,6 +68,21 @@ public interface RawClient {
     RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException;
 
     /**
+     * Fetch data from the given <code>bucket/key</code> with
+     * <code>fetchMeta</code>
+     * 
+     * @param bucket
+     *            the bucket
+     * @param key
+     *            the key
+     * @param fetchMeta
+     *            the extra fetch parameters {@link FetchMeta}
+     * @return a {@link RiakResponse}
+     * @throws IOException
+     */
+    RiakResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException;
+
+    /**
      * Store the given {@link IRiakObject} in Riak at the location
      * <code>bucket/key</code>
      * 
@@ -219,4 +234,10 @@ public interface RawClient {
      * @throws IOException
      */
     List<String> fetchIndex(IndexQuery indexQuery) throws IOException;
+
+    /**
+     * The raw transport name.
+     * @return the {@link Transport} for the client or null if not implemented.
+     */
+    Transport getTransport();
 }

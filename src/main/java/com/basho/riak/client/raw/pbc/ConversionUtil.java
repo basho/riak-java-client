@@ -44,12 +44,15 @@ import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
+import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
 
 /**
@@ -80,6 +83,27 @@ public final class ConversionUtil {
         }
 
         return response;
+    }
+
+    /**
+     * Deal with a more detailed response (maybe from a conditional fetch)
+     * 
+     * @param fetchResponse
+     * @return a {@link RiakResponse}
+     */
+    static RiakResponse convert(FetchResponse fetchResponse) {
+        if (fetchResponse.isUnchanged()) {
+            return RiakResponse.unmodified();
+        }
+        RiakObject[] objects = fetchResponse.getObjects();
+        byte[] vclock = fetchResponse.getVClock();
+
+        // no objects + vclock == deleted vclock
+        if ((objects == null || objects.length == 0) && vclock != null) {
+            return new RiakResponse(vclock);
+        }
+
+        return convert(fetchResponse.getObjects());
     }
 
     /**
@@ -375,5 +399,19 @@ public final class ConversionUtil {
             b.withUsermeta(userMetaData);
         }
         return b.build();
+    }
+
+    /**
+     * Convert a {@link FetchMeta} to a {@link com.basho.riak.pbc.FetchMeta}
+     * @param fetchMeta the {@link FetchMeta} to convert
+     * @return the {@link com.basho.riak.pbc.FetchMeta} with the same values
+     */
+    static com.basho.riak.pbc.FetchMeta convert(FetchMeta fm) {
+        if (fm != null) {
+            return new com.basho.riak.pbc.FetchMeta(fm.getR(), fm.getPR(), fm.getNotFoundOK(), fm.getBasicQuorum(),
+                                                    fm.getHeadOnly(), fm.getReturnDeletedVClock(), fm.getIfModifiedVClock());
+        } else {
+            return com.basho.riak.pbc.FetchMeta.empty();
+        }
     }
 }

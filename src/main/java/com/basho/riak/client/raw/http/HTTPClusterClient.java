@@ -29,6 +29,7 @@ import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakConfig;
 import com.basho.riak.client.raw.ClusterClient;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.config.ClusterConfig;
 
 /**
@@ -117,5 +118,12 @@ public class HTTPClusterClient extends ClusterClient<HTTPClientConfig> {
         } catch (URISyntaxException e) {
             throw new IOException(e.toString());
         }
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getTransport()
+     */
+    public Transport getTransport() {
+        return Transport.HTTP;
     }
 }

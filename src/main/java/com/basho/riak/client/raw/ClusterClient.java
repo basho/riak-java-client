@@ -95,6 +95,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.fetch(bucket, key, readQuorum);
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta)
+     */
+    public RiakResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetch(bucket, key, fetchMeta);
+    }
+
     /*
      * (non-Javadoc)
      * 

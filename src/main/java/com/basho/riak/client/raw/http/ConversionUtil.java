@@ -64,6 +64,7 @@ import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
@@ -372,6 +373,10 @@ public final class ConversionUtil {
         builder.w(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_W), Quorum.class));
         builder.dw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_DW), Quorum.class));
         builder.rw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_RW), Quorum.class));
+        builder.pr(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PR), Quorum.class));
+        builder.pw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PW), Quorum.class));
+        builder.basicQuorum(props.path(Constants.FL_SCHEMA_BASIC_QUORUM).getBooleanValue());
+        builder.notFoundOK(props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).getBooleanValue());
 
         builder.chashKeyFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_CHASHFUN),
                                                            NamedErlangFunction.class));
@@ -450,6 +455,10 @@ public final class ConversionUtil {
         writeIfNotNull(jg, bp.getRW(), Constants.FL_SCHEMA_RW);
         writeIfNotNull(jg, bp.getW(), Constants.FL_SCHEMA_W);
         writeIfNotNull(jg, bp.getDW(), Constants.FL_SCHEMA_DW);
+        writeIfNotNull(jg, bp.getPR(), Constants.FL_SCHEMA_PR);
+        writeIfNotNull(jg, bp.getPW(), Constants.FL_SCHEMA_PW);
+        writeIfNotNull(jg, bp.getBasicQuorum(), Constants.FL_SCHEMA_BASIC_QUORUM);
+        writeIfNotNull(jg, bp.getNotFoundOK(), Constants.FL_SCHEMA_NOT_FOUND_OK);
         writeIfNotNull(jg, bp.getChashKeyFunction(), Constants.FL_SCHEMA_CHASHFUN);
         writeIfNotNull(jg, bp.getLinkWalkFunction(), Constants.FL_SCHEMA_LINKFUN);
         writeIfNotNull(jg, bp.getPostcommitHooks(), Constants.FL_SCHEMA_POSTCOMMIT);
@@ -627,5 +636,38 @@ public final class ConversionUtil {
         } else {
             throw new IOException(response.getBodyAsString());
         }
+    }
+
+    /**
+     * Convert a {@link FetchMeta} to a {@link RequestMeta}
+     * 
+     * @param fetchMeta
+     *            the {@link FetchMeta} to convert
+     * @return the {@link RequestMeta}
+     */
+    static RequestMeta convert(FetchMeta fetchMeta) {
+        RequestMeta rm = new RequestMeta();
+
+        if (fetchMeta.getR() != null) {
+            rm.setQueryParam(Constants.QP_R, fetchMeta.getR().toString());
+        }
+
+        if (fetchMeta.getPR() != null) {
+            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPR().toString());
+        }
+
+        if (fetchMeta.getNotFoundOK() != null) {
+            rm.setQueryParam(Constants.QP_NOT_FOUND_OK, fetchMeta.getNotFoundOK().toString());
+        }
+
+        if (fetchMeta.getBasicQuorum() != null) {
+            rm.setQueryParam(Constants.QP_BASIC_QUORUM, fetchMeta.getBasicQuorum().toString());
+        }
+
+        if (fetchMeta.getIfModifiedSince() != null) {
+            rm.setIfModifiedSince(fetchMeta.getIfModifiedSince());
+        }
+
+        return rm;
     }
 }

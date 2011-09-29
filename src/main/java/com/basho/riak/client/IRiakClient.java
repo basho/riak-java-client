@@ -26,6 +26,7 @@ import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.MapReduce;
 import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.query.indexes.FetchIndex;
+import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 
 /**
@@ -197,4 +198,11 @@ public interface IRiakClient {
      *             if Riak does not respond OK
      */
     void ping() throws RiakException;
+
+    /**
+     * Optional method, the underlying transport.
+     * 
+     * @return a {@link Transport} or null if not implemented.
+     */
+    Transport getTransport();
 }

@@ -11,28 +11,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.http.response;
-
-import java.util.Collection;
-
-import com.basho.riak.client.http.RiakObject;
+package com.basho.riak.client.raw;
 
 /**
- * A unified interface for responses that may return one, or more RiakObjects
+ * Marker enum for supported transports.
  * 
- * @see {@link FetchResponse}, {@link StoreResponse}
  * @author russell
- * 
+ *
  */
-public interface WithBodyResponse extends HttpResponse {
-
-    public boolean hasObject();
-
-    public RiakObject getObject();
-
-    public boolean hasSiblings();
-
-    public Collection<RiakObject> getSiblings();
-
-    public String getVclock();
+public enum Transport {
+    HTTP, PB;
 }
