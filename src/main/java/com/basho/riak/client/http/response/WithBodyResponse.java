@@ -34,5 +34,5 @@ public interface WithBodyResponse extends HttpResponse {
 
     public Collection<RiakObject> getSiblings();
 
-    public String getVClock();
+    public String getVclock();
 }

@@ -95,13 +95,4 @@ public class StoreResponse extends HttpResponseDecorator implements WithBodyResp
     public Collection<RiakObject> getSiblings() {
         return fetchResponse.getSiblings();
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.http.response.WithBodyResponse#getVClock()
-     */
-    public String getVClock() {
-        return fetchResponse.getVClock();
-    }
 }

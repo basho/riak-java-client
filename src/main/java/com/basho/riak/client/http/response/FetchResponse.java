@@ -147,7 +147,7 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
     /**
      * @return the X-Riak-Vclock header value, if present.
      */
-    public String getVClock() {
+    public String getVclock() {
         return vclock;
     }
 }

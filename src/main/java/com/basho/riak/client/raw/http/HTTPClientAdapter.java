@@ -167,10 +167,10 @@ public class HTTPClientAdapter implements RawClient {
         }
 
         if (values.length > 0) {
-            response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVClock()), values);
+            response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVclock()), values);
         } else {
-            if(resp.getVClock() != null) { // a deleted vclock
-                response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVClock()));
+            if(resp.getVclock() != null) { // a deleted vclock
+                response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVclock()));
             }
         }
 

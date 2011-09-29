@@ -102,8 +102,8 @@ public class FetchObject<T> implements RiakOperation<T> {
         // fetch, resolve
         Callable<RiakResponse> command = new Callable<RiakResponse>() {
             public RiakResponse call() throws Exception {
-                    return client.fetch(bucket, key, builder.build());
-                }
+                return client.fetch(bucket, key, builder.build());
+            }
         };
 
         rawResponse = retrier.attempt(command);
