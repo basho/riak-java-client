@@ -43,6 +43,10 @@ public interface Constants {
     public static String FL_SCHEMA_W = "w";
     public static String FL_SCHEMA_DW = "dw";
     public static String FL_SCHEMA_RW = "rw";
+    public static String FL_SCHEMA_PR = "pr";
+    public static String FL_SCHEMA_PW = "pw";
+    public static String FL_SCHEMA_BASIC_QUORUM = "basic_quorum";
+    public static String FL_SCHEMA_NOT_FOUND_OK = "notfound_ok";
     public static String FL_SCHEMA_POSTCOMMIT = "postcommit";
     public static String FL_SCHEMA_PRECOMMIT = "precommit";
     public static String FL_SCHEMA_SEARCH = "search";
@@ -72,6 +76,8 @@ public interface Constants {
     // headers prefix is correctly capitalized in requests.
     public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
     public static String HDR_USERMETA_REQ_PREFIX = "X-Riak-Meta-";
+    public static String HDR_SEC_INDEX_REQ_PREFIX = "X-Riak-Index-";
+    public static String HDR_SEC_INDEX_PREFIX = "x-riak-index-";
 
     // Content types used in Riak
     public static String CTYPE_ANY = "*/*";
@@ -100,6 +106,9 @@ public interface Constants {
     public static String QP_RW = "rw";
     public static String QP_KEYS = "keys";
     public static String QP_BUCKETS = "buckets";
+    public static String QP_PR = "pr";
+    public static String QP_NOT_FOUND_OK = "notfound_ok";
+    public static String QP_BASIC_QUORUM = "basic_quorum";
 
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";

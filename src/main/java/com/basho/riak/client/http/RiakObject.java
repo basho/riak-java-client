@@ -57,6 +57,8 @@ public class RiakObject {
     private String key;
     private byte[] value;
     private List<RiakLink> links;
+    private final Object indexLock = new Object();
+    @SuppressWarnings("rawtypes") private List<RiakIndex> indexes;
     private Map<String, String> userMetaData;
     private String contentType;
     private String vclock;
@@ -64,6 +66,50 @@ public class RiakObject {
     private String vtag;
     private InputStream valueStream;
     private Long valueStreamLength;
+
+    /**
+     * Create an object. The content type defaults to
+     * application/octet-stream.
+     * 
+     * @param riak
+     *            Riak instance this object is associated with, which is used by
+     *            the convenience methods in this class (e.g.
+     *            {@link RiakObject#store()}).
+     * @param bucket
+     *            The object's bucket
+     * @param key
+     *            The object's key
+     * @param value
+     *            The object's value
+     * @param contentType
+     *            The object's content type which defaults to
+     *            application/octet-stream if null.
+     * @param links
+     *            Links to other objects
+     * @param userMetaData
+     *            Custom metadata key-value pairs for this object
+     * @param vclock
+     *            An opaque vclock assigned by Riak
+     * @param lastmod
+     *            The last time this object was modified according to Riak
+     * @param vtag
+     *            This object's entity tag assigned by Riak
+     */
+    public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
+            List<RiakLink> links, Map<String, String> userMetaData, String vclock, String lastmod, String vtag, @SuppressWarnings("rawtypes") List<RiakIndex> indexes) {
+        this.riak = riak;
+        this.bucket = bucket;
+        this.key = key;
+        this.vclock = vclock;
+        this.lastmod = lastmod;
+        this.vtag = vtag;
+
+        safeSetValue(value);
+        this.contentType = contentType == null ? Constants.CTYPE_OCTET_STREAM : contentType;
+        safeSetLinks(links);
+        safeSetUsermetaData(userMetaData);
+        safeSetIndexes(indexes);
+    }
 
     /**
      * Create an empty object. The content type defaults to
@@ -95,17 +141,7 @@ public class RiakObject {
      */
     public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
             List<RiakLink> links, Map<String, String> userMetaData, String vclock, String lastmod, String vtag) {
-        this.riak = riak;
-        this.bucket = bucket;
-        this.key = key;
-        this.vclock = vclock;
-        this.lastmod = lastmod;
-        this.vtag = vtag;
-
-        safeSetValue(value);
-        this.contentType = contentType == null ? Constants.CTYPE_OCTET_STREAM : contentType;
-        safeSetLinks(links);
-        safeSetUsermetaData(userMetaData);
+       this(riak, bucket, key, value, contentType, links, userMetaData, vclock, lastmod, vtag, null);
     }
 
     public RiakObject(RiakClient riak, String bucket, String key) {
@@ -360,6 +396,14 @@ public class RiakObject {
         }
     }
 
+    @SuppressWarnings("rawtypes") private void safeSetIndexes(final List<RiakIndex> indexes) {
+        if (indexes == null) {
+            this.indexes = new ArrayList<RiakIndex>();
+        } else {
+            this.indexes = new ArrayList<RiakIndex>(indexes);
+        }
+    }
+
     /**
      * Creates a new RiakLink for each RiakLink in links and adds it to a new List.
      *
@@ -486,6 +530,47 @@ public class RiakObject {
      */
     public Iterable<String> usermetaKeys() {
         return userMetaData.keySet();
+    }
+
+    /**
+     * @return a *copy* of the list of {@link RiakIndex}es for this object
+     */
+    @SuppressWarnings("rawtypes") public List<RiakIndex> getIndexes() {
+        synchronized (indexLock) {
+            return new ArrayList<RiakIndex>(indexes);
+        }
+    }
+
+    /**
+     * Add a binary index to the object
+     * 
+     * @param name
+     *            of the index
+     * @param value
+     *            the value to add to the index
+     * @return this
+     */
+    public RiakObject addIndex(String name, String value) {
+        synchronized (indexLock) {
+            indexes.add(new BinIndex(name, value));
+        }
+        return this;
+    }
+
+    /**
+     * Add an int index to this object
+     * 
+     * @param name
+     *            of the index
+     * @param value
+     *            the value to add to the index
+     * @return this
+     */
+    public RiakObject addIndex(String name, int value) {
+        synchronized (indexLock) {
+            indexes.add(new IntIndex(name, value));
+        }
+        return this;
     }
 
     /* (non-Javadoc)
@@ -685,6 +770,9 @@ public class RiakObject {
         for (String name : userMetaData.keySet()) {
             httpMethod.addHeader(Constants.HDR_USERMETA_REQ_PREFIX + name, userMetaData.get(name));
         }
+
+        writeIndexes(httpMethod);
+
         if (vclock != null) {
             httpMethod.addHeader(Constants.HDR_VCLOCK, vclock);
         }
@@ -712,7 +800,21 @@ public class RiakObject {
             entityEnclosingMethod.setEntity(entity);
         }
     }
-    
+
+    /**
+     * Write HTTP header for each secondary index
+     * @param httpMethod
+     */
+    @SuppressWarnings("rawtypes") private void writeIndexes(HttpRequestBase httpMethod) {
+        // write 2i headers
+        synchronized (indexLock) {
+            for (RiakIndex i : indexes) {
+                String index = i.getName();
+                httpMethod.addHeader(Constants.HDR_SEC_INDEX_REQ_PREFIX + index, i.getValue().toString());
+            }
+        }
+    }
+
     private void writeLinks(HttpRequestBase httpMethod, String basePath) {
         StringBuilder linkHeader = new StringBuilder();
 

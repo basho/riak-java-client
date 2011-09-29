@@ -14,6 +14,7 @@
 package com.basho.riak.client.raw;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,6 +27,7 @@ import com.basho.riak.client.raw.config.Configuration;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.basho.riak.client.raw.query.indexes.IndexQuery;
 
 /**
  * A {@link RawClient} that can be configured with a cluster of Riak clients
@@ -91,6 +93,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
     public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
         final RawClient delegate = getDelegate();
         return delegate.fetch(bucket, key, readQuorum);
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta)
+     */
+    public RiakResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetch(bucket, key, fetchMeta);
     }
 
     /*
@@ -240,5 +250,13 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
     public void ping() throws IOException {
         final RawClient delegate = getDelegate();
         delegate.ping();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#fetchIndex(com.basho.riak.client.raw.query.IndexQuery)
+     */
+    public List<String> fetchIndex(IndexQuery indexQuery) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetchIndex(indexQuery);
     }
 }

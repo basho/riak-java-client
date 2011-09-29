@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.http.impl.cookie.DateUtils;
 import org.codehaus.jackson.JsonEncoding;
@@ -51,6 +52,7 @@ import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.BucketResponse;
+import com.basho.riak.client.http.response.IndexResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.WalkResponse;
 import com.basho.riak.client.http.util.Constants;
@@ -60,6 +62,9 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
+import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
@@ -139,6 +144,18 @@ public final class ConversionUtil {
         }
 
         builder.withLinks(links);
+
+        @SuppressWarnings("rawtypes") final Collection<com.basho.riak.client.http.RiakIndex> indexes = o.getIndexes();
+
+        for (@SuppressWarnings("rawtypes") com.basho.riak.client.http.RiakIndex i : indexes) {
+            if (i instanceof com.basho.riak.client.http.IntIndex) {
+                builder.addIndex(i.getName(), (Integer) i.getValue());
+            }
+            if (i instanceof com.basho.riak.client.http.BinIndex) {
+                builder.addIndex(i.getName(), (String) i.getValue());
+            }
+        }
+
         builder.withContentType(o.getContentType());
 
         final Map<String, String> userMetaData = new HashMap<String, String>();
@@ -200,6 +217,12 @@ public final class ConversionUtil {
      * @return a {@link RiakObject} populate with {@link IRiakObject}'s data
      */
     static com.basho.riak.client.http.RiakObject convert(IRiakObject object, final RiakClient client) {
+        final List<com.basho.riak.client.http.RiakIndex<Integer>> intIndexes = convertIntIndexes(object.allIntIndexes());
+        final List<com.basho.riak.client.http.RiakIndex<String>> binIndexes = convertBinIndexes(object.allBinIndexes());
+
+        @SuppressWarnings("rawtypes") final List<com.basho.riak.client.http.RiakIndex> allIndexes = new ArrayList<com.basho.riak.client.http.RiakIndex>(intIndexes);
+        allIndexes.addAll(binIndexes);
+
         com.basho.riak.client.http.RiakObject riakObject = new com.basho.riak.client.http.RiakObject(
                                                                                            client,
                                                                                            object.getBucket(),
@@ -210,8 +233,41 @@ public final class ConversionUtil {
                                                                                            getUserMetaData(object),
                                                                                            object.getVClockAsString(),
                                                                                            formatDate(object.getLastModified()),
-                                                                                           object.getVtag());
+                                                                                           object.getVtag(),
+                                                                                           allIndexes);
         return riakObject;
+    }
+
+    /**
+     * @param binIndexes
+     * @return
+     */
+    private static List<com.basho.riak.client.http.RiakIndex<String>> convertBinIndexes(Map<BinIndex, Set<String>> binIndexes) {
+        final List<com.basho.riak.client.http.RiakIndex<String>> converted = new ArrayList<com.basho.riak.client.http.RiakIndex<String>>();
+
+        for (Map.Entry<BinIndex, Set<String>> index : binIndexes.entrySet()) {
+            String name = index.getKey().getFullname();
+            for (String v : index.getValue()) {
+                converted.add(new com.basho.riak.client.http.BinIndex(name, v));
+            }
+        }
+        return converted;
+    }
+
+    /**
+     * @param allIntIndexes
+     * @return
+     */
+    private static List<com.basho.riak.client.http.RiakIndex<Integer>> convertIntIndexes(Map<IntIndex, Set<Integer>> intIndexes) {
+        final List<com.basho.riak.client.http.RiakIndex<Integer>> converted = new ArrayList<com.basho.riak.client.http.RiakIndex<Integer>>();
+
+        for (Map.Entry<IntIndex, Set<Integer>> index : intIndexes.entrySet()) {
+            String name = index.getKey().getFullname();
+            for (Integer v : index.getValue()) {
+                converted.add(new com.basho.riak.client.http.IntIndex(name, v));
+            }
+        }
+        return converted;
     }
 
     /**
@@ -317,6 +373,10 @@ public final class ConversionUtil {
         builder.w(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_W), Quorum.class));
         builder.dw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_DW), Quorum.class));
         builder.rw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_RW), Quorum.class));
+        builder.pr(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PR), Quorum.class));
+        builder.pw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PW), Quorum.class));
+        builder.basicQuorum(props.path(Constants.FL_SCHEMA_BASIC_QUORUM).getBooleanValue());
+        builder.notFoundOK(props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).getBooleanValue());
 
         builder.chashKeyFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_CHASHFUN),
                                                            NamedErlangFunction.class));
@@ -395,6 +455,10 @@ public final class ConversionUtil {
         writeIfNotNull(jg, bp.getRW(), Constants.FL_SCHEMA_RW);
         writeIfNotNull(jg, bp.getW(), Constants.FL_SCHEMA_W);
         writeIfNotNull(jg, bp.getDW(), Constants.FL_SCHEMA_DW);
+        writeIfNotNull(jg, bp.getPR(), Constants.FL_SCHEMA_PR);
+        writeIfNotNull(jg, bp.getPW(), Constants.FL_SCHEMA_PW);
+        writeIfNotNull(jg, bp.getBasicQuorum(), Constants.FL_SCHEMA_BASIC_QUORUM);
+        writeIfNotNull(jg, bp.getNotFoundOK(), Constants.FL_SCHEMA_NOT_FOUND_OK);
         writeIfNotNull(jg, bp.getChashKeyFunction(), Constants.FL_SCHEMA_CHASHFUN);
         writeIfNotNull(jg, bp.getLinkWalkFunction(), Constants.FL_SCHEMA_LINKFUN);
         writeIfNotNull(jg, bp.getPostcommitHooks(), Constants.FL_SCHEMA_POSTCOMMIT);
@@ -556,5 +620,54 @@ public final class ConversionUtil {
                 return  new UnmodifiableIterator<Collection<IRiakObject>>( convertedSteps.iterator() );
             }
         };
+    }
+
+    /**
+     * Convert an {@link IndexResponse} to a List of Strings
+     * 
+     * @param response an {@link IndexResponse}
+     * @return a List<String> or the empty list
+     * @throws IOException
+     *             if {@link IndexResponse} isn't a success.
+     */
+    static List<String> convert(IndexResponse response) throws IOException {
+        if (response.isSuccess()) {
+            return response.getKeys();
+        } else {
+            throw new IOException(response.getBodyAsString());
+        }
+    }
+
+    /**
+     * Convert a {@link FetchMeta} to a {@link RequestMeta}
+     * 
+     * @param fetchMeta
+     *            the {@link FetchMeta} to convert
+     * @return the {@link RequestMeta}
+     */
+    static RequestMeta convert(FetchMeta fetchMeta) {
+        RequestMeta rm = new RequestMeta();
+
+        if (fetchMeta.getR() != null) {
+            rm.setQueryParam(Constants.QP_R, fetchMeta.getR().toString());
+        }
+
+        if (fetchMeta.getPR() != null) {
+            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPR().toString());
+        }
+
+        if (fetchMeta.getNotFoundOK() != null) {
+            rm.setQueryParam(Constants.QP_NOT_FOUND_OK, fetchMeta.getNotFoundOK().toString());
+        }
+
+        if (fetchMeta.getBasicQuorum() != null) {
+            rm.setQueryParam(Constants.QP_BASIC_QUORUM, fetchMeta.getBasicQuorum().toString());
+        }
+
+        if (fetchMeta.getIfModifiedSince() != null) {
+            rm.setIfModifiedSince(fetchMeta.getIfModifiedSince());
+        }
+
+        return rm;
     }
 }

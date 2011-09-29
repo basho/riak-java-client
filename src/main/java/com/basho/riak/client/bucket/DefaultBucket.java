@@ -41,6 +41,8 @@ import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
+import com.basho.riak.client.query.indexes.FetchIndex;
+import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.util.CharsetUtils;
 
@@ -239,6 +241,34 @@ public class DefaultBucket implements Bucket {
         return properties.getDW();
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getPR()
+     */
+    public Quorum getPR() {
+        return properties.getPR();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#getPW()
+     */
+    public Quorum getPW() {
+        return properties.getPW();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#isBasicQuorum()
+     */
+    public Boolean getBasicQuorum() {
+        return properties.getBasicQuorum();
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#isNotFoundOK()
+     */
+    public Boolean getNotFoundOK() {
+        return properties.getNotFoundOK();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -263,6 +293,7 @@ public class DefaultBucket implements Bucket {
     public Boolean getSearch() {
         return properties.getSearch();
     }
+
     // BUCKET
 
     /**
@@ -545,5 +576,12 @@ public class DefaultBucket implements Bucket {
      */
     public DeleteObject delete(String key) {
         return new DeleteObject(client, name, key, retrier);
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.Bucket#fetchIndex(com.basho.riak.client.query.indexes.RiakIndex)
+     */
+    public <T> FetchIndex<T> fetchIndex(RiakIndex<T> index) {
+        return new FetchIndex<T>(client, name, index, retrier);
     }
 }

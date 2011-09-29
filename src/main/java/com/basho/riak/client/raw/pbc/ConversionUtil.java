@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -41,12 +42,17 @@ import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.query.LinkWalkStep.Accumulate;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
+import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
 
 /**
@@ -80,6 +86,27 @@ public final class ConversionUtil {
     }
 
     /**
+     * Deal with a more detailed response (maybe from a conditional fetch)
+     * 
+     * @param fetchResponse
+     * @return a {@link RiakResponse}
+     */
+    static RiakResponse convert(FetchResponse fetchResponse) {
+        if (fetchResponse.isUnchanged()) {
+            return RiakResponse.unmodified();
+        }
+        RiakObject[] objects = fetchResponse.getObjects();
+        byte[] vclock = fetchResponse.getVClock();
+
+        // no objects + vclock == deleted vclock
+        if ((objects == null || objects.length == 0) && vclock != null) {
+            return new RiakResponse(vclock);
+        }
+
+        return convert(fetchResponse.getObjects());
+    }
+
+    /**
      * @param o
      * @return
      */
@@ -103,6 +130,18 @@ public final class ConversionUtil {
         }
 
         builder.withLinks(links);
+
+        @SuppressWarnings("rawtypes") final Collection<com.basho.riak.client.http.RiakIndex> indexes = o.getIndexes();
+
+        for (@SuppressWarnings("rawtypes") com.basho.riak.client.http.RiakIndex i : indexes) {
+            if (i instanceof com.basho.riak.client.http.IntIndex) {
+                builder.addIndex(i.getName(), (Integer) i.getValue());
+            }
+            if (i instanceof com.basho.riak.client.http.BinIndex) {
+                builder.addIndex(i.getName(), (String) i.getValue());
+            }
+        }
+
         builder.withContentType(o.getContentType());
 
         final Map<String, String> userMetaData = new HashMap<String, String>(o.getUsermeta());
@@ -193,6 +232,22 @@ public final class ConversionUtil {
 
         for (Entry<String, String> metaDataItem : riakObject.userMetaEntries()) {
             result.addUsermetaItem(metaDataItem.getKey(), metaDataItem.getValue());
+        }
+
+        // copy the indexes
+        for (Map.Entry<IntIndex, Set<Integer>> i : riakObject.allIntIndexes().entrySet()) {
+            String name = i.getKey().getFullname();
+            for (Integer v : i.getValue()) {
+                result.addIndex(name, v);
+            }
+        }
+
+        // copy the indexes
+        for (Map.Entry<BinIndex, Set<String>> i : riakObject.allBinIndexes().entrySet()) {
+            String name = i.getKey().getFullname();
+            for (String v : i.getValue()) {
+                result.addIndex(name, v);
+            }
         }
 
         result.setContentType(riakObject.getContentType());
@@ -344,5 +399,19 @@ public final class ConversionUtil {
             b.withUsermeta(userMetaData);
         }
         return b.build();
+    }
+
+    /**
+     * Convert a {@link FetchMeta} to a {@link com.basho.riak.pbc.FetchMeta}
+     * @param fetchMeta the {@link FetchMeta} to convert
+     * @return the {@link com.basho.riak.pbc.FetchMeta} with the same values
+     */
+    static com.basho.riak.pbc.FetchMeta convert(FetchMeta fm) {
+        if (fm != null) {
+            return new com.basho.riak.pbc.FetchMeta(fm.getR(), fm.getPR(), fm.getNotFoundOK(), fm.getBasicQuorum(),
+                                                    fm.getHeadOnly(), fm.getReturnDeletedVClock(), fm.getIfModifiedVClock());
+        } else {
+            return com.basho.riak.pbc.FetchMeta.empty();
+        }
     }
 }

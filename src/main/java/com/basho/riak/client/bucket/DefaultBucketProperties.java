@@ -41,16 +41,10 @@ public class DefaultBucketProperties implements BucketProperties {
     private final Boolean lastWriteWins;
     private final Integer nVal;
     private final String backend;
-    private final Integer smallVClock;
-    private final Integer bigVClock;
-    private final Long youngVClock;
-    private final Long oldVClock;
+    private final VClockPruneProps vclockProps;
     private final Collection<NamedFunction> precommitHooks;
     private final Collection<NamedErlangFunction> postcommitHooks;
-    private final Quorum r;
-    private final Quorum w;
-    private final Quorum dw;
-    private final Quorum rw;
+    private final TunableCAPProps capProps;
     private final NamedErlangFunction chashKeyFunction;
     private final NamedErlangFunction linkWalkFunction;
     private final Boolean search;
@@ -62,38 +56,26 @@ public class DefaultBucketProperties implements BucketProperties {
      * @param lastWriteWins
      * @param nVal
      * @param backend
-     * @param smallVClock
-     * @param bigVClock
-     * @param youngVClock
-     * @param oldVClock
+     * @param vclockProps
      * @param precommitHooks
      * @param postcommitHooks
-     * @param r
-     * @param w
-     * @param dw
-     * @param rw
+     * @param capProps
      * @param chashKeyFunction
      * @param linkWalkFunction
      * @param search
      */
     public DefaultBucketProperties(Boolean allowSiblings, Boolean lastWriteWins, Integer nVal, String backend,
-            Integer smallVClock, Integer bigVClock, Long youngVClock, Long oldVClock,
-            Collection<NamedFunction> precommitHooks, Collection<NamedErlangFunction> postcommitHooks, Quorum r,
-            Quorum w, Quorum dw, Quorum rw, NamedErlangFunction chashKeyFunction, NamedErlangFunction linkWalkFunction, Boolean search) {
+            VClockPruneProps vclockProps,
+            Collection<NamedFunction> precommitHooks, Collection<NamedErlangFunction> postcommitHooks,
+            TunableCAPProps capProps, NamedErlangFunction chashKeyFunction, NamedErlangFunction linkWalkFunction, Boolean search) {
         this.allowSiblings = allowSiblings;
         this.lastWriteWins = lastWriteWins;
         this.nVal = nVal;
         this.backend = backend;
-        this.smallVClock = smallVClock;
-        this.bigVClock = bigVClock;
-        this.youngVClock = youngVClock;
-        this.oldVClock = oldVClock;
+        this.vclockProps = vclockProps;
         this.precommitHooks = precommitHooks;
         this.postcommitHooks = postcommitHooks;
-        this.r = r;
-        this.w = w;
-        this.dw = dw;
-        this.rw = rw;
+        this.capProps = capProps;
         this.chashKeyFunction = chashKeyFunction;
         this.linkWalkFunction = linkWalkFunction;
         this.search = search;
@@ -131,28 +113,28 @@ public class DefaultBucketProperties implements BucketProperties {
      * @see com.basho.riak.client.bucket.BucketProperties#getSmallVClock()
      */
     public Integer getSmallVClock() {
-        return smallVClock;
+        return vclockProps.getSmallVClock();
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.bucket.BucketProperties#getBigVClock()
      */
     public Integer getBigVClock() {
-        return bigVClock;
+        return vclockProps.getBigVClock();
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.bucket.BucketProperties#getYoungVClock()
      */
     public Long getYoungVClock() {
-        return youngVClock;
+        return vclockProps.getYoungVClock();
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.bucket.BucketProperties#getOldVClock()
      */
     public Long getOldVClock() {
-        return oldVClock;
+        return vclockProps.getOldVClock();
     }
 
     /* (non-Javadoc)
@@ -173,28 +155,64 @@ public class DefaultBucketProperties implements BucketProperties {
      * @see com.basho.riak.client.bucket.BucketProperties#getR()
      */
     public Quorum getR() {
-        return r;
+        return capProps.getR();
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.bucket.BucketProperties#getW()
      */
     public Quorum getW() {
-        return w;
+        return capProps.getW();
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.bucket.BucketProperties#getRW()
      */
     public Quorum getRW() {
-        return rw;
+        return capProps.getRW();
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.bucket.BucketProperties#getDW()
      */
     public Quorum getDW() {
-        return dw;
+        return capProps.getDW();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.bucket.BucketProperties#getPR()
+     */
+    public Quorum getPR() {
+        return capProps.getPR();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.bucket.BucketProperties#getPW()
+     */
+    public Quorum getPW() {
+        return capProps.getPW();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.bucket.BucketProperties#getBasicQuorum()
+     */
+    public Boolean getBasicQuorum() {
+        return capProps.getBasicQuorum();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.bucket.BucketProperties#getNotFoundOK()
+     */
+    public Boolean getNotFoundOK() {
+        return capProps.getNotFoundOK();
     }
 
     /* (non-Javadoc)
@@ -257,21 +275,15 @@ public class DefaultBucketProperties implements BucketProperties {
         int result = 1;
         result = prime * result + ((allowSiblings == null) ? 0 : allowSiblings.hashCode());
         result = prime * result + ((backend == null) ? 0 : backend.hashCode());
-        result = prime * result + ((bigVClock == null) ? 0 : bigVClock.hashCode());
+        result = prime * result + ((capProps == null) ? 0 : capProps.hashCode());
         result = prime * result + ((chashKeyFunction == null) ? 0 : chashKeyFunction.hashCode());
-        result = prime * result + ((dw == null) ? 0 : dw.hashCode());
         result = prime * result + ((lastWriteWins == null) ? 0 : lastWriteWins.hashCode());
         result = prime * result + ((linkWalkFunction == null) ? 0 : linkWalkFunction.hashCode());
         result = prime * result + ((nVal == null) ? 0 : nVal.hashCode());
-        result = prime * result + ((oldVClock == null) ? 0 : oldVClock.hashCode());
         result = prime * result + ((postcommitHooks == null) ? 0 : postcommitHooks.hashCode());
         result = prime * result + ((precommitHooks == null) ? 0 : precommitHooks.hashCode());
-        result = prime * result + ((r == null) ? 0 : r.hashCode());
-        result = prime * result + ((rw == null) ? 0 : rw.hashCode());
         result = prime * result + ((search == null) ? 0 : search.hashCode());
-        result = prime * result + ((smallVClock == null) ? 0 : smallVClock.hashCode());
-        result = prime * result + ((w == null) ? 0 : w.hashCode());
-        result = prime * result + ((youngVClock == null) ? 0 : youngVClock.hashCode());
+        result = prime * result + ((vclockProps == null) ? 0 : vclockProps.hashCode());
         return result;
     }
 
@@ -303,11 +315,11 @@ public class DefaultBucketProperties implements BucketProperties {
         } else if (!backend.equals(other.backend)) {
             return false;
         }
-        if (bigVClock == null) {
-            if (other.bigVClock != null) {
+        if (capProps == null) {
+            if (other.capProps != null) {
                 return false;
             }
-        } else if (!bigVClock.equals(other.bigVClock)) {
+        } else if (!capProps.equals(other.capProps)) {
             return false;
         }
         if (chashKeyFunction == null) {
@@ -315,13 +327,6 @@ public class DefaultBucketProperties implements BucketProperties {
                 return false;
             }
         } else if (!chashKeyFunction.equals(other.chashKeyFunction)) {
-            return false;
-        }
-        if (dw == null) {
-            if (other.dw != null) {
-                return false;
-            }
-        } else if (!dw.equals(other.dw)) {
             return false;
         }
         if (lastWriteWins == null) {
@@ -345,13 +350,6 @@ public class DefaultBucketProperties implements BucketProperties {
         } else if (!nVal.equals(other.nVal)) {
             return false;
         }
-        if (oldVClock == null) {
-            if (other.oldVClock != null) {
-                return false;
-            }
-        } else if (!oldVClock.equals(other.oldVClock)) {
-            return false;
-        }
         if (postcommitHooks == null) {
             if (other.postcommitHooks != null) {
                 return false;
@@ -366,20 +364,6 @@ public class DefaultBucketProperties implements BucketProperties {
         } else if (!precommitHooks.equals(other.precommitHooks)) {
             return false;
         }
-        if (r == null) {
-            if (other.r != null) {
-                return false;
-            }
-        } else if (!r.equals(other.r)) {
-            return false;
-        }
-        if (rw == null) {
-            if (other.rw != null) {
-                return false;
-            }
-        } else if (!rw.equals(other.rw)) {
-            return false;
-        }
         if (search == null) {
             if (other.search != null) {
                 return false;
@@ -387,25 +371,11 @@ public class DefaultBucketProperties implements BucketProperties {
         } else if (!search.equals(other.search)) {
             return false;
         }
-        if (smallVClock == null) {
-            if (other.smallVClock != null) {
+        if (vclockProps == null) {
+            if (other.vclockProps != null) {
                 return false;
             }
-        } else if (!smallVClock.equals(other.smallVClock)) {
-            return false;
-        }
-        if (w == null) {
-            if (other.w != null) {
-                return false;
-            }
-        } else if (!w.equals(other.w)) {
-            return false;
-        }
-        if (youngVClock == null) {
-            if (other.youngVClock != null) {
-                return false;
-            }
-        } else if (!youngVClock.equals(other.youngVClock)) {
+        } else if (!vclockProps.equals(other.vclockProps)) {
             return false;
         }
         return true;
@@ -415,10 +385,8 @@ public class DefaultBucketProperties implements BucketProperties {
      * @see java.lang.Object#toString()
      */
     @Override public String toString() {
-        return String.format("DefaultBucketProperties [allowSiblings=%s, lastWriteWins=%s, nVal=%s, backend=%s, smallVClock=%s, "
-                                     + "bigVClock=%s, youngVClock=%s, oldVClock=%s, precommitHooks=%s, postcommitHooks=%s, r=%s, w=%s, dw=%s, rw=%s, chashKeyFunction=%s, "
-                                     + "linkWalkFunction=%s, search=%s]", allowSiblings, lastWriteWins, nVal, backend,
-                             smallVClock, bigVClock, youngVClock, oldVClock, precommitHooks, postcommitHooks, r, w, dw,
-                             rw, chashKeyFunction, linkWalkFunction, search);
+        return String.format("DefaultBucketProperties [allowSiblings=%s, lastWriteWins=%s, nVal=%s, backend=%s, vclockProps=%s, precommitHooks=%s, postcommitHooks=%s, capProps=%s, chashKeyFunction=%s, linkWalkFunction=%s, search=%s]",
+                             allowSiblings, lastWriteWins, nVal, backend, vclockProps, precommitHooks, postcommitHooks,
+                             capProps, chashKeyFunction, linkWalkFunction, search);
     }
 }

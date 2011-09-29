@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -32,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,12 +41,16 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
+import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.query.indexes.IntIndex;
 import com.megacorp.commerce.LegacyCart;
 import com.megacorp.commerce.ShoppingCart;
 
@@ -237,38 +243,38 @@ public abstract class ITestBucket {
         final String key = UUID.randomUUID().toString();
 
         final Bucket maps = client.createBucket(bucketName).allowSiblings(true).execute();
-        
+
         final Map<String, String> myMap = new HashMap<String, String>();
         myMap.put("size", "s");
         myMap.put("colour", "red");
         myMap.put("style", "short-sleeve");
-        
+
         maps.store(key, myMap).returnBody(false).w(2).execute();
-        
+
         @SuppressWarnings("unchecked") final Map<String, String> fetchedMap = maps.fetch(key, Map.class).execute();
-        
+
         assertEquals(myMap, fetchedMap);
     }
-    
+
     @Test public void storeList() throws Exception {
         final String bucketName = UUID.randomUUID().toString() + "_lists";
         final String key = UUID.randomUUID().toString();
 
         final Bucket lists = client.createBucket(bucketName).allowSiblings(true).execute();
-        
+
         final Collection<String> myList = new ArrayList<String>();
         myList.add("red");
         myList.add("yellow");
         myList.add("pink");
         myList.add("green");
-        
+
         lists.store(key, myList).returnBody(false).w(2).execute();
-        
+
         @SuppressWarnings("unchecked") final Collection<String> fetchedList = lists.fetch(key, Collection.class).execute();
-        
+
         assertEquals(myList, fetchedList);
     }
-    
+
     // List Keys
     @Test public void listKeys() throws Exception {
         final Set<String> keys = new LinkedHashSet<String>();
@@ -288,5 +294,74 @@ public abstract class ITestBucket {
         }
 
         assertTrue(keys.isEmpty());
+    }
+
+    // fetch index
+    @Test public void fetchIndex() throws Exception {
+        Assume.assumeTrue(TestProperties.is2iEnabled());
+
+        final String bucketName = UUID.randomUUID().toString() + "_2i";
+        final Bucket b = client.fetchBucket(bucketName).execute();
+        final PassThroughConverter converter = new PassThroughConverter();
+
+        // create objects with indexes
+        IRiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, "k1").withValue("some data")
+        .addIndex("twitter", "alfonso").addIndex("age", 37).build();
+
+        IRiakObject o2 = RiakObjectBuilder.newBuilder(bucketName, "k2").withValue("some data")
+        .addIndex("twitter", "peter").addIndex("age", 29).build();
+
+        IRiakObject o3 = RiakObjectBuilder.newBuilder(bucketName, "k3").withValue("some data")
+        .addIndex("twitter", "zachary").addIndex("age", 30).build();
+
+        // store them
+        b.store(o1).withConverter(converter).execute();
+        b.store(o2).withConverter(converter).execute();
+        b.store(o3).withConverter(converter).execute();
+
+        // retrieve and check indexes are present
+        IRiakObject o1r = b.fetch("k1").execute();
+        IRiakObject o2r = b.fetch("k2").execute();
+        IRiakObject o3r = b.fetch("k3").execute();
+
+        assertTrue(o1r.getBinIndex("twitter").contains("alfonso"));
+        assertTrue(o1r.getIntIndex("age").contains(37));
+
+        assertTrue(o2r.getBinIndex("twitter").contains("peter"));
+        assertTrue(o2r.getIntIndex("age").contains(29));
+
+        assertTrue(o3r.getBinIndex("twitter").contains("zachary"));
+        assertTrue(o3r.getIntIndex("age").contains(30));
+
+        // fetch by index
+        List<String> keys = b.fetchIndex(BinIndex.named("twitter")).withValue("alfonso").execute();
+
+        assertEquals(1, keys.size());
+        assertTrue(keys.contains("k1"));
+
+        // fetch int range
+        List<String> ageRange = b.fetchIndex(IntIndex.named("age")).from(30).to(40).execute();
+
+        assertEquals(2, ageRange.size());
+        assertTrue(ageRange.contains("k1"));
+        assertTrue(ageRange.contains("k3"));
+
+        // fetch bin range
+        List<String> twitterRange = b.fetchIndex(BinIndex.named("twitter")).from("albert").to("zebediah").execute();
+
+        assertEquals(3, twitterRange.size());
+        assertTrue(twitterRange.contains("k1"));
+        assertTrue(twitterRange.contains("k2"));
+        assertTrue(twitterRange.contains("k3"));
+
+        // fetch no value results
+        List<String> empty = b.fetchIndex(BinIndex.named("twitter")).withValue("purdy").execute();
+
+        assertEquals(0, empty.size());
+
+        // fetch no value result
+        empty = b.fetchIndex(BinIndex.named("unknown")).withValue("unkown").execute();
+
+        assertEquals(0, empty.size());
     }
 }

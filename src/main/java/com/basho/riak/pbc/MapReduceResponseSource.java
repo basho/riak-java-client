@@ -125,7 +125,7 @@ public class MapReduceResponseSource extends
                     }
                 }
             } catch (JSONException e) {
-               throw new IOException(e);
+               throw new IOException(mrr.response.toStringUtf8(), e);
             }
         }
 

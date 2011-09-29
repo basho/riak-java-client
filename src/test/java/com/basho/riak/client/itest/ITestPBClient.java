@@ -13,9 +13,16 @@
  */
 package com.basho.riak.client.itest;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.UUID;
+
+import org.junit.Test;
+
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 import com.basho.riak.client.raw.pbc.PBClusterConfig;
@@ -40,4 +47,14 @@ public class ITestPBClient extends ITestClientBasic {
         return RiakFactory.newClient(clusterConf);
     }
 
+    @Override @Test public void bucketProperties() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+
+        client.createBucket(bucket).allowSiblings(true).nVal(2).execute();
+
+        Bucket b2 = client.fetchBucket(bucket).execute();
+
+        assertEquals(true, b2.getAllowSiblings());
+        assertEquals(new Integer(2), b2.getNVal());
+    }
 }

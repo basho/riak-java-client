@@ -81,6 +81,10 @@ If you *do* have Riak Search enabled, then you can enable the search integration
 
     -DargLine="-Dcom.basho.riak.search=true"
 
+If you *do* have the eleveldb backend configured, then you can enable the secondary indexes integration tests by adding the following property to the -DargLine
+
+    -DargLine="-Dcom.basho.riak.2i=true"
+
 ## Code Format ##
 
 The files `eclipse-cleanup-profile.xml` and `eclipse-format-profile.xml` are provided to be used with Eclipse.  Import them using Preferences > Java > Code Style > Clean Up and ... > Formatter.  New code can be formatted like the current code using the Source > Clean Up... feature.
