@@ -117,4 +117,10 @@ public abstract class ITestClientBasic {
         assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
         assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
     }
+
+    /**
+     * Each transport implementation has its own set of supported properties.
+     * @throws Exception
+     */
+    @Test public abstract void bucketProperties() throws Exception;
 }

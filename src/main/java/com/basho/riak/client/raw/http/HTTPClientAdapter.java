@@ -31,6 +31,7 @@ import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -375,5 +376,12 @@ public class HTTPClientAdapter implements RawClient {
         indexQuery.write(executor);
 
         return convert(res.get());
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getTransport()
+     */
+    public Transport getTransport() {
+        return Transport.HTTP;
     }
 }
