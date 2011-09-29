@@ -114,7 +114,7 @@ public class FetchObjectTest {
         assertEquals(true, captured.getNotFoundOK());
         assertEquals(true, captured.getReturnDeletedVClock());
         assertEquals(new Integer(3), captured.getR());
-        assertEquals(new Integer(4), captured.getPR());
+        assertEquals(new Integer(4), captured.getPr());
         assertEquals(vclock, captured.getIfModifiedVClock());
         assertEquals(modifiedSince, captured.getIfModifiedSince());
     }

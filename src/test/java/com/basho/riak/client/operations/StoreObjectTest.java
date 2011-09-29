@@ -130,7 +130,7 @@ public class StoreObjectTest {
         assertEquals(true, fm.getNotFoundOK());
         assertEquals(true, fm.getReturnDeletedVClock());
         assertEquals(new Integer(2), fm.getR());
-        assertEquals(new Integer(1), fm.getPR());
+        assertEquals(new Integer(1), fm.getPr());
 
         // check store meta is populates as expected
         StoreMeta sm = storeCaptor.getValue();

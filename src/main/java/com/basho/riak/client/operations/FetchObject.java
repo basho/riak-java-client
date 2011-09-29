@@ -138,8 +138,10 @@ public class FetchObject<T> implements RiakOperation<T> {
      * @return
      * @see com.basho.riak.client.raw.FetchMeta.Builder#pr(int)
      */
-    public FetchObject<T> pr(int pr) {
-        builder.pr(pr);
+    public FetchObject<T> pr(Integer pr) {
+        if (pr != null) {
+            builder.pr(pr);
+        }
         return this;
     }
 

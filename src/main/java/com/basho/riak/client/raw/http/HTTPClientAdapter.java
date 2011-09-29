@@ -38,6 +38,7 @@ import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.WithBodyResponse;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
@@ -250,6 +251,16 @@ public class HTTPClientAdapter implements RawClient {
      */
     public void delete(String bucket, String key, int deleteQuorum) throws IOException {
         HttpResponse resp = client.delete(bucket, key, RequestMeta.deleteParams(deleteQuorum));
+        if (!resp.isSuccess()) {
+            throw new IOException(resp.getBodyAsString());
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String, java.lang.String, com.basho.riak.client.raw.DeleteMeta)
+     */
+    public void delete(String bucket, String key, DeleteMeta deleteMeta) throws IOException {
+        HttpResponse resp = client.delete(bucket, key, convert(deleteMeta));
         if (!resp.isSuccess()) {
             throw new IOException(resp.getBodyAsString());
         }

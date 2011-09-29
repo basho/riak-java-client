@@ -39,6 +39,7 @@ import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
@@ -197,6 +198,13 @@ public class PBClientAdapter implements RawClient {
      */
     public void delete(String bucket, String key, int deleteQuorum) throws IOException {
         client.delete(bucket, key, deleteQuorum);
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String, java.lang.String, com.basho.riak.client.raw.DeleteMeta)
+     */
+    public void delete(String bucket, String key, DeleteMeta deleteMeta) throws IOException {
+        client.delete(bucket, key, convert(deleteMeta));
     }
 
     /*

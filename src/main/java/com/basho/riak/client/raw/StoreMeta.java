@@ -91,7 +91,7 @@ public class StoreMeta {
      * Has the durable write quorum been set?
      * @return <code>true</code> if durable write quorum is set, <code>false</code> otherwise
      */
-    public boolean hasDW() {
+    public boolean hasDw() {
         return dw != null;
     }
 
