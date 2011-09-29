@@ -22,15 +22,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
-import com.basho.riak.client.cap.Quora;
-import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -121,36 +118,9 @@ public abstract class ITestClientBasic {
         assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
     }
 
-    // full set of bucket properties
-    @Test public void allBucketProperties() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
-
-        client.createBucket(bucket).allowSiblings(true).lastWriteWins(false)
-            .smallVClock(5).bigVClock(20).youngVClock(40).oldVClock(172800)
-                .nVal(2).r(1).w(1).dw(Quora.ONE).rw(Quora.QUORUM).pr(1).pw(1).notFoundOK(false).basicQuorum(true)
-                .enableForSearch()
-                .execute();
-
-        Bucket b2 = client.fetchBucket(bucket).execute();
-
-        assertEquals(true, b2.getAllowSiblings());
-        assertEquals(new Integer(2), b2.getNVal());
-
-        // HTTP only below
-        Assume.assumeTrue(Transport.HTTP.equals(client.getTransport()));
-        assertEquals(false, b2.getLastWriteWins());
-        assertEquals(new Integer(5), b2.getSmallVClock());
-        assertEquals(new Integer(20), b2.getBigVClock());
-        assertEquals(new Long(40), b2.getYoungVClock());
-        assertEquals(new Long(172800), b2.getOldVClock());
-        assertEquals(1, b2.getR().getIntValue());
-        assertEquals(1, b2.getW().getIntValue());
-        assertEquals(Quora.ONE, b2.getDW().getSymbolicValue());
-        assertEquals(Quora.QUORUM, b2.getRW().getSymbolicValue());
-        assertEquals(1, b2.getPR().getIntValue());
-        assertEquals(1, b2.getPW().getIntValue());
-        assertTrue(b2.getBasicQuorum());
-        assertFalse(b2.getNotFoundOK());
-        assertTrue(b2.getSearch());
-    }
+    /**
+     * Each transport implementation has its own set of supported properties.
+     * @throws Exception
+     */
+    @Test public abstract void bucketProperties() throws Exception;
 }
