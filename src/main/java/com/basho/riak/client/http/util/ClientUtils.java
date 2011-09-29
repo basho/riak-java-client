@@ -418,7 +418,7 @@ public class ClientUtils {
 
     /**
      * Extract X-Riak-Index-* headers and create {@link List} of
-     * {@link RiakIndex}s from them
+     * {@link RiakIndex}es from them
      * 
      * @param headers
      *            The full HTTP headers from the response

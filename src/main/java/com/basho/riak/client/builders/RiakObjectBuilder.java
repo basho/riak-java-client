@@ -194,10 +194,10 @@ public class RiakObjectBuilder {
     }
 
     /**
-     * A Collection of {@link RiakIndex}s for the new riak object
+     * A Collection of {@link RiakIndex}es for the new riak object
      * 
      * @param indexes
-     *            the {@link Collection} of {@link RiakIndex}s for the Riak
+     *            the {@link Collection} of {@link RiakIndex}es for the Riak
      *            object, is copied over the current collection, not merged!
      *            NOTE: this will be copied.
      * @return this

@@ -478,7 +478,7 @@ provide the input for a Map/Reduce job. As before, use the
 #+END_SRC
 There are query classes to perform a =RangeQuery= or a =ValueQuery=.
 
-You can also directly fetch and index using a =Bucket=:
+You can also directly fetch an index using a =Bucket=:
 #+BEGIN_SRC java
     // fetch int range
     List<String> ageRange = b.fetchIndex(IntIndex.named("age")).from(16).to(64).execute();

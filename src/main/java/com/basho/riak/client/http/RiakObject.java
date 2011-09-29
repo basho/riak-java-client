@@ -533,7 +533,7 @@ public class RiakObject {
     }
 
     /**
-     * @return a *copy* of the list of {@link RiakIndex}s for this object
+     * @return a *copy* of the list of {@link RiakIndex}es for this object
      */
     @SuppressWarnings("rawtypes") public List<RiakIndex> getIndexes() {
         synchronized (indexLock) {

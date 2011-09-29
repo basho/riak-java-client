@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -39,12 +39,11 @@ import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
-import com.basho.riak.client.http.IntIndex;
-import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.client.query.LinkWalkStep.Accumulate;
-import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.util.CharsetUtils;
@@ -108,10 +107,10 @@ public final class ConversionUtil {
 
         builder.withLinks(links);
 
-        @SuppressWarnings("rawtypes") final Collection<RiakIndex> indexes = o.getIndexes();
+        @SuppressWarnings("rawtypes") final Collection<com.basho.riak.client.http.RiakIndex> indexes = o.getIndexes();
 
-        for (@SuppressWarnings("rawtypes") RiakIndex i : indexes) {
-            if (i instanceof IntIndex) {
+        for (@SuppressWarnings("rawtypes") com.basho.riak.client.http.RiakIndex i : indexes) {
+            if (i instanceof com.basho.riak.client.http.IntIndex) {
                 builder.addIndex(i.getName(), (Integer) i.getValue());
             }
             if (i instanceof com.basho.riak.client.http.BinIndex) {
@@ -212,7 +211,7 @@ public final class ConversionUtil {
         }
 
         // copy the indexes
-        for (Map.Entry<com.basho.riak.client.query.indexes.IntIndex, Set<Integer>> i : riakObject.allIntIndexes().entrySet()) {
+        for (Map.Entry<IntIndex, Set<Integer>> i : riakObject.allIntIndexes().entrySet()) {
             String name = i.getKey().getFullname();
             for (Integer v : i.getValue()) {
                 result.addIndex(name, v);
