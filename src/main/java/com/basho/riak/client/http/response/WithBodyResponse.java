@@ -33,4 +33,6 @@ public interface WithBodyResponse extends HttpResponse {
     public boolean hasSiblings();
 
     public Collection<RiakObject> getSiblings();
+
+    public String getVclock();
 }

@@ -21,13 +21,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.http.HttpStatus;
+
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
-import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.http.request.RequestMeta;
+import com.basho.riak.client.http.response.BucketResponse;
+import com.basho.riak.client.http.response.FetchResponse;
+import com.basho.riak.client.http.response.HttpResponse;
+import com.basho.riak.client.http.response.IndexResponse;
+import com.basho.riak.client.http.response.ListBucketsResponse;
+import com.basho.riak.client.http.response.MapReduceResponse;
+import com.basho.riak.client.http.response.StoreResponse;
+import com.basho.riak.client.http.response.WithBodyResponse;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -38,15 +49,6 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
-import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.response.BucketResponse;
-import com.basho.riak.client.http.response.FetchResponse;
-import com.basho.riak.client.http.response.HttpResponse;
-import com.basho.riak.client.http.response.IndexResponse;
-import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.http.response.MapReduceResponse;
-import com.basho.riak.client.http.response.StoreResponse;
-import com.basho.riak.client.http.response.WithBodyResponse;
 
 /**
  * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.
@@ -124,6 +126,28 @@ public class HTTPClientAdapter implements RawClient {
         return handleBodyResponse(resp);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String,
+     * java.lang.String, com.basho.riak.client.raw.FetchMeta)
+     */
+    public RiakResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException {
+        if (bucket == null || bucket.trim().equals("")) {
+            throw new IllegalArgumentException(
+                                               "bucket must not be null and bucket.getName() must not be null or empty "
+                                                       + "or just whitespace.");
+        }
+
+        if (key == null || key.trim().equals("")) {
+            throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
+        }
+        RequestMeta rm = convert(fetchMeta);
+
+        FetchResponse resp = client.fetch(bucket, key, rm);
+        return handleBodyResponse(resp);
+    }
+
     /**
      * For all those fetch/store methods that may return an actual data payload.
      * @param resp a {@link WithBodyResponse}
@@ -131,19 +155,23 @@ public class HTTPClientAdapter implements RawClient {
      * @see ConversionUtil#convert(java.util.Collection)
      */
     private RiakResponse handleBodyResponse(WithBodyResponse resp) {
-        RiakResponse response = RiakResponse.empty();
+        boolean unmodified = resp.getStatusCode() == HttpStatus.SC_NOT_MODIFIED;
+
+        RiakResponse response = RiakResponse.empty(unmodified);
         IRiakObject[] values = new IRiakObject[] {};
 
         if (resp.hasSiblings()) {
             values = convert(resp.getSiblings());
-        } else if (resp.hasObject()) {
+        } else if (resp.hasObject() && !unmodified) {
             values = new IRiakObject[] { convert(resp.getObject()) };
         }
 
-        // we have at least an object, get a vclock for the response
         if (values.length > 0) {
-            final RiakObject obj = resp.getObject();
-            response = new RiakResponse(CharsetUtils.utf8StringToBytes(obj.getVclock()), values);
+            response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVclock()), values);
+        } else {
+            if(resp.getVclock() != null) { // a deleted vclock
+                response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVclock()));
+            }
         }
 
         return response;

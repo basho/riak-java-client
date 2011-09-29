@@ -36,6 +36,7 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
 
     private RiakObject object = null;
     private Collection<RiakObject> siblings = new ArrayList<RiakObject>();
+    private String vclock;
 
     /**
      * On a 2xx response, parse the HTTP response from Riak into a
@@ -69,6 +70,7 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
         List<RiakLink> links = ClientUtils.parseLinkHeader(headers.get(Constants.HDR_LINK));
         @SuppressWarnings("rawtypes") List<RiakIndex> indexes = ClientUtils.parseIndexHeaders(headers);
         Map<String, String> usermeta = ClientUtils.parseUsermeta(headers);
+        vclock = headers.get(Constants.HDR_VCLOCK);
 
         if (r.getStatusCode() == 300) {
             String contentType = headers.get(Constants.HDR_CONTENT_TYPE);
@@ -140,5 +142,12 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
      */
     public Collection<RiakObject> getSiblings() {
         return siblings;
+    }
+
+    /**
+     * @return the X-Riak-Vclock header value, if present.
+     */
+    public String getVclock() {
+        return vclock;
     }
 }

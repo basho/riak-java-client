@@ -15,6 +15,7 @@ package com.basho.riak.client.operations;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.Callable;
 
 import com.basho.riak.client.IRiakObject;
@@ -24,8 +25,11 @@ import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.FetchMeta.Builder;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 
@@ -45,10 +49,12 @@ public class FetchObject<T> implements RiakOperation<T> {
     private final String bucket;
     private final RawClient client;
     private final String key;
+    private RiakResponse rawResponse;
 
     private Retrier retrier;
 
-    private Integer r;
+    private FetchMeta.Builder builder = new Builder();
+
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
 
@@ -96,18 +102,14 @@ public class FetchObject<T> implements RiakOperation<T> {
         // fetch, resolve
         Callable<RiakResponse> command = new Callable<RiakResponse>() {
             public RiakResponse call() throws Exception {
-                if (r != null) {
-                    return client.fetch(bucket, key, r);
-                } else {
-                    return client.fetch(bucket, key);
-                }
+                return client.fetch(bucket, key, builder.build());
             }
         };
 
-        final RiakResponse ros = retrier.attempt(command);
-        final Collection<T> siblings = new ArrayList<T>(ros.numberOfValues());
+        rawResponse = retrier.attempt(command);
+        final Collection<T> siblings = new ArrayList<T>(rawResponse.numberOfValues());
 
-        for (IRiakObject o : ros) {
+        for (IRiakObject o : rawResponse) {
             siblings.add(converter.toDomain(o));
         }
 
@@ -125,7 +127,79 @@ public class FetchObject<T> implements RiakOperation<T> {
      * @return this
      */
     public FetchObject<T> r(int r) {
-        this.r = r;
+        builder.r(r);
+        return this;
+    }
+
+    /**
+     * @param pr
+     * @return
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#pr(int)
+     */
+    public FetchObject<T> pr(int pr) {
+        builder.pr(pr);
+        return this;
+    }
+
+    /**
+     * @param notFoundOK
+     * @return
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#notFoundOK(boolean)
+     */
+    public FetchObject<T> notFoundOK(boolean notFoundOK) {
+        builder.notFoundOK(notFoundOK);
+        return this;
+    }
+
+    /**
+     * @param basicQuorum
+     * @return
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#basicQuorum(boolean)
+     */
+    public FetchObject<T> basicQuorum(boolean basicQuorum) {
+        builder.basicQuorum(basicQuorum);
+        return this;
+    }
+
+    /**
+     * @param returnDeletedVClock
+     * @return
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#returnDeletedVClock(boolean)
+     */
+    public FetchObject<T> returnDeletedVClock(boolean returnDeletedVClock) {
+        builder.returnDeletedVClock(returnDeletedVClock);
+        return this;
+    }
+
+    /**
+     * *NOTE* HTTP Only.
+     * 
+     * TODO using generics and transports make this generic Transport for either
+     * Date/VClock
+     * 
+     * @param modifiedSince
+     *            a last modified date.
+     * 
+     * @return this
+     */
+    public FetchObject<T> modifiedSince(Date modifiedSince) {
+        builder.modifiedSince(modifiedSince);
+        return this;
+    }
+
+    /**
+     * *NOTE* PB Only.
+     * 
+     * TODO using generics and transports make this generic T for either
+     * Date/VClock
+     * 
+     * @param vclock
+     *            a vclock
+     * 
+     * @return this
+     */
+    public FetchObject<T> ifModified(VClock vclock) {
+        builder.vclock(vclock);
         return this;
     }
 
@@ -147,5 +221,54 @@ public class FetchObject<T> implements RiakOperation<T> {
     public FetchObject<T> retrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;
+    }
+
+    // Meta information from the raw response
+
+    /**
+     * @return true if the fetch was conditional and no result was returned
+     *         since the value was unmodified
+     */
+    public boolean isUnmodified() {
+        validatePostExecute();
+        return rawResponse.isUnmodified();
+    }
+
+    /**
+     * @return true if the fetch was to a deleted key but the
+     *         returnDeletedVClock parameter was set, and the response has that
+     *         vclock
+     */
+    public boolean hasDeletedVclock() {
+        validatePostExecute();
+        return rawResponse.isDeleted();
+    }
+
+    /**
+     * @return checks that the response had a vclock (i.e. was some kind of
+     *         success)
+     */
+    public boolean hasVclock() {
+        validatePostExecute();
+        return rawResponse.getVclock() != null;
+    }
+
+    /**
+     * @return if hasDeletedVclock or hasVclock return true, this method returns
+     *         the vclock
+     */
+    public VClock getVClock() {
+        validatePostExecute();
+        return rawResponse.getVclock();
+    }
+
+    /**
+     * If the {@link RiakResponse} isn't populated then the request hasn't been
+     * executed.
+     */
+    private void validatePostExecute() {
+        if (rawResponse == null) {
+            throw new IllegalStateException("Please execute the operation before accessing the results");
+        }
     }
 }

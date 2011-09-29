@@ -17,17 +17,23 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.convert.PassThroughConverter;
+import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -43,7 +49,8 @@ public abstract class ITestClientBasic {
     }
 
     /**
-     * @return
+     * @return an {@link IRiakClient} implementation for the transport to be
+     *         tested.
      */
     protected abstract IRiakClient getClient() throws RiakException;
 
@@ -123,4 +130,121 @@ public abstract class ITestClientBasic {
      * @throws Exception
      */
     @Test public abstract void bucketProperties() throws Exception;
+
+    @Test public void conditionalFetch() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "key";
+        final String originalValue = "first_value";
+        final String newValue = "second_value";
+
+        Bucket b = client.fetchBucket(bucket).execute();
+        b.store(key, originalValue).execute();
+
+        IRiakObject obj = b.fetch(key).execute();
+
+        assertNotNull(obj);
+        assertEquals(originalValue, obj.getValueAsString());
+
+        final FetchObject<IRiakObject> fo = b.fetch(key)
+            .ifModified(obj.getVClock()) // in case of PB
+            .modifiedSince(obj.getLastModified()); // in case of HTTP
+
+        IRiakObject obj2 = fo.execute();
+
+        assertNull(obj2);
+        assertTrue(fo.isUnmodified());
+
+        // wait because of coarseness of last modified time update (HTTP).
+        Thread.sleep(1000);
+        // change it, fetch it
+        obj.setValue(newValue);
+        b.store(obj).withConverter(new PassThroughConverter()).execute();
+
+        IRiakObject obj3 = b.fetch(key)
+            .ifModified(obj.getVClock()) // in case of PB
+            .modifiedSince(obj.getLastModified()) // in case of HTTP
+            .execute();
+
+        assertNotNull(obj3);
+        assertEquals(newValue, obj3.getValueAsString());
+    }
+
+    @Test public void deletedVclock() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "k";
+
+        final Bucket b = client.fetchBucket(bucket).execute();
+
+        final CountDownLatch endLatch = new CountDownLatch(1);
+
+        final Runnable putter = new Runnable() {
+
+            public void run() {
+                int cnt = 0;
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        b.store(key, String.valueOf(cnt)).execute();
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread putterThread = new Thread(putter);
+
+        final Runnable deleter = new Runnable() {
+
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        b.delete(key).execute();
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread deleterThread = new Thread(deleter);
+
+        final Runnable getter = new Runnable() {
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        FetchObject<IRiakObject> fo = b.fetch(key).returnDeletedVClock(true);
+                        IRiakObject o = fo.execute();
+
+                        if (fo.hasDeletedVclock()) {
+                            endLatch.countDown();
+                            Thread.currentThread().interrupt();
+                            putterThread.interrupt();
+                            deleterThread.interrupt();
+                            assertNull(o);
+
+                        }
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread getterThread = new Thread(getter);
+
+        putterThread.start();
+        deleterThread.start();
+        getterThread.start();
+
+        boolean sawDeletedVClock = endLatch.await(10, TimeUnit.SECONDS);
+
+        if (!sawDeletedVClock) {
+            putterThread.interrupt();
+            getterThread.interrupt();
+            deleterThread.interrupt();
+        } else {
+            assertTrue(sawDeletedVClock); // somewhat redundant, but it's a
+                                          // test.
+        }
+    }
 }

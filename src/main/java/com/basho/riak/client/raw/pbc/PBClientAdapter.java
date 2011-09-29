@@ -39,6 +39,7 @@ import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -118,6 +119,13 @@ public class PBClientAdapter implements RawClient {
      * .Bucket, java.lang.String, int)
      */
     public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
+        return fetch(bucket, key, FetchMeta.withR(readQuorum));
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta)
+     */
+    public RiakResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException {
         if (bucket == null || bucket.trim().equals("")) {
             throw new IllegalArgumentException(
                                                "bucket must not be null or empty "
@@ -127,7 +135,7 @@ public class PBClientAdapter implements RawClient {
         if (key == null || key.trim().equals("")) {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
-        return convert(client.fetch(bucket, key, readQuorum));
+        return convert(client.fetch(bucket, key, convert(fetchMeta)));
     }
 
     /*

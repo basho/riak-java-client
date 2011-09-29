@@ -65,6 +65,7 @@ import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
@@ -636,5 +637,38 @@ public final class ConversionUtil {
         } else {
             throw new IOException(response.getBodyAsString());
         }
+    }
+
+    /**
+     * Convert a {@link FetchMeta} to a {@link RequestMeta}
+     * 
+     * @param fetchMeta
+     *            the {@link FetchMeta} to convert
+     * @return the {@link RequestMeta}
+     */
+    static RequestMeta convert(FetchMeta fetchMeta) {
+        RequestMeta rm = new RequestMeta();
+
+        if (fetchMeta.getR() != null) {
+            rm.setQueryParam(Constants.QP_R, fetchMeta.getR().toString());
+        }
+
+        if (fetchMeta.getPR() != null) {
+            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPR().toString());
+        }
+
+        if (fetchMeta.getNotFoundOK() != null) {
+            rm.setQueryParam(Constants.QP_NOT_FOUND_OK, fetchMeta.getNotFoundOK().toString());
+        }
+
+        if (fetchMeta.getBasicQuorum() != null) {
+            rm.setQueryParam(Constants.QP_BASIC_QUORUM, fetchMeta.getBasicQuorum().toString());
+        }
+
+        if (fetchMeta.getIfModifiedSince() != null) {
+            rm.setIfModifiedSince(fetchMeta.getIfModifiedSince());
+        }
+
+        return rm;
     }
 }
