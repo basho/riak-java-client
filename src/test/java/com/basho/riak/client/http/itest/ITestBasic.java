@@ -82,7 +82,6 @@ public class ITestBasic {
         fetchresp = c.fetch(BUCKET, KEY);
         assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
-        System.out.println(fetchresp.getStatusCode() + " " + fetchresp.getBodyAsString());
         assertEquals(VALUE1, fetchresp.getObject().getValue());
         assertFalse(fetchresp.getObject().hasLinks());
         assertFalse(fetchresp.getObject().hasUsermeta());
@@ -222,6 +221,9 @@ public class ITestBasic {
         bucketInfo.setAllowMult(true);
 
         c.setBucketSchema(bucket, bucketInfo);
+        Thread.sleep(1000);
+        // allow the bucket properties to propagate around the ring
+
         RiakObject o = new RiakObject(bucket, key, value);
 
         final RequestMeta rm = WRITE_3_REPLICAS().setHeader(Constants.QP_RETURN_BODY, "true");
@@ -262,7 +264,7 @@ public class ITestBasic {
         assertTrue(buckets.contains(bucket2));
     }
 
-    @Test public void fetch_meta_with_siblings() {
+    @Test public void fetch_meta_with_siblings() throws Exception {
         final RiakClient c1 = new RiakClient(RIAK_URL);
         final RiakClient c2 = new RiakClient(RIAK_URL);
         final String bucket = UUID.randomUUID().toString();
@@ -271,6 +273,8 @@ public class ITestBasic {
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setAllowMult(true);
         assertSuccess(c1.setBucketSchema(bucket, bucketInfo));
+        // allow the bucket properties to propagate around the ring
+        Thread.sleep(1000);
 
         c1.store(new RiakObject(c1, bucket, key, "v".getBytes()));
 
@@ -293,8 +297,8 @@ public class ITestBasic {
 
         FetchResponse fm2 = c1.fetchMeta(bucket, key);
         // since there are siblings fetchMeta will do a full fetch to get them
+        assertTrue(fm2.hasSiblings());
         assertTrue(fm2.hasObject());
         assertNotNull(fm2.getObject().getValue());
-        assertTrue(fm2.hasSiblings());
     }
 }

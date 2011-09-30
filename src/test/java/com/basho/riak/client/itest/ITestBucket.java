@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
@@ -121,6 +122,7 @@ public abstract class ITestBucket {
         assertNull(fetched);
     }
 
+    @Ignore("non-deterministic")
     @Test public void byDefaultSiblingsThrowUnresolvedExceptionOnStore() throws Exception {
         final String bucketName = UUID.randomUUID().toString();
 
