@@ -65,6 +65,7 @@ import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.basho.riak.client.query.indexes.BinIndex;
+import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
@@ -207,6 +208,18 @@ public final class ConversionUtil {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(true));
         } else {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(false));
+        }
+
+        if (storeMeta.hasPw()) {
+            requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().toString());
+        }
+
+        if (storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch()) {
+            requestMeta.setIfNoneMatch(storeMeta.getEtags());
+        }
+
+        if (storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()) {
+            requestMeta.setIfUnmodifiedSince(storeMeta.getLastModified());
         }
 
         return requestMeta;
@@ -653,8 +666,8 @@ public final class ConversionUtil {
             rm.setQueryParam(Constants.QP_R, fetchMeta.getR().toString());
         }
 
-        if (fetchMeta.getPR() != null) {
-            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPR().toString());
+        if (fetchMeta.getPr() != null) {
+            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPr().toString());
         }
 
         if (fetchMeta.getNotFoundOK() != null) {
@@ -670,5 +683,32 @@ public final class ConversionUtil {
         }
 
         return rm;
+    }
+
+    static RequestMeta convert(DeleteMeta deleteMeta) {
+        RequestMeta rm = convert(new FetchMeta(deleteMeta.getR(), deleteMeta.getPr(), null, null, null, null, null,
+                                               null));
+
+        if (deleteMeta.hasW()) {
+            rm.setQueryParam(Constants.QP_W, deleteMeta.getW().toString());
+        }
+
+        if (deleteMeta.hasPw()) {
+            rm.setQueryParam(Constants.QP_PW, deleteMeta.getPw().toString());
+        }
+
+        if (deleteMeta.hasDw()) {
+            rm.setQueryParam(Constants.QP_DW, deleteMeta.getDw().toString());
+        }
+
+        if (deleteMeta.hasRw()) {
+            rm.setQueryParam(Constants.QP_RW, deleteMeta.getRw().toString());
+        }
+
+        if (deleteMeta.hasVclock()) {
+            rm.setHeader(Constants.HDR_VCLOCK, deleteMeta.getVclock().asString());
+        }
+
+        return null;
     }
 }

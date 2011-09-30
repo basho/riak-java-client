@@ -401,7 +401,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
      * @param retrier a Retrier to use for the execute operation
      * @return this
      */
-    public WriteBucket retrier(final Retrier retrier) {
+    public WriteBucket withRetrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;
     }

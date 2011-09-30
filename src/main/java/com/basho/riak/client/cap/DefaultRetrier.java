@@ -16,6 +16,8 @@ package com.basho.riak.client.cap;
 import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakRetryFailedException;
+import com.basho.riak.client.convert.ConversionException;
+import com.basho.riak.client.raw.MatchFoundException;
 
 /**
  * A basic retrier implementation that attempts *n* times before throwing a
@@ -68,6 +70,10 @@ public class DefaultRetrier implements Retrier {
     public static <T> T attempt(final Callable<T> command, int times) throws RiakRetryFailedException {
         try {
             return command.call();
+        } catch (MatchFoundException e) {
+            throw e;
+        } catch (ConversionException e) {
+            throw e;
         } catch (Exception e) {
             if (times == 0) {
                 throw new RiakRetryFailedException(e);

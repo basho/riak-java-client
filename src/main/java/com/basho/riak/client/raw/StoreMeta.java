@@ -13,26 +13,54 @@
  */
 package com.basho.riak.client.raw;
 
+import java.util.Date;
+
 /**
  * Encapsulates the optional parameters for a store operation on Riak
+ * 
  * @author russell
  * @see RawClient#store(com.basho.riak.client.IRiakObject, StoreMeta)
  */
 public class StoreMeta {
+
+    private static final StoreMeta EMPTY = new StoreMeta(null, null, null, false, null, null);
+
     private final Integer w;
     private final Integer dw;
+    private final Integer pw;
     private final Boolean returnBody;
+    private final Boolean ifNonMatch;
+    private final Boolean ifNotModified;
+    // these two are HTTP API specific for ifNonMatch and ifNotModified
+    // which are different to the PB options of the same name
+    private String[] etags;
+    private Long lastModified;
 
     /**
      * Create a StoreMeta, accepts <code>null</code>s for any parameter
-     * @param w the write quorum for a store operation
-     * @param dw the durable write quorum for a store operation
-     * @param returnBody should the store operation return the new data item and its meta data
+     * 
+     * @param w
+     *            the write quorum for a store operation
+     * @param dw
+     *            the durable write quorum for a store operation
+     * @param pw
+     *            the primary write quorum
+     * @param returnBody
+     *            should the store operation return the new data item and its
+     *            meta data
+     * @param ifNonMatch
+     *            only store if bucket/key does not exist
+     * @param ifNotModified
+     *            only store is the vclock supplied on store matches the vclock
+     *            in Riak
      */
-    public StoreMeta(Integer w, Integer dw, Boolean returnBody) {
+    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNonMatch, Boolean ifNotModified) {
         this.w = w;
         this.dw = dw;
+        this.pw = pw;
         this.returnBody = returnBody;
+        this.ifNonMatch = ifNonMatch;
+        this.ifNotModified = ifNotModified;
     }
 
     /**
@@ -63,7 +91,7 @@ public class StoreMeta {
      * Has the durable write quorum been set?
      * @return <code>true</code> if durable write quorum is set, <code>false</code> otherwise
      */
-    public boolean hasDW() {
+    public boolean hasDw() {
         return dw != null;
     }
 
@@ -83,4 +111,116 @@ public class StoreMeta {
         return returnBody;
     }
 
+    /**
+     * Has the pw parameter been set?
+     * 
+     * @return <code>true</code> if pw parameter is set, <code>false</code>
+     *         otherwise
+     */
+    public boolean hasPw() {
+        return pw != null;
+    }
+
+    /**
+     * Get the value for the pw parameter
+     * 
+     * @return the pw or <code>null</code> if it is not set.
+     */
+    public Integer getPw() {
+        return pw;
+    }
+
+    /**
+     * Has the ifNonMatch parameter been set?
+     * 
+     * @return <code>true</code> if ifNonMatch parameter is set,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasIfNonMatch() {
+        return ifNonMatch != null;
+    }
+
+    /**
+     * Get the value of the ifNonMatch parameter
+     * 
+     * @return the ifNonMatch or <code>null</code> if not set.
+     */
+    public Boolean getIfNonMatch() {
+        return ifNonMatch;
+    }
+
+    /**
+     * Has the ifNotModified parameter been set?
+     * 
+     * @return <code>true</code> if ifNotModified parameter is set,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasIfNotModified() {
+        return ifNotModified != null;
+    }
+
+    /**
+     * Get the value of the ifNonMatch parameter
+     * 
+     * @return the ifNotModified or <code>null</code> if not set.
+     */
+    public Boolean getIfNotModified() {
+        return ifNotModified;
+    }
+
+    /**
+     * @return
+     */
+    public static StoreMeta empty() {
+        return EMPTY;
+    }
+
+    /**
+     * Optional supporting data for ifNonMatch for the HTTP API
+     * 
+     * @param etags
+     *            the array of etags to provide for ifNonMatch
+     * @return this.
+     */
+    public synchronized StoreMeta etags(String[] etags) {
+        if (etags != null) {
+            this.etags = etags.clone();
+        }
+        return this;
+    }
+
+    /**
+     * @return the etags
+     */
+    public synchronized String[] getEtags() {
+        if (etags != null) {
+            return etags.clone();
+        }
+        return null;
+    }
+
+    /**
+     * @return the lastModified
+     */
+    public synchronized Date getLastModified() {
+        if (lastModified != null) {
+            return new Date(lastModified);
+        }
+        return null;
+    }
+
+    /**
+     * Optional supporting parameter for ifNotModified for the HTTP API
+     * 
+     * @param lastModified
+     *            a Date
+     * @return this
+     */
+    public synchronized StoreMeta lastModified(Date lastModified) {
+        if (lastModified != null) {
+            this.lastModified = lastModified.getTime();
+        }
+
+        return this;
+    }
 }

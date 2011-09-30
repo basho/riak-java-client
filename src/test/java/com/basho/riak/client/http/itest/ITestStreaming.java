@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -98,7 +99,7 @@ public class ITestStreaming {
 
     @Test public void stream_siblings() throws IOException {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = "test_stream_siblings";
+        final String BUCKET = UUID.randomUUID().toString() + "_test_stream_siblings";
         final String KEY = "key";
         final byte[][] bytes = new byte[][] { new byte[512], new byte[512], new byte[512] };
         new Random().nextBytes(bytes[0]);

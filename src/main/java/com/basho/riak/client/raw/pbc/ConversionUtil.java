@@ -45,6 +45,7 @@ import com.basho.riak.client.query.LinkWalkStep.Accumulate;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -182,6 +183,14 @@ public final class ConversionUtil {
     }
 
     /**
+     * @param vclock
+     * @return the vclock bytes, or null if vclock is null
+     */
+    static byte[] nullSafeToBytes(VClock vclock) {
+        return vclock == null ? null : vclock.getBytes();
+    }
+
+    /**
      * Convert a {@link StoreMeta} to a pbc {@link RequestMeta}
      * 
      * @param storeMeta
@@ -193,16 +202,30 @@ public final class ConversionUtil {
         if (storeMeta.hasW()) {
             requestMeta.w(storeMeta.getW());
         }
-        if (storeMeta.hasDW()) {
+        if (storeMeta.hasDw()) {
             requestMeta.dw(storeMeta.getDw());
         }
         if (storeMeta.hasReturnBody()) {
             requestMeta.returnBody(storeMeta.getReturnBody());
         }
+
         String contentType = riakObject.getContentType();
         if (contentType != null) {
             requestMeta.contentType(contentType);
         }
+
+        if (storeMeta.hasPw()) {
+            requestMeta.pw(storeMeta.getPw());
+        }
+
+        if (storeMeta.hasIfNonMatch()) {
+            requestMeta.ifNonMatch(storeMeta.getIfNonMatch());
+        }
+
+        if (storeMeta.hasIfNotModified()) {
+            requestMeta.ifNotModified(storeMeta.getIfNotModified());
+        }
+
         return requestMeta;
     }
 
@@ -404,15 +427,28 @@ public final class ConversionUtil {
 
     /**
      * Convert a {@link FetchMeta} to a {@link com.basho.riak.pbc.FetchMeta}
-     * @param fetchMeta the {@link FetchMeta} to convert
+     * @param fm the {@link FetchMeta} to convert
      * @return the {@link com.basho.riak.pbc.FetchMeta} with the same values
      */
     static com.basho.riak.pbc.FetchMeta convert(FetchMeta fm) {
         if (fm != null) {
-            return new com.basho.riak.pbc.FetchMeta(fm.getR(), fm.getPR(), fm.getNotFoundOK(), fm.getBasicQuorum(),
+            return new com.basho.riak.pbc.FetchMeta(fm.getR(), fm.getPr(), fm.getNotFoundOK(), fm.getBasicQuorum(),
                                                     fm.getHeadOnly(), fm.getReturnDeletedVClock(), fm.getIfModifiedVClock());
         } else {
             return com.basho.riak.pbc.FetchMeta.empty();
+        }
+    }
+
+    /**
+     * Convert a {@link DeleteMeta} to a {@link com.basho.riak.pbc.DeletehMeta}
+     * @param dm the {@link FetchMeta} to convert
+     * @return the {@link com.basho.riak.pbc.FetchMeta} with the same values
+     */
+    static com.basho.riak.pbc.DeleteMeta convert(DeleteMeta dm) {
+        if (dm != null) {
+            return new com.basho.riak.pbc.DeleteMeta(dm.getR(), dm.getPr(), dm.getW(), dm.getDw(), dm.getPw(), dm.getRw(), nullSafeToBytes(dm.getVclock()));
+        } else {
+            return com.basho.riak.pbc.DeleteMeta.empty();
         }
     }
 }

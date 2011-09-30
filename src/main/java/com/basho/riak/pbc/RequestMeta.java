@@ -29,6 +29,9 @@ public class RequestMeta implements IRequestMeta {
 	Integer writeQuorum;
 	Integer durableWriteQuorum;
 	String contentType;
+	Integer pw;
+	Boolean ifNotModified;
+	Boolean ifNonMatch;
 	
 	public RequestMeta() {
 	}
@@ -48,7 +51,19 @@ public class RequestMeta implements IRequestMeta {
 		
 		if (durableWriteQuorum != null) {
 			builder.setDw(durableWriteQuorum.intValue());
-		}		
+		}
+
+        if (pw != null) {
+            builder.setPw(pw);
+        }
+
+        if (ifNonMatch != null) {
+            builder.setIfNoneMatch(ifNonMatch);
+        }
+
+        if (ifNotModified != null) {
+            builder.setIfNotModified(ifNotModified);
+        }
 	}
 
 	/* (non-Javadoc)
@@ -89,4 +104,19 @@ public class RequestMeta implements IRequestMeta {
 	public ByteString getContentType() {
 		return ByteString.copyFromUtf8(contentType);
 	}
+
+    public IRequestMeta pw(int pw) {
+        this.pw = pw;
+        return this;
+    }
+
+    public IRequestMeta ifNonMatch(boolean ifNonMatch) {
+        this.ifNonMatch = ifNonMatch;
+        return this;
+    }
+
+    public IRequestMeta ifNotModified(boolean ifNotModified) {
+        this.ifNotModified = ifNotModified;
+        return this;
+    }
 }
