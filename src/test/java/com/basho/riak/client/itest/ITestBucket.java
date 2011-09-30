@@ -182,7 +182,7 @@ public abstract class ITestBucket {
         cart.addItem("fixie");
         cart.addItem("moleskine");
 
-        carts.store(cart).returnBody(false).retrier(DefaultRetrier.attempts(2)).execute();
+        carts.store(cart).returnBody(false).withRetrier(DefaultRetrier.attempts(2)).execute();
 
         final ShoppingCart fetchedCart = carts.fetch(cart).execute();
 
@@ -211,7 +211,7 @@ public abstract class ITestBucket {
         cart.addItem("moleskine");
 
         try {
-            carts.store(cart).returnBody(false).retrier(new DefaultRetrier(3)).execute();
+            carts.store(cart).returnBody(false).withRetrier(new DefaultRetrier(3)).execute();
             fail("Expected NoKeySpecifiedException");
         } catch (NoKeySpecifedException e) {
             // NO-OP

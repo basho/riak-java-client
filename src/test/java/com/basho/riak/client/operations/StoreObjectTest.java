@@ -109,7 +109,7 @@ public class StoreObjectTest {
             .ifNotModified(true)
             .returnDeletedVClock(true)
             .returnBody(true)
-            .retrier(retrier)
+            .withRetrier(retrier)
             .withConverter(converter)
             .withMutator(mutation)
             .withResolver(conflictResolver)

@@ -70,13 +70,11 @@ public class DefaultRetrier implements Retrier {
     public static <T> T attempt(final Callable<T> command, int times) throws RiakRetryFailedException {
         try {
             return command.call();
+        } catch (MatchFoundException e) {
+            throw e;
+        } catch (ConversionException e) {
+            throw e;
         } catch (Exception e) {
-            if(e instanceof MatchFoundException) {
-                throw (MatchFoundException)e;
-            }
-            if(e instanceof ConversionException) {
-                throw (ConversionException)e;
-            }
             if (times == 0) {
                 throw new RiakRetryFailedException(e);
             } else {

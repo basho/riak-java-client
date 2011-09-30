@@ -135,7 +135,7 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
-     * Create a {@link StoreMeta} instance from this operations.
+     * Create a {@link StoreMeta} instance from this operation's parameters.
      * @return a {@link StoreMeta} populated with the store parameters.
      */
     private StoreMeta generateStoreMeta() {
@@ -314,9 +314,9 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @param retrier a {@link Retrier}
      * @return this
      */
-    public StoreObject<T> retrier(final Retrier retrier) {
+    public StoreObject<T> withRetrier(final Retrier retrier) {
         this.retrier = retrier;
-        this.fetchObject.retrier(retrier);
+        this.fetchObject.withRetrier(retrier);
         return this;
     }
 

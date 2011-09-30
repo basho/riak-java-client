@@ -189,7 +189,7 @@ public class DeleteObject implements RiakOperation<Void> {
      * @param retrier a {@link Retrier}
      * @return this
      */
-    public DeleteObject retrier(final Retrier retrier) {
+    public DeleteObject withRetrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;
     }
