@@ -82,7 +82,6 @@ public class ITestBasic {
         fetchresp = c.fetch(BUCKET, KEY);
         assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
-        System.out.println(fetchresp.getStatusCode() + " " + fetchresp.getBodyAsString());
         assertEquals(VALUE1, fetchresp.getObject().getValue());
         assertFalse(fetchresp.getObject().hasLinks());
         assertFalse(fetchresp.getObject().hasUsermeta());
