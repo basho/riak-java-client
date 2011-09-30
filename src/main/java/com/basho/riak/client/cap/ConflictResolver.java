@@ -28,6 +28,6 @@ public interface ConflictResolver<T> {
      * @return a single value of type <code>T</code>
      * @throws UnresolvedConflictException if it cannot determine a single value.
      */
-    T resolve(final Collection<T> siblings) throws UnresolvedConflictException;
+    T resolve(final Collection<T> siblings);
 
 }

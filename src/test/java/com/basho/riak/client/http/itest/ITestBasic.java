@@ -58,7 +58,7 @@ public class ITestBasic {
         final RiakLink LINK = new RiakLink("bucket", "key", "tag");
         final String USERMETA_KEY = "usermeta";
         final String USERMETA_VALUE = "value";
-        final String BUCKET = "store_fetch_modify";
+        final String BUCKET = UUID.randomUUID().toString() + "_store_fetch_modify";
         final String KEY = "key";
 
         // Set bucket schema to return siblings
@@ -82,6 +82,7 @@ public class ITestBasic {
         fetchresp = c.fetch(BUCKET, KEY);
         assertSuccess(fetchresp);
         assertTrue(fetchresp.hasObject());
+        System.out.println(fetchresp.getStatusCode() + " " + fetchresp.getBodyAsString());
         assertEquals(VALUE1, fetchresp.getObject().getValue());
         assertFalse(fetchresp.getObject().hasLinks());
         assertFalse(fetchresp.getObject().hasUsermeta());
