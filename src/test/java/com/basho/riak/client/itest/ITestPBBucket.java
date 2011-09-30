@@ -32,5 +32,4 @@ public class ITestPBBucket extends ITestBucket {
     @Override protected IRiakClient getClient() throws RiakException {
         return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
     }
-
-}
+}   

@@ -139,7 +139,7 @@ public class FetchObject<T> implements RiakOperation<T> {
      * @see com.basho.riak.client.raw.FetchMeta.Builder#pr(int)
      */
     public FetchObject<T> pr(Integer pr) {
-        if(pr != null) {
+        if (pr != null) {
             builder.pr(pr);
         }
         return this;
@@ -222,7 +222,7 @@ public class FetchObject<T> implements RiakOperation<T> {
      * @param retrier
      * @return
      */
-    public FetchObject<T> retrier(final Retrier retrier) {
+    public FetchObject<T> withRetrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;
     }

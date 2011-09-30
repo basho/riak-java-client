@@ -107,6 +107,7 @@ public interface Constants {
     public static String QP_KEYS = "keys";
     public static String QP_BUCKETS = "buckets";
     public static String QP_PR = "pr";
+    public static String QP_PW = "pw";
     public static String QP_NOT_FOUND_OK = "notfound_ok";
     public static String QP_BASIC_QUORUM = "basic_quorum";
 

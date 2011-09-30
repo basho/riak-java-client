@@ -11,31 +11,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.convert;
+package com.basho.riak.client.raw;
 
-import com.basho.riak.client.IRiakObject;
+import java.io.IOException;
 
 /**
- * Wraps any exception thrown while converting to/from {@link IRiakObject} and your domain types.
+ * Thrown when a "if not modified" conditional store fails.
+ * 
  * @author russell
  * 
  */
-public class ConversionException extends RuntimeException {
+@SuppressWarnings("serial") public class ModifiedException extends IOException {
 
     /**
-     * eclipse generated id
+     * @param cause
+     *            root exception
      */
-    private static final long serialVersionUID = 2116948528090219193L;
-
-    public ConversionException() {
-        super();
-    }
-
-    public ConversionException(String message) {
-        super(message);
-    }
-
-    public ConversionException(Throwable cause) {
+    public ModifiedException(Throwable cause) {
         super(cause);
+    }
+
+    /**
+     * 
+     */
+    public ModifiedException() {
+        super();
     }
 }

@@ -143,7 +143,7 @@ public class DomainBucket<T> {
             .r(r)
             .w(w)
             .dw(dw)
-            .retrier(retrier)
+            .withRetrier(retrier)
             .returnBody(returnBody)
             .execute();
     }
@@ -163,7 +163,7 @@ public class DomainBucket<T> {
      * @throws RiakException
      */
     public T fetch(String key) throws RiakException {
-        return bucket.fetch(key, clazz).withConverter(converter).withResolver(resolver).r(r).retrier(retrier).execute();
+        return bucket.fetch(key, clazz).withConverter(converter).withResolver(resolver).r(r).withRetrier(retrier).execute();
     }
 
     /**
@@ -182,7 +182,7 @@ public class DomainBucket<T> {
      * @throws RiakException
      */
     public T fetch(T o) throws RiakException {
-        return bucket.fetch(o).withConverter(converter).withResolver(resolver).r(r).retrier(retrier).execute();
+        return bucket.fetch(o).withConverter(converter).withResolver(resolver).r(r).withRetrier(retrier).execute();
     }
 
     /**
@@ -218,7 +218,7 @@ public class DomainBucket<T> {
      * @throws RiakException
      */
     public void delete(String key) throws RiakException {
-        bucket.delete(key).retrier(retrier).rw(rw).execute();
+        bucket.delete(key).withRetrier(retrier).rw(rw).execute();
     }
 
     /**

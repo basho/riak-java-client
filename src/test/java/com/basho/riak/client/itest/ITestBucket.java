@@ -28,29 +28,38 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
+import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.DefaultRetrier;
+import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.raw.MatchFoundException;
+import com.basho.riak.client.raw.ModifiedException;
 import com.megacorp.commerce.LegacyCart;
 import com.megacorp.commerce.ShoppingCart;
 
@@ -113,6 +122,7 @@ public abstract class ITestBucket {
         assertNull(fetched);
     }
 
+    @Ignore("non-deterministic")
     @Test public void byDefaultSiblingsThrowUnresolvedExceptionOnStore() throws Exception {
         final String bucketName = UUID.randomUUID().toString();
 
@@ -174,7 +184,7 @@ public abstract class ITestBucket {
         cart.addItem("fixie");
         cart.addItem("moleskine");
 
-        carts.store(cart).returnBody(false).retrier(DefaultRetrier.attempts(2)).execute();
+        carts.store(cart).returnBody(false).withRetrier(DefaultRetrier.attempts(2)).execute();
 
         final ShoppingCart fetchedCart = carts.fetch(cart).execute();
 
@@ -203,7 +213,7 @@ public abstract class ITestBucket {
         cart.addItem("moleskine");
 
         try {
-            carts.store(cart).returnBody(false).retrier(new DefaultRetrier(3)).execute();
+            carts.store(cart).returnBody(false).withRetrier(new DefaultRetrier(3)).execute();
             fail("Expected NoKeySpecifiedException");
         } catch (NoKeySpecifedException e) {
             // NO-OP
@@ -364,4 +374,267 @@ public abstract class ITestBucket {
 
         assertEquals(0, empty.size());
     }
-}
+
+
+    @Test public void conditionalFetch() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "key";
+        final String originalValue = "first_value";
+        final String newValue = "second_value";
+
+        Bucket b = client.fetchBucket(bucket).execute();
+        b.store(key, originalValue).execute();
+
+        IRiakObject obj = b.fetch(key).execute();
+
+        assertNotNull(obj);
+        assertEquals(originalValue, obj.getValueAsString());
+
+        final FetchObject<IRiakObject> fo = b.fetch(key)
+            .ifModified(obj.getVClock()) // in case of PB
+            .modifiedSince(obj.getLastModified()); // in case of HTTP
+
+        IRiakObject obj2 = fo.execute();
+
+        assertNull(obj2);
+        assertTrue(fo.isUnmodified());
+
+        // wait because of coarseness of last modified time update (HTTP).
+        Thread.sleep(1000);
+        // change it, fetch it
+        obj.setValue(newValue);
+        b.store(obj).withConverter(new PassThroughConverter()).execute();
+
+        IRiakObject obj3 = b.fetch(key)
+            .ifModified(obj.getVClock()) // in case of PB
+            .modifiedSince(obj.getLastModified()) // in case of HTTP
+            .execute();
+
+        assertNotNull(obj3);
+        assertEquals(newValue, obj3.getValueAsString());
+    }
+
+    @Test public void deletedVclock() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "k";
+
+        final Bucket b = client.fetchBucket(bucket).execute();
+
+        final CountDownLatch endLatch = new CountDownLatch(1);
+
+        final Runnable putter = new Runnable() {
+
+            public void run() {
+                int cnt = 0;
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        b.store(key, String.valueOf(cnt)).execute();
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread putterThread = new Thread(putter);
+
+        final Runnable deleter = new Runnable() {
+
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        b.delete(key).execute();
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread deleterThread = new Thread(deleter);
+
+        final Runnable getter = new Runnable() {
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        FetchObject<IRiakObject> fo = b.fetch(key).returnDeletedVClock(true);
+                        IRiakObject o = fo.execute();
+
+                        if (fo.hasDeletedVclock()) {
+                            endLatch.countDown();
+                            Thread.currentThread().interrupt();
+                            putterThread.interrupt();
+                            deleterThread.interrupt();
+                            assertNull(o);
+
+                        }
+                    } catch (RiakException e) {
+                        // no-op, keep going
+                    }
+                }
+            }
+        };
+
+        final Thread getterThread = new Thread(getter);
+
+        putterThread.start();
+        deleterThread.start();
+        getterThread.start();
+
+        boolean sawDeletedVClock = endLatch.await(10, TimeUnit.SECONDS);
+
+        if (!sawDeletedVClock) {
+            putterThread.interrupt();
+            getterThread.interrupt();
+            deleterThread.interrupt();
+        } else {
+            assertTrue(sawDeletedVClock); // somewhat redundant, but it's a
+                                          // test.
+        }
+    }
+
+    /**
+     * test the case where object won't be stored if there is an entry already
+     */
+    @Test public void conditionalStore_noneMatch() throws Exception {
+        final String bucketName = UUID.randomUUID().toString();
+        final String k = "k";
+        final String v1 = "v1";
+        final String v2 = "v2";
+
+        final IRiakClient client = getClient();
+        final Bucket b = client.fetchBucket(bucketName).execute();
+
+        b.store(k, v1).execute();
+        IRiakObject o = b.fetch(k).execute();
+
+        assertEquals(v1, o.getValueAsString());
+
+        try {
+            b.store(k, v2).ifNonMatch(true).execute();
+            fail("expected match_found");
+        } catch (MatchFoundException e) {
+            // NO-OP, all good
+        }
+    }
+
+    /**
+     * test the case where object won't be stored if it has been modified in
+     * since (date(HTTP)/vclock(PB)), but it *hasn't* been modified.
+     */
+    @Test public void conditionalStore_notModified() throws Exception {
+        final String bucketName = UUID.randomUUID().toString();
+        final String k = "k";
+        final String v1 = "v1";
+        final String v2 = "v2";
+
+        final IRiakClient client = getClient();
+        final Bucket b = client.fetchBucket(bucketName).execute();
+
+        b.store(k, v1).execute();
+        IRiakObject o = b.fetch(k).execute();
+
+        assertEquals(v1, o.getValueAsString());
+
+        b.store(k, v2).ifNotModified(true).execute();
+
+        IRiakObject o2 = b.fetch(k).execute();
+
+        assertEquals(v2, o2.getValueAsString());
+    }
+
+    /**
+     * test the case where object won't be stored if it has been modified in
+     * since (date(HTTP)/vclock(PB)), uses a custom mutator, threads and a mutex
+     * to force an update to occur inbetween when a pre-store fetch has executed
+     * and when the actual store is executed.
+     */
+    @Test public void conditionalStore_modified() throws Exception {
+        final String bucketName = UUID.randomUUID().toString();
+        final String k = "k";
+        final String v1 = "v1";
+        final String v2 = "v2";
+        final String v3 = "v3";
+        final SynchronousQueue<Integer> sync = new SynchronousQueue<Integer>(true);
+        final CountDownLatch endLatch = new CountDownLatch(1);
+
+        final IRiakClient client = getClient();
+        final Bucket b = client.fetchBucket(bucketName).execute();
+        b.store(k, v1).execute();
+
+        final Runnable helper = new Runnable() {
+            public void run() {
+                try {
+                    while (!Thread.currentThread().isInterrupted()) {
+                        sync.take(); // block until the other thread has fetched
+                        Thread.sleep(1000); // throw in a sleep for the HTTP API
+                        b.store(k, v3).execute();
+                        sync.put(1); // tell the other thread that we've updated
+                                     // the value
+                    }
+                } catch (RiakException e) {
+                    // fatal
+                    fail("exception in helper, storing value");
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    // used to cause thread to exit
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+
+        final Thread helperThread = new Thread(helper);
+        helperThread.start();
+        final Runnable failer = new Runnable() {
+            public void run() {
+                try {
+                    b.store(k, v2).ifNotModified(true).withMutator(new Mutation<IRiakObject>() {
+
+                        public IRiakObject apply(IRiakObject original) {
+                            try {
+                                sync.put(1); // tell the other thread to store
+                                sync.take(); // block until it has stored
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                throw new RuntimeException(e);
+                            }
+                            return original;
+                        }
+                    }).execute();
+                    fail("Expected an exception");
+                } catch (RiakRetryFailedException e) {
+                    assertTrue((e.getCause() instanceof ModifiedException));
+                    helperThread.interrupt();
+                    endLatch.countDown();
+                } catch (RiakException e) {
+                    fail("unexpected exception caught " + e);
+                }
+
+            }
+        };
+
+        final Thread failerThread = new Thread(failer);
+        failerThread.start();
+
+        boolean success = endLatch.await(10, TimeUnit.SECONDS);
+
+        assertTrue(success);
+    }
+
+    @Test public void deleteWithFetchedVClock() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        Bucket b = client.fetchBucket(bucket).execute();
+        b.store("k", "v").execute();
+
+        IRiakObject fetched = b.fetch("k").execute();
+        assertEquals("v", fetched.getValueAsString());
+
+        b.delete("k").r(1).pr(1).w(1).dw(1).pw(1).fetchBeforeDelete(true).execute();
+
+        Thread.sleep(200);
+
+        fetched = b.fetch("k").execute();
+
+        assertNull(fetched);
+    }
+ }

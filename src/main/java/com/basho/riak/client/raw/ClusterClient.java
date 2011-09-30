@@ -152,6 +152,17 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
     /*
      * (non-Javadoc)
      * 
+     * @see com.basho.riak.client.raw.RawClient#delete(java.lang.String,
+     * java.lang.String, com.basho.riak.client.raw.DeleteMeta)
+     */
+    public void delete(String bucket, String key, DeleteMeta deleteMeta) throws IOException {
+        final RawClient delegate = getDelegate();
+        delegate.delete(bucket, key, deleteMeta);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.raw.RawClient#listBuckets()
      */
     public Set<String> listBuckets() throws IOException {

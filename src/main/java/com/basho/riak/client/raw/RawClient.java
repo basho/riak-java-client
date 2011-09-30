@@ -127,6 +127,18 @@ public interface RawClient {
      */
     void delete(String bucket, String key, int deleteQuorum) throws IOException;
 
+    /**
+     * Delete the data at <code>bucket/key</code> using the parameters in
+     * <code>deleteMeta</code>
+     * 
+     * @param bucket
+     * @param key
+     * @param deleteMeta
+     *            the {@link DeleteMeta} containing the operation parameters
+     * @throws IOException
+     */
+    void delete(String bucket, String key, DeleteMeta deleteMeta) throws IOException;
+
     // Bucket
     /**
      * An Unmodifiable {@link Iterator} view of the all the Buckets in Riak

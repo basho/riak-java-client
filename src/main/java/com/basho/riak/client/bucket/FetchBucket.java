@@ -81,7 +81,7 @@ public class FetchBucket implements RiakOperation<Bucket> {
      * @param retrier the {@link Retrier} to use
      * @return this
      */
-    public FetchBucket retrier(final Retrier retrier) {
+    public FetchBucket withRetrier(final Retrier retrier) {
         this.retrier = retrier;
         return this;
     }
