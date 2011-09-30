@@ -17,7 +17,7 @@ public final class DefaultResolver<T> implements ConflictResolver<T> {
      * @return null or the single value in the collection
      * @throws UnresolvedConflictException if <code>siblings</code> as > 1 entry.
      */
-    public T resolve(Collection<T> siblings) throws UnresolvedConflictException {
+    public T resolve(Collection<T> siblings) {
         if (siblings.size() > 1) {
             throw new UnresolvedConflictException("Siblings found", siblings);
         } else if (siblings.size() == 1) {
