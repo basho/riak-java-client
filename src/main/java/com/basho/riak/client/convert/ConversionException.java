@@ -14,23 +14,23 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.RiakException;
 
 /**
  * Wraps any exception thrown while converting to/from {@link IRiakObject} and your domain types.
  * @author russell
  * 
  */
-public class ConversionException extends RiakException {
+public class ConversionException extends RuntimeException {
 
     /**
      * eclipse generated id
      */
-    private static final long serialVersionUID = -2271716956697197374L;
+    private static final long serialVersionUID = 2116948528090219193L;
 
     public ConversionException() {
         super();
     }
+
     public ConversionException(String message) {
         super(message);
     }

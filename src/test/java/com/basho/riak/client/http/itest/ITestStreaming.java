@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -96,9 +97,9 @@ public class ITestStreaming {
         r.close();
     }
 
-    @Test public void stream_siblings() throws IOException {
+    @Test public void stream_siblings() throws Exception {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = "test_stream_siblings";
+        final String BUCKET = UUID.randomUUID().toString() + "_test_stream_siblings";
         final String KEY = "key";
         final byte[][] bytes = new byte[][] { new byte[512], new byte[512], new byte[512] };
         new Random().nextBytes(bytes[0]);
@@ -112,6 +113,8 @@ public class ITestStreaming {
         RiakBucketInfo bucketInfo = bucketresp.getBucketInfo();
         bucketInfo.setAllowMult(true);
         assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
+        // allow the bucket properties to propagate around the ring
+        Thread.sleep(1000);
         
         // Clean out any previous entry
         c.delete(BUCKET, KEY, WRITE_3_REPLICAS());

@@ -15,8 +15,6 @@ package com.basho.riak.client.cap;
 
 import java.util.Collection;
 
-import com.basho.riak.client.RiakException;
-
 /**
  * Thrown by {@link Retrier#attempt(java.util.concurrent.Callable)} when it finally fails.
  * 
@@ -24,7 +22,7 @@ import com.basho.riak.client.RiakException;
  * 
  * @author russell
  */
-public class UnresolvedConflictException extends RiakException {
+public class UnresolvedConflictException extends RuntimeException {
 
     /**
      * eclipse generated id
