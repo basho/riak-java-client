@@ -39,10 +39,12 @@ And set the dependency in your projects pom.xml to
     <dependency>
         <groupId>com.basho.riak</groupId>
         <artifactId>riak-client</artifactId>
-        <version>0.15-SNAPSHOT</version>
+        <version>1.0rc1</version>
         <type>pom</type>
     </dependency>
 #+END_SRC
+
+Maven artifacts are published to the [[https://oss.sonatype.org/index.html#nexus-search;quick~riak][Sonatype OSS Repository]].
 
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
