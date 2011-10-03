@@ -197,4 +197,11 @@ public class FetchMeta {
             return this;
         }
     }
+
+    /**
+     * @return a FetchMeta empty for everything except <code>headOnly</code>
+     */
+    public static FetchMeta head() {
+        return new FetchMeta(null, null, null, null, true, null, null, null);
+    }
 }

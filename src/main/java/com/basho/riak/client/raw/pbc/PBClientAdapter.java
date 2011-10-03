@@ -99,6 +99,19 @@ public class PBClientAdapter implements RawClient {
         this.client = delegate;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#head(java.lang.String, java.lang.String)
+     */
+    public RiakResponse head(String bucket, String key, FetchMeta fm) throws IOException {
+        if(fm != null) {
+        fm = new FetchMeta(fm.getR(), fm.getPr(), fm.getNotFoundOK(), fm.getBasicQuorum(), true,
+                           fm.getReturnDeletedVClock(), fm.getIfModifiedSince(), fm.getIfModifiedVClock());
+        } else {
+            fm = FetchMeta.head();
+        }
+        return fetch(bucket, key, fm);
+    }
+
     /*
      * (non-Javadoc)
      * 

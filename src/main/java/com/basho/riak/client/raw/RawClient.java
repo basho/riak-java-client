@@ -41,6 +41,21 @@ import com.basho.riak.client.raw.query.indexes.IndexQuery;
 public interface RawClient {
 
     /**
+     * Fetch only the meta-data from <code>bucket/key</code>
+     * 
+     * @param bucket
+     *            the bucket
+     * @param key
+     *            the key
+     * @param fetchMeta
+     *            the fetch options
+     * @return a {@link RiakResponse} that, if it has an {@link IRiakObject} it
+     *         will have an empty value
+     * @throws IOException
+     */
+    RiakResponse head(String bucket, String key, FetchMeta fetchMeta) throws IOException;
+
+    /**
      * Fetch data from <code>bucket/key</code>
      * 
      * @param bucket

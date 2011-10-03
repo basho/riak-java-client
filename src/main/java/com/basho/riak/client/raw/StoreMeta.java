@@ -29,6 +29,7 @@ public class StoreMeta {
     private final Integer dw;
     private final Integer pw;
     private final Boolean returnBody;
+    private final Boolean returnHead;
     private final Boolean ifNonMatch;
     private final Boolean ifNotModified;
     // these two are HTTP API specific for ifNonMatch and ifNotModified
@@ -55,10 +56,36 @@ public class StoreMeta {
      *            in Riak
      */
     public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNonMatch, Boolean ifNotModified) {
+        this(w, dw, pw, returnBody, null, ifNonMatch, ifNotModified);
+    }
+
+    /**
+     * Create a StoreMeta, accepts <code>null</code>s for any parameter
+     * 
+     * @param w
+     *            the write quorum for a store operation
+     * @param dw
+     *            the durable write quorum for a store operation
+     * @param pw
+     *            the primary write quorum
+     * @param returnBody
+     *            should the store operation return the new data item and its
+     *            meta data
+     * @param returnHead
+     *            should the store operation return only the meta data
+     * @param ifNonMatch
+     *            only store if bucket/key does not exist
+     * @param ifNotModified
+     *            only store is the vclock supplied on store matches the vclock
+     *            in Riak
+     */
+    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNonMatch,
+            Boolean ifNotModified) {
         this.w = w;
         this.dw = dw;
         this.pw = pw;
         this.returnBody = returnBody;
+        this.returnHead = returnHead;
         this.ifNonMatch = ifNonMatch;
         this.ifNotModified = ifNotModified;
     }
@@ -169,10 +196,24 @@ public class StoreMeta {
     }
 
     /**
-     * @return
+     * @return an empty StoreMeta
      */
     public static StoreMeta empty() {
         return EMPTY;
+    }
+
+    /**
+     * @return true if returnHead is set, false otherwise
+     */
+    public boolean hasReturnHead() {
+        return returnHead != null;
+    }
+
+    /**
+     * @return the returnHead value or null (if not set)
+     */
+    public Boolean getReturnHead() {
+        return returnHead;
     }
 
     /**
@@ -222,5 +263,12 @@ public class StoreMeta {
         }
 
         return this;
+    }
+
+    /**
+     * @return a StoreMeta with only the headOnly set to true
+     */
+    public static StoreMeta headOnly() {
+        return new StoreMeta(null, null, null, null, true, null, null);
     }
 }

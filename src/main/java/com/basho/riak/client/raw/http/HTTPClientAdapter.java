@@ -83,6 +83,36 @@ public class HTTPClientAdapter implements RawClient {
         this(new RiakClient(url));
     }
 
+    /**
+     * NOTE: returns the values *if* siblings are present
+     * 
+     * @see com.basho.riak.client.raw.RawClient#head(java.lang.String,
+     *      java.lang.String)
+     */
+    public RiakResponse head(String bucket, String key, FetchMeta fetchMeta) throws IOException {
+        if (bucket == null || bucket.trim().equals("")) {
+            throw new IllegalArgumentException(
+                                               "bucket must not be null and bucket.getName() must not be null or empty "
+                                                       + "or just whitespace.");
+        }
+
+        if (key == null || key.trim().equals("")) {
+            throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
+        }
+
+        if (fetchMeta == null) {
+            fetchMeta = FetchMeta.head();
+        } else {
+            fetchMeta = new FetchMeta(fetchMeta.getR(), fetchMeta.getPr(), fetchMeta.getNotFoundOK(),
+                                      fetchMeta.getBasicQuorum(), true, fetchMeta.getReturnDeletedVClock(),
+                                      fetchMeta.getIfModifiedSince(), fetchMeta.getIfModifiedVClock());
+        }
+
+        RequestMeta rm = convert(fetchMeta);
+        FetchResponse resp = client.fetchMeta(bucket, key, rm);
+        return handleBodyResponse(resp);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -212,6 +242,10 @@ public class HTTPClientAdapter implements RawClient {
 
         if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
             response = handleBodyResponse(resp);
+        } else if(storeMeta.hasReturnHead() && storeMeta.getReturnHead()) {
+            // fake a returnHead by doing a head fetch now
+            FetchResponse fr = client.fetchMeta(object.getBucket(), object.getKey());
+            response = handleBodyResponse(fr);
         }
 
         return response;

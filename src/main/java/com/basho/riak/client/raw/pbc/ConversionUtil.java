@@ -201,11 +201,17 @@ public final class ConversionUtil {
         if (storeMeta.hasW()) {
             requestMeta.w(storeMeta.getW());
         }
+
         if (storeMeta.hasDw()) {
             requestMeta.dw(storeMeta.getDw());
         }
+
         if (storeMeta.hasReturnBody()) {
             requestMeta.returnBody(storeMeta.getReturnBody());
+        }
+
+        if (storeMeta.hasReturnHead()) {
+            requestMeta.returnHead(storeMeta.getReturnHead());
         }
 
         String contentType = riakObject.getContentType();
