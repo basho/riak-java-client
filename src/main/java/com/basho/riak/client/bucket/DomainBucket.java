@@ -102,16 +102,12 @@ public class DomainBucket<T> {
      *            the {@link Converter} to use
      * @param mutationProducer
      *            the {@link MutationProducer} to use
-     * @param w
-     *            the write quorum for store operations.
-     * @param dw
-     *            the durable_write quorum for store operations
-     * @param r
-     *            the read quorum for fetch (and store) operations
-     * @param rw
-     *            the read_write quorum for delete operations
-     * @param returnBody
-     *            boolean for whether to return body on store operations
+     * @param storeMeta
+     *            the set of store parameters
+     * @param fetchMeta
+     *            the set of fetch parameters
+     * @param deleteMeta
+     *            the set of delete parameters
      * @param clazz
      *            the Class type of the DomainBucket
      * @param retrier
