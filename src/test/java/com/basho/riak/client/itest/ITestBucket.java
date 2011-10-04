@@ -606,10 +606,7 @@ public abstract class ITestBucket {
                     assertTrue((e.getCause() instanceof ModifiedException));
                     helperThread.interrupt();
                     endLatch.countDown();
-                } catch (RiakException e) {
-                    fail("unexpected exception caught " + e);
                 }
-
             }
         };
 

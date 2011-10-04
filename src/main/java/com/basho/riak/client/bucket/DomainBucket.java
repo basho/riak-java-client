@@ -25,6 +25,9 @@ import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.StoreObject;
+import com.basho.riak.client.raw.DeleteMeta;
+import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.StoreMeta;
 
 /**
  * A domain bucket is a wrapper around a {@link Bucket} that is strongly typed and uses
@@ -77,42 +80,53 @@ public class DomainBucket<T> {
     private final ConflictResolver<T> resolver;
     private final Converter<T> converter;
     private final MutationProducer<T> mutationProducer;
-    private final Integer w;
-    private final Integer dw;
-    private final Integer r;
-    private final Integer rw;
-    private final boolean returnBody;
+    private final StoreMeta storeMeta;
+    private final FetchMeta fetchMeta;
+    private final DeleteMeta deleteMeta;
     private final Class<T> clazz;
     private final Retrier retrier;
 
   
     /**
-     * Create a new {@link DomainBucket} for <code>clazz</code> Class objects wrapped around <code>bucket</code>
+     * Create a new {@link DomainBucket} for <code>clazz</code> Class objects
+     * wrapped around <code>bucket</code>
      * 
-     * @param bucket The bucket to wrap.
-     * @param resolver the {@link ConflictResolver}
-     * @param converter the {@link Converter} to use
-     * @param mutationProducer the {@link MutationProducer} to use
-     * @param w the write quorum for store operations.
-     * @param dw the durable_write quorum for store operations
-     * @param r the read quorum for fetch (and store) operations
-     * @param rw the read_write quorum for delete operations
-     * @param returnBody boolean for wether to return body on store operations
-     * @param clazz the Class type of the DomainBucket
-     * @param retrier the {@link Retrier} to use for each operation
+     * It is recommended to use the {@link DomainBucketBuilder} rather than this
+     * constructor.
+     * 
+     * @param bucket
+     *            The bucket to wrap.
+     * @param resolver
+     *            the {@link ConflictResolver}
+     * @param converter
+     *            the {@link Converter} to use
+     * @param mutationProducer
+     *            the {@link MutationProducer} to use
+     * @param w
+     *            the write quorum for store operations.
+     * @param dw
+     *            the durable_write quorum for store operations
+     * @param r
+     *            the read quorum for fetch (and store) operations
+     * @param rw
+     *            the read_write quorum for delete operations
+     * @param returnBody
+     *            boolean for whether to return body on store operations
+     * @param clazz
+     *            the Class type of the DomainBucket
+     * @param retrier
+     *            the {@link Retrier} to use for each operation
      */
     public DomainBucket(Bucket bucket, ConflictResolver<T> resolver, Converter<T> converter,
-            MutationProducer<T> mutationProducer, Integer w, Integer dw, Integer r, Integer rw, boolean returnBody,
+            MutationProducer<T> mutationProducer, StoreMeta storeMeta, FetchMeta fetchMeta, DeleteMeta deleteMeta,
             Class<T> clazz, final Retrier retrier) {
         this.bucket = bucket;
         this.resolver = resolver;
         this.converter = converter;
         this.mutationProducer = mutationProducer;
-        this.w = w;
-        this.dw = dw;
-        this.r = r;
-        this.rw = rw;
-        this.returnBody = returnBody;
+        this.storeMeta = storeMeta;
+        this.fetchMeta = fetchMeta;
+        this.deleteMeta = deleteMeta;
         this.clazz = clazz;
         this.retrier = retrier;
     }
@@ -136,16 +150,57 @@ public class DomainBucket<T> {
      */
     public T store(T o) throws RiakException {
         final Mutation<T> mutation = mutationProducer.produce(o);
-        return bucket.store(o)
+        final StoreObject<T> so = bucket.store(o)
             .withConverter(converter)
             .withMutator(mutation)
             .withResolver(resolver)
-            .r(r)
-            .w(w)
-            .dw(dw)
-            .withRetrier(retrier)
-            .returnBody(returnBody)
-            .execute();
+            .withRetrier(retrier);
+
+        if (fetchMeta.getR() != null) {
+            so.r(fetchMeta.getR());
+        }
+
+        if (storeMeta.hasW()) {
+            so.w(storeMeta.getW());
+        }
+
+        if (storeMeta.hasDw()) {
+            so.dw(storeMeta.getDw());
+        }
+
+        if (fetchMeta.hasPr()) {
+            so.pr(fetchMeta.getPr());
+        }
+
+        if (storeMeta.hasPw()) {
+            so.pw(storeMeta.getPw());
+        }
+
+        if (fetchMeta.hasBasicQuorum()) {
+            so.basicQuorum(fetchMeta.getBasicQuorum());
+        }
+
+        if (fetchMeta.hasNotFoundOk()) {
+            so.notFoundOK(fetchMeta.getNotFoundOK());
+        }
+
+        if (storeMeta.hasIfNotModified()) {
+            so.ifNotModified(storeMeta.isIfNotModified());
+        }
+
+        if (storeMeta.hasIfNonMatch()) {
+            so.ifNonMatch(storeMeta.isIfNonMatch());
+        }
+
+        if (fetchMeta.hasReturnDeletedVClock()) {
+            so.returnDeletedVClock(fetchMeta.getReturnDeletedVClock());
+        }
+
+        if (storeMeta.hasReturnBody()) {
+            so.returnBody(storeMeta.getReturnBody());
+        }
+
+        return so.execute();
     }
 
     /**
@@ -163,7 +218,27 @@ public class DomainBucket<T> {
      * @throws RiakException
      */
     public T fetch(String key) throws RiakException {
-        return bucket.fetch(key, clazz).withConverter(converter).withResolver(resolver).r(r).withRetrier(retrier).execute();
+        final FetchObject<T> fo = bucket.fetch(key, clazz)
+            .withConverter(converter)
+            .withResolver(resolver)
+            .withRetrier(retrier);
+
+        if (fetchMeta.hasR()) {
+            fo.r(fetchMeta.getR());
+        }
+
+        if (fetchMeta.hasPr()) {
+            fo.pr(fetchMeta.getPr());
+        }
+
+        if (fetchMeta.hasBasicQuorum()) {
+            fo.basicQuorum(fetchMeta.getBasicQuorum());
+        }
+
+        if (fetchMeta.hasNotFoundOk()) {
+            fo.notFoundOK(fetchMeta.getNotFoundOK());
+        }
+        return fo.execute();
     }
 
     /**
@@ -182,7 +257,27 @@ public class DomainBucket<T> {
      * @throws RiakException
      */
     public T fetch(T o) throws RiakException {
-        return bucket.fetch(o).withConverter(converter).withResolver(resolver).r(r).withRetrier(retrier).execute();
+        final FetchObject<T> fo = bucket.fetch(o)
+            .withConverter(converter)
+            .withResolver(resolver)
+            .withRetrier(retrier);
+
+        if (fetchMeta.hasR()) {
+            fo.r(fetchMeta.getR());
+        }
+
+        if (fetchMeta.hasPr()) {
+            fo.pr(fetchMeta.getPr());
+        }
+
+        if (fetchMeta.hasBasicQuorum()) {
+            fo.basicQuorum(fetchMeta.getBasicQuorum());
+        }
+
+        if (fetchMeta.hasNotFoundOk()) {
+            fo.notFoundOK(fetchMeta.getNotFoundOK());
+        }
+        return fo.execute();
     }
 
     /**
@@ -218,7 +313,29 @@ public class DomainBucket<T> {
      * @throws RiakException
      */
     public void delete(String key) throws RiakException {
-        bucket.delete(key).withRetrier(retrier).rw(rw).execute();
+        final DeleteObject delete = bucket.delete(key).withRetrier(retrier);
+
+        if (deleteMeta.hasR()) {
+            delete.r(deleteMeta.getR());
+        }
+
+        if (deleteMeta.hasPr()) {
+            delete.pr(deleteMeta.getPr());
+        }
+
+        if (deleteMeta.hasW()) {
+            delete.w(deleteMeta.getW());
+        }
+
+        if (deleteMeta.hasDw()) {
+            delete.dw(deleteMeta.getDw());
+        }
+
+        if (deleteMeta.hasPw()) {
+            delete.pw(deleteMeta.getPw());
+        }
+        delete.fetchBeforeDelete(deleteMeta.hasVclock());
+        delete.execute();
     }
 
     /**

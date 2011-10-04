@@ -54,11 +54,9 @@ public class StoreObject<T> implements RiakOperation<T> {
     private final FetchObject<T> fetchObject;
 
     private Retrier retrier;
-    private Integer w;
-    private Integer dw;
-    private Integer pw;
-    private Boolean ifNotModified;
-    private Boolean ifNonMatch;
+
+    private final StoreMeta.Builder storeMetaBuilder = new StoreMeta.Builder();
+
     private boolean returnBody = false;
 
     private Mutation<T> mutation;
@@ -107,7 +105,7 @@ public class StoreObject<T> implements RiakOperation<T> {
         final T resolved = fetchObject.execute();
         final T mutated = mutation.apply(resolved);
         final IRiakObject o = converter.fromDomain(mutated, fetchObject.getVClock());
-        final StoreMeta storeMeta = generateStoreMeta();
+        final StoreMeta storeMeta = storeMetaBuilder.returnBody(returnBody).build();
 
         // if non match and if not modified require extra data for the HTTP API
         // pull that from the riak object if possible
@@ -135,20 +133,12 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
-     * Create a {@link StoreMeta} instance from this operation's parameters.
-     * @return a {@link StoreMeta} populated with the store parameters.
-     */
-    private StoreMeta generateStoreMeta() {
-        return new StoreMeta(w, dw, pw, returnBody, ifNonMatch, ifNotModified);
-    }
-
-    /**
      * A store performs a fetch first (to get a vclock and resolve any conflicts), set the read quorum for the fetch
      *
      * @param r the read quorum for the pre-store fetch
      * @return this
      */
-    public StoreObject<T> r(Integer r) {
+    public StoreObject<T> r(int r) {
         this.fetchObject.r(r);
         return this;
     }
@@ -209,8 +199,8 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @param pw
      * @return this
      */
-    public StoreObject<T> pw(Integer pw) {
-        this.pw = pw;
+    public StoreObject<T> pw(int pw) {
+        storeMetaBuilder.pw(pw);
         return this;
     }
 
@@ -219,8 +209,8 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @param w
      * @return this
      */
-    public StoreObject<T> w(Integer w) {
-        this.w = w;
+    public StoreObject<T> w(int w) {
+        storeMetaBuilder.w(w);
         return this;
     }
 
@@ -229,8 +219,8 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @param dw
      * @return this
      */
-    public StoreObject<T> dw(Integer dw) {
-        this.dw = dw;
+    public StoreObject<T> dw(int dw) {
+        storeMetaBuilder.dw(dw);
         return this;
     }
 
@@ -273,7 +263,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @return this
      */
     public StoreObject<T> ifNonMatch(boolean ifNonMatch) {
-        this.ifNonMatch = ifNonMatch;
+        storeMetaBuilder.ifNonMatch(ifNonMatch);
         return this;
     }
 
@@ -305,7 +295,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @return this
      */
     public StoreObject<T> ifNotModified(boolean ifNotModified) {
-        this.ifNotModified = ifNotModified;
+        storeMetaBuilder.ifNotModified(ifNotModified);
         return this;
     }
 

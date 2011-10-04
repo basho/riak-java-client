@@ -24,6 +24,9 @@ import com.basho.riak.client.cap.MutationProducer;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
+import com.basho.riak.client.raw.DeleteMeta;
+import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.StoreMeta;
 
 /**
  * For creating a {@link DomainBucket}
@@ -52,10 +55,9 @@ public class DomainBucketBuilder<T> {
     private MutationProducer<T> mutationProducer;
     private Retrier retrier = DefaultRetrier.attempts(3);
 
-    private Integer w;
-    private Integer dw;
-    private Integer r;
-    private Integer rw;
+    private FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder();
+    private StoreMeta.Builder storeMetaBuilder = new StoreMeta.Builder();
+    private DeleteMeta.Builder deleteMetaBuilder = new DeleteMeta.Builder();
     private boolean returnBody = false;
 
     /**
@@ -91,8 +93,9 @@ public class DomainBucketBuilder<T> {
             };
         }
 
-        return new DomainBucket<T>(bucket, resolver, converter, mutationProducer, w, dw, r, rw, returnBody, clazz,
-                                   retrier);
+        return new DomainBucket<T>(bucket, resolver, converter, mutationProducer,
+                    storeMetaBuilder.returnBody(returnBody).build(), fetchMetaBuilder.build(), deleteMetaBuilder.build(),
+                    clazz, retrier);
     }
 
     /**
@@ -106,7 +109,7 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
-     * Should store operations on the built {@link DomainBucket} have return a body?
+     * Should store operations on the built {@link DomainBucket} return a body?
      * @param returnBody
      * @return this
      */
@@ -131,7 +134,8 @@ public class DomainBucketBuilder<T> {
      * @return this
      */
     public DomainBucketBuilder<T> w(int w) {
-        this.w = w;
+        storeMetaBuilder.w(w);
+        deleteMetaBuilder.w(w);
         return this;
     }
 
@@ -141,7 +145,8 @@ public class DomainBucketBuilder<T> {
      * @return this
      */
     public DomainBucketBuilder<T> r(int r) {
-        this.r = r;
+        fetchMetaBuilder.r(r);
+        deleteMetaBuilder.r(r);
         return this;
     }
 
@@ -151,17 +156,83 @@ public class DomainBucketBuilder<T> {
      * @return this
      */
     public DomainBucketBuilder<T> rw(int rw) {
-        this.rw = rw;
+        deleteMetaBuilder.rw(rw);
         return this;
     }
 
     /**
-     * The durabel write quorum for store operations on the built {@link DomainBucket}
+     * The durable write quorum for store operations on the built {@link DomainBucket}
      * @param dw
      * @return this
      */
     public DomainBucketBuilder<T> dw(int dw) {
-        this.dw = dw;
+        storeMetaBuilder.dw(dw);
+        deleteMetaBuilder.dw(dw);
+        return this;
+    }
+
+    /**
+     * @param notFoundOK
+     * @return this
+     */
+    public DomainBucketBuilder<T> notFoundOK(boolean notFoundOK) {
+        fetchMetaBuilder.notFoundOK(notFoundOK);
+        return this;
+    }
+
+    /**
+     * @param basicQuorum
+     * @return this
+     */
+    public DomainBucketBuilder<T> basicQuorum(boolean basicQuorum) {
+        fetchMetaBuilder.basicQuorum(basicQuorum);
+        return this;
+    }
+
+    /**
+     * @param returnDeletedVClock
+     * @return this
+     */
+    public DomainBucketBuilder<T> returnDeletedVClock(boolean returnDeletedVClock) {
+        fetchMetaBuilder.returnDeletedVClock(returnDeletedVClock);
+        return this;
+    }
+
+    /**
+     * @param ifNotModified
+     * @return this
+     */
+    public DomainBucketBuilder<T> ifNotModified(boolean ifNotModified) {
+        storeMetaBuilder.ifNotModified(ifNotModified);
+        return this;
+    }
+
+    /**
+     * @param ifNonMatch
+     * @return this
+     */
+    public DomainBucketBuilder<T> ifNonMatch(boolean ifNonMatch) {
+        storeMetaBuilder.ifNonMatch(ifNonMatch);
+        return this;
+    }
+
+    /**
+     * @param pr
+     * @return this
+     */
+    public DomainBucketBuilder<T> pr(int pr) {
+        deleteMetaBuilder.pr(pr);
+        fetchMetaBuilder.pr(pr);
+        return this;
+    }
+
+    /**
+     * @param pw
+     * @return this
+     */
+    public DomainBucketBuilder<T> pw(int pw) {
+        deleteMetaBuilder.pw(pw);
+        storeMetaBuilder.pw(pw);
         return this;
     }
 

@@ -72,6 +72,13 @@ public class FetchMeta {
     }
 
     /**
+     * @return true if the r parameter is set, false otherwise
+     */
+    public boolean hasR() {
+        return r != null;
+    }
+
+    /**
      * @return the r
      */
     public Integer getR() {
@@ -79,10 +86,23 @@ public class FetchMeta {
     }
 
     /**
+     * @return true if the pr parameter is set, false otherwise
+     */
+    public boolean hasPr() {
+        return pr != null;
+    }
+    /**
      * @return the pr
      */
     public Integer getPr() {
         return pr;
+    }
+
+    /**
+     * @return true if the notFoundOk parameter is set, false otherwise
+     */
+    public boolean hasNotFoundOk() {
+        return notFoundOK != null;
     }
 
     /**
@@ -93,6 +113,13 @@ public class FetchMeta {
     }
 
     /**
+     * @return true if the basicQuorum parameter is set, false otherwise
+     */
+    public boolean hasBasicQuorum() {
+        return basicQuorum != null;
+    }
+
+    /**
      * @return the basicQuorum
      */
     public Boolean getBasicQuorum() {
@@ -100,10 +127,24 @@ public class FetchMeta {
     }
 
     /**
+     * @return true if the headOnly parameter is set, false otherwise
+     */
+    public boolean hasHeadOnly() {
+        return headOnly != null;
+    }
+
+    /**
      * @return the headOnly
      */
     public Boolean getHeadOnly() {
         return headOnly;
+    }
+
+    /**
+     * @return true if the returnDeletedVClock parameter is set, false otherwise
+     */
+    public boolean hasReturnDeletedVClock() {
+        return returnDeletedVClock != null;
     }
 
     /**

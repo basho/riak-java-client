@@ -177,6 +177,13 @@ public class StoreMeta {
     }
 
     /**
+     * @return true if hasIfNonMatch && getIfNonMatch
+     */
+    public boolean isIfNonMatch() {
+        return hasIfNonMatch() && ifNonMatch;
+    }
+
+    /**
      * Has the ifNotModified parameter been set?
      * 
      * @return <code>true</code> if ifNotModified parameter is set,
@@ -193,6 +200,13 @@ public class StoreMeta {
      */
     public Boolean getIfNotModified() {
         return ifNotModified;
+    }
+
+    /**
+     * @return true if hasIfNotModified && getIfNotModified, false otherwise
+     */
+    public boolean isIfNotModified() {
+        return hasIfNotModified() && ifNotModified;
     }
 
     /**
@@ -270,5 +284,54 @@ public class StoreMeta {
      */
     public static StoreMeta headOnly() {
         return new StoreMeta(null, null, null, null, true, null, null);
+    }
+
+    public static class Builder {
+        private Integer w;
+        private Integer dw;
+        private Integer pw;
+        private Boolean returnBody;
+        private Boolean returnHead;
+        private Boolean ifNotModified;
+        private Boolean ifNonMatch;
+
+        public StoreMeta build() {
+            return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNonMatch, ifNotModified);
+        }
+
+        public Builder w(int w) {
+            this.w = w;
+            return this;
+        }
+
+        public Builder dw(int dw) {
+            this.dw = dw;
+            return this;
+        }
+
+        public Builder pw(int pw) {
+            this.pw = pw;
+            return this;
+        }
+
+        public Builder returnBody(boolean returnBody) {
+            this.returnBody = returnBody;
+            return this;
+        }
+
+        public Builder returnHead(boolean returnHead) {
+            this.returnHead = returnHead;
+            return this;
+        }
+
+        public Builder ifNotModified(boolean ifNotModified) {
+            this.ifNotModified = ifNotModified;
+            return this;
+        }
+
+        public Builder ifNonMatch(boolean ifNonMatch) {
+            this.ifNonMatch = ifNonMatch;
+            return this;
+        }
     }
 }
