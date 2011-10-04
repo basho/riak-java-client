@@ -32,7 +32,7 @@ public class ITestHTTPClientAdapter extends ITestRawClientAdapter {
      * @see com.basho.riak.client.raw.itest.ITestRawClientAdapter#getClient()
      */
     @Override protected RawClient getClient() throws IOException {
-        HTTPClientConfig config = new HTTPClientConfig.Builder().withHost(Hosts.RIAK_HOST).build();
+        HTTPClientConfig config = new HTTPClientConfig.Builder().withUrl(Hosts.RIAK_URL).build();
         return HTTPRiakClientFactory.getInstance().newClient(config);
     }
 
