@@ -184,8 +184,8 @@ public class DomainBucket<T> {
             so.ifNotModified(storeMeta.isIfNotModified());
         }
 
-        if (storeMeta.hasIfNonMatch()) {
-            so.ifNonMatch(storeMeta.isIfNonMatch());
+        if (storeMeta.hasIfNoneMatch()) {
+            so.ifNoneMatch(storeMeta.isIfNoneMatch());
         }
 
         if (fetchMeta.hasReturnDeletedVClock()) {

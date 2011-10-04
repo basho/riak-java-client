@@ -105,7 +105,7 @@ public class StoreObjectTest {
         String actual = store.r(2).pr(1).w(3).dw(4).pw(5)
             .basicQuorum(true)
             .notFoundOK(true)
-            .ifNonMatch(true)
+            .ifNoneMatch(true)
             .ifNotModified(true)
             .returnDeletedVClock(true)
             .returnBody(true)
@@ -138,7 +138,7 @@ public class StoreObjectTest {
         assertEquals(new Integer(3), sm.getW());
         assertEquals(new Integer(4), sm.getDw());
         assertEquals(new Integer(5), sm.getPw());
-        assertEquals(true, sm.getIfNonMatch());
+        assertEquals(true, sm.getIfNoneMatch());
         assertEquals(true, sm.getIfNotModified());
         assertEquals(true, sm.getReturnBody());
 

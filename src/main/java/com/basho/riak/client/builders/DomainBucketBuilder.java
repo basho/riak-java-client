@@ -208,11 +208,11 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
-     * @param ifNonMatch
+     * @param ifNoneMatch
      * @return this
      */
-    public DomainBucketBuilder<T> ifNonMatch(boolean ifNonMatch) {
-        storeMetaBuilder.ifNonMatch(ifNonMatch);
+    public DomainBucketBuilder<T> ifNoneMatch(boolean ifNoneMatch) {
+        storeMetaBuilder.ifNoneMatch(ifNoneMatch);
         return this;
     }
 

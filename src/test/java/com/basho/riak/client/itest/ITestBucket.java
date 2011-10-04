@@ -511,7 +511,7 @@ public abstract class ITestBucket {
         assertEquals(v1, o.getValueAsString());
 
         try {
-            b.store(k, v2).ifNonMatch(true).execute();
+            b.store(k, v2).ifNoneMatch(true).execute();
             fail("expected match_found");
         } catch (MatchFoundException e) {
             // NO-OP, all good

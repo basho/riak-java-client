@@ -98,7 +98,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      *         <code>true</code>, <code>null</code> if <code>returnBody</code>
      *         is <code>false</code>
      * @throws RiakException
-     * @throws {@link MatchFoundException} if a 'ifNonMatch' conditional store
+     * @throws {@link MatchFoundException} if a 'ifNoneMatch' conditional store
      *         fails because a match exists
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
@@ -109,7 +109,7 @@ public class StoreObject<T> implements RiakOperation<T> {
 
         // if non match and if not modified require extra data for the HTTP API
         // pull that from the riak object if possible
-        if(storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch() && o != null) {
+        if(storeMeta.hasIfNoneMatch() && storeMeta.getIfNoneMatch() && o != null) {
             storeMeta.etags(new String[] {o.getVtag()});
         }
 
@@ -257,13 +257,13 @@ public class StoreObject<T> implements RiakOperation<T> {
      * the retrier, to override this, provide a custom retrier.
      * </p>
      * 
-     * @param ifNonMatch
+     * @param ifNoneMatch
      *            true if you want a conditional store, false otherwise,
      *            defaults to false.
      * @return this
      */
-    public StoreObject<T> ifNonMatch(boolean ifNonMatch) {
-        storeMetaBuilder.ifNonMatch(ifNonMatch);
+    public StoreObject<T> ifNoneMatch(boolean ifNoneMatch) {
+        storeMetaBuilder.ifNoneMatch(ifNoneMatch);
         return this;
     }
 
