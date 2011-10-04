@@ -227,9 +227,7 @@ public class HTTPClientAdapter implements RawClient {
         RequestMeta requestMeta = convert(storeMeta);
         StoreResponse resp = client.store(riakObject, requestMeta);
 
-        if (resp.isSuccess()) {
-            riakObject.updateMeta(resp);
-        } else {
+        if (!resp.isSuccess()) {
             if (resp.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) {
                 if (storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch()) {
                     throw new MatchFoundException();
