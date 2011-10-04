@@ -31,7 +31,6 @@ import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
-import com.basho.riak.client.raw.Transport;
 
 /**
  * @author russell
@@ -88,6 +87,14 @@ public abstract class ITestRawClientAdapter {
     }
 
     /**
+     * @param valueAsString
+     */
+    private void assertNotEmptyString(String valueAsString) {
+        if (valueAsString == null || "".equals(valueAsString)) {
+            fail("expected an empty or null string but got " + valueAsString);
+        }
+    }
+    /**
      * Test method for
      * {@link com.basho.riak.client.raw.pbc.PBClientAdapter#head(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta)}
      * .
@@ -122,12 +129,7 @@ public abstract class ITestRawClientAdapter {
         assertTrue(headResponse.hasSiblings());
 
         for (IRiakObject iro : headResponse.getRiakObjects()) {
-            // The legacy http client (sensibly) resorts to a full fetch if
-            // siblings are present
-            // the PB client does not
-            if (client.getTransport() != Transport.HTTP) {
-                assertEmptyString(iro.getValueAsString());
-            }
+            assertNotEmptyString(iro.getValueAsString());
         }
     }
 

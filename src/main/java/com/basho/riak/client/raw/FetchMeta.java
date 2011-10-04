@@ -153,6 +153,18 @@ public class FetchMeta {
         private VClock vclock;
         private Date modifiedSince;
 
+        public static Builder from(FetchMeta fm) {
+            Builder b = new Builder();
+            b.r = fm.getR();
+            b.pr = fm.getPr();
+            b.notFoundOK = fm.getNotFoundOK();
+            b.basicQuorum = fm.getBasicQuorum();
+            b.returnDeletedVClock = fm.getReturnDeletedVClock();
+            b.vclock = fm.getIfModifiedVClock();
+            b.modifiedSince = fm.getIfModifiedSince();
+            return b;
+        }
+
         public FetchMeta build() {
             return new FetchMeta(r, pr, notFoundOK, basicQuorum, headOnly, returnDeletedVClock, modifiedSince, vclock);
         }
