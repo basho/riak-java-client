@@ -223,8 +223,8 @@ public final class ConversionUtil {
             requestMeta.pw(storeMeta.getPw());
         }
 
-        if (storeMeta.hasIfNonMatch()) {
-            requestMeta.ifNonMatch(storeMeta.getIfNonMatch());
+        if (storeMeta.hasIfNoneMatch()) {
+            requestMeta.ifNoneMatch(storeMeta.getIfNoneMatch());
         }
 
         if (storeMeta.hasIfNotModified()) {

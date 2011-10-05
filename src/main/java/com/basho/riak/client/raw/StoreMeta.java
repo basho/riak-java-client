@@ -30,9 +30,9 @@ public class StoreMeta {
     private final Integer pw;
     private final Boolean returnBody;
     private final Boolean returnHead;
-    private final Boolean ifNonMatch;
+    private final Boolean ifNoneMatch;
     private final Boolean ifNotModified;
-    // these two are HTTP API specific for ifNonMatch and ifNotModified
+    // these two are HTTP API specific for ifNoneMatch and ifNotModified
     // which are different to the PB options of the same name
     private String[] etags;
     private Long lastModified;
@@ -49,14 +49,14 @@ public class StoreMeta {
      * @param returnBody
      *            should the store operation return the new data item and its
      *            meta data
-     * @param ifNonMatch
+     * @param ifNoneMatch
      *            only store if bucket/key does not exist
      * @param ifNotModified
      *            only store is the vclock supplied on store matches the vclock
      *            in Riak
      */
-    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNonMatch, Boolean ifNotModified) {
-        this(w, dw, pw, returnBody, null, ifNonMatch, ifNotModified);
+    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNoneMatch, Boolean ifNotModified) {
+        this(w, dw, pw, returnBody, null, ifNoneMatch, ifNotModified);
     }
 
     /**
@@ -73,20 +73,20 @@ public class StoreMeta {
      *            meta data
      * @param returnHead
      *            should the store operation return only the meta data
-     * @param ifNonMatch
+     * @param ifNoneMatch
      *            only store if bucket/key does not exist
      * @param ifNotModified
      *            only store is the vclock supplied on store matches the vclock
      *            in Riak
      */
-    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNonMatch,
+    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
             Boolean ifNotModified) {
         this.w = w;
         this.dw = dw;
         this.pw = pw;
         this.returnBody = returnBody;
         this.returnHead = returnHead;
-        this.ifNonMatch = ifNonMatch;
+        this.ifNoneMatch = ifNoneMatch;
         this.ifNotModified = ifNotModified;
     }
 
@@ -158,22 +158,29 @@ public class StoreMeta {
     }
 
     /**
-     * Has the ifNonMatch parameter been set?
+     * Has the ifNoneMatch parameter been set?
      * 
-     * @return <code>true</code> if ifNonMatch parameter is set,
+     * @return <code>true</code> if ifNoneMatch parameter is set,
      *         <code>false</code> otherwise
      */
-    public boolean hasIfNonMatch() {
-        return ifNonMatch != null;
+    public boolean hasIfNoneMatch() {
+        return ifNoneMatch != null;
     }
 
     /**
-     * Get the value of the ifNonMatch parameter
+     * Get the value of the ifNoneMatch parameter
      * 
-     * @return the ifNonMatch or <code>null</code> if not set.
+     * @return the ifNoneMatch or <code>null</code> if not set.
      */
-    public Boolean getIfNonMatch() {
-        return ifNonMatch;
+    public Boolean getIfNoneMatch() {
+        return ifNoneMatch;
+    }
+
+    /**
+     * @return true if hasIfNoneMatch && getIfNoneMatch
+     */
+    public boolean isIfNoneMatch() {
+        return hasIfNoneMatch() && ifNoneMatch;
     }
 
     /**
@@ -187,12 +194,19 @@ public class StoreMeta {
     }
 
     /**
-     * Get the value of the ifNonMatch parameter
+     * Get the value of the ifNoneMatch parameter
      * 
      * @return the ifNotModified or <code>null</code> if not set.
      */
     public Boolean getIfNotModified() {
         return ifNotModified;
+    }
+
+    /**
+     * @return true if hasIfNotModified && getIfNotModified, false otherwise
+     */
+    public boolean isIfNotModified() {
+        return hasIfNotModified() && ifNotModified;
     }
 
     /**
@@ -217,10 +231,10 @@ public class StoreMeta {
     }
 
     /**
-     * Optional supporting data for ifNonMatch for the HTTP API
+     * Optional supporting data for ifNoneMatch for the HTTP API
      * 
      * @param etags
-     *            the array of etags to provide for ifNonMatch
+     *            the array of etags to provide for ifNoneMatch
      * @return this.
      */
     public synchronized StoreMeta etags(String[] etags) {
@@ -270,5 +284,54 @@ public class StoreMeta {
      */
     public static StoreMeta headOnly() {
         return new StoreMeta(null, null, null, null, true, null, null);
+    }
+
+    public static class Builder {
+        private Integer w;
+        private Integer dw;
+        private Integer pw;
+        private Boolean returnBody;
+        private Boolean returnHead;
+        private Boolean ifNotModified;
+        private Boolean ifNoneMatch;
+
+        public StoreMeta build() {
+            return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNoneMatch, ifNotModified);
+        }
+
+        public Builder w(int w) {
+            this.w = w;
+            return this;
+        }
+
+        public Builder dw(int dw) {
+            this.dw = dw;
+            return this;
+        }
+
+        public Builder pw(int pw) {
+            this.pw = pw;
+            return this;
+        }
+
+        public Builder returnBody(boolean returnBody) {
+            this.returnBody = returnBody;
+            return this;
+        }
+
+        public Builder returnHead(boolean returnHead) {
+            this.returnHead = returnHead;
+            return this;
+        }
+
+        public Builder ifNotModified(boolean ifNotModified) {
+            this.ifNotModified = ifNotModified;
+            return this;
+        }
+
+        public Builder ifNoneMatch(boolean ifNoneMatch) {
+            this.ifNoneMatch = ifNoneMatch;
+            return this;
+        }
     }
 }

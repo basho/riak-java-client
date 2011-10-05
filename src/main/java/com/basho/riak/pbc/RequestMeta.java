@@ -31,7 +31,7 @@ public class RequestMeta implements IRequestMeta {
 	String contentType;
 	Integer pw;
 	Boolean ifNotModified;
-	Boolean ifNonMatch;
+	Boolean ifNoneMatch;
 	Boolean returnHead;
 	
 	public RequestMeta() {
@@ -58,8 +58,8 @@ public class RequestMeta implements IRequestMeta {
             builder.setPw(pw);
         }
 
-        if (ifNonMatch != null) {
-            builder.setIfNoneMatch(ifNonMatch);
+        if (ifNoneMatch != null) {
+            builder.setIfNoneMatch(ifNoneMatch);
         }
 
         if (ifNotModified != null) {
@@ -115,8 +115,8 @@ public class RequestMeta implements IRequestMeta {
         return this;
     }
 
-    public IRequestMeta ifNonMatch(boolean ifNonMatch) {
-        this.ifNonMatch = ifNonMatch;
+    public IRequestMeta ifNoneMatch(boolean ifNoneMatch) {
+        this.ifNoneMatch = ifNoneMatch;
         return this;
     }
 

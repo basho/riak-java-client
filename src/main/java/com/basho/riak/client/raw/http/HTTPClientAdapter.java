@@ -229,7 +229,7 @@ public class HTTPClientAdapter implements RawClient {
 
         if (!resp.isSuccess()) {
             if (resp.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) {
-                if (storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch()) {
+                if (storeMeta.hasIfNoneMatch() && storeMeta.getIfNoneMatch()) {
                     throw new MatchFoundException();
                 } else if (storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()) {
                     throw new ModifiedException();
