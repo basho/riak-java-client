@@ -150,4 +150,53 @@ public class DeleteMeta {
         return vclock;
     }
 
+    // Builder
+    public static class Builder {
+        private Integer r;
+        private Integer pr;
+        private Integer w;
+        private Integer dw;
+        private Integer pw;
+        private Integer rw;
+        private VClock vclock;
+
+        public DeleteMeta build() {
+            return new DeleteMeta(r, pr, w, dw, pw, rw, vclock);
+        }
+
+        public Builder r(int r) {
+            this.r = r;
+            return this;
+        }
+
+        public Builder pr(int pr) {
+            this.pr = pr;
+            return this;
+        }
+
+        public Builder w(int w) {
+            this.w = w;
+            return this;
+        }
+
+        public Builder dw(int dw) {
+            this.dw = dw;
+            return this;
+        }
+
+        public Builder pw(int pw) {
+            this.pw = pw;
+            return this;
+        }
+
+        public Builder rw(int rw) {
+            this.rw = rw;
+            return this;
+        }
+
+        public Builder vclock(VClock vclock) {
+            this.vclock = vclock;
+            return this;
+        }
+    }
 }

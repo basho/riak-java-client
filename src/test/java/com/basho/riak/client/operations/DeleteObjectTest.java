@@ -90,12 +90,12 @@ public class DeleteObjectTest {
         final ArgumentCaptor<DeleteMeta> deleteCaptor = ArgumentCaptor.forClass(DeleteMeta.class);
         final VClock vclock = new BasicVClock(CharsetUtils.utf8StringToBytes("I am a vclock"));
 
-        when(rawClient.fetch(eq(BUCKET), eq(KEY), any(FetchMeta.class))).thenReturn(response);
+        when(rawClient.head(eq(BUCKET), eq(KEY), any(FetchMeta.class))).thenReturn(response);
         when(response.getVclock()).thenReturn(vclock);
 
         deleteObject.r(1).pr(2).w(3).dw(4).pw(5).rw(6).fetchBeforeDelete(true).execute();
 
-        verify(rawClient, times(1)).fetch(eq(BUCKET), eq(KEY), fetchCaptor.capture());
+        verify(rawClient, times(1)).head(eq(BUCKET), eq(KEY), fetchCaptor.capture());
         verify(rawClient, times(1)).delete(eq(BUCKET), eq(KEY), deleteCaptor.capture());
 
         // verify captured fetch meta
