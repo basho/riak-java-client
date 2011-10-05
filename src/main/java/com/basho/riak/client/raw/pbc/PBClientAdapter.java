@@ -52,6 +52,7 @@ import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.util.CharsetUtils;
+import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.MapReduceResponseSource;
@@ -99,6 +100,18 @@ public class PBClientAdapter implements RawClient {
         this.client = delegate;
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#head(java.lang.String, java.lang.String)
+     */
+    public RiakResponse head(String bucket, String key, FetchMeta fm) throws IOException {
+        if(fm != null) {
+            fm = FetchMeta.Builder.from(fm).headOnly(true).build();
+        } else {
+            fm = FetchMeta.head();
+        }
+        return fetch(bucket, key, fm);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -142,7 +155,16 @@ public class PBClientAdapter implements RawClient {
         if (key == null || key.trim().equals("")) {
             throw new IllegalArgumentException("Key cannot be null or empty or just whitespace");
         }
-        return convert(client.fetch(bucket, key, convert(fetchMeta)));
+
+        FetchResponse fr = client.fetch(bucket, key, convert(fetchMeta));
+
+        if (fr.hasSiblings()) {
+            // do a full fetch to get the sibling values
+            FetchMeta fm = FetchMeta.Builder.from(fetchMeta).headOnly(false).build();
+            fr = client.fetch(bucket, key, convert(fm));
+        }
+
+        return convert(fr);
     }
 
     /*

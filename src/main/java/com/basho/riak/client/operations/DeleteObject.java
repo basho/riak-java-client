@@ -46,13 +46,8 @@ public class DeleteObject implements RiakOperation<Void> {
     private Retrier retrier;
     private boolean fetchBeforeDelete = false;
 
-    private Integer r;
-    private Integer pr;
-    private Integer w;
-    private Integer dw;
-    private Integer pw;
-    private Integer rw;
-    private VClock vclock;
+    private final DeleteMeta.Builder deleteMetaBuilder = new DeleteMeta.Builder();
+    private final FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder();
 
     /**
      * Create a <code>DeleteOperation</code> that delegates to
@@ -85,24 +80,20 @@ public class DeleteObject implements RiakOperation<Void> {
      * @return null, always null.
      */
     public Void execute() throws RiakException {
-
         if(fetchBeforeDelete) {
             Callable<VClock> fetch = new Callable<VClock>() {
                 public VClock call() throws Exception {
-                    // TODO this should be a head only operation for efficiency,
-                    // change when implemented
-                    RiakResponse response = client.fetch(bucket, key, new FetchMeta(r, pr, null, null, null, null,
-                                                                                    null, null));
+                    RiakResponse response = client.head(bucket, key, fetchMetaBuilder.build());
                     return response.getVclock();
                 }
             };
 
-            this.vclock = retrier.attempt(fetch);
+             deleteMetaBuilder.vclock(retrier.attempt(fetch));
         }
 
         Callable<Void> command = new Callable<Void>() {
             public Void call() throws Exception {
-                client.delete(bucket, key, new DeleteMeta(r, pr, w, dw, pw, rw, vclock));
+                client.delete(bucket, key, deleteMetaBuilder.build());
                 return null;
             }
         };
@@ -116,8 +107,9 @@ public class DeleteObject implements RiakOperation<Void> {
      *            the read quorum for the delete operation
      * @return this
      */
-    public DeleteObject r(Integer r) {
-        this.r = r;
+    public DeleteObject r(int r) {
+        fetchMetaBuilder.r(r);
+        deleteMetaBuilder.r(r);
         return this;
     }
 
@@ -126,8 +118,9 @@ public class DeleteObject implements RiakOperation<Void> {
      *            the primary read quorum for the delete operation
      * @return this
      */
-    public DeleteObject pr(Integer pr) {
-        this.pr = pr;
+    public DeleteObject pr(int pr) {
+        fetchMetaBuilder.pr(pr);
+        deleteMetaBuilder.pr(pr);
         return this;
     }
 
@@ -136,8 +129,8 @@ public class DeleteObject implements RiakOperation<Void> {
      *            the write quorum for the delete tombstone
      * @return this
      */
-    public DeleteObject w(Integer w) {
-        this.w = w;
+    public DeleteObject w(int w) {
+        deleteMetaBuilder.w(w);
         return this;
     }
 
@@ -146,8 +139,8 @@ public class DeleteObject implements RiakOperation<Void> {
      *            the durable write quorum for the delete tombstone
      * @return this
      */
-    public DeleteObject dw(Integer dw) {
-        this.dw = dw;
+    public DeleteObject dw(int dw) {
+         deleteMetaBuilder.dw(dw);
         return this;
     }
 
@@ -156,8 +149,8 @@ public class DeleteObject implements RiakOperation<Void> {
      *            the primary write quorum for the delete tombstone
      * @return this
      */
-    public DeleteObject pw(Integer pw) {
-        this.pw = pw;
+    public DeleteObject pw(int pw) {
+        deleteMetaBuilder.pw(pw);
         return this;
     }
 
@@ -166,8 +159,8 @@ public class DeleteObject implements RiakOperation<Void> {
      * @param rw an {@link Integer} for the read/write quorum
      * @return this
      */
-    public DeleteObject rw(Integer rw) {
-        this.rw = rw;
+    public DeleteObject rw(int rw) {
+        deleteMetaBuilder.rw(rw);
         return this;
     }
 
@@ -180,7 +173,7 @@ public class DeleteObject implements RiakOperation<Void> {
      * @see DeleteObject#fetchBeforeDelete
      */
     public DeleteObject vclock(VClock vclock) {
-        this.vclock = vclock;
+        deleteMetaBuilder.vclock(vclock);
         return this;
     }
 

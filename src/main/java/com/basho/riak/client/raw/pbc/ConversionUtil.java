@@ -201,11 +201,17 @@ public final class ConversionUtil {
         if (storeMeta.hasW()) {
             requestMeta.w(storeMeta.getW());
         }
+
         if (storeMeta.hasDw()) {
             requestMeta.dw(storeMeta.getDw());
         }
+
         if (storeMeta.hasReturnBody()) {
             requestMeta.returnBody(storeMeta.getReturnBody());
+        }
+
+        if (storeMeta.hasReturnHead()) {
+            requestMeta.returnHead(storeMeta.getReturnHead());
         }
 
         String contentType = riakObject.getContentType();
@@ -217,8 +223,8 @@ public final class ConversionUtil {
             requestMeta.pw(storeMeta.getPw());
         }
 
-        if (storeMeta.hasIfNonMatch()) {
-            requestMeta.ifNonMatch(storeMeta.getIfNonMatch());
+        if (storeMeta.hasIfNoneMatch()) {
+            requestMeta.ifNoneMatch(storeMeta.getIfNoneMatch());
         }
 
         if (storeMeta.hasIfNotModified()) {
