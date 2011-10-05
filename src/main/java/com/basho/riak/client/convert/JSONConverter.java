@@ -14,10 +14,11 @@
 package com.basho.riak.client.convert;
 
 import static com.basho.riak.client.convert.KeyUtil.getKey;
-import static com.basho.riak.client.util.CharsetUtils.*;
+import static com.basho.riak.client.util.CharsetUtils.asString;
+import static com.basho.riak.client.util.CharsetUtils.getCharset;
 
 import java.io.IOException;
-import java.io.StringWriter;
+import java.util.Map;
 
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -45,6 +46,7 @@ public class JSONConverter<T> implements Converter<T> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Class<T> clazz;
     private final String bucket;
+    private final UsermetaConverter<T> usermetaConverter;
     private String defaultKey;
 
     /**
@@ -56,8 +58,7 @@ public class JSONConverter<T> implements Converter<T> {
      * @param b the bucket
      */
     public JSONConverter(Class<T> clazz, String bucket) {
-        this.clazz = clazz;
-        this.bucket = bucket;
+        this(clazz, bucket, null);
     }
 
     /**
@@ -66,15 +67,18 @@ public class JSONConverter<T> implements Converter<T> {
      * instances of <code>clazz</code>
      * 
      * @param clazz the type to convert to/from
-     * @param b the bucket
+     * @param bucket the bucket
      * @param defaultKey
      *            for cases where <code>clazz</code> does not have a
      *            {@link RiakKey} annotated field, pass the key to use in this
      *            conversion.
      */
-    public JSONConverter(Class<T> clazz, String b, String defaultKey) {
-        this(clazz, b);
+    public JSONConverter(Class<T> clazz, String bucket, String defaultKey) {
+        this.clazz = clazz;
+        this.bucket = bucket;
         this.defaultKey = defaultKey;
+        this.usermetaConverter = new UsermetaConverter<T>();
+        objectMapper.registerModule(new RiakJacksonModule());
     }
 
     /**
@@ -95,10 +99,14 @@ public class JSONConverter<T> implements Converter<T> {
                 throw new NoKeySpecifedException(domainObject);
             }
 
-            final StringWriter sw = new StringWriter();
-            objectMapper.writeValue(sw, domainObject);
-            return RiakObjectBuilder.newBuilder(bucket, key).withValue(utf8StringToBytes(sw.toString())).withVClock(vclock).
-                withContentType(Constants.CTYPE_JSON_UTF8).build();
+            final byte[] value = objectMapper.writeValueAsBytes(domainObject);
+            Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);
+            return RiakObjectBuilder.newBuilder(bucket, key)
+                .withValue(value)
+                .withVClock(vclock)
+                .withUsermeta(usermetaData).
+                withContentType(Constants.CTYPE_JSON_UTF8)
+                .build();
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);
         } catch (IOException e) {
@@ -129,6 +137,7 @@ public class JSONConverter<T> implements Converter<T> {
         try {
             T domainObject = objectMapper.readValue(json, clazz);
             KeyUtil.setKey(domainObject, riakObject.getKey());
+            usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
             return domainObject;
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);

@@ -60,6 +60,7 @@ import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
+import com.megacorp.commerce.Customer;
 import com.megacorp.commerce.LegacyCart;
 import com.megacorp.commerce.ShoppingCart;
 
@@ -246,6 +247,43 @@ public abstract class ITestBucket {
         Thread.sleep(500);
 
         assertNull(carts.fetch(userId).execute());
+    }
+
+    @Test public void storeDomainObjectWithUserMeta() throws Exception {
+        final String bucketName = UUID.randomUUID().toString() + "_users";
+        final String userId = UUID.randomUUID().toString();
+
+        final String email = "customer@megacorp.com";
+        final String languageCode = "en";
+        final String favColor = "fav-color";
+        final String blue = "blue";
+
+        final Bucket users = client.createBucket(bucketName).execute();
+
+        final Customer c1 = new Customer(userId);
+
+        c1.setEmailAddress(email);
+        c1.setLanguageCode(languageCode);
+        c1.addPreference(favColor, blue);
+
+        users.store(c1).execute();
+
+        // fetch it as an IRiakObject and check the meta data
+        IRiakObject iro = users.fetch(userId).execute();
+        Map<String, String> meta = iro.getMeta();
+
+        assertEquals(2, meta.size());
+        assertEquals(languageCode, meta.get("language-pref"));
+        assertEquals(blue, meta.get(favColor));
+
+        // fetch it as a Customer and check the meta data
+        Customer actual = users.fetch(userId, Customer.class).execute();
+
+        assertEquals(languageCode, actual.getLanguageCode());
+        Map<String, String> prefs = actual.getPreferences();
+
+        assertEquals(1, prefs.size());
+        assertEquals(blue, prefs.get(favColor));
     }
 
     @Test public void storeMap() throws Exception {
