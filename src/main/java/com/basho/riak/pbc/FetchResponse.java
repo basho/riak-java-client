@@ -67,4 +67,12 @@ public class FetchResponse {
         }
         return this.vclock;
     }
+
+    /**
+     * @return true if there are sibling values in this fetch response, false
+     *         otherwise
+     */
+    public boolean hasSiblings() {
+        return objects.length > 1;
+    }
 }

@@ -213,7 +213,7 @@ public final class ConversionUtil {
             requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().toString());
         }
 
-        if (storeMeta.hasIfNonMatch() && storeMeta.getIfNonMatch()) {
+        if (storeMeta.hasIfNoneMatch() && storeMeta.getIfNoneMatch()) {
             requestMeta.setIfNoneMatch(storeMeta.getEtags());
         }
 
