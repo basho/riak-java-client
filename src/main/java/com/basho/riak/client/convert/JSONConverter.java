@@ -18,6 +18,7 @@ import static com.basho.riak.client.util.CharsetUtils.asString;
 import static com.basho.riak.client.util.CharsetUtils.getCharset;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
 import org.codehaus.jackson.JsonProcessingException;
@@ -49,6 +50,7 @@ public class JSONConverter<T> implements Converter<T> {
     private final String bucket;
     private final UsermetaConverter<T> usermetaConverter;
     private final RiakIndexConverter<T> riakIndexConverter;
+    private final RiakLinksConverter<T> riakLinksConverter;
     private String defaultKey;
 
     /**
@@ -81,6 +83,7 @@ public class JSONConverter<T> implements Converter<T> {
         this.defaultKey = defaultKey;
         this.usermetaConverter = new UsermetaConverter<T>();
         this.riakIndexConverter = new RiakIndexConverter<T>();
+        this.riakLinksConverter = new RiakLinksConverter<T>();
         objectMapper.registerModule(new RiakJacksonModule());
     }
 
@@ -105,11 +108,13 @@ public class JSONConverter<T> implements Converter<T> {
             final byte[] value = objectMapper.writeValueAsBytes(domainObject);
             Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);
             RiakIndexes indexes = riakIndexConverter.getIndexes(domainObject);
+            Collection<RiakLink> links = riakLinksConverter.getLinks(domainObject);
             return RiakObjectBuilder.newBuilder(bucket, key)
                 .withValue(value)
                 .withVClock(vclock)
                 .withUsermeta(usermetaData)
                 .withIndexes(indexes)
+                .withLinks(links)
                 .withContentType(Constants.CTYPE_JSON_UTF8)
                 .build();
         } catch (JsonProcessingException e) {
@@ -145,6 +150,7 @@ public class JSONConverter<T> implements Converter<T> {
             usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
             riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexes()),
                                                domainObject);
+            riakLinksConverter.populateLinks(riakObject.getLinks(), domainObject);
             return domainObject;
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);

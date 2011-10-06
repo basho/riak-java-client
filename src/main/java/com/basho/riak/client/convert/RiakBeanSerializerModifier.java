@@ -78,10 +78,12 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
     private boolean keepProperty(BeanPropertyWriter beanPropertyWriter) {
         RiakKey key = null;
         RiakUsermeta usermeta = null;
+        RiakLinks links = null;
         AnnotatedMember member = beanPropertyWriter.getMember();
         if (member instanceof AnnotatedField) {
             key = beanPropertyWriter.getAnnotation(RiakKey.class);
             usermeta = beanPropertyWriter.getAnnotation(RiakUsermeta.class);
+            links = beanPropertyWriter.getAnnotation(RiakLinks.class);
         } else {
             @SuppressWarnings("rawtypes") Class clazz = member.getDeclaringClass();
             Field field;
@@ -89,12 +91,13 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
                 field = clazz.getDeclaredField(beanPropertyWriter.getName());
                 key = field.getAnnotation(RiakKey.class);
                 usermeta = field.getAnnotation(RiakUsermeta.class);
+                links = field.getAnnotation(RiakLinks.class);
             } catch (SecurityException e) {
                 throw new RuntimeException(e);
             } catch (NoSuchFieldException e) {
                 // ignore, not a field means not a Riak annotated field.
             }
         }
-        return key == null && usermeta == null;
+        return key == null && usermeta == null && links == null;
     }
 }
