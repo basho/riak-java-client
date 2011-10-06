@@ -21,8 +21,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.basho.riak.client.convert.UsermetaField;
+import com.basho.riak.client.query.indexes.RiakIndexes;
 
 /**
  * Class that contains the Riak annotated fields for an annotated class
@@ -39,16 +41,18 @@ public class AnnotationInfo {
     private final Field riakKeyField;
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
+    private final List<RiakIndexField> indexFields;
 
     /**
      * @param riakKeyField
      * @param usermetaItemFields
      * @param usermetaMapField
      */
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField) {
+    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields) {
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
         this.usermetaMapField = usermetaMapField;
+        this.indexFields = indexFields;
     }
 
     /**
@@ -88,7 +92,10 @@ public class AnnotationInfo {
             Object o = getFieldValue(f.getField(), obj);
             String val = o == null ? null : o.toString();
             String key = f.getUsermetaDataKey();
-            usermetaData.put(key, val);
+            // null is not a user meta datum
+            if(o != null) {
+                usermetaData.put(key, val);
+            }
         }
 
         if (usermetaMapField != null) {
@@ -119,4 +126,52 @@ public class AnnotationInfo {
         }
     }
 
+    /**
+     * @return a {@link RiakIndexes} made of the values of the RiakIndex
+     *         annotated fields
+     */
+    public <T> RiakIndexes getIndexes(T obj) {
+        final RiakIndexes riakIndexes = new RiakIndexes();
+
+        for (RiakIndexField f : indexFields) {
+            Object val = getFieldValue(f.getField(), obj);
+            // null is not an index value
+            if (val != null) {
+                if (val instanceof String) {
+                    riakIndexes.add(f.getIndexName(), (String) val);
+                } else {
+                    riakIndexes.add(f.getIndexName(), (Integer) val);
+                }
+            }
+        }
+
+        return riakIndexes;
+    }
+
+    /**
+     * TODO handle multi-value indexes with the same name
+     * 
+     * @param <T>
+     * @param indexes
+     *            the RiakIndexes to copy to the domain object
+     * @param obj
+     *            the domain object to set indexes on
+     */
+    public <T> void setIndexes(RiakIndexes indexes, T obj) {
+        // copy the index values to the correct fields
+        for (RiakIndexField f : indexFields) {
+            Set<?> val = null;
+            if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
+                val = indexes.getIntIndex(f.getIndexName());
+            }
+
+            if (String.class.equals(f.getType())) {
+                val = indexes.getBinIndex(f.getIndexName());
+            }
+
+            if (val != null && !val.isEmpty()) {
+                setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+            }
+        }
+    }
 }

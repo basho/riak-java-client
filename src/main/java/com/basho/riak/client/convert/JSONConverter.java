@@ -28,6 +28,7 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.query.indexes.RiakIndexes;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -47,6 +48,7 @@ public class JSONConverter<T> implements Converter<T> {
     private final Class<T> clazz;
     private final String bucket;
     private final UsermetaConverter<T> usermetaConverter;
+    private final RiakIndexConverter<T> riakIndexConverter;
     private String defaultKey;
 
     /**
@@ -78,6 +80,7 @@ public class JSONConverter<T> implements Converter<T> {
         this.bucket = bucket;
         this.defaultKey = defaultKey;
         this.usermetaConverter = new UsermetaConverter<T>();
+        this.riakIndexConverter = new RiakIndexConverter<T>();
         objectMapper.registerModule(new RiakJacksonModule());
     }
 
@@ -101,11 +104,13 @@ public class JSONConverter<T> implements Converter<T> {
 
             final byte[] value = objectMapper.writeValueAsBytes(domainObject);
             Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);
+            RiakIndexes indexes = riakIndexConverter.getIndexes(domainObject);
             return RiakObjectBuilder.newBuilder(bucket, key)
                 .withValue(value)
                 .withVClock(vclock)
-                .withUsermeta(usermetaData).
-                withContentType(Constants.CTYPE_JSON_UTF8)
+                .withUsermeta(usermetaData)
+                .withIndexes(indexes)
+                .withContentType(Constants.CTYPE_JSON_UTF8)
                 .build();
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);
@@ -138,6 +143,8 @@ public class JSONConverter<T> implements Converter<T> {
             T domainObject = objectMapper.readValue(json, clazz);
             KeyUtil.setKey(domainObject, riakObject.getKey());
             usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
+            riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexes()),
+                                               domainObject);
             return domainObject;
         } catch (JsonProcessingException e) {
             throw new ConversionException(e);

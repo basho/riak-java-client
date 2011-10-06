@@ -15,6 +15,8 @@ package com.basho.riak.client.convert.reflect;
 
 import java.util.Map;
 
+import com.basho.riak.client.query.indexes.RiakIndexes;
+
 /**
  * Singleton that wraps a cache of Class -> AnnotatioInfo and provides
  * convenience methods for getting and setting Riak annotated field values
@@ -66,4 +68,14 @@ public class AnnotationHelper {
         return obj;
     }
 
+    public <T> RiakIndexes getIndexes(T obj) {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        return annotationInfo.getIndexes(obj);
+    }
+
+    public <T> T setIndexes(RiakIndexes indexes, T obj) {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        annotationInfo.setIndexes(indexes, obj);
+        return obj;
+    }
 }

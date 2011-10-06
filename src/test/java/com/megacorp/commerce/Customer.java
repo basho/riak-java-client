@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakUsermeta;
 
@@ -32,7 +33,9 @@ public class Customer {
 
     @RiakKey private final String userId;
     private String username;
-    private String emailAddress;
+
+    @RiakIndex(name = "email") private String emailAddress;
+    @RiakIndex(name = "shoe-size") private int shoeSize;
 
     @RiakUsermeta(key = "language-pref") private String languageCode;
 
@@ -80,6 +83,21 @@ public class Customer {
      */
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
+    }
+
+    /**
+     * @return the shoeSize
+     */
+    public int getShoeSize() {
+        return shoeSize;
+    }
+
+    /**
+     * @param shoeSize
+     *            the shoeSize to set
+     */
+    public void setShoeSize(int shoeSize) {
+        this.shoeSize = shoeSize;
     }
 
     /**

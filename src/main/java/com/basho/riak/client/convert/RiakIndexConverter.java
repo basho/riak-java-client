@@ -13,27 +13,26 @@
  */
 package com.basho.riak.client.convert;
 
-import java.util.Map;
-
 import com.basho.riak.client.convert.reflect.AnnotationHelper;
+import com.basho.riak.client.query.indexes.RiakIndexes;
 
 /**
- * Handles the conversion of user meta data from domain objects -> IRiakObject
+ * Handles the conversion of riak indexes from domain objects -> IRiakObject
  * and back
  * 
  * @author russell
  * @param <T>
  * 
  */
-public class UsermetaConverter<T> {
+public class RiakIndexConverter<T> {
 
     private final AnnotationHelper annotationHelper = AnnotationHelper.getInstance();
 
-    public Map<String, String> getUsermetaData(T domainObject) {
-        return annotationHelper.getUsermetaData(domainObject);
+    public RiakIndexes getIndexes(T domainObject) {
+        return annotationHelper.getIndexes(domainObject);
     }
 
-    public T populateUsermeta(Map<String, String> usermetaData, T domainObject) {
-        return annotationHelper.setUsermetaData(usermetaData, domainObject);
+    public T populateIndexes(RiakIndexes indexes, T domainObject) {
+        return annotationHelper.setIndexes(indexes, domainObject);
     }
 }

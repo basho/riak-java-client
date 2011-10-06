@@ -36,6 +36,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -252,16 +254,17 @@ public abstract class ITestBucket {
     @Test public void storeDomainObjectWithUserMeta() throws Exception {
         final String bucketName = UUID.randomUUID().toString() + "_users";
         final String userId = UUID.randomUUID().toString();
-
         final String email = "customer@megacorp.com";
         final String languageCode = "en";
         final String favColor = "fav-color";
         final String blue = "blue";
+        final String username = "userX";
 
         final Bucket users = client.createBucket(bucketName).execute();
 
         final Customer c1 = new Customer(userId);
 
+        c1.setUsername(username);
         c1.setEmailAddress(email);
         c1.setLanguageCode(languageCode);
         c1.addPreference(favColor, blue);
@@ -271,19 +274,76 @@ public abstract class ITestBucket {
         // fetch it as an IRiakObject and check the meta data
         IRiakObject iro = users.fetch(userId).execute();
         Map<String, String> meta = iro.getMeta();
+        // check that meta values haven't leaked into the JSON
+        JsonNode value = new ObjectMapper().readTree(iro.getValueAsString());
 
+        assertEquals(3, value.size());
+        assertEquals(username, value.get("username").getTextValue());
+        assertEquals(email, value.get("emailAddress").getTextValue());
+        assertEquals(null, value.get("shoeSize").getTextValue());
         assertEquals(2, meta.size());
         assertEquals(languageCode, meta.get("language-pref"));
         assertEquals(blue, meta.get(favColor));
 
         // fetch it as a Customer and check the meta data
         Customer actual = users.fetch(userId, Customer.class).execute();
-
-        assertEquals(languageCode, actual.getLanguageCode());
         Map<String, String> prefs = actual.getPreferences();
 
+        assertEquals(languageCode, actual.getLanguageCode());
         assertEquals(1, prefs.size());
         assertEquals(blue, prefs.get(favColor));
+    }
+
+    @Test public void storeDomainObjectWithIndexes() throws Exception {
+        Assume.assumeTrue(TestProperties.is2iEnabled());
+        final String bucketName = UUID.randomUUID().toString() + "_users";
+        final String userId = UUID.randomUUID().toString();
+        final String email = "customer@megacorp.com";
+        final String username = "userX";
+        final int shoeSize = 43;
+
+        final Bucket users = client.createBucket(bucketName).execute();
+
+        final Customer c1 = new Customer(userId);
+
+        c1.setUsername(username);
+        c1.setEmailAddress(email);
+        c1.setShoeSize(shoeSize);
+
+        users.store(c1).execute();
+
+        // retrieve as riak object and check indexes are present
+        IRiakObject iro = users.fetch(userId).execute();
+
+        Map<IntIndex, Set<Integer>> intIndexes = iro.allIntIndexes();
+
+        assertEquals(1, intIndexes.size());
+        Set<Integer> si = intIndexes.get(IntIndex.named("shoe-size"));
+        assertEquals(1, si.size());
+        assertEquals(shoeSize, si.iterator().next().intValue());
+
+        Map<BinIndex, Set<String>> binIndexes = iro.allBinIndexes();
+
+        assertEquals(1, binIndexes.size());
+        Set<String> sb = binIndexes.get(BinIndex.named("email"));
+        assertEquals(1, sb.size());
+        assertEquals(email, sb.iterator().next());
+
+        // retrieve as a domain object and check indexes
+        Customer actual = users.fetch(userId, Customer.class).execute();
+
+        assertEquals(email, actual.getEmailAddress());
+        assertEquals(shoeSize, actual.getShoeSize());
+
+        // do index queries
+        List<String> keys = users.fetchIndex(BinIndex.named("email")).withValue(email).execute();
+
+        assertEquals(1, keys.size());
+        assertEquals(userId, keys.get(0));
+
+        keys = users.fetchIndex(IntIndex.named("shoe-size")).from(0).to(100).execute();
+        assertEquals(1, keys.size());
+        assertEquals(userId, keys.get(0));
     }
 
     @Test public void storeMap() throws Exception {

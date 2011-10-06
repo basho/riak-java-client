@@ -19,6 +19,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 /**
+ * TODO: consider class reloading and re-scanning
  * @author russell
  * @param <T>
  * 

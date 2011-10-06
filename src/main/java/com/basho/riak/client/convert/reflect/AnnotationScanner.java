@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakUsermeta;
 import com.basho.riak.client.convert.UsermetaField;
@@ -46,6 +47,8 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
         Field riakKeyField = null;
         Field usermetaMapField = null;
         List<UsermetaField> usermetaItemFields = new ArrayList<UsermetaField>();
+        List<RiakIndexField> indexFields = new ArrayList<RiakIndexField>();
+
         final Field[] fields = classToScan.getDeclaredFields();
 
         for (Field field : fields) {
@@ -64,7 +67,10 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
                 }
 
             }
+            if(field.isAnnotationPresent(RiakIndex.class)) {
+                indexFields.add(new RiakIndexField(ClassUtil.checkAndFixAccess(field)));
+            }
         }
-        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField);
+        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields);
     }
 }
