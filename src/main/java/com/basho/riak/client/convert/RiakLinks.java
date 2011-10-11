@@ -21,14 +21,13 @@ import java.lang.annotation.Target;
 import com.basho.riak.client.bucket.DefaultBucket;
 
 /**
- * Annotation to declare a field as a RiakIndex.
+ * Annotation to declare a field as holding a collection of RiakLinks
  * <p>
- * You do not need to specify the index type prefix (_bin/_int). It will be
- * inferred from the type of the annotated field. Only String/Integer/int fields
- * may be annotated with RiakIndex.
- * </p>
- * <p>
- * <b>NOTE: if there are *multiple* values for the same named index, only the 1st will find it's way into the domain object (atm)</b>
+ * Annotate a single field in your domain class. It must be a
+ * Collection<RiakLink>. This is so ORM features can still be used and RiakLink
+ * data made available. At a later date this will be used to model
+ * relationships/graphs of domain objects. For now it sticks a Riak domain thing
+ * in your domain.
  * </p>
  * <p>
  * For example: <code><pre>
@@ -36,11 +35,8 @@ import com.basho.riak.client.bucket.DefaultBucket;
  *     \@RiakKey
  *     private String myKeyString;
  *     
- *     \@RiakIndex("email")
- *     private String emailAddress; // will be indexed in email_bin index
- *     
- *     \@RiakIndex("age")
- *     private int age; // will be index in age_int index
+ *     \@RiakLinks
+ *     private Collection<RiakLinks> links;
  * }
  * </pre></code>
  * </p>
@@ -50,9 +46,5 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * @see JSONConverter
  * @see DefaultBucket
  */
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakIndex {
-    /**
-     * @return the index name
-     */
-    String name() default "";
+@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakLinks {
 }

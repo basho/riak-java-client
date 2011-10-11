@@ -13,8 +13,10 @@
  */
 package com.basho.riak.client.convert.reflect;
 
+import java.util.Collection;
 import java.util.Map;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 
 /**
@@ -76,6 +78,17 @@ public class AnnotationHelper {
     public <T> T setIndexes(RiakIndexes indexes, T obj) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
         annotationInfo.setIndexes(indexes, obj);
+        return obj;
+    }
+
+    public <T> Collection<RiakLink> getLinks(T obj) {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        return annotationInfo.getLinks(obj);
+    }
+
+    public <T> T setLinks(Collection<RiakLink> links, T obj) {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        annotationInfo.setLinks(links, obj);
         return obj;
     }
 }

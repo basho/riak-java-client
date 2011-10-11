@@ -20,6 +20,7 @@ import java.util.concurrent.Callable;
 
 import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
+import com.basho.riak.client.convert.RiakLinks;
 import com.basho.riak.client.convert.RiakUsermeta;
 import com.basho.riak.client.convert.UsermetaField;
 
@@ -46,6 +47,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
     public AnnotationInfo call() throws Exception {
         Field riakKeyField = null;
         Field usermetaMapField = null;
+        Field linksField = null;
         List<UsermetaField> usermetaItemFields = new ArrayList<UsermetaField>();
         List<RiakIndexField> indexFields = new ArrayList<RiakIndexField>();
 
@@ -56,6 +58,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
             if (field.isAnnotationPresent(RiakKey.class)) {
                 riakKeyField = ClassUtil.checkAndFixAccess(field);
             }
+
             if (field.isAnnotationPresent(RiakUsermeta.class)) {
                 RiakUsermeta a = field.getAnnotation(RiakUsermeta.class);
                 String key = a.key();
@@ -67,10 +70,15 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
                 }
 
             }
+
             if(field.isAnnotationPresent(RiakIndex.class)) {
                 indexFields.add(new RiakIndexField(ClassUtil.checkAndFixAccess(field)));
             }
+
+            if (field.isAnnotationPresent(RiakLinks.class)) {
+                linksField = ClassUtil.checkAndFixAccess(field);
+            }
         }
-        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields);
+        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields, linksField);
     }
 }
