@@ -203,7 +203,7 @@ public class RiakObjectBuilder {
      * @return this
      */
     public RiakObjectBuilder withIndexes(RiakIndexes indexes) {
-        indexes = RiakIndexes.from(indexes);
+        this.indexes = RiakIndexes.from(indexes);
         return this;
     }
 
@@ -215,7 +215,7 @@ public class RiakObjectBuilder {
      * @return this
      */
     public RiakObjectBuilder addIndex(String index, int value) {
-        indexes.add(index, value);
+        this.indexes.add(index, value);
         return this;
     }
 
@@ -227,7 +227,7 @@ public class RiakObjectBuilder {
      * @return this
      */
     public RiakObjectBuilder addIndex(String index, String value) {
-        indexes.add(index, value);
+        this.indexes.add(index, value);
         return this;
     }
 

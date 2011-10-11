@@ -22,7 +22,7 @@ import com.basho.riak.client.http.Hosts;
  * @author russell
  * 
  */
-public class ITestHTTPBucket extends ITestBucket {
+public class ITestHTTPBucket extends ITestORM {
 
     /*
      * (non-Javadoc)
