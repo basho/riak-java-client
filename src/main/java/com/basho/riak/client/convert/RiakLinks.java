@@ -23,10 +23,10 @@ import com.basho.riak.client.bucket.DefaultBucket;
 /**
  * Annotation to declare a field as holding a collection of RiakLinks
  * <p>
- * Annotate a single field in your domain class, it must be a
- * Collection<RiakLink> This is so ORM features can still be used and RiakLink
+ * Annotate a single field in your domain class. It must be a
+ * Collection<RiakLink>. This is so ORM features can still be used and RiakLink
  * data made available. At a later date this will be used to model
- * relationships/graphs of domain objects, for now it sticks a Riak domain thing
+ * relationships/graphs of domain objects. For now it sticks a Riak domain thing
  * in your domain.
  * </p>
  * <p>
