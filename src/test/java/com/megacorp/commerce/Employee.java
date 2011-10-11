@@ -11,25 +11,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.itest;
-
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.http.Hosts;
+package com.megacorp.commerce;
 
 /**
  * @author russell
- * 
+ *
  */
-public class ITestPBBucket extends ITestORM {
+public class Employee {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.itest.ITestBucket#getClient()
-     */
-    @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
-    }
-}   
+}
