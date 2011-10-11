@@ -17,12 +17,17 @@ import static com.basho.riak.client.convert.reflect.ClassUtil.getFieldValue;
 import static com.basho.riak.client.convert.reflect.ClassUtil.setFieldValue;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.convert.UsermetaField;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 
@@ -34,25 +39,65 @@ import com.basho.riak.client.query.indexes.RiakIndexes;
  */
 public class AnnotationInfo {
 
-    /**
-     * 
-     */
     private static final String NO_RIAK_KEY_FIELD_PRESENT = "no riak key field present";
     private final Field riakKeyField;
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
     private final List<RiakIndexField> indexFields;
+    private final Field riakLinksField;
 
     /**
      * @param riakKeyField
      * @param usermetaItemFields
      * @param usermetaMapField
      */
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields) {
+    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField) {
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
+        validateUsermetaMapField(usermetaMapField);
         this.usermetaMapField = usermetaMapField;
         this.indexFields = indexFields;
+        validateRiakLinksField(riakLinksField);
+        this.riakLinksField = riakLinksField;
+    }
+
+    /**
+     * @param riakLinksField
+     */
+    private void validateRiakLinksField(Field riakLinksField) {
+        if (riakLinksField == null) {
+            return;
+        }
+
+        ParameterizedType type = (ParameterizedType) riakLinksField.getGenericType();
+        if (type.getRawType().equals(Collection.class)) {
+
+            Type[] genericParams = type.getActualTypeArguments();
+            if (genericParams.length == 1 && genericParams[0].equals(RiakLink.class)) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException("riak links field must be Collection<RiakLink>");
+    }
+
+    /**
+     * @param usermetaMapField
+     */
+    private void validateUsermetaMapField(Field usermetaMapField) {
+        if (usermetaMapField == null) {
+            return;
+        }
+
+        ParameterizedType type = (ParameterizedType) usermetaMapField.getGenericType();
+        if (type.getRawType().equals(Map.class)) {
+
+            Type[] genericParams = type.getActualTypeArguments();
+            if (genericParams.length == 2 && genericParams[0].equals(String.class) &&
+                genericParams[1].equals(String.class)) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException("user meta map field must be Map<String, String>");
     }
 
     /**
@@ -172,6 +217,23 @@ public class AnnotationInfo {
             if (val != null && !val.isEmpty()) {
                 setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked") public <T> Collection<RiakLink> getLinks(T obj) {
+        final Collection<RiakLink> links = new ArrayList<RiakLink>();
+        if (riakLinksField != null) {
+            Object o = getFieldValue(riakLinksField, obj);
+            if (o != null && o instanceof Collection) {
+                links.addAll((Collection<RiakLink>) o);
+            }
+        }
+        return links;
+    }
+
+    public <T> void setLinks(Collection<RiakLink> links, T obj) {
+        if (riakLinksField != null) {
+            setFieldValue(riakLinksField, obj, links);
         }
     }
 }
