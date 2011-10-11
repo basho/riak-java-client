@@ -850,7 +850,7 @@ public class RiakObject {
         if (httpMethod == null || httpMethod.getURI() == null)
             return "";
 
-        String path = httpMethod.getURI().getPath();
+        String path = httpMethod.getURI().getRawPath();
         int idx = path.length() - 1;
 
         // ignore any trailing slash
