@@ -23,26 +23,12 @@ The current riak-java-client is available from maven central. Add the dependency
     <dependency>
         <groupId>com.basho.riak</groupId>
         <artifactId>riak-client</artifactId>
-        <version>0.14.1</version>
+        <version>1.0.0</version>
         <type>pom</type>
     </dependency>
-#+END_SRC
-However, that does *not* include all the new stuff here in master. To
-get an early feel for the new API you need to build and install from
-source, first install [[http://maven.apache.org/download.html][Apache Maven]]. With Maven installed, run:
-#+BEGIN_SRC shell
-mvn clean install
 #+END_SRC
 
-And set the dependency in your projects pom.xml to
-#+BEGIN_SRC xml
-    <dependency>
-        <groupId>com.basho.riak</groupId>
-        <artifactId>riak-client</artifactId>
-        <version>0.15-SNAPSHOT</version>
-        <type>pom</type>
-    </dependency>
-#+END_SRC
+Maven artifacts are published to the [[https://oss.sonatype.org/index.html#nexus-search;quick~riak][Sonatype OSS Repository]].
 
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
