@@ -1,3 +1,135 @@
+1.0
+-------------
+
+This version adds 2 new APIs to the riak-java-client whilst
+maintaining (for now) backwards compatibility with the 0.14
+releases. If you are using the legacy HTTP or PB RiakClient API your
+code should still work. Please consider migrating to the new API, the
+old API will be deprecated in the next release, and removed the
+release after that.
+
+This version replaces the EOL Apache HTTP Client 3x dependancy with
+Apache HTTP Client 4.1.1.
+
+Please view the README and this blog post[1] for full details.
+
+There is a new API built around the RawClient interface, a transport
+agnostic abstraction. There are two implementation at present that
+adapt the legacy clients to the new API. There is some small
+performance cost in this, since types must be converted between the
+new common API and the older transport specific API, but it is small
+(and temporary.)
+
+There is also a second, higher level API, based around the IRiakClient
+and Bucket interfaces. This API is a fluent builder based API that
+provides abstractions and interfaces for simplifiying aspects of
+working with a distributed, fault tolerant database. Of most interest
+is a primative ORM (using the excellent Jackson JSON library) and an
+interface for encoding conflict resolution strategies.
+
+**Changes**
+
+057c2f2 Merge branch 'az766_store'
+9de410b Merge branch 'az771_delete' into az766_store
+119544b Merge pull request #58 from basho/az783_api
+a098f2c Remove sys.out from test
+a3b8ded Change 'retrier' builder methods to 'withRetrier'
+f63d0fe Update sibling tests with sleep time to allow bucket props to propagate
+e60eeef Make Conflict/Conversion exceptions into RuntimeExceptions
+5d43737 Remove duplicate vclock accessor
+9e196e6 Make the setting of unsupported bucket properties fail loudly
+6e5d39e Add new delete operation parameters
+6721172 Add support for conditional store
+088cb1d Add support for returning tombstone vclock
+5301508 Add new fetch properties
+e8ef8ff Merge pull request #51 from basho/bz1203_npe
+cbec2a6 Add new 1.0 bucket properties (pr, pw, notfound_ok, basic_quorum)
+39005f8 Update documenetation for 2i
+95ef7d8 Add property to ignore 2i tests unless they are enabled
+d9c6bfb Merge pull request #49 from basho/az493_search
+139232b Update README with riak search example
+bd1d6e4 Clarify usage for enabling search itests vi argLine
+cd67a3f Add secondary index support
+dfa0615 Fix NPE when calling store on default domain bucket
+1d344e0 Update DEVELOPERS with how to enable search integration tests
+0c80180 Remove redundant lib/* files
+a0c0091 Merge pull request #48 from michaelklishin/patch-1
+608fd6a Fix pbc.ITestMapReduceSearch to use correct port property
+d8f0542 Add property control for search tests
+4c6fa76 Add support for m/r search input to legacy and new clients
+bd5ad43 master now builds 0.15-SNAPSHOT
+ebc30a2 Add Riak Search m/r input
+55918f6 Merge cadement pr32 to add search m/r to legacy clients
+b47c231 Add meaningful exception when listKeys fails
+831a465 Add PB client M/R code to read multiphase results
+4a7c9e7 robustify pb mapred tests: reduce results may be delivered as multiple messages
+087a2af Fix fetchMeta to handle siblings
+9567f8f Merge pull request #45 from basho/bz1167_mr_args
+b8ab408 Ensure map/reduce function argument is encoded and sent to server
+13fdd21 Merge pull request #38 from basho/bz1142_pbc_meta
+d53a62a Add JavaDoc and README details for connection acquisition exceptions
+ab240a6 Fix incorrect default HTTP port in the HTTPClientConfig builder
+e7b8e6a Add finally block to ensure entity always consumed for connection release
+966dd5a Add ping to http client, RawClient and IRiakClient
+45865ec Add constant for unbounded connection pools
+68b002c Add test for content type being stored/retrieved
+c8a0452 Add conversion code for user meta and links to pbc converter
+d3f0cc9 Merge in fix to broken pbc pool from az481_profile
+59cf9a2 Fix connection pool to only consume permits on connection creation
+49f2595 Add constant for connection acquire attempt number
+1477751 Add a "cluster client"
+26d5859 Update version number in pom to indicate minor API change
+fa6f20b Replace end of life apache http client 3.1 with 4.1
+ccbd831 Merge pull request #35 from basho/bz1125_nval
+c706a92 Change expected http code to 400 for n_val violation on delete
+95c9646 Add test for RiakConnectionPool
+3c9bcac Remove sys.out logging
+a0039b6 Add a connection pool for the pbc.RiakClient
+bfe3749 Make socket buffer size tunable by programmer and system property
+f6f369a Add seed to SecureRandom for generating client id
+c6c21bb Modify zero-results m/r test to account for new not_found result
+a9dcb4c The last phase of a map/reduce must respect a keep value of false
+13b2b14 Add instructions for building against non-default ports/host
+06b7518 Add Host/Port param to factory for running itests against remote riak
+d593697 Added RiakObject.getLinks() to protocol buffers client
+47f1de2 Fix sporadically failing Domain Bucket test
+2558f69 The last phase of a m/r query should default to keep=true
+1d6ffd2 Add specific checked exception for Map reduce timeout
+9d9a74f Fix array index exception for empty m/r result on pb client
+9fd4a21 Add list buckets to new API
+52cf38b Document new API packages, classes and methods
+e643929 Add Link Walking tests for both http and pb clients
+5e78743 Daemonise and name KeySource timer thread
+8e007c8 Change multipart boundary charset to iso8859_1
+e219194 Enforce correct characterset usage when going from byte[] to String
+cb2a5c6 Add read quorum parameter to StoreOperation (for fetch before store)
+4d59c23 Use Java standard library Callable instead of Command
+9f7dd24 Merge pull request #23 from basho/bz1088.
+dac9836 Deprecate legacy RiakClient and RiakObject
+3cf5012 Remove references to deprecated legacy RiakClient code.
+09386d9 Move all HTTP specific code to new client.http package
+0c31b83 Add ITest for filters to existing m/r test
+b6be99d Add link walking to both HTTP and PB client adapters
+04c6755 Add VClock to RiakObject's parsed from link walk multipart response
+74f7fa7 Implement MapReduce for new API
+849c5ed Make filter name static final
+079954c Add RW param to delete operations for HTTP client
+57fc57c Add getter for VTag to pbc.RiakObject
+1f7abe8 Add getter for lastModified to pbc RiakObject
+d3df4ec Add getter for last modified date to pbc RiakObject
+2b717d2 Make Multipart parse Java 5 compatible
+65e6886 Parse multipart/mixed response entities as byte arrays, not strings.
+eba46c4 Merged pull request #21 from codahale/fix-riak-connection-timer.
+8d58949 Merge GitHub supplied patch to pr 18
+f6ec76a Merged pull request #18 from taichi/unitetestinghost.
+fd8d7a5 Make RiakConnection's timer daemon and named.
+dbe79b6 bz1071 Fix store to return siblings if returnbody is true
+dc20920 Initial commit of a high level Java API for Riak
+b27c3b5 Add RW param to delete operations for HTTP client
+e719257 get host and ports from System properties.
+2b65bab unite RIAK_HOST and RIAK_URL. Hosts.java has test server host name and url.
+883073e Incorporate Coda Hale's suggestions into a new API
+
 0.14.1
 -------------
 

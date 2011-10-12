@@ -11,25 +11,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.itest;
+package com.basho.riak.client.raw.itest;
 
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
+import java.io.IOException;
+
 import com.basho.riak.client.http.Hosts;
+import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.http.HTTPClientConfig;
+import com.basho.riak.client.raw.http.HTTPRiakClientFactory;
 
 /**
  * @author russell
  * 
  */
-public class ITestPBBucket extends ITestORM {
+public class ITestHTTPClientAdapter extends ITestRawClientAdapter {
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.basho.riak.client.itest.ITestBucket#getClient()
+     * @see com.basho.riak.client.raw.itest.ITestRawClientAdapter#getClient()
      */
-    @Override protected IRiakClient getClient() throws RiakException {
-        return RiakFactory.pbcClient(Hosts.RIAK_HOST, Hosts.RIAK_PORT);
+    @Override protected RawClient getClient() throws IOException {
+        HTTPClientConfig config = new HTTPClientConfig.Builder().withUrl(Hosts.RIAK_URL).build();
+        return HTTPRiakClientFactory.getInstance().newClient(config);
     }
-}   
+
+}

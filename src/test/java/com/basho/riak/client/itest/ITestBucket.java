@@ -21,10 +21,8 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -49,10 +47,8 @@ import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.TestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
-import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.FetchObject;
@@ -60,8 +56,6 @@ import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
-import com.megacorp.commerce.LegacyCart;
-import com.megacorp.commerce.ShoppingCart;
 
 /**
  * @author russell
@@ -168,123 +162,6 @@ public abstract class ITestBucket {
         // TODO clean up your mess (teardown)
     }
 
-    /**
-     * @see ITestDomainBucket
-     * @throws Exception
-     */
-    @Test public void storeDomainObjectWithKeyAnnotation() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_carts";
-        final String userId = UUID.randomUUID().toString();
-
-        final Bucket carts = client.createBucket(bucketName).allowSiblings(true).execute();
-
-        final ShoppingCart cart = new ShoppingCart(userId);
-
-        cart.addItem("coffee");
-        cart.addItem("fixie");
-        cart.addItem("moleskine");
-
-        carts.store(cart).returnBody(false).withRetrier(DefaultRetrier.attempts(2)).execute();
-
-        final ShoppingCart fetchedCart = carts.fetch(cart).execute();
-
-        assertNotNull(fetchedCart);
-        assertEquals(cart.getUserId(), fetchedCart.getUserId());
-        assertEquals(cart, fetchedCart);
-
-        carts.delete(fetchedCart).rw(3).execute();
-
-        Thread.sleep(500);
-
-        assertNull(carts.fetch(userId).execute());
-    }
-
-    @Test public void storeDomainObjectWithoutKeyAnnotation() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_carts";
-        final String userId = UUID.randomUUID().toString();
-
-        final Bucket carts = client.createBucket(bucketName).allowSiblings(true).execute();
-
-        final LegacyCart cart = new LegacyCart();
-        cart.setUserId(userId);
-
-        cart.addItem("coffee");
-        cart.addItem("fixie");
-        cart.addItem("moleskine");
-
-        try {
-            carts.store(cart).returnBody(false).withRetrier(new DefaultRetrier(3)).execute();
-            fail("Expected NoKeySpecifiedException");
-        } catch (NoKeySpecifedException e) {
-            // NO-OP
-        }
-
-        carts.store(userId, cart).returnBody(false).execute();
-
-        try {
-            carts.fetch(cart).execute();
-            fail("Expected NoKeySpecifiedException");
-        } catch (NoKeySpecifedException e) {
-            // NO-OP
-        }
-
-        final LegacyCart fetchedCart = carts.fetch(userId, LegacyCart.class).execute();
-
-        assertNotNull(fetchedCart);
-        assertEquals(cart.getUserId(), fetchedCart.getUserId());
-        assertEquals(cart, fetchedCart);
-
-        try {
-            carts.delete(cart).execute();
-            fail("Expected NoKeySpecifiedException");
-        } catch (NoKeySpecifedException e) {
-            // NO-OP
-        }
-
-        carts.delete(userId).rw(3).execute();
-
-        Thread.sleep(500);
-
-        assertNull(carts.fetch(userId).execute());
-    }
-
-    @Test public void storeMap() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_maps";
-        final String key = UUID.randomUUID().toString();
-
-        final Bucket maps = client.createBucket(bucketName).allowSiblings(true).execute();
-
-        final Map<String, String> myMap = new HashMap<String, String>();
-        myMap.put("size", "s");
-        myMap.put("colour", "red");
-        myMap.put("style", "short-sleeve");
-
-        maps.store(key, myMap).returnBody(false).w(2).execute();
-
-        @SuppressWarnings("unchecked") final Map<String, String> fetchedMap = maps.fetch(key, Map.class).execute();
-
-        assertEquals(myMap, fetchedMap);
-    }
-
-    @Test public void storeList() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_lists";
-        final String key = UUID.randomUUID().toString();
-
-        final Bucket lists = client.createBucket(bucketName).allowSiblings(true).execute();
-
-        final Collection<String> myList = new ArrayList<String>();
-        myList.add("red");
-        myList.add("yellow");
-        myList.add("pink");
-        myList.add("green");
-
-        lists.store(key, myList).returnBody(false).w(2).execute();
-
-        @SuppressWarnings("unchecked") final Collection<String> fetchedList = lists.fetch(key, Collection.class).execute();
-
-        assertEquals(myList, fetchedList);
-    }
-
     // List Keys
     @Test public void listKeys() throws Exception {
         final Set<String> keys = new LinkedHashSet<String>();
@@ -374,7 +251,6 @@ public abstract class ITestBucket {
 
         assertEquals(0, empty.size());
     }
-
 
     @Test public void conditionalFetch() throws Exception {
         final String bucket = UUID.randomUUID().toString();
@@ -511,7 +387,7 @@ public abstract class ITestBucket {
         assertEquals(v1, o.getValueAsString());
 
         try {
-            b.store(k, v2).ifNonMatch(true).execute();
+            b.store(k, v2).ifNoneMatch(true).execute();
             fail("expected match_found");
         } catch (MatchFoundException e) {
             // NO-OP, all good
@@ -606,10 +482,7 @@ public abstract class ITestBucket {
                     assertTrue((e.getCause() instanceof ModifiedException));
                     helperThread.interrupt();
                     endLatch.countDown();
-                } catch (RiakException e) {
-                    fail("unexpected exception caught " + e);
                 }
-
             }
         };
 
