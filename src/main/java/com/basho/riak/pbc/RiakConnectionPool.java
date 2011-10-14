@@ -139,11 +139,12 @@ public class RiakConnectionPool {
             idleReaper.scheduleWithFixedDelay(new Runnable() {
                 public void run() {
                     RiakConnection c = available.peek();
-                    long connIdleStartNanos = c.getIdleStartTimeNanos();
                     while (c != null) {
+                        long connIdleStartNanos = c.getIdleStartTimeNanos();
                         if (connIdleStartNanos + idleConnectionTTLNanos < System.nanoTime()) {
                             if (c.getIdleStartTimeNanos() == connIdleStartNanos) {
-                                // still a small window, but better than locking the whole pool
+                                // still a small window, but better than locking
+                                // the whole pool
                                 boolean removed = available.remove(c);
                                 if (removed) {
                                     c.close();
