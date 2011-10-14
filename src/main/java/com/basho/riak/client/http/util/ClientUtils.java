@@ -530,7 +530,7 @@ public class ClientUtils {
                     String[] locationParts = location.split("/");
                     if (locationParts.length >= 2) {
                         partBucket = locationParts[locationParts.length - 2];
-                        partKey = locationParts[locationParts.length - 1];
+                        partKey = urlDecode(locationParts[locationParts.length - 1]);
                     }
                 }
 
