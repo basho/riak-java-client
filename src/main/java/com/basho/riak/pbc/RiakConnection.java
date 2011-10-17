@@ -45,7 +45,7 @@ class RiakConnection {
 	 // Guarded by the intrinsic lock 'this'
 	 private byte[] clientId;
 
-    private long idleStart;
+    private volatile long idleStart;
 
 	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool) throws IOException {
         this.pool = pool;
@@ -139,7 +139,7 @@ class RiakConnection {
 	    this.idleStart = System.nanoTime();
 	}
 	
-	public synchronized long getIdleStartTimeNanos() {
+	public long getIdleStartTimeNanos() {
        return this.idleStart;
     }
 	

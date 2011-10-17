@@ -51,6 +51,7 @@ public class ITestRiakConnectionPool {
         byte[] clientId = new byte[] { 13, 45, 99, 2 };
         // create a pool
         final RiakConnectionPool pool = new RiakConnectionPool(0, 1, host, PORT, 1000, 16, 5000);
+        pool.start();
         // get a connection
         PublicRiakConnection wrapper = new PublicRiakConnection(pool.getConnection(clientId));
         // release it (but retain it, bwah ha ha)
@@ -59,6 +60,7 @@ public class ITestRiakConnectionPool {
         assertEquals(wrapper.getConn(), pool.getConnection(clientId));
 
         pool.releaseConnection(wrapper.getConn());
+        pool.shutdown();
     }
 
     /**
@@ -70,6 +72,7 @@ public class ITestRiakConnectionPool {
         byte[] clientId = new byte[] { 13, 45, 99, 2 };
         // create a pool
         final RiakConnectionPool pool = new RiakConnectionPool(1, 1, host, PORT, 1000, 16, 5000);
+        pool.start();
         // get a connection
         PublicRiakConnection wrapper = new PublicRiakConnection(pool.getConnection(clientId));
 
@@ -84,6 +87,7 @@ public class ITestRiakConnectionPool {
         PublicRiakConnection wrapper2 = new PublicRiakConnection(pool.getConnection(clientId));
         assertEquals(wrapper.getConn(), wrapper2.getConn());
         pool.releaseConnection(wrapper2.getConn());
+        pool.shutdown();
     }
 
     /**
@@ -109,6 +113,7 @@ public class ITestRiakConnectionPool {
         PublicRiakConnection wrapper2 = new PublicRiakConnection(pool.getConnection(clientId));
 
         assertNotSame(wrapper2.getConn(), wrapper.getConn());
+        pool.shutdown();
     }
 
     @Test public void conncurrentAcquire_toFewConnections() throws Exception {
@@ -151,6 +156,7 @@ public class ITestRiakConnectionPool {
         assertEquals("Wrong number of connections acquired", Math.min(numTasks, maxConnections), successCount);
         assertEquals("Wrong number of failed connection acquisitions", Math.max(0, numTasks - maxConnections),
                      failureCount);
+        pool.shutdown();
     }
 
     /**
