@@ -40,6 +40,90 @@ import com.google.protobuf.ByteString;
 public class RiakConnectionPool {
 
     /**
+     * Specific behaviour for the pool methods, depending on the pools current
+     * state.
+     */
+    enum State {
+        CREATED {
+            @Override void releaseConnection(RiakConnection c, RiakConnectionPool pool) {
+                throw new IllegalStateException("Pool not yet started");
+            }
+
+            @Override RiakConnection getConnection(byte[] clientId, RiakConnectionPool pool) {
+                throw new IllegalStateException("Pool not yet started");
+            }
+
+            @Override void start(RiakConnectionPool pool) {
+                pool.doStart();
+            }
+
+            @Override void shutdown(RiakConnectionPool pool) {
+                pool.doShutdown();
+            }
+        },
+        RUNNING {
+            @Override void releaseConnection(RiakConnection c, RiakConnectionPool pool) {
+                pool.doRelease(c);
+            }
+
+            @Override RiakConnection getConnection(byte[] clientId, RiakConnectionPool pool) throws IOException {
+                return pool.doGetConection(clientId); // use the internal get
+                                                      // connection method
+            }
+
+            @Override void start(RiakConnectionPool pool) {
+                throw new IllegalStateException("pool already started");
+            }
+
+            @Override void shutdown(RiakConnectionPool pool) {
+                pool.doShutdown();
+            }
+        },
+        SHUTTING_DOWN {
+            @Override void releaseConnection(RiakConnection c, RiakConnectionPool pool) {
+                pool.closeAndRemove(c);
+            }
+
+            @Override RiakConnection getConnection(byte[] clientId, RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shutting down");
+            }
+
+            @Override void start(RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shutting down");
+            }
+
+            @Override void shutdown(RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shutting down");
+            }
+        },
+        SHUTDOWN {
+            @Override void releaseConnection(RiakConnection c, RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shut down");
+            }
+
+            @Override RiakConnection getConnection(byte[] clientId, RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shut down");
+            }
+
+            @Override void start(RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shut down");
+            }
+
+            @Override void shutdown(RiakConnectionPool pool) {
+                throw new IllegalStateException("pool shut down");
+            }
+        };
+
+        abstract void releaseConnection(RiakConnection c, RiakConnectionPool pool);
+
+        abstract RiakConnection getConnection(byte[] clientId, RiakConnectionPool pool) throws IOException;
+
+        abstract void start(RiakConnectionPool pool);
+
+        abstract void shutdown(RiakConnectionPool pool);
+    }
+
+    /**
      * Constant to use for <code>maxSize</code> when creating an unbounded pool
      */
     public static final int LIMITLESS = 0;
@@ -54,8 +138,9 @@ public class RiakConnectionPool {
     private final int initialSize;
     private final long idleConnectionTTLNanos;
     private final ScheduledExecutorService idleReaper;
-    //guarded by intrinsic lock, set once only on start
-    private boolean started = false;
+    private final ScheduledExecutorService shutdownExecutor;
+    // what state the pool is in (see enum State)
+    private volatile State state;
 
     /**
      * Crate a new host connection pool. NOTE: before using you must call
@@ -88,6 +173,7 @@ public class RiakConnectionPool {
              idleConnectionTTLMillis);
 
         if (initialSize > maxSize && (maxSize > 0)) {
+            state = State.SHUTTING_DOWN;
             throw new IllegalArgumentException("Initial pool size is greater than maximum pools size");
         }
     }
@@ -128,6 +214,8 @@ public class RiakConnectionPool {
         this.initialSize = initialSize;
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
+        this.shutdownExecutor = Executors.newScheduledThreadPool(1);
+        this.state = State.CREATED;
         warmUp();
     }
 
@@ -135,7 +223,11 @@ public class RiakConnectionPool {
      * Starts the reaper thread
      */
     public synchronized void start() {
-        if (!started && idleConnectionTTLNanos > 0) {
+        state.start(this);
+    }
+
+    private synchronized void doStart() {
+        if (idleConnectionTTLNanos > 0) {
             idleReaper.scheduleWithFixedDelay(new Runnable() {
                 public void run() {
                     RiakConnection c = available.peek();
@@ -163,7 +255,7 @@ public class RiakConnectionPool {
             }, idleConnectionTTLNanos, idleConnectionTTLNanos, TimeUnit.NANOSECONDS);
         }
 
-        started = true;
+        state = State.RUNNING;
     }
 
     /**
@@ -215,6 +307,10 @@ public class RiakConnectionPool {
      *             probably indicate that you have sized your pool too small.
      */
     public RiakConnection getConnection(byte[] clientId) throws IOException {
+       return state.getConnection(clientId, this);
+    }
+
+    private RiakConnection doGetConection(byte[] clientId) throws IOException {
         RiakConnection c = getConnection();
         if (clientId != null && !Arrays.equals(clientId, c.getClientId())) {
             setClientIdOnConnection(c, clientId);
@@ -305,6 +401,14 @@ public class RiakConnectionPool {
      *            the connection to return.
      */
     public void releaseConnection(final RiakConnection c) {
+        state.releaseConnection(c, this);
+    }
+
+    /**
+     * internal release
+     * @param c
+     */
+    private void doRelease(RiakConnection c) {
         if (c == null) {
             return;
         }
@@ -315,8 +419,70 @@ public class RiakConnectionPool {
                 available.offer(c);
             } else {
                 // don't put a closed connection in the pool, release a permit
-               permits.release();
+                permits.release();
             }
+        } else {
+            // not our connection?
+            throw new IllegalArgumentException("connection not managed by this pool");
         }
+    }
+
+    /**
+     * internal close and remove from the inUse queue. Does not return to the
+     * available pool, does not release a permit. Used for a pool that is
+     * shutting/shut down.
+     * 
+     * @param c
+     */
+    private void closeAndRemove(RiakConnection c) {
+        c.close();
+        inUse.remove(c);
+    }
+
+    /**
+     * Close this pool and all its connections. The pool will throw
+     * {@link IllegalStateException} for calls to getConnection. While shutting
+     * down it will still accept calls to releaseConnection.
+     */
+    public synchronized void shutdown() {
+        state.shutdown(this);
+    }
+
+    /**
+     * Shuts the pool down.
+     * 
+     * Close all connections in available.
+     * Stop the reaper thread.
+     * Start a thread that checks the inUse queue is empty.
+     */
+    private void doShutdown() {
+        state = State.SHUTTING_DOWN;
+
+        // drain the available pool
+        RiakConnection c = available.poll();
+        while( c != null) {
+            c.close();
+            c = available.poll();
+        }
+
+        shutdownExecutor.scheduleWithFixedDelay(new Runnable() {
+            public void run() {
+                // when all connections are returned, and the available pool is empty
+                if(inUse.isEmpty() && available.isEmpty()) {
+                    state = State.SHUTDOWN;
+                    shutdownExecutor.shutdown();
+                    idleReaper.shutdown();
+                }
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Convenience method to check the state of the pool.
+     * 
+     * @return the name of the current {@link State} of the pool
+     */
+    public String getPoolState() {
+        return state.name();
     }
 }
