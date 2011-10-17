@@ -66,6 +66,7 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
 
         for (PBClientConfig node : clusterConfig.getClients()) {
             final RiakConnectionPool hostPool = makePool(clusterSemaphore, node);
+            hostPool.start();
             clients.add(new PBClientAdapter(new RiakClient(hostPool)));
         }
         return clients.toArray(new RawClient[clients.size()]);
