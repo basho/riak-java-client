@@ -69,6 +69,7 @@ public class PBRiakClientFactory implements RiakClientFactory {
                                                                conf.getSocketBufferSizeKb(),
                                                                conf.getIdleConnectionTTLMillis());
 
+        pool.start();
         return new PBClientAdapter(new RiakClient(pool));
     }
 }
