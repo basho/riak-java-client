@@ -1,3 +1,19 @@
+1.0.1
+-------------
+This relase fixes 1 critical and 1 major bug in riak-java-client.  The
+first is an error in the idle connection reaper that leads to an
+infinite loop, the second a bug with the PB client factory which did
+not start the idle connection thread before using the pool.
+
+**Changes**
+
+27fa0adfe4 Move connection age check inside connection timeout loop
+           [bz://1251]
+bf0efe0383 Fix factories/tests that did not start up the pool before
+           using [bz://1252]
+c85e98b263 RiakObjects created from link-walking now URLDecode their
+           keys
+
 1.0
 -------------
 
