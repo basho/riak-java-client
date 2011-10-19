@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
-import com.basho.riak.client.TestProperties;
+import com.basho.riak.client.RiakTestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.convert.NoKeySpecifedException;
@@ -174,7 +174,7 @@ public abstract class ITestORM extends ITestBucket {
     }
 
     @Test public void storeDomainObjectWithIndexes() throws Exception {
-        Assume.assumeTrue(TestProperties.is2iEnabled());
+        Assume.assumeTrue(RiakTestProperties.is2iEnabled());
         final String bucketName = UUID.randomUUID().toString() + "_users";
         final String userId = UUID.randomUUID().toString();
         final String email = "customer@megacorp.com";
