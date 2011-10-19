@@ -19,7 +19,7 @@ import com.basho.riak.client.http.Hosts;
  * @author russell
  * 
  */
-public final class TestProperties {
+public final class RiakTestProperties {
 
     public static final String SEARCH_PROPERTY = "search";
     public static final boolean SEARCH_ENABLED = Boolean.parseBoolean(System.getProperty(Hosts.PREFIX + SEARCH_PROPERTY,
@@ -29,7 +29,7 @@ public final class TestProperties {
     public static final boolean _2I_ENABLED = Boolean.parseBoolean(System.getProperty(Hosts.PREFIX + _2I_PROPERTY,
                                                                                          "false"));
 
-    private TestProperties() {};
+    private RiakTestProperties() {};
 
     public static boolean isSearchEnabled() {
         return SEARCH_ENABLED;

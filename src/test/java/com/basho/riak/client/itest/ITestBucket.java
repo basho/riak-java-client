@@ -44,7 +44,7 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.TestProperties;
+import com.basho.riak.client.RiakTestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.Mutation;
@@ -185,7 +185,7 @@ public abstract class ITestBucket {
 
     // fetch index
     @Test public void fetchIndex() throws Exception {
-        Assume.assumeTrue(TestProperties.is2iEnabled());
+        Assume.assumeTrue(RiakTestProperties.is2iEnabled());
 
         final String bucketName = UUID.randomUUID().toString() + "_2i";
         final Bucket b = client.fetchBucket(bucketName).execute();
