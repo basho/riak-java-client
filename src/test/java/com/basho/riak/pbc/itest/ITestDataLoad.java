@@ -27,7 +27,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -130,9 +129,11 @@ public class ITestDataLoad {
                             assertEquals(o.getKey(), result.getKey());
                             assertEquals(o.getValue(), result.getValue());
                         }
-                        endLatch.countDown();
+
                     } catch (Exception e) {
                         throw new RuntimeException(e);
+                    } finally {
+                        endLatch.countDown();
                     }
                 }
             });
