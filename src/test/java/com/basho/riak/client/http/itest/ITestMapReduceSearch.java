@@ -27,7 +27,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.basho.riak.client.TestProperties;
+import com.basho.riak.client.RiakTestProperties;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
@@ -51,7 +51,7 @@ public class ITestMapReduceSearch {
     public static int TEST_ITEMS = 200;
 
     @BeforeClass public static void setup() {
-        Assume.assumeTrue(TestProperties.isSearchEnabled());
+        Assume.assumeTrue(RiakTestProperties.isSearchEnabled());
         RiakClient c = new RiakClient(RIAK_URL);
 
         indexBucket(c, SEARCH_BUCKET_NAME);
@@ -91,7 +91,7 @@ public class ITestMapReduceSearch {
     }
 
     @AfterClass public static void teardown() {
-        if (TestProperties.isSearchEnabled()) {
+        if (RiakTestProperties.isSearchEnabled()) {
             RiakClient c = new RiakClient(RIAK_URL);
             for (int i = 0; i < TEST_ITEMS; i++) {
                 c.delete(SEARCH_BUCKET_NAME, "java_" + Integer.toString(i));
