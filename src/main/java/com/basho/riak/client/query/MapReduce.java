@@ -155,7 +155,7 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
                     MapPhase mapPhase = (MapPhase)phase;
                     FunctionToJson.newWriter(mapPhase.getPhaseFunction(), jg).write();
                     if(mapPhase.getArg() != null) {
-                        jg.writeStringField("arg", mapPhase.getArg().toString());
+                        jg.writeObjectField("arg", mapPhase.getArg());
                     }
                     break;
                 case LINK:

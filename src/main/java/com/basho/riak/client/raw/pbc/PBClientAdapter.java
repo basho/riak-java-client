@@ -37,6 +37,7 @@ import com.basho.riak.client.query.LinkWalkStep;
 import com.basho.riak.client.query.MapReduce;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.functions.Args;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.DeleteMeta;
@@ -423,14 +424,9 @@ public class PBClientAdapter implements RawClient {
     public List<String> fetchIndex(IndexQuery indexQuery) throws IOException {
         final MapReduce mr = new IndexMapReduce(this, indexQuery);
 
-        mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY, new Object() {
-            @Override public String toString() {
-                return "{reduce_phase_only_1, true}";
-            }
-
-        });
+        mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY, Args.REDUCE_PHASE_ONLY_1);
         // only return the key, to match the http rest api
-        mr.addReducePhase(new JSSourceFunction("function(v) { return v.map(function(e) { return e[1]; }); }"));
+        mr.addReducePhase(new JSSourceFunction("function(v) { return v.map(function(e) { return e[1]; }); }"), Args.REDUCE_PHASE_ONLY_1);
 
         try {
             MapReduceResult result = mr.execute();
