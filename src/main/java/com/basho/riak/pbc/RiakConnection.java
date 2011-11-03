@@ -24,7 +24,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 import com.basho.riak.pbc.RPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
@@ -48,8 +50,21 @@ class RiakConnection {
     private volatile long idleStart;
 
 	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool) throws IOException {
-        this.pool = pool;
-        sock = new Socket(addr, port);
+        this(new InetSocketAddress(addr, port), bufferSizeKb, pool, 0);
+    }
+
+	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool, final long timeoutMillis) throws IOException {
+        this(new InetSocketAddress(addr, port), bufferSizeKb, pool, timeoutMillis);
+    }
+
+	public RiakConnection(SocketAddress addr, int bufferSizeKb, final RiakConnectionPool pool, final long timeoutMillis) throws IOException {
+	    if(timeoutMillis > Integer.MAX_VALUE || timeoutMillis < Integer.MIN_VALUE) {
+	        throw new IllegalArgumentException("Cannot cast timeout to int without changing value");
+	    }
+
+	    this.pool = pool;
+        sock = new Socket();
+        sock.connect(addr, (int)timeoutMillis);
 
         sock.setSendBufferSize(1024 * bufferSizeKb);
 

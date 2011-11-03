@@ -210,7 +210,7 @@ public class RiakConnectionPool {
         this.bufferSizeKb = bufferSizeKb;
         this.host = host;
         this.port = port;
-        this.connectionWaitTimeoutNanos = TimeUnit.NANOSECONDS.convert(connectionWaitTimeoutMillis, TimeUnit.NANOSECONDS);
+        this.connectionWaitTimeoutNanos = TimeUnit.NANOSECONDS.convert(connectionWaitTimeoutMillis, TimeUnit.MILLISECONDS);
         this.initialSize = initialSize;
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
@@ -374,7 +374,7 @@ public class RiakConnectionPool {
         try {
             if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
                 try {
-                    return new RiakConnection(host, port, bufferSizeKb, this);
+                    return new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS));
                 } catch (IOException e) {
                     permits.release();
                     throw e;
