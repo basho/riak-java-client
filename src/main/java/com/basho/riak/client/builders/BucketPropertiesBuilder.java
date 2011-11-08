@@ -128,7 +128,7 @@ public final class BucketPropertiesBuilder {
         if (this.postcommitHooks == null) {
             this.postcommitHooks = new ArrayList<NamedErlangFunction>();
         }
-        this.precommitHooks.add(postcommitHook);
+        this.postcommitHooks.add(postcommitHook);
         return this;
     }
 
