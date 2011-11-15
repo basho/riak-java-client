@@ -146,7 +146,7 @@ public class PBClientConfig implements Configuration {
      * </tr>
      * <tr>
      * <td>port</td>
-     * <td>8097</td>
+     * <td>8087</td>
      * </tr>
      * <tr>
      * <td>poolSize</td>
@@ -172,7 +172,7 @@ public class PBClientConfig implements Configuration {
     public static final class Builder {
         private int socketBufferSizeKb = 16;
         private String host = "127.0.0.1";
-        private int port = 8097;
+        private int port = 8087;
         private int poolSize = 0;
         private int initialPoolSize = 0;
         private long idleConnectionTTLMillis = 1000;
