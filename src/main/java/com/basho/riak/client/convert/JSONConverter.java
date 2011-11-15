@@ -55,7 +55,7 @@ public class JSONConverter<T> implements Converter<T> {
 
     /**
      * Create a JSONConverter for creating instances of <code>clazz</code> from
-     * JSON and instances of {@link IRiakObject} with a JSON paylaod from
+     * JSON and instances of {@link IRiakObject} with a JSON payload from
      * instances of <code>clazz</code>
      * 
      * @param clazz the type to convert to/from
@@ -67,7 +67,7 @@ public class JSONConverter<T> implements Converter<T> {
 
     /**
      * Create a JSONConverter for creating instances of <code>clazz</code> from
-     * JSON and instances of {@link IRiakObject} with a JSON paylaod from
+     * JSON and instances of {@link IRiakObject} with a JSON payload from
      * instances of <code>clazz</code>
      * 
      * @param clazz the type to convert to/from
