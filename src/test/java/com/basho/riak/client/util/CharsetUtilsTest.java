@@ -15,6 +15,7 @@ package com.basho.riak.client.util;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -78,6 +79,32 @@ public class CharsetUtilsTest {
         assertEquals(Charset.forName("UTF-16"), CharsetUtils.getCharset("text/plain;charset=UTF-16"));
         assertEquals(Charset.forName("ISO8859_1"), CharsetUtils.getCharset("gibberish"));
         assertEquals(Charset.forName("ISO8859_1"), CharsetUtils.getCharset((String) null));
+    }
+
+    /**
+     * Test method for
+     * {@link com.basho.riak.client.util.CharsetUtils#getDeclaredCharset(java.lang.String)}
+     * .
+     */
+    @Test public void getDeclaredCharsetFromContentType() {
+        assertEquals("UTF-8", CharsetUtils.getDeclaredCharset(Constants.CTYPE_TEXT_UTF8));
+        assertEquals("NotACharSet", CharsetUtils.getDeclaredCharset("text/plain;charset=NotACharSet"));
+        assertEquals("UTF-16", CharsetUtils.getDeclaredCharset("text/plain;charset=UTF-16"));
+        assertNull(CharsetUtils.getDeclaredCharset("gibberish"));
+        assertNull(CharsetUtils.getDeclaredCharset((String) null));
+    }
+
+    /**
+     * Test method for
+     * {@link com.basho.riak.client.util.CharsetUtils#getDeclaredCharset(java.lang.String)}
+     * .
+     */
+    @Test public void hasCharset() {
+        assertTrue( CharsetUtils.hasCharset(Constants.CTYPE_TEXT_UTF8));
+        assertTrue(CharsetUtils.hasCharset("text/plain;charset=NotACharSet"));
+        assertFalse(CharsetUtils.hasCharset(Constants.CTYPE_JSON));
+        assertFalse(CharsetUtils.hasCharset("gibberish"));
+        assertFalse(CharsetUtils.hasCharset((String) null));
     }
 
     /**

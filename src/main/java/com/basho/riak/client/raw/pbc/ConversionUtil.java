@@ -64,6 +64,11 @@ import com.google.protobuf.ByteString;
 public final class ConversionUtil {
 
     /**
+     * the string to append to the content-type, before the charset name
+     */
+    private static final String CHARSET = "; charset=";
+
+    /**
      * All static methods, don't allow any instances to be created.
      */
     private ConversionUtil() {}
@@ -143,7 +148,14 @@ public final class ConversionUtil {
             }
         }
 
-        builder.withContentType(o.getContentType());
+        String ctype = o.getContentType();
+        String charset = o.getCharset();
+
+        if(CharsetUtils.hasCharset(ctype) || charset==null || "".equals(charset.trim())) {
+            builder.withContentType(ctype);
+        } else {
+            builder.withContentType(ctype + CHARSET + charset);
+        }
 
         final Map<String, String> userMetaData = new HashMap<String, String>(o.getUsermeta());
 
@@ -279,7 +291,13 @@ public final class ConversionUtil {
             }
         }
 
-        result.setContentType(riakObject.getContentType());
+        String ctype = riakObject.getContentType();
+        if(CharsetUtils.hasCharset(ctype)) {
+            result.setCharset(CharsetUtils.getDeclaredCharset(ctype));
+            ctype = ctype.split(";")[0];
+        }
+
+        result.setContentType(ctype);
         return result;
     }
 
