@@ -100,6 +100,32 @@ public class CharsetUtils {
     }
 
     /**
+     * Get the actual string value declared as the charset in a content-type
+     * string, regardless of its validity.
+     * <p>
+     * NOTE: this is different from getCharset, which will always return a
+     * default value.
+     * </p>
+     * 
+     * @param contentType
+     *            the content-type string
+     * @return the verbatim charset declared or null if non-exists
+     */
+    public static String getDeclaredCharset(String contentType) {
+        if (contentType == null) {
+            return null;
+        }
+
+        Matcher matcher = CHARSET_PATT.matcher(contentType);
+        if (matcher.find()) {
+            String encstr = matcher.group(1);
+            return encstr;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Adds the utf-8 charset to a content type.
      * 
      * @param contentType
@@ -186,5 +212,24 @@ public class CharsetUtils {
      */
     public static byte[] utf8StringToBytes(String string) {
         return asBytes(string, UTF_8);
+    }
+
+    /**
+     * Check if a content-type string has a charset field appended.
+     * 
+     * @param ctype
+     *            the content-type string
+     * @return true if <code>ctype</code> has a charset, false otherwise
+     */
+    public static boolean hasCharset(String ctype) {
+        if(ctype == null) {
+            return false;
+        }
+        Matcher matcher = CHARSET_PATT.matcher(ctype);
+        if (matcher.find()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

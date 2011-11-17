@@ -17,6 +17,7 @@ import static com.basho.riak.client.util.CharsetUtils.asBytes;
 import static com.basho.riak.client.util.CharsetUtils.getCharset;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -62,6 +63,11 @@ import com.google.protobuf.ByteString;
  * 
  */
 public final class ConversionUtil {
+
+    /**
+     * the string to append to the content-type, before the charset name
+     */
+    private static final String CHARSET = "; charset=";
 
     /**
      * All static methods, don't allow any instances to be created.
@@ -143,7 +149,14 @@ public final class ConversionUtil {
             }
         }
 
-        builder.withContentType(o.getContentType());
+        String ctype = o.getContentType();
+        String charset = o.getCharset();
+
+        if(CharsetUtils.hasCharset(ctype) || charset==null || "".equals(charset.trim())) {
+            builder.withContentType(ctype);
+        } else {
+            builder.withContentType(ctype + CHARSET + o.getCharset());
+        }
 
         final Map<String, String> userMetaData = new HashMap<String, String>(o.getUsermeta());
 
@@ -279,7 +292,15 @@ public final class ConversionUtil {
             }
         }
 
-        result.setContentType(riakObject.getContentType());
+        String ctype = riakObject.getContentType();
+        Charset charset = null;
+        if(CharsetUtils.hasCharset(ctype)) {
+            charset = CharsetUtils.getCharset(ctype);
+            result.setCharset(charset.name());
+            ctype = ctype.split(";")[0];
+        }
+
+        result.setContentType(ctype);
         return result;
     }
 
