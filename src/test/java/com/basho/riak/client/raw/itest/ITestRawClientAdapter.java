@@ -151,9 +151,9 @@ public abstract class ITestRawClientAdapter {
     }
 
     @Test public void storeSplitsContentTypeAndCharset() throws Exception {
-        final String bucket = "mybucket";
-        final String key = "test3";
-        final String value = "{\"foo\": \"bar bar baram\"}";
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "k";
+        final String value = "{\"foo\": \"bar bar bar\"}";
 
         IRiakObject o = RiakObjectBuilder.newBuilder(bucket, key).withContentType(Constants.CTYPE_JSON_UTF8).withValue(value).build();
 

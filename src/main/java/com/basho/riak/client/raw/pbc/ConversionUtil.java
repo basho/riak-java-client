@@ -17,7 +17,6 @@ import static com.basho.riak.client.util.CharsetUtils.asBytes;
 import static com.basho.riak.client.util.CharsetUtils.getCharset;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
