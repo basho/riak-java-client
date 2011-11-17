@@ -155,7 +155,7 @@ public final class ConversionUtil {
         if(CharsetUtils.hasCharset(ctype) || charset==null || "".equals(charset.trim())) {
             builder.withContentType(ctype);
         } else {
-            builder.withContentType(ctype + CHARSET + o.getCharset());
+            builder.withContentType(ctype + CHARSET + charset);
         }
 
         final Map<String, String> userMetaData = new HashMap<String, String>(o.getUsermeta());
@@ -293,10 +293,8 @@ public final class ConversionUtil {
         }
 
         String ctype = riakObject.getContentType();
-        Charset charset = null;
         if(CharsetUtils.hasCharset(ctype)) {
-            charset = CharsetUtils.getCharset(ctype);
-            result.setCharset(charset.name());
+            result.setCharset(CharsetUtils.getDeclaredCharset(ctype));
             ctype = ctype.split(";")[0];
         }
 
