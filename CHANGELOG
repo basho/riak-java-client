@@ -1,3 +1,16 @@
+1.0.2
+-------------
+This is a patch release that fixes a couple of minor bugs.
+
+**Changes**
+
+85b94e7 This change fixes a bug in the Java client where all
+        commit hooks are added to the pre-commit list; anything incoming in
+        the post-commit list goes to the pre-commit hook list instead
+2ddd975 Add connection timout to pb socket creation bz1275
+855493c Fix incorrect encoding of reduce_phase_only_1 arg on fetch index bz1262
+0c44b01 Fix incorrect default riak PB port  bz1285
+
 1.0.1
 -------------
 This relase fixes 1 critical and 1 major bug in riak-java-client.  The
