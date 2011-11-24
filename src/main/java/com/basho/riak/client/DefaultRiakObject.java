@@ -248,7 +248,7 @@ public class DefaultRiakObject implements IRiakObject {
      * @see com.basho.riak.client.IRiakObject#setContentType(java.lang.String)
      */
     public void setContentType(String contentType) {
-        this.contentType = contentType;
+        safeSetContentType(contentType);
     }
 
     /**

@@ -28,9 +28,11 @@ import org.junit.Test;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.builders.RiakObjectBuilder;
+import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.test.util.ContentTypesEqual;
 
 /**
  * @author russell
@@ -146,5 +148,20 @@ public abstract class ITestRawClientAdapter {
         assertTrue(r.hasValue());
         assertFalse(r.hasSiblings());
         assertEmptyString(r.getRiakObjects()[0].getValueAsString());
+    }
+
+    @Test public void storeSplitsContentTypeAndCharset() throws Exception {
+        final String bucket = UUID.randomUUID().toString();
+        final String key = "k";
+        final String value = "{\"foo\": \"bar bar bar\"}";
+
+        IRiakObject o = RiakObjectBuilder.newBuilder(bucket, key).withContentType(Constants.CTYPE_JSON_UTF8).withValue(value).build();
+
+        client.store(o);
+        RiakResponse r = client.fetch(bucket, key);
+
+        IRiakObject o2 = r.getRiakObjects()[0];
+
+        ContentTypesEqual.equal(Constants.CTYPE_JSON_UTF8, o2.getContentType());
     }
 }
