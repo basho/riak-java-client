@@ -241,6 +241,10 @@ public class RiakObject {
 		this.contentType = contentType;
 	}
 
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
     public void addLink(String tag, String bucket, String key) {
         links.add(new RiakLink(bucket, key, tag));
     }
@@ -297,6 +301,11 @@ public class RiakObject {
     public String getContentType() {
         return this.contentType;
     }
+
+    public String getCharset() {
+        return this.charset;
+    }
+
     /**
      * @return a *copy* of the list of {@link RiakIndex}es for this object
      */
