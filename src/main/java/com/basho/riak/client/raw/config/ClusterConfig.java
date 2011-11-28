@@ -80,4 +80,27 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
     public synchronized List<T> getClients() {
         return Collections.unmodifiableList(nodes);
     }
+
+    /**
+     * Convenience method for creating a cluster of hosts with a common, default
+     * config except for host
+     * 
+     * @param hosts
+     *            var arg String array of hosts
+     * @return the {@link ClusterConfig} with a node for each host in
+     *         <code>hosts</code>
+     */
+    protected abstract ClusterConfig<T> addHosts(String... hosts);
+
+    /**
+     * Convenience method for creating a cluster of hosts with a common
+     * config except for host
+     * 
+     * @param config T the common base config
+     * @param hosts
+     *            var arg String array of hosts
+     * @return the {@link ClusterConfig} with a node for each host in
+     *         <code>hosts</code>
+     */
+    protected abstract ClusterConfig<T> addHosts(T config, String... hosts);
 }

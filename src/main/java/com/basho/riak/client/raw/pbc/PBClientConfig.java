@@ -201,7 +201,7 @@ public class PBClientConfig implements Configuration {
             b.initialPoolSize = copyConfig.initialPoolSize;
             b.idleConnectionTTLMillis = copyConfig.idleConnectionTTLMillis;
             b.connectionWaitTimeoutMillis = copyConfig.connectionWaitTimeoutMillis;
-            return new PBClientConfig.Builder();
+            return b;
         }
 
         public Builder withSocketBufferSizeKb(int socketBufferSizeKb) {
