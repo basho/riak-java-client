@@ -14,6 +14,7 @@
 package com.basho.riak.client.raw.http;
 
 import com.basho.riak.client.raw.config.ClusterConfig;
+import com.basho.riak.client.raw.http.HTTPClientConfig.Builder;
 
 /**
  * Concrete child of {@link ClusterConfig} that provides the generic type
@@ -30,4 +31,31 @@ public class HTTPClusterConfig extends ClusterConfig<HTTPClientConfig> {
         super(totalMaximumConnections);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.raw.config.ClusterConfig#forHosts(java.lang.String
+     * [])
+     */
+    @Override public ClusterConfig<HTTPClientConfig> addHosts(String... hosts) {
+        return addHosts(HTTPClientConfig.defaults(), hosts);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.basho.riak.client.raw.config.ClusterConfig#forHosts(com.basho.riak
+     * .client.raw.config.Configuration, java.lang.String[])
+     */
+    @Override public ClusterConfig<HTTPClientConfig> addHosts(HTTPClientConfig config, String... hosts) {
+        Builder b = HTTPClientConfig.Builder.from(config);
+
+        for (String host : hosts) {
+            addClient(b.withHost(host).build());
+        }
+
+        return this;
+    }
 }
