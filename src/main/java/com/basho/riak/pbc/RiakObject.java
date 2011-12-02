@@ -289,7 +289,7 @@ public class RiakObject {
         Date d = null;
 
         if (lastModified != null && lastModifiedUsec != null) {
-            long t = (lastModified * 1000L ) + (lastModifiedUsec / 100L);
+            long t = (lastModified * 1000L ) + (lastModifiedUsec / 1000L);
             d = new Date(t);
         }
         return d;
