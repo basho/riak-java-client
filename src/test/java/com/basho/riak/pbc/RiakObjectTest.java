@@ -28,11 +28,6 @@ import com.google.protobuf.ByteString;
 public class RiakObjectTest {
 
     /**
-     * @throws java.lang.Exception
-     */
-    @Before public void setUp() throws Exception {}
-
-    /**
      * Test method for {@link com.basho.riak.pbc.RiakObject#getLastModified()}.
      */
     @Test public void testGetLastModified() {
