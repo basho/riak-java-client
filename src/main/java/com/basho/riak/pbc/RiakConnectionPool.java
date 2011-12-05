@@ -15,6 +15,7 @@ package com.basho.riak.pbc;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
@@ -375,6 +376,8 @@ public class RiakConnectionPool {
             if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
                 try {
                     return new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS));
+                } catch(SocketTimeoutException e) {
+                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage());
                 } catch (IOException e) {
                     permits.release();
                     throw e;

@@ -117,15 +117,15 @@ public class ITestRiakConnectionPool {
     }
 
     @Test public void conncurrentAcquire_toFewConnections() throws Exception {
-        int numTasks = 10;
-        int maxConnections = 7;
+        int numTasks = 5;
+        int maxConnections = 4;
 
         doConcurrentAcquire(numTasks, maxConnections);
     }
 
     @Test public void conncurrentAcquire_ampleConnections() throws Exception {
-        int numTasks = 10;
-        int maxConnections = 17;
+        int numTasks = 5;
+        int maxConnections = 10;
 
         doConcurrentAcquire(numTasks, maxConnections);
     }
@@ -138,6 +138,7 @@ public class ITestRiakConnectionPool {
 
         Collection<Future<PublicRiakConnection>> results = Executors.newFixedThreadPool(numTasks).invokeAll(makeTasks(numTasks,
                                                                                                                       pool));
+
         int successCount = 0;
         int failureCount = 0;
 
@@ -149,6 +150,8 @@ public class ITestRiakConnectionPool {
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof AcquireConnectionTimeoutException) {
                     failureCount++;
+                } else {
+                    throw e;
                 }
             }
         }
