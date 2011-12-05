@@ -13,16 +13,34 @@
  */
 package com.basho.riak.pbc;
 
-import static com.basho.riak.test.util.ExpectedValues.*;
-import static org.junit.Assert.*;
+import static com.basho.riak.test.util.ExpectedValues.BS_BUCKET;
+import static com.basho.riak.test.util.ExpectedValues.BS_CONTENT;
+import static com.basho.riak.test.util.ExpectedValues.BS_GZIP_ENC;
+import static com.basho.riak.test.util.ExpectedValues.BS_JSON_CTYPE;
+import static com.basho.riak.test.util.ExpectedValues.BS_KEY;
+import static com.basho.riak.test.util.ExpectedValues.BS_UTF8_CHARSET;
+import static com.basho.riak.test.util.ExpectedValues.BS_VCLOCK;
+import static com.basho.riak.test.util.ExpectedValues.BS_VTAG;
+import static com.basho.riak.test.util.ExpectedValues.BUCKET;
+import static com.basho.riak.test.util.ExpectedValues.CONTENT;
+import static com.basho.riak.test.util.ExpectedValues.JSON_CTYPE;
+import static com.basho.riak.test.util.ExpectedValues.KEY;
+import static com.basho.riak.test.util.ExpectedValues.LAST_MOD;
+import static com.basho.riak.test.util.ExpectedValues.LAST_MOD_USEC;
+import static com.basho.riak.test.util.ExpectedValues.TAG;
+import static com.basho.riak.test.util.ExpectedValues.concatToByteString;
+import static com.basho.riak.test.util.ExpectedValues.rpbLinks;
+import static com.basho.riak.test.util.ExpectedValues.rpbPairs;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Test;
 
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RPB.RpbContent;
+import com.google.protobuf.ByteString;
 
 
 /**
@@ -122,16 +140,17 @@ public class TestRiakObject {
     }
 
     @Test public void getLastModifiedDate() {
-        final Date date = new Date();
-        long time = date.getTime();
-        long lastModified = time / 1000;
-        long lastModifiedUsec = (time % 1000) * 100;
+        int lastModified = (1000000 * 1322 + 821585);
+        int lastModifiedUSec = 351853;
 
-        final RpbContent.Builder contentBuilder = RpbContent.newBuilder();
-        contentBuilder.setValue(BS_CONTENT).setLastMod((int)lastModified).setLastModUsecs((int)lastModifiedUsec);
-        final RiakObject riakObject = new RiakObject(BS_VCLOCK, BS_BUCKET, BS_KEY, contentBuilder.build());
+        RpbContent content = RpbContent.newBuilder().setValue(ByteString.copyFromUtf8("v"))
+            .setLastMod(lastModified)
+            .setLastModUsecs(lastModifiedUSec).build();
 
-        assertEquals(date, riakObject.getLastModified());
+        RiakObject ro = new RiakObject(ByteString.copyFromUtf8("vclock"), ByteString.copyFromUtf8("b"),
+                                       ByteString.copyFromUtf8("k"), content);
+
+        assertEquals(1322821585351L, ro.getLastModified().getTime());
     }
 
     private static void assertBasicValues(final RiakObject riakObject) {
