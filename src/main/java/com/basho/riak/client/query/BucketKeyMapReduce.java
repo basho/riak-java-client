@@ -94,4 +94,17 @@ public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> 
     @Override protected void writeInput(final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeObject(this);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.query.MapReduce#validate()
+     */
+    @Override protected void validate() {
+        super.validate();
+        if (inputs.isEmpty()) {
+            throw new NoInputsException();
+        }
+    }
+
 }

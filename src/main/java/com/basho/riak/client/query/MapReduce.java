@@ -69,8 +69,11 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
      * constructed with.
      * 
      * @return a {@link MapReduceResult} containing the results of the query.
+     * @throws RiakException
+     * @throws InvalidMapReduceException
      */
     public MapReduceResult execute() throws RiakException {
+        validate();
         final String strSpec = writeSpec();
         MapReduceSpec spec = new MapReduceSpec(strSpec);
         try {
@@ -79,6 +82,16 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
             throw ErlangTermErrorParser.parseErlangError(e.getMessage());
         } catch (IOException e) {
             throw new RiakException(e);
+        }
+    }
+
+    /**
+     * Check that this map/reduce job is valid
+     * @throws InvalidMapReduceException
+     */
+    protected void validate() {
+        if(phases.isEmpty()) {
+            throw new NoPhasesException();
         }
     }
 
