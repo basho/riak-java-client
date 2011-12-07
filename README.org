@@ -184,7 +184,7 @@ to each operation when you build it. There is a simple retrier
 provided with this library that retries the given operation *n* times
 before throwing an exception.
 #+BEGIN_SRC java
-    b.store("k", "v").retrier(DefaultRetrier.attempts(3)).execute();    
+    b.store("k", "v").withRetrier(DefaultRetrier.attempts(3)).execute();    
 #+END_SRC
 The DefaultRiakClient implementation provides a 3 times retrier to all it's
 operations. You can override this from the constructor or
