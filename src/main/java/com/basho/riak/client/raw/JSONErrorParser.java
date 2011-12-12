@@ -31,6 +31,7 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
  * 
  */
 public class JSONErrorParser {
+    private static final String PBSOCKET_PRE_1_1_TIMEOUT_TUPLE = "{error,timeout}";
     private static final String PARSE_ERROR = ". Additionally, an error was thrown parsing the error response.";
     private static final String ERROR_KEY = "error";
     private static final String TIMEOUT_VALUE = "timeout";
@@ -77,6 +78,12 @@ public class JSONErrorParser {
             Map<String, String> exceptionData = parseError(json);
             return isTimeoutError(exceptionData);
         } catch (IOException e) {
+            // what about an old skool Erlang term exception from the PB Socket?
+            // fall back to the string match on 'timeout'
+            // TODO: @remove:1.2
+            if (PBSOCKET_PRE_1_1_TIMEOUT_TUPLE.equals(json)) {
+                return true;
+            }
             // can't be a timeout if we can't parse it
             return false;
         }
