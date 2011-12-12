@@ -42,6 +42,7 @@ import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
@@ -410,8 +411,16 @@ public class PBClientAdapter implements RawClient {
     public MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException {
         IRequestMeta meta = new RequestMeta();
         meta.contentType(Constants.CTYPE_JSON);
+        try {
         MapReduceResponseSource resp = client.mapReduce(spec.getJSON(), meta);
         return convert(resp);
+        } catch (RiakError e) {
+            if( JSONErrorParser.isTimeoutException(e.getMessage())) {
+                throw new MapReduceTimeoutException();
+            } else {
+                throw new IOException(e.getMessage());
+            }
+        }
     }
 
     /*
