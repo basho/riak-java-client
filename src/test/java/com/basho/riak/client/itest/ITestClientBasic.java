@@ -32,7 +32,6 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.util.CharsetUtils;
 
@@ -158,7 +157,7 @@ public abstract class ITestClientBasic {
         Thread.sleep(1000);
         // change it, fetch it
         obj.setValue(newValue);
-        b.store(obj).withConverter(new PassThroughConverter()).execute();
+        b.store(obj).execute();
 
         IRiakObject obj3 = b.fetch(key)
             .ifModified(obj.getVClock()) // in case of PB
