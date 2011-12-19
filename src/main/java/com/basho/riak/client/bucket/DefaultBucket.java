@@ -447,10 +447,31 @@ public class DefaultBucket implements Bucket {
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
+
+        Converter<T> converter = getDefaultConverter(clazz);
+
         return new StoreObject<T>(client, name, key, retrier)
-            .withConverter(new JSONConverter<T>(clazz, name))
+            .withConverter(converter)
                 .withMutator(new ClobberMutation<T>(o))
                   .withResolver(new DefaultResolver<T>());
+    }
+
+    private <T> Converter<T> getDefaultConverter(Class<T> clazz) {
+        return getDefaultConverter(clazz, null);
+    }
+
+    @SuppressWarnings("unchecked") private <T> Converter<T> getDefaultConverter(Class<T> clazz, String key) {
+        Converter<T> converter;
+        if (IRiakObject.class.isAssignableFrom(clazz)) {
+            converter = (Converter<T>) new PassThroughConverter();
+        } else {
+            if (key != null) {
+                converter = new JSONConverter<T>(clazz, name, key);
+            } else {
+                converter = new JSONConverter<T>(clazz, name);
+            }
+        }
+        return converter;
     }
 
     /**
@@ -476,9 +497,9 @@ public class DefaultBucket implements Bucket {
      */
     public <T> StoreObject<T> store(final String key, final T o) {
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
-
+        Converter<T> converter = getDefaultConverter(clazz, key);
         return new StoreObject<T>(client, name, key, retrier).
-        withConverter(new JSONConverter<T>(clazz, name, key))
+        withConverter(converter)
             .withMutator(new ClobberMutation<T>(o)).withResolver(new DefaultResolver<T>());
     }
 
@@ -506,8 +527,9 @@ public class DefaultBucket implements Bucket {
         if (key == null) {
             throw new NoKeySpecifedException(o);
         }
+        Converter<T> converter = getDefaultConverter(clazz);
         return new FetchObject<T>(client, name, key, retrier)
-            .withConverter(new JSONConverter<T>(clazz, name))
+            .withConverter(converter)
             .withResolver(new DefaultResolver<T>());
     }
 
@@ -532,8 +554,9 @@ public class DefaultBucket implements Bucket {
      * @see FetchObject
      */
     public <T> FetchObject<T> fetch(final String key, final Class<T> type) {
+        Converter<T> converter = getDefaultConverter(type, key);
         return new FetchObject<T>(client, name, key, retrier)
-            .withConverter(new JSONConverter<T>(type, name))
+            .withConverter(converter)
             .withResolver(new DefaultResolver<T>());
     }
 

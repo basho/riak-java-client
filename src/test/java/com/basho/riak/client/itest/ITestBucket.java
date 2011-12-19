@@ -49,7 +49,6 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.query.indexes.BinIndex;
@@ -94,7 +93,7 @@ public abstract class ITestBucket {
         fetched.addUsermeta("meta1", "metaValue1").addUsermeta("meta2", "metaValue2");
         fetched.setContentType(Constants.CTYPE_JSON);
 
-        b.store(fetched).withConverter(new PassThroughConverter()).execute();
+        b.store(fetched).execute();
 
         IRiakObject reFetched = b.fetch("k").execute();
 
@@ -189,7 +188,6 @@ public abstract class ITestBucket {
 
         final String bucketName = UUID.randomUUID().toString() + "_2i";
         final Bucket b = client.fetchBucket(bucketName).execute();
-        final PassThroughConverter converter = new PassThroughConverter();
 
         // create objects with indexes
         IRiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, "k1").withValue("some data")
@@ -202,9 +200,9 @@ public abstract class ITestBucket {
         .addIndex("twitter", "zachary").addIndex("age", 30).build();
 
         // store them
-        b.store(o1).withConverter(converter).execute();
-        b.store(o2).withConverter(converter).execute();
-        b.store(o3).withConverter(converter).execute();
+        b.store(o1).execute();
+        b.store(o2).execute();
+        b.store(o3).execute();
 
         // retrieve and check indexes are present
         IRiakObject o1r = b.fetch("k1").execute();
@@ -279,7 +277,7 @@ public abstract class ITestBucket {
         Thread.sleep(1000);
         // change it, fetch it
         obj.setValue(newValue);
-        b.store(obj).withConverter(new PassThroughConverter()).execute();
+        b.store(obj).execute();
 
         IRiakObject obj3 = b.fetch(key)
             .ifModified(obj.getVClock()) // in case of PB
