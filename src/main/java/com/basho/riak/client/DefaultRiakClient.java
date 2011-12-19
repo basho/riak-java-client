@@ -88,7 +88,7 @@ public final class DefaultRiakClient implements IRiakClient {
      * @see com.basho.riak.client.IRiakClient#updateBucket(com.basho.riak.client.bucket.Bucket)
      */
     public WriteBucket updateBucket(final Bucket b) {
-        return new WriteBucket(rawClient, b.getName(), retrier);
+        return new WriteBucket(rawClient, b, retrier);
     }
 
     /* (non-Javadoc)

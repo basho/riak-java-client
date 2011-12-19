@@ -52,6 +52,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
     private final RawClient client;
     private Retrier retrier;
     private String name;
+    private final Collection<NamedFunction> existingPrecommitHooks;
 
     private BucketPropertiesBuilder builder = new BucketPropertiesBuilder();
 
@@ -65,6 +66,25 @@ public class WriteBucket implements RiakOperation<Bucket> {
         this.name = name;
         this.client = client;
         this.retrier = retrier;
+        this.existingPrecommitHooks = null;
+    }
+
+    /**
+     * Create WriteBucket operation that delegates to the given
+     * {@link RawClient} via the give {@link Retrier}.
+     * 
+     * @param client
+     *            the {@link RawClient} to delegate to
+     * @param name
+     *            the name of the bucket to create/update
+     * @param retrier
+     *            the {@link Retrier} to use
+     */
+    public WriteBucket(final RawClient client, Bucket bucket, final Retrier retrier) {
+        this.name = bucket.getName();
+        this.client = client;
+        this.retrier = retrier;
+        this.existingPrecommitHooks = bucket.getPrecommitHooks();
     }
 
     /**
@@ -468,6 +488,29 @@ public class WriteBucket implements RiakOperation<Bucket> {
     public WriteBucket enableForSearch() {
         httpOnly(client.getTransport(), Constants.FL_SCHEMA_SEARCH);
         builder.addPrecommitHook(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK).search(true);
+        return this;
+    }
+
+    /**
+     * convenience for setting search=false **and** removing the search
+     * precommit hook (support for both pre-1.0 and 1.0 search) NOTE: at present
+     * this is not supported by PB API and an
+     * {@link UnsupportedPropertyException} will be thrown if called for that
+     * transport
+     * 
+     * @return this
+     */
+    public WriteBucket disableSearch() {
+        httpOnly(client.getTransport(), Constants.FL_SCHEMA_SEARCH);
+        if (existingPrecommitHooks != null) {
+            synchronized (existingPrecommitHooks) {
+                existingPrecommitHooks.remove(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK);
+                for (NamedFunction f : existingPrecommitHooks) {
+                    builder.addPrecommitHook(f);
+                }
+            }
+        }
+        builder.search(false);
         return this;
     }
 

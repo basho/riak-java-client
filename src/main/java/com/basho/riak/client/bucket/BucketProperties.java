@@ -198,4 +198,10 @@ public interface BucketProperties {
      * @return true/false/null
      */
     Boolean getSearch();
+
+    /**
+     * Is search enabled on this bucket
+     * @return true/false
+     */
+    public boolean isSearchEnabled();
 }
