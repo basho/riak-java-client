@@ -75,8 +75,8 @@ public class WriteBucket implements RiakOperation<Bucket> {
      * 
      * @param client
      *            the {@link RawClient} to delegate to
-     * @param name
-     *            the name of the bucket to create/update
+     * @param bucket
+     *            the bucket to update
      * @param retrier
      *            the {@link Retrier} to use
      */
