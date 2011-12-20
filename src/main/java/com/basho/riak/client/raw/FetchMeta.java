@@ -56,7 +56,7 @@ public class FetchMeta {
      *            only for HTTP API!!!
      * @param ifModifiedVClock
      *            a vclock for conditional get. Not null value means only return
-     *            a value if the current vclock does not match this one. *NOT*
+     *            a value if the current vclock does not match this one. *NOTE*
      *            Only for PB API!
      */
     public FetchMeta(Integer r, Integer pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
