@@ -294,6 +294,13 @@ public class DefaultBucket implements Bucket {
         return properties.getSearch();
     }
 
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.bucket.BucketProperties#isSearchEnabled()
+     */
+    public boolean isSearchEnabled() {
+        return properties.isSearchEnabled();
+    }
+
     // BUCKET
 
     /**

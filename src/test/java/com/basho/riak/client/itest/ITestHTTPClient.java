@@ -15,6 +15,7 @@ package com.basho.riak.client.itest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
@@ -121,5 +122,13 @@ public class ITestHTTPClient extends ITestClientBasic {
         assertTrue(b2.getBasicQuorum());
         assertFalse(b2.getNotFoundOK());
         assertTrue(b2.getSearch());
+        assertTrue(b2.isSearchEnabled());
+        assertTrue(b2.getPrecommitHooks().contains(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK));
+
+        //update the bucket again, disable search
+        Bucket b3 = client.updateBucket(b2).disableSearch().execute();
+        assertFalse(b3.isSearchEnabled());
+        assertFalse(b3.getSearch());
+        assertNull(b3.getPostcommitHooks());
     }
 }
