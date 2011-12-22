@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.bucket;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
@@ -52,7 +53,8 @@ public class WriteBucket implements RiakOperation<Bucket> {
     private final RawClient client;
     private Retrier retrier;
     private String name;
-    private final Collection<NamedFunction> existingPrecommitHooks;
+    private Collection<NamedFunction> precommitHooks;
+    private Collection<NamedErlangFunction> postcommitHooks;
 
     private BucketPropertiesBuilder builder = new BucketPropertiesBuilder();
 
@@ -66,7 +68,6 @@ public class WriteBucket implements RiakOperation<Bucket> {
         this.name = name;
         this.client = client;
         this.retrier = retrier;
-        this.existingPrecommitHooks = null;
     }
 
     /**
@@ -84,7 +85,8 @@ public class WriteBucket implements RiakOperation<Bucket> {
         this.name = bucket.getName();
         this.client = client;
         this.retrier = retrier;
-        this.existingPrecommitHooks = bucket.getPrecommitHooks();
+        this.precommitHooks = bucket.getPrecommitHooks();
+        this.postcommitHooks = bucket.getPostcommitHooks();
     }
 
     /**
@@ -92,7 +94,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
      * @return the {@link Bucket}
      */
     public Bucket execute() throws RiakRetryFailedException {
-        final BucketProperties propsToStore = builder.build();
+        final BucketProperties propsToStore = builder.precommitHooks(precommitHooks).postcommitHooks(postcommitHooks).build();
 
         retrier.attempt(new Callable<Void>() {
             public Void call() throws Exception {
@@ -178,7 +180,12 @@ public class WriteBucket implements RiakOperation<Bucket> {
      */
     public WriteBucket addPrecommitHook(NamedFunction preCommitHook) {
         httpOnly(client.getTransport(), Constants.FL_SCHEMA_PRECOMMIT);
-        builder.addPrecommitHook(preCommitHook);
+        if(preCommitHook != null) {
+            if(precommitHooks == null) {
+                precommitHooks = new ArrayList<NamedFunction>();
+            }
+            precommitHooks.add(preCommitHook);
+        }
         return this;
     }
 
@@ -204,7 +211,12 @@ public class WriteBucket implements RiakOperation<Bucket> {
      */
     public WriteBucket addPostcommitHook(NamedErlangFunction postcommitHook) {
         httpOnly(client.getTransport(), Constants.FL_SCHEMA_POSTCOMMIT);
-        builder.addPostcommitHook(postcommitHook);
+        if(postcommitHook != null) {
+            if(postcommitHooks == null) {
+                postcommitHooks = new ArrayList<NamedErlangFunction>();
+            }
+            postcommitHooks.add(postcommitHook);
+        }
         return this;
     }
 
@@ -487,7 +499,8 @@ public class WriteBucket implements RiakOperation<Bucket> {
      */
     public WriteBucket enableForSearch() {
         httpOnly(client.getTransport(), Constants.FL_SCHEMA_SEARCH);
-        builder.addPrecommitHook(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK).search(true);
+        addPrecommitHook(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK);
+        builder.search(true);
         return this;
     }
 
@@ -502,13 +515,8 @@ public class WriteBucket implements RiakOperation<Bucket> {
      */
     public WriteBucket disableSearch() {
         httpOnly(client.getTransport(), Constants.FL_SCHEMA_SEARCH);
-        if (existingPrecommitHooks != null) {
-            synchronized (existingPrecommitHooks) {
-                existingPrecommitHooks.remove(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK);
-                for (NamedFunction f : existingPrecommitHooks) {
-                    builder.addPrecommitHook(f);
-                }
-            }
+        if (precommitHooks != null) {
+            precommitHooks.remove(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK);
         }
         builder.search(false);
         return this;

@@ -107,7 +107,9 @@ public final class BucketPropertiesBuilder {
     }
 
     public BucketPropertiesBuilder precommitHooks(Collection<NamedFunction> precommitHooks) {
-        this.precommitHooks = new ArrayList<NamedFunction>(precommitHooks);
+        if(precommitHooks != null) {
+            this.precommitHooks = new ArrayList<NamedFunction>(precommitHooks);
+        }
         return this;
     }
 
@@ -120,7 +122,9 @@ public final class BucketPropertiesBuilder {
     }
 
     public BucketPropertiesBuilder postcommitHooks(Collection<NamedErlangFunction> postCommitHooks) {
-        this.postcommitHooks = new ArrayList<NamedErlangFunction>(postCommitHooks);
+        if(postCommitHooks != null) {
+            this.postcommitHooks = new ArrayList<NamedErlangFunction>(postCommitHooks);
+        }
         return this;
     }
 
