@@ -261,7 +261,7 @@ public class DefaultBucketProperties implements BucketProperties {
      * @see com.basho.riak.client.bucket.BucketProperties#isSearchEnabled()
      */
     public boolean isSearchEnabled() {
-        if (Boolean.TRUE.equals(search) || precommitHooks.contains(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK)) {
+        if (Boolean.TRUE.equals(search) || (precommitHooks != null && precommitHooks.contains(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK))) {
             return true;
         }
         return false;

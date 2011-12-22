@@ -104,7 +104,7 @@ public interface BucketProperties {
      * href="http://wiki.basho.com/Pre--and-Post-Commit-Hooks.html">pre and post
      * commit hooks</a> for more details.
      * 
-     * @return the precommit hooks, if any, or an empty collection.
+     * @return the precommit hooks, if any, or null
      */
     Collection<NamedFunction> getPrecommitHooks();
 
@@ -113,7 +113,7 @@ public interface BucketProperties {
      * href="http://wiki.basho.com/Pre--and-Post-Commit-Hooks.html">pre and post
      * commit hooks</a> for more details.
      * 
-     * @return the post commit hooks, if ant, or an empty collection.
+     * @return the post commit hooks, if any, or null
      */
     Collection<NamedErlangFunction> getPostcommitHooks();
 
@@ -198,4 +198,10 @@ public interface BucketProperties {
      * @return true/false/null
      */
     Boolean getSearch();
+
+    /**
+     * Is search enabled on this bucket
+     * @return true/false
+     */
+    public boolean isSearchEnabled();
 }

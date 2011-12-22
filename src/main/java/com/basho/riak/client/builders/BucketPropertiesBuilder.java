@@ -60,7 +60,7 @@ public final class BucketPropertiesBuilder {
      *            the BucketProperties to copy to the builder
      * @return a builder with all values set from p
      */
-    public static BucketPropertiesBuilder from(DefaultBucketProperties p) {
+    public static BucketPropertiesBuilder from(BucketProperties p) {
         BucketPropertiesBuilder b = new BucketPropertiesBuilder();
         b.allowSiblings = p.getAllowSiblings();
         b.lastWriteWins = p.getLastWriteWins();
@@ -107,7 +107,9 @@ public final class BucketPropertiesBuilder {
     }
 
     public BucketPropertiesBuilder precommitHooks(Collection<NamedFunction> precommitHooks) {
-        this.precommitHooks = new ArrayList<NamedFunction>(precommitHooks);
+        if(precommitHooks != null) {
+            this.precommitHooks = new ArrayList<NamedFunction>(precommitHooks);
+        }
         return this;
     }
 
@@ -120,7 +122,9 @@ public final class BucketPropertiesBuilder {
     }
 
     public BucketPropertiesBuilder postcommitHooks(Collection<NamedErlangFunction> postCommitHooks) {
-        this.postcommitHooks = new ArrayList<NamedErlangFunction>(postCommitHooks);
+        if(postCommitHooks != null) {
+            this.postcommitHooks = new ArrayList<NamedErlangFunction>(postCommitHooks);
+        }
         return this;
     }
 
@@ -319,7 +323,7 @@ public final class BucketPropertiesBuilder {
      * @param search
      */
     public BucketPropertiesBuilder search(boolean search) {
-        this.search = true;
+        this.search = search;
         return this;
     }
 }
