@@ -30,13 +30,18 @@ import org.junit.Test;
 
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
+import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.http.RiakBucketInfo;
+import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
+import com.basho.riak.client.raw.DeleteMeta;
+import com.basho.riak.client.raw.DeleteMeta.Builder;
+import com.basho.riak.client.util.CharsetUtils;
 
 /**
  * @author russell
@@ -119,4 +124,27 @@ public class ConversionUtilTest {
         assertEquals(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK.getFun(), hook1.get(Constants.FL_SCHEMA_FUN_FUN));
     }
 
+    /**
+     * Test method for
+     * {@link com.basho.riak.client.raw.http.ConversionUtil#convert(com.basho.riak.client.raw.DeleteMeta)}
+     */
+    @Test public void deleteMetaToRequestMeta() {
+        DeleteMeta dm = null;
+
+        RequestMeta rm = ConversionUtil.convert(dm);
+        assertNull("Expected a null request meta for a null delete meta", rm);
+
+        dm = new Builder().w(1).dw(2).pr(3).pw(4).r(5).rw(6).vclock(new BasicVClock(
+                                                                                    CharsetUtils.utf8StringToBytes("vclock"))).build();
+
+        rm = ConversionUtil.convert(dm);
+
+        assertEquals("Expected w of 1", "1", rm.getQueryParam(Constants.QP_W));
+        assertEquals("Expected dw of 2", "2", rm.getQueryParam(Constants.QP_DW));
+        assertEquals("Expected pr of 3", "3", rm.getQueryParam(Constants.QP_PR));
+        assertEquals("Expected pw of 4", "4", rm.getQueryParam(Constants.QP_PW));
+        assertEquals("Expected r of 5", "5", rm.getQueryParam(Constants.QP_R));
+        assertEquals("Expected rw of 6", "6", rm.getQueryParam(Constants.QP_RW));
+        assertEquals("Expected vclock of 'vclock'", "vclock", rm.getHeader(Constants.HDR_VCLOCK));
+    }
 }
