@@ -685,6 +685,9 @@ public final class ConversionUtil {
     }
 
     static RequestMeta convert(DeleteMeta deleteMeta) {
+        if(deleteMeta == null) {
+            return null;
+        }
         RequestMeta rm = convert(new FetchMeta(deleteMeta.getR(), deleteMeta.getPr(), null, null, null, null, null,
                                                null));
 
@@ -708,6 +711,6 @@ public final class ConversionUtil {
             rm.setHeader(Constants.HDR_VCLOCK, deleteMeta.getVclock().asString());
         }
 
-        return null;
+        return rm;
     }
 }
