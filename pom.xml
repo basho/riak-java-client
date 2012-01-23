@@ -138,7 +138,7 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<descriptors>
-						<descriptor>src/main/assembly/deps.xml</descriptor>
+						<descriptor>src/main/assembly/rjc-deps.xml</descriptor>
 					</descriptors>
 					<archive>
 					</archive>
