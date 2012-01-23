@@ -1,23 +1,24 @@
 <assembly>
-  <id>all</id>
+  <id>bin</id>
   <formats>
-    <format>jar</format>
+    <format>tar.gz</format>
+    <format>tar.bz2</format>
+    <format>zip</format>
   </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>
   <dependencySets>
     <dependencySet>
       <unpack>false</unpack>
       <scope>runtime</scope>
-      <outputDirectory>lib</outputDirectory>
-      <excludes>
-        <exclude>${groupId}:${artifactId}</exclude>
-      </excludes>
-    </dependencySet>
-    <dependencySet>
-      <unpack>true</unpack>
-      <includes>
-        <include>${groupId}:${artifactId}</include>
-      </includes>
+      <outputDirectory>/</outputDirectory>
     </dependencySet>
   </dependencySets>
+  <fileSets>
+    <fileSet>
+      <directory>target</directory> 
+      <outputDirectory>/</outputDirectory> 
+      <includes>
+        <include>*.jar</include>
+      </includes>
+    </fileSet>
+  </fileSets>
 </assembly>
