@@ -597,4 +597,8 @@ public class RiakClient {
             }
         }
     }
+
+  public void shutdown()
+  {
+  }
 }

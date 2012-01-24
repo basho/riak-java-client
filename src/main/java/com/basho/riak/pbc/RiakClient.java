@@ -354,7 +354,7 @@ public class RiakClient implements RiakMessageCodes {
 		}
 	}
 
-	class BulkReader implements Runnable {
+  class BulkReader implements Runnable {
 
 		private ByteString[] vclocks;
 		private final RiakConnection c;
@@ -587,5 +587,10 @@ public class RiakClient implements RiakMessageCodes {
 		
 		return new MapReduceResponseSource(this, c, contentType);
 	}
+
+  public void shutdown()
+  {
+    pool.shutdown();
+  }
 
 }

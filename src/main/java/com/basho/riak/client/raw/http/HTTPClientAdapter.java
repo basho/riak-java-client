@@ -464,4 +464,8 @@ public class HTTPClientAdapter implements RawClient {
     public Transport getTransport() {
         return Transport.HTTP;
     }
+
+  public void shutdown(){
+    client.shutdown();
+  }
 }
