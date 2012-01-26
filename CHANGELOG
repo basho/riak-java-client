@@ -1,3 +1,42 @@
+1.0.3
+-------------
+This is a patch release that fixes a few minor issues. The one 
+non-trivial change is the fixing of where the client would attempt to 
+convert Riak Objects to JSON (b21fcfc).
+
+**Changes**
+f8010a9 Russell Brown Fix whitespace in Niklas' contribution
+1fdfbae Niklas Gawell Added store without key functionality to http client
+3a9ff1e Russell Brown Merge pull request #89 from basho/gh-88
+e69ff25 Russell Brown Fix http Conversion of DeleteMeta to return the built value (not null)
+5f67b84 Russell Brown Merge pull request #86 from basho/zd947_search
+ea7a6d9 Russell Brown Remove the search precommit hook from the list of precommit hooks if it is present
+fff007c Russell Brown Merge pull request #87 from basho/wrd-spelling-fix
+a2d0379 Reid Draper s/NOT/NOTE
+f677313 Russell Brown Update JavaDoc for new WriteBucket constructor
+3bf5798 Russell Brown Add API for disabling search on a bucket
+fc44b95 Russell Brown Merge pull request #84 from basho/no_converter
+575ba09 Russell Brown Merge pull request #85 from bretthoerner/master
+536c374 Brett Hoerner Bump jackson to 1.9.2
+034c2c4 Russell Brown Remove Betbuy test
+b21fcfc Russell Brown Detect store/fetch of Riak Objects and don't attempt to convert
+b4615d9 Russell Brown Merge pull request #83 from basho/az935_pb_errors
+014efee Russell Brown Add backwards compatibile fallback for pre 1.1 Riak
+6c7e73c Russell Brown Remove hack to work around PB MapReduce errors difference from HTTP
+794b633 Russell Brown Merge pull request #80 from basho/bz1296_mr_failFast
+189e1e0 Russell Brown Merge pull request #81 from pramodsadalage/master
+258c242 Pramod Update README.org
+80a0d7f Russell Brown Merge pull request #79 from basho/bz1299_ts
+d847872 Russell Brown Remove RiakObjectTest and move last modified test to TestRiakObject
+2f93930 Russell Brown Add validation to MapReduce before execution
+5873573 Russell Brown Remove redundant test setup method
+2876641 Russell Brown Fix pbc RiakObject timestamp conversion bug
+8459ce3 Russell Brown Merge pull request #78 from basho/gh-71
+076305d Russell Brown Fix broken from(Config) method in PB client config builder
+3025820 Russell Brown Bump pom version
+
+
+
 1.0.2
 -------------
 This is a patch release that fixes a couple of minor bugs.
