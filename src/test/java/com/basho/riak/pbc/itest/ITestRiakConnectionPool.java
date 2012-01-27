@@ -13,9 +13,16 @@
  */
 package com.basho.riak.pbc.itest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.RiakException;
+import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.http.Hosts;
+import com.basho.riak.client.raw.pbc.PBClientConfig;
+import com.basho.riak.client.raw.pbc.PBClusterConfig;
+import com.basho.riak.pbc.AcquireConnectionTimeoutException;
+import com.basho.riak.pbc.PublicRiakConnection;
+import com.basho.riak.pbc.RiakConnectionPool;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,12 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.junit.Test;
-
-import com.basho.riak.client.http.Hosts;
-import com.basho.riak.pbc.AcquireConnectionTimeoutException;
-import com.basho.riak.pbc.PublicRiakConnection;
-import com.basho.riak.pbc.RiakConnectionPool;
+import static org.junit.Assert.*;
 
 /**
  * @author russell
@@ -128,6 +130,21 @@ public class ITestRiakConnectionPool {
         int maxConnections = 10;
 
         doConcurrentAcquire(numTasks, maxConnections);
+    }
+
+    @Test public void getConnection_clusterpoolshutdown() throws Exception {
+        PBClusterConfig config = new PBClusterConfig(4);
+        config.addClient(new PBClientConfig.Builder().withHost(HOST).withPort(PORT).build());
+
+        IRiakClient riak=RiakFactory.newClient(config);
+        riak.ping();
+        riak.shutdown();
+        try{
+          riak.ping();
+          assertTrue("Use of client after shutdown should fail",false);
+        } catch(IllegalStateException e){
+          // Ignored
+        }
     }
 
     private void doConcurrentAcquire(int numTasks, int maxConnections) throws Exception {

@@ -496,7 +496,7 @@ public class PBClientAdapter implements RawClient {
         return Transport.PB;
     }
 
-  public void shutdown(){
-    client.shutdown();
-  }
+    public void shutdown(){
+        client.shutdown();
+    }
 }

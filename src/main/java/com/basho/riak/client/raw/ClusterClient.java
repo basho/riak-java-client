@@ -282,10 +282,10 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.fetchIndex(indexQuery);
     }
 
-  public void shutdown(){
-    for(RawClient rc : cluster){
-      rc.shutdown();
+    public void shutdown(){
+        for(RawClient rc : cluster){
+            rc.shutdown();
+        }
     }
-  }
 
 }

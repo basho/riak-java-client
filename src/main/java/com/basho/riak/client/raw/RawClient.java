@@ -268,5 +268,5 @@ public interface RawClient {
      */
     Transport getTransport();
 
-  void shutdown();
+    void shutdown();
 }

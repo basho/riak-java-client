@@ -217,7 +217,7 @@ public final class DefaultRiakClient implements IRiakClient {
         return rawClient.getTransport();
     }
 
-  public void shutdown(){
-    rawClient.shutdown();
-  }
+    public void shutdown(){
+        rawClient.shutdown();
+    }
 }
