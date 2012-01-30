@@ -53,6 +53,7 @@ import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
+import com.basho.riak.client.query.indexes.KeyIndex;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
 
@@ -248,6 +249,10 @@ public abstract class ITestBucket {
         empty = b.fetchIndex(BinIndex.named("unknown")).withValue("unkown").execute();
 
         assertEquals(0, empty.size());
+
+        // fetch all keys using magic keys index
+        List<String> all = b.fetchIndex(KeyIndex.index).from("a").to("z").execute();
+        assertEquals(3, all.size());
     }
 
     @Test public void conditionalFetch() throws Exception {
