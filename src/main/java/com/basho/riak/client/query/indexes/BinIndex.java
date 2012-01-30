@@ -17,11 +17,11 @@ package com.basho.riak.client.query.indexes;
  * @author russell
  * 
  */
-public final class BinIndex extends RiakIndex<String> {
+public class BinIndex extends RiakIndex<String> {
 
     private static final String SUFFIX = "_bin";
 
-    private BinIndex(String name) {
+    protected BinIndex(String name) {
         super(name);
     }
 
