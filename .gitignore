@@ -3,7 +3,6 @@ lib
 classes
 target
 .settings
-*.xml
 *.jar
 .classpath
 .project
