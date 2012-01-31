@@ -189,7 +189,7 @@
                     <id>githubUpload</id>
                     <activation>
                         <property>
-                            <name>github.upload</name>
+                            <name>github.downloads</name>
                             <value>true</value>
                         </property>
                     </activation>
