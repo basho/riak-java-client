@@ -99,12 +99,24 @@
         <build>
 		<plugins>
 			<plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+                                <version>2.3.2</version>
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
 				</configuration>
 			</plugin>
+                        <plugin>
+                            <groupId>com.github.github</groupId>
+                            <artifactId>downloads-maven-plugin</artifactId>
+                            <version>0.4</version>
+                            <configuration>
+                                <description>${project.version} release of ${project.name}</description>
+                                <override>false</override>
+                                <includeAttached>true</includeAttached>
+                            </configuration>
+                        </plugin>
 			<plugin>
 		        <groupId>org.codehaus.mojo</groupId>
 		        <artifactId>cobertura-maven-plugin</artifactId>
