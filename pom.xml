@@ -99,7 +99,9 @@
         <build>
 		<plugins>
 			<plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+                                <version>2.3.2</version>
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
@@ -183,6 +185,37 @@
 				</plugins>
 			</build>
 		</profile>
+                <profile>
+                    <id>githubUpload</id>
+                    <activation>
+                        <property>
+                            <name>github.downloads</name>
+                            <value>true</value>
+                        </property>
+                    </activation>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>com.github.github</groupId>
+                                <artifactId>downloads-maven-plugin</artifactId>
+                                <version>0.4</version>
+                                <configuration>
+                                    <description>${project.version} release of ${project.name}</description>
+                                    <override>false</override>
+                                    <includeAttached>true</includeAttached>
+                                </configuration>
+                                <executions>
+                                    <execution>
+                                        <goals>
+                                        <goal>upload</goal>
+                                        </goals>
+                                        <phase>install</phase>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </profile>
                 <profile>
                 <id>dependencyArchive</id>
                 <activation>
