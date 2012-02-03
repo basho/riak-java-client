@@ -131,6 +131,18 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.1</version>
 		      </plugin>
+		      <plugin>
+      <artifactId>maven-jar-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>test-jar</id>
+          <phase>package</phase>
+          <goals>
+            <goal>test-jar</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
                     </plugins>
 	</build>
 	<profiles>
@@ -232,6 +244,39 @@
                             <configuration>
                                 <descriptors>
                                     <descriptor>src/main/assembly/rjc-deps.xml</descriptor>
+                                </descriptors>
+                                <archive>
+                                </archive>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>make-assembly</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>single</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </build>
+            </profile>
+             <profile>
+                <id>depsAndTests</id>
+                <activation>
+                    <property>
+                        <name>bundle.be_fat</name>
+                        <value>true</value>
+                    </property>
+                </activation>
+                <build>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-assembly-plugin</artifactId>
+                            <version>2.2.1</version>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>src/main/assembly/rjc-be-fat.xml</descriptor>
                                 </descriptors>
                                 <archive>
                                 </archive>
