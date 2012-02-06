@@ -43,6 +43,11 @@ public class NamedErlangFunction implements NamedFunction {
      */
     public static final Function REDUCE_IDENTITY = new NamedErlangFunction("riak_kv_mapreduce", "reduce_identity");
 
+    /**
+     * Riak_kv_mapreduce:map_object_value
+     */
+    public static final Function MAP_OBJECT_VALUE = new NamedErlangFunction("riak_kv_mapreduce", "map_object_value");
+
     private final String mod;
     private final String fun;
 

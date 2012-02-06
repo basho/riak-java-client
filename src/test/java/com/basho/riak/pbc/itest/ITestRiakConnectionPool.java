@@ -13,16 +13,9 @@
  */
 package com.basho.riak.pbc.itest;
 
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakFactory;
-import com.basho.riak.client.http.Hosts;
-import com.basho.riak.client.raw.pbc.PBClientConfig;
-import com.basho.riak.client.raw.pbc.PBClusterConfig;
-import com.basho.riak.pbc.AcquireConnectionTimeoutException;
-import com.basho.riak.pbc.PublicRiakConnection;
-import com.basho.riak.pbc.RiakConnectionPool;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -33,7 +26,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.http.Hosts;
+import com.basho.riak.client.query.functions.JSSourceFunction;
+import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.pbc.PBClientConfig;
+import com.basho.riak.client.raw.pbc.PBClusterConfig;
+import com.basho.riak.pbc.AcquireConnectionTimeoutException;
+import com.basho.riak.pbc.PublicRiakConnection;
+import com.basho.riak.pbc.RiakClient;
+import com.basho.riak.pbc.RiakConnectionPool;
 
 /**
  * @author russell
@@ -199,5 +205,59 @@ public class ITestRiakConnectionPool {
         }
 
         return tasks;
+    }
+
+    @Test public void shutDownWorksAfterError() throws Exception {
+        final InetAddress host = InetAddress.getByName(HOST);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000);
+        pool.start();
+
+        assertEquals("RUNNING", pool.getPoolState());
+        RiakClient delegate = new RiakClient(pool);
+        IRiakClient c = RiakFactory.pbcClient(delegate);
+
+        try {
+            c.mapReduce("bucket").addMapPhase(new JSSourceFunction("this is not javascript")).execute();
+        } catch (Exception e) {
+            // NO-OP
+        }
+
+        c.shutdown();
+
+        int start = 0;
+        boolean shutdown = false;
+
+        while (start < 10 && !shutdown) {
+            start = start + 1;
+            shutdown = pool.getPoolState().equals("SHUTDOWN");
+            Thread.sleep(1000);
+        }
+        assertTrue("Expected pool to shutdown within 10 seconds", shutdown);
+    }
+
+    @Test public void shutdownWorksAfterSuccessfulMapReduce() throws Exception {
+        final InetAddress host = InetAddress.getByName(HOST);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000);
+        pool.start();
+        assertEquals("RUNNING", pool.getPoolState());
+        RiakClient delegate = new RiakClient(pool);
+        IRiakClient c = RiakFactory.pbcClient(delegate);
+        Bucket b = c.fetchBucket("bucket").execute();
+        b.store("key", "value").execute();
+
+        c.mapReduce("bucket").addMapPhase(NamedErlangFunction.MAP_OBJECT_VALUE).execute();
+
+        c.shutdown();
+
+        int start = 0;
+        boolean shutdown = false;
+
+        while (start < 10 && !shutdown) {
+            start = start + 1;
+            shutdown = pool.getPoolState().equals("SHUTDOWN");
+            Thread.sleep(1000);
+        }
+
+        assertTrue("Expected pool to shutdown within 10 seconds", shutdown);
     }
 }

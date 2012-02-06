@@ -412,10 +412,10 @@ public class PBClientAdapter implements RawClient {
         IRequestMeta meta = new RequestMeta();
         meta.contentType(Constants.CTYPE_JSON);
         try {
-        MapReduceResponseSource resp = client.mapReduce(spec.getJSON(), meta);
-        return convert(resp);
+            MapReduceResponseSource resp = client.mapReduce(spec.getJSON(), meta);
+            return convert(resp);
         } catch (RiakError e) {
-            if( JSONErrorParser.isTimeoutException(e.getMessage())) {
+            if (JSONErrorParser.isTimeoutException(e.getMessage())) {
                 throw new MapReduceTimeoutException();
             } else {
                 throw new IOException(e.getMessage());
