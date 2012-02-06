@@ -76,14 +76,19 @@ public class KeySource extends RiakStreamClient<ByteString> {
 				}
 			}
 
-			byte[] data = conn.receive(RiakMessageCodes.MSG_ListKeysResp);
-			if (data == null) {
-				close();
-				throw new IOException("received empty response");
-			}
+            try {
+                byte[] data = conn.receive(RiakMessageCodes.MSG_ListKeysResp);
+                if (data == null) {
+                    close();
+                    throw new IOException("received empty response");
+                }
 
-			r = RPB.RpbListKeysResp.parseFrom(data);
-			i = 0;
+                r = RPB.RpbListKeysResp.parseFrom(data);
+                i = 0;
+            } catch (RiakError e) {
+                close();
+                throw e;
+            }
 
 			// did we got an empty chunk! get another one.
 		} while (r.getKeysCount() == 0);

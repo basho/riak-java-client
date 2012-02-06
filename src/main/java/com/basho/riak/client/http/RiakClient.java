@@ -13,32 +13,19 @@
  */
 package com.basho.riak.client.http;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-
+import com.basho.riak.client.http.request.MapReduceBuilder;
+import com.basho.riak.client.http.request.RequestMeta;
+import com.basho.riak.client.http.request.RiakWalkSpec;
+import com.basho.riak.client.http.response.*;
+import com.basho.riak.client.http.util.ClientHelper;
+import com.basho.riak.client.http.util.Constants;
 import org.apache.http.client.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.basho.riak.client.http.RiakObject;
-import com.basho.riak.client.http.request.MapReduceBuilder;
-import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.request.RiakWalkSpec;
-import com.basho.riak.client.http.response.BucketResponse;
-import com.basho.riak.client.http.response.FetchResponse;
-import com.basho.riak.client.http.response.HttpResponse;
-import com.basho.riak.client.http.response.IndexResponse;
-import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.http.response.MapReduceResponse;
-import com.basho.riak.client.http.response.RiakExceptionHandler;
-import com.basho.riak.client.http.response.RiakIORuntimeException;
-import com.basho.riak.client.http.response.RiakResponseRuntimeException;
-import com.basho.riak.client.http.response.StoreResponse;
-import com.basho.riak.client.http.response.StreamHandler;
-import com.basho.riak.client.http.response.WalkResponse;
-import com.basho.riak.client.http.util.ClientHelper;
-import com.basho.riak.client.http.util.Constants;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Primary interface for interacting with Riak via HTTP.
@@ -596,5 +583,9 @@ public class RiakClient {
                                                 "helper.toss() returns a unsuccessful result, so BucketResponse shouldn't try to parse it or throw");
             }
         }
+    }
+
+    public void shutdown()
+    {
     }
 }

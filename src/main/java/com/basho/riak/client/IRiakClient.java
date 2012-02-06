@@ -205,4 +205,6 @@ public interface IRiakClient {
      * @return a {@link Transport} or null if not implemented.
      */
     Transport getTransport();
+
+    void shutdown();
 }

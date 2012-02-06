@@ -267,4 +267,6 @@ public interface RawClient {
      * @return the {@link Transport} for the client or null if not implemented.
      */
     Transport getTransport();
+
+    void shutdown();
 }
