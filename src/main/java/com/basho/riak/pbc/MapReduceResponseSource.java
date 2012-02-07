@@ -83,15 +83,18 @@ public class MapReduceResponseSource extends
 			}
 		}
 
-		byte[] data = conn.receive(RiakMessageCodes.MSG_MapRedResp);
-		if (data == null) {
-			close();
-			throw new IOException("received empty response");
-		}
-
-		r = RPB.RpbMapRedResp.parseFrom(data);
-		is_given = false;
-
+        try {
+            byte[] data = conn.receive(RiakMessageCodes.MSG_MapRedResp);
+            if (data == null) {
+                close();
+                throw new IOException("received empty response");
+            }
+            r = RPB.RpbMapRedResp.parseFrom(data);
+            is_given = false;
+        } catch (RiakError e) {
+            close();
+            throw e;
+        }
 	}
 
 	/**

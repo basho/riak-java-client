@@ -28,9 +28,17 @@ import java.util.concurrent.Future;
 
 import org.junit.Test;
 
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.http.Hosts;
+import com.basho.riak.client.query.functions.JSSourceFunction;
+import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.raw.pbc.PBClientConfig;
+import com.basho.riak.client.raw.pbc.PBClusterConfig;
 import com.basho.riak.pbc.AcquireConnectionTimeoutException;
 import com.basho.riak.pbc.PublicRiakConnection;
+import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakConnectionPool;
 
 /**
@@ -130,6 +138,21 @@ public class ITestRiakConnectionPool {
         doConcurrentAcquire(numTasks, maxConnections);
     }
 
+    @Test public void getConnection_clusterpoolshutdown() throws Exception {
+        PBClusterConfig config = new PBClusterConfig(4);
+        config.addClient(new PBClientConfig.Builder().withHost(HOST).withPort(PORT).build());
+
+        IRiakClient riak=RiakFactory.newClient(config);
+        riak.ping();
+        riak.shutdown();
+        try{
+          riak.ping();
+          assertTrue("Use of client after shutdown should fail",false);
+        } catch(IllegalStateException e){
+          // Ignored
+        }
+    }
+
     private void doConcurrentAcquire(int numTasks, int maxConnections) throws Exception {
         final InetAddress host = InetAddress.getByName(HOST);
         // create a pool
@@ -182,5 +205,59 @@ public class ITestRiakConnectionPool {
         }
 
         return tasks;
+    }
+
+    @Test public void shutDownWorksAfterError() throws Exception {
+        final InetAddress host = InetAddress.getByName(HOST);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000);
+        pool.start();
+
+        assertEquals("RUNNING", pool.getPoolState());
+        RiakClient delegate = new RiakClient(pool);
+        IRiakClient c = RiakFactory.pbcClient(delegate);
+
+        try {
+            c.mapReduce("bucket").addMapPhase(new JSSourceFunction("this is not javascript")).execute();
+        } catch (Exception e) {
+            // NO-OP
+        }
+
+        c.shutdown();
+
+        int start = 0;
+        boolean shutdown = false;
+
+        while (start < 10 && !shutdown) {
+            start = start + 1;
+            shutdown = pool.getPoolState().equals("SHUTDOWN");
+            Thread.sleep(1000);
+        }
+        assertTrue("Expected pool to shutdown within 10 seconds", shutdown);
+    }
+
+    @Test public void shutdownWorksAfterSuccessfulMapReduce() throws Exception {
+        final InetAddress host = InetAddress.getByName(HOST);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000);
+        pool.start();
+        assertEquals("RUNNING", pool.getPoolState());
+        RiakClient delegate = new RiakClient(pool);
+        IRiakClient c = RiakFactory.pbcClient(delegate);
+        Bucket b = c.fetchBucket("bucket").execute();
+        b.store("key", "value").execute();
+
+        c.mapReduce("bucket").addMapPhase(NamedErlangFunction.MAP_OBJECT_VALUE).execute();
+
+        c.shutdown();
+
+        int start = 0;
+        boolean shutdown = false;
+
+        while (start < 10 && !shutdown) {
+            start = start + 1;
+            shutdown = pool.getPoolState().equals("SHUTDOWN");
+            Thread.sleep(1000);
+        }
+
+        assertTrue("Expected pool to shutdown within 10 seconds", shutdown);
     }
 }
