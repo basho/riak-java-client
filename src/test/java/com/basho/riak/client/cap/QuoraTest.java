@@ -28,11 +28,11 @@ public class QuoraTest {
      * Test method for {@link com.basho.riak.client.cap.Quora#getValue()}.
      */
     @Test public void testGetValue() {
-        assertEquals(Integer.MIN_VALUE, Quora.ALL.getValue());
-        assertEquals(Integer.MIN_VALUE + 1, Quora.ONE.getValue());
-        assertEquals(Integer.MIN_VALUE + 2, Quora.QUORUM.getValue());
-        assertEquals(Integer.MIN_VALUE + 3, Quora.DEFAULT.getValue());
-        assertEquals(Integer.MIN_VALUE + 4, Quora.INTEGER.getValue());
+        assertEquals(-4, Quora.ALL.getValue());
+        assertEquals(-2, Quora.ONE.getValue());
+        assertEquals(-3, Quora.QUORUM.getValue());
+        assertEquals(-5, Quora.DEFAULT.getValue());
+        assertEquals(Integer.MIN_VALUE, Quora.INTEGER.getValue());
     }
 
     /**

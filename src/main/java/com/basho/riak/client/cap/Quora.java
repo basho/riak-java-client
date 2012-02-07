@@ -20,8 +20,24 @@ package com.basho.riak.client.cap;
  * 
  */
 public enum Quora {
-    ALL(Integer.MIN_VALUE, "all"), ONE(Integer.MIN_VALUE + 1, "one"), QUORUM(Integer.MIN_VALUE + 2, "quorum"), DEFAULT(
-            Integer.MIN_VALUE + 3, "default"), INTEGER(Integer.MIN_VALUE + 4, "int");
+    /*
+     * Riak uses certain "magic" numbers in the protocol buffers transport. 
+     * They are unsigned 32 bit ints:
+     * 'one' (4294967295-1), 'quorum' (4294967295-2), 'all' (4294967295-3), 'default' (4294967295-4)
+     * The way java protocol buffers works is that it uses a (signed) java int
+     * on the java side, casting it to unsigned on the other (erlang) side
+     */
+    
+     /*
+      * "one" = (int)(4294967295L - 1L); 
+      * "quorum" = (int)(4294967295L - 2L); 
+      * "all" = (int)(4294967295L - 3L); 
+      * "default" =  (int)(4294967295L - 4L); 
+      */ 
+    
+    
+    ONE(-2, "one"), QUORUM(-3, "quorum"), ALL(-4, "all"), 
+    DEFAULT(-5, "default"), INTEGER(Integer.MIN_VALUE, "int");
 
     private final int value;
     private final String name;
