@@ -56,7 +56,7 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
      * 
      * @throws RiakResponseRuntimeException
      *             If the server returns a 300 without a proper multipart/mixed
-     *             body
+     *             body or the server returns a 400 Bad Request
      * @throws RiakIORuntimeException
      *             If an error occurs during communication with the Riak server.
      */
@@ -91,7 +91,11 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
             }
 
             object = siblings.iterator().next();
-        } else if (r.isSuccess()) {
+        } 
+        else if (r.getStatusCode() == 400) {
+            throw new RiakResponseRuntimeException(r, r.getBodyAsString());
+        }
+        else if (r.isSuccess()) {
             object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),
                                     headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta,
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),

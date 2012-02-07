@@ -31,11 +31,7 @@ import com.basho.riak.client.http.plain.PlainClient;
 import com.basho.riak.client.http.plain.RiakIOException;
 import com.basho.riak.client.http.plain.RiakResponseException;
 import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.response.BucketResponse;
-import com.basho.riak.client.http.response.FetchResponse;
-import com.basho.riak.client.http.response.HttpResponse;
-import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.http.response.StoreResponse;
+import com.basho.riak.client.http.response.*;
 import com.basho.riak.client.http.util.Constants;
 
 /**
@@ -193,6 +189,31 @@ public class ITestBasic {
         assertNull(o);
     }
 
+    @Test public void fetchWithRGreaterN() throws RiakIOException, RiakResponseException {
+        final RiakClient c = new RiakClient(RIAK_URL);
+        final String bucket = UUID.randomUUID().toString();
+        final String key = UUID.randomUUID().toString();
+        final byte[] value = utf8StringToBytes("value");
+        
+        RiakBucketInfo bucketInfo = new RiakBucketInfo();
+        bucketInfo.setNVal(3);
+
+        c.setBucketSchema(bucket, bucketInfo);
+        RiakObject o = new RiakObject(bucket, key, value);
+
+        final RequestMeta rm = WRITE_3_REPLICAS();
+
+        StoreResponse storeresp = c.store(o, rm);
+        assertSuccess(storeresp);
+        
+        try {
+            c.fetch(bucket, key, REQUIRE_7_REPLICAS());
+            fail("Expected RiakResponseRuntimeException when R > N");
+        } catch (RiakResponseRuntimeException re) {
+            // ignore this because it means the test passed!
+        }
+    }
+    
     @Test public void storeWithReturnBody() {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String bucket = UUID.randomUUID().toString();
