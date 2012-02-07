@@ -33,7 +33,7 @@ public final class BucketPropertiesBuilder {
     private Quorum pr;
     private Quorum pw;
     private Boolean notFoundOK;
-    private boolean basicQuorum;
+    private Boolean basicQuorum;
     private Collection<NamedFunction> precommitHooks;
     private Collection<NamedErlangFunction> postcommitHooks;
     private Long oldVClock;
