@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.Quorum;
 import java.util.Date;
 
 import com.basho.riak.client.cap.VClock;
@@ -25,8 +27,8 @@ import com.basho.riak.client.cap.VClock;
  */
 public class FetchMeta {
 
-    private final Integer r;
-    private final Integer pr;
+    private final Quorum r;
+    private final Quorum pr;
     private final Boolean notFoundOK;
     private final Boolean basicQuorum;
     private final Boolean headOnly;
@@ -61,8 +63,28 @@ public class FetchMeta {
      */
     public FetchMeta(Integer r, Integer pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
             Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock) {
+        
+        // A lot of the old code depends on r and pr being returned as null if
+        // they aren't set / passed in as null
+        this( (null == r ? null : new Quorum(r)), 
+              (null == pr ? null : new Quorum(pr)),
+              notFoundOK,
+              basicQuorum,
+              headOnly,
+              returnDeletedVClock,
+              ifModifiedSince,
+              ifModifiedVClock
+            );
+        
+    }
+
+    
+    public FetchMeta(Quorum r, Quorum pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
+            Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock) {
+        
         this.r = r;
         this.pr = pr;
+        
         this.notFoundOK = notFoundOK;
         this.basicQuorum = basicQuorum;
         this.headOnly = headOnly;
@@ -70,7 +92,7 @@ public class FetchMeta {
         this.ifModifiedVClock = ifModifiedVClock;
         this.ifModifiedSince = ifModifiedSince;
     }
-
+    
     /**
      * @return true if the r parameter is set, false otherwise
      */
@@ -81,7 +103,7 @@ public class FetchMeta {
     /**
      * @return the r
      */
-    public Integer getR() {
+    public Quorum getR() {
         return r;
     }
 
@@ -94,7 +116,7 @@ public class FetchMeta {
     /**
      * @return the pr
      */
-    public Integer getPr() {
+    public Quorum getPr() {
         return pr;
     }
 
@@ -185,8 +207,8 @@ public class FetchMeta {
 
     // Builder
     public static class Builder {
-        private Integer r;
-        private Integer pr;
+        private Quorum r;
+        private Quorum pr;
         private Boolean notFoundOK;
         private Boolean basicQuorum;
         private Boolean headOnly;
@@ -211,15 +233,35 @@ public class FetchMeta {
         }
 
         public Builder r(int r) {
+            this.r = new Quorum(r);
+            return this;
+        }
+
+        public Builder r(Quora r) {
+            this.r = new Quorum(r);
+            return this;
+        }
+        
+        public Builder r(Quorum r) {
             this.r = r;
             return this;
         }
-
+        
         public Builder pr(int pr) {
-            this.pr = pr;
+            this.pr = new Quorum(pr);
             return this;
         }
 
+        public Builder pr(Quora pr) {
+            this.pr = new Quorum(pr);
+            return this;
+        }
+        
+        public Builder pr(Quorum pr) {
+            this.pr = pr;
+            return this;
+        }
+        
         public Builder notFoundOK(boolean notFoundOK) {
             this.notFoundOK = notFoundOK;
             return this;
@@ -255,6 +297,7 @@ public class FetchMeta {
      * @return a FetchMeta empty for everything except <code>headOnly</code>
      */
     public static FetchMeta head() {
-        return new FetchMeta(null, null, null, null, true, null, null, null);
+        // Cast first null to Quorum to avoid ambiguous constructor problem
+        return new FetchMeta((Quorum)null, null, null, null, true, null, null, null);
     }
 }

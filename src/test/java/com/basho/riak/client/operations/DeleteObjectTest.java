@@ -100,8 +100,8 @@ public class DeleteObjectTest {
 
         // verify captured fetch meta
         FetchMeta fm = fetchCaptor.getValue();
-        assertEquals(new Integer(1), fm.getR());
-        assertEquals(new Integer(2), fm.getPr());
+        assertEquals(1, fm.getR().getIntValue());
+        assertEquals(2, fm.getPr().getIntValue());
 
         // verify captured delete meta
         DeleteMeta dm = deleteCaptor.getValue();

@@ -22,11 +22,7 @@ import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
-import com.basho.riak.client.cap.ClobberMutation;
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.Mutation;
-import com.basho.riak.client.cap.Retrier;
-import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.raw.MatchFoundException;
@@ -144,6 +140,28 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * A store performs a fetch first (to get a vclock and resolve any conflicts), set the read quorum for the fetch
+     *
+     * @param r the read quorum for the pre-store fetch
+     * @return this
+     */
+    public StoreObject<T> r(Quora r) {
+        this.fetchObject.r(r);
+        return this;
+    }
+    
+    /**
+     * A store performs a fetch first (to get a vclock and resolve any conflicts), set the read quorum for the fetch
+     *
+     * @param r the read quorum for the pre-store fetch
+     * @return this
+     */
+    public StoreObject<T> r(Quorum r) {
+        this.fetchObject.r(r);
+        return this;
+    }
+    
+    /**
      * The pr for the pre-store fetch
      * @param pr
      * @return
@@ -154,6 +172,29 @@ public class StoreObject<T> implements RiakOperation<T> {
         return this;
     }
 
+    /**
+     * The pr for the pre-store fetch
+     * @param pr
+     * @return
+     * @see com.basho.riak.client.operations.FetchObject#pr(Quora)
+     */
+    public StoreObject<T> pr(Quora pr) {
+        this.fetchObject.pr(pr);
+        return this;
+    }
+    
+    /**
+     * The pr for the pre-store fetch
+     * @param pr
+     * @return
+     * @see com.basho.riak.client.operations.FetchObject#pr(Quorum)
+     */
+    public StoreObject<T> pr(Quorum pr) {
+        this.fetchObject.pr(pr);
+        return this;
+    }
+    
+    
     /**
      * if notfound_ok counts towards r count (for the pre-store fetch)
      * 

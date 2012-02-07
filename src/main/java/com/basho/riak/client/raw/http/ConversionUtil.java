@@ -671,11 +671,22 @@ public final class ConversionUtil {
         RequestMeta rm = new RequestMeta();
 
         if (fetchMeta.getR() != null) {
-            rm.setQueryParam(Constants.QP_R, fetchMeta.getR().toString());
+            if (fetchMeta.getR().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_R, fetchMeta.getR().getName());
+            } else {
+                rm.setQueryParam(Constants.QP_R, 
+                                 Integer.toString(fetchMeta.getR().getIntValue()));
+            }
+            
         }
 
         if (fetchMeta.getPr() != null) {
-            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPr().toString());
+            if (fetchMeta.getPr().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_PR, fetchMeta.getPr().getName());
+            } else {
+                rm.setQueryParam(Constants.QP_PR, 
+                                 Integer.toString(fetchMeta.getPr().getIntValue()));
+            }
         }
 
         if (fetchMeta.getNotFoundOK() != null) {

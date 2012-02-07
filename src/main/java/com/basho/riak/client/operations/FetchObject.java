@@ -22,10 +22,7 @@ import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.Retrier;
-import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.raw.FetchMeta;
@@ -130,7 +127,27 @@ public class FetchObject<T> implements RiakOperation<T> {
         builder.r(r);
         return this;
     }
-
+    
+    /**
+     * The read quorum for this fetch operation
+     * @param r an Quora for the read quorum
+     * @return this
+     */
+    public FetchObject<T> r(Quora r) {
+        builder.r(r);
+        return this;
+    }
+    
+    /**
+     * The read quorum for this fetch operation
+     * @param r an Quorum for the read quorum
+     * @return this
+     */
+    public FetchObject<T> r(Quorum r) {
+        builder.r(r);
+        return this;
+    }
+    
     /**
      * @param pr
      * @return
@@ -141,6 +158,28 @@ public class FetchObject<T> implements RiakOperation<T> {
         return this;
     }
 
+    /**
+     * @param pr
+     * @return
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#pr(Quora)
+     */
+    
+    public FetchObject<T> pr(Quora pr) {
+        builder.pr(pr);
+        return this;
+    }
+    
+    /**
+     * @param pr
+     * @return
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#pr(Quora)
+     */
+    
+    public FetchObject<T> pr(Quorum pr) {
+        builder.pr(pr);
+        return this;
+    }
+    
     /**
      * @param notFoundOK
      * @return
