@@ -386,10 +386,19 @@ public final class ConversionUtil {
         builder.w(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_W), Quorum.class));
         builder.dw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_DW), Quorum.class));
         builder.rw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_RW), Quorum.class));
-        builder.pr(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PR), Quorum.class));
-        builder.pw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PW), Quorum.class));
-        builder.basicQuorum(props.path(Constants.FL_SCHEMA_BASIC_QUORUM).getBooleanValue());
-        builder.notFoundOK(props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).getBooleanValue());
+        // TODO backwards compatibility - remove when riak goes 1.3
+        if(!props.path(Constants.FL_SCHEMA_PR).isMissingNode()) {
+            builder.pr(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PR), Quorum.class));
+        }
+        if(!props.path(Constants.FL_SCHEMA_PW).isMissingNode()) {
+            builder.pw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PW), Quorum.class));
+        }
+        if(!props.path(Constants.FL_SCHEMA_BASIC_QUORUM).isMissingNode()) {
+            builder.basicQuorum(props.path(Constants.FL_SCHEMA_BASIC_QUORUM).getBooleanValue());
+        }
+        if(!props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).isMissingNode()) {
+            builder.notFoundOK(props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).getBooleanValue());
+        }
 
         builder.chashKeyFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_CHASHFUN),
                                                            NamedErlangFunction.class));
