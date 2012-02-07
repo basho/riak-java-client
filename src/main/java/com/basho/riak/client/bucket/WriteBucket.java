@@ -87,6 +87,10 @@ public class WriteBucket implements RiakOperation<Bucket> {
         this.retrier = retrier;
         this.precommitHooks = bucket.getPrecommitHooks();
         this.postcommitHooks = bucket.getPostcommitHooks();
+        
+        // replace the default builder with one using the properties from the 
+        // bucket that was passed in.
+        builder = BucketPropertiesBuilder.from(bucket);
     }
 
     /**
