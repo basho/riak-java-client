@@ -21,7 +21,8 @@ import com.basho.riak.client.http.response.HttpResponse;
 public class Utils {
 
     public static RequestMeta WRITE_3_REPLICAS() { return RequestMeta.writeParams(3, 3); }
-
+    public static RequestMeta REQUIRE_7_REPLICAS() { return RequestMeta.readParams(7); }
+    
     public static void assertSuccess(HttpResponse response) {
         if (!response.isSuccess()) {
             StringBuilder msg = new StringBuilder("Failed ");
