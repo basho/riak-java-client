@@ -113,12 +113,10 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     ITestDomainBucketHTTP.class,
     ITestDomainBucketPB.class,
     ITestHTTPClient.class,
+    com.basho.riak.pbc.itest.ITestMapReduce.class,
     ITestHTTPLinkWalk.class,
     ITestPBLinkWalk.class,
     ITestMapReduce.class,
-    com.basho.riak.client.itest.ITestMapReduceHTTP.class,
-    com.basho.riak.client.itest.ITestMapReducePB.class,
-    com.basho.riak.pbc.itest.ITestMapReduce.class,
     ITestMapReduceSearch.class,
     com.basho.riak.client.itest.ITestMapReduceSearchHTTP.class,
     com.basho.riak.pbc.itest.ITestMapReduceSearch.class,
@@ -175,6 +173,8 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     TestWalkResponse.class,
     UnmodifiableIteratorTest.class,
     UsermetaConverterTest.class,
-    WriteBucketTest.class})
+    WriteBucketTest.class,
+    com.basho.riak.client.itest.ITestMapReduceHTTP.class,
+    com.basho.riak.client.itest.ITestMapReducePB.class})
 public class AllTests {
 }
