@@ -13,7 +13,6 @@
  */
 package com.basho.riak.pbc;
 
-import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.pbc.RPB.RpbGetReq;
 import com.google.protobuf.ByteString;
@@ -29,8 +28,8 @@ public class FetchMeta {
 
     private static final FetchMeta EMPTY = new FetchMeta(null, null, null, null, null, null, null);
 
-    private final Quorum r;
-    private final Quorum pr;
+    private final Integer r;
+    private final Integer pr;
     private final Boolean notFoundOK;
     private final Boolean basicQuorum;
     private final Boolean headOnly;
@@ -47,7 +46,7 @@ public class FetchMeta {
      * @param vtag
      *            if not null then a conditional fetch
      */
-    public FetchMeta(Quorum r, Quorum pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
+    public FetchMeta(Integer r, Integer pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
             Boolean returnDeletedVClock, VClock ifModifiedVClock) {
         this.r = r;
         this.pr = pr;
@@ -60,11 +59,11 @@ public class FetchMeta {
 
     public void write(RpbGetReq.Builder b) {
         if (r != null) {
-            b.setR(r.getIntValue());
+            b.setR(r);
         }
 
         if (pr != null) {
-            b.setPr(pr.getIntValue());
+            b.setPr(pr);
         }
 
         if (notFoundOK != null) {

@@ -71,12 +71,12 @@ public class DeleteObjectTest {
 
         // verify captured delete meta
         DeleteMeta dm = deleteCaptor.getValue();
-        assertEquals(new Integer(1), dm.getR());
-        assertEquals(new Integer(2), dm.getPr());
-        assertEquals(new Integer(3), dm.getW());
-        assertEquals(new Integer(4), dm.getDw());
-        assertEquals(new Integer(5), dm.getPw());
-        assertEquals(new Integer(6), dm.getRw());
+        assertEquals(1, dm.getR().getIntValue());
+        assertEquals(2, dm.getPr().getIntValue());
+        assertEquals(3, dm.getW().getIntValue());
+        assertEquals(4, dm.getDw().getIntValue());
+        assertEquals(5, dm.getPw().getIntValue());
+        assertEquals(6, dm.getRw().getIntValue());
         assertEquals(vclock, dm.getVclock());
     }
 
@@ -105,12 +105,12 @@ public class DeleteObjectTest {
 
         // verify captured delete meta
         DeleteMeta dm = deleteCaptor.getValue();
-        assertEquals(new Integer(1), dm.getR());
-        assertEquals(new Integer(2), dm.getPr());
-        assertEquals(new Integer(3), dm.getW());
-        assertEquals(new Integer(4), dm.getDw());
-        assertEquals(new Integer(5), dm.getPw());
-        assertEquals(new Integer(6), dm.getRw());
+        assertEquals(1, dm.getR().getIntValue());
+        assertEquals(2, dm.getPr().getIntValue());
+        assertEquals(3, dm.getW().getIntValue());
+        assertEquals(4, dm.getDw().getIntValue());
+        assertEquals(5, dm.getPw().getIntValue());
+        assertEquals(6, dm.getRw().getIntValue());
         assertEquals(vclock, dm.getVclock());
     }
 }

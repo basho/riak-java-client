@@ -211,11 +211,11 @@ public final class ConversionUtil {
     static RequestMeta convert(StoreMeta storeMeta, IRiakObject riakObject) {
         RequestMeta requestMeta = new RequestMeta();
         if (storeMeta.hasW()) {
-            requestMeta.w(storeMeta.getW());
+            requestMeta.w(storeMeta.getW().getIntValue());
         }
 
         if (storeMeta.hasDw()) {
-            requestMeta.dw(storeMeta.getDw());
+            requestMeta.dw(storeMeta.getDw().getIntValue());
         }
 
         if (storeMeta.hasReturnBody()) {
@@ -232,7 +232,7 @@ public final class ConversionUtil {
         }
 
         if (storeMeta.hasPw()) {
-            requestMeta.pw(storeMeta.getPw());
+            requestMeta.pw( storeMeta.getPw().getIntValue());
         }
 
         if (storeMeta.hasIfNoneMatch()) {
@@ -455,8 +455,14 @@ public final class ConversionUtil {
      */
     static com.basho.riak.pbc.FetchMeta convert(FetchMeta fm) {
         if (fm != null) {
-            return new com.basho.riak.pbc.FetchMeta(fm.getR(), fm.getPr(), fm.getNotFoundOK(), fm.getBasicQuorum(),
-                                                    fm.getHeadOnly(), fm.getReturnDeletedVClock(), fm.getIfModifiedVClock());
+            return new com.basho.riak.pbc.FetchMeta( fm.hasR() ? fm.getR().getIntValue() : null, 
+                                                     fm.hasPr() ? fm.getPr().getIntValue() : null, 
+                                                     fm.getNotFoundOK(), 
+                                                     fm.getBasicQuorum(),
+                                                     fm.getHeadOnly(), 
+                                                     fm.getReturnDeletedVClock(), 
+                                                     fm.getIfModifiedVClock()
+                                                   );
         } else {
             return com.basho.riak.pbc.FetchMeta.empty();
         }
@@ -469,7 +475,14 @@ public final class ConversionUtil {
      */
     static com.basho.riak.pbc.DeleteMeta convert(DeleteMeta dm) {
         if (dm != null) {
-            return new com.basho.riak.pbc.DeleteMeta(dm.getR(), dm.getPr(), dm.getW(), dm.getDw(), dm.getPw(), dm.getRw(), nullSafeToBytes(dm.getVclock()));
+            return new com.basho.riak.pbc.DeleteMeta( dm.hasR() ? dm.getR().getIntValue() : null, 
+                                                      dm.hasPr() ? dm.getPr().getIntValue() : null, 
+                                                      dm.hasW() ? dm.getW().getIntValue() : null, 
+                                                      dm.hasDw() ? dm.getDw().getIntValue() : null, 
+                                                      dm.hasPw() ? dm.getPw().getIntValue() : null , 
+                                                      dm.hasRw() ? dm.getRw().getIntValue() : null, 
+                                                      nullSafeToBytes(dm.getVclock())
+                                                    );
         } else {
             return com.basho.riak.pbc.DeleteMeta.empty();
         }

@@ -202,7 +202,7 @@ public final class ConversionUtil {
      */
     static RequestMeta convert(StoreMeta storeMeta) {
         RequestMeta requestMeta = RequestMeta.writeParams(storeMeta.getW(), storeMeta.getDw());
-
+        
         if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(true));
         } else {
@@ -718,19 +718,43 @@ public final class ConversionUtil {
                                                null));
 
         if (deleteMeta.hasW()) {
-            rm.setQueryParam(Constants.QP_W, deleteMeta.getW().toString());
+            if (deleteMeta.getW().isSymbolic())
+                rm.setQueryParam(Constants.QP_W, deleteMeta.getW().getName());
+            else {
+                rm.setQueryParam( Constants.QP_W, 
+                                  String.valueOf(deleteMeta.getW().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasPw()) {
-            rm.setQueryParam(Constants.QP_PW, deleteMeta.getPw().toString());
+            if (deleteMeta.getPw().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_PW, deleteMeta.getPw().getName());
+            } else {
+                rm.setQueryParam( Constants.QP_PW,
+                                  String.valueOf(deleteMeta.getPw().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasDw()) {
-            rm.setQueryParam(Constants.QP_DW, deleteMeta.getDw().toString());
+            if (deleteMeta.getDw().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_DW, deleteMeta.getDw().getName());
+            } else {
+                rm.setQueryParam( Constants.QP_DW, 
+                                  String.valueOf(deleteMeta.getDw().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasRw()) {
-            rm.setQueryParam(Constants.QP_RW, deleteMeta.getRw().toString());
+            if (deleteMeta.getRw().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_RW, deleteMeta.getRw().getName());
+            } else {
+                rm.setQueryParam( Constants.QP_RW,
+                                  String.valueOf(deleteMeta.getRw().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasVclock()) {
