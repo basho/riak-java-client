@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.Quorum;
 import java.util.Date;
 
 /**
@@ -25,9 +27,9 @@ public class StoreMeta {
 
     private static final StoreMeta EMPTY = new StoreMeta(null, null, null, false, null, null);
 
-    private final Integer w;
-    private final Integer dw;
-    private final Integer pw;
+    private final Quorum w;
+    private final Quorum dw;
+    private final Quorum pw;
     private final Boolean returnBody;
     private final Boolean returnHead;
     private final Boolean ifNoneMatch;
@@ -56,7 +58,14 @@ public class StoreMeta {
      *            in Riak
      */
     public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNoneMatch, Boolean ifNotModified) {
-        this(w, dw, pw, returnBody, null, ifNoneMatch, ifNotModified);
+        this(null == w ? null : new Quorum(w), 
+             null == dw ? null : new Quorum(dw), 
+             null == pw ? null : new Quorum(pw), 
+             returnBody, 
+             null, 
+             ifNoneMatch, 
+             ifNotModified
+            );
     }
 
     /**
@@ -80,6 +89,38 @@ public class StoreMeta {
      *            in Riak
      */
     public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
+                     Boolean ifNotModified) {
+        this(null == w ? null : new Quorum(w), 
+             null == dw ? null : new Quorum(dw), 
+             null == pw ? null : new Quorum(pw), 
+             returnBody, 
+             returnHead, 
+             ifNoneMatch, 
+             ifNotModified
+        );
+    }
+    
+    /**
+     * Create a StoreMeta, accepts <code>null</code>s for any parameter
+     * 
+     * @param w
+     *            the write quorum for a store operation
+     * @param dw
+     *            the durable write quorum for a store operation
+     * @param pw
+     *            the primary write quorum
+     * @param returnBody
+     *            should the store operation return the new data item and its
+     *            meta data
+     * @param returnHead
+     *            should the store operation return only the meta data
+     * @param ifNoneMatch
+     *            only store if bucket/key does not exist
+     * @param ifNotModified
+     *            only store is the vclock supplied on store matches the vclock
+     *            in Riak
+     */
+    public StoreMeta(Quorum w, Quorum dw, Quorum pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
             Boolean ifNotModified) {
         this.w = w;
         this.dw = dw;
@@ -94,7 +135,7 @@ public class StoreMeta {
      * The write quorum
      * @return an Integer or null if no write quorum set
      */
-    public Integer getW() {
+    public Quorum getW() {
         return w;
     }
 
@@ -110,7 +151,7 @@ public class StoreMeta {
      * The durable write quorum
      * @return an Integer or <code>null</code> if the durable write quorum is not set
      */
-    public Integer getDw() {
+    public Quorum getDw() {
         return dw;
     }
 
@@ -153,7 +194,7 @@ public class StoreMeta {
      * 
      * @return the pw or <code>null</code> if it is not set.
      */
-    public Integer getPw() {
+    public Quorum getPw() {
         return pw;
     }
 
@@ -283,13 +324,13 @@ public class StoreMeta {
      * @return a StoreMeta with only the headOnly set to true
      */
     public static StoreMeta headOnly() {
-        return new StoreMeta(null, null, null, null, true, null, null);
+        return new StoreMeta((Quorum)null, null, null, null, true, null, null);
     }
 
     public static class Builder {
-        private Integer w;
-        private Integer dw;
-        private Integer pw;
+        private Quorum w;
+        private Quorum dw;
+        private Quorum pw;
         private Boolean returnBody;
         private Boolean returnHead;
         private Boolean ifNotModified;
@@ -300,20 +341,50 @@ public class StoreMeta {
         }
 
         public Builder w(int w) {
+            this.w = new Quorum(w);
+            return this;
+        }
+
+        public Builder w(Quora w) {
+            this.w = new Quorum(w);
+            return this;
+        }
+        
+        public Builder w(Quorum w) {
             this.w = w;
             return this;
         }
-
+        
         public Builder dw(int dw) {
+            this.dw = new Quorum(dw);
+            return this;
+        }
+
+        public Builder dw(Quora dw) {
+            this.dw = new Quorum(dw);
+            return this;
+        }
+        
+        public Builder dw(Quorum dw) {
             this.dw = dw;
             return this;
         }
-
+        
         public Builder pw(int pw) {
-            this.pw = pw;
+            this.pw = new Quorum(pw);
             return this;
         }
 
+        public Builder pw(Quora pw) {
+            this.pw = new Quorum(pw);
+            return this;
+        }
+        
+        public Builder pw(Quorum pw) {
+            this.pw = pw;
+            return this;
+        }
+        
         public Builder returnBody(boolean returnBody) {
             this.returnBody = returnBody;
             return this;

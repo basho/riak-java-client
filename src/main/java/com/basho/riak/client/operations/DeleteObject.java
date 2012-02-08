@@ -18,6 +18,8 @@ import java.util.concurrent.Callable;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
+import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.raw.DeleteMeta;
@@ -114,6 +116,30 @@ public class DeleteObject implements RiakOperation<Void> {
     }
 
     /**
+     * @param r
+     *            the read quorum for the delete operation
+     * @return this
+     */
+    public DeleteObject r(Quora r) {
+        fetchMetaBuilder.r(r);
+        deleteMetaBuilder.r(r);
+        return this;
+    }
+
+    /**
+     * @param r
+     *            the read quorum for the delete operation
+     * @return this
+     */
+    public DeleteObject r(Quorum r) {
+        fetchMetaBuilder.r(r);
+        deleteMetaBuilder.r(r);
+        return this;
+    }
+
+
+
+    /**
      * @param pr
      *            the primary read quorum for the delete operation
      * @return this
@@ -125,11 +151,53 @@ public class DeleteObject implements RiakOperation<Void> {
     }
 
     /**
+     * @param pr
+     *            the primary read quorum for the delete operation
+     * @return this
+     */
+    public DeleteObject pr(Quora pr) {
+        fetchMetaBuilder.pr(pr);
+        deleteMetaBuilder.pr(pr);
+        return this;
+    }
+
+    /**
+     * @param pr
+     *            the primary read quorum for the delete operation
+     * @return this
+     */
+    public DeleteObject pr(Quorum pr) {
+        fetchMetaBuilder.pr(pr);
+        deleteMetaBuilder.pr(pr);
+        return this;
+    }
+    
+    /**
      * @param w
      *            the write quorum for the delete tombstone
      * @return this
      */
     public DeleteObject w(int w) {
+        deleteMetaBuilder.w(w);
+        return this;
+    }
+
+    /**
+     * @param w
+     *            the write quorum for the delete tombstone
+     * @return this
+     */
+    public DeleteObject w(Quora w) {
+        deleteMetaBuilder.w(w);
+        return this;
+    }
+
+    /**
+     * @param w
+     *            the write quorum for the delete tombstone
+     * @return this
+     */
+    public DeleteObject w(Quorum w) {
         deleteMetaBuilder.w(w);
         return this;
     }
@@ -145,6 +213,27 @@ public class DeleteObject implements RiakOperation<Void> {
     }
 
     /**
+     * @param dw
+     *            the durable write quorum for the delete tombstone
+     * @return this
+     */
+    public DeleteObject dw(Quora dw) {
+         deleteMetaBuilder.dw(dw);
+        return this;
+    }
+
+
+    /**
+     * @param dw
+     *            the durable write quorum for the delete tombstone
+     * @return this
+     */
+    public DeleteObject dw(Quorum dw) {
+         deleteMetaBuilder.dw(dw);
+        return this;
+    }
+
+    /**
      * @param pw
      *            the primary write quorum for the delete tombstone
      * @return this
@@ -155,6 +244,26 @@ public class DeleteObject implements RiakOperation<Void> {
     }
 
     /**
+     * @param pw
+     *            the primary write quorum for the delete tombstone
+     * @return this
+     */
+    public DeleteObject pw(Quora pw) {
+        deleteMetaBuilder.pw(pw);
+        return this;
+    }
+
+    /**
+     * @param pw
+     *            the primary write quorum for the delete tombstone
+     * @return this
+     */
+    public DeleteObject pw(Quorum pw) {
+        deleteMetaBuilder.pw(pw);
+        return this;
+    }
+    
+    /**
      * The read_write quorum for the delete operation
      * @param rw an {@link Integer} for the read/write quorum
      * @return this
@@ -164,6 +273,26 @@ public class DeleteObject implements RiakOperation<Void> {
         return this;
     }
 
+    /**
+     * The read_write quorum for the delete operation
+     * @param rw an {@link Integer} for the read/write quorum
+     * @return this
+     */
+    public DeleteObject rw(Quora rw) {
+        deleteMetaBuilder.rw(rw);
+        return this;
+    }
+
+    /**
+     * The read_write quorum for the delete operation
+     * @param rw an {@link Integer} for the read/write quorum
+     * @return this
+     */
+    public DeleteObject rw(Quorum rw) {
+        deleteMetaBuilder.rw(rw);
+        return this;
+    }
+    
     /**
      * Provide a vclock to riak for the delete operation.
      * 

@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.itest;
 
+import com.basho.riak.client.cap.Quorum;
 import static org.junit.Assert.*;
 
 import com.basho.riak.client.http.request.RequestMeta;
@@ -20,7 +21,9 @@ import com.basho.riak.client.http.response.HttpResponse;
 
 public class Utils {
 
-    public static RequestMeta WRITE_3_REPLICAS() { return RequestMeta.writeParams(3, 3); }
+    public static RequestMeta WRITE_3_REPLICAS() { 
+        return RequestMeta.writeParams(3, 3); 
+    }
 
     public static void assertSuccess(HttpResponse response) {
         if (!response.isSuccess()) {
