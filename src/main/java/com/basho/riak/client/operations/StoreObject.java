@@ -246,6 +246,30 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * Set the primary write quorum for the store operation, takes precedence
+     * over w.
+     * 
+     * @param pw
+     * @return this
+     */
+    public StoreObject<T> pw(Quora pw) {
+        storeMetaBuilder.pw(pw);
+        return this;
+    }
+    
+    /**
+     * Set the primary write quorum for the store operation, takes precedence
+     * over w.
+     * 
+     * @param pw
+     * @return this
+     */
+    public StoreObject<T> pw(Quorum pw) {
+        storeMetaBuilder.pw(pw);
+        return this;
+    }
+    
+    /**
      * Set the write quorum for the store operation
      * @param w
      * @return this
@@ -256,11 +280,52 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * Set the write quorum for the store operation
+     * @param w
+     * @return this
+     */
+    public StoreObject<T> w(Quora w) {
+        storeMetaBuilder.w(w);
+        return this;
+    }
+
+/**
+     * Set the write quorum for the store operation
+     * @param w
+     * @return this
+     */
+    public StoreObject<T> w(Quorum w) {
+        storeMetaBuilder.w(w);
+        return this;
+    }
+
+
+    /**
      * The durable write quorum for this store operation
      * @param dw
      * @return this
      */
     public StoreObject<T> dw(int dw) {
+        storeMetaBuilder.dw(dw);
+        return this;
+    }
+
+    /**
+     * The durable write quorum for this store operation
+     * @param dw
+     * @return this
+     */
+    public StoreObject<T> dw(Quora dw) {
+        storeMetaBuilder.dw(dw);
+        return this;
+    }
+
+    /**
+     * The durable write quorum for this store operation
+     * @param dw
+     * @return this
+     */
+    public StoreObject<T> dw(Quorum dw) {
         storeMetaBuilder.dw(dw);
         return this;
     }

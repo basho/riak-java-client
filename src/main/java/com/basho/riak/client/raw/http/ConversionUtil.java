@@ -210,7 +210,13 @@ public final class ConversionUtil {
         }
 
         if (storeMeta.hasPw()) {
-            requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().toString());
+            if (storeMeta.getPw().isSymbolic())
+            {
+                requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().getName());
+            } else {
+                requestMeta.setQueryParam(Constants.QP_PW, 
+                                          Integer.toString(storeMeta.getPw().getIntValue()));
+            }
         }
 
         if (storeMeta.hasIfNoneMatch() && storeMeta.getIfNoneMatch()) {

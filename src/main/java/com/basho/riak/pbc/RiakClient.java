@@ -324,11 +324,11 @@ public class RiakClient implements RiakMessageCodes {
 				if (meta != null) {
 
 					if (meta.writeQuorum != null) {
-						builder.setW(meta.writeQuorum.intValue());
+						builder.setW(meta.writeQuorum.getIntValue());
 					}
 
 					if (meta.durableWriteQuorum != null) {
-						builder.setDw(meta.durableWriteQuorum.intValue());
+						builder.setDw(meta.durableWriteQuorum.getIntValue());
 					}
 				}
 

@@ -18,6 +18,7 @@
 
 package com.basho.riak.pbc;
 
+import com.basho.riak.client.cap.Quorum;
 import com.google.protobuf.ByteString;
 
 /**
@@ -26,10 +27,10 @@ import com.google.protobuf.ByteString;
 public class RequestMeta implements IRequestMeta {
 
 	Boolean returnBody;
-	Integer writeQuorum;
-	Integer durableWriteQuorum;
+	Quorum writeQuorum;
+	Quorum durableWriteQuorum;
 	String contentType;
-	Integer pw;
+	Quorum pw;
 	Boolean ifNotModified;
 	Boolean ifNoneMatch;
 	Boolean returnHead;
@@ -47,15 +48,15 @@ public class RequestMeta implements IRequestMeta {
 		}
 		
 		if (writeQuorum != null) {
-			builder.setW(writeQuorum.intValue());
+			builder.setW(writeQuorum.getIntValue());
 		}
 		
 		if (durableWriteQuorum != null) {
-			builder.setDw(durableWriteQuorum.intValue());
+			builder.setDw(durableWriteQuorum.getIntValue());
 		}
 
         if (pw != null) {
-            builder.setPw(pw);
+            builder.setPw(pw.getIntValue());
         }
 
         if (ifNoneMatch != null) {
@@ -83,18 +84,27 @@ public class RequestMeta implements IRequestMeta {
 	 * @see com.trifork.riak.IRequestMeta#w(int)
 	 */
 	public IRequestMeta w(int w) {
-	    writeQuorum = new Integer(w);
+	    writeQuorum = new Quorum(w);
 		return this;
 	}
 
+    public IRequestMeta w(Quorum w) {
+        writeQuorum = w;
+        return this;
+    }
+    
 	/* (non-Javadoc)
 	 * @see com.trifork.riak.IRequestMeta#dw(int)
 	 */
 	public IRequestMeta dw(int dw) {
-	    durableWriteQuorum = new Integer(dw);
+	    durableWriteQuorum = new Quorum(dw);
 		return this;
 	}
 	
+    public IRequestMeta dw(Quorum dw) {
+        durableWriteQuorum = dw;
+        return this;
+    }
 	/* (non-Javadoc)
 	 * @see com.trifork.riak.IRequestMeta#contentType(java.lang.String)
 	 */
@@ -111,10 +121,15 @@ public class RequestMeta implements IRequestMeta {
 	}
 
     public IRequestMeta pw(int pw) {
-        this.pw = pw;
+        this.pw = new Quorum(pw);
         return this;
     }
 
+    public IRequestMeta pw(Quorum pw) {
+        this.pw = pw;
+        return this;
+    }
+    
     public IRequestMeta ifNoneMatch(boolean ifNoneMatch) {
         this.ifNoneMatch = ifNoneMatch;
         return this;

@@ -78,7 +78,31 @@ public class FetchMeta {
         
     }
 
-    
+    /**
+     * Create a fetch meta with the specified parameters for a conditional fetch
+     * with the either API
+     * 
+     * @param r
+     *            how many vnodes must reply
+     * @param pr
+     *            how many primary vnodes must reply, takes precedence over r
+     * @param notFoundOK
+     *            if a notfound response counts towards satisfying the r value
+     * @param basicQuorum
+     *            if after a quorum of notfounds/error return at once
+     * @param headOnly
+     *            only return the object meta, not its value
+     * @param returnDeletedVClock
+     *            if an object has been deleted, return the tombstone vclock
+     * @param ifModifiedSince
+     *            a date for conditional get. Not null value means only return a
+     *            value if the last_modified date is later than this date *NOTE*
+     *            only for HTTP API!!!
+     * @param ifModifiedVClock
+     *            a vclock for conditional get. Not null value means only return
+     *            a value if the current vclock does not match this one. *NOTE*
+     *            Only for PB API!
+     */
     public FetchMeta(Quorum r, Quorum pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
             Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock) {
         
