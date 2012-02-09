@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http.request;
 
+import com.basho.riak.client.cap.Quorum;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -67,10 +68,43 @@ public class RequestMeta {
         }
         if (dw != null) {
             meta.setQueryParam(Constants.QP_DW, Integer.toString(dw));
-        }
+            }
         return meta;
     }
 
+    /**
+     * Use the given w and dw params for store or delete operations.
+     * 
+     * @param w
+     *            w- parameter for store and delete: the number of successful
+     *            write responses required for a successful store operation
+     * @param dw
+     *            dw- parameter for store and delete: The number of successful
+     *            durable write responses required for a successful store
+     *            operation
+     * @return A {@link RequestMeta} object with the appropriate query
+     *         parameters
+     */
+    public static RequestMeta writeParams(Quorum w, Quorum dw) {
+        RequestMeta meta = new RequestMeta();
+        if (w != null) {
+            if (w.isSymbolic()) {
+                meta.setQueryParam(Constants.QP_W, w.getName());
+            } else {
+                meta.setQueryParam(Constants.QP_W, Integer.toString(w.getIntValue()));
+            }
+        }
+        if (dw != null) {
+            if (dw.isSymbolic())
+            {
+                meta.setQueryParam(Constants.QP_DW, dw.getName());
+            } else {
+                meta.setQueryParam(Constants.QP_DW, Integer.toString(dw.getIntValue()));
+            }
+        }
+        return meta;
+    }
+    
     /**
      * Use the given rw parameter for delete operations
      *

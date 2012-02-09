@@ -202,7 +202,7 @@ public final class ConversionUtil {
      */
     static RequestMeta convert(StoreMeta storeMeta) {
         RequestMeta requestMeta = RequestMeta.writeParams(storeMeta.getW(), storeMeta.getDw());
-
+        
         if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(true));
         } else {
@@ -210,7 +210,13 @@ public final class ConversionUtil {
         }
 
         if (storeMeta.hasPw()) {
-            requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().toString());
+            if (storeMeta.getPw().isSymbolic())
+            {
+                requestMeta.setQueryParam(Constants.QP_PW, storeMeta.getPw().getName());
+            } else {
+                requestMeta.setQueryParam(Constants.QP_PW, 
+                                          Integer.toString(storeMeta.getPw().getIntValue()));
+            }
         }
 
         if (storeMeta.hasIfNoneMatch() && storeMeta.getIfNoneMatch()) {
@@ -671,11 +677,22 @@ public final class ConversionUtil {
         RequestMeta rm = new RequestMeta();
 
         if (fetchMeta.getR() != null) {
-            rm.setQueryParam(Constants.QP_R, fetchMeta.getR().toString());
+            if (fetchMeta.getR().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_R, fetchMeta.getR().getName());
+            } else {
+                rm.setQueryParam(Constants.QP_R, 
+                                 Integer.toString(fetchMeta.getR().getIntValue()));
+            }
+            
         }
 
         if (fetchMeta.getPr() != null) {
-            rm.setQueryParam(Constants.QP_PR, fetchMeta.getPr().toString());
+            if (fetchMeta.getPr().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_PR, fetchMeta.getPr().getName());
+            } else {
+                rm.setQueryParam(Constants.QP_PR, 
+                                 Integer.toString(fetchMeta.getPr().getIntValue()));
+            }
         }
 
         if (fetchMeta.getNotFoundOK() != null) {
@@ -701,19 +718,43 @@ public final class ConversionUtil {
                                                null));
 
         if (deleteMeta.hasW()) {
-            rm.setQueryParam(Constants.QP_W, deleteMeta.getW().toString());
+            if (deleteMeta.getW().isSymbolic())
+                rm.setQueryParam(Constants.QP_W, deleteMeta.getW().getName());
+            else {
+                rm.setQueryParam( Constants.QP_W, 
+                                  String.valueOf(deleteMeta.getW().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasPw()) {
-            rm.setQueryParam(Constants.QP_PW, deleteMeta.getPw().toString());
+            if (deleteMeta.getPw().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_PW, deleteMeta.getPw().getName());
+            } else {
+                rm.setQueryParam( Constants.QP_PW,
+                                  String.valueOf(deleteMeta.getPw().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasDw()) {
-            rm.setQueryParam(Constants.QP_DW, deleteMeta.getDw().toString());
+            if (deleteMeta.getDw().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_DW, deleteMeta.getDw().getName());
+            } else {
+                rm.setQueryParam( Constants.QP_DW, 
+                                  String.valueOf(deleteMeta.getDw().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasRw()) {
-            rm.setQueryParam(Constants.QP_RW, deleteMeta.getRw().toString());
+            if (deleteMeta.getRw().isSymbolic()) {
+                rm.setQueryParam(Constants.QP_RW, deleteMeta.getRw().getName());
+            } else {
+                rm.setQueryParam( Constants.QP_RW,
+                                  String.valueOf(deleteMeta.getRw().getIntValue())
+                                );
+            }
         }
 
         if (deleteMeta.hasVclock()) {

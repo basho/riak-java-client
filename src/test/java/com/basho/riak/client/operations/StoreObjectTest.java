@@ -129,15 +129,15 @@ public class StoreObjectTest {
         assertEquals(true, fm.getBasicQuorum());
         assertEquals(true, fm.getNotFoundOK());
         assertEquals(true, fm.getReturnDeletedVClock());
-        assertEquals(new Integer(2), fm.getR());
-        assertEquals(new Integer(1), fm.getPr());
+        assertEquals(2, fm.getR().getIntValue());
+        assertEquals(1, fm.getPr().getIntValue());
 
         // check store meta is populates as expected
         StoreMeta sm = storeCaptor.getValue();
 
-        assertEquals(new Integer(3), sm.getW());
-        assertEquals(new Integer(4), sm.getDw());
-        assertEquals(new Integer(5), sm.getPw());
+        assertEquals(3, sm.getW().getIntValue());
+        assertEquals(4, sm.getDw().getIntValue());
+        assertEquals(5, sm.getPw().getIntValue());
         assertEquals(true, sm.getIfNoneMatch());
         assertEquals(true, sm.getIfNotModified());
         assertEquals(true, sm.getReturnBody());

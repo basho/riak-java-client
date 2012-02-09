@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 
 /**
@@ -23,12 +25,12 @@ import com.basho.riak.client.cap.VClock;
  */
 public class DeleteMeta {
 
-    private final Integer r;
-    private final Integer pr;
-    private final Integer w;
-    private final Integer dw;
-    private final Integer pw;
-    private final Integer rw;
+    private final Quorum r;
+    private final Quorum pr;
+    private final Quorum w;
+    private final Quorum dw;
+    private final Quorum pw;
+    private final Quorum rw;
     private final VClock vclock;
 
     /**
@@ -43,6 +45,29 @@ public class DeleteMeta {
      * @param vclock
      */
     public DeleteMeta(Integer r, Integer pr, Integer w, Integer dw, Integer pw, Integer rw, VClock vclock) {
+        this( null == r ? null : new Quorum(r),
+              null == pr ? null : new Quorum(pr),
+              null == w ? null : new Quorum(w),
+              null == dw ? null : new Quorum(dw),
+              null == pw ? null : new Quorum(pw),
+              null == rw ? null : new Quorum(rw),
+              vclock
+            );
+        
+        }
+    
+    /**
+     * Any of the parameters may be null.
+     * 
+     * @param r
+     * @param pr
+     * @param w
+     * @param dw
+     * @param pw
+     * @param rw
+     * @param vclock
+     */
+    public DeleteMeta(Quorum r, Quorum pr, Quorum w, Quorum dw, Quorum pw, Quorum rw, VClock vclock) {
         this.r = r;
         this.pr = pr;
         this.w = w;
@@ -51,7 +76,6 @@ public class DeleteMeta {
         this.rw = rw;
         this.vclock = vclock;
     }
-
     /**
      * @return true is the r parameter is set, false otherwise.
      */
@@ -62,7 +86,7 @@ public class DeleteMeta {
     /**
      * @return r parameter or null
      */
-    public Integer getR() {
+    public Quorum getR() {
         return r;
     }
 
@@ -76,7 +100,7 @@ public class DeleteMeta {
     /**
      * @return the pr parameter, or null
      */
-    public Integer getPr() {
+    public Quorum getPr() {
         return pr;
     }
 
@@ -90,7 +114,7 @@ public class DeleteMeta {
     /**
      * @return the w parameter or null
      */
-    public Integer getW() {
+    public Quorum getW() {
         return w;
     }
 
@@ -102,9 +126,9 @@ public class DeleteMeta {
     }
 
     /**
-     * @return the dw paramter, or null
+     * @return the dw parameter, or null
      */
-    public Integer getDw() {
+    public Quorum getDw() {
         return dw;
     }
 
@@ -118,7 +142,7 @@ public class DeleteMeta {
     /**
      * @return pw parameter, or null
      */
-    public Integer getPw() {
+    public Quorum getPw() {
         return pw;
     }
 
@@ -132,7 +156,7 @@ public class DeleteMeta {
     /**
      * @return the rw, or null if not set.
      */
-    public Integer getRw() {
+    public Quorum getRw() {
         return rw;
     }
 
@@ -152,12 +176,12 @@ public class DeleteMeta {
 
     // Builder
     public static class Builder {
-        private Integer r;
-        private Integer pr;
-        private Integer w;
-        private Integer dw;
-        private Integer pw;
-        private Integer rw;
+        private Quorum r;
+        private Quorum pr;
+        private Quorum w;
+        private Quorum dw;
+        private Quorum pw;
+        private Quorum rw;
         private VClock vclock;
 
         public DeleteMeta build() {
@@ -165,35 +189,95 @@ public class DeleteMeta {
         }
 
         public Builder r(int r) {
+            this.r = new Quorum(r);
+            return this;
+        }
+
+        public Builder r(Quora r) {
+            this.r = new Quorum(r);
+            return this;
+        }
+
+        public Builder r(Quorum r) {
             this.r = r;
             return this;
         }
-
+        
         public Builder pr(int pr) {
-            this.pr = pr;
+            this.pr = new Quorum(pr);
             return this;
         }
 
+        public Builder pr(Quora pr) {
+            this.pr = new Quorum(pr);
+            return this;
+        }
+        
+        public Builder pr(Quorum pr) {
+            this.pr = pr;
+            return this;
+        }
+        
         public Builder w(int w) {
+            this.w = new Quorum(w);
+            return this;
+        }
+
+        public Builder w(Quora w) {
+            this.w = new Quorum(w);
+            return this;
+        }
+
+        public Builder w(Quorum w) {
             this.w = w;
             return this;
         }
 
         public Builder dw(int dw) {
+            this.dw = new Quorum(dw);
+            return this;
+        }
+
+        public Builder dw(Quora dw) {
+            this.dw = new Quorum(dw);
+            return this;
+        }
+        
+        public Builder dw(Quorum dw) {
             this.dw = dw;
             return this;
         }
-
+        
         public Builder pw(int pw) {
+            this.pw = new Quorum(pw);
+            return this;
+        }
+
+        public Builder pw(Quora pw) {
+            this.pw = new Quorum(pw);
+            return this;
+        }
+        
+        public Builder pw(Quorum pw) {
             this.pw = pw;
             return this;
         }
-
+        
         public Builder rw(int rw) {
-            this.rw = rw;
+            this.rw = new Quorum(rw);
             return this;
         }
 
+        public Builder rw(Quora rw) {
+            this.rw = new Quorum(rw);
+            return this;
+        }
+        
+        public Builder rw(Quorum rw) {
+            this.rw = rw;
+            return this;
+        }
+        
         public Builder vclock(VClock vclock) {
             this.vclock = vclock;
             return this;

@@ -113,8 +113,8 @@ public class FetchObjectTest {
         assertEquals(true, captured.getBasicQuorum());
         assertEquals(true, captured.getNotFoundOK());
         assertEquals(true, captured.getReturnDeletedVClock());
-        assertEquals(new Integer(3), captured.getR());
-        assertEquals(new Integer(4), captured.getPr());
+        assertEquals(3, captured.getR().getIntValue());
+        assertEquals(4, captured.getPr().getIntValue());
         assertEquals(vclock, captured.getIfModifiedVClock());
         assertEquals(modifiedSince, captured.getIfModifiedSince());
     }
