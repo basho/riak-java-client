@@ -13,9 +13,12 @@
  */
 package com.basho.riak.client;
 
+import java.io.IOException;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.WriteBucketTest;
 import com.basho.riak.client.cap.ClobberMutationTest;
 import com.basho.riak.client.cap.QuoraTest;
@@ -72,6 +75,7 @@ import com.basho.riak.client.query.BuckeyKeyMapReduceTest;
 import com.basho.riak.client.query.filter.LogicalAndFilterTest;
 import com.basho.riak.client.query.serialize.FunctionToJsonTest;
 import com.basho.riak.client.raw.ClusterClientTest;
+import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.config.ClusterConfigTest;
 import com.basho.riak.client.raw.http.HTTPRiakClientFactoryTest;
 import com.basho.riak.client.raw.http.NamedErlangFunctionDeserializerTest;
@@ -177,4 +181,17 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     com.basho.riak.client.itest.ITestMapReduceHTTP.class,
     com.basho.riak.client.itest.ITestMapReducePB.class})
 public class AllTests {
+
+    public static void emptyBucket(String bucketName, IRiakClient client) throws RiakException {
+        Bucket b = client.fetchBucket(bucketName).execute();
+        for (String k : b.keys()) {
+            b.delete(k).execute();
+        }
+    }
+
+    public static void emptyBucket(String bucketName, RawClient client) throws IOException {
+        for (String k : client.listKeys(bucketName)) {
+            client.delete(bucketName, k);
+        }
+    }
 }

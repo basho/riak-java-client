@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.AllTests.emptyBucket;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -46,15 +47,17 @@ import com.megacorp.commerce.ShoppingCart;
 public abstract class ITestDomainBucket {
 
     protected IRiakClient client;
+    protected String bucketName;
 
     @Before public void setUp() throws RiakException {
         this.client = getClient();
+        this.bucketName = this.getClass().getName();
+        emptyBucket(bucketName, client);
     }
 
     public abstract IRiakClient getClient() throws RiakException;
 
     @Test public void useDomainBucket() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_carts";
         final String userId = UUID.randomUUID().toString();
 
         //get two clients with different IDs
@@ -110,6 +113,8 @@ public abstract class ITestDomainBucket {
         for (String item : expectedMergedCart) {
             assertTrue("Expected cart to contain: " + item, finalCart.hasItem(item));
         }
+
+        client.createBucket(bucketName).allowSiblings(false).nVal(3).execute();
     }
 
     /**
@@ -140,7 +145,6 @@ public abstract class ITestDomainBucket {
     }
 
     @Test public void minimalDomainBucketWorks() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_db";
         final String userId = UUID.randomUUID().toString();
         Bucket b = client.fetchBucket(bucketName).execute();
         DomainBucket<ShoppingCart> carts = DomainBucket.builder(b,

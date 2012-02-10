@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
@@ -34,6 +35,7 @@ import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -95,12 +97,14 @@ public class ITestStreaming {
         assertArrayEquals(bytes, os.toByteArray());
         
         r.close();
+
+        AllTests.emptyBucket(BUCKET, new HTTPClientAdapter(c));
     }
 
     @Test public void stream_siblings() throws Exception {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = UUID.randomUUID().toString() + "_test_stream_siblings";
-        final String KEY = "key";
+        final String BUCKET = "test_stream_siblings";
+        final String KEY = UUID.randomUUID().toString();
         final byte[][] bytes = new byte[][] { new byte[512], new byte[512], new byte[512] };
         new Random().nextBytes(bytes[0]);
         new Random().nextBytes(bytes[1]);
@@ -159,5 +163,9 @@ public class ITestStreaming {
         }
         
         r.close();
+        RiakBucketInfo cleanUpBucketIfo = new RiakBucketInfo();
+        cleanUpBucketIfo.setAllowMult(false);
+        c.setBucketSchema(BUCKET, cleanUpBucketIfo);
+        AllTests.emptyBucket(BUCKET, new HTTPClientAdapter(c));
     }
 }

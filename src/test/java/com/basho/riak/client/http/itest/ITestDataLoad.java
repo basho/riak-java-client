@@ -21,11 +21,14 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -46,6 +49,11 @@ public class ITestDataLoad {
         }
     }
     
+    @After public void teardown() throws Exception {
+        RiakClient riak = new RiakClient(RIAK_URL);
+        AllTests.emptyBucket(BUCKET, new HTTPClientAdapter(riak));
+    }
+
     @Test public void concurrent_data_load() throws InterruptedException {
         
         final int NUM_THREADS = 5;
