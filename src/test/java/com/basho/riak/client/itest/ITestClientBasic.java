@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.AllTests.emptyBucket;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,7 +22,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -42,9 +42,12 @@ import com.basho.riak.client.util.CharsetUtils;
 public abstract class ITestClientBasic {
 
     protected IRiakClient client;
+    protected String bucketName;
 
     @Before public void setUp() throws RiakException {
         this.client = getClient();
+        this.bucketName = this.getClass().getName();
+        emptyBucket(bucketName, client);
     }
 
     /**
@@ -58,8 +61,6 @@ public abstract class ITestClientBasic {
     }
 
     @Test public void fetchBucket() throws RiakException {
-        final String bucketName = UUID.randomUUID().toString();
-
         Bucket b = client.fetchBucket(bucketName).execute();
 
         assertNotNull(b);
@@ -69,8 +70,6 @@ public abstract class ITestClientBasic {
     }
 
     @Test public void updateBucket() throws RiakException {
-        final String bucketName = UUID.randomUUID().toString();
-
         Bucket b = client.fetchBucket(bucketName).execute();
 
         assertNotNull(b);
@@ -84,17 +83,18 @@ public abstract class ITestClientBasic {
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(4), b.getNVal());
         assertTrue(b.getAllowSiblings());
+
+        client.updateBucket(b).allowSiblings(false).nVal(3).execute();
     }
 
     @Test public void createBucket() throws RiakException {
-        final String bucketName = UUID.randomUUID().toString();
-
         Bucket b = client.createBucket(bucketName).nVal(1).allowSiblings(true).execute();
 
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(1), b.getNVal());
         assertTrue(b.getAllowSiblings());
+        client.updateBucket(b).allowSiblings(false).nVal(3).execute();
     }
 
     @Test public void clientIds() throws Exception {
@@ -109,8 +109,8 @@ public abstract class ITestClientBasic {
     }
 
     @Test public void listBuckets() throws RiakException {
-        final String bucket1 = UUID.randomUUID().toString();
-        final String bucket2 = UUID.randomUUID().toString();
+        final String bucket1 = bucketName + "_1";
+        final String bucket2 = bucketName + "_2";
 
         Bucket b1 = client.createBucket(bucket1).execute();
         Bucket b2 = client.createBucket(bucket2).execute();
@@ -122,6 +122,9 @@ public abstract class ITestClientBasic {
 
         assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
         assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
+
+        emptyBucket(bucket2, client);
+        emptyBucket(bucket1, client);
     }
 
     /**
@@ -131,12 +134,11 @@ public abstract class ITestClientBasic {
     @Test public abstract void bucketProperties() throws Exception;
 
     @Test public void conditionalFetch() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
         final String key = "key";
         final String originalValue = "first_value";
         final String newValue = "second_value";
 
-        Bucket b = client.fetchBucket(bucket).execute();
+        Bucket b = client.fetchBucket(bucketName).execute();
         b.store(key, originalValue).execute();
 
         IRiakObject obj = b.fetch(key).execute();
@@ -169,10 +171,9 @@ public abstract class ITestClientBasic {
     }
 
     @Test public void deletedVclock() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
         final String key = "k";
 
-        final Bucket b = client.fetchBucket(bucket).execute();
+        final Bucket b = client.fetchBucket(bucketName).execute();
 
         final CountDownLatch endLatch = new CountDownLatch(1);
 

@@ -26,9 +26,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.prefs.Preferences;
 
+import org.junit.After;
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.pbc.BucketProperties;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
@@ -42,6 +45,10 @@ import com.google.protobuf.ByteString;
 public class ITestBasic {
 
     private static final String BUCKET = "__itest_java_pbc__";
+
+    @After public void teardown() throws Exception {
+        AllTests.emptyBucket(BUCKET, new PBClientAdapter(RIAK_HOST, RIAK_PORT));
+    }
 
     /*
      * PING

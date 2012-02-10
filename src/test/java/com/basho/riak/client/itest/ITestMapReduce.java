@@ -248,7 +248,7 @@ public abstract class ITestMapReduce {
     }
 
     @Test public void timeoutMapReduceThrowsTimeoutException() throws Exception {
-        final String bucketName = UUID.randomUUID().toString();
+        final String bucketName = "mr_goog";
         // set up data
         final String json = "[{\"Date\":\"2010-01-04\",\"Open\":626.95,\"High\":629.51,\"Low\":624.24,\"Close\":626.75,\"Volume\":1956200,\"Adj. Close\":626.75}," +
                 "{\"Date\":\"2010-01-05\",\"Open\":627.18,\"High\":627.84,\"Low\":621.54,\"Close\":623.99,\"Volume\":3004700,\"Adj. Close\":623.99}," +

@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakFactory;
 import com.basho.riak.client.bucket.Bucket;
@@ -259,5 +260,7 @@ public class ITestRiakConnectionPool {
         }
 
         assertTrue("Expected pool to shutdown within 10 seconds", shutdown);
+
+        AllTests.emptyBucket("bucket", RiakFactory.pbcClient(HOST, PORT));
     }
 }

@@ -18,11 +18,15 @@ import static com.basho.riak.client.http.Hosts.RIAK_URL;
 import static com.basho.riak.client.http.itest.Utils.*;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakLink;
@@ -31,12 +35,12 @@ import com.basho.riak.client.http.plain.PlainClient;
 import com.basho.riak.client.http.plain.RiakIOException;
 import com.basho.riak.client.http.plain.RiakResponseException;
 import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
 import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.raw.http.HTTPClientAdapter;
 
 /**
  * Basic exercises such as store, fetch, and modify objects for the Riak client.
@@ -44,6 +48,20 @@ import com.basho.riak.client.http.util.Constants;
  * @see com.basho.riak.client.http.Hosts#RIAK_URL
  */
 public class ITestBasic {
+
+    private String bucketName;
+
+    @Before public void setUp() throws IOException {
+        this.bucketName = this.getClass().getName();
+    }
+
+    @After public void tearDown() throws Exception {
+        RiakBucketInfo bucketInfo = new RiakBucketInfo();
+        bucketInfo.setAllowMult(false);
+        bucketInfo.setNVal(3);
+        new RiakClient(RIAK_URL).setBucketSchema(bucketName, bucketInfo);
+        AllTests.emptyBucket(bucketName, new HTTPClientAdapter(new RiakClient(RIAK_URL)));
+    }
 
     @Test public void ping() {
         final RiakClient c = new RiakClient(RIAK_URL);
@@ -58,8 +76,8 @@ public class ITestBasic {
         final RiakLink LINK = new RiakLink("bucket", "key", "tag");
         final String USERMETA_KEY = "usermeta";
         final String USERMETA_VALUE = "value";
-        final String BUCKET = UUID.randomUUID().toString() + "_store_fetch_modify";
-        final String KEY = "key";
+        final String BUCKET = bucketName;
+        final String KEY = UUID.randomUUID().toString();
 
         // Set bucket schema to return siblings
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
@@ -105,69 +123,24 @@ public class ITestBasic {
         assertEquals(USERMETA_VALUE, fetchresp.getObject().getUsermetaItem(USERMETA_KEY));
     }
 
-    @Test public void test_bucket_schema() {
-        final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = UUID.randomUUID().toString();
-        final String KEY1 = UUID.randomUUID().toString();
-        final String KEY2 = UUID.randomUUID().toString();
-        final String KEY3 = UUID.randomUUID().toString();
-        final String CHASH_MOD = "riak_core_util";
-        final String CHASH_FUN = "chash_bucketonly_keyfun";
-
-        // Add a few objects
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY1, utf8StringToBytes("v")), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY2, utf8StringToBytes("v")), WRITE_3_REPLICAS()));
-        assertSuccess(c.store(new RiakObject(BUCKET, KEY3, utf8StringToBytes("v")), WRITE_3_REPLICAS()));
-
-        // Get the current bucket schema and contents
-        BucketResponse bucketresp = c.listBucket(BUCKET);
-        assertSuccess(bucketresp);
-        assertTrue(bucketresp.hasBucketInfo());
-        RiakBucketInfo bucketInfo = bucketresp.getBucketInfo();
-        int nval = bucketInfo.getNVal();
-
-        // Verify that contents are correct
-        assertTrue("Should contain key1: " + bucketInfo.getKeys(), bucketInfo.getKeys().contains(KEY1));
-        assertTrue("Should contain key2: " + bucketInfo.getKeys(), bucketInfo.getKeys().contains(KEY2));
-        assertTrue("Should contain key3: " + bucketInfo.getKeys(), bucketInfo.getKeys().contains(KEY3));
-
-        // Change some properties
-        bucketInfo.setNVal(nval + 1);
-        bucketInfo.setCHashFun(CHASH_MOD, CHASH_FUN);
-        assertSuccess(c.setBucketSchema(BUCKET, bucketInfo));
-
-        // Verify that properties stuck
-        bucketresp = c.getBucketSchema(BUCKET);
-        assertSuccess(bucketresp);
-        assertTrue(bucketresp.hasBucketInfo());
-        bucketInfo = bucketresp.getBucketInfo();
-        assertEquals(nval + 1, bucketInfo.getNVal().intValue());
-
-        // Clear out the objects we're testing with
-        assertSuccess(c.delete(BUCKET, KEY1));
-        assertSuccess(c.delete(BUCKET, KEY2));
-        assertSuccess(c.delete(BUCKET, KEY3));
-    }
-
     @Test public void deleteQuorumIsApplied() {
         final RiakClient c = new RiakClient(RIAK_URL);
 
-        final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
         final byte[] value = utf8StringToBytes("value");
 
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setNVal(3);
 
-        c.setBucketSchema(bucket, bucketInfo);
-        RiakObject o = new RiakObject(bucket, key, value);
+        c.setBucketSchema(bucketName, bucketInfo);
+        RiakObject o = new RiakObject(bucketName, key, value);
 
         final RequestMeta rm = WRITE_3_REPLICAS();
 
         StoreResponse storeresp = c.store(o, rm);
         assertSuccess(storeresp);
 
-        HttpResponse deleteResponse = c.delete(bucket, key, RequestMeta.deleteParams(4));
+        HttpResponse deleteResponse = c.delete(bucketName, key, RequestMeta.deleteParams(4));
 
         assertEquals(400, deleteResponse.getStatusCode());
         assertTrue("Unexpected error message", deleteResponse.getBodyAsString().contains("Specified w/dw/pw values invalid for bucket n value of 3"));
@@ -175,10 +148,9 @@ public class ITestBasic {
 
     @Test public void fetchNonExistant() {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = UUID.randomUUID().toString();
         final String KEY = UUID.randomUUID().toString();
 
-        FetchResponse fetchresp = c.fetch(BUCKET, KEY);
+        FetchResponse fetchresp = c.fetch(bucketName, KEY);
         assertEquals(404, fetchresp.getStatusCode());
         assertNull(fetchresp.getObject());
     }
@@ -186,20 +158,18 @@ public class ITestBasic {
     @Test public void fetchNonExistant_plainClient() throws RiakIOException, RiakResponseException {
         final RiakClient c = new RiakClient(RIAK_URL);
         PlainClient client = new PlainClient(c);
-        final String BUCKET = UUID.randomUUID().toString();
         final String KEY = UUID.randomUUID().toString();
 
-        RiakObject o = client.fetch(BUCKET, KEY);
+        RiakObject o = client.fetch(bucketName, KEY);
         assertNull(o);
     }
 
     @Test public void storeWithReturnBody() {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
         final byte[] value = utf8StringToBytes("value");
 
-        RiakObject o = new RiakObject(bucket, key, value);
+        RiakObject o = new RiakObject(bucketName, key, value);
         StoreResponse storeresp = c.store(o, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
@@ -212,7 +182,6 @@ public class ITestBasic {
     @Test public void storeWithReturnBodyAndSiblings() throws InterruptedException {
         final RiakClient c = new RiakClient(RIAK_URL);
 
-        final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
         final byte[] value = utf8StringToBytes("value");
         final byte[] newValue = utf8StringToBytes("new_value");
@@ -220,18 +189,18 @@ public class ITestBasic {
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setAllowMult(true);
 
-        c.setBucketSchema(bucket, bucketInfo);
+        c.setBucketSchema(bucketName, bucketInfo);
         Thread.sleep(1000);
         // allow the bucket properties to propagate around the ring
 
-        RiakObject o = new RiakObject(bucket, key, value);
+        RiakObject o = new RiakObject(bucketName, key, value);
 
         final RequestMeta rm = WRITE_3_REPLICAS().setHeader(Constants.QP_RETURN_BODY, "true");
 
         StoreResponse storeresp = c.store(o, rm);
         assertSuccess(storeresp);
 
-        o = new RiakObject(bucket, key, newValue);
+        o = new RiakObject(bucketName, key, newValue);
         storeresp = c.store(o, rm);
 
         assertSuccess(storeresp);
@@ -262,40 +231,42 @@ public class ITestBasic {
 
         assertTrue(buckets.contains(bucket1));
         assertTrue(buckets.contains(bucket2));
+
+        AllTests.emptyBucket(bucket1, new HTTPClientAdapter(c));
+        AllTests.emptyBucket(bucket2, new HTTPClientAdapter(c));
     }
 
     @Test public void fetch_meta_with_siblings() throws Exception {
         final RiakClient c1 = new RiakClient(RIAK_URL);
         final RiakClient c2 = new RiakClient(RIAK_URL);
-        final String bucket = UUID.randomUUID().toString();
         final String key = UUID.randomUUID().toString();
 
         RiakBucketInfo bucketInfo = new RiakBucketInfo();
         bucketInfo.setAllowMult(true);
-        assertSuccess(c1.setBucketSchema(bucket, bucketInfo));
+        assertSuccess(c1.setBucketSchema(bucketName, bucketInfo));
         // allow the bucket properties to propagate around the ring
         Thread.sleep(1000);
 
-        c1.store(new RiakObject(c1, bucket, key, "v".getBytes()));
+        c1.store(new RiakObject(c1, bucketName, key, "v".getBytes()));
 
-        final FetchResponse fm1 = c1.fetchMeta(bucket, key);
+        final FetchResponse fm1 = c1.fetchMeta(bucketName, key);
 
         assertTrue(fm1.hasObject());
         assertNull(fm1.getObject().getValue());
         assertFalse(fm1.hasSiblings());
 
-        final FetchResponse fr = c1.fetch(bucket, key);
+        final FetchResponse fr = c1.fetch(bucketName, key);
 
         RiakObject ro = fr.getObject();
 
-        RiakObject ro2 = new RiakObject(c2, bucket, key);
+        RiakObject ro2 = new RiakObject(c2, bucketName, key);
         ro2.copyData(ro);
         ro2.setValue("v2".getBytes());
 
         c1.store(ro);
         c2.store(ro2);
 
-        FetchResponse fm2 = c1.fetchMeta(bucket, key);
+        FetchResponse fm2 = c1.fetchMeta(bucketName, key);
         // since there are siblings fetchMeta will do a full fetch to get them
         assertTrue(fm2.hasSiblings());
         assertTrue(fm2.hasObject());

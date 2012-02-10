@@ -20,12 +20,15 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakLink;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.response.WalkResponse;
+import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -33,11 +36,17 @@ import com.basho.riak.client.util.CharsetUtils;
  * @see com.basho.riak.client.http.Hosts#RIAK_URL
  */
 public class ITestWalk {
-    
+
+    private final static String BUCKET = "test_walk";
+
+    @After public void teardown() throws Exception {
+        AllTests.emptyBucket(BUCKET, new HTTPClientAdapter(RIAK_URL));
+    }
+
     @Test
     public void test_walk() {
         final RiakClient c = new RiakClient(RIAK_URL);
-        final String BUCKET = "test_walk";
+
         final String ROOT = "root";
         final String LEAF1 = "leaf1";
         final String LEAF2 = "leaf2";

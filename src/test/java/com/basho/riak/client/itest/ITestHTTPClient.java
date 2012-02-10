@@ -52,7 +52,6 @@ public class ITestHTTPClient extends ITestClientBasic {
 
     @Test public void fetchBucket() throws RiakException {
         super.fetchBucket();
-        final String bucketName = UUID.randomUUID().toString();
 
         Bucket b = client.fetchBucket(bucketName).execute();
 
@@ -66,14 +65,16 @@ public class ITestHTTPClient extends ITestClientBasic {
 
         super.updateBucket();
 
-        final String bucketName = UUID.randomUUID().toString();
-
         Bucket b = client.fetchBucket(bucketName).execute();
 
         b = client.updateBucket(b).chashKeyFunction(newChashkeyFun).linkWalkFunction(newLinkwalkFun).execute();
 
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());
+        client.updateBucket(b)
+            .chashKeyFunction(new NamedErlangFunction("riak_core_util", "chash_std_keyfun"))
+            .linkWalkFunction(new NamedErlangFunction("riak_kv_wm_link_walker", "mapreduce_linkfun"))
+            .execute();
     }
 
     /*
@@ -93,6 +94,10 @@ public class ITestHTTPClient extends ITestClientBasic {
 
         assertEquals(newChashkeyFun, b.getChashKeyFunction());
         assertEquals(newLinkwalkFun, b.getLinkWalkFunction());
+        client.updateBucket(b)
+        .chashKeyFunction(new NamedErlangFunction("riak_core_util", "chash_std_keyfun"))
+        .linkWalkFunction(new NamedErlangFunction("riak_kv_wm_link_walker", "mapreduce_linkfun"))
+        .execute();
     }
 
     @Override @Test public void bucketProperties() throws Exception {
