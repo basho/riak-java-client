@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Assume;
@@ -51,7 +50,7 @@ public abstract class ITestMapReduceSearch {
      */
     protected abstract IRiakClient getClient() throws RiakException;
 
-    public static String SEARCH_BUCKET_NAME = "mr_test_search_" + UUID.randomUUID().toString();
+    public static String SEARCH_BUCKET_NAME = "mr_test_search";
     public static int TEST_ITEMS = 200;
 
     @Before public  void setup() throws RiakException {

@@ -55,7 +55,6 @@ public abstract class ITestORM extends ITestBucket {
      * @throws Exception
      */
     @Test public void storeDomainObjectWithKeyAnnotation() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_carts";
         final String userId = UUID.randomUUID().toString();
 
         final Bucket carts = client.createBucket(bucketName).allowSiblings(true).execute();
@@ -79,10 +78,10 @@ public abstract class ITestORM extends ITestBucket {
         Thread.sleep(500);
 
         assertNull(carts.fetch(userId).execute());
+        client.updateBucket(carts).allowSiblings(false).execute();
     }
 
     @Test public void storeDomainObjectWithoutKeyAnnotation() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_carts";
         final String userId = UUID.randomUUID().toString();
 
         final Bucket carts = client.createBucket(bucketName).allowSiblings(true).execute();
@@ -128,10 +127,10 @@ public abstract class ITestORM extends ITestBucket {
         Thread.sleep(500);
 
         assertNull(carts.fetch(userId).execute());
+        client.updateBucket(carts).allowSiblings(false).execute();
     }
 
     @Test public void storeDomainObjectWithUserMeta() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_users";
         final String userId = UUID.randomUUID().toString();
         final String email = "customer@megacorp.com";
         final String languageCode = "en";
@@ -175,7 +174,6 @@ public abstract class ITestORM extends ITestBucket {
 
     @Test public void storeDomainObjectWithIndexes() throws Exception {
         Assume.assumeTrue(RiakTestProperties.is2iEnabled());
-        final String bucketName = UUID.randomUUID().toString() + "_users";
         final String userId = UUID.randomUUID().toString();
         final String email = "customer@megacorp.com";
         final String username = "userX";
@@ -226,7 +224,6 @@ public abstract class ITestORM extends ITestBucket {
     }
 
     @Test public void storeMap() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_maps";
         final String key = UUID.randomUUID().toString();
 
         final Bucket maps = client.createBucket(bucketName).allowSiblings(true).execute();
@@ -241,10 +238,11 @@ public abstract class ITestORM extends ITestBucket {
         @SuppressWarnings("unchecked") final Map<String, String> fetchedMap = maps.fetch(key, Map.class).execute();
 
         assertEquals(myMap, fetchedMap);
+
+        client.updateBucket(maps).allowSiblings(false).execute();
     }
 
     @Test public void storeList() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_lists";
         final String key = UUID.randomUUID().toString();
 
         final Bucket lists = client.createBucket(bucketName).allowSiblings(true).execute();
@@ -260,10 +258,10 @@ public abstract class ITestORM extends ITestBucket {
         @SuppressWarnings("unchecked") final Collection<String> fetchedList = lists.fetch(key, Collection.class).execute();
 
         assertEquals(myList, fetchedList);
+        client.updateBucket(lists).execute();
     }
 
     @Test public void storeDomainObjectWithLinks() throws Exception {
-        final String bucketName = UUID.randomUUID().toString() + "_users";
         final String deptId = UUID.randomUUID().toString();
         final String name = "Irwin Firwin";
 
@@ -294,5 +292,6 @@ public abstract class ITestORM extends ITestBucket {
         Department actual = depts.fetch(deptId, Department.class).execute();
 
         assertEquals(employees, actual.getEmployees());
+        client.updateBucket(depts).execute();
     }
 }

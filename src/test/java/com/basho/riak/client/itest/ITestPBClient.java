@@ -15,8 +15,6 @@ package com.basho.riak.client.itest;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.UUID;
-
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
@@ -48,13 +46,12 @@ public class ITestPBClient extends ITestClientBasic {
     }
 
     @Override @Test public void bucketProperties() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
+        client.createBucket(bucketName).allowSiblings(true).nVal(2).execute();
 
-        client.createBucket(bucket).allowSiblings(true).nVal(2).execute();
-
-        Bucket b2 = client.fetchBucket(bucket).execute();
+        Bucket b2 = client.fetchBucket(bucketName).execute();
 
         assertEquals(true, b2.getAllowSiblings());
         assertEquals(new Integer(2), b2.getNVal());
+        client.updateBucket(b2).allowSiblings(false).nVal(3).execute();
     }
 }

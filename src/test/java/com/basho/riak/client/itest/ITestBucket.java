@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.AllTests.emptyBucket;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -24,7 +25,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -64,16 +64,18 @@ import com.basho.riak.client.raw.ModifiedException;
 public abstract class ITestBucket {
 
     protected IRiakClient client;
+    protected String bucketName;
 
     @Before public void setUp() throws RiakException {
         client = getClient();
+        bucketName = this.getClass().getName();
+
+        emptyBucket(bucketName, client);
     }
 
     protected abstract IRiakClient getClient() throws RiakException;
 
     @Test public void basicStore() throws Exception {
-        final String bucketName = UUID.randomUUID().toString();
-
         Bucket b = client.fetchBucket(bucketName).execute();
         IRiakObject o = b.store("k", "v").execute();
         assertNull(o);
@@ -118,8 +120,6 @@ public abstract class ITestBucket {
 
     @Ignore("non-deterministic")
     @Test public void byDefaultSiblingsThrowUnresolvedExceptionOnStore() throws Exception {
-        final String bucketName = UUID.randomUUID().toString();
-
         final Bucket b = client.createBucket(bucketName).allowSiblings(true).execute();
         b.store("k", "v").execute();
 
@@ -159,16 +159,14 @@ public abstract class ITestBucket {
             }
         }
 
-        // TODO clean up your mess (teardown)
+        client.updateBucket(b).allowSiblings(false).execute();
     }
 
     // List Keys
     @Test public void listKeys() throws Exception {
         final Set<String> keys = new LinkedHashSet<String>();
 
-        final String bucketName = UUID.randomUUID().toString();
-
-        Bucket b = client.fetchBucket(bucketName).execute();
+        Bucket b = client.fetchBucket(bucketName + "_kl").execute();
 
         for (int i = 65; i <= 90; i++) {
             String key = Character.toString((char) i);
@@ -181,13 +179,16 @@ public abstract class ITestBucket {
         }
 
         assertTrue(keys.isEmpty());
+
+        for (String key : b.keys()) {
+            b.delete(key).execute();
+        }
     }
 
     // fetch index
     @Test public void fetchIndex() throws Exception {
         Assume.assumeTrue(RiakTestProperties.is2iEnabled());
 
-        final String bucketName = UUID.randomUUID().toString() + "_2i";
         final Bucket b = client.fetchBucket(bucketName).execute();
 
         // create objects with indexes
@@ -256,12 +257,11 @@ public abstract class ITestBucket {
     }
 
     @Test public void conditionalFetch() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
         final String key = "key";
         final String originalValue = "first_value";
         final String newValue = "second_value";
 
-        Bucket b = client.fetchBucket(bucket).execute();
+        Bucket b = client.fetchBucket(bucketName).execute();
         b.store(key, originalValue).execute();
 
         IRiakObject obj = b.fetch(key).execute();
@@ -294,10 +294,9 @@ public abstract class ITestBucket {
     }
 
     @Test public void deletedVclock() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
         final String key = "k";
 
-        final Bucket b = client.fetchBucket(bucket).execute();
+        final Bucket b = client.fetchBucket(bucketName).execute();
 
         final CountDownLatch endLatch = new CountDownLatch(1);
 
@@ -376,7 +375,6 @@ public abstract class ITestBucket {
      * test the case where object won't be stored if there is an entry already
      */
     @Test public void conditionalStore_noneMatch() throws Exception {
-        final String bucketName = UUID.randomUUID().toString();
         final String k = "k";
         final String v1 = "v1";
         final String v2 = "v2";
@@ -402,7 +400,6 @@ public abstract class ITestBucket {
      * since (date(HTTP)/vclock(PB)), but it *hasn't* been modified.
      */
     @Test public void conditionalStore_notModified() throws Exception {
-        final String bucketName = UUID.randomUUID().toString();
         final String k = "k";
         final String v1 = "v1";
         final String v2 = "v2";
@@ -429,7 +426,6 @@ public abstract class ITestBucket {
      * and when the actual store is executed.
      */
     @Test public void conditionalStore_modified() throws Exception {
-        final String bucketName = UUID.randomUUID().toString();
         final String k = "k";
         final String v1 = "v1";
         final String v2 = "v2";
@@ -498,8 +494,7 @@ public abstract class ITestBucket {
     }
 
     @Test public void deleteWithFetchedVClock() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
-        Bucket b = client.fetchBucket(bucket).execute();
+        Bucket b = client.fetchBucket(bucketName).execute();
         b.store("k", "v").execute();
 
         IRiakObject fetched = b.fetch("k").execute();

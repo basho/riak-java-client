@@ -27,9 +27,12 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
+import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
@@ -55,8 +58,12 @@ public class ITestDataLoad {
         }
     }
 
+    @After public void teardown() throws Exception {
+        AllTests.emptyBucket(BUCKET, new PBClientAdapter(RIAK_HOST, RIAK_PORT));
+    }
+
     @Test public void multiDataLoad() throws Exception {
-        final String bucket = UUID.randomUUID().toString();
+        final String bucket = BUCKET;
         final int NUM_OBJECTS = 200;
         int idx = 0;
         final RiakClient riak = new RiakClient(RIAK_HOST, RIAK_PORT);

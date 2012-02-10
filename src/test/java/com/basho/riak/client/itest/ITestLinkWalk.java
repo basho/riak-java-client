@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
+import static com.basho.riak.client.AllTests.emptyBucket;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -20,8 +21,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
@@ -39,13 +41,25 @@ import com.basho.riak.client.util.CharsetUtils;
  */
 public abstract class ITestLinkWalk {
 
+    protected IRiakClient client;
+    protected String bucketName;
+
+    @Before public void setUp() throws Exception {
+        this.client = getClient();
+        this.bucketName = this.getClass().getName();
+        emptyBucket(bucketName, client);
+    }
+
+    @After public void teardown() throws Exception {
+        emptyBucket(bucketName, client);
+    }
+
     @Test public void test_walk() throws RiakException {
         final IRiakClient client = getClient();
 
         final String fooVal = "fooer";
         final String barVal = "barrer";
 
-        final String bucketName = "test_walk_" + UUID.randomUUID().toString();
         final String[] first = { "first", "the first" };
         final String[] second = { "second", fooVal };
         final String[] third = { "third", barVal };

@@ -18,12 +18,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.basho.riak.client.AllTests;
 import com.basho.riak.client.RiakTestProperties;
 import com.basho.riak.client.http.BinIndex;
 import com.basho.riak.client.http.Hosts;
@@ -33,6 +34,7 @@ import com.basho.riak.client.http.RiakIndex;
 import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.IndexResponse;
+import com.basho.riak.client.raw.http.HTTPClientAdapter;
 
 /**
  * @author russell
@@ -50,7 +52,13 @@ public class ITestSecondaryIndexes {
     @Before public void setUp() {
         Assume.assumeTrue(RiakTestProperties.is2iEnabled());
         client = new RiakClient(Hosts.RIAK_URL);
-        bucket = UUID.randomUUID().toString();
+        bucket = getClass().getName();
+    }
+
+    @After public void tearDown() throws Exception {
+        if (RiakTestProperties.is2iEnabled()) {
+            AllTests.emptyBucket(bucket, new HTTPClientAdapter(client));
+        }
     }
 
     @Test public void storeRetrieveQuery() {

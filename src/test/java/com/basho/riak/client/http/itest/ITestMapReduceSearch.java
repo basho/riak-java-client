@@ -65,7 +65,7 @@ public class ITestMapReduceSearch {
         }
     }
 
-    private static void indexBucket(RiakClient c, String bucket) {
+ private static void indexBucket(RiakClient c, String bucket) {
         try {
             BucketResponse response = c.getBucketSchema(SEARCH_BUCKET_NAME);
             RiakBucketInfo info = response.getBucketInfo();
