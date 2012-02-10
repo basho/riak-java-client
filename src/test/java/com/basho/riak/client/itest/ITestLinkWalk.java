@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,13 +50,16 @@ public abstract class ITestLinkWalk {
         emptyBucket(bucketName, client);
     }
 
+    @After public void teardown() throws Exception {
+        emptyBucket(bucketName, client);
+    }
+
     @Test public void test_walk() throws RiakException {
         final IRiakClient client = getClient();
 
         final String fooVal = "fooer";
         final String barVal = "barrer";
 
-        final String bucketName = "test_walk";
         final String[] first = { "first", "the first" };
         final String[] second = { "second", fooVal };
         final String[] third = { "third", barVal };
