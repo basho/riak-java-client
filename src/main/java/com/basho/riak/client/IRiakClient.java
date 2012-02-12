@@ -208,10 +208,12 @@ public interface IRiakClient {
      * 
      * Perform the Riak <code>/stats</code> operation on the node(s) this client
      * is connected to.
-     * 
+     * <p>
+     * <b>This is not supported by the Riak Protobuf API</b>
+     * <p>
      * @return an {@link Iterable} object that contains one or more {@link NodeStats}
      * 
-     * @throws RiakException 
+     * @throws RiakException If Riak does not respond or if the protobuf API is being used
      */
     Iterable<NodeStats> stats() throws RiakException;
 }

@@ -277,7 +277,6 @@ public interface RawClient {
      * or more sets of stats and can be Iterated over.
      * 
      * @return a {@link NodeStats} object that represents one or more sets of stats.
-     * @throws IOException
      */
     NodeStats stats();
     
