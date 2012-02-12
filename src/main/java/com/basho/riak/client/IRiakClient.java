@@ -204,5 +204,14 @@ public interface IRiakClient {
 
     void shutdown();
     
-    Iterator<NodeStats> stats() throws RiakException;
+    /**
+     * 
+     * Perform the Riak <code>/stats</code> operation on the node(s) this client
+     * is connected to.
+     * 
+     * @return an {@link Iterable} object that contains one or more {@link NodeStats}
+     * 
+     * @throws RiakException 
+     */
+    Iterable<NodeStats> stats() throws RiakException;
 }

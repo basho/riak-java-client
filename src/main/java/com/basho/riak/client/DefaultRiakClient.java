@@ -218,11 +218,14 @@ public final class DefaultRiakClient implements IRiakClient {
         rawClient.shutdown();
     }
     
-    public Iterator<NodeStats> stats() throws RiakException
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.IRiakClient#stats()
+     */
+    public Iterable<NodeStats> stats() throws RiakException
     {
         
         try {
-            return rawClient.stats().iterator();
+            return rawClient.stats();
         } catch (Exception e) {
             throw new RiakException(e);
         }
