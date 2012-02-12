@@ -19,15 +19,11 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.FetchBucket;
 import com.basho.riak.client.bucket.WriteBucket;
 import com.basho.riak.client.cap.ClientId;
-import com.basho.riak.client.query.BucketKeyMapReduce;
-import com.basho.riak.client.query.BucketMapReduce;
-import com.basho.riak.client.query.IndexMapReduce;
-import com.basho.riak.client.query.LinkWalk;
-import com.basho.riak.client.query.MapReduce;
-import com.basho.riak.client.query.SearchMapReduce;
+import com.basho.riak.client.query.*;
 import com.basho.riak.client.query.indexes.FetchIndex;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
+import java.util.Iterator;
 
 /**
  * Primary high-level interface for accessing Riak.
@@ -207,4 +203,6 @@ public interface IRiakClient {
     Transport getTransport();
 
     void shutdown();
+    
+    Iterator<NodeStats> stats() throws RiakException;
 }

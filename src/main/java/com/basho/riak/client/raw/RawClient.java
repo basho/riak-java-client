@@ -21,6 +21,7 @@ import java.util.Set;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
@@ -269,4 +270,16 @@ public interface RawClient {
     Transport getTransport();
 
     void shutdown();
+    
+    /**
+     * Performs a Riak <code>/stats</code> operation on the node(s) this client
+     * is connected to. The {@link NodeStats} object that is returned contains one
+     * or more sets of stats and can be Iterated over.
+     * 
+     * @return a {@link NodeStats} object that represents one or more sets of stats.
+     * @throws IOException
+     */
+    NodeStats stats();
+    
+    
 }

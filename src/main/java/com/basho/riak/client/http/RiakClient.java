@@ -499,6 +499,26 @@ public class RiakClient {
     }
 
     /**
+     * GET Riak's stats (status) resource.
+     * 
+     * @return an {@link HttpResponse} with the result of GET
+     */
+    public StatsResponse stats() {
+        HttpResponse r = helper.stats();
+        try {
+            return new StatsResponse(r);
+        } catch (JSONException e) {
+            try {
+                return new StatsResponse(helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException(
+                                                "helper.toss() returns a unsuccessful result, so StatsResponse shouldn't try to parse it or throw");
+            }
+        } 
+    }
+    
+    
+    /**
      * Fetch the keys for <code>index</code> with <code>value</code>
      * 
      * @param bucket
