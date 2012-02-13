@@ -1090,6 +1090,11 @@ public class NodeStats implements Iterable<NodeStats>
         this.next = anotherStats;
     }
     
+    void setPrevious(NodeStats anotherStats)
+    {
+        this.previous = anotherStats;
+    }
+    
     /**
      * Adds a set of stats to the end of the collection. Using the iterator
      * you can retrieve each set in order
@@ -1100,6 +1105,7 @@ public class NodeStats implements Iterable<NodeStats>
         if (next == null)
         {
             next = anotherStats;
+            anotherStats.setPrevious(this);
         }
         else
         {
@@ -1110,6 +1116,7 @@ public class NodeStats implements Iterable<NodeStats>
             }
             
             tmp.setNext(anotherStats);
+            anotherStats.setPrevious(tmp);
         }
     }
 
