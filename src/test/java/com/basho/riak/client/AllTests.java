@@ -52,6 +52,7 @@ import com.basho.riak.client.http.response.TestStoreResponse;
 import com.basho.riak.client.http.response.TestStreamedKeysCollection;
 import com.basho.riak.client.http.response.TestStreamedSiblingsCollection;
 import com.basho.riak.client.http.response.TestWalkResponse;
+import com.basho.riak.client.http.response.TestStatsResponse;
 import com.basho.riak.client.http.util.TestBranchableInputStream;
 import com.basho.riak.client.http.util.TestClientHelper;
 import com.basho.riak.client.http.util.TestClientUtils;
@@ -68,6 +69,8 @@ import com.basho.riak.client.itest.ITestHTTPLinkWalk;
 import com.basho.riak.client.itest.ITestPBBucket;
 import com.basho.riak.client.itest.ITestPBClient;
 import com.basho.riak.client.itest.ITestPBLinkWalk;
+import com.basho.riak.client.itest.ITestHTTPStats;
+import com.basho.riak.client.itest.ITestHTTPClusterStats;
 import com.basho.riak.client.operations.DeleteObjectTest;
 import com.basho.riak.client.operations.FetchObjectTest;
 import com.basho.riak.client.operations.StoreObjectTest;
@@ -117,6 +120,8 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     ITestDomainBucketHTTP.class,
     ITestDomainBucketPB.class,
     ITestHTTPClient.class,
+    ITestHTTPStats.class,
+    ITestHTTPClusterStats.class,
     com.basho.riak.pbc.itest.ITestMapReduce.class,
     ITestHTTPLinkWalk.class,
     ITestPBLinkWalk.class,
@@ -150,6 +155,7 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     TestConvertToCheckedExceptions.class,
     TestDefaultHttpResponse.class,
     TestFetchResponse.class,
+    TestStatsResponse.class,
     TestHttpResponseDecorator.class,
     TestKeySource.class,
     TestLinkHeader.class,

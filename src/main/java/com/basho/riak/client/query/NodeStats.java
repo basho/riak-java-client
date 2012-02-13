@@ -15,13 +15,38 @@
  */
 package com.basho.riak.client.query;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * The encapsulation of the data returned by the Riak <code>/stats</code> 
+ * operation.
+ * <p>
+ * By implementing the {@link Iterable<NodeStats>} interface it contains N sets
+ * of data where N is the number of connections the current client holds.
+ * <p>
+ * For example, using the HTTPClusterClient you can retrieve stats from all of your nodes:
+ * </p>
+ * <code><pre>
+ * HTTPClusterConfig c = new HTTPClusterConfig(10);
+ * HTTPClientConfig cc HTTPClientConfig.defaults();
+ * c.addHosts(cc,"192.168.1.5:8098","192.168.1.6:8098","192.168.1.7:8098");
+ * 
+ * IRiakClient riakClient = RiakFactory.newClient(c);
+ * 
+ * for (NodeStats ns : riakClient.stats())
+ * {
+ *     System.out.println(ns.nodename());
+ *     Syste.out.println(ns.vnodeGets());
+ * }
+ * 
+ * </pre></code
+ * 
  * @author roach
  */
 public class NodeStats implements Iterable<NodeStats>

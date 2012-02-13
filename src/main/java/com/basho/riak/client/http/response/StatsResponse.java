@@ -15,14 +15,11 @@
  */
 package com.basho.riak.client.http.response;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * 
  * @author roach
  */
 public class StatsResponse extends HttpResponseDecorator implements HttpResponse
