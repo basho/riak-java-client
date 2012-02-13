@@ -33,6 +33,10 @@
             <name>Russell Brown</name>
             <email>russelldb@basho.com</email>
         </developer>
+        <developer>
+            <name>Brian Roach</name>
+            <email>roach@basho.com</email>
+        </developer>
     </developers>
 
 	<scm>
