@@ -91,7 +91,7 @@ public class MapReduceResponseSource extends
             }
             r = RPB.RpbMapRedResp.parseFrom(data);
             is_given = false;
-        } catch (RiakError e) {
+        } catch (IOException e) {
             close();
             throw e;
         }

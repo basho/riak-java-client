@@ -85,7 +85,7 @@ public class KeySource extends RiakStreamClient<ByteString> {
 
                 r = RPB.RpbListKeysResp.parseFrom(data);
                 i = 0;
-            } catch (RiakError e) {
+            } catch (IOException e) {
                 close();
                 throw e;
             }
