@@ -292,17 +292,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
     /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#fetchIndex(com.basho.riak.client.raw.RawClient#stats()
      */
-    public NodeStats stats() throws IOException
-    {
+    public NodeStats stats() throws IOException {
         NodeStats nodeStats = null;
-        
         for(RawClient rc : cluster) {
             if (nodeStats == null)
                 nodeStats = rc.stats();
             else
                 nodeStats.add(rc.stats());
         }
-        
         return nodeStats;
     }
 

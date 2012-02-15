@@ -21,7 +21,6 @@ import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
-import java.util.Iterator;
 
 /**
  * The default implementation of IRiakClient.
