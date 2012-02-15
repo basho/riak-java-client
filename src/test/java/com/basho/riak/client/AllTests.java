@@ -14,8 +14,18 @@
 package com.basho.riak.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import junit.runner.Version;
+
+import org.junit.internal.TextListener;
+import org.junit.runner.Description;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
 import org.junit.runner.RunWith;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 import org.junit.runners.Suite;
 
 import com.basho.riak.client.bucket.Bucket;
@@ -192,6 +202,22 @@ public class AllTests {
     public static void emptyBucket(String bucketName, RawClient client) throws IOException {
         for (String k : client.listKeys(bucketName)) {
             client.delete(bucketName, k);
+        }
+    }
+
+    public static void main(String[] args) {
+        JUnitCore junit = new JUnitCore();
+        System.out.println("JUnit version " + Version.id());
+        RunListener listener = new TestNameTextListener();
+        junit.addListener(listener);
+        Result result = junit.run(new Class<?>[] { AllTests.class });
+        System.exit(result.wasSuccessful() ? 0 : 1);
+    }
+
+    private static final class TestNameTextListener extends TextListener {
+        @Override public void testStarted(Description description) {
+            super.testStarted(description);
+            System.out.println(description.getDisplayName());
         }
     }
 }
