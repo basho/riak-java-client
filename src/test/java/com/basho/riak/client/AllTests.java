@@ -52,7 +52,6 @@ import com.basho.riak.client.http.response.TestStoreResponse;
 import com.basho.riak.client.http.response.TestStreamedKeysCollection;
 import com.basho.riak.client.http.response.TestStreamedSiblingsCollection;
 import com.basho.riak.client.http.response.TestWalkResponse;
-import com.basho.riak.client.http.response.TestStatsResponse;
 import com.basho.riak.client.http.util.TestBranchableInputStream;
 import com.basho.riak.client.http.util.TestClientHelper;
 import com.basho.riak.client.http.util.TestClientUtils;
@@ -155,7 +154,6 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     TestConvertToCheckedExceptions.class,
     TestDefaultHttpResponse.class,
     TestFetchResponse.class,
-    TestStatsResponse.class,
     TestHttpResponseDecorator.class,
     TestKeySource.class,
     TestLinkHeader.class,

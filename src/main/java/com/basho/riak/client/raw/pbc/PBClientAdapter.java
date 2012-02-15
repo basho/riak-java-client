@@ -495,8 +495,7 @@ public class PBClientAdapter implements RawClient {
         client.shutdown();
     }
 
-    public NodeStats stats()
-    {
+    public NodeStats stats() {
         throw new UnsupportedOperationException("Not supported using protobuffer protocol.");
     }
 }

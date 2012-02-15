@@ -10,7 +10,12 @@ import com.basho.riak.client.bucket.WriteBucket;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.operations.RiakOperation;
-import com.basho.riak.client.query.*;
+import com.basho.riak.client.query.BucketKeyMapReduce;
+import com.basho.riak.client.query.BucketMapReduce;
+import com.basho.riak.client.query.IndexMapReduce;
+import com.basho.riak.client.query.SearchMapReduce;
+import com.basho.riak.client.query.LinkWalk;
+import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
@@ -221,14 +226,11 @@ public final class DefaultRiakClient implements IRiakClient {
     /* (non-Javadoc)
      * @see com.basho.riak.client.IRiakClient#stats()
      */
-    public Iterable<NodeStats> stats() throws RiakException
-    {
-        
+    public Iterable<NodeStats> stats() throws RiakException {
         try {
             return rawClient.stats();
         } catch (Exception e) {
             throw new RiakException(e);
         }
-        
     }
 }

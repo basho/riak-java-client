@@ -15,13 +15,10 @@
  */
 package com.basho.riak.client.query;
 
-import java.util.ArrayList;
+import java.math.BigInteger;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * The encapsulation of the data returned by the Riak <code>/stats</code> 
@@ -29,7 +26,10 @@ import org.json.JSONObject;
  * <p>
  * By implementing the {@link Iterable<NodeStats>} interface it contains N sets
  * of data where N is the number of connections the current client holds.
- * <p>
+ * </p><p>
+ * Worth noting is that integer values are returned as {@link BigInteger} objects. 
+ * This is done to match the unconstrained size provided by Riak. 
+ * </p><p>
  * For example, using the HTTPClusterClient you can retrieve stats from all of your nodes:
  * </p>
  * <code><pre>
@@ -51,7 +51,6 @@ import org.json.JSONObject;
  */
 public class NodeStats implements Iterable<NodeStats>
 {
-    private final JSONObject stats;
     
     /*
      * This got rather tricky due to the HTTPClusterClient implementing RawClient
@@ -66,433 +65,534 @@ public class NodeStats implements Iterable<NodeStats>
     private NodeStats next;
     private NodeStats previous;
     
+    @JsonProperty private BigInteger vnode_gets;
+    @JsonProperty private BigInteger vnode_puts;
+    @JsonProperty private BigInteger vnode_index_reads;
+    @JsonProperty private BigInteger vnode_index_writes;
+    @JsonProperty private BigInteger vnode_index_writes_postings;
+    @JsonProperty private BigInteger vnode_index_deletes;
+    @JsonProperty private BigInteger vnode_index_deletes_postings;
+    @JsonProperty private BigInteger read_repairs;
+    @JsonProperty private BigInteger vnode_gets_total;
+    @JsonProperty private BigInteger vnode_puts_total;
+    @JsonProperty private BigInteger vnode_index_reads_total;
+    @JsonProperty private BigInteger vnode_index_writes_total;
+    @JsonProperty private BigInteger vnode_index_writes_postings_total;
+    @JsonProperty private BigInteger vnode_index_deletes_total;
+    @JsonProperty private BigInteger vnode_index_deletes_postings_total;
+    @JsonProperty private BigInteger node_gets;
+    @JsonProperty private BigInteger node_gets_total;
+    @JsonProperty private BigInteger node_get_fsm_time_mean;
+    @JsonProperty private BigInteger node_get_fsm_time_median;
+    @JsonProperty private BigInteger node_get_fsm_time_95;
+    @JsonProperty private BigInteger node_get_fsm_time_99;
+    @JsonProperty private BigInteger node_get_fsm_time_100;
+    @JsonProperty private BigInteger node_puts;
+    @JsonProperty private BigInteger node_puts_total;
+    @JsonProperty private BigInteger node_put_fsm_time_mean;
+    @JsonProperty private BigInteger node_put_fsm_time_median;
+    @JsonProperty private BigInteger node_put_fsm_time_95;
+    @JsonProperty private BigInteger node_put_fsm_time_99;
+    @JsonProperty private BigInteger node_put_fsm_time_100;
+    @JsonProperty private BigInteger node_get_fsm_siblings_mean;
+    @JsonProperty private BigInteger node_get_fsm_siblings_median;
+    @JsonProperty private BigInteger node_get_fsm_siblings_95;
+    @JsonProperty private BigInteger node_get_fsm_siblings_99;
+    @JsonProperty private BigInteger node_get_fsm_siblings_100;
+    @JsonProperty private BigInteger node_get_fsm_objsize_mean;
+    @JsonProperty private BigInteger node_get_fsm_objsize_median;
+    @JsonProperty private BigInteger node_get_fsm_objsize_95;
+    @JsonProperty private BigInteger node_get_fsm_objsize_99;
+    @JsonProperty private BigInteger node_get_fsm_objsize_100;
+    @JsonProperty private BigInteger read_repairs_total;
+    @JsonProperty private BigInteger coord_redirs_total;
+    @JsonProperty private BigInteger cpu_nprocs;
+    @JsonProperty private BigInteger cpu_avg1;
+    @JsonProperty private BigInteger cpu_avg5;
+    @JsonProperty private BigInteger cpu_avg15;
+    @JsonProperty private BigInteger mem_total;
+    @JsonProperty private BigInteger mem_allocated;
+    @JsonProperty private String nodename;
+    @JsonProperty private String[] connected_nodes;
+    @JsonProperty private String sys_driver_version;
+    @JsonProperty private BigInteger sys_global_heaps_size;
+    @JsonProperty private String sys_heap_type;
+    @JsonProperty private BigInteger sys_logical_processors;
+    @JsonProperty private String sys_otp_release;
+    @JsonProperty private BigInteger sys_process_count;
+    @JsonProperty private boolean sys_smp_support;
+    @JsonProperty private String sys_system_version;
+    @JsonProperty private String sys_system_architecture;
+    @JsonProperty private boolean sys_threads_enabled;
+    @JsonProperty private BigInteger sys_thread_pool_size;
+    @JsonProperty private BigInteger sys_wordsize;
+    @JsonProperty private String[] ring_members;
+    @JsonProperty private BigInteger ring_num_partitions;
+    @JsonProperty private String ring_ownership;
+    @JsonProperty private BigInteger ring_creation_size;
+    @JsonProperty private String storage_backend;
+    @JsonProperty private BigInteger pbc_connects_total;
+    @JsonProperty private BigInteger pbc_connects;
+    @JsonProperty private BigInteger pbc_active;
+    @JsonProperty private String ssl_version;
+    @JsonProperty private String public_key_version;
+    @JsonProperty private String runtime_tools_version;
+    @JsonProperty private String basho_stats_version;
+    @JsonProperty private String riak_search_version;
+    @JsonProperty private String merge_index_version;
+    @JsonProperty private String luwak_version;
+    @JsonProperty private String skerl_version;
+    @JsonProperty private String riak_kv_version;
+    @JsonProperty private String bitcask_version;
+    @JsonProperty private String luke_version;
+    @JsonProperty private String erlang_js_version;
+    @JsonProperty private String mochiweb_version;
+    @JsonProperty private String inets_version;
+    @JsonProperty private String riak_pipe_version;
+    @JsonProperty private String riak_core_version;
+    @JsonProperty private String riak_sysmon_version;
+    @JsonProperty private String webmachine_version;
+    @JsonProperty private String crypto_version;
+    @JsonProperty private String os_mon_version;
+    @JsonProperty private String cluster_info_version;
+    @JsonProperty private String sasl_version;
+    @JsonProperty private String lager_version;
+    @JsonProperty private String basho_metrics_version;
+    @JsonProperty private String stdlib_version;
+    @JsonProperty private String kernel_version;
+    @JsonProperty private BigInteger executing_mappers;
+    @JsonProperty private BigInteger memory_total;
+    @JsonProperty private BigInteger memory_processes;
+    @JsonProperty private BigInteger memory_processes_used;
+    @JsonProperty private BigInteger memory_system;
+    @JsonProperty private BigInteger memory_atom;
+    @JsonProperty private BigInteger memory_atom_used;
+    @JsonProperty private BigInteger memory_binary;
+    @JsonProperty private BigInteger memory_code;
+    @JsonProperty private BigInteger memory_ets;
     
-    public NodeStats (JSONObject stats) 
-    {
-        this.stats = stats;
-    }    
     
     /**
      * Returns the <code>vnode_gets</code> value from the Riak stats reply
      * @return int value
      */
-    public int vnodeGets() 
+    public BigInteger vnodeGets() 
     {
-        return getIntValue("vnode_gets");
+        return vnode_gets;
     }
  
     /**
      * Returns the <code>vnode_gets</code> value from the Riak stats reply
      * @return <code>int</code> value
      */
-    public int vnodePuts()
+    public BigInteger vnodePuts()
     {
-        return getIntValue("vnode_puts");
+        return vnode_puts;
     }
     
     /**
      * Returns the <code>vnode_index_reads</code> value from the Riak stats reply
      * @return <code>int</code> value
      */
-    public int vnodeIndexReads()
+    public BigInteger vnodeIndexReads()
     {
-        return getIntValue("vnode_index_reads"); 
+        return vnode_index_reads; 
     }
     
     /**
      * Returns the <code>vnode_index_writes</code> value from the Riak stats reply
      * @return <code>int</code> value
      */
-    public int vnodeIndexWrites()
+    public BigInteger vnodeIndexWrites()
     {
-        return getIntValue("vnode_index_writes");
+        return vnode_index_writes;
     }
     
     /**
      * Returns the <code>vnode_index_writes_postings</code> value from the Riak stats reply
      * @return <code>int</code> value
      */
-    public int vnodeIndexWritePostings()
+    public BigInteger vnodeIndexWritePostings()
     {
-        return getIntValue("vnode_index_writes_postings");
+        return vnode_index_writes_postings;
     }
     
     /**
      * Returns the <code>vnode_index_deletes</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeIndexDeletes()
+     */     
+    public BigInteger vnodeIndexDeletes()
     {
-        return getIntValue("vnode_index_deletes");
+        return vnode_index_deletes;
     }
     
     /**
      * Returns the <code>vnode_index_deletes_postings</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodesIndexDeletesPostings()
+     */     
+    public BigInteger vnodesIndexDeletesPostings()
     {
-        return getIntValue("vnode_index_deletes_postings");
+        return vnode_index_deletes_postings;
     }
     
     /**
      * Returns the <code>read_repairs</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int readRepairs()
+     */     
+    public BigInteger readRepairs()
     {
-        return getIntValue("read_repairs");
+        return read_repairs;
     }
     
     /**
      * Returns the <code>vnode_gets_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeGetsTotal()
+     */     
+    public BigInteger vnodeGetsTotal()
     {
-        return getIntValue("vnode_gets_total");
+        return vnode_gets_total;
     }
     
     /**
      * Returns the <code>vnode_puts_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodePutsTotal()
+     */     
+    public BigInteger vnodePutsTotal()
     {
-        return getIntValue("vnode_puts_total");
+        return vnode_puts_total;
     }
     
     /**
      * Returns the <code>vnode_index_reads_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeIndexReadsTotal()
+     */     
+    public BigInteger vnodeIndexReadsTotal()
     {
-        return getIntValue("vnode_index_reads_total");
+        return vnode_index_reads_total;
     }
     
     /**
      * Returns the <code>vnode_index_writes_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeIndexWritesTotal()
+     */     
+    public BigInteger vnodeIndexWritesTotal()
     {
-        return getIntValue("vnode_index_writes_total");
+        return vnode_index_writes_total;
     }
     
     /**
      * Returns the <code>vnode_index_writes_postings_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeIndexWritesPostingsTotal()
+     */     
+    public BigInteger vnodeIndexWritesPostingsTotal()
     {
-        return getIntValue("vnode_index_writes_postings_total");
+        return vnode_index_writes_postings_total;
     }
     
     /**
      * Returns the <code>vnode_index_deletes_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeIndexDeletesTotal()
+     */     
+    public BigInteger vnodeIndexDeletesTotal()
     {
-        return getIntValue("vnode_index_deletes_total");
+        return vnode_index_deletes_total;
     }
     
     /**
      * Returns the <code>vnode_index_deletes_postings_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int vnodeIndexDeletesPostingsTotal()
+     */     
+    public BigInteger vnodeIndexDeletesPostingsTotal()
     {
-        return getIntValue("vnode_index_deletes_postings_total");
+        return vnode_index_deletes_postings_total;
     }
     
     /**
      * Returns the <code>node_gets</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGets()
+     */     
+    public BigInteger nodeGets()
     {
-        return getIntValue("node_gets");
+        return node_gets;
     }
     
     /**
      * Returns the <code>node_gets_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGetsTotal()
+     */     
+    public BigInteger nodeGetsTotal()
     {
-        return getIntValue("node_gets_total");
+        return node_gets_total;
     }
     
     /**
      * Returns the <code>node_get_fsm_time_mean</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGetFsmTimeMean()
+     */     
+    public BigInteger nodeGetFsmTimeMean()
     {
-        return getIntValue("node_get_fsm_time_mean");
+        return node_get_fsm_time_mean;
     }
     
     /**
      * Returns the <code>node_get_fsm_time_median</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGetFsmTimeMedian()
+     */     
+    public BigInteger nodeGetFsmTimeMedian()
     {
-        return getIntValue("node_get_fsm_time_median");
+        return node_get_fsm_time_median;
     }
     
     /**
      * Returns the <code>node_get_fsm_time_95</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGetFsmTime95()
+     */     
+    public BigInteger nodeGetFsmTime95()
     {
-        return getIntValue("node_get_fsm_time_95");
+        return node_get_fsm_time_95;
     }
     
     /**
      * Returns the <code>node_get_fsm_time_99</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGetFsmTime99()
+     */     
+    public BigInteger nodeGetFsmTime99()
     {
-        return getIntValue("node_get_fsm_time_99");
+        return node_get_fsm_time_99;
     }
     
     /**
      * Returns the <code>node_get_fsm_time_100</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodeGetFsmTime100()
+     */     
+    public BigInteger nodeGetFsmTime100()
     {
-        return getIntValue("node_get_fsm_time_100");
+        return node_get_fsm_time_100;
     }
     
     /**
      * Returns the <code>node_puts</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePuts()
+     */     
+    public BigInteger nodePuts()
     {
-        return getIntValue("node_puts");
+        return node_puts;
     }
     
     /**
      * Returns the <code>node_puts_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutsTotal()
+     */     
+    public BigInteger nodePutsTotal()
     {
-        return getIntValue("node_puts_total");
+        return node_puts_total;
     }
     
     /**
      * Returns the <code>node_get_fsm_time_mean</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmTimeMean()
+     */     
+    public BigInteger nodePutFsmTimeMean()
     {
-        return getIntValue("node_get_fsm_time_mean");
+        return node_put_fsm_time_mean;
     }
     
     /**
      * Returns the <code>node_put_fsm_time_median</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmTimeMedian()
+     */     
+    public BigInteger nodePutFsmTimeMedian()
     {
-        return getIntValue("node_put_fsm_time_median");
+        return node_put_fsm_time_median;
     }
     
     /**
      * Returns the <code>node_put_fsm_time_95</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmTime95()
+     */     
+    public BigInteger nodePutFsmTime95()
     {
-        return getIntValue("node_put_fsm_time_95");
+        return node_put_fsm_time_95;
     }
     
     /**
      * Returns the <code>node_put_fsm_time_99</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmTime99()
+     */     
+    public BigInteger nodePutFsmTime99()
     {
-        return getIntValue("node_put_fsm_time_99");
+        return node_put_fsm_time_99;
     }
     
     /**
      * Returns the <code>node_put_fsm_time_100</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmTime100()
+     */     
+    public BigInteger nodePutFsmTime100()
     {
-        return getIntValue("node_put_fsm_time_100");
+        return node_put_fsm_time_100;
     }
     
     /**
      * Returns the <code>node_get_fsm_siblings_mean</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmSiblingsMean()
+     */     
+    public BigInteger nodeGetFsmSiblingsMean()
     {
-        return getIntValue("node_get_fsm_siblings_mean");
+        return node_get_fsm_siblings_mean;
     }
     
     /**
      * Returns the <code>node_put_fsm_siblings_median</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmSiblingsMedian()
+     */     
+    public BigInteger nodeGetFsmSiblingsMedian()
     {
-        return getIntValue("node_put_fsm_siblings_median");
+        return node_get_fsm_siblings_median;
     }
     
     /**
      * Returns the <code>node_put_fsm_siblings_95</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmSiblings95()
+     */     
+    public BigInteger nodeGetFsmSiblings95()
     {
-        return getIntValue("node_put_fsm_siblings_95");
+        return node_get_fsm_siblings_95;
     }
     
     /**
      * Returns the <code>node_put_fsm_siblings_99</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmSiblings99()
+     */     
+    public BigInteger nodeGetFsmSiblings99()
     {
-        return getIntValue("node_put_fsm_siblings_99");
+        return node_get_fsm_siblings_99;
     }
     
     /**
      * Returns the <code>node_put_fsm_siblings_100</code> value from the Riak Stats reply
      * @return <code>int</code> value
-     */
-    public int nodePutFsmSiblings100()
+     */     
+    public BigInteger nodeGetFsmSiblings100()
     {
-        return getIntValue("node_put_fsm_siblings_100");
+        return node_get_fsm_siblings_100;
     }
     
     /**
      * Returns the <code>node_get_fsm_objsize_mean</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int nodePutFsmObjsizeMean()
+    public BigInteger nodeGetFsmObjsizeMean()
     {
-        return getIntValue("node_get_fsm_objsize_mean");
+        return node_get_fsm_objsize_mean;
     }
     
     /**
      * Returns the <code>node_put_fsm_objsize_median</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int nodePutFsmObjsizeMedian()
+    public BigInteger nodeGetFsmObjsizeMedian()
     {
-        return getIntValue("node_put_fsm_objsize_median");
+        return node_get_fsm_objsize_median;
     }
     
     /**
      * Returns the <code>node_put_fsm_objsize_95</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int nodePutFsmObjsize95()
+    public BigInteger nodeGetFsmObjsize95()
     {
-        return getIntValue("node_put_fsm_objsize_95");
+        return node_get_fsm_objsize_95;
     }
     
     /**
      * Returns the <code>node_put_fsm_objsize_99</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int nodePutFsmObjsize99()
+    public BigInteger nodeGetFsmObjsize99()
     {
-        return getIntValue("node_put_fsm_objsize_99");
+        return node_get_fsm_objsize_99;
     }
     
     /**
      * Returns the <code>node_put_fsm_objsize_100</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int nodePutFsmSObjsize100()
+    public BigInteger nodePutFsmSObjsize100()
     {
-        return getIntValue("node_put_fsm_objsize_100");
+        return node_get_fsm_objsize_100;
     }
     
     /**
      * Returns the <code>read_repairs_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int readRepairsTotal()
+    public BigInteger readRepairsTotal()
     {
-        return getIntValue("read_repairs_total");
+        return read_repairs_total;
     }
     
     /**
      * Returns the <code>coord_redirs_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int coordRedirsTotal()
+    public BigInteger coordRedirsTotal()
     {
-        return getIntValue("coord_redirs_total");
+        return coord_redirs_total;
     }
     
     /**
      * Returns the <code>cpu_nprocs</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int cpuNumProcs()
+    public BigInteger cpuNumProcs()
     {
-        return getIntValue("cpu_nprocs");
+        return cpu_nprocs;
     }
     
     /**
      * Returns the <code>cpu_avg1</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int cpuAvg1()
+    public BigInteger cpuAvg1()
     {
-        return getIntValue("cpu_avg1");
+        return cpu_avg1;
     }
     
     /**
      * Returns the <code>cpu_avg5</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int cpuAvg5()
+    public BigInteger cpuAvg5()
     {
-        return getIntValue("cpu_avg5");
+        return cpu_avg5;
     }
 
     /**
      * Returns the <code>cpu_avg15</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int cpuAvg15()
+    public BigInteger cpuAvg15()
     {
-        return getIntValue("cpu_avg15");
+        return cpu_avg15;
     }
     
     /**
      * Returns the <code>mem_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memTotal()
+    public BigInteger memTotal()
     {
-        return getIntValue("mem_total");
+        return mem_total;
     }
     
     /**
      * Returns the <code>mem_allocated</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memAllocated()
+    public BigInteger memAllocated()
     {
-        return getIntValue("mem_allocated");
+        return mem_allocated;
     }
     
     /**
@@ -501,16 +601,16 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String nodename()
     {
-        return getStringValue("nodename");
+        return nodename;
     }
     
     /**
      * Returns the <code>connected_nodes</code> value from the Riak Stats reply
-     * @return <code>List<String></code> of node names
+     * @return <code>String[]</code> of node names
      */
-    public List<String> connectedNodes()
+    public String[] connectedNodes()
     {
-        return getStringList("connected_nodes");
+        return connected_nodes;
     }
     
     /**
@@ -519,16 +619,16 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String sysDriverVersion()
     {
-        return getStringValue("sys_driver_version");
+        return sys_driver_version;
     }
     
     /**
      * Returns the <code>sys_global_heaps_size</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int sysGlobalHeapsSize()
+    public BigInteger sysGlobalHeapsSize()
     {
-        return getIntValue("sys_global_heaps_size");
+        return sys_global_heaps_size;
     }
     
     /**
@@ -537,16 +637,16 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String sysHeapType()
     {
-        return getStringValue("sys_heap_type");
+        return sys_heap_type;
     }
     
     /**
      * Returns the <code>sys_logical_processors</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int sysLogicalProcessors()
+    public BigInteger sysLogicalProcessors()
     {
-        return getIntValue("sys_logical_processors");
+        return sys_logical_processors;
     }
     
     /**
@@ -555,16 +655,16 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String sysOtpRelease()
     {
-        return getStringValue("sys_otp_release");
+        return sys_otp_release;
     }
     
     /**
      * Returns the <code>sys_process_count</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int sysProcessCount()
+    public BigInteger sysProcessCount()
     {
-        return getIntValue("sys_process_count");
+        return sys_process_count;
     }
     
     /**
@@ -573,7 +673,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public boolean sysSmpSupport()
     {
-        return getBoolValue("sys_smp_support");
+        return sys_smp_support;
     }
     
     /**
@@ -582,7 +682,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String sysSystemVersion()
     {
-        return getStringValue("sys_system_version");
+        return sys_system_version;
     }
     
     /**
@@ -591,7 +691,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String sysSystemArchitecture()
     {
-        return getStringValue("sys_system_architecture");
+        return sys_system_architecture;
     }
     
     /**
@@ -600,43 +700,43 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public boolean sysThreadsEnabled()
     {
-        return getBoolValue("sys_threads_enabled");
+        return sys_threads_enabled;
     }
     
     /**
      * Returns the <code>sys_thread_pool_size</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int sysThreadPoolSize()
+    public BigInteger sysThreadPoolSize()
     {
-        return getIntValue("sys_thread_pool_size");
+        return sys_thread_pool_size;
     }
     
     /**
      * Returns the <code>sys_wordsize</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int sysWordSize()
+    public BigInteger sysWordSize()
     {
-        return getIntValue("sys_wordsize");
+        return sys_wordsize;
     }
     
     /**
      * Returns the <code>ring_members</code> value from the Riak Stats reply
-     * @return <code>List<String></code> of node names
+     * @return <code>String[]</code> of node names
      */
-    public List<String> ringMembers()
+    public String[] ringMembers()
     {
-        return getStringList("ring_members");
+        return ring_members;
     }
     
     /**
      * Returns the <code>ring_num_partitions</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int ringNumPartitions()
+    public BigInteger ringNumPartitions()
     {
-        return getIntValue("ring_num_partitions");
+        return ring_num_partitions;
     }
     
     /**
@@ -645,16 +745,16 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String ringOwnership()
     {
-        return getStringValue("ring_ownership");
+        return ring_ownership;
     }
     
     /**
      * Returns the <code>ring_creation_size</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int ringCreationSize()
+    public BigInteger ringCreationSize()
     {
-        return getIntValue("ring_creation_size");
+        return ring_creation_size;
     }
     
     /**
@@ -663,34 +763,34 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String storageBackend()
     {
-        return getStringValue("storage_backend");
+        return storage_backend;
     }
     
     /**
      * Returns the <code>pbc_connects_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int pbcConnectsTotal()
+    public BigInteger pbcConnectsTotal()
     {
-        return getIntValue("pbc_connects_total");
+        return pbc_connects_total;
     }
     
     /**
      * Returns the <code>pbc_connects</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int pbcConnects()
+    public BigInteger pbcConnects()
     {
-        return getIntValue("pbc_connects");
+        return pbc_connects;
     }
     
     /**
      * Returns the <code>pbc_active</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int pbcActive()
+    public BigInteger pbcActive()
     {
-        return getIntValue("pbc_active");
+        return pbc_active;
     }
     
     /**
@@ -699,7 +799,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String sslVeriosn()
     {
-        return getStringValue("ssl_version");
+        return ssl_version;
     }
     
     /**
@@ -708,7 +808,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String publicKeyVersion()
     {
-        return getStringValue("public_key_version");
+        return public_key_version;
     }
     
     /**
@@ -717,7 +817,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String runtimeToolsVersion()
     {
-        return getStringValue("runtime_tools_version");
+        return runtime_tools_version;
     }
     
     /**
@@ -726,7 +826,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String bashoStatsVersion()
     {
-        return getStringValue("basho_stats_version");
+        return basho_stats_version;
     }
     
     /**
@@ -735,7 +835,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String riakSearchVersion()
     {
-        return getStringValue("riak_search_version");
+        return riak_search_version;
     }
     
     /**
@@ -744,7 +844,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String mergeIndexVersion()
     {
-        return getStringValue("merge_index_version");
+        return merge_index_version;
     }
     
     /**
@@ -753,7 +853,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String luwakVersion()
     {
-        return getStringValue("luwak_version");
+        return luwak_version;
     }
     
     /**
@@ -762,7 +862,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String skerlVersion()
     {
-        return getStringValue("skerl_version");
+        return skerl_version;
     }
     
     /**
@@ -771,7 +871,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String riakKvVersion()
     {
-        return getStringValue("riak_kv_version");
+        return riak_kv_version;
     }
     
     /**
@@ -780,7 +880,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String bitcaskVersion()
     {
-        return getStringValue("bitcask_version");
+        return bitcask_version;
     }
     
     /**
@@ -789,7 +889,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String lukeVeriosn()
     {
-        return getStringValue("luke_version");
+        return luke_version;
     }
     
     /**
@@ -798,7 +898,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String erlangJsVersion()
     {
-        return getStringValue("erlang_js_version");
+        return erlang_js_version;
     }
     
     /**
@@ -807,7 +907,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String mochiwebVersion()
     {
-        return getStringValue("mochiweb_value");
+        return mochiweb_version;
     }
     
     /**
@@ -816,7 +916,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String inetsVersion()
     {
-        return getStringValue("inets_version");
+        return inets_version;
     }
     
     /**
@@ -825,7 +925,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String riakPipeVersion()
     {
-        return getStringValue("riak_pipe_version");
+        return riak_pipe_version;
     }
     
     /**
@@ -834,7 +934,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String riakCoreVersion()
     {
-        return getStringValue("riak_core_version");
+        return riak_core_version;
     }
     
     /**
@@ -843,7 +943,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String riak_sysmon_version()
     {
-        return getStringValue("riak_sysmon_version");
+        return riak_sysmon_version;
     }
     
     /**
@@ -852,7 +952,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String webmachineVersion()
     {
-        return getStringValue("webmachine_version");
+        return webmachine_version;
     }
     
     /**
@@ -861,7 +961,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String cryptoVersion()
     {
-        return getStringValue("crypto_version");
+        return crypto_version;
     }
     
     /**
@@ -870,7 +970,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String osMonVersion()
     {
-        return getStringValue("os_mon_version");
+        return os_mon_version;
     }
     
     /**
@@ -879,7 +979,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String clusterInfoVersion()
     {
-        return getStringValue("cluster_info_version");
+        return cluster_info_version;
     }
     
     /**
@@ -888,7 +988,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String saslVersion()
     {
-        return getStringValue("sasl_version");
+        return sasl_version;
     }
     
     /**
@@ -897,7 +997,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String lagerVersion()
     {
-        return getStringValue("lager_version");
+        return lager_version;
     }
     
     /**
@@ -906,7 +1006,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String bashoMetricsVersion()
     {
-        return getStringValue("basho_lager_version");
+        return basho_metrics_version;
     }
     
     /**
@@ -915,7 +1015,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String stdlibVersion()
     {
-        return getStringValue("stdlib_version");
+        return stdlib_version;
     }
     
     /**
@@ -924,156 +1024,98 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String kernelVersion()
     {
-        return getStringValue("kernel_version");
+        return kernel_version;
     }
     
     /**
      * Returns the <code>executing_mappers</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int executingMappers()
+    public BigInteger executingMappers()
     {
-        return getIntValue("executing_mappers");
+        return executing_mappers;
     }
     
     /**
      * Returns the <code>memory_total</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryTotal()
+    public BigInteger memoryTotal()
     {
-        return getIntValue("memory_total");
+        return memory_total;
     }
     
     /**
      * Returns the <code>memory_processes</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryProcesses()
+    public BigInteger memoryProcesses()
     {
-        return getIntValue("memory_processes");
+        return memory_processes;
     }
     
     /**
      * Returns the <code>memory_processes_used</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryProcessesUsed()
+    public BigInteger memoryProcessesUsed()
     {
-        return getIntValue("memory_processes_used");
+        return memory_processes_used;
     }
     
     /**
      * Returns the <code>memory_system</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memorySystem()
+    public BigInteger memorySystem()
     {
-        return getIntValue("memory_system");
+        return memory_system;
     }
     
     /**
      * Returns the <code>memory_atom</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryAtom()
+    public BigInteger memoryAtom()
     {
-        return getIntValue("memory_atom");
+        return memory_atom;
     }
     
     /**
      * Returns the <code>memory_atom_used</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryAtomUsed()
+    public BigInteger memoryAtomUsed()
     {
-        return getIntValue("memory_atom_used");
+        return memory_atom_used;
     }
     
     /**
      * Returns the <code>memory_binary</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryBinary()
+    public BigInteger memoryBinary()
     {
-        return getIntValue("memory_binary");
+        return memory_binary;
     }
     
     /**
      * Returns the <code>memory_code</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryCode()
+    public BigInteger memoryCode()
     {
-        return getIntValue("memory_code");
+        return memory_code;
     }
     
     /**
      * Returns the <code>memory_ets</code> value from the Riak Stats reply
      * @return <code>int</code> value
      */
-    public int memoryEts()
+    public BigInteger memoryEts()
     {
-        return getIntValue("memory_ets");
+        return memory_ets;
     }
-    
-    private boolean getBoolValue(String key)
-    {
-        try
-        {
-            return stats.getBoolean(key);
-        }
-        catch (JSONException ex)
-        {
-            return false;
-        }
-    }
-    
-    private List<String> getStringList(String key)
-    {
-        try
-        {
-            JSONArray array = stats.getJSONArray(key);
-            ArrayList<String> list = new ArrayList<String>();
-            for (int i = 0; i < array.length(); i++)
-            {
-                list.add(array.getString(i));
-            }
-            
-            return list;
-            
-        }
-        catch (JSONException ex)
-        {
-            return new ArrayList<String>();
-        }
-        
-    }
-    
-    private String getStringValue(String key)
-    {
-        try
-        {
-            return stats.getString(key);
-        }
-        catch (JSONException ex)
-        {
-            return "";
-        }
-    }
-    
-    private int getIntValue(String key) 
-    {
-        try
-        {
-            return stats.getInt(key);
-        }
-        catch (JSONException ex)
-        {
-            return 0;
-        }
-    }
-    
     
     NodeStats getPrevios()
     {

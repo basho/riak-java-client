@@ -69,8 +69,8 @@ public class ITestBasic {
 
     @Test public void stats() {
         RiakClient c = new RiakClient(RIAK_URL);
-        StatsResponse resp = c.stats();
-        JSONObject json = resp.getStats();
+        HttpResponse resp = c.stats();
+        String json = resp.getBodyAsString();
         assertTrue(json.length() > 0);
     }
     
