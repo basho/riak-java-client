@@ -15,10 +15,18 @@
  */
 package com.basho.riak.client.query;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.JsonToken;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.DeserializationContext;
+import org.codehaus.jackson.map.JsonDeserializer;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * The encapsulation of the data returned by the Riak <code>/stats</code> 
@@ -49,6 +57,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * 
  * @author roach
  */
+
+// We set this so as not to break is new stats are added to the Riak /stats operation
+
+
+@JsonIgnoreProperties(ignoreUnknown=true) 
 public class NodeStats implements Iterable<NodeStats>
 {
     
@@ -106,6 +119,8 @@ public class NodeStats implements Iterable<NodeStats>
     @JsonProperty private BigInteger node_get_fsm_objsize_100;
     @JsonProperty private BigInteger read_repairs_total;
     @JsonProperty private BigInteger coord_redirs_total;
+    @JsonProperty private BigInteger precommit_fail;            // Riak 1.1
+    @JsonProperty private BigInteger postcommit_fail;           // Riak 1.1
     @JsonProperty private BigInteger cpu_nprocs;
     @JsonProperty private BigInteger cpu_avg1;
     @JsonProperty private BigInteger cpu_avg5;
@@ -158,6 +173,7 @@ public class NodeStats implements Iterable<NodeStats>
     @JsonProperty private String sasl_version;
     @JsonProperty private String lager_version;
     @JsonProperty private String basho_metrics_version;
+    @JsonProperty private String riak_control_version;          // Riak 1.1
     @JsonProperty private String stdlib_version;
     @JsonProperty private String kernel_version;
     @JsonProperty private BigInteger executing_mappers;
@@ -170,6 +186,34 @@ public class NodeStats implements Iterable<NodeStats>
     @JsonProperty private BigInteger memory_binary;
     @JsonProperty private BigInteger memory_code;
     @JsonProperty private BigInteger memory_ets;
+    @JsonProperty private BigInteger ignored_gossip_total;      // Riak 1.1
+    @JsonProperty private BigInteger rings_reconciled_total;    // Riak 1.1
+    @JsonProperty private BigInteger rings_reconciled;          // Riak 1.1
+    @JsonProperty private BigInteger gossip_received;           // Riak 1.1
+    @JsonDeserialize(using=UndefinedStatDeserializer.class)
+    @JsonProperty private BigInteger converge_delay_min;        // Riak 1.1
+    @JsonProperty private BigInteger converge_delay_max;        // Riak 1.1
+    @JsonProperty private BigInteger converge_delay_mean;       // Riak 1.1
+    @JsonDeserialize(using=UndefinedStatDeserializer.class)
+    @JsonProperty private BigInteger converge_delay_last;       // Riak 1.1
+    @JsonDeserialize(using=UndefinedStatDeserializer.class)
+    @JsonProperty private BigInteger rebalance_delay_min;       // Riak 1.1
+    @JsonProperty private BigInteger rebalance_delay_max;       // Riak 1.1
+    @JsonProperty private BigInteger rebalance_delay_mean;      // Riak 1.1 
+    @JsonDeserialize(using=UndefinedStatDeserializer.class)
+    @JsonProperty private BigInteger rebalance_delay_last;      // Riak 1.1
+    @JsonProperty private BigInteger riak_kv_vnodes_running;    // Riak 1.1
+    @JsonProperty private BigInteger riak_kv_vnodeq_min;        // Riak 1.1
+    @JsonProperty private BigInteger riak_kv_vnodeq_median;     // Riak 1.1
+    @JsonProperty private BigInteger riak_kv_vnodeq_mean;       // Riak 1.1
+    @JsonProperty private BigInteger riak_kv_vnodeq_max;        // Riak 1.1
+    @JsonProperty private BigInteger riak_kv_vnodeq_total;      // Riak 1.1
+    @JsonProperty private BigInteger riak_pipe_vnodes_running;  // Riak 1.1
+    @JsonProperty private BigInteger riak_pipe_vnodeq_min;      // Riak 1.1
+    @JsonProperty private BigInteger riak_pipe_vnodeq_median;   // Riak 1.1
+    @JsonProperty private BigInteger riak_pipe_vnodeq_mean;     // Riak 1.1
+    @JsonProperty private BigInteger riak_pipe_vnodeq_max;      // Riak 1.1
+    @JsonProperty private BigInteger riak_pipe_vnodeq_total;    // Riak 1.1
     
     
     /**
@@ -1116,6 +1160,214 @@ public class NodeStats implements Iterable<NodeStats>
     {
         return memory_ets;
     }
+
+    /**
+     * @return the precommit_fail
+     */
+    public BigInteger precommitFail()
+    {
+        return precommit_fail;
+    }
+
+    /**
+     * @return the postcommit_fail
+     */
+    public BigInteger postcommitFail()
+    {
+        return postcommit_fail;
+    }
+
+    /**
+     * @return the ignored_gossip_total
+     */
+    public BigInteger ignoredGossipTotal()
+    {
+        return ignored_gossip_total;
+    }
+
+    /**
+     * @return the rings_reconciled_total
+     */
+    public BigInteger ringsReconciledTotal()
+    {
+        return rings_reconciled_total;
+    }
+
+    /**
+     * @return the rings_reconciled
+     */
+    public BigInteger ringsReconciled()
+    {
+        return rings_reconciled;
+    }
+
+    /**
+     * @return the gossip_received
+     */
+    public BigInteger gossipReceived()
+    {
+        return gossip_received;
+    }
+
+    /**
+     * @return the converge_delay_min
+     */
+    public BigInteger convergeDelayMin()
+    {
+        return converge_delay_min;
+    }
+
+    /**
+     * @return the converge_delay_max
+     */
+    public BigInteger convergeDelayMax()
+    {
+        return converge_delay_max;
+    }
+
+    /**
+     * @return the converge_delay_mean
+     */
+    public BigInteger convergeDelayMean()
+    {
+        return converge_delay_mean;
+    }
+
+    /**
+     * @return the converge_delay_last
+     */
+    public BigInteger convergeDelayLast()
+    {
+        return converge_delay_last;
+    }
+
+    /**
+     * @return the rebalance_delay_min
+     */
+    public BigInteger rebalanceDelayMin()
+    {
+        return rebalance_delay_min;
+    }
+
+    /**
+     * @return the rebalance_delay_max
+     */
+    public BigInteger rebalanceDelayMax()
+    {
+        return rebalance_delay_max;
+    }
+
+    /**
+     * @return the rebalance_delay_mean
+     */
+    public BigInteger rebalanceDelayMean()
+    {
+        return rebalance_delay_mean;
+    }
+
+    /**
+     * @return the rebalanceDelay_last
+     */
+    public BigInteger rebalanceDelayLast()
+    {
+        return rebalance_delay_last;
+    }
+
+    /**
+     * @return the riak_kv_vnodes_running
+     */
+    public BigInteger riakKvVnodesRunning()
+    {
+        return riak_kv_vnodes_running;
+    }
+
+    /**
+     * @return the riak_kv_vnodeq_min
+     */
+    public BigInteger riakKvVnodeqMin()
+    {
+        return riak_kv_vnodeq_min;
+    }
+
+    /**
+     * @return the riak_kv_vnodeq_median
+     */
+    public BigInteger riakKvVnodeqMedian()
+    {
+        return riak_kv_vnodeq_median;
+    }
+
+    /**
+     * @return the riak_kv_vnodeq_mean
+     */
+    public BigInteger riakKvVnodeqMean()
+    {
+        return riak_kv_vnodeq_mean;
+    }
+
+    /**
+     * @return the riak_kv_vnodeq_max
+     */
+    public BigInteger riakKvVnodeqMax()
+    {
+        return riak_kv_vnodeq_max;
+    }
+
+    /**
+     * @return the riak_kv_vnodeq_total
+     */
+    public BigInteger riakKvVnodeqTotal()
+    {
+        return riak_kv_vnodeq_total;
+    }
+
+    /**
+     * @return the riak_pipe_vnodes_running
+     */
+    public BigInteger riakPipeVnodesRunning()
+    {
+        return riak_pipe_vnodes_running;
+    }
+
+    /**
+     * @return the riak_pipe_vnodeq_min
+     */
+    public BigInteger riakPipeVnodeqMin()
+    {
+        return riak_pipe_vnodeq_min;
+    }
+
+    /**
+     * @return the riak_pipe_vnodeq_median
+     */
+    public BigInteger riakPipeVnodeqMedian()
+    {
+        return riak_pipe_vnodeq_median;
+    }
+
+    /**
+     * @return the riak_pipe_vnodeq_mean
+     */
+    public BigInteger riakPipeVnodeqMean()
+    {
+        return riak_pipe_vnodeq_mean;
+    }
+
+    /**
+     * @return the riak_pipe_vnodeq_max
+     */
+    public BigInteger riakPipeVnodeqMax()
+    {
+        return riak_pipe_vnodeq_max;
+    }
+
+    /**
+     * @return the riak_pipe_vnodeq_total
+     */
+    public BigInteger riakPipeVnodeqTotal()
+    {
+        return riak_pipe_vnodeq_total;
+    }
     
     NodeStats getPrevios()
     {
@@ -1136,6 +1388,7 @@ public class NodeStats implements Iterable<NodeStats>
     {
         this.previous = anotherStats;
     }
+    
     
     /**
      * Adds a set of stats to the end of the collection. Using the iterator
@@ -1220,3 +1473,23 @@ public class NodeStats implements Iterable<NodeStats>
     }
 
 }
+/* There's a few stats that are currently not being properly serialized
+*  to JSON by Riak that have a string value ("undefined") instead of 0 (or
+* any integer value). This fixes those. 
+*/
+class UndefinedStatDeserializer extends JsonDeserializer<BigInteger>
+{
+    @Override
+    public BigInteger deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException
+    {
+        if (jp.getCurrentToken() == JsonToken.VALUE_STRING)
+        {
+            return BigInteger.valueOf(0L);
+        }
+        else
+            return BigInteger.valueOf(jp.getLongValue());
+        
+    }
+
+}
+    
