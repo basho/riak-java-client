@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.client.raw.config.Configuration;
@@ -286,6 +287,20 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         for(RawClient rc : cluster){
             rc.shutdown();
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#fetchIndex(com.basho.riak.client.raw.RawClient#stats()
+     */
+    public NodeStats stats() throws IOException {
+        NodeStats nodeStats = null;
+        for(RawClient rc : cluster) {
+            if (nodeStats == null)
+                nodeStats = rc.stats();
+            else
+                nodeStats.add(rc.stats());
+        }
+        return nodeStats;
     }
 
 }

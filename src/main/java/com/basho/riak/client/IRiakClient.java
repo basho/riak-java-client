@@ -19,15 +19,11 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.FetchBucket;
 import com.basho.riak.client.bucket.WriteBucket;
 import com.basho.riak.client.cap.ClientId;
-import com.basho.riak.client.query.BucketKeyMapReduce;
-import com.basho.riak.client.query.BucketMapReduce;
-import com.basho.riak.client.query.IndexMapReduce;
-import com.basho.riak.client.query.LinkWalk;
-import com.basho.riak.client.query.MapReduce;
-import com.basho.riak.client.query.SearchMapReduce;
+import com.basho.riak.client.query.*;
 import com.basho.riak.client.query.indexes.FetchIndex;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
+import java.util.Iterator;
 
 /**
  * Primary high-level interface for accessing Riak.
@@ -207,4 +203,17 @@ public interface IRiakClient {
     Transport getTransport();
 
     void shutdown();
+    
+    /**
+     * 
+     * Perform the Riak <code>/stats</code> operation on the node(s) this client
+     * is connected to.
+     * <p>
+     * <b>This is not supported by the Riak Protobuf API</b>
+     * <p>
+     * @return an {@link Iterable} object that contains one or more {@link NodeStats}
+     * 
+     * @throws RiakException If Riak does not respond or if the protobuf API is being used
+     */
+    Iterable<NodeStats> stats() throws RiakException;
 }

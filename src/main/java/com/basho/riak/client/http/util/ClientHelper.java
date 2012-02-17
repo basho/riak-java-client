@@ -352,6 +352,17 @@ public class ClientHelper {
     }
 
     /**
+     * Same as {@link RiakClient#stats}  
+     * 
+     * @return an {@link HttpResponse} whose body should be the result of asking
+     *         Riak for its stats (status).
+     */
+    public HttpResponse stats() {
+        HttpGet get = new HttpGet(config.getStatsUrl());
+        return executeMethod(null, null, get, null);
+    }
+    
+    /**
      * Install an exception handler. If an exception handler is provided, then
      * the Riak client will hand exceptions to the handler rather than throwing
      * them.

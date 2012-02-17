@@ -31,12 +31,7 @@ import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.util.Constants;
-import com.basho.riak.client.query.BucketKeyMapReduce;
-import com.basho.riak.client.query.IndexMapReduce;
-import com.basho.riak.client.query.LinkWalkStep;
-import com.basho.riak.client.query.MapReduce;
-import com.basho.riak.client.query.MapReduceResult;
-import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.*;
 import com.basho.riak.client.query.functions.Args;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
@@ -498,5 +493,9 @@ public class PBClientAdapter implements RawClient {
 
     public void shutdown(){
         client.shutdown();
+    }
+
+    public NodeStats stats() {
+        throw new UnsupportedOperationException("Not supported using protobuffer protocol.");
     }
 }
