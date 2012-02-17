@@ -32,6 +32,7 @@ public class RiakConfig {
     private String baseUrl = null;
     private String mapredPath = "/mapred";
     private String pingPath = "/ping";
+    private String statsPath = "/stats";
     private HttpClient httpClient = null;
     private Integer timeout = null;
     private Integer maxConnections = null;
@@ -105,6 +106,14 @@ public class RiakConfig {
         return baseUrl + pingPath;
     }
 
+    /**
+     * The full URL of the Riak status (stats) resource, which is calculated by
+     * combining the host and port from the Riak URL and the stats path.
+     */
+    public String getStatsUrl() {
+        return baseUrl + statsPath;
+    }
+    
     /**
      * The host and port of the Riak server, which is extracted from the
      * specified Riak URL.
