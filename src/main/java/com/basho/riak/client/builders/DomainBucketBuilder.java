@@ -21,6 +21,7 @@ import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.MutationProducer;
+import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
@@ -140,6 +141,17 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
+     * The write quorum for store operations on the built {@link DomainBucket}
+     * @param w - {@link Quora} to use.
+     * @return this
+     */
+    public DomainBucketBuilder<T> w(Quora w) {
+        storeMetaBuilder.w(w);
+        deleteMetaBuilder.w(w);
+        return this;
+    }
+    
+    /**
      * The read quorum for fetch/store operations on the built {@link DomainBucket}
      * @param r
      * @return this
@@ -151,6 +163,17 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
+     * The read quorum for fetch/store operations on the built {@link DomainBucket}
+     * @param r - {@link Quora} to use
+     * @return this
+     */
+    public DomainBucketBuilder<T> r(Quora r) {
+        fetchMetaBuilder.r(r);
+        deleteMetaBuilder.r(r);
+        return this;
+    }
+    
+    /**
      *The read write quorum for delete operations on the built {@link DomainBucket}
      * @param rw
      * @return this
@@ -161,6 +184,16 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
+     *The read write quorum for delete operations on the built {@link DomainBucket}
+     * @param rw - {@link Quora} to use
+     * @return this
+     */
+    public DomainBucketBuilder<T> rw(Quora rw) {
+        deleteMetaBuilder.rw(rw);
+        return this;
+    }
+    
+    /**
      * The durable write quorum for store operations on the built {@link DomainBucket}
      * @param dw
      * @return this
@@ -170,7 +203,18 @@ public class DomainBucketBuilder<T> {
         deleteMetaBuilder.dw(dw);
         return this;
     }
-
+    
+    /**
+     * The durable write quorum for store operations on the built {@link DomainBucket}
+     * @param dw - {@link Quora} to use
+     * @return this
+     */
+    public DomainBucketBuilder<T> dw(Quora dw) {
+        storeMetaBuilder.dw(dw);
+        deleteMetaBuilder.dw(dw);
+        return this;
+    }
+    
     /**
      * @param notFoundOK
      * @return this
@@ -227,6 +271,16 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
+     * @param pr - {@link Quora} to use
+     * @return this
+     */
+    public DomainBucketBuilder<T> pr(Quora pr) {
+        deleteMetaBuilder.pr(pr);
+        fetchMetaBuilder.pr(pr);
+        return this;
+    }
+    
+    /**
      * @param pw
      * @return this
      */
@@ -236,6 +290,16 @@ public class DomainBucketBuilder<T> {
         return this;
     }
 
+    /**
+     * @param pw - {@link Quora} to use
+     * @return this
+     */
+    public DomainBucketBuilder<T> pw(Quora pw) {
+        deleteMetaBuilder.pw(pw);
+        storeMetaBuilder.pw(pw);
+        return this;
+    }
+    
     /**
      * A {@link MutationProducer} to provide the {@link Mutation} to use in store operations.
      * @param mutationProducer
