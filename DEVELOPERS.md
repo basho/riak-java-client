@@ -10,6 +10,13 @@ The Javadocs contain detailed information about each class.  They can be built u
 
 Then open `target/site/apidocs/index.html`.
 
+# Bundling # 
+
+As a convenience you can have maven build a zip/tar.gz/bz2 archive with the client .jar and all dependencies and/or a all-in-one .jar by adding
+-Dbundle.archives
+-Dbundle.fat
+respectively to the mvn command.
+
 # Overview #
 
 The most important classes are:

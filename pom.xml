@@ -4,7 +4,7 @@
 	<groupId>com.basho.riak</groupId>
 	<artifactId>riak-client</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.3</version>
+	<version>1.0.4-SNAPSHOT</version>
 	<name>Riak Client for Java</name>
 	<description>HttpClient-based client for Riak</description>
 	<url>https://github.com/basho/riak-java-client</url>
@@ -96,11 +96,12 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
+        <build>
 		<plugins>
 			<plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+                                <version>2.3.2</version>
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
@@ -129,8 +130,20 @@
 		      <plugin>
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.1</version>
-			</plugin>
-		</plugins>
+		      </plugin>
+		      <plugin>
+      <artifactId>maven-jar-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>test-jar</id>
+          <phase>package</phase>
+          <goals>
+            <goal>test-jar</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+                    </plugins>
 	</build>
 	<profiles>
 		<profile>
@@ -184,6 +197,136 @@
 				</plugins>
 			</build>
 		</profile>
+                <profile>
+                    <id>githubUpload</id>
+                    <activation>
+                        <property>
+                            <name>github.downloads</name>
+                            <value>true</value>
+                        </property>
+                    </activation>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>com.github.github</groupId>
+                                <artifactId>downloads-maven-plugin</artifactId>
+                                <version>0.4</version>
+                                <configuration>
+                                    <description>${project.version} release of ${project.name}</description>
+                                    <override>false</override>
+                                    <includeAttached>true</includeAttached>
+                                </configuration>
+                                <executions>
+                                    <execution>
+                                        <goals>
+                                        <goal>upload</goal>
+                                        </goals>
+                                        <phase>install</phase>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </profile>
+                <profile>
+                <id>dependencyArchive</id>
+                <activation>
+                    <property>
+                        <name>bundle.archives</name>
+                        <value>true</value>
+                    </property>
+                </activation>
+                <build>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-assembly-plugin</artifactId>
+                            <version>2.2.1</version>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>src/main/assembly/rjc-deps.xml</descriptor>
+                                </descriptors>
+                                <archive>
+                                </archive>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>make-assembly</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>single</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </build>
+            </profile>
+             <profile>
+                <id>depsAndTests</id>
+                <activation>
+                    <property>
+                        <name>bundle.be_fat</name>
+                        <value>true</value>
+                    </property>
+                </activation>
+                <build>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-assembly-plugin</artifactId>
+                            <version>2.2.1</version>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>src/main/assembly/rjc-be-fat.xml</descriptor>
+                                </descriptors>
+                                <archive>
+                                </archive>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>make-assembly</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>single</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </build>
+            </profile>
+            <profile>
+                <id>fat_jar</id>
+                <activation>
+                    <property>
+                        <name>bundle.fat</name>
+                        <value>true</value>
+                    </property>
+                </activation>
+                <build>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-assembly-plugin</artifactId>
+                            <version>2.2.1</version>
+                            <configuration>
+                                <descriptorRefs>
+                                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                                </descriptorRefs>
+                                <archive>
+                                </archive>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>make-assembly</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>single</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </build>
+            </profile>
 	</profiles>
 	
 	<reporting>
