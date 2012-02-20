@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -185,10 +186,10 @@ public class ClientHelper {
         String bucket = object.getBucket();
         String key = object.getKey();
         String url = ClientUtils.makeURI(config, bucket, key);
-        HttpPut put = new HttpPut(url);
+        HttpRequestBase storeMethod = createStoreHttpMethod(key, url);
 
-        object.writeToHttpMethod(put);
-        return executeMethod(bucket, key, put, meta);
+        object.writeToHttpMethod(storeMethod);
+        return executeMethod(bucket, key, storeMethod, meta);
     }
 
     /**
@@ -479,6 +480,8 @@ public class ClientHelper {
                 }
             }
 
+            key = extractKeyFromResponseIfItWasNotAlreadyProvided(key, response);
+
             return new DefaultHttpResponse(bucket, key, status, headers, body, stream, response, httpMethod);
         } catch (IOException e) {
             httpMethod.abort();
@@ -494,7 +497,31 @@ public class ClientHelper {
         }
     }
 
+    private String extractKeyFromResponseIfItWasNotAlreadyProvided(String key, org.apache.http.HttpResponse response) {
+        if (key == null) {
+            Header locationHeader = response.getFirstHeader("Location");
+            if (locationHeader != null) {
+                String location = locationHeader.getValue();
+                if (location != null) {
+                    int indexOfLastSlash = location.lastIndexOf("/");
+                    key = location.substring(indexOfLastSlash + 1);
+                }
+            }
+        }
+        return key;
+    }
+
     HttpResponse executeMethod(String bucket, String key, HttpRequestBase httpMethod, RequestMeta meta) {
         return executeMethod(bucket, key, httpMethod, meta, false);
+    }
+
+    private HttpRequestBase createStoreHttpMethod(String key, String url) {
+        HttpRequestBase storeMethod = null;
+        if (key == null) {
+            storeMethod = new HttpPost(url);
+        } else {
+            storeMethod = new HttpPut(url);
+        }
+        return storeMethod;
     }
 }
