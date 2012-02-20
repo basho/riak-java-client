@@ -33,9 +33,15 @@ import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.MutationProducer;
+import com.basho.riak.client.cap.Quora;
+import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.raw.DeleteMeta;
+import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.raw.StoreMeta;
 import com.megacorp.commerce.CartMerger;
 import com.megacorp.commerce.MergeCartResolver;
 import com.megacorp.commerce.ShoppingCart;
+import java.lang.reflect.Field;
 
 /**
  * A DomainBucket is a wrapper around a bucket that uses a preset conflict
@@ -168,4 +174,41 @@ public abstract class ITestDomainBucket {
 
         assertNull(cart3);
     }
+    
+    @Test public void domainBucketAcceptsQuora() throws Exception {
+        Bucket b = client.fetchBucket(bucketName).execute();
+        DomainBucket<ShoppingCart> carts = DomainBucket.builder(b,
+                ShoppingCart.class)
+                .dw(Quora.ONE)
+                .pw(Quora.ONE)
+                .w(Quora.ALL)
+                .pr(Quora.QUORUM)
+                .r(Quora.ONE)
+                .rw(Quora.ONE).build();
+        
+        // Using reflection to get at the underlying private Meta objects 
+        Class domainBucketClass = carts.getClass();
+        Field storeMetaField = domainBucketClass.getDeclaredField("storeMeta");
+        storeMetaField.setAccessible(true);
+        StoreMeta storeMeta = (StoreMeta)storeMetaField.get(carts);
+        
+        assertTrue(storeMeta.hasDw() && (storeMeta.getDw().equals(new Quorum(Quora.ONE))));
+        assertTrue(storeMeta.hasPw() && (storeMeta.getPw().equals(new Quorum(Quora.ONE))));
+        assertTrue(storeMeta.hasW() && (storeMeta.getW().equals(new Quorum(Quora.ALL))));
+        
+        Field fetchMetaField = domainBucketClass.getDeclaredField("fetchMeta");
+        fetchMetaField.setAccessible(true);
+        FetchMeta fetchMeta = (FetchMeta)fetchMetaField.get(carts);
+        
+        assertTrue(fetchMeta.hasR() && (fetchMeta.getR().equals(new Quorum(Quora.ONE))));
+        assertTrue(fetchMeta.hasPr() && (fetchMeta.getPr().equals(new Quorum(Quora.QUORUM))));
+        
+        Field deleteMetaField = domainBucketClass.getDeclaredField("deleteMeta");
+        deleteMetaField.setAccessible(true);
+        DeleteMeta deleteMeta = (DeleteMeta)deleteMetaField.get(carts);
+        
+        assertTrue(deleteMeta.hasRw() && (deleteMeta.getRw().equals(new Quorum(Quora.ONE))));
+        
+    }
+    
 }
