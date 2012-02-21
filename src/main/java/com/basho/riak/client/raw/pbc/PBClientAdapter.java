@@ -91,7 +91,15 @@ public class PBClientAdapter implements RawClient {
         this.client = new RiakClient(host, port);
     }
 
-    /**
+  @Override
+  public String toString()
+  {
+    return "PBClientAdapter{" +
+            "client=" + client +
+            '}';
+  }
+
+  /**
      * Adapt the given pre-created/configured pb client to the {@link RawClient}
      * interface
      * 

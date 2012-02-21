@@ -25,11 +25,7 @@ import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.http.HTTPClusterClientFactory;
 import com.basho.riak.client.raw.http.HTTPClusterConfig;
 import com.basho.riak.client.raw.http.HTTPRiakClientFactory;
-import com.basho.riak.client.raw.pbc.PBClientAdapter;
-import com.basho.riak.client.raw.pbc.PBClientConfig;
-import com.basho.riak.client.raw.pbc.PBClusterClientFactory;
-import com.basho.riak.client.raw.pbc.PBClusterConfig;
-import com.basho.riak.client.raw.pbc.PBRiakClientFactory;
+import com.basho.riak.client.raw.pbc.*;
 import com.basho.riak.pbc.RiakClient;
 
 /**
@@ -74,6 +70,7 @@ public class RiakFactory {
         REGISTRY.put(PBClientConfig.class, PBRiakClientFactory.getInstance());
         REGISTRY.put(PBClusterConfig.class, PBClusterClientFactory.getInstance());
         REGISTRY.put(HTTPClusterConfig.class, HTTPClusterClientFactory.getInstance());
+        REGISTRY.put(PBFailoverClusterConfig.class, PBFailoverClusterClientFactory.getInstance());
     }
 
     private static final String DEFAULT_RIAK_URL = "http://127.0.0.1:8098/riak";

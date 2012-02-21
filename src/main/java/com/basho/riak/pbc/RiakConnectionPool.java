@@ -179,7 +179,17 @@ public class RiakConnectionPool {
         }
     }
 
-    /**
+  @Override
+  public String toString()
+  {
+    return "RiakConnectionPool{" +
+            "host=" + host +
+            ", port=" + port +
+            ", state=" + state +
+            '}';
+  }
+
+  /**
      * Crate a new host connection pool. NOTE: before using you must call
      * start()
      * 

@@ -77,7 +77,18 @@ public class RiakClient implements RiakMessageCodes {
 		this(host, RiakConnection.DEFAULT_RIAK_PB_PORT);
 	}
 
-	public RiakClient(String host, int port) throws IOException {
+  @Override
+  public String toString()
+  {
+    return "RiakClient{" +
+            "node='" + node + '\'' +
+            ", serverVersion='" + serverVersion + '\'' +
+            ", clientId=" + clientId +
+            ", pool=" + pool +
+            '}';
+  }
+
+  public RiakClient(String host, int port) throws IOException {
 		this(InetAddress.getByName(host), port);
 	}
 
