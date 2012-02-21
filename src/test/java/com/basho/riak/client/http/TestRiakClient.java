@@ -104,6 +104,12 @@ public class TestRiakClient {
 
         impl.listBuckets();
         verify(mockHelper).listBuckets();
+        
+        when(mockHelper.stats()).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.isSuccess()).thenReturn(true);
+        when(mockHttpResponse.getBodyAsString()).thenReturn("{}");
+        impl.stats();
+        verify(mockHelper).stats();
     }
     
     @Test public void convenience_methods_defer_to_main_methods_with_null_meta() {
@@ -159,7 +165,7 @@ public class TestRiakClient {
         doThrow(new RiakResponseRuntimeException(null)).when(impl).getFetchResponse(any(HttpResponse.class));
         doThrow(new RiakResponseRuntimeException(null)).when(impl).getWalkResponse(any(HttpResponse.class));
         doThrow(new JSONException("")).when(impl).getMapReduceResponse(any(HttpResponse.class));
-
+            
         impl.getBucketSchema(bucket, meta);
         verify(mockHelper).toss(any(RiakResponseRuntimeException.class));
         reset(mockHelper);

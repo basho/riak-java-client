@@ -37,6 +37,7 @@ import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.StoreResponse;
 import com.basho.riak.client.http.response.WithBodyResponse;
 import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
@@ -52,6 +53,7 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.
@@ -468,4 +470,22 @@ public class HTTPClientAdapter implements RawClient {
     public void shutdown(){
         client.shutdown();
     }
+    
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#stats()
+     */
+    public NodeStats stats() throws IOException {
+        HttpResponse r = client.stats();
+        if (!r.isSuccess()) {
+            throw new IOException("stats failed with status code: "
+                + r.getStatusCode());
+        } else {
+            try {
+                return new ObjectMapper().readValue(r.getBodyAsString(), NodeStats.class);
+            } catch (IOException e) {
+                throw new IOException("Could not parse stats JSON response, body: " + r.getBodyAsString(),e);
+            }
+        }
+    }
+    
 }

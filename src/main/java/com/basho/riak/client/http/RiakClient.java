@@ -499,6 +499,16 @@ public class RiakClient {
     }
 
     /**
+     * GET Riak's <code>/stats</code> (status) resource.
+     * 
+     * @return an {@link HttpResponse} with the result of GET
+     */
+    public HttpResponse stats() {
+        return helper.stats();
+    }
+    
+    
+    /**
      * Fetch the keys for <code>index</code> with <code>value</code>
      * 
      * @param bucket

@@ -35,13 +35,10 @@ import com.basho.riak.client.http.plain.PlainClient;
 import com.basho.riak.client.http.plain.RiakIOException;
 import com.basho.riak.client.http.plain.RiakResponseException;
 import com.basho.riak.client.http.request.RequestMeta;
-import com.basho.riak.client.http.response.FetchResponse;
-import com.basho.riak.client.http.response.HttpResponse;
-import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.http.response.RiakResponseRuntimeException;
-import com.basho.riak.client.http.response.StoreResponse;
+import com.basho.riak.client.http.response.*;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
+import org.json.JSONObject;
 
 /**
  * Basic exercises such as store, fetch, and modify objects for the Riak client.
@@ -70,6 +67,13 @@ public class ITestBasic {
         assertSuccess(response);
     }
 
+    @Test public void stats() {
+        RiakClient c = new RiakClient(RIAK_URL);
+        HttpResponse resp = c.stats();
+        String json = resp.getBodyAsString();
+        assertTrue(json.length() > 0);
+    }
+    
     @Test public void store_fetch_modify() {
         final RiakClient c = new RiakClient(RIAK_URL);
         final String VALUE1 = "value1";
