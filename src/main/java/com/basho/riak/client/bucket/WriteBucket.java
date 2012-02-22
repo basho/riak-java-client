@@ -57,7 +57,8 @@ public class WriteBucket implements RiakOperation<Bucket> {
     private Collection<NamedErlangFunction> postcommitHooks;
 
     private BucketPropertiesBuilder builder = new BucketPropertiesBuilder();
-
+    private boolean lazyLoadProperties = false;
+    
     /**
      * Create WriteBucket operation that delegates to the given {@link RawClient} via the give {@link Retrier}.
      * @param client the {@link RawClient} to delegate to
@@ -107,11 +108,18 @@ public class WriteBucket implements RiakOperation<Bucket> {
             }
         });
 
-        BucketProperties properties = retrier.attempt(new Callable<BucketProperties>() {
-            public BucketProperties call() throws Exception {
-                return client.fetchBucket(name);
-            }
-        });
+        BucketProperties properties;
+        
+        if (!lazyLoadProperties) {
+            properties = retrier.attempt(new Callable<BucketProperties>() {
+                public BucketProperties call() throws Exception {
+                    return client.fetchBucket(name);
+                }
+            });
+        } else {
+            properties = new LazyBucketProperties(client, retrier, name);
+        }
+            
 
         return new DefaultBucket(name, properties, client, retrier);
     }
@@ -530,5 +538,22 @@ public class WriteBucket implements RiakOperation<Bucket> {
         if(!Transport.HTTP.equals(transport)) {
             throw new UnsupportedPropertyException(transport, propertyName);
         }
+    }
+    /**
+     * Prior to the addition of this method there was no way to prevent 
+     * {@link #execute() } from fetching the {@link BucketProperties} from Riak
+     * after storing any modifications made via this object. 
+     * <p>
+     * Calling this prior to {@link #execute() } allows you to defer fetching 
+     * the bucket properties for this bucket from Riak
+     * until they are required by one of the {@link Bucket} methods that
+     * accesses them (e.g. {@link Bucket#getR() } ). If none of those methods are
+     * called then they are never retrieved.
+     * </p>
+     * @return this 
+     */
+    public WriteBucket lazyLoadBucketProperties() {
+        this.lazyLoadProperties = true;
+        return this;
     }
 }

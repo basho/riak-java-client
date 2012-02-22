@@ -46,6 +46,7 @@ public class FetchBucket implements RiakOperation<Bucket> {
     private final String bucket;
 
     private Retrier retrier;
+    private boolean lazyLoadProperties = false;
 
     /**
      * Create a FetchBucket that delegates to the provided {@link RawClient}.
@@ -66,12 +67,19 @@ public class FetchBucket implements RiakOperation<Bucket> {
      * @throws RiakRetryFailedException if the {@link Retrier} throws {@link RiakRetryFailedException}
      */
     public Bucket execute() throws RiakRetryFailedException {
-        BucketProperties properties = retrier.attempt(new Callable<BucketProperties>() {
-            public BucketProperties call() throws Exception {
-                return client.fetchBucket(bucket);
-            }
-        });
-
+        BucketProperties properties;
+        if (!lazyLoadProperties) {
+            properties = retrier.attempt(new Callable<BucketProperties>() {
+                public BucketProperties call() throws Exception {
+                    return client.fetchBucket(bucket);
+                }
+            });
+        }
+        else
+        {
+            properties = new LazyBucketProperties(client, retrier, bucket);
+        }
+        
         return new DefaultBucket(bucket, properties, client, retrier);
     }
 
@@ -85,4 +93,22 @@ public class FetchBucket implements RiakOperation<Bucket> {
         this.retrier = retrier;
         return this;
     }
+    
+    /**
+     * Prior to the addition of this method there was no way to prevent 
+     * {@link #execute() } from fetching the {@link BucketProperties} from Riak. 
+     * <p>
+     * Calling this prior to {@link #execute() } allows you to defer fetching 
+     * the bucket properties for this bucket from Riak
+     * until they are required by one of the {@link Bucket} methods that
+     * accesses them (e.g. {@link Bucket#getR() } ). If none of those methods are
+     * called then they are never retrieved.
+     * </p>
+     * @return this 
+     */
+    public FetchBucket lazyLoadBucketProperties() {
+        this.lazyLoadProperties = true;
+        return this;
+    }
+    
  }
