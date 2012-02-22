@@ -42,7 +42,8 @@ public class LazyBucketProperties implements BucketProperties
 {
 
     private BucketProperties properties;
-    private final AtomicBoolean isLoaded = new AtomicBoolean(false);
+    private volatile boolean isLoaded = false;
+    private final AtomicBoolean isLoading = new AtomicBoolean(false);
     private final CountDownLatch countdownLatch = new CountDownLatch(1);
     private final RawClient client;
     private final Retrier retrier;
@@ -282,44 +283,45 @@ public class LazyBucketProperties implements BucketProperties
 
     private void lazyLoad()
     {
-        boolean notLoaded = isLoaded.compareAndSet(false, true);
-        if (notLoaded)
+        if (!isLoaded)
         {
-            try
+            boolean notLoading = isLoading.compareAndSet(false, true);
+            if (notLoading)
             {
-                properties = retrier.attempt(new Callable<BucketProperties>() {
-                    public BucketProperties call() throws Exception {
-                        return client.fetchBucket(bucketName);
-                    }
-                });
-            }
-            catch (RiakRetryFailedException ex)
-            {
-                // We have to reset the state here to avoid a race condition where 
-                // other threads could be waiting for the latch
-                isLoaded.set(false);
-                throw new RuntimeException("Lazy loading of BucketProperties failed", ex);
-            }
-            finally
-            {
-                countdownLatch.countDown();
-            }
-        }
-        else
-        {
-            try
-            {
-                countdownLatch.await();
-                // This ensures that if the thread retreiving the properties fails
-                // all waiting threads will also fail. 
-                if (!isLoaded.get())
+                try
                 {
-                    throw new RuntimeException("Lazy loading of BucketProperties failed");
+                    properties = retrier.attempt(new Callable<BucketProperties>() {
+                        public BucketProperties call() throws Exception {
+                            return client.fetchBucket(bucketName);
+                        }
+                    });
+                    isLoaded = true;
+                }
+                catch (RiakRetryFailedException ex)
+                {
+                    throw new RuntimeException("Lazy loading of BucketProperties failed", ex);
+                }
+                finally
+                {
+                    countdownLatch.countDown();
                 }
             }
-            catch (InterruptedException ex)
+            else
             {
-                throw new RuntimeException("Interrupted while waiting for BucketProperties to lazy load", ex);
+                try
+                {
+                    countdownLatch.await();
+                    // This ensures that if the thread retreiving the properties fails
+                    // all waiting threads will also fail. 
+                    if (!isLoaded)
+                    {
+                        throw new RuntimeException("Lazy loading of BucketProperties failed");
+                    }
+                }
+                catch (InterruptedException ex)
+                {
+                    throw new RuntimeException("Interrupted while waiting for BucketProperties to lazy load", ex);
+                }
             }
         }
     }
