@@ -1,328 +1,248 @@
 /*
- * Copyright 2012 roach.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.basho.riak.client.bucket;
 
-import com.basho.riak.client.RiakRetryFailedException;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.raw.RawClient;
-import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * A lazy loading BucketProperties. Defers the {@link RawClient#fetchBucket(java.lang.String) }
  * call until one of the getters is called. See {@link FetchBucket#lazyLoadBucketProperties() }
  * or {@link WriteBucket#lazyLoadBucketProperties() }
- * 
+ *
  * 
  * @author roach
  */
+public class LazyBucketProperties implements BucketProperties {
 
-public class LazyBucketProperties implements BucketProperties
-{
+    private final FutureTask<BucketProperties> future;
 
-    private BucketProperties properties;
-    private volatile boolean isLoaded = false;
-    private final AtomicBoolean isLoading = new AtomicBoolean(false);
-    private final CountDownLatch countdownLatch = new CountDownLatch(1);
-    private final RawClient client;
-    private final Retrier retrier;
-    private final String bucketName;
-    
-    
     /**
      * 
      * @param client - a {@link RawClient} to be used to fetch the bucket properties
      * @param retrier - the {@link Retrier} to use
      * @param bucketName - Name of the Riak bucket 
      */
-    public LazyBucketProperties(RawClient client, Retrier retrier, String bucketName)
-    {
-        this.client = client;
-        this.retrier = retrier;
-        this.bucketName = bucketName;
-    }
-    
-    
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getAllowSiblings()
-     */
-    public Boolean getAllowSiblings()
-    {
-        lazyLoad();
-        return properties.getAllowSiblings();
+    public LazyBucketProperties(final RawClient client, final Retrier retrier, final String bucket) {
+        future = new FutureTask<BucketProperties>(new Callable<BucketProperties>() {
+            public BucketProperties call() throws Exception {
+                return retrier.attempt(new Callable<BucketProperties>() {
+                    public BucketProperties call() throws Exception {
+                        return client.fetchBucket(bucket);
+                    }
+                });
+            }
+        });
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getLastWriteWins()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getAllowSiblings()
      */
-    public Boolean getLastWriteWins()
-    {
-        lazyLoad();
-        return properties.getLastWriteWins();
+    public Boolean getAllowSiblings() {
+        return getProperties().getAllowSiblings();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getNVal()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getLastWriteWins()
      */
-    public Integer getNVal()
-    {
-        lazyLoad();
-        return properties.getNVal();
+    public Boolean getLastWriteWins() {
+        return getProperties().getLastWriteWins();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getBackend()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getNVal()
      */
-    public String getBackend()
-    {
-        lazyLoad();
-        return properties.getBackend();
+    public Integer getNVal() {
+        return getProperties().getNVal();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getSmallVClock()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getBackend()
      */
-    public Integer getSmallVClock()
-    {
-        lazyLoad();
-        return properties.getSmallVClock();
+    public String getBackend() {
+        return getProperties().getBackend();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getBigVClock()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getSmallVClock()
      */
-    public Integer getBigVClock()
-    {
-        lazyLoad();
-        return properties.getBigVClock();
+    public Integer getSmallVClock() {
+        return getProperties().getSmallVClock();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getYoungVClock()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getBigVClock()
      */
-    public Long getYoungVClock()
-    {
-        lazyLoad();
-        return properties.getYoungVClock();
+    public Integer getBigVClock() {
+        return getProperties().getBigVClock();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getOldVClock()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getYoungVClock()
      */
-    public Long getOldVClock()
-    {
-        lazyLoad();
-        return properties.getOldVClock();
+    public Long getYoungVClock() {
+        return getProperties().getYoungVClock();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getPrecommitHooks()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getOldVClock()
      */
-    public Collection<NamedFunction> getPrecommitHooks()
-    {
-        lazyLoad();
-        return properties.getPrecommitHooks();
+    public Long getOldVClock() {
+        return getProperties().getOldVClock();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getPostcommitHooks()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getPrecommitHooks()
      */
-    public Collection<NamedErlangFunction> getPostcommitHooks()
-    {
-        lazyLoad();
-        return properties.getPostcommitHooks();
+    public Collection<NamedFunction> getPrecommitHooks() {
+        return getProperties().getPrecommitHooks();
     }
 
-    /*
-     * (non-Javadoc) @see com.basho.riak.client.bucket.BucketProperties#getR()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getPostcommitHooks()
      */
-    public Quorum getR()
-    {
-        lazyLoad();
-        return properties.getR();
+    public Collection<NamedErlangFunction> getPostcommitHooks() {
+        return getProperties().getPostcommitHooks();
     }
 
-    /*
-     * (non-Javadoc) @see com.basho.riak.client.bucket.BucketProperties#getW()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getR()
      */
-    public Quorum getW()
-    {
-        lazyLoad();
-        return properties.getW();
+    public Quorum getR() {
+        return getProperties().getR();
     }
 
-    /*
-     * (non-Javadoc) @see com.basho.riak.client.bucket.BucketProperties#getRW()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getW()
      */
-    public Quorum getRW()
-    {
-        lazyLoad();
-        return properties.getRW();
+    public Quorum getW() {
+        return getProperties().getW();
     }
 
-    /*
-     * (non-Javadoc) @see com.basho.riak.client.bucket.BucketProperties#getDW()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getRW()
      */
-    public Quorum getDW()
-    {
-        lazyLoad();
-        return properties.getDW();
+    public Quorum getRW() {
+        return getProperties().getRW();
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getDW()
+     */
+    public Quorum getDW() {
+        return getProperties().getDW();
+    }
+
+    /**
+     * @return
      * @see com.basho.riak.client.bucket.BucketProperties#getPR()
      */
-    public Quorum getPR()
-    {
-        lazyLoad();
-        return properties.getPR();
+    public Quorum getPR() {
+        return getProperties().getPR();
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
+     * @return
      * @see com.basho.riak.client.bucket.BucketProperties#getPW()
      */
-    public Quorum getPW()
-    {
-        lazyLoad();
-        return properties.getPW();
+    public Quorum getPW() {
+        return getProperties().getPW();
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
+     * @return
      * @see com.basho.riak.client.bucket.BucketProperties#getBasicQuorum()
      */
-    public Boolean getBasicQuorum()
-    {
-        lazyLoad();
-        return properties.getBasicQuorum();
+    public Boolean getBasicQuorum() {
+        return getProperties().getBasicQuorum();
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
+     * @return
      * @see com.basho.riak.client.bucket.BucketProperties#getNotFoundOK()
      */
-    public Boolean getNotFoundOK()
-    {
-        lazyLoad();
-        return properties.getNotFoundOK();
+    public Boolean getNotFoundOK() {
+        return getProperties().getNotFoundOK();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getChashKeyFunction()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getChashKeyFunction()
      */
-    public NamedErlangFunction getChashKeyFunction()
-    {
-        lazyLoad();
-        return properties.getChashKeyFunction();
+    public NamedErlangFunction getChashKeyFunction() {
+        return getProperties().getChashKeyFunction();
     }
 
-    /*
-     * (non-Javadoc) @see
-     * com.basho.riak.client.bucket.BucketProperties#getLinkWalkFunction()
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getLinkWalkFunction()
      */
-    public NamedErlangFunction getLinkWalkFunction()
-    {
-        lazyLoad();
-        return properties.getLinkWalkFunction();
+    public NamedErlangFunction getLinkWalkFunction() {
+        return getProperties().getLinkWalkFunction();
     }
 
-    public Boolean getSearch()
-    {
-        lazyLoad();
-        return properties.getSearch();
+    /**
+     * @return
+     * @see com.basho.riak.client.bucket.BucketProperties#getSearch()
+     */
+    public Boolean getSearch() {
+        return getProperties().getSearch();
     }
 
-    /*
-     * (non-Javadoc)
-     *
+    /**
+     * @return
      * @see com.basho.riak.client.bucket.BucketProperties#isSearchEnabled()
      */
-    public boolean isSearchEnabled()
-    {
-        lazyLoad();
-        return properties.isSearchEnabled();
+    public boolean isSearchEnabled() {
+        return getProperties().isSearchEnabled();
     }
 
-    private void lazyLoad()
-    {
-        if (!isLoaded)
-        {
-            boolean notLoading = isLoading.compareAndSet(false, true);
-            if (notLoading)
-            {
-                try
-                {
-                    properties = retrier.attempt(new Callable<BucketProperties>() {
-                        public BucketProperties call() throws Exception {
-                            return client.fetchBucket(bucketName);
-                        }
-                    });
-                    isLoaded = true;
-                }
-                catch (RiakRetryFailedException ex)
-                {
-                    throw new RuntimeException("Lazy loading of BucketProperties failed", ex);
-                }
-                finally
-                {
-                    countdownLatch.countDown();
-                }
-            }
-            else
-            {
-                try
-                {
-                    countdownLatch.await();
-                    // This ensures that if the thread retreiving the properties fails
-                    // all waiting threads will also fail. 
-                    if (!isLoaded)
-                    {
-                        throw new RuntimeException("Lazy loading of BucketProperties failed");
-                    }
-                }
-                catch (InterruptedException ex)
-                {
-                    throw new RuntimeException("Interrupted while waiting for BucketProperties to lazy load", ex);
-                }
-            }
+    private BucketProperties getProperties() {
+        // FutureTask has an internal state that will only allow it to 
+        // actually run once.
+        future.run();
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e.getCause());
         }
     }
 }
+
