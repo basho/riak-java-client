@@ -1,9 +1,0 @@
-bin
-lib
-classes
-target
-.settings
-*.jar
-.classpath
-.project
-*~
