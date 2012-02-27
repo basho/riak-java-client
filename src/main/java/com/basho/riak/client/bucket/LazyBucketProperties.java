@@ -32,6 +32,7 @@ import com.basho.riak.client.raw.RawClient;
  *
  * 
  * @author roach
+ * @since 1.0.4
  */
 public class LazyBucketProperties implements BucketProperties {
 

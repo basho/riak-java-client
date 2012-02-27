@@ -105,6 +105,7 @@ public class FetchBucket implements RiakOperation<Bucket> {
      * called then they are never retrieved.
      * </p>
      * @return this 
+     * @since 1.0.4
      */
     public FetchBucket lazyLoadBucketProperties() {
         this.lazyLoadProperties = true;

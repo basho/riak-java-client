@@ -551,6 +551,7 @@ public class WriteBucket implements RiakOperation<Bucket> {
      * called then they are never retrieved.
      * </p>
      * @return this 
+     * @since 1.0.4
      */
     public WriteBucket lazyLoadBucketProperties() {
         this.lazyLoadProperties = true;

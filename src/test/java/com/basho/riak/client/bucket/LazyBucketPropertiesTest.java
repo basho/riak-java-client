@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.bucket;
 
+import com.basho.riak.client.RiakRetryFailedException;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
@@ -119,41 +120,17 @@ public class LazyBucketPropertiesTest {
         }
     }
 
-    @Test public void futureTaskTest() throws Exception {
-        final int numThreads = 100;
-        final CountDownLatch startLatch = new CountDownLatch(1);
-        final CountDownLatch endLatch = new CountDownLatch(numThreads);
-        final AtomicInteger cnt = new AtomicInteger(0);
-
-        final FutureTask<Void> ft = new FutureTask<Void>(new Callable<Void>() {
-
-            public Void call() throws Exception {
-                cnt.getAndIncrement();
-                return null;
-            }
-        });
-
-        for (int i = 0; i < numThreads; i++) {
-            new Thread(new Runnable() {
-
-                public void run() {
-                    try {
-                        startLatch.await();
-                        ft.run();
-                        //cnt.getAndIncrement();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } finally {
-                        endLatch.countDown();
-                    }
-
-                }
-            }).start();
+    @Test public void lazyLoadThrowsUncheckedOnFailure() throws Exception {
+        props = new LazyBucketProperties(client, retrier, BUCKET);
+        
+        when(retrier.attempt(any(Callable.class))).thenThrow(new RiakRetryFailedException(null));
+        
+        try {
+            props.getPR();
+            fail("Exception expected from props.getPR()");
+        } catch (RuntimeException re) {
+            // no-op - we got what we were expecting.
         }
-        startLatch.countDown();
-        boolean timely = endLatch.await(1000, TimeUnit.MILLISECONDS);
-
-        assertTrue("Expected to finish in 1 second", timely);
-        assertEquals("Expected only one execution of the callable", 1, cnt.get());
+        
     }
 }
