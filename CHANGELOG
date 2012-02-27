@@ -1,3 +1,110 @@
+1.0.4
+-------------
+This is a patch release that adds new features and fixes a few minor issues.
+New features include support of the Riak /stats command through the IRiakClient
+interface (when using HTTP - stats via PB is not supported by Riak), a shutdown()
+method in the IRiakClient Interface that cleanly shuts down running threads, and
+a new lazyLoadProperties() method for both FetchBucket and WriteBucket that
+will eliminate a request to Riak for bucket properties if they're not needed.
+
+**Changes**
+cf0ac0e Brian Roach Merge pull request #109 from basho/t46-lazy-bucket-properties
+d9f08eb Brian Roach Removed superflous test, added one for fail case Added Test class to AllTests runner Added @since tags to javadoc for new methods in FetchBucket and WriteBucket
+437bfa1 Brian Roach Test for LazyBucketProperties
+e3d6a4e Brian Roach Changed to using Russell's implementation; overall it's just cleaner and there's an internal state that protects a FutureTask from being run() twice that I wasn't aware of.
+93e048c Brian Roach In a fail condition, resetting the AtomicBoolean could create a problem because the CountDownLatch was still at 0. Resetting it to 1 afterward would leave iopen a tiny race condi
+24256dd Brian Roach First cut at adding lazy loading of bucket properties.
+da98d9a Brian Roach Merge pull request #107 from basho/t44-sybolic-quora-domainbucketbuilder
+c3eb030 Brian Roach Added setter methods in the DomainBucketBuilder to accetp symbolic quora. Added test to verify
+0da5f82 Brian Roach Merge pull request #104 from basho/BR-add-status
+ee66d0f Brian Roach Added new Riak 1.1 stats and also a custom deserializer for some of those that are currently broken and containing the string "undefined" rather than an int value
+3449ef7 Brian Roach final style check.
+ae754e5 Brian Roach Changes from Russel's comments - Fixed style / formatting - Converted to using Jackson object mapping - eliminated http.response.StatsResponse and its tests as it was no longer n
+3cabc61 Russell Brown Merge pull request #106 from basho/rdb_leaking_connections
+f1546db Russell Brown Catch more general IOException and close RiakConnection
+e29152d Russell Brown Merge pull request #105 from basho/rdb_test_be_output
+bfea2b5 Russell Brown Output current test name
+d4b1f5d Brian Roach Fixed small bug with NodeStats reviewing my own code.
+36f98f2 Brian Roach Added me as a Developer :-D
+5625008 Brian Roach Added tests and javadoc
+53b8599 Brian Roach final touches. Still need to write tests and a bit more javadoc
+d157e22 Brian Roach new files for /stats operation. Decided to change IRiakClient interface to return an Iterable<NodeStats) rather than an interator.
+0cff86e Brian Roach initial check in of /stats support. All working, just need to do some testing and  think if the interface is sane or not.
+083294e Russell Brown Merge branch 'az878_fewer_buckets'
+bb9b668 Russell Brown Teardown Link Walk test bucket too
+48c1110 Russell Brown Merge remote-tracking branch 'origin/BR-r-greater-then-n-http'
+0fadac1 Brian Roach Changed the error check to throw on all 5xx errors, and all 4xx errors except 404 and 412 A number of the operations objects are expecting 404 to come back, and the 412 needs to 
+54d0675 Russell Brown Make fewer buckets in the itests.
+19e8953 Brian Roach Merge pull request #102 from basho/BR-symbolic-quora
+ae22370 Brian Roach Delete now works with symbolic quorums I also ended up reverting some eralier changes I made to the classes in com.basho.riak.pbc and pushed the logic up into the ConversionUtil 
+6aca729 Russell Brown Re-order tests, put timeout tests to end
+fe56fdf Brian Roach StoreObject now supports Quorums for w, pw, dw
+49ec585 Brian Roach Symbolic quora now work for reads. Existing tests all pass, need to write new tests for checking symbolics
+7ae2ce5 Brian Roach Fixed "magic" numbers in Quora, adjusted test to match.
+e9affe5 Brian Roach Merge pull request #100 from basho/BR-writebucket-constructor
+af139dd Brian Roach Fixed problem where the http client ignored when a 400 Bad Request was returned. Specifically this would cause a fetch with r > n to simply return null as if the k/v simply didn'
+e7cd246 Russell Brown Merge pull request #98 from basho/rdb_backwards_compat
+7a547a5 Russell Brown Merge pull request #99 from basho/gh92_shutdown_client
+1cdee7e Brian Roach The WriteBucket constructor that takes an existing Bucket as a parameter now copies the BucketProperties from that Bucket
+a89d334 Russell Brown Fix connection in leak in MapReduceResponseSource
+2c4b211 Russell Brown Update bucket properties to be more backwards compatible
+7e1b0ff Russell Brown Merge pull request #97 from basho/rdb_b_e_package
+7db2616 Russell Brown Stawman commit - make B_E faster / easier for Java
+4c7dbb9 Brian Roach Merge pull request #96 from basho/BR-maven-githup-upload
+0994584 Brian Roach automated uploads to github of the artifacts
+cbe9c6b Brian Roach moved uploading to its own profile due to weirdness with current use of release plugin
+feba60c Brian Roach working on automated github uploads during release
+01599d3 Brian Roach Merge pull request #82 from basho/hornbeck_artifact
+987ec69 Russell Brown Merge pull request #95 from basho/az1091_key_index
+8398f90 Russell Brown Add support for $key index
+f54c137 pbarry Tidy indentation and add test
+089bd3e Sean Cribbs Merge pull request #94 from michaelklishin/master
+5a441ef Michael S. Klishin Explain why email notifications on travis-ci.org are disabled and how to learn more
+2c40473 Michael S. Klishin Add .travis.yml
+24afbbd Brian Roach changed version in README and pom to 1.0.3 and 1.0.4-SNAPSHOT respectively
+6639df7 Brian Roach Merge branch '1.0.3'
+0450be6 Brian Roach changed to version 1.0.3 (no SNAPSHOT)
+8235e08 Brian Roach Added 1.0.3 changelog, and new commiters
+f8010a9 Russell Brown Fix whitespace in Niklas' contribution
+1fdfbae Niklas Gawell Added store without key functionality to http client
+0d26bb1 Brian Roach added instructions for building dependency bundles with maven
+b507f22 Brian Roach Reworked bundling into profiles so that when building the library with maven you can choose what to build. By default only the client library .jar is built with no dependencies. 
+a7f2ac8 pbarry Add shutdown() for graceful pool shutdown
+551ef93 pbarry ignore emacs temp files
+15cfd28 Brian Roach Fixed deps filename
+bb47216 Brian Roach changed the maven build to provide a number of options for us to distribute. Maven will now create:
+3a9ff1e Russell Brown Merge pull request #89 from basho/gh-88
+e69ff25 Russell Brown Fix http Conversion of DeleteMeta to return the built value (not null)
+5f67b84 Russell Brown Merge pull request #86 from basho/zd947_search
+ea7a6d9 Russell Brown Remove the search precommit hook from the list of precommit hooks if it is present
+fff007c Russell Brown Merge pull request #87 from basho/wrd-spelling-fix
+a2d0379 Reid Draper s/NOT/NOTE
+f677313 Russell Brown Update JavaDoc for new WriteBucket constructor
+3bf5798 Russell Brown Add API for disabling search on a bucket
+fc44b95 Russell Brown Merge pull request #84 from basho/no_converter
+575ba09 Russell Brown Merge pull request #85 from bretthoerner/master
+536c374 Brett Hoerner Bump jackson to 1.9.2
+034c2c4 Russell Brown Remove Betbuy test
+b21fcfc Russell Brown Detect store/fetch of Riak Objects and don't attempt to convert
+b4615d9 Russell Brown Merge pull request #83 from basho/az935_pb_errors
+014efee Russell Brown Add backwards compatibile fallback for pre 1.1 Riak
+6c7e73c Russell Brown Remove hack to work around PB MapReduce errors difference from HTTP
+794b633 Russell Brown Merge pull request #80 from basho/bz1296_mr_failFast
+189e1e0 Russell Brown Merge pull request #81 from pramodsadalage/master
+258c242 Pramod Update README.org
+36cc215 Russell Brown Update ignore to allow xml changes
+cc83853 Russell Brown Add assembly to build a jar with deps for non maven users
+80a0d7f Russell Brown Merge pull request #79 from basho/bz1299_ts
+d847872 Russell Brown Remove RiakObjectTest and move last modified test to TestRiakObject
+2f93930 Russell Brown Add validation to MapReduce before execution
+5873573 Russell Brown Remove redundant test setup method
+2876641 Russell Brown Fix pbc RiakObject timestamp conversion bug
+8459ce3 Russell Brown Merge pull request #78 from basho/gh-71
+076305d Russell Brown Fix broken from(Config) method in PB client config builder
+3025820 Russell Brown Bump pom version
+
+
+
 1.0.3
 -------------
 This is a patch release that fixes a few minor issues. The one 
