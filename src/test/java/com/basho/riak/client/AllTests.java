@@ -29,6 +29,7 @@ import org.junit.runner.notification.RunListener;
 import org.junit.runners.Suite;
 
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.bucket.LazyBucketPropertiesTest;
 import com.basho.riak.client.bucket.WriteBucketTest;
 import com.basho.riak.client.cap.ClobberMutationTest;
 import com.basho.riak.client.cap.QuoraTest;
@@ -192,6 +193,7 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     UnmodifiableIteratorTest.class,
     UsermetaConverterTest.class,
     WriteBucketTest.class,
+    LazyBucketPropertiesTest.class,
     com.basho.riak.client.itest.ITestMapReduceHTTP.class,
     com.basho.riak.client.itest.ITestMapReducePB.class})
 public class AllTests {
