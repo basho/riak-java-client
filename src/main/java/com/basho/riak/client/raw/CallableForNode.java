@@ -14,7 +14,11 @@
 
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+
+import java.io.IOException;
+
 public interface CallableForNode<V>
 {
-  public V call(RawClient client) throws Exception;
+  public V call(RawClient client) throws IOException,MapReduceTimeoutException;
 }

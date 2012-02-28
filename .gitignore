@@ -7,3 +7,6 @@ target
 .classpath
 .project
 *~
+.idea
+out
+*.iml

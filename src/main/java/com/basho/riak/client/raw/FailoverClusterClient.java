@@ -20,6 +20,7 @@ import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.client.raw.config.Configuration;
+import com.basho.riak.client.raw.config.FailoverClusterConfig;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -29,13 +30,19 @@ import java.io.IOException;
 import java.util.*;
 
 public abstract class FailoverClusterClient<T extends Configuration> implements RawClient {
-  //protected static Log log=LogFactory.getLog("com.temetra.riak.fcc");
+  //protected static Log log=LogFactory.getLog("com.basho.riak");
   private FailoverNodes nodes;
+  private long failedNodeMillisBetweenRetries=FailoverClusterConfig.DEFAULT_FAILEDNODEMILLISBETWEENRETRIES;  // When nodes fail, wait this long before attempting another call
+  private long retryIOExceptionTimeout=FailoverClusterConfig.DEFAULT_RETRYIOEXCEPTIONTIMEOUT;                // Ignore IOException for this long, and keep retrying nodes (does not affect timeout for running op)
+  private long pauseBetweenAllDeadNodes=FailoverClusterConfig.DEFAULT_PAUSEBETWEENALLDEADNODES;              // When all nodes are down, short pause before retrying on each one
 
-  public FailoverClusterClient(ClusterConfig<T> clusterConfig) throws IOException
+  public FailoverClusterClient(FailoverClusterConfig<T> clusterConfig) throws IOException
   {
     //noinspection AbstractMethodCallInConstructor
     nodes=new FailoverNodes(fromConfig(clusterConfig));
+    failedNodeMillisBetweenRetries=clusterConfig.getFailedNodeMillisBetweenRetries();
+    retryIOExceptionTimeout=clusterConfig.getRetryIOExceptionTimeout();
+    pauseBetweenAllDeadNodes=clusterConfig.getPauseBetweenAllDeadNodes();
   }
 
   /**
@@ -207,8 +214,8 @@ public abstract class FailoverClusterClient<T extends Configuration> implements 
 
     public void markAsSuspect()
     {
-      nextActiveCheckMillis=System.currentTimeMillis()+15000;
-      //log.debug("*** Marking "+riak+" as suspect until "+ Conversion.formatIrishTime(nextActiveCheckMillis));
+      nextActiveCheckMillis=System.currentTimeMillis()+failedNodeMillisBetweenRetries;
+      //log.debug("*** Marked "+riak+" as suspect for "+failedNodeMillisBetweenRetries);
     }
 
     public boolean isActive() // Don't bother synchronizing - fails safe
@@ -217,6 +224,7 @@ public abstract class FailoverClusterClient<T extends Configuration> implements 
         return true;
       }
       if(System.currentTimeMillis()>nextActiveCheckMillis){
+        //log.debug("*** Checking "+riak+" again");
         nextActiveCheckMillis=0;
       }
       return nextActiveCheckMillis==0;
@@ -282,7 +290,7 @@ public abstract class FailoverClusterClient<T extends Configuration> implements 
 
   private Object attempt(CallableForNode callableForNode) throws IOException
   {
-    long timeoutMillis=System.currentTimeMillis()+2000L;
+    long timeoutMillis=System.currentTimeMillis()+retryIOExceptionTimeout;
     // Once around the active nodes without delays
     ActiveNodesIterator iter=nodes.activeNodes();
     while(iter.hasNext()){
@@ -290,7 +298,9 @@ public abstract class FailoverClusterClient<T extends Configuration> implements 
       try{
         //log.debug("  Calling with "+next.getRiak());
         return callableForNode.call(next.getRiak());
-      } catch(Exception e){
+      } catch(MapReduceTimeoutException mrte){
+        throw new IOException(mrte); // TODO - fixme
+      } catch(IOException e){
         //log.warn("Exception when calling with node "+next+"/"+e.getMessage());
         next.markAsSuspect();
       }
@@ -301,12 +311,14 @@ public abstract class FailoverClusterClient<T extends Configuration> implements 
       for(FailoverNode next : nodes){
         try{
           return callableForNode.call(next.getRiak());
-        } catch(Exception e){
+        } catch(IOException e){
           //log.warn("Exception when calling with node "+next+"/"+e.getMessage());
+        } catch(MapReduceTimeoutException mrte){
+          throw new IOException(mrte); // TODO - fixme
         }
       }
       try{
-        Thread.sleep(50);
+        Thread.sleep(pauseBetweenAllDeadNodes);
       } catch(InterruptedException e){
         break;
       }
