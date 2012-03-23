@@ -199,7 +199,6 @@ public class HTTPClientConfig implements Configuration {
          * @return a {@link HTTPClientConfig}
          */
         public HTTPClientConfig build() {
-           
             String builderUrl = url;
             if (builderUrl == null) {
                 StringBuilder sb = new StringBuilder(scheme).append("://").append(host).append(":").append(port);
@@ -236,16 +235,13 @@ public class HTTPClientConfig implements Configuration {
             // In order to allow you to change the host or port through the 
             // the builder when we're starting from an existing config, 
             // we need to parse them out (and not copy the existing url).
-            if (copyConfig.url != null)
-            {
+            if (copyConfig.url != null) {
                 Pattern p = Pattern.compile("//(.*):(\\d+)/");
                 Matcher m = p.matcher(copyConfig.url);
-                if (m.find())
-                {
+                if (m.find()) {
                     b.host = m.group(1);
                     b.port = Integer.parseInt(m.group(2));
                 }
-                
             }
             
             return b;
