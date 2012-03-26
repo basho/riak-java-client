@@ -21,6 +21,8 @@ import org.apache.http.client.HttpRequestRetryHandler;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.config.Configuration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The set of configuration parameters to use when creating an HTTP RawClient
@@ -197,16 +199,18 @@ public class HTTPClientConfig implements Configuration {
          * @return a {@link HTTPClientConfig}
          */
         public HTTPClientConfig build() {
-            if (url == null) {
+            String builderUrl = url;
+            if (builderUrl == null) {
                 StringBuilder sb = new StringBuilder(scheme).append("://").append(host).append(":").append(port);
 
                 if (!riakPath.startsWith("/")) {
                     sb.append("/");
                 }
 
-                url = sb.append(riakPath).toString();
-            }
-            return new HTTPClientConfig(url, mapreducePath, httpClient, timeout, maxConnections, retryHandler);
+                builderUrl = sb.append(riakPath).toString();
+            } 
+                
+            return new HTTPClientConfig(builderUrl, mapreducePath, httpClient, timeout, maxConnections, retryHandler);
         }
 
         /**
@@ -220,12 +224,26 @@ public class HTTPClientConfig implements Configuration {
          */
         public static Builder from(HTTPClientConfig copyConfig) {
             Builder b = new Builder();
-            b.url = copyConfig.url;
+            
             b.mapreducePath = copyConfig.mapreducePath;
             b.httpClient = copyConfig.httpClient;
             b.timeout = copyConfig.timeout;
             b.maxConnections = copyConfig.maxConnections;
             b.retryHandler = copyConfig.retryHandler;
+            
+            // The HTTPClientConfig only contains the URL, not the host and port
+            // In order to allow you to change the host or port through the 
+            // the builder when we're starting from an existing config, 
+            // we need to parse them out (and not copy the existing url).
+            if (copyConfig.url != null) {
+                Pattern p = Pattern.compile("//(.*):(\\d+)/");
+                Matcher m = p.matcher(copyConfig.url);
+                if (m.find()) {
+                    b.host = m.group(1);
+                    b.port = Integer.parseInt(m.group(2));
+                }
+            }
+            
             return b;
         }
 
