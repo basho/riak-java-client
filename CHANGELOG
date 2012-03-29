@@ -1,3 +1,26 @@
+1.0.5
+-------------
+This is a bugfix release.
+
+Two major bugs are corrected: 
+PBClusterClient will now recover from node failures correctly (48f0a29)
+HTTPClientCluster.addHosts() now works correctly (4b81b06)
+
+
+48f0a29 Brian Roach Merge pull request #121 from basho/GH120-Socket-not-closed-on-failure
+4b81b06 Brian Roach Merge pull request #122 from basho/tr63-refactor-HTTPClientConfig-fix-from-bugs
+b30c3c5 Brian Roach reformat file converting spaces to tabs
+8a9377c Brian Roach Changed to using the URI class internally to solve problems with the Builder.from() method.
+56ad877 Brian Roach Reformat file to convert all spaces to tabs. Suggest tabstop=4
+22011bd Brian Roach Changed try/catch to not wrap a bad code; preserves existing behavior
+0fa9b81 Brian Roach When an IOException happens on a read from a Socket's InputStream or a write to it's OutputStream the Socket object is not automatically set to closed. This fix makes it so we explicit
+058638e Brian Roach Merge pull request #114 from basho/t59-HTTPClientConfig-Builder-from-bug
+16bca44 Brian Roach Fixed style, with apolgies to Russell
+f63347b Brian Roach There was a bug in the HTTPClientConfig.Builder that was causing a problem with creating a HTTPClusterClient If you supplied an existing HTTPClientConfig to the builder it would copy t
+fa2f15b Brian Roach [maven-release-plugin] prepare for next development iteration
+
+
+
 1.0.4
 -------------
 This is a patch release that adds new features and fixes a few minor issues.
