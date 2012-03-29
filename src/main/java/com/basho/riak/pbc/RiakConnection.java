@@ -102,51 +102,62 @@ class RiakConnection {
 	}
 
 	byte[] receive(int code) throws IOException {
-		try {
-            int len = din.readInt();
-            int get_code = din.read();
+		
+        int len;
+        int get_code;
+        byte[] data = null;
+        
+        
+        try {
+            len = din.readInt();
+            get_code = din.read();
 
-            byte[] data = null;
             if (len > 1) {
                 data = new byte[len - 1];
                 din.readFully(data);
             }
-        
-            
-            if (get_code == RiakClient.MSG_ErrorResp) {
-                RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
-                throw new RiakError(err);
-            }
-
-            if (code != get_code) {
-                throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
-            }
-
-		return data;
-        
         } catch (IOException e) {
             // Explicitly close our Socket on an IOException then rethrow
             close();
             throw e;
         }
+            
+        if (get_code == RiakClient.MSG_ErrorResp) {
+            RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
+            throw new RiakError(err);
+        }
+
+        if (code != get_code) {
+            throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
+        }
+
+		return data;
+        
+        
 	}
 
 	void receive_code(int code) throws IOException, RiakError {
-		try {
-            int len = din.readInt();
-            int get_code = din.read();
+		
+        int len;
+        int get_code;
+        
+        try {
+            len = din.readInt();
+            get_code = din.read();
             if (code == RiakClient.MSG_ErrorResp) {
                 RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(din);
                 throw new RiakError(err);
             }
-            if (len != 1 || code != get_code) {
-                throw new IOException("bad message code");
-            }
         } catch (IOException e) {
             // Explicitly close our Socket on an IOException then rethrow
             close();
             throw e;
         }
+            
+        if (len != 1 || code != get_code) {
+            throw new IOException("bad message code");
+        }
+        
 	}
 
 
