@@ -75,51 +75,78 @@ class RiakConnection {
 	///////////////////////
 
 	void send(int code, MessageLite req) throws IOException {
-		int len = req.getSerializedSize();
-		dout.writeInt(len + 1);
-		dout.write(code);
-		req.writeTo(dout);
-		dout.flush();
+		try {
+            int len = req.getSerializedSize();
+            dout.writeInt(len + 1);
+            dout.write(code);
+            req.writeTo(dout);
+            dout.flush();
+        } catch (IOException e) {
+            // Explicitly close our Socket on an IOException then rethrow
+            close();
+            throw e;
+        }
 	}
 
 	void send(int code) throws IOException {
-		dout.writeInt(1);
-		dout.write(code);
-		dout.flush();
+		try {
+            dout.writeInt(1);
+            dout.write(code);
+            dout.flush();
+        } catch (IOException e) {
+            // Explicitly close our Socket on an IOException then rethrow
+            close();
+            throw e;
+        }
+        
 	}
 
 	byte[] receive(int code) throws IOException {
-		int len = din.readInt();
-		int get_code = din.read();
+		try {
+            int len = din.readInt();
+            int get_code = din.read();
 
-		byte[] data = null;
-        if (len > 1) {
-            data = new byte[len - 1];
-            din.readFully(data);
-        }
+            byte[] data = null;
+            if (len > 1) {
+                data = new byte[len - 1];
+                din.readFully(data);
+            }
+        
+            
+            if (get_code == RiakClient.MSG_ErrorResp) {
+                RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
+                throw new RiakError(err);
+            }
 
-        if (get_code == RiakClient.MSG_ErrorResp) {
-            RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
-            throw new RiakError(err);
-        }
-
-		if (code != get_code) {
-            throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
-        }
+            if (code != get_code) {
+                throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
+            }
 
 		return data;
+        
+        } catch (IOException e) {
+            // Explicitly close our Socket on an IOException then rethrow
+            close();
+            throw e;
+        }
 	}
 
 	void receive_code(int code) throws IOException, RiakError {
-		int len = din.readInt();
-		int get_code = din.read();
-		if (code == RiakClient.MSG_ErrorResp) {
-			RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(din);
-			throw new RiakError(err);
-		}
-		if (len != 1 || code != get_code) {
-			throw new IOException("bad message code");
-		}
+		try {
+            int len = din.readInt();
+            int get_code = din.read();
+            if (code == RiakClient.MSG_ErrorResp) {
+                RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(din);
+                throw new RiakError(err);
+            }
+            if (len != 1 || code != get_code) {
+                throw new IOException("bad message code");
+            }
+        } catch (IOException e) {
+            // Explicitly close our Socket on an IOException then rethrow
+            close();
+            throw e;
+        }
 	}
 
 
