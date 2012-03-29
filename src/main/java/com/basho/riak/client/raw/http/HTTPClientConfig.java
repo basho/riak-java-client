@@ -16,6 +16,8 @@ package com.basho.riak.client.raw.http;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 
@@ -33,7 +35,7 @@ import java.util.regex.Pattern;
  */
 public class HTTPClientConfig implements Configuration {
 
-    private final String url;
+    private final URI uri;
     private final String mapreducePath;
     private final HttpClient httpClient;
     private final Integer timeout;
@@ -62,11 +64,11 @@ public class HTTPClientConfig implements Configuration {
     private HTTPClientConfig(String url, String mapreducePath, HttpClient httpClient, Integer timeout,
             Integer maxConnections, HttpRequestRetryHandler retryHandler) {
         try {
-            new URI(url);
+            this.uri = new URI(url);
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
-        this.url = url;
+        
         this.mapreducePath = mapreducePath;
         this.httpClient = httpClient;
         this.timeout = timeout;
@@ -86,10 +88,10 @@ public class HTTPClientConfig implements Configuration {
     }
 
     /**
-     * @return the URL
+     * @return the URL 
      */
     public String getUrl() {
-        return url;
+        return uri.toString();
     }
 
     /**
@@ -184,7 +186,7 @@ public class HTTPClientConfig implements Configuration {
      */
     public static final class Builder {
 
-        private String url = null;
+        private URI uri = null;
         private String scheme = "http";
         private String host = "127.0.0.1";
         private int port = 8098;
@@ -199,8 +201,8 @@ public class HTTPClientConfig implements Configuration {
          * @return a {@link HTTPClientConfig}
          */
         public HTTPClientConfig build() {
-            String builderUrl = url;
-            if (builderUrl == null) {
+            String builderUrl;
+            if (uri == null) {
                 StringBuilder sb = new StringBuilder(scheme).append("://").append(host).append(":").append(port);
 
                 if (!riakPath.startsWith("/")) {
@@ -208,7 +210,9 @@ public class HTTPClientConfig implements Configuration {
                 }
 
                 builderUrl = sb.append(riakPath).toString();
-            } 
+            }
+            else
+                builderUrl = uri.toString();
                 
             return new HTTPClientConfig(builderUrl, mapreducePath, httpClient, timeout, maxConnections, retryHandler);
         }
@@ -231,17 +235,13 @@ public class HTTPClientConfig implements Configuration {
             b.maxConnections = copyConfig.maxConnections;
             b.retryHandler = copyConfig.retryHandler;
             
-            // The HTTPClientConfig only contains the URL, not the host and port
-            // In order to allow you to change the host or port through the 
-            // the builder when we're starting from an existing config, 
-            // we need to parse them out (and not copy the existing url).
-            if (copyConfig.url != null) {
-                Pattern p = Pattern.compile("//(.*):(\\d+)/");
-                Matcher m = p.matcher(copyConfig.url);
-                if (m.find()) {
-                    b.host = m.group(1);
-                    b.port = Integer.parseInt(m.group(2));
-                }
+            // This avoids the new builder from being unchangable due to
+			// the withUrl() method taking precendent
+            if (copyConfig.uri != null) {
+               b.scheme = copyConfig.uri.getScheme();
+                b.riakPath = copyConfig.uri.getRawPath();
+                b.host = copyConfig.uri.getHost();
+                b.port = copyConfig.uri.getPort();
             }
             
             return b;
@@ -259,7 +259,12 @@ public class HTTPClientConfig implements Configuration {
          * @return this
          */
         public Builder withUrl(String url) {
-            this.url = url;
+            try {
+                this.uri = new URI(url);
+            } catch (URISyntaxException ex) {
+                // no-op to not change behavior. This will be caught in build()
+				// when the constructor for HTTPClientConfig is called
+            }
             return this;
         }
 
