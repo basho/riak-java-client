@@ -24,7 +24,7 @@ public class BucketIndex extends BinIndex {
     private static final String BUCKETS_INDEX = "$bucket";
     private static final String EMPTY = "";
 
-    public static final Index index = new BucketIndex();
+    public static final BucketIndex index = new BucketIndex();
 
     private BucketIndex() {
         super(BUCKETS_INDEX);
