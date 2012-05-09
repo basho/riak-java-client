@@ -262,9 +262,9 @@ public abstract class ITestBucket {
         // Without this sleep() the following tests may fail due to previous 
         // keys in riak not yet actually deleted from the call to emptyBucket()
         Thread.sleep(3000L);
-		
-		// fetch all keys using magic keys index
-		// This is 4 because it picks up all the objects including k4
+
+        // fetch all keys using magic keys index
+        // This is 4 because it picks up all the objects including k4
         List<String> all = b.fetchIndex(KeyIndex.index).from("a").to("z").execute();
         assertEquals(4, all.size());
 
