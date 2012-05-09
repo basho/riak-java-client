@@ -70,8 +70,8 @@ public abstract class ITestBucket {
     @Before public void setUp() throws RiakException, InterruptedException {
         client = getClient();
         bucketName = this.getClass().getName();
-		emptyBucket(bucketName, client);
-	}
+        emptyBucket(bucketName, client);
+    }
 
     protected abstract IRiakClient getClient() throws RiakException;
 
@@ -187,13 +187,10 @@ public abstract class ITestBucket {
 
     // fetch index
     @Test public void fetchIndex() throws Exception {
-        //Assume.assumeTrue(RiakTestProperties.is2iEnabled());
+        Assume.assumeTrue(RiakTestProperties.is2iEnabled());
 
         final Bucket b = client.fetchBucket(bucketName).execute();
 
-		
-		
-		
         // create objects with indexes
         IRiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, "k1").withValue("some data")
         .addIndex("twitter", "alfonso").addIndex("age", 37).build();
@@ -204,20 +201,20 @@ public abstract class ITestBucket {
         IRiakObject o3 = RiakObjectBuilder.newBuilder(bucketName, "k3").withValue("some data")
         .addIndex("twitter", "zachary").addIndex("age", 30).build();
 
-		IRiakObject o4 = RiakObjectBuilder.newBuilder(bucketName, "k4").withValue("some data")
+        IRiakObject o4 = RiakObjectBuilder.newBuilder(bucketName, "k4").withValue("some data")
         .addIndex("another_index", "bob").addIndex("age", 45).build();
 		
         // store them
         b.store(o1).execute();
         b.store(o2).execute();
         b.store(o3).execute();
-		b.store(o4).execute();
+        b.store(o4).execute();
 
         // retrieve and check indexes are present
         IRiakObject o1r = b.fetch("k1").execute();
         IRiakObject o2r = b.fetch("k2").execute();
         IRiakObject o3r = b.fetch("k3").execute();
-		IRiakObject o4r = b.fetch("k4").execute();
+        IRiakObject o4r = b.fetch("k4").execute();
 		
         assertTrue(o1r.getBinIndex("twitter").contains("alfonso"));
         assertTrue(o1r.getIntIndex("age").contains(37));
@@ -228,9 +225,9 @@ public abstract class ITestBucket {
         assertTrue(o3r.getBinIndex("twitter").contains("zachary"));
         assertTrue(o3r.getIntIndex("age").contains(30));
 
-		assertTrue(o4r.getBinIndex("another_index").contains("bob"));
+        assertTrue(o4r.getBinIndex("another_index").contains("bob"));
         assertTrue(o4r.getIntIndex("age").contains(45));
-		
+
         // fetch by index
         List<String> keys = b.fetchIndex(BinIndex.named("twitter")).withValue("alfonso").execute();
 
@@ -262,23 +259,19 @@ public abstract class ITestBucket {
 
         assertEquals(0, empty.size());
 
-		// Without this sleep() the following tests may fail due to previous 
-		// keys in riak not yet actually deleted from the call to emptyBucket()
-		Thread.sleep(3000L);
-		
-		
+        // Without this sleep() the following tests may fail due to previous 
+        // keys in riak not yet actually deleted from the call to emptyBucket()
+        Thread.sleep(3000L);
 		
 		// fetch all keys using magic keys index
 		// This is 4 because it picks up all the objects including k4
         List<String> all = b.fetchIndex(KeyIndex.index).from("a").to("z").execute();
         assertEquals(4, all.size());
-		
-		// fetch all keys using magic bucket index
-		all = b.fetchIndex(BucketIndex.index).withValue("_").execute();
-		assertEquals(4, all.size());
-		
-		
-		
+
+        // fetch all keys using magic bucket index
+        all = b.fetchIndex(BucketIndex.index).withValue("_").execute();
+        assertEquals(4, all.size());
+
     }
 
     @Test public void conditionalFetch() throws Exception {
