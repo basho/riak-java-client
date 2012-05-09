@@ -51,7 +51,7 @@ public class StreamedKeysCollection extends CollectionWrapper<String> {
             return false;
 
         try {
-            while (!tokens.end()) {
+            while (tokens.more()) {
                 char c = tokens.nextClean();
                 if ((!readingArray && c == '[') || (readingArray && c == ',')) {
                     if (tokens.nextClean() != ']') {
