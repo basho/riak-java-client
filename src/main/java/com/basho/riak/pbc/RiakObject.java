@@ -347,4 +347,19 @@ public class RiakObject {
         return this;
     }
 
+    public Map<String, String> getUsermeta() {
+        return userMeta;
+    }
+    
+    public void setUserMeta(Map<String,String> userMeta){
+    	this.userMeta = userMeta;
+    }
+    
+    public List<RiakLink> getLinks(){
+    	return this.links;
+    }
+    
+    public void setLinks(List<RiakLink> links){
+    	this.links = links;
+    }
 }
