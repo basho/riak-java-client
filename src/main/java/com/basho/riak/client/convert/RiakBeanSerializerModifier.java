@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.convert;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,9 +82,10 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
         RiakLinks links = null;
         AnnotatedMember member = beanPropertyWriter.getMember();
         if (member instanceof AnnotatedField) {
-            key = beanPropertyWriter.getAnnotation(RiakKey.class);
-            usermeta = beanPropertyWriter.getAnnotation(RiakUsermeta.class);
-            links = beanPropertyWriter.getAnnotation(RiakLinks.class);
+            AnnotatedElement element = member.getAnnotated();
+            key = element.getAnnotation(RiakKey.class);
+            usermeta = element.getAnnotation(RiakUsermeta.class);
+            links = element.getAnnotation(RiakLinks.class);
         } else {
             @SuppressWarnings("rawtypes") Class clazz = member.getDeclaringClass();
             Field field;

@@ -41,6 +41,16 @@ public class RiakBeanSerializerModifierTest {
         assertEquals(2, map.size());
         assertTrue(map.containsKey("someField"));
         assertTrue(map.containsKey("someOtherField"));
+        
+        RiakAnnotatedClassWithPublicFields racwpf = new RiakAnnotatedClassWithPublicFields();
+
+        json = mapper.writeValueAsString(racwpf);
+
+        map = mapper.readValue(json, Map.class);
+
+        assertEquals(2, map.size());
+        assertTrue(map.containsKey("someField"));
+        assertTrue(map.containsKey("someOtherField"));
     }
 
     @SuppressWarnings("unused") private static final class RiakAnnotatedClass {
@@ -74,6 +84,15 @@ public class RiakBeanSerializerModifierTest {
         public String getMetaValueField() {
             return metaValueField;
         }
+    }
+
+    @SuppressWarnings("unused") private static final class RiakAnnotatedClassWithPublicFields {
+        @RiakKey public String keyField = "key";
+        @RiakUsermeta(key = "metaKey1") public String metaValueField = "ONE";
+        @RiakUsermeta public Map<String, String> usermeta = new HashMap<String, String>();
+
+        public String someField = "TWO";
+        public String someOtherField = "THREE";
     }
 
 }
