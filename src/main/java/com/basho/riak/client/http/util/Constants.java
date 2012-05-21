@@ -82,7 +82,7 @@ public interface Constants {
     // Content types used in Riak
     public static String CTYPE_ANY = "*/*";
     public static String CTYPE_JSON = "application/json";
-    public static String CTYPE_JSON_UTF8 = "application/json;charset=UTF-8";
+    public static String CTYPE_JSON_UTF8 = "application/json; charset=UTF-8";
     public static String CTYPE_OCTET_STREAM = "application/octet-stream";
     public static String CTYPE_MULTIPART_MIXED = "multipart/mixed";
     public static String CTYPE_TEXT = "text/plain";
