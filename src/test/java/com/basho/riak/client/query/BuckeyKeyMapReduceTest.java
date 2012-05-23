@@ -45,13 +45,6 @@ public class BuckeyKeyMapReduceTest {
     @Test public void executeInvalid() throws RiakException {
         BucketKeyMapReduce mr = new BucketKeyMapReduce(client);
 
-        try {
-            mr.execute();
-            fail("expected NoPhasesException");
-        } catch (NoPhasesException e) {
-            // NO-OP
-        }
-
         mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY);
         try {
             mr.execute();

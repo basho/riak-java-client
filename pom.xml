@@ -4,7 +4,7 @@
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.6-SNAPSHOT</version>
     <name>Riak Client for Java</name>
     <description>HttpClient-based client for Riak</description>
     <url>https://github.com/basho/riak-java-client</url>
@@ -99,6 +99,11 @@
             <artifactId>junit</artifactId>
             <version>4.4</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
         </dependency>
     </dependencies>
     <build>

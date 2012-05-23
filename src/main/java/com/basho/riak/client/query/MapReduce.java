@@ -86,10 +86,9 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
      * @throws InvalidMapReduceException
      */
     protected void validate() {
-        if(phases.isEmpty()) {
-            throw new NoPhasesException();
-        }
-    }
+        // Changed to no-op; phase no longer required
+		// Left in place so as not to break inheritence
+	}
 
     /**
      * Creates the JSON string of the M/R job for submitting to the
