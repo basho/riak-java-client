@@ -279,6 +279,14 @@ public interface RawClient {
      * @return a {@link NodeStats} object that represents one or more sets of stats.
      */
     NodeStats stats() throws IOException;
-    
-    
+
+    /**
+     * Gets the name of this node.  Implementations should retrieve and cache
+     * this value when the client is created so it can be used as an identifier
+     * for the raw node even when the node is down.
+     *
+     * @return the {@link String} node name
+     */
+    String getNodeName();
+
 }

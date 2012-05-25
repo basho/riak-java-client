@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw.http;
 
+import java.io.IOException;
+
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakConfig;
 import com.basho.riak.client.raw.RawClient;
@@ -59,7 +61,7 @@ public class HTTPRiakClientFactory implements RiakClientFactory {
      * com.basho.riak.client.raw.RiakClientFactory#newClient(com.basho.riak.
      * client.raw.config.Configuration)
      */
-    public RawClient newClient(Configuration conf) {
+    public RawClient newClient(Configuration conf) throws IOException {
         if (conf == null) {
             throw new IllegalArgumentException("conf cannot be null");
         }

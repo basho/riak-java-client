@@ -71,6 +71,7 @@ public class PBClientAdapter implements RawClient {
     private static final Object MODIFIED = "modified";
 
     private final RiakClient client;
+    private final String nodeName;
 
     /**
      * Create an instance of the adapter that creates a {@link RiakClient} using
@@ -84,6 +85,7 @@ public class PBClientAdapter implements RawClient {
      */
     public PBClientAdapter(String host, int port) throws IOException {
         this.client = new RiakClient(host, port);
+        this.nodeName = this.client.getServerInfo().get("node");
     }
 
     /**
@@ -93,8 +95,9 @@ public class PBClientAdapter implements RawClient {
      * @param delegate
      *            the {@link RiakClient} to adapt.
      */
-    public PBClientAdapter(com.basho.riak.pbc.RiakClient delegate) {
+    public PBClientAdapter(com.basho.riak.pbc.RiakClient delegate) throws IOException {
         this.client = delegate;
+        this.nodeName = this.client.getServerInfo().get("node");
     }
 
     /* (non-Javadoc)
@@ -497,5 +500,13 @@ public class PBClientAdapter implements RawClient {
 
     public NodeStats stats() {
         throw new UnsupportedOperationException("Not supported using protobuffer protocol.");
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getNodeName()
+     */
+    public String getNodeName() {
+      return nodeName;
     }
 }

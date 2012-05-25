@@ -117,9 +117,14 @@ public class RiakFactory {
      * @param delegate the pbc.{@link RiakClient} to wrap.
      * @return a {@link DefaultRiakClient} that delegates to <code>delegate</code>
      */
-    public static IRiakClient pbcClient(com.basho.riak.pbc.RiakClient delegate) {
-        final RawClient client = new PBClientAdapter(delegate);
-        return new DefaultRiakClient(client);
+    public static IRiakClient pbcClient(com.basho.riak.pbc.RiakClient delegate) throws RiakException {
+        try {
+            final RawClient client = new PBClientAdapter(delegate);
+
+            return new DefaultRiakClient(client);
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
     }
 
     /**
@@ -127,8 +132,13 @@ public class RiakFactory {
      * @return a default configuration {@link DefaultRiakClient} delegating to the HTTP client
      */
     public static IRiakClient httpClient() throws RiakException {
-        final RawClient client = new HTTPClientAdapter(DEFAULT_RIAK_URL);
-        return new DefaultRiakClient(client);
+        try {
+            final RawClient client = new HTTPClientAdapter(DEFAULT_RIAK_URL);
+
+            return new DefaultRiakClient(client);
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
     }
 
     /**
@@ -141,8 +151,13 @@ public class RiakFactory {
      *         the HTTP client
      */
     public static IRiakClient httpClient(String url) throws RiakException {
-        final RawClient client = new HTTPClientAdapter(url);
-        return new DefaultRiakClient(client);
+        try {
+            final RawClient client = new HTTPClientAdapter(url);
+
+            return new DefaultRiakClient(client);
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
     }
 
     /**
@@ -151,8 +166,13 @@ public class RiakFactory {
      * @return a {@link DefaultRiakClient} that delegates to <code>delegate</code>
      */
     public static IRiakClient httpClient(com.basho.riak.client.http.RiakClient delegate) throws RiakException {
-        final RawClient client = new HTTPClientAdapter(delegate);
-        return new DefaultRiakClient(client);
+        try {
+            final RawClient client = new HTTPClientAdapter(delegate);
+
+            return new DefaultRiakClient(client);
+        } catch (IOException e) {
+            throw new RiakException(e);
+        }
     }
 
     /**

@@ -64,13 +64,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class HTTPClientAdapter implements RawClient {
 
     private final RiakClient client;
+    private final String nodeName;
 
     /**
      * Create an instance of the adapter that delegates all API calls to <code>client</code>
      * @param client the {@link RiakClient} to delegate to.
      */
-    public HTTPClientAdapter(final RiakClient client) {
+    public HTTPClientAdapter(final RiakClient client) throws IOException {
         this.client = client;
+        this.nodeName = stats().nodename();
     }
 
     /**
@@ -81,7 +83,7 @@ public class HTTPClientAdapter implements RawClient {
      * @param url
      *            of the riak REST interface
      */
-    public HTTPClientAdapter(String url) {
+    public HTTPClientAdapter(String url) throws IOException {
         this(new RiakClient(url));
     }
 
@@ -487,5 +489,11 @@ public class HTTPClientAdapter implements RawClient {
             }
         }
     }
-    
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.raw.RawClient#getNodeName()
+     */
+    public String getNodeName() {
+      return this.nodeName;
+    }
 }

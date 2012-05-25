@@ -16,7 +16,9 @@ package com.basho.riak.client.raw.config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import com.basho.riak.client.raw.cluster.ClusterObserver;
 import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 
@@ -40,7 +42,9 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
     public static final int UNLIMITED_CONNECTIONS = 0;
 
     private final int totalMaximumConnections;
+    private long healthCheckFrequencyMillis = TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS);
     private final List<T> nodes = new ArrayList<T>();
+    private final List<ClusterObserver> clusterObservers = new ArrayList<ClusterObserver>();
 
     /**
      * @param totalMaximumConnections
@@ -61,7 +65,7 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
     /**
      * Add a new client config to the collection of client in the cluster config
      * 
-     * @param nodeConfig
+     * @param clientConfig
      *            a node config to add
      * @return this, updated
      * @see HTTPClientConfig
@@ -79,6 +83,49 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
      */
     public synchronized List<T> getClients() {
         return Collections.unmodifiableList(nodes);
+    }
+
+    /**
+     * Add a new observer to receive notifications when the state of the cluster changes
+     *
+     * @param clusterObserver
+     *          a {@link ClusterObserver} to add
+     * @return this, updated
+     * @see ClusterObserver
+     */
+    public synchronized ClusterConfig<T> addClusterObserver(ClusterObserver clusterObserver) {
+        this.clusterObservers.add(clusterObserver);
+        return this;
+    }
+
+    /**
+     *
+     * @return an *unmodifiable* view of the {@link ClusterObserver}s in
+     *         the cluster configuration
+     */
+    public synchronized List<ClusterObserver> getClusterObservers() {
+        return Collections.unmodifiableList(clusterObservers);
+    }
+
+    /**
+     * Set the frequency with which to check to see if unhealthy nodes have recovered
+     *
+     * @param duration the frequency with which to check
+     * @param timeUnit the time unit of the frequency
+     * @return this, updated
+     */
+    public ClusterConfig<T> setHealthCheckFrequency(long duration, TimeUnit timeUnit) {
+        this.healthCheckFrequencyMillis = TimeUnit.MILLISECONDS.convert(duration, timeUnit);
+        return this;
+    }
+
+    /**
+     * Get the frequency with which to check tos ee if unhealthy nodes have recovered (in millis)
+     *
+     * @return the frequency with which to check (in millis)
+     */
+    public long getHealthCheckFrequencyMillis() {
+        return this.healthCheckFrequencyMillis;
     }
 
     /**
