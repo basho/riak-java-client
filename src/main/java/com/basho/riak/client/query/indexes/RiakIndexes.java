@@ -77,7 +77,7 @@ public class RiakIndexes {
      *            the value
      * @return this
      */
-    public RiakIndexes add(String index, String value) {
+    public RiakIndexes add(final String index, final String value) {
         final BinIndex key = BinIndex.named(index);
         final String lock = key.getFullname().intern();
         // even though it is a concurrent hashmap, we need
@@ -87,9 +87,40 @@ public class RiakIndexes {
             Set<String> values = binIndexes.get(key);
             if (values == null) {
                 values = new HashSet<String>();
+                binIndexes.put(key, values);
             }
             values.add(value);
-            binIndexes.put(key, values);
+        }
+        return this;
+    }
+
+    /**
+     * Add a Set of {@link BinIndex} values to the set
+     * 
+     * @param index
+     *            name of the index
+     * @param indexValues
+     *            the values
+     * @return this
+     */
+    public RiakIndexes addAllString(final String index, final Set<String> indexValues) {
+        if (!indexValues.isEmpty()) {
+            final BinIndex key = BinIndex.named(index);
+            final String lock = key.getFullname().intern();
+            // even though it is a concurrent hashmap, we need
+            // fine grained access control for the
+            // key's value set
+            synchronized (lock) {
+                Set<String> values = binIndexes.get(key);
+                if (values == null) {
+                    // This will create the proper capacity for every use case.
+                    values = new HashSet<String>(Math.max((int) (indexValues.size() / .75f) + 1, 16));
+                    binIndexes.put(key, values);
+                }
+                for (String value : indexValues) {
+                    values.add(value);
+                }
+            }
         }
         return this;
     }
@@ -103,7 +134,7 @@ public class RiakIndexes {
      *            the value
      * @return this
      */
-    public RiakIndexes add(String index, int value) {
+    public RiakIndexes add(final String index, final int value) {
         final IntIndex key = IntIndex.named(index);
         final String lock = key.getFullname().intern();
         // even though it is a concurrent hashmap, we need
@@ -113,9 +144,40 @@ public class RiakIndexes {
             Set<Integer> values = intIndexes.get(key);
             if (values == null) {
                 values = new HashSet<Integer>();
+                intIndexes.put(key, values);
             }
             values.add(value);
-            intIndexes.put(key, values);
+        }
+        return this;
+    }
+
+    /**
+     * Add a Set of {@link IntIndex} values to the set
+     * 
+     * @param index
+     *            name of the index
+     * @param indexValues
+     *            the values
+     * @return this
+     */
+    public RiakIndexes addAllInt(final String index, final Set<Integer> indexValues) {
+        if (!indexValues.isEmpty()) {
+            final IntIndex key = IntIndex.named(index);
+            final String lock = key.getFullname().intern();
+            // even though it is a concurrent hashmap, we need
+            // fine grained access control for the
+            // key's value set
+            synchronized (lock) {
+                Set<Integer> values = intIndexes.get(key);
+                if (values == null) {
+                    // This will create the proper capacity for every use case.
+                    values = new HashSet<Integer>(Math.max((int) (indexValues.size() / .75f) + 1, 16));
+                    intIndexes.put(key, values);
+                }
+                for (Integer value : indexValues) {
+                    values.add(value);
+                }
+            }
         }
         return this;
     }

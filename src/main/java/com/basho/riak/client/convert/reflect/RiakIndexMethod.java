@@ -13,44 +13,43 @@
  */
 package com.basho.riak.client.convert.reflect;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Set;
 
 import com.basho.riak.client.convert.RiakIndex;
 
 /**
- * @author russell
- * 
+ * @author guido A copy of RiakIndexField for Methods.
  */
-public class RiakIndexField {
+public class RiakIndexMethod {
 
-    private final Field field;
+    private final Method method;
     private final String indexName;
     @SuppressWarnings("rawtypes") private final Class type;
 
     /**
-     * The field that is to be wrapped
+     * The method that is to be wrapped
      * 
-     * @param field
+     * @param method
      */
-    public RiakIndexField(final Field field) {
-        if (field == null ||
-            field.getAnnotation(RiakIndex.class) == null ||
-            "".equals(field.getAnnotation(RiakIndex.class).name()) ||
-            (!field.getType().equals(String.class) && !field.getType().equals(Integer.class) && !field.getType().equals(int.class)) &&
-            !Set.class.isAssignableFrom(field.getType())) {
-            throw new IllegalArgumentException(field.getType().toString());
+    public RiakIndexMethod(final Method method) {
+        if (method == null ||
+            method.getAnnotation(RiakIndex.class) == null ||
+            "".equals(method.getAnnotation(RiakIndex.class).name()) ||
+            (!method.getReturnType().equals(String.class) && !method.getReturnType().equals(Integer.class) && !method.getReturnType().equals(int.class)) &&
+            !Set.class.isAssignableFrom(method.getReturnType())) {
+            throw new IllegalArgumentException(method.getReturnType().toString());
         }
-        this.field = field;
-        this.indexName = field.getAnnotation(RiakIndex.class).name();
-        this.type = field.getType();
+        this.method = method;
+        this.indexName = method.getAnnotation(RiakIndex.class).name();
+        this.type = method.getReturnType();
     }
 
     /**
-     * @return the field
+     * @return the method
      */
-    public Field getField() {
-        return field;
+    public Method getMethod() {
+        return method;
     }
 
     /**

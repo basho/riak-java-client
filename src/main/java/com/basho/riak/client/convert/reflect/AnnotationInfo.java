@@ -14,6 +14,7 @@
 package com.basho.riak.client.convert.reflect;
 
 import static com.basho.riak.client.convert.reflect.ClassUtil.getFieldValue;
+import static com.basho.riak.client.convert.reflect.ClassUtil.getMethodValue;
 import static com.basho.riak.client.convert.reflect.ClassUtil.setFieldValue;
 
 import java.lang.reflect.Field;
@@ -44,6 +45,7 @@ public class AnnotationInfo {
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
     private final List<RiakIndexField> indexFields;
+    private final List<RiakIndexMethod> indexMethods;
     private final Field riakLinksField;
 
     /**
@@ -51,12 +53,14 @@ public class AnnotationInfo {
      * @param usermetaItemFields
      * @param usermetaMapField
      */
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField) {
+    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField,
+            List<RiakIndexField> indexFields, List<RiakIndexMethod> indexMethods, Field riakLinksField) {
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
         validateUsermetaMapField(usermetaMapField);
         this.usermetaMapField = usermetaMapField;
         this.indexFields = indexFields;
+        this.indexMethods = indexMethods;
         validateRiakLinksField(riakLinksField);
         this.riakLinksField = riakLinksField;
     }
@@ -138,7 +142,7 @@ public class AnnotationInfo {
             String val = o == null ? null : o.toString();
             String key = f.getUsermetaDataKey();
             // null is not a user meta datum
-            if(o != null) {
+            if (o != null) {
                 usermetaData.put(key, val);
             }
         }
@@ -166,35 +170,65 @@ public class AnnotationInfo {
         }
 
         // set a catch all map field
-        if(usermetaMapField != null) {
+        if (usermetaMapField != null) {
             setFieldValue(usermetaMapField, obj, localMetaCopy);
         }
     }
 
     /**
      * @return a {@link RiakIndexes} made of the values of the RiakIndex
-     *         annotated fields
+     *         annotated fields and methods. For methods it is expected to be a
+     *         Set of String or Integer
      */
     public <T> RiakIndexes getIndexes(T obj) {
         final RiakIndexes riakIndexes = new RiakIndexes();
 
         for (RiakIndexField f : indexFields) {
+            final String indexName = f.getIndexName();
             Object val = getFieldValue(f.getField(), obj);
             // null is not an index value
             if (val != null) {
-                if (val instanceof String) {
-                    riakIndexes.add(f.getIndexName(), (String) val);
+                if (val instanceof Set<?>) {
+                    try {
+                        @SuppressWarnings("unchecked") final Set<String> indexValues = (Set<String>) val;
+                        riakIndexes.addAllString(indexName, indexValues);
+                    } catch (Exception e) {
+                        @SuppressWarnings("unchecked") final Set<Integer> indexValues = (Set<Integer>) val;
+                        riakIndexes.addAllInt(indexName, indexValues);
+                    }
+                } else if (val instanceof String) {
+                    riakIndexes.add(indexName, (String) val);
                 } else {
-                    riakIndexes.add(f.getIndexName(), (Integer) val);
+                    riakIndexes.add(indexName, (Integer) val);
                 }
             }
         }
 
+        for (RiakIndexMethod m : indexMethods) {
+            final String indexName = m.getIndexName();
+            Object val = getMethodValue(m.getMethod(), obj);
+            // null is not an index value
+            if (val != null) {
+                if (val instanceof Set<?>) {
+                    try {
+                        @SuppressWarnings("unchecked") final Set<String> indexValues = (Set<String>) val;
+                        riakIndexes.addAllString(indexName, indexValues);
+                    } catch (Exception e) {
+                        @SuppressWarnings("unchecked") final Set<Integer> indexValues = (Set<Integer>) val;
+                        riakIndexes.addAllInt(indexName, indexValues);
+                    }
+                } else if (val instanceof String) {
+                    riakIndexes.add(indexName, (String) val);
+                } else {
+                    riakIndexes.add(indexName, (Integer) val);
+                }
+            }
+        }
         return riakIndexes;
     }
 
     /**
-     * TODO handle multi-value indexes with the same name
+     * TODO Set multi-value indexes for methods when fetched back from Riak
      * 
      * @param <T>
      * @param indexes
@@ -215,7 +249,16 @@ public class AnnotationInfo {
             }
 
             if (val != null && !val.isEmpty()) {
-                setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+                setFieldValue(f.getField(), obj, val.iterator().next());
+            } else if (Set.class.isAssignableFrom(f.getType())) {
+                // If the index is a collection it is expected to be a Set<?>
+                val = indexes.getBinIndex(f.getIndexName());
+                if (val == null || val.isEmpty()) {
+                    val = indexes.getIntIndex(f.getIndexName());
+                }
+                if (val != null && !val.isEmpty()) {
+                    setFieldValue(f.getField(), obj, val);
+                }
             }
         }
     }
