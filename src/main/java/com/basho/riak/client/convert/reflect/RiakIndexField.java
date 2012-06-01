@@ -14,6 +14,8 @@
 package com.basho.riak.client.convert.reflect;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 import com.basho.riak.client.convert.RiakIndex;
@@ -40,6 +42,19 @@ public class RiakIndexField {
             (!field.getType().equals(String.class) && !field.getType().equals(Integer.class) && !field.getType().equals(int.class)) &&
             !Set.class.isAssignableFrom(field.getType())) {
             throw new IllegalArgumentException(field.getType().toString());
+        }
+
+        if (Set.class.isAssignableFrom(field.getType())) {
+            // Verify it's a Set<String> or Set<Integer>
+            Type t = field.getGenericType();
+            if (t instanceof ParameterizedType) {
+                Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
+                    throw new IllegalArgumentException(field.getType().toString());
+                }
+            } else {
+                throw new IllegalArgumentException(field.getType().toString());
+            }
         }
         this.field = field;
         this.indexName = field.getAnnotation(RiakIndex.class).name();

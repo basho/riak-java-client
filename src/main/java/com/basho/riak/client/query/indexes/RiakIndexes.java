@@ -103,7 +103,7 @@ public class RiakIndexes {
      *            the values
      * @return this
      */
-    public RiakIndexes addAllString(final String index, final Set<String> indexValues) {
+    public RiakIndexes addBinSet(final String index, final Set<String> indexValues) {
         if (!indexValues.isEmpty()) {
             final BinIndex key = BinIndex.named(index);
             final String lock = key.getFullname().intern();
@@ -160,7 +160,7 @@ public class RiakIndexes {
      *            the values
      * @return this
      */
-    public RiakIndexes addAllInt(final String index, final Set<Integer> indexValues) {
+    public RiakIndexes addIntSet(final String index, final Set<Integer> indexValues) {
         if (!indexValues.isEmpty()) {
             final IntIndex key = IntIndex.named(index);
             final String lock = key.getFullname().intern();

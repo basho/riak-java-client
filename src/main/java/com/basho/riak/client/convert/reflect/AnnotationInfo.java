@@ -180,47 +180,53 @@ public class AnnotationInfo {
      *         annotated fields and methods. For methods it is expected to be a
      *         Set of String or Integer
      */
-    public <T> RiakIndexes getIndexes(T obj) {
+    @SuppressWarnings("unchecked") public <T> RiakIndexes getIndexes(T obj) {
         final RiakIndexes riakIndexes = new RiakIndexes();
 
         for (RiakIndexField f : indexFields) {
-            final String indexName = f.getIndexName();
-            Object val = getFieldValue(f.getField(), obj);
-            // null is not an index value
-            if (val != null) {
-                if (val instanceof Set<?>) {
-                    try {
-                        @SuppressWarnings("unchecked") final Set<String> indexValues = (Set<String>) val;
-                        riakIndexes.addAllString(indexName, indexValues);
-                    } catch (Exception e) {
-                        @SuppressWarnings("unchecked") final Set<Integer> indexValues = (Set<Integer>) val;
-                        riakIndexes.addAllInt(indexName, indexValues);
+            if (Set.class.isAssignableFrom(f.getType())) {
+                Type t = f.getField().getGenericType();
+                if (t instanceof ParameterizedType) {
+                    Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                    if (String.class.equals(genericType)) {
+                        riakIndexes.addBinSet(f.getIndexName(), (Set<String>) getFieldValue(f.getField(), obj));
+                    } else if (Integer.class.equals(genericType)) {
+                        riakIndexes.addIntSet(f.getIndexName(), (Set<Integer>) getFieldValue(f.getField(), obj));
                     }
-                } else if (val instanceof String) {
-                    riakIndexes.add(indexName, (String) val);
-                } else {
-                    riakIndexes.add(indexName, (Integer) val);
+                }
+            } else {
+                Object val = getFieldValue(f.getField(), obj);
+                // null is not an index value
+                if (val != null) {
+                    if (val instanceof String) {
+                        riakIndexes.add(f.getIndexName(), (String) val);
+                    } else if (val instanceof Integer) {
+                        riakIndexes.add(f.getIndexName(), (Integer) val);
+                    }
                 }
             }
         }
 
         for (RiakIndexMethod m : indexMethods) {
-            final String indexName = m.getIndexName();
-            Object val = getMethodValue(m.getMethod(), obj);
-            // null is not an index value
-            if (val != null) {
-                if (val instanceof Set<?>) {
-                    try {
-                        @SuppressWarnings("unchecked") final Set<String> indexValues = (Set<String>) val;
-                        riakIndexes.addAllString(indexName, indexValues);
-                    } catch (Exception e) {
-                        @SuppressWarnings("unchecked") final Set<Integer> indexValues = (Set<Integer>) val;
-                        riakIndexes.addAllInt(indexName, indexValues);
+            if (Set.class.isAssignableFrom(m.getType())) {
+                Type t = m.getMethod().getGenericReturnType();
+                if (t instanceof ParameterizedType) {
+                    Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                    if (String.class.equals(genericType)) {
+                        riakIndexes.addBinSet(m.getIndexName(), (Set<String>) getMethodValue(m.getMethod(), obj));
+                    } else if (Integer.class.equals(genericType)) {
+                        riakIndexes.addIntSet(m.getIndexName(), (Set<Integer>) getMethodValue(m.getMethod(), obj));
                     }
-                } else if (val instanceof String) {
-                    riakIndexes.add(indexName, (String) val);
-                } else {
-                    riakIndexes.add(indexName, (Integer) val);
+                }
+            } else {
+                Object val = getMethodValue(m.getMethod(), obj);
+                // null is not an index value
+                if (val != null) {
+                    if (val instanceof String) {
+                        riakIndexes.add(m.getIndexName(), (String) val);
+                    } else if (val instanceof Integer) {
+                        riakIndexes.add(m.getIndexName(), (Integer) val);
+                    }
                 }
             }
         }
@@ -240,24 +246,32 @@ public class AnnotationInfo {
         // copy the index values to the correct fields
         for (RiakIndexField f : indexFields) {
             Set<?> val = null;
-            if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
-                val = indexes.getIntIndex(f.getIndexName());
-            }
 
-            if (String.class.equals(f.getType())) {
-                val = indexes.getBinIndex(f.getIndexName());
-            }
-
-            if (val != null && !val.isEmpty()) {
-                setFieldValue(f.getField(), obj, val.iterator().next());
-            } else if (Set.class.isAssignableFrom(f.getType())) {
-                // If the index is a collection it is expected to be a Set<?>
-                val = indexes.getBinIndex(f.getIndexName());
-                if (val == null || val.isEmpty()) {
-                    val = indexes.getIntIndex(f.getIndexName());
+            if (Set.class.isAssignableFrom(f.getType())) {
+                Type t = f.getField().getGenericType();
+                if (t instanceof ParameterizedType) {
+                    Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                    if (String.class.equals(genericType)) {
+                        val = indexes.getBinIndex(f.getIndexName());
+                    } else if (Integer.class.equals(genericType)) {
+                        val = indexes.getIntIndex(f.getIndexName());
+                    }
                 }
                 if (val != null && !val.isEmpty()) {
                     setFieldValue(f.getField(), obj, val);
+                }
+            } else {
+                if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
+                    val = indexes.getIntIndex(f.getIndexName());
+                } else if (String.class.equals(f.getType())) {
+                    val = indexes.getBinIndex(f.getIndexName());
+                }
+
+                if (val != null && !val.isEmpty()) {
+                    setFieldValue(f.getField(), obj, val.iterator().next()); // take
+                                                                             // the
+                                                                             // first
+                                                                             // value
                 }
             }
         }

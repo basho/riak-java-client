@@ -14,6 +14,8 @@
 package com.basho.riak.client.convert.reflect;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 import com.basho.riak.client.convert.RiakIndex;
@@ -39,6 +41,19 @@ public class RiakIndexMethod {
             (!method.getReturnType().equals(String.class) && !method.getReturnType().equals(Integer.class) && !method.getReturnType().equals(int.class)) &&
             !Set.class.isAssignableFrom(method.getReturnType())) {
             throw new IllegalArgumentException(method.getReturnType().toString());
+        }
+
+        if (Set.class.isAssignableFrom(method.getReturnType())) {
+            // Verify it's a Set<String> or Set<Integer>
+            Type t = method.getReturnType().getGenericSuperclass();
+            if (t instanceof ParameterizedType) {
+                Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
+                    throw new IllegalArgumentException(method.getReturnType().toString());
+                }
+            } else {
+                throw new IllegalArgumentException(method.getReturnType().toString());
+            }
         }
         this.method = method;
         this.indexName = method.getAnnotation(RiakIndex.class).name();
