@@ -45,7 +45,7 @@ public class RiakIndexMethod {
 
         if (Set.class.isAssignableFrom(method.getReturnType())) {
             // Verify it's a Set<String> or Set<Integer>
-            Type t = method.getReturnType().getGenericSuperclass();
+            Type t = method.getGenericReturnType();
             if (t instanceof ParameterizedType) {
                 Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
                 if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {

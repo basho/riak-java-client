@@ -60,18 +60,40 @@ public class RiakIndexConverterTest {
         rIndexes = converter.getIndexes(obj);
 
         assertNotNull("Expected RiakIndexes BinIndexes to be populated", rIndexes.getBinIndex("favorite_languages"));
-        assertNotNull("Expected RiakIndexes IntIndexes to be populated", rIndexes.getBinIndex("other_numbers"));
+        assertNotNull("Expected RiakIndexes IntIndexes to be populated", rIndexes.getIntIndex("other_numbers"));
+        assertNotNull("Expected Method RiakIndexes IntIndexes to be populated",
+                      rIndexes.getIntIndex("calculated_numbers"));
+        assertNotNull("Expected Method RiakIndexes BinIndexes to be populated",
+                      rIndexes.getBinIndex("calculated_strings"));
         assertEquals(langSet.size(), rIndexes.getBinIndex("favorite_languages").size());
         assertEquals(luckySet.size(), rIndexes.getIntIndex("other_numbers").size());
         assertEquals(1, rIndexes.getIntIndex("lucky_numbers").size());
-
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIntIndex("calculated_numbers").size());
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getBinIndex("calculated_strings").size());
     }
 
     private static final class DomainObject {
+        public static final int CALCULATIONS_COUNT = 5;
         @RiakIndex(name = "favorite_languages") public Set<String> favoriteLanguages;
         // int field should end up with first entry of index set
         @RiakIndex(name = "lucky_numbers") public int lucky_number;
         @RiakIndex(name = "other_numbers") public Set<Integer> otherNumbers;
+
+        @SuppressWarnings("unused") @RiakIndex(name = "calculated_numbers") public Set<Integer> getCalculatedNumbers() {
+            final Set<Integer> calculatedNumbers = new HashSet<Integer>();
+            for (int i = 0; i < CALCULATIONS_COUNT; i++) {
+                calculatedNumbers.add(i);
+            }
+            return calculatedNumbers;
+        }
+
+        @SuppressWarnings("unused") @RiakIndex(name = "calculated_strings") public Set<String> getCalculatedStrings() {
+            final Set<String> calculatedStrings = new HashSet<String>();
+            for (int i = 0; i < CALCULATIONS_COUNT; i++) {
+                calculatedStrings.add(String.valueOf(i));
+            }
+            return calculatedStrings;
+        }
     }
 
 }
