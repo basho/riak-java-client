@@ -185,17 +185,20 @@ public class AnnotationInfo {
 
         for (RiakIndexField f : indexFields) {
             if (Set.class.isAssignableFrom(f.getType())) {
-                Type t = f.getField().getGenericType();
+                final Type t = f.getField().getGenericType();
                 if (t instanceof ParameterizedType) {
-                    Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
-                    if (String.class.equals(genericType)) {
-                        riakIndexes.addBinSet(f.getIndexName(), (Set<String>) getFieldValue(f.getField(), obj));
-                    } else if (Integer.class.equals(genericType)) {
-                        riakIndexes.addIntSet(f.getIndexName(), (Set<Integer>) getFieldValue(f.getField(), obj));
+                    final Object val = getFieldValue(f.getField(), obj);
+                    if (val != null) {
+                        final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                        if (String.class.equals(genericType)) {
+                            riakIndexes.addBinSet(f.getIndexName(), (Set<String>) val);
+                        } else if (Integer.class.equals(genericType)) {
+                            riakIndexes.addIntSet(f.getIndexName(), (Set<Integer>) val);
+                        }
                     }
                 }
             } else {
-                Object val = getFieldValue(f.getField(), obj);
+                final Object val = getFieldValue(f.getField(), obj);
                 // null is not an index value
                 if (val != null) {
                     if (val instanceof String) {
@@ -209,17 +212,20 @@ public class AnnotationInfo {
 
         for (RiakIndexMethod m : indexMethods) {
             if (Set.class.isAssignableFrom(m.getType())) {
-                Type t = m.getMethod().getGenericReturnType();
+                final Type t = m.getMethod().getGenericReturnType();
                 if (t instanceof ParameterizedType) {
-                    Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
-                    if (String.class.equals(genericType)) {
-                        riakIndexes.addBinSet(m.getIndexName(), (Set<String>) getMethodValue(m.getMethod(), obj));
-                    } else if (Integer.class.equals(genericType)) {
-                        riakIndexes.addIntSet(m.getIndexName(), (Set<Integer>) getMethodValue(m.getMethod(), obj));
+                    final Object val = getMethodValue(m.getMethod(), obj);
+                    if (val != null) {
+                        final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                        if (String.class.equals(genericType)) {
+                            riakIndexes.addBinSet(m.getIndexName(), (Set<String>) val);
+                        } else if (Integer.class.equals(genericType)) {
+                            riakIndexes.addIntSet(m.getIndexName(), (Set<Integer>) val);
+                        }
                     }
                 }
             } else {
-                Object val = getMethodValue(m.getMethod(), obj);
+                final Object val = getMethodValue(m.getMethod(), obj);
                 // null is not an index value
                 if (val != null) {
                     if (val instanceof String) {
