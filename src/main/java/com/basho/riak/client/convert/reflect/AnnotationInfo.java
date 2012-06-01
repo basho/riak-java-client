@@ -209,7 +209,7 @@ public class AnnotationInfo {
 
         for (RiakIndexMethod m : indexMethods) {
             if (Set.class.isAssignableFrom(m.getType())) {
-                Type t = m.getMethod().getGenericReturnType();
+                Type t = m.getType();
                 if (t instanceof ParameterizedType) {
                     Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
