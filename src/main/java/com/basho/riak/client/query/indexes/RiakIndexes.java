@@ -95,6 +95,23 @@ public class RiakIndexes {
     }
 
     /**
+     * Add a new {@link BinIndex} set of values to the set
+     * 
+     * @param index
+     *            the index name
+     * @param values
+     *            the set of values
+     * @return this
+     */    
+    public RiakIndexes addBinSet(String index, Set<String> values) {
+        for (String s : values) {
+            add(index, s);
+        }
+        return this;
+    }
+    
+    
+    /**
      * Add a new {@link IntIndex} value to the set
      * 
      * @param name
@@ -120,6 +137,23 @@ public class RiakIndexes {
         return this;
     }
 
+    /**
+     * Add a new set of {@link IntIndex} values to the set
+     * 
+     * @param name
+     *            name of the index
+     * @param values
+     *            the set of values
+     * @return this
+     */
+    public RiakIndexes addIntSet(String index, Set<Integer> values) {
+        for (Integer i : values)
+        {
+            add(index, i);
+        }
+        return this;
+    }
+    
     /**
      * Remove a {@link BinIndex}
      * 
