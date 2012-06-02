@@ -28,7 +28,8 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * may be annotated with RiakIndex.
  * </p>
  * <p>
- * <b>NOTE: if there are *multiple* values for the same named index, only the 1st will find it's way into the domain object (atm)</b>
+ * <b>NOTE: if there are *multiple* values for the same named index, only the
+ * 1st will find it's way into the domain object (atm)</b>
  * </p>
  * <p>
  * For example: <code><pre>
@@ -50,7 +51,7 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * @see JSONConverter
  * @see DefaultBucket
  */
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakIndex {
+@Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.FIELD, ElementType.METHOD }) public @interface RiakIndex {
     /**
      * @return the index name
      */

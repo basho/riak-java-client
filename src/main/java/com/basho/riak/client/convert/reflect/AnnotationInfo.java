@@ -14,6 +14,7 @@
 package com.basho.riak.client.convert.reflect;
 
 import static com.basho.riak.client.convert.reflect.ClassUtil.getFieldValue;
+import static com.basho.riak.client.convert.reflect.ClassUtil.getMethodValue;
 import static com.basho.riak.client.convert.reflect.ClassUtil.setFieldValue;
 
 import java.lang.reflect.Field;
@@ -44,6 +45,7 @@ public class AnnotationInfo {
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
     private final List<RiakIndexField> indexFields;
+    private final List<RiakIndexMethod> indexMethods;
     private final Field riakLinksField;
 
     /**
@@ -51,12 +53,14 @@ public class AnnotationInfo {
      * @param usermetaItemFields
      * @param usermetaMapField
      */
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField) {
+    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField,
+            List<RiakIndexField> indexFields, List<RiakIndexMethod> indexMethods, Field riakLinksField) {
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
         validateUsermetaMapField(usermetaMapField);
         this.usermetaMapField = usermetaMapField;
         this.indexFields = indexFields;
+        this.indexMethods = indexMethods;
         validateRiakLinksField(riakLinksField);
         this.riakLinksField = riakLinksField;
     }
@@ -138,7 +142,7 @@ public class AnnotationInfo {
             String val = o == null ? null : o.toString();
             String key = f.getUsermetaDataKey();
             // null is not a user meta datum
-            if(o != null) {
+            if (o != null) {
                 usermetaData.put(key, val);
             }
         }
@@ -166,35 +170,77 @@ public class AnnotationInfo {
         }
 
         // set a catch all map field
-        if(usermetaMapField != null) {
+        if (usermetaMapField != null) {
             setFieldValue(usermetaMapField, obj, localMetaCopy);
         }
     }
 
     /**
      * @return a {@link RiakIndexes} made of the values of the RiakIndex
-     *         annotated fields
+     *         annotated fields and methods. For methods it is expected to be a
+     *         Set of String or Integer
      */
-    public <T> RiakIndexes getIndexes(T obj) {
+    @SuppressWarnings("unchecked") public <T> RiakIndexes getIndexes(T obj) {
         final RiakIndexes riakIndexes = new RiakIndexes();
 
         for (RiakIndexField f : indexFields) {
-            Object val = getFieldValue(f.getField(), obj);
-            // null is not an index value
-            if (val != null) {
-                if (val instanceof String) {
-                    riakIndexes.add(f.getIndexName(), (String) val);
-                } else {
-                    riakIndexes.add(f.getIndexName(), (Integer) val);
+            if (Set.class.isAssignableFrom(f.getType())) {
+                final Type t = f.getField().getGenericType();
+                if (t instanceof ParameterizedType) {
+                    final Object val = getFieldValue(f.getField(), obj);
+                    if (val != null) {
+                        final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                        if (String.class.equals(genericType)) {
+                            riakIndexes.addBinSet(f.getIndexName(), (Set<String>) val);
+                        } else if (Integer.class.equals(genericType)) {
+                            riakIndexes.addIntSet(f.getIndexName(), (Set<Integer>) val);
+                        }
+                    }
+                }
+            } else {
+                final Object val = getFieldValue(f.getField(), obj);
+                // null is not an index value
+                if (val != null) {
+                    if (val instanceof String) {
+                        riakIndexes.add(f.getIndexName(), (String) val);
+                    } else if (val instanceof Integer) {
+                        riakIndexes.add(f.getIndexName(), (Integer) val);
+                    }
                 }
             }
         }
 
+        for (RiakIndexMethod m : indexMethods) {
+            if (Set.class.isAssignableFrom(m.getType())) {
+                final Type t = m.getMethod().getGenericReturnType();
+                if (t instanceof ParameterizedType) {
+                    final Object val = getMethodValue(m.getMethod(), obj);
+                    if (val != null) {
+                        final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                        if (String.class.equals(genericType)) {
+                            riakIndexes.addBinSet(m.getIndexName(), (Set<String>) val);
+                        } else if (Integer.class.equals(genericType)) {
+                            riakIndexes.addIntSet(m.getIndexName(), (Set<Integer>) val);
+                        }
+                    }
+                }
+            } else {
+                final Object val = getMethodValue(m.getMethod(), obj);
+                // null is not an index value
+                if (val != null) {
+                    if (val instanceof String) {
+                        riakIndexes.add(m.getIndexName(), (String) val);
+                    } else if (val instanceof Integer) {
+                        riakIndexes.add(m.getIndexName(), (Integer) val);
+                    }
+                }
+            }
+        }
         return riakIndexes;
     }
 
     /**
-     * TODO handle multi-value indexes with the same name
+     * TODO Set multi-value indexes for methods when fetched back from Riak
      * 
      * @param <T>
      * @param indexes
@@ -206,16 +252,33 @@ public class AnnotationInfo {
         // copy the index values to the correct fields
         for (RiakIndexField f : indexFields) {
             Set<?> val = null;
-            if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
-                val = indexes.getIntIndex(f.getIndexName());
-            }
 
-            if (String.class.equals(f.getType())) {
-                val = indexes.getBinIndex(f.getIndexName());
-            }
+            if (Set.class.isAssignableFrom(f.getType())) {
+                final Type t = f.getField().getGenericType();
+                if (t instanceof ParameterizedType) {
+                    final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                    if (String.class.equals(genericType)) {
+                        val = indexes.getBinIndex(f.getIndexName());
+                    } else if (Integer.class.equals(genericType)) {
+                        val = indexes.getIntIndex(f.getIndexName());
+                    }
+                }
+                if (val != null && !val.isEmpty()) {
+                    setFieldValue(f.getField(), obj, val);
+                }
+            } else {
+                if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
+                    val = indexes.getIntIndex(f.getIndexName());
+                } else if (String.class.equals(f.getType())) {
+                    val = indexes.getBinIndex(f.getIndexName());
+                }
 
-            if (val != null && !val.isEmpty()) {
-                setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+                if (val != null && !val.isEmpty()) {
+                    setFieldValue(f.getField(), obj, val.iterator().next()); // take
+                                                                             // the
+                                                                             // first
+                                                                             // value
+                }
             }
         }
     }
