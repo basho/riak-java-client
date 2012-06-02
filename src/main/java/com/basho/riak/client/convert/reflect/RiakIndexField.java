@@ -28,7 +28,7 @@ public class RiakIndexField {
 
     private final Field field;
     private final String indexName;
-    @SuppressWarnings("rawtypes") private final Class type;
+    private final Class<?> type;
 
     /**
      * The field that is to be wrapped
@@ -46,9 +46,9 @@ public class RiakIndexField {
 
         if (Set.class.isAssignableFrom(field.getType())) {
             // Verify it's a Set<String> or Set<Integer>
-            Type t = field.getGenericType();
+            final Type t = field.getGenericType();
             if (t instanceof ParameterizedType) {
-                Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
                 if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
                     throw new IllegalArgumentException(field.getType().toString());
                 }
@@ -75,7 +75,8 @@ public class RiakIndexField {
         return indexName;
     }
 
-    @SuppressWarnings("rawtypes") public Class getType() {
+    public Class<?> getType() {
         return type;
     }
+
 }

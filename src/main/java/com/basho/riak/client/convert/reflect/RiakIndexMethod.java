@@ -27,7 +27,7 @@ public class RiakIndexMethod {
 
     private final Method method;
     private final String indexName;
-    @SuppressWarnings("rawtypes") private final Class type;
+    private final Class<?> type;
 
     /**
      * The method that is to be wrapped
@@ -45,9 +45,9 @@ public class RiakIndexMethod {
 
         if (Set.class.isAssignableFrom(method.getReturnType())) {
             // Verify it's a Set<String> or Set<Integer>
-            Type t = method.getGenericReturnType();
+            final Type t = method.getGenericReturnType();
             if (t instanceof ParameterizedType) {
-                Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
                 if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
                     throw new IllegalArgumentException(method.getReturnType().toString());
                 }
@@ -74,7 +74,8 @@ public class RiakIndexMethod {
         return indexName;
     }
 
-    @SuppressWarnings("rawtypes") public Class getType() {
+    public Class<?> getType() {
         return type;
     }
+
 }

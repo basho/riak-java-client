@@ -254,9 +254,9 @@ public class AnnotationInfo {
             Set<?> val = null;
 
             if (Set.class.isAssignableFrom(f.getType())) {
-                Type t = f.getField().getGenericType();
+                final Type t = f.getField().getGenericType();
                 if (t instanceof ParameterizedType) {
-                    Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                    final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
                         val = indexes.getBinIndex(f.getIndexName());
                     } else if (Integer.class.equals(genericType)) {
