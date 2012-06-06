@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.introspect.AnnotatedField;
 import org.codehaus.jackson.map.introspect.AnnotatedMember;
@@ -69,23 +70,33 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
     }
 
     /**
-     * Checks if the property has any of the Riak annotations on it, if so it
-     * returns false, otherwise true
+     * Checks if the property has any of the Riak annotations on it or the 
+     * Jackson JsonProperty annotation. 
+     * 
+     * If a Riak annotation is present without the Jackson JsonProperty
+     * annotation, this will return false.
+     * 
+     * If a property has been annotated with both the Jackson JsonProperty
+     * annotation and a Riak annotation, the Jackson annotation takes precedent 
+     * and this will return true.
      * 
      * @param beanPropertyWriter
      *            a {@link BeanPropertyWriter} to check for Riak* annotations
-     * @return true if the property is not Riak annotated, false otherwise
+     * @return true if the property is not Riak annotated or is Jackson
+	 * JsonProperty annotated, false otherwise
      */
     private boolean keepProperty(BeanPropertyWriter beanPropertyWriter) {
         RiakKey key = null;
         RiakUsermeta usermeta = null;
         RiakLinks links = null;
+		JsonProperty jacksonJsonProperty = null;
         AnnotatedMember member = beanPropertyWriter.getMember();
         if (member instanceof AnnotatedField) {
             AnnotatedElement element = member.getAnnotated();
             key = element.getAnnotation(RiakKey.class);
             usermeta = element.getAnnotation(RiakUsermeta.class);
             links = element.getAnnotation(RiakLinks.class);
+            jacksonJsonProperty = element.getAnnotation(JsonProperty.class);
         } else {
             @SuppressWarnings("rawtypes") Class clazz = member.getDeclaringClass();
             Field field;
@@ -94,12 +105,18 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
                 key = field.getAnnotation(RiakKey.class);
                 usermeta = field.getAnnotation(RiakUsermeta.class);
                 links = field.getAnnotation(RiakLinks.class);
+                jacksonJsonProperty = field.getAnnotation(JsonProperty.class);
             } catch (SecurityException e) {
                 throw new RuntimeException(e);
             } catch (NoSuchFieldException e) {
                 // ignore, not a field means not a Riak annotated field.
             }
         }
-        return key == null && usermeta == null && links == null;
+
+        if (jacksonJsonProperty != null) {
+            return true;
+		} else {
+            return key == null && usermeta == null && links == null;
+        }
     }
 }
