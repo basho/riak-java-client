@@ -22,8 +22,7 @@ import java.util.List;
 import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
 
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakConfig;
@@ -31,6 +30,8 @@ import com.basho.riak.client.raw.ClusterClient;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.config.ClusterConfig;
+import com.yammer.metrics.httpclient.InstrumentedClientConnManager;
+import com.yammer.metrics.httpclient.InstrumentedHttpClient;
 
 /**
  * Cluster client that creates a collection of {@link HTTPClientAdapter}
@@ -80,14 +81,14 @@ public class HTTPClusterClient extends ClusterClient<HTTPClientConfig> {
             // RiakClient instances
             // in the cluster
             // add a route per host and a max per route
-            ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
+            InstrumentedClientConnManager cm = new InstrumentedClientConnManager();
             cm.setMaxTotal(maxTotal);
 
             for (HTTPClientConfig node : clusterConfig.getClients()) {
                 if (node.getMaxConnections() != null) {
                     cm.setMaxForRoute(makeRoute(node.getUrl()), node.getMaxConnections());
                 }
-                DefaultHttpClient httpClient = new DefaultHttpClient(cm);
+                InstrumentedHttpClient httpClient = new InstrumentedHttpClient(cm, new BasicHttpParams());
 
                 if (node.getRetryHandler() != null) {
                     httpClient.setHttpRequestRetryHandler(node.getRetryHandler());

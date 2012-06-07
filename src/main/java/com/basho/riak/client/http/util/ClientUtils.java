@@ -25,17 +25,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AllClientPNames;
-import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -50,6 +49,8 @@ import com.basho.riak.client.http.RiakObject;
 import com.basho.riak.client.http.response.RiakExceptionHandler;
 import com.basho.riak.client.http.response.RiakIORuntimeException;
 import com.basho.riak.client.util.CharsetUtils;
+import com.yammer.metrics.httpclient.InstrumentedClientConnManager;
+import com.yammer.metrics.httpclient.InstrumentedHttpClient;
 
 /**
  * Utility functions.
@@ -71,15 +72,16 @@ public class ClientUtils {
     public static HttpClient newHttpClient(RiakConfig config) {
 
         HttpClient http = config.getHttpClient();
-        ClientConnectionManager m;
 
         if (http == null) {
-            m = new ThreadSafeClientConnManager();
+            InstrumentedClientConnManager m = new InstrumentedClientConnManager();
             if (config.getMaxConnections() != null) {
-                ((ThreadSafeClientConnManager) m).setMaxTotal(config.getMaxConnections());
-                ((ThreadSafeClientConnManager) m).setDefaultMaxPerRoute(config.getMaxConnections());
+                m.setMaxTotal(config.getMaxConnections());
+                m.setDefaultMaxPerRoute(config.getMaxConnections());
             }
-            http = new DefaultHttpClient(m);
+
+            HttpParams params = new BasicHttpParams();
+            http = new InstrumentedHttpClient((InstrumentedClientConnManager) m, params);
 
             if (config.getRetryHandler() != null) {
                 ((DefaultHttpClient) http).setHttpRequestRetryHandler(config.getRetryHandler());
