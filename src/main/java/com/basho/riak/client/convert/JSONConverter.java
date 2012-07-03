@@ -104,7 +104,7 @@ public class JSONConverter<T> implements Converter<T> {
             if (key == null) {
                 throw new NoKeySpecifedException(domainObject);
             }
-
+            
             final byte[] value = objectMapper.writeValueAsBytes(domainObject);
             Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);
             RiakIndexes indexes = riakIndexConverter.getIndexes(domainObject);
@@ -147,6 +147,7 @@ public class JSONConverter<T> implements Converter<T> {
         try {
             T domainObject = objectMapper.readValue(json, clazz);
             KeyUtil.setKey(domainObject, riakObject.getKey());
+            VClockUtil.setVClock(domainObject, riakObject.getVClock());
             usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
             riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexes()),
                                                domainObject);
