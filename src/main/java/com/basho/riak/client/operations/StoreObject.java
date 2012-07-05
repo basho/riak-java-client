@@ -25,6 +25,7 @@ import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.VClockUtil;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
@@ -54,6 +55,7 @@ public class StoreObject<T> implements RiakOperation<T> {
     private final StoreMeta.Builder storeMetaBuilder = new StoreMeta.Builder();
 
     private boolean returnBody = false;
+    private boolean doNotFetch = false;
 
     private Mutation<T> mutation;
     private ConflictResolver<T> resolver;
@@ -90,6 +92,10 @@ public class StoreObject<T> implements RiakOperation<T> {
      * result is treated like a fetch (converted, conflict resolved) and the
      * resultant object returned.
      * 
+     * If you wish to eliminate the fetch and conflict resolution, calling 
+     * <code>withoutFetch()</code> prior to this will do so. 
+     * 
+     * 
      * @return the result of the store if <code>returnBody</code> is
      *         <code>true</code>, <code>null</code> if <code>returnBody</code>
      *         is <code>false</code>
@@ -98,9 +104,22 @@ public class StoreObject<T> implements RiakOperation<T> {
      *         fails because a match exists
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
-        final T resolved = fetchObject.execute();
+        T resolved = null;
+        VClock vclock = null;
+        
+        if (!doNotFetch) {
+            resolved = fetchObject.execute();
+            vclock = fetchObject.getVClock();
+        }
+        
         final T mutated = mutation.apply(resolved);
-        final IRiakObject o = converter.fromDomain(mutated, fetchObject.getVClock());
+        
+        if (doNotFetch) {
+            vclock = VClockUtil.getVClock(mutated);
+        }
+        
+        
+        final IRiakObject o = converter.fromDomain(mutated, vclock);
         final StoreMeta storeMeta = storeMetaBuilder.returnBody(returnBody).build();
 
         // if non match and if not modified require extra data for the HTTP API
@@ -458,6 +477,30 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public StoreObject<T> withValue(final T value) {
         this.mutation = new ClobberMutation<T>(value);
+        return this;
+    }
+    
+    /**
+     * Eliminates fetching the existing value before storing the current one.
+     * 
+     * The original client design was based around the StoreObject retrieving 
+     * an existing value from Riak, resolving siblings, applying a Mutation, then
+     * finally storing the modified object to Riak. In several use cases this is
+     * not optimal.
+     * 
+     * By calling this method prior to <cod>execute()</code> the fetch and 
+     * conflict resolution will not occur. 
+     * 
+     * Care must be taken when using this option:
+     * 
+     * 1) <code>null</code> will be passed to the {@link Mutation} object (if 
+     *    you are using the default {@link ClobberMutation} this is fine).
+     * 2) A vector clock should be provided by the object returned from your
+     *    {@link Mutation}. 
+     * 
+     */
+    public StoreObject<T> withoutFetch() {
+        this.doNotFetch = true;
         return this;
     }
 }

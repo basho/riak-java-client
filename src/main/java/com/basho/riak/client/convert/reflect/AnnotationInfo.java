@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.basho.riak.client.RiakLink;
+import com.basho.riak.client.cap.BasicVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.UsermetaField;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 
@@ -40,18 +42,20 @@ import com.basho.riak.client.query.indexes.RiakIndexes;
 public class AnnotationInfo {
 
     private static final String NO_RIAK_KEY_FIELD_PRESENT = "no riak key field present";
+    private static final String NO_RIAK_VCLOCK_FIELD_PRESENT = "no riak vclock field present";
     private final Field riakKeyField;
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
     private final List<RiakIndexField> indexFields;
     private final Field riakLinksField;
+    private final Field riakVClockField;
 
     /**
      * @param riakKeyField
      * @param usermetaItemFields
      * @param usermetaMapField
      */
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField) {
+    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField, Field riakVClockField) {
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
         validateUsermetaMapField(usermetaMapField);
@@ -59,6 +63,7 @@ public class AnnotationInfo {
         this.indexFields = indexFields;
         validateRiakLinksField(riakLinksField);
         this.riakLinksField = riakLinksField;
+        this.riakVClockField = riakVClockField;
     }
 
     /**
@@ -129,6 +134,46 @@ public class AnnotationInfo {
         setFieldValue(riakKeyField, obj, key);
     }
 
+    public boolean hasRiakVClock() {
+        return riakVClockField != null;
+    }
+    
+    public <T> VClock getRiakVClock(T obj) {
+        if (!hasRiakVClock()) {
+            throw new IllegalStateException(NO_RIAK_VCLOCK_FIELD_PRESENT);
+        }
+        
+        VClock vclock;
+        
+        // We allow the annotated field to be either an actual VClock, or
+        // a byte array. This is enforced in the AnnotationScanner
+        
+        if (riakVClockField.getType().isAssignableFrom(VClock.class)) {
+            vclock = (VClock) getFieldValue(riakVClockField, obj);
+        } else {
+            vclock = new BasicVClock((byte[]) getFieldValue(riakVClockField, obj));
+        }
+        
+        return vclock;
+        
+    }
+    
+    public <T> void setRiakVClock(T obj, VClock vclock) {
+        if (!hasRiakVClock()) {
+            throw new IllegalStateException(NO_RIAK_VCLOCK_FIELD_PRESENT);
+        }
+            
+        // We allow the annotated field to be either an actual VClock, or
+        // a byte array. This is enforced in the AnnotationScanner
+        
+        if (riakVClockField.getType().isAssignableFrom(VClock.class)) {
+            setFieldValue(riakVClockField, obj, vclock);
+        } else {
+            setFieldValue(riakVClockField, obj, vclock.getBytes());
+        }
+    }
+    
+    
     @SuppressWarnings({ "unchecked", "rawtypes" }) public <T> Map<String, String> getUsermetaData(T obj) {
         final Map<String, String> usermetaData = new LinkedHashMap<String, String>();
         Map<String, String> objectMetaMap = null;
