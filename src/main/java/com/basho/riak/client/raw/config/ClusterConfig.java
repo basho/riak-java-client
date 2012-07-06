@@ -120,7 +120,7 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
     }
 
     /**
-     * Get the frequency with which to check tos ee if unhealthy nodes have recovered (in millis)
+     * Get the frequency with which to check to see if unhealthy nodes have recovered (in millis)
      *
      * @return the frequency with which to check (in millis)
      */
