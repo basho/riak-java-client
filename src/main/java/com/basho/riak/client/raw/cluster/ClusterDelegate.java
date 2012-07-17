@@ -25,6 +25,7 @@ import com.basho.riak.client.raw.config.ClusterConfig;
  * @see ClusterObserver
  */
 public class ClusterDelegate {
+    private static double HEALTH_PCT = .5d;
 
     private List<RawClient> healthy;
     private final CopyOnWriteArrayList<RawClient> unhealthy;
@@ -39,6 +40,14 @@ public class ClusterDelegate {
      *                      (health check thread configuration, observers to call back, etc)
      */
     public ClusterDelegate(final List<RawClient> cluster, final ClusterConfig<?> clusterConfig) {
+        int actualClusterSize = cluster.size();
+        int expectedClusterSize = clusterConfig.getClients().size();
+        if (actualClusterSize / new Double(expectedClusterSize).doubleValue() < HEALTH_PCT) {
+          throw new IllegalStateException("Cluster would come up in unhealthy state. " +
+            " Number of health nodes less than half the number of expected nodes");
+        }
+
+
         this.healthy = Collections.unmodifiableList(cluster);
         this.unhealthy = new CopyOnWriteArrayList<RawClient>();
         this.clientResolver = new ClientResolver();
@@ -46,6 +55,8 @@ public class ClusterDelegate {
         this.healthCheckExecutor = Executors.newScheduledThreadPool(1);
         this.healthCheckExecutor.scheduleAtFixedRate(new HealthChecker(), 0, clusterConfig.getHealthCheckFrequencyMillis(), TimeUnit.MILLISECONDS);
         this.mutex = new Object();
+
+        notifyObservers();
     }
 
     public List<RawClient> getHealthyClients() {
@@ -74,6 +85,7 @@ public class ClusterDelegate {
      */
     public <T> T execute(final ClusterTask<T> task) throws IOException, ClusterTaskException {
         final RawClient client = clientResolver.getNextClient(healthy);
+
         try {
             return task.call(client);
         } catch (IOException ioe) {

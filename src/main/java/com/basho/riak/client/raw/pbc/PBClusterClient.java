@@ -22,6 +22,7 @@ import java.util.concurrent.Semaphore;
 import com.basho.riak.client.raw.ClusterClient;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.Transport;
+import com.basho.riak.client.raw.cluster.ClusterObserver;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakConnectionPool;
@@ -65,10 +66,15 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
         }
 
         for (PBClientConfig node : clusterConfig.getClients()) {
+          try {
             final RiakConnectionPool hostPool = makePool(clusterSemaphore, node);
             hostPool.start();
             clients.add(new PBClientAdapter(new RiakClient(hostPool)));
+          } catch (IOException ioe) {
+            //-- Skip this node
+          }
         }
+      
         return clients.toArray(new RawClient[clients.size()]);
     }
 
