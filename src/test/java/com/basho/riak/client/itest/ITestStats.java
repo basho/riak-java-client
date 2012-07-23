@@ -17,6 +17,7 @@ package com.basho.riak.client.itest;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 
@@ -33,6 +34,11 @@ public abstract class ITestStats
     @Before public void setUp() throws RiakException
     {
         this.client = getClient();
+    }
+    
+    @After public void tearDown() throws RiakException
+    {
+        this.client.shutdown();
     }
     
     protected abstract IRiakClient getClient() throws RiakException;

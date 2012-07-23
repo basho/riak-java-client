@@ -16,7 +16,6 @@ package com.basho.riak.client.raw;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.bucket.BucketProperties;
@@ -34,22 +33,22 @@ import com.basho.riak.client.raw.query.indexes.IndexQuery;
  * A {@link RawClient} that can be configured with a cluster of Riak clients
  * that connect to different Riak nodes.
  * 
- * It uses a very basic modulus round robin algorithm to select the client to
- * use.
+ * By default it uses a very basic modulus round robin algorithm to select the 
+ * client to use. This behavior can be modified by supplying a different
+ * {@link DelegateProvider} in the {@link ClusterConfig}
  * 
  * @author russell
  * 
  */
 public abstract class ClusterClient<T extends Configuration> implements RawClient {
 
-    private final RawClient[] cluster;
-    private final int clusterSize;
-    private final AtomicInteger counter;
+    private final DelegateProvider delegateProvider;
 
     public ClusterClient(ClusterConfig<T> clusterConfig) throws IOException {
-        cluster = fromConfig(clusterConfig);
-        clusterSize = cluster.length;
-        counter = new AtomicInteger(0);
+        delegateProvider = clusterConfig.getDelegateProvider();
+        
+        delegateProvider.init(fromConfig(clusterConfig));
+        
     }
 
     /**
@@ -60,20 +59,6 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      */
     protected abstract RawClient[] fromConfig(ClusterConfig<T> clusterConfig) throws IOException;
 
-    /**
-     * Get a {@link RawClient} delegate from the array that makes up the
-     * cluster, basic round robin.
-     * 
-     * TODO abstract this out to a strategy so users can provide alternative
-     * load balancing/client selection strategies
-     * 
-     * @return a {@link RawClient} to be a delegate for the requested operation.
-     */
-    private RawClient getDelegate() {
-        int delegateIndex = Math.abs(counter.getAndIncrement() % clusterSize);
-        return cluster[delegateIndex];
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -81,8 +66,13 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * java.lang.String)
      */
     public RiakResponse head(String bucket, String key, FetchMeta fetchMeta) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.head(bucket, key, fetchMeta);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().head(bucket, key, fetchMeta);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
     }
 
     /*
@@ -92,8 +82,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * java.lang.String)
      */
     public RiakResponse fetch(String bucket, String key) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.fetch(bucket, key);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().fetch(bucket, key);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -103,16 +99,28 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * java.lang.String, int)
      */
     public RiakResponse fetch(String bucket, String key, int readQuorum) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.fetch(bucket, key, readQuorum);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().fetch(bucket, key, readQuorum);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#fetch(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta)
      */
     public RiakResponse fetch(String bucket, String key, FetchMeta fetchMeta) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.fetch(bucket, key, fetchMeta);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().fetch(bucket, key, fetchMeta);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -123,8 +131,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * , com.basho.riak.client.raw.StoreMeta)
      */
     public RiakResponse store(IRiakObject object, StoreMeta storeMeta) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.store(object, storeMeta);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().store(object, storeMeta);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -135,8 +149,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * )
      */
     public void store(IRiakObject object) throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.store(object);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().store(object);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -146,8 +166,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * java.lang.String)
      */
     public void delete(String bucket, String key) throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.delete(bucket, key);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().delete(bucket, key);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -157,8 +183,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * java.lang.String, int)
      */
     public void delete(String bucket, String key, int deleteQuorum) throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.delete(bucket, key, deleteQuorum);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().delete(bucket, key, deleteQuorum);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -168,8 +200,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * java.lang.String, com.basho.riak.client.raw.DeleteMeta)
      */
     public void delete(String bucket, String key, DeleteMeta deleteMeta) throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.delete(bucket, key, deleteMeta);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().delete(bucket, key, deleteMeta);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -178,8 +216,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * @see com.basho.riak.client.raw.RawClient#listBuckets()
      */
     public Set<String> listBuckets() throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.listBuckets();
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().listBuckets();
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -188,8 +232,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * @see com.basho.riak.client.raw.RawClient#fetchBucket(java.lang.String)
      */
     public BucketProperties fetchBucket(String bucketName) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.fetchBucket(bucketName);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().fetchBucket(bucketName);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -199,8 +249,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * com.basho.riak.client.bucket.BucketProperties)
      */
     public void updateBucket(String name, BucketProperties bucketProperties) throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.updateBucket(name, bucketProperties);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().updateBucket(name, bucketProperties);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -209,8 +265,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * @see com.basho.riak.client.raw.RawClient#listKeys(java.lang.String)
      */
     public Iterable<String> listKeys(String bucketName) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.listKeys(bucketName);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().listKeys(bucketName);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -221,8 +283,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * .query.LinkWalkSpec)
      */
     public WalkResult linkWalk(LinkWalkSpec linkWalkSpec) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.linkWalk(linkWalkSpec);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().linkWalk(linkWalkSpec);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -233,8 +301,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * .query.MapReduceSpec)
      */
     public MapReduceResult mapReduce(MapReduceSpec spec) throws IOException, MapReduceTimeoutException {
-        final RawClient delegate = getDelegate();
-        return delegate.mapReduce(spec);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().mapReduce(spec);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -243,8 +317,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * @see com.basho.riak.client.raw.RawClient#generateAndSetClientId()
      */
     public byte[] generateAndSetClientId() throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.generateAndSetClientId();
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().generateAndSetClientId();
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -253,8 +333,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * @see com.basho.riak.client.raw.RawClient#setClientId(byte[])
      */
     public void setClientId(byte[] clientId) throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.setClientId(clientId);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().setClientId(clientId);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /*
@@ -263,30 +349,49 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      * @see com.basho.riak.client.raw.RawClient#getClientId()
      */
     public byte[] getClientId() throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.getClientId();
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().getClientId();
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#ping()
      */
     public void ping() throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.ping();
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            delegate.getClient().ping();
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#fetchIndex(com.basho.riak.client.raw.query.IndexQuery)
      */
     public List<String> fetchIndex(IndexQuery indexQuery) throws IOException {
-        final RawClient delegate = getDelegate();
-        return delegate.fetchIndex(indexQuery);
+        final DelegateWrapper delegate = delegateProvider.getDelegate();
+        try {
+            return delegate.getClient().fetchIndex(indexQuery);
+        } catch (IOException e) {
+            delegateProvider.markAsBad(delegate, e);
+            throw(e);
+        }
+        
     }
 
     public void shutdown(){
-        for(RawClient rc : cluster){
-            rc.shutdown();
+        for(DelegateWrapper dw : delegateProvider.getAllDelegates()){
+            dw.getClient().shutdown();
         }
+        delegateProvider.stop();
     }
     
     /* (non-Javadoc)
@@ -294,11 +399,15 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
      */
     public NodeStats stats() throws IOException {
         NodeStats nodeStats = null;
-        for(RawClient rc : cluster) {
-            if (nodeStats == null)
-                nodeStats = rc.stats();
-            else
-                nodeStats.add(rc.stats());
+        for(DelegateWrapper dw : delegateProvider.getAllDelegates()) {
+            try {
+                if (nodeStats == null)
+                    nodeStats = dw.getClient().stats();
+                else
+                    nodeStats.add(dw.getClient().stats());
+            } catch (IOException e) {
+                // no-op
+            }
         }
         return nodeStats;
     }
