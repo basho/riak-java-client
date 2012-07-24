@@ -275,7 +275,7 @@ public class RiakClient implements RiakMessageCodes {
 	}
 
 	private FetchResponse processFetchReply(RiakConnection c, ByteString bucket, ByteString key) throws IOException {
-	    byte[] rep = c.receive(MSG_GetResp);
+      byte[] rep = c.receive(MSG_GetResp);
 
         if (rep == null) {
             return new FetchResponse(NO_RIAK_OBJECTS, false, null);
@@ -290,7 +290,7 @@ public class RiakClient implements RiakMessageCodes {
         }
 
         boolean unchanged = resp.getUnchanged();
-
+    
         return new FetchResponse(out, unchanged, vclock.toByteArray());
 	}
 

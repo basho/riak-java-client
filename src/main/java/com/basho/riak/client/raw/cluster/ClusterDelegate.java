@@ -145,11 +145,8 @@ public class ClusterDelegate {
                 }
                 final List<RawClient> recovering = new ArrayList<RawClient>();
                 for (final RawClient client : unhealthy) {
-                    try {
-                        client.ping();
-                        recovering.add(client);
-                    } catch (IOException ioe) {
-                        // still broken
+                    if (isClientHealthy(client)){
+                      recovering.add(client);
                     }
                 }
                 synchronized (mutex) {
@@ -163,8 +160,19 @@ public class ClusterDelegate {
                 }
                 notifyObservers();
             } catch (RuntimeException re) {
-                // keep runtime exceptions from killing scheduled thread
             }
+        }
+      
+        public boolean isClientHealthy(RawClient client) {
+          try {
+            //-- First check to see if client is up
+            client.ping();
+            //-- Check to see if client has joined ring by check to see if it has any buckets
+            return !client.listBuckets().isEmpty();
+          } catch (IOException ioe) {
+            return false;
+          }
+          
         }
     }
 
