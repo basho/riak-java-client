@@ -180,7 +180,7 @@ public class DefaultDelegateProvider implements DelegateProvider
             }
 
             if (keepChecking)
-                checker.schedule(this, delay);
+                checker.schedule(new HealthCheck(delay), delay);
         }
     }
     
