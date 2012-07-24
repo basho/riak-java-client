@@ -113,9 +113,9 @@ public class CharsetUtilsTest {
      * .
      */
     @Test public void addUTF8CharsetToContentType() {
-        assertTrue("Expceted UTF-8 charset to be added to content type",
-                   Constants.CTYPE_JSON_UTF8.equalsIgnoreCase(CharsetUtils.addUtf8Charset(Constants.CTYPE_JSON)));
-
+        
+		assertEquals("application/json;charset=utf-8", CharsetUtils.addUtf8Charset(Constants.CTYPE_JSON));
+		
         // null gets a default
         assertEquals("text/plain;charset=utf-8", CharsetUtils.addUtf8Charset(null));
 
