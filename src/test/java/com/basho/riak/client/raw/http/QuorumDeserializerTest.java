@@ -16,9 +16,9 @@ package com.basho.riak.client.raw.http;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.module.SimpleModule;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ public class QuorumDeserializerTest {
     }
 
     /**
-     * Test method for {@link com.basho.riak.client.raw.http.QuorumDeserializer#deserialize(org.codehaus.jackson.JsonParser, org.codehaus.jackson.map.DeserializationContext)}.
+     * Test method for {@link com.basho.riak.client.raw.http.QuorumDeserializer#deserialize(com.fasterxml.jackson.core.JsonParser, com.fasterxml.jackson.databind.DeserializationContext)}.
      */
     @Test public void deserialize() throws Exception {
         final String json = "{\"w\":\"quorum\", \"r\": \"all\", \"rw\": \"default\", \"dw\": \"one\", \"pr\": 3}";

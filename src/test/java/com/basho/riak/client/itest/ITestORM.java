@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -156,9 +156,9 @@ public abstract class ITestORM extends ITestBucket {
         JsonNode value = new ObjectMapper().readTree(iro.getValueAsString());
 
         assertEquals(3, value.size());
-        assertEquals(username, value.get("username").getTextValue());
-        assertEquals(email, value.get("emailAddress").getTextValue());
-        assertEquals(null, value.get("shoeSize").getTextValue());
+        assertEquals(username, value.get("username").asText());
+        assertEquals(email, value.get("emailAddress").asText());
+        assertEquals(null, value.get("shoeSize").asText());
         assertEquals(2, meta.size());
         assertEquals(languageCode, meta.get("language-pref"));
         assertEquals(blue, meta.get(favColor));

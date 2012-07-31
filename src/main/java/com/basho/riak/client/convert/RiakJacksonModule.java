@@ -13,8 +13,8 @@
  */
 package com.basho.riak.client.convert;
 
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.Module;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.Module;
 
 /**
  * A <a href="">Jackson</a> {@link Module} that customises Jackson's object

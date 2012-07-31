@@ -13,7 +13,7 @@
  */
 package com.megacorp.commerce;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.basho.riak.client.convert.RiakKey;
 

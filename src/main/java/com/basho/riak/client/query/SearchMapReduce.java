@@ -15,8 +15,8 @@ package com.basho.riak.client.query;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.basho.riak.client.raw.RawClient;
 

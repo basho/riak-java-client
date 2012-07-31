@@ -77,7 +77,7 @@ public class ConversionUtilTest {
         assertNotNull(props);
         assertEquals(true, props.getAllowSiblings());
         assertEquals(false, props.getLastWriteWins());
-        assertNull(props.getBackend());
+        assertEquals(props.getBackend(),"");
         assertEquals(50, props.getBigVClock().intValue());
         assertEquals(NamedErlangFunction.STD_CHASH_FUN, props.getChashKeyFunction());
         assertEquals(new Quorum(Quora.QUORUM), props.getDW());

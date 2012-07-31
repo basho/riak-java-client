@@ -19,8 +19,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.json.JSONArray;
 
 import com.basho.riak.client.convert.ConversionException;
@@ -100,7 +100,7 @@ public class PBMapReduceResult implements MapReduceResult {
      */
     public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
         try {
-            return objectMapper.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
+            return objectMapper.readValue(getResultRaw(), objectMapper.getTypeFactory().constructCollectionType(Collection.class, resultType));
         } catch (IOException e) {
             throw new ConversionException(e);
         }
