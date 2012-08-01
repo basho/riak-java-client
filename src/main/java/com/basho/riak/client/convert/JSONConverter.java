@@ -159,4 +159,13 @@ public class JSONConverter<T> implements Converter<T> {
             throw new ConversionException(e);
         }
     }
+    
+    /**
+     * Returns the {@link ObjectMapper} being used.
+     * This is a convenience method to allow changing its behavior.
+     * @return The Jackson ObjectMapper
+     */
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
 }
