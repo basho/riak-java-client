@@ -89,14 +89,17 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
         RiakKey key = null;
         RiakUsermeta usermeta = null;
         RiakLinks links = null;
+        RiakIndex index = null;
         RiakVClock vclock = null;
 		JsonProperty jacksonJsonProperty = null;
+
         AnnotatedMember member = beanPropertyWriter.getMember();
         if (member instanceof AnnotatedField) {
             AnnotatedElement element = member.getAnnotated();
             key = element.getAnnotation(RiakKey.class);
             usermeta = element.getAnnotation(RiakUsermeta.class);
             links = element.getAnnotation(RiakLinks.class);
+            index = element.getAnnotation(RiakIndex.class);
             vclock = element.getAnnotation(RiakVClock.class);
             jacksonJsonProperty = element.getAnnotation(JsonProperty.class);
         } else {
@@ -107,6 +110,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
                 key = field.getAnnotation(RiakKey.class);
                 usermeta = field.getAnnotation(RiakUsermeta.class);
                 links = field.getAnnotation(RiakLinks.class);
+                index = field.getAnnotation(RiakIndex.class);
                 vclock = field.getAnnotation(RiakVClock.class);
                 jacksonJsonProperty = field.getAnnotation(JsonProperty.class);
             } catch (SecurityException e) {
@@ -119,7 +123,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
         if (jacksonJsonProperty != null) {
             return true;
 		} else {
-            return key == null && usermeta == null && links == null && vclock == null;
+            return key == null && usermeta == null && links == null && vclock == null && index == null;
         }
     }
 }
