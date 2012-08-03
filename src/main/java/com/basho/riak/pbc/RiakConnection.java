@@ -47,22 +47,25 @@ class RiakConnection
 	private byte[] clientId;
 	private volatile long idleStart;
 
-	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool) throws IOException {
-		this(new InetSocketAddress(addr, port), bufferSizeKb, pool, 0);
+	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool, final long connectTimeoutMillis, final int requestTimeoutMillis) throws IOException {
+		this(new InetSocketAddress(addr, port), bufferSizeKb, pool, connectTimeoutMillis, requestTimeoutMillis);
 	}
 
-	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool, final long timeoutMillis) throws IOException {
-		this(new InetSocketAddress(addr, port), bufferSizeKb, pool, timeoutMillis);
-	}
-
-	public RiakConnection(SocketAddress addr, int bufferSizeKb, final RiakConnectionPool pool, final long timeoutMillis) throws IOException {
-		if (timeoutMillis > Integer.MAX_VALUE || timeoutMillis < Integer.MIN_VALUE) {
+	public RiakConnection(SocketAddress addr, int bufferSizeKb, final RiakConnectionPool pool, final long connectTimeoutMillis, final int requestTimeoutMillis) throws IOException {
+        
+		if (connectTimeoutMillis > Integer.MAX_VALUE || connectTimeoutMillis < Integer.MIN_VALUE) {
 			throw new IllegalArgumentException("Cannot cast timeout to int without changing value");
 		}
 
 		this.pool = pool;
 		sock = new Socket();
-		sock.connect(addr, (int) timeoutMillis);
+        
+        // With the original Java IO the SO_TIMEOUT value is used for read/write operations
+        if (requestTimeoutMillis > 0) {
+            sock.setSoTimeout(requestTimeoutMillis);
+        }
+		
+        sock.connect(addr, (int) connectTimeoutMillis);
 
 		sock.setSendBufferSize(1024 * bufferSizeKb);
 

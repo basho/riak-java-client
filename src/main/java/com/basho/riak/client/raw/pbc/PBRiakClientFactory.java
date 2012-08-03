@@ -67,7 +67,8 @@ public class PBRiakClientFactory implements RiakClientFactory {
                                                                hostAddress, conf.getPort(),
                                                                conf.getConnectionWaitTimeoutMillis(),
                                                                conf.getSocketBufferSizeKb(),
-                                                               conf.getIdleConnectionTTLMillis());
+                                                               conf.getIdleConnectionTTLMillis(),
+                                                               conf.getRequestTimeoutMillis());
 
         pool.start();
         return new PBClientAdapter(new RiakClient(pool));

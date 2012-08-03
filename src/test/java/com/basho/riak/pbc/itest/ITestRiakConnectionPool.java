@@ -59,7 +59,7 @@ public class ITestRiakConnectionPool {
         final InetAddress host = InetAddress.getByName(HOST);
         byte[] clientId = new byte[] { 13, 45, 99, 2 };
         // create a pool
-        final RiakConnectionPool pool = new RiakConnectionPool(0, 1, host, PORT, 1000, 16, 5000);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 1, host, PORT, 1000, 16, 5000, 0);
         pool.start();
         // get a connection
         PublicRiakConnection wrapper = new PublicRiakConnection(pool.getConnection(clientId));
@@ -80,7 +80,7 @@ public class ITestRiakConnectionPool {
         final InetAddress host = InetAddress.getByName(HOST);
         byte[] clientId = new byte[] { 13, 45, 99, 2 };
         // create a pool
-        final RiakConnectionPool pool = new RiakConnectionPool(1, 1, host, PORT, 1000, 16, 5000);
+        final RiakConnectionPool pool = new RiakConnectionPool(1, 1, host, PORT, 1000, 16, 5000, 0);
         pool.start();
         // get a connection
         PublicRiakConnection wrapper = new PublicRiakConnection(pool.getConnection(clientId));
@@ -108,7 +108,7 @@ public class ITestRiakConnectionPool {
         byte[] clientId = new byte[] { 13, 45, 99, 2 };
         final int reapTime = 500;
         // create a pool
-        final RiakConnectionPool pool = new RiakConnectionPool(1, 1, host, PORT, 1000, 16, reapTime);
+        final RiakConnectionPool pool = new RiakConnectionPool(1, 1, host, PORT, 1000, 16, reapTime, 0);
         pool.start();
         // get a connection
         PublicRiakConnection wrapper = new PublicRiakConnection(pool.getConnection(clientId));
@@ -157,7 +157,7 @@ public class ITestRiakConnectionPool {
     private void doConcurrentAcquire(int numTasks, int maxConnections) throws Exception {
         final InetAddress host = InetAddress.getByName(HOST);
         // create a pool
-        final RiakConnectionPool pool = new RiakConnectionPool(0, maxConnections, host, PORT, 1000, 16, 0);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, maxConnections, host, PORT, 1000, 16, 0, 0);
         pool.start();
 
         Collection<Future<PublicRiakConnection>> results = Executors.newFixedThreadPool(numTasks).invokeAll(makeTasks(numTasks,
@@ -210,7 +210,7 @@ public class ITestRiakConnectionPool {
 
     @Test public void shutDownWorksAfterError() throws Exception {
         final InetAddress host = InetAddress.getByName(HOST);
-        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000, 0);
         pool.start();
 
         assertEquals("RUNNING", pool.getPoolState());
@@ -238,7 +238,7 @@ public class ITestRiakConnectionPool {
 
     @Test public void shutdownWorksAfterSuccessfulMapReduce() throws Exception {
         final InetAddress host = InetAddress.getByName(HOST);
-        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000);
+        final RiakConnectionPool pool = new RiakConnectionPool(0, 10, host, PORT, 1000, 16, 5000, 0);
         pool.start();
         assertEquals("RUNNING", pool.getPoolState());
         RiakClient delegate = new RiakClient(pool);

@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.basho.riak.client.RiakLink;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 
 /**
@@ -59,6 +60,26 @@ public class AnnotationHelper {
         return obj;
     }
 
+    public <T> T setRiakVClock(T obj, VClock vclock) {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        if (annotationInfo.hasRiakVClock()) {
+            annotationInfo.setRiakVClock(obj, vclock);
+        }
+        
+        return obj;
+    }
+    
+    public <T> VClock getRiakVClock(T obj) {
+        VClock vclock = null;
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        
+        if (annotationInfo.hasRiakVClock()) {
+            vclock = annotationInfo.getRiakVClock(obj);
+        }
+        
+        return vclock;
+    }
+    
     public <T> Map<String, String> getUsermetaData(T obj) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
         return annotationInfo.getUsermetaData(obj);

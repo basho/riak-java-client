@@ -31,6 +31,7 @@ public class PBClientConfig implements Configuration {
     private final int initialPoolSize;
     private final long idleConnectionTTLMillis;
     private final long connectionWaitTimeoutMillis;
+    private final int requestTimeoutMillis;
 
     /**
      * Creates a new {@link PBClientConfig} instance. Use the {@link Builder}
@@ -54,9 +55,12 @@ public class PBClientConfig implements Configuration {
      * @param connectionWaitTimeoutMillis
      *            How many milliseconds to block trying to obtain a connection
      *            from the pool before failing
+     * @param requestTimeoutMillis 
+     *            How many milliseconds to block/wait trying to read/write from/to
+     *            a connection (This is the SO_TIMEOUT parameter on the Socket)
      */
     private PBClientConfig(int socketBufferSizeKb, String host, int port, int poolSize, int initialPoolSize,
-            long idleConnectionTTLMillis, long connectionWaitTimeoutMillis) {
+            long idleConnectionTTLMillis, long connectionWaitTimeoutMillis, int requestTimeoutMillis) {
         this.socketBufferSizeKb = socketBufferSizeKb;
         this.host = host;
         this.port = port;
@@ -64,6 +68,7 @@ public class PBClientConfig implements Configuration {
         this.initialPoolSize = initialPoolSize;
         this.idleConnectionTTLMillis = idleConnectionTTLMillis;
         this.connectionWaitTimeoutMillis = connectionWaitTimeoutMillis;
+        this.requestTimeoutMillis = requestTimeoutMillis;
     }
 
     /**
@@ -127,6 +132,15 @@ public class PBClientConfig implements Configuration {
     public long getConnectionWaitTimeoutMillis() {
         return connectionWaitTimeoutMillis;
     }
+    
+    /**
+     * @return the how long to wait/block (in milliseconds) when reading/writing 
+     *         from/to a connection. Note that the default 0 is no timeout
+     */
+    
+    public int getRequestTimeoutMillis() {
+        return requestTimeoutMillis;
+    }
 
     /**
      * Builder for the {@link PBClientConfig} Has the following default values:
@@ -165,6 +179,10 @@ public class PBClientConfig implements Configuration {
      * <td>1000 (if a connection cannot be acquired within this time and
      * exception is thrown)</td>
      * </tr>
+     * <tr>
+     * <td>requestTimeoutMillis</td>
+     * <td>0 (no timeout)</td>
+     * </tr>
      * </table>
      * 
      * @author russell
@@ -177,10 +195,12 @@ public class PBClientConfig implements Configuration {
         private int initialPoolSize = 0;
         private long idleConnectionTTLMillis = 1000;
         private long connectionWaitTimeoutMillis = 1000;
+        private int requestTimeoutMillis = 0;
 
         public PBClientConfig build() {
             return new PBClientConfig(socketBufferSizeKb, host, port, poolSize, initialPoolSize,
-                                      idleConnectionTTLMillis, connectionWaitTimeoutMillis);
+                                      idleConnectionTTLMillis, connectionWaitTimeoutMillis, 
+                                      requestTimeoutMillis );
         }
 
         /**
@@ -201,6 +221,7 @@ public class PBClientConfig implements Configuration {
             b.initialPoolSize = copyConfig.initialPoolSize;
             b.idleConnectionTTLMillis = copyConfig.idleConnectionTTLMillis;
             b.connectionWaitTimeoutMillis = copyConfig.connectionWaitTimeoutMillis;
+            b.requestTimeoutMillis = copyConfig.requestTimeoutMillis;
             return b;
         }
 
@@ -238,5 +259,11 @@ public class PBClientConfig implements Configuration {
             this.connectionWaitTimeoutMillis = connectionTimeoutMillis;
             return this;
         }
+        
+        public Builder withRequestTimeoutMillis(int requestTimeoutMillis) {
+            this.requestTimeoutMillis = requestTimeoutMillis;
+            return this;
+        }
+        
     }
 }

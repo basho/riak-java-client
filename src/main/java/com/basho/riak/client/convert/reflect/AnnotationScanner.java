@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.convert.reflect;
 
+import com.basho.riak.client.cap.VClock;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakLinks;
 import com.basho.riak.client.convert.RiakUsermeta;
+import com.basho.riak.client.convert.RiakVClock;
 import com.basho.riak.client.convert.UsermetaField;
 
 /**
@@ -46,6 +48,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
      */
     public AnnotationInfo call() throws Exception {
         Field riakKeyField = null;
+        Field riakVClockField = null;
         Field usermetaMapField = null;
         Field linksField = null;
         List<UsermetaField> usermetaItemFields = new ArrayList<UsermetaField>();
@@ -56,9 +59,23 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
         for (Field field : fields) {
 
             if (field.isAnnotationPresent(RiakKey.class)) {
+                
                 riakKeyField = ClassUtil.checkAndFixAccess(field);
             }
 
+            if (field.isAnnotationPresent(RiakVClock.class)) {
+                
+                // restrict the field type to byte[] or VClock
+                if (!(field.getType().isArray() && 
+                       field.getType().getComponentType().equals(byte.class)) &&
+                     !field.getType().isAssignableFrom(VClock.class)
+                    ) {
+                    throw new IllegalArgumentException(field.getType().toString());
+                }
+                
+                riakVClockField = ClassUtil.checkAndFixAccess(field);
+            }
+            
             if (field.isAnnotationPresent(RiakUsermeta.class)) {
                 RiakUsermeta a = field.getAnnotation(RiakUsermeta.class);
                 String key = a.key();
@@ -79,6 +96,6 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
                 linksField = ClassUtil.checkAndFixAccess(field);
             }
         }
-        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields, linksField);
+        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields, linksField, riakVClockField);
     }
 }
