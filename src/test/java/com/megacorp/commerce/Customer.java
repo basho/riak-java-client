@@ -34,8 +34,9 @@ public class Customer {
     @RiakKey private final String userId;
     private String username;
 
-    @RiakIndex(name = "email") private String emailAddress;
-    @RiakIndex(name = "shoe-size") private int shoeSize;
+    
+    @JsonProperty @RiakIndex(name = "email") private String emailAddress;
+    @JsonProperty @RiakIndex(name = "shoe-size") private int shoeSize;
 
     @RiakUsermeta(key = "language-pref") private String languageCode;
 

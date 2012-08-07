@@ -24,11 +24,15 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * Annotation to declare a field as a RiakIndex.
  * <p>
  * You do not need to specify the index type prefix (_bin/_int). It will be
- * inferred from the type of the annotated field. Only String/Integer/int fields
+ * inferred from the type of the annotated field. 
+ * 
+ * Only String/Integer/int or Set<String>/Set<Integer> fields
  * may be annotated with RiakIndex.
  * </p>
  * <p>
- * <b>NOTE: if there are *multiple* values for the same named index, only the 1st will find it's way into the domain object (atm)</b>
+ * <b>NOTE: if there are *multiple* values for the same named index and the field
+ * in the domain object is an int, Integer, or String only the 1st will find 
+ * it's way into the domain object</b>
  * </p>
  * <p>
  * For example: <code><pre>

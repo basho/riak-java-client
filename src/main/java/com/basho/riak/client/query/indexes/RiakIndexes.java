@@ -95,6 +95,38 @@ public class RiakIndexes {
     }
 
     /**
+     * Add a new {@link BinIndex} set of values to the set
+     * 
+     * @param index
+     *            the index name
+     * @param values
+     *            the set of values
+     * @return this
+     */    
+    public RiakIndexes addBinSet(String index, Set<String> newValues) {
+        
+        final BinIndex key = BinIndex.named(index);
+        final String lock = key.getFullname().intern();
+        // even though it is a concurrent hashmap, we need
+        // fine grained access control for the
+        // key's value set
+        synchronized (lock) {
+        
+            Set<String> values = binIndexes.get(key);
+            
+            if (values == null) {
+                values = new HashSet<String>();
+            }
+            
+            values.addAll(newValues);
+            binIndexes.put(key,values);
+        }
+        
+        return this;
+    }
+    
+    
+    /**
      * Add a new {@link IntIndex} value to the set
      * 
      * @param name
@@ -120,6 +152,36 @@ public class RiakIndexes {
         return this;
     }
 
+    /**
+     * Add a new set of {@link IntIndex} values to the set
+     * 
+     * @param name
+     *            name of the index
+     * @param values
+     *            the set of values
+     * @return this
+     */
+    public RiakIndexes addIntSet(String index, Set<Integer> newValues) {
+        final IntIndex key = IntIndex.named(index);
+        final String lock = key.getFullname().intern();
+        // even though it is a concurrent hashmap, we need
+        // fine grained access control for the
+        // key's value set
+        synchronized (lock) {
+        
+            Set<Integer> values = intIndexes.get(key);
+            
+            if (values == null) {
+                values = new HashSet<Integer>();
+            }
+            
+            values.addAll(newValues);
+            intIndexes.put(key,values);
+        }
+        
+        return this;
+    }
+    
     /**
      * Remove a {@link BinIndex}
      * 

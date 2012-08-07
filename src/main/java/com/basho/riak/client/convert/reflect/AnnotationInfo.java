@@ -54,6 +54,8 @@ public class AnnotationInfo {
      * @param riakKeyField
      * @param usermetaItemFields
      * @param usermetaMapField
+     * @param riakLinksField 
+     * @param indexFields 
      */
     public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField, Field riakVClockField) {
         this.riakKeyField = riakKeyField;
@@ -224,13 +226,25 @@ public class AnnotationInfo {
         final RiakIndexes riakIndexes = new RiakIndexes();
 
         for (RiakIndexField f : indexFields) {
-            Object val = getFieldValue(f.getField(), obj);
-            // null is not an index value
-            if (val != null) {
-                if (val instanceof String) {
-                    riakIndexes.add(f.getIndexName(), (String) val);
-                } else {
-                    riakIndexes.add(f.getIndexName(), (Integer) val);
+            if (Set.class.isAssignableFrom(f.getType())) {
+                Type t = f.getField().getGenericType();
+                if (t instanceof ParameterizedType) {
+                    Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                    if (String.class.equals(genericType)) {
+                        riakIndexes.addBinSet(f.getIndexName(), (Set<String>)getFieldValue(f.getField(), obj)); 
+                    } else if (Integer.class.equals(genericType)) {
+                        riakIndexes.addIntSet(f.getIndexName(), (Set<Integer>)getFieldValue(f.getField(), obj));
+                    }
+                }
+            } else {
+                Object val = getFieldValue(f.getField(), obj);
+                // null is not an index value
+                if (val != null) {
+                    if (val instanceof String) {
+                        riakIndexes.add(f.getIndexName(), (String) val);
+                    } else if (val instanceof Integer) {
+                        riakIndexes.add(f.getIndexName(), (Integer) val);
+                    } 
                 }
             }
         }
@@ -239,8 +253,6 @@ public class AnnotationInfo {
     }
 
     /**
-     * TODO handle multi-value indexes with the same name
-     * 
      * @param <T>
      * @param indexes
      *            the RiakIndexes to copy to the domain object
@@ -251,16 +263,30 @@ public class AnnotationInfo {
         // copy the index values to the correct fields
         for (RiakIndexField f : indexFields) {
             Set<?> val = null;
-            if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
-                val = indexes.getIntIndex(f.getIndexName());
-            }
-
-            if (String.class.equals(f.getType())) {
-                val = indexes.getBinIndex(f.getIndexName());
-            }
-
-            if (val != null && !val.isEmpty()) {
-                setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+            
+            if (Set.class.isAssignableFrom(f.getType())) {
+                Type t = f.getField().getGenericType();
+                if (t instanceof ParameterizedType) {
+                    Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                    if (String.class.equals(genericType)) {
+                        val = indexes.getBinIndex(f.getIndexName());
+                    } else if (Integer.class.equals(genericType)) {
+                        val = indexes.getIntIndex(f.getIndexName());
+                    }
+                }
+                if (val != null && !val.isEmpty()) {
+                    setFieldValue(f.getField(), obj, val); 
+                }
+            } else {
+                if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
+                    val = indexes.getIntIndex(f.getIndexName());
+                } else if (String.class.equals(f.getType())) {
+                    val = indexes.getBinIndex(f.getIndexName());
+                }
+            
+                if (val != null && !val.isEmpty()) {
+                    setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+                }
             }
         }
     }
