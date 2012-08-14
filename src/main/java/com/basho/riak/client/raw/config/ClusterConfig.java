@@ -13,12 +13,15 @@
  */
 package com.basho.riak.client.raw.config;
 
+
+import com.basho.riak.client.raw.DefaultDelegateProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
+import com.basho.riak.client.raw.DelegateProvider;
 
 /**
  * Abstract parent {@link Configuration} for a "cluster" of clients.
@@ -41,6 +44,7 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
 
     private final int totalMaximumConnections;
     private final List<T> nodes = new ArrayList<T>();
+    private DelegateProvider delegateProvider = new DefaultDelegateProvider();
 
     /**
      * @param totalMaximumConnections
@@ -58,6 +62,17 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
         return totalMaximumConnections;
     }
 
+    public synchronized ClusterConfig<T> setDelegateProvider(DelegateProvider delegateProvider)
+    {
+        this.delegateProvider = delegateProvider;
+        return this;
+    }
+    
+    public synchronized DelegateProvider getDelegateProvider()
+    {
+        return this.delegateProvider;
+    }
+    
     /**
      * Add a new client config to the collection of client in the cluster config
      * 

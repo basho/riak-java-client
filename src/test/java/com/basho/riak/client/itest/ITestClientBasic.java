@@ -34,6 +34,7 @@ import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.util.CharsetUtils;
+import org.junit.After;
 
 /**
  * @author russell
@@ -50,6 +51,10 @@ public abstract class ITestClientBasic {
         emptyBucket(bucketName, client);
     }
 
+    @After public void tearDown() throws RiakException {
+        this.client.shutdown();
+    }
+    
     /**
      * @return an {@link IRiakClient} implementation for the transport to be
      *         tested.
