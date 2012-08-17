@@ -20,9 +20,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.basho.riak.pbc.RPB.RpbBucketProps;
-import com.basho.riak.pbc.RPB.RpbBucketProps.Builder;
-import com.basho.riak.pbc.RPB.RpbGetBucketResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbBucketProps;
+import com.basho.riak.protobuf.RiakKvPB.RpbBucketProps.Builder;
+import com.basho.riak.protobuf.RiakKvPB.RpbGetBucketResp;
 
 /**
  * @author russell

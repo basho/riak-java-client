@@ -14,7 +14,7 @@
 package com.basho.riak.pbc;
 
 import com.basho.riak.client.cap.VClock;
-import com.basho.riak.pbc.RPB.RpbGetReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbGetReq;
 import com.google.protobuf.ByteString;
 
 /**

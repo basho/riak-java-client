@@ -40,7 +40,7 @@ public class RequestMeta implements IRequestMeta {
 	/* (non-Javadoc)
 	 * @see com.trifork.riak.IRequestMeta#preparePut(com.trifork.riak.RPB.RpbPutReq.Builder)
 	 */
-	public void preparePut(RPB.RpbPutReq.Builder builder) {
+	public void preparePut(com.basho.riak.protobuf.RiakKvPB.RpbPutReq.Builder builder) {
 
 		if (returnBody != null) {
 			builder.setReturnBody(returnBody.booleanValue());

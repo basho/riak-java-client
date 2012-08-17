@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.basho.riak.pbc.RPB.RpbLink;
+import com.basho.riak.protobuf.RiakKvPB.RpbLink;
 import com.google.protobuf.ByteString;
 
 /**
@@ -38,7 +38,7 @@ import com.google.protobuf.ByteString;
 public class TestRiakLink {
 
     @Test public void fromRpbLink() {
-        final RPB.RpbLink rpbLink = RPB.RpbLink.newBuilder().setBucket(BS_BUCKET).setKey(BS_KEY).setTag(BS_TAG).build();
+        final RpbLink rpbLink = RpbLink.newBuilder().setBucket(BS_BUCKET).setKey(BS_KEY).setTag(BS_TAG).build();
         final RiakLink link = new RiakLink(rpbLink);
 
         assertBasicValues(link);
