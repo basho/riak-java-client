@@ -28,9 +28,9 @@ import java.util.Map;
 import com.basho.riak.client.http.BinIndex;
 import com.basho.riak.client.http.IntIndex;
 import com.basho.riak.client.http.RiakIndex;
-import com.basho.riak.pbc.RPB.RpbContent;
-import com.basho.riak.pbc.RPB.RpbPair;
-import com.basho.riak.pbc.RPB.RpbContent.Builder;
+import com.basho.riak.protobuf.RiakKvPB.RpbContent;
+import com.basho.riak.protobuf.RiakPB.RpbPair;
+import com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder;
 import com.google.protobuf.ByteString;
 
 /**
@@ -213,7 +213,8 @@ public class RiakObject {
 		if (tmpUserMetaData != null && !tmpUserMetaData.isEmpty()) {
 			for (Map.Entry<String, String> ent : tmpUserMetaData.entrySet()) {
 				ByteString key = ByteString.copyFromUtf8(ent.getKey());
-				com.basho.riak.pbc.RPB.RpbPair.Builder pb = RPB.RpbPair.newBuilder().setKey(key);
+				com.basho.riak.protobuf.RiakPB.RpbPair.Builder pb = 
+                    com.basho.riak.protobuf.RiakPB.RpbPair.newBuilder().setKey(key);
 				if (ent.getValue() != null) {
 					pb.setValue(ByteString.copyFromUtf8(ent.getValue()));
 				}

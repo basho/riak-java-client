@@ -21,7 +21,7 @@ package com.basho.riak.pbc.mapreduce;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.basho.riak.pbc.RPB.RpbMapRedResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbMapRedResp;
 import com.google.protobuf.ByteString;
 
 /**

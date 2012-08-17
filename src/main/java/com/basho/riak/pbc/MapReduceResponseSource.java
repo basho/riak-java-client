@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.basho.riak.pbc.RPB.RpbMapRedResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbMapRedResp;
 import com.basho.riak.pbc.mapreduce.MapReduceResponse;
 import com.google.protobuf.ByteString;
 
@@ -89,7 +89,7 @@ public class MapReduceResponseSource extends
                 close();
                 throw new IOException("received empty response");
             }
-            r = RPB.RpbMapRedResp.parseFrom(data);
+            r = com.basho.riak.protobuf.RiakKvPB.RpbMapRedResp.parseFrom(data);
             is_given = false;
         } catch (IOException e) {
             close();
