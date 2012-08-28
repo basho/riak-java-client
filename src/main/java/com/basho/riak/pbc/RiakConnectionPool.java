@@ -24,7 +24,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import com.basho.riak.client.raw.pbc.PoolSemaphore;
-import com.basho.riak.pbc.RPB.RpbSetClientIdReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
 
 /**
@@ -343,7 +343,7 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private void setClientIdOnConnection(RiakConnection c, byte[] clientId) throws IOException {
-        RpbSetClientIdReq req = RPB.RpbSetClientIdReq.newBuilder().setClientId(ByteString.copyFrom(clientId)).build();
+        RpbSetClientIdReq req = com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq.newBuilder().setClientId(ByteString.copyFrom(clientId)).build();
 
         try {
             c.send(RiakMessageCodes.MSG_SetClientIdReq, req);
