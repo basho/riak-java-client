@@ -30,10 +30,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.cookie.DateParseException;
-import org.apache.http.impl.cookie.DateUtils;
 
-import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.FetchResponse;
@@ -609,11 +606,7 @@ public class RiakObject {
      * @see com.basho.riak.client.HttpRiakObject#getLastmodAsDate()
      */
     public Date getLastmodAsDate() {
-        try {
-            return DateUtils.parseDate(lastmod);
-        } catch (DateParseException e) {
-            return null;
-        }
+        return ClientUtils.parseDate(lastmod);
     }
 
     /* (non-Javadoc)
