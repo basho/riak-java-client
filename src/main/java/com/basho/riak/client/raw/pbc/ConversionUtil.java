@@ -469,7 +469,7 @@ public final class ConversionUtil {
     }
 
     /**
-     * Convert a {@link DeleteMeta} to a {@link com.basho.riak.pbc.DeletehMeta}
+     * Convert a {@link DeleteMeta} to a {@link com.basho.riak.pbc.DeleteMeta}
      * @param dm the {@link FetchMeta} to convert
      * @return the {@link com.basho.riak.pbc.FetchMeta} with the same values
      */
