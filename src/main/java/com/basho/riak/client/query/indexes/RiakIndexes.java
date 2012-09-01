@@ -55,14 +55,14 @@ public class RiakIndexes {
     public RiakIndexes() {}
 
     /**
-     * @return a *copy* of the {@link BinIndex}s
+     * @return a *shallow copy* of the {@link BinIndex}s
      */
     public Map<BinIndex, Set<String>> getBinIndexes() {
         return new HashMap<BinIndex, Set<String>>(binIndexes);
     }
 
     /**
-     * @return a *copy* of the {@link IntIndex}s
+     * @return a *shallow copy* of the {@link IntIndex}s
      */
     public Map<IntIndex, Set<Integer>> getIntIndexes() {
         return new HashMap<IntIndex, Set<Integer>>(intIndexes);
