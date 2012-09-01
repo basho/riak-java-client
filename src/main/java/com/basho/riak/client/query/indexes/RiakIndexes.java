@@ -79,17 +79,11 @@ public class RiakIndexes {
      */
     public RiakIndexes add(String index, String value) {
         final BinIndex key = BinIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-            Set<String> values = binIndexes.get(key);
-            if (values == null) {
-                values = new HashSet<String>();
-            }
+        Set<String> newSet = new HashSet<String>();
+        Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
+        Set<String> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { // lock is safe as 'values' is internal-only -- it's copied before being exposed externally
             values.add(value);
-            binIndexes.put(key, values);
         }
         return this;
     }
@@ -104,24 +98,13 @@ public class RiakIndexes {
      * @return this
      */    
     public RiakIndexes addBinSet(String index, Set<String> newValues) {
-        
         final BinIndex key = BinIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-        
-            Set<String> values = binIndexes.get(key);
-            
-            if (values == null) {
-                values = new HashSet<String>();
-            }
-            
+        Set<String> newSet = new HashSet<String>();
+        Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
+        Set<String> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { // lock is safe as 'values' is internal-only -- it's copied before being exposed externally
             values.addAll(newValues);
-            binIndexes.put(key,values);
         }
-        
         return this;
     }
     
@@ -137,17 +120,11 @@ public class RiakIndexes {
      */
     public RiakIndexes add(String index, int value) {
         final IntIndex key = IntIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-            Set<Integer> values = intIndexes.get(key);
-            if (values == null) {
-                values = new HashSet<Integer>();
-            }
+        Set<Integer> newSet = new HashSet<Integer>();
+        Set<Integer> prevSet = intIndexes.putIfAbsent(key, newSet);
+        Set<Integer> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { // lock is safe as 'values' is internal-only -- it's copied before being exposed externally
             values.add(value);
-            intIndexes.put(key, values);
         }
         return this;
     }
@@ -163,22 +140,12 @@ public class RiakIndexes {
      */
     public RiakIndexes addIntSet(String index, Set<Integer> newValues) {
         final IntIndex key = IntIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-        
-            Set<Integer> values = intIndexes.get(key);
-            
-            if (values == null) {
-                values = new HashSet<Integer>();
-            }
-            
+        Set<Integer> newSet = new HashSet<Integer>();
+        Set<Integer> prevSet = intIndexes.putIfAbsent(key, newSet);
+        Set<Integer> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { // lock is safe as 'values' is internal-only -- it's copied before being exposed externally
             values.addAll(newValues);
-            intIndexes.put(key,values);
         }
-        
         return this;
     }
     
