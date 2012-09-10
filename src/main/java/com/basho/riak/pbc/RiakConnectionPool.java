@@ -387,20 +387,26 @@ public class RiakConnectionPool {
     private RiakConnection createConnection(int attempts) throws IOException {
         try {
             if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
+                boolean releasePermit = true;
                 try {
-                    return new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
-                } catch(SocketTimeoutException e) {
-                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage());
+                    RiakConnection connection = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
+                    releasePermit = false;
+                    return connection;
+                } catch (SocketTimeoutException e) {
+                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
                 } catch (IOException e) {
-                    permits.release();
                     throw e;
+                } finally {
+                    if (releasePermit) {
+                        permits.release();
+                    }
                 }
             } else {
                 throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-
+            
             if (attempts > 0) {
                 return createConnection(attempts - 1);
             } else {
