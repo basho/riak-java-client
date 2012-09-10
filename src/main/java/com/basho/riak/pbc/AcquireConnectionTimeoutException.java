@@ -39,4 +39,8 @@ public class AcquireConnectionTimeoutException extends IOException {
     public AcquireConnectionTimeoutException(String message) {
         super(message);
     }
+    
+    public AcquireConnectionTimeoutException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
