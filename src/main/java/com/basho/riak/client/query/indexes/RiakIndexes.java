@@ -17,10 +17,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.basho.riak.client.IRiakObject;
+import com.google.common.collect.Maps;
 
 /**
  * Container for the set of index/values for a {@link IRiakObject}
@@ -30,8 +30,12 @@ import com.basho.riak.client.IRiakObject;
  */
 public class RiakIndexes {
 
-    private final ConcurrentMap<BinIndex, Set<String>> binIndexes = new ConcurrentHashMap<BinIndex, Set<String>>();
-    private final ConcurrentMap<IntIndex, Set<Integer>> intIndexes = new ConcurrentHashMap<IntIndex, Set<Integer>>();
+    // Guava concurrent maps have a better performance than JDK built-in ones.
+    private final ConcurrentMap<BinIndex, Set<String>> binIndexes = Maps.newConcurrentMap();
+    private final ConcurrentMap<IntIndex, Set<Integer>> intIndexes = Maps.newConcurrentMap();
+    // A lock map with an initial concurrency level of 16 and capacity of 64.
+    // You can tune it up depending on your needs.
+    private final LockMap<String> lockMap = new LockMap<String>(16, 64);
 
     public RiakIndexes(final Map<BinIndex, Set<String>> binIndexes, final Map<IntIndex, Set<Integer>> intIndexes) {
         for (Map.Entry<BinIndex, Set<String>> bi : binIndexes.entrySet()) {
@@ -79,11 +83,11 @@ public class RiakIndexes {
      */
     public RiakIndexes add(String index, String value) {
         final BinIndex key = BinIndex.named(index);
-        final String lock = key.getFullname().intern();
+        final String lockName = key.getFullname();
         // even though it is a concurrent hashmap, we need
         // fine grained access control for the
         // key's value set
-        synchronized (lock) {
+        synchronized (lockMap.getLock(lockName)) {
             Set<String> values = binIndexes.get(key);
             if (values == null) {
                 values = new HashSet<String>();
@@ -102,30 +106,28 @@ public class RiakIndexes {
      * @param values
      *            the set of values
      * @return this
-     */    
+     */
     public RiakIndexes addBinSet(String index, Set<String> newValues) {
-        
         final BinIndex key = BinIndex.named(index);
-        final String lock = key.getFullname().intern();
+        final String lockName = key.getFullname();
         // even though it is a concurrent hashmap, we need
         // fine grained access control for the
         // key's value set
-        synchronized (lock) {
-        
+        synchronized (lockMap.getLock(lockName)) {
+
             Set<String> values = binIndexes.get(key);
-            
+
             if (values == null) {
                 values = new HashSet<String>();
             }
-            
+
             values.addAll(newValues);
-            binIndexes.put(key,values);
+            binIndexes.put(key, values);
         }
-        
+
         return this;
     }
-    
-    
+
     /**
      * Add a new {@link IntIndex} value to the set
      * 
@@ -137,11 +139,11 @@ public class RiakIndexes {
      */
     public RiakIndexes add(String index, int value) {
         final IntIndex key = IntIndex.named(index);
-        final String lock = key.getFullname().intern();
+        final String lockName = key.getFullname();
         // even though it is a concurrent hashmap, we need
         // fine grained access control for the
         // key's value set
-        synchronized (lock) {
+        synchronized (lockMap.getLock(lockName)) {
             Set<Integer> values = intIndexes.get(key);
             if (values == null) {
                 values = new HashSet<Integer>();
@@ -163,25 +165,25 @@ public class RiakIndexes {
      */
     public RiakIndexes addIntSet(String index, Set<Integer> newValues) {
         final IntIndex key = IntIndex.named(index);
-        final String lock = key.getFullname().intern();
+        final String lockName = key.getFullname();
         // even though it is a concurrent hashmap, we need
         // fine grained access control for the
         // key's value set
-        synchronized (lock) {
-        
+        synchronized (lockMap.getLock(lockName)) {
+
             Set<Integer> values = intIndexes.get(key);
-            
+
             if (values == null) {
                 values = new HashSet<Integer>();
             }
-            
+
             values.addAll(newValues);
-            intIndexes.put(key,values);
+            intIndexes.put(key, values);
         }
-        
+
         return this;
     }
-    
+
     /**
      * Remove a {@link BinIndex}
      * 
@@ -243,4 +245,5 @@ public class RiakIndexes {
         }
         return new HashSet<Integer>(values);
     }
+
 }
