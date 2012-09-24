@@ -154,8 +154,12 @@ public class RiakObject {
 	}
 	
 	public String getKey() {
-		return key.toStringUtf8();
-	}
+		if (key != null) {
+            return key.toStringUtf8();
+        } else {
+            return null;
+        }
+    }
 	
 	public ByteString getVclock() {
 		return vclock;
