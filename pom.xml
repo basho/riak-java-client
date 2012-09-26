@@ -48,6 +48,7 @@
     <properties>
         <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <cobertura.version>2.4</cobertura.version>
     </properties>
 
