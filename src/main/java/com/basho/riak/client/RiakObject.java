@@ -29,8 +29,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.cookie.DateParseException;
-import org.apache.http.impl.cookie.DateUtils;
 
 import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.request.RequestMeta;
@@ -573,11 +571,7 @@ public class RiakObject {
      * object. Returns null if header is null, malformed, or cannot be parsed.
      */
     public Date getLastmodAsDate() {
-        try {
-            return DateUtils.parseDate(lastmod);
-        } catch (DateParseException e) {
-            return null;
-        }
+        return ClientUtils.parseDate(lastmod);
     }
 
     /**

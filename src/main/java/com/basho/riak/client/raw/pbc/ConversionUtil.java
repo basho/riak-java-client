@@ -29,8 +29,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.http.impl.cookie.DateParseException;
-import org.apache.http.impl.cookie.DateUtils;
+import com.basho.riak.client.http.util.ClientUtils;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
@@ -430,12 +429,9 @@ public final class ConversionUtil {
             b.withContentType(contentType);
             b.withVtag((String) meta.get("X-Riak-VTag"));
 
-            try {
-                Date lastModDate = DateUtils.parseDate((String) meta.get("X-Riak-Last-Modified"));
+            Date lastModDate = ClientUtils.parseDate((String) meta.get("X-Riak-Last-Modified"));
+            if (lastModDate != null)
                 b.withLastModified(lastModDate.getTime());
-            } catch (DateParseException e) {
-                // NO-OP
-            }
 
             List<List<String>> links = (List<List<String>>) meta.get("Links");
             for (List<String> link : links) {
@@ -469,7 +465,7 @@ public final class ConversionUtil {
     }
 
     /**
-     * Convert a {@link DeleteMeta} to a {@link com.basho.riak.pbc.DeletehMeta}
+     * Convert a {@link DeleteMeta} to a {@link com.basho.riak.pbc.DeleteMeta}
      * @param dm the {@link FetchMeta} to convert
      * @return the {@link com.basho.riak.pbc.FetchMeta} with the same values
      */

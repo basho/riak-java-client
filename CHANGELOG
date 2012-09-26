@@ -1,3 +1,62 @@
+1.0.6
+-------------
+This is a bugfix and feature relese
+
+Worth special mention:
+
+af12b6c - The default JSONConverter now supports multiple values via a @RiakIndex annotated Set<> (Integer or String). Note this also brings serialization/deserialization in line with our other annotaded fields in that these values will not be present in the resulting JSON. To override this behavior the Jackson @JsonProperty annotation can be supplied
+
+9bd8e60 - You can now perform a store operation without the implicit fetch performed by the StoreObject.execute() method using the new StoreObject.withoutFetch() method. Also added a new @RiakVClock annotation to support this using your own POJOs.  
+
+
+
+e1db43d Brian Roach Merge pull request #156 from michaelklishin/patch-1
+091adc9 Brian Roach Merge pull request #162 from geardley/master
+b8a4e7b Garrett Eardley fixed permit leak on socket connection timeouts
+bf415bd Brian Roach Merge pull request #159 from pcl/date-speedup
+109f967 Patrick Linskey Speed up date parsing.
+6f5fa58 Patrick Linskey fix javadoc
+f804a41 Michael Klishin Make .travis.yml future proof
+d2478b6 Brian Roach Merge pull request #155 from basho/tr96-use-riak-pb-jar
+63c9e00 Brian Roach This refactors the client to use the new jar generated from the riak_pb project. It is pulled from maven central as a dependency
+61f164e Brian Roach Merge pull request #140 from basho/gh135-index-annotation-set-support
+af7d6fa Brian Roach merge #135 gh135-index-annotation-set-support
+d4ecc7b Brian Roach Modfied test class to satisfy test cases now that Domain Object fields annotated with @RiakIndex are no longer automatically included by the JSON conver
+a58ac9b Brian Roach Merged with master to pick up annotation processing changes from another PR
+f520adc Brian Roach Merge pull request #136 from basho/gh125-wrong-json-utf8-constant
+30b7628 Brian Roach Merge pull request #151 from basho/tr95-expose-objectmapper-jsonconverter
+9b6dbfd Brian Roach Added getter to expose the Jackson ObjectMapper
+7067c62 Brian Roach Merge pull request #148 from basho/gh146-fetch-during-store-optional
+c154825 Brian Roach Added test cases for setting/getting vclock from annotated POJO
+3e957a2 Brian Roach Changed addIntSet and addBinSet to add all the new values at once rather than calling add(). More efficient due to locking.
+9bd8e60 Brian Roach Supporting store operations without implicit fetches new withoutFetch() method added to StoreObject We now provide a @RiakVClock annotation to use with 
+453d223 Sean Cribbs Enable chat bot hook and integration tests on Travis.
+9b676d0 Brian Roach Merge pull request #142 from basho/gh138-add-timeout-to-pb-client
+f92ec2a Brian Roach Added read/write timeout to PB client
+888353d Brian Roach Merge pull request #133 from basho/t84-keep-jackson-annotated-fields
+3edcbbe Brian Roach Merge pull request #129 from basho/add-support-bucket-index
+af12b6c Brian Roach Multiple values for the same Riak index now supported when converting to/from a domain object. @RiakIndex annoted fields no longer encoded into JSON usi
+384facb Brian Roach  I somehow managed to revert this change before commiting and pushing. Derp
+55ae28e Brian Roach changed constant CTYPE_JSON_UTF8 to match what webmachine returns as content type
+17b433f Brian Roach Merge pull request #131 from basho/gh115-add-cookbook-link-to-readme
+defec04 Brian Roach Adjusted the annotation processing to allow a @RiakKey to be included in the JSON serialization if it is also annotated with the Jackson @JsonProperty. 
+dea9dc7 Brian Roach Added missing space to CTYPE_JSON_UTF8 - it now matches what is returned by riak.
+c21527f Brian Roach added link to the cookbook
+749b3e1 Brian Roach Merge pull request #130 from basho/t83-annotated-fields-not-excluded-from-JSON
+05b383a Brian Roach public fields without getters annotated with Riak annotations are now excluded from JSON serialization
+2009724 Brian Roach Merge pull request #127 from basho/t53-map-reduce-without-phase
+9d2f9ae Brian Roach Merge pull request #128 from basho/t82-remove-json-org-classes
+2b99417 Brian Roach last formatting fix
+85fd686 Brian Roach fixed formatting. uncommented check for 2i property
+df75c33 Brian Roach added test for new $bucket feature. Also fixed problem where tests for $key and $bucket could fail due to previous keys in bucket not yet having finishe
+a4faa4f Brian Roach Removed the json.org code from our project, changing it to a Maven dependency. The one issue is that the org.json jar files available from Maven central
+faf2faa Brian Roach Changed the validate() method in MapReduce to be no-op. It is left in place so as not to break inheritence Removed the NoPhasesException as it is no lon
+9a451fb Randy Secrist Derp, fixed a compile issue.
+45e8569 Randy Secrist Added support for 2i queries that use $bucket.
+3985db5 Brian Roach [maven-release-plugin] prepare for next development iteration
+
+
+
 1.0.5
 -------------
 This is a bugfix release.
