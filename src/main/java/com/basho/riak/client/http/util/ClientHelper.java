@@ -199,9 +199,7 @@ public class ClientHelper {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        if (meta.getQueryParam(Constants.QP_R) == null) {
-            meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
-        }
+        
         HttpHead head = new HttpHead(ClientUtils.makeURI(config, bucket, key));
         return executeMethod(bucket, key, head, meta);
     }
@@ -227,9 +225,7 @@ public class ClientHelper {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        if (meta.getQueryParam(Constants.QP_R) == null) {
-            meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
-        }
+        
         HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, key));
         return executeMethod(bucket, key, get, meta, streamResponse);
     }
@@ -245,9 +241,7 @@ public class ClientHelper {
         if (meta == null) {
             meta = new RequestMeta();
         }
-        if (meta.getQueryParam(Constants.QP_R) == null) {
-            meta.setQueryParam(Constants.QP_R, Constants.DEFAULT_R.toString());
-        }
+
         HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, key));
         try {
             org.apache.http.HttpResponse response = httpClient.execute(get);
