@@ -46,7 +46,6 @@
     	</scm>
 
     	<properties>
-        	<os.installed.protoc.version>2.3.0</os.installed.protoc.version>
         	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         	<cobertura.version>2.4</cobertura.version>
@@ -150,7 +149,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.1</version>
+				<version>2.2.2</version>
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -231,7 +230,7 @@
 					<plugin>
 						<groupId>com.github.github</groupId>
 						<artifactId>downloads-maven-plugin</artifactId>
-						<version>0.4</version>
+						<version>0.6</version>
 						<configuration>
 							<description>${project.version} release of ${project.name}</description>
 							<override>false</override>
@@ -261,7 +260,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-assembly-plugin</artifactId>
-						<version>2.2.1</version>
+						<version>2.2.2</version>
 						<configuration>
 							<descriptors>
 								<descriptor>src/main/assembly/rjc-deps.xml</descriptor>
@@ -294,7 +293,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-assembly-plugin</artifactId>
-						<version>2.2.1</version>
+						<version>2.2.2</version>
 						<configuration>
 							<descriptors>
 								<descriptor>src/main/assembly/rjc-be-fat.xml</descriptor>
@@ -327,7 +326,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-assembly-plugin</artifactId>
-						<version>2.2.1</version>
+						<version>2.2.2</version>
 						<configuration>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
