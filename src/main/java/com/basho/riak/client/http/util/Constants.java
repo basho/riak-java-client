@@ -88,11 +88,6 @@ public interface Constants {
     public static String CTYPE_TEXT = "text/plain";
     public static String CTYPE_TEXT_UTF8 = "text/plain; charset=UTF-8";
 
-    // Default r, w, and dw values to use when not specified
-    public static Integer DEFAULT_R = 2;
-    public static Integer DEFAULT_W = null;
-    public static Integer DEFAULT_DW = null;
-    
     // Values for the "keys" query parameter
     public static String NO_KEYS = "false";
     public static String INCLUDE_KEYS = "true";

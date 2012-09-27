@@ -67,7 +67,7 @@ public class DefaultRetrier implements Retrier {
      * @throws RiakRetryFailedException
      *             if the Callable throws an exception <code>times</code> times
      */
-    public static <T> T attempt(final Callable<T> command, int times) throws RiakRetryFailedException {
+    public static <T> T attempt(final Callable<T> command, final int times) throws RiakRetryFailedException {
         try {
             return command.call();
         } catch (MatchFoundException e) {
@@ -78,7 +78,7 @@ public class DefaultRetrier implements Retrier {
             if (times == 0) {
                 throw new RiakRetryFailedException(e);
             } else {
-                return attempt(command, --times);
+                return attempt(command, times - 1);
             }
         }
     }

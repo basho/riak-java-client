@@ -39,11 +39,18 @@
 		</developer>
 	</developers>
 
-	<scm>
-		<connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
-		<url>http://github.com/basho/riak-java-client</url>
-	</scm>
+    <scm>
+        <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
+        <url>http://github.com/basho/riak-java-client</url>
+    </scm>
+
+    <properties>
+        <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <cobertura.version>2.4</cobertura.version>
+    </properties>
 
 	<properties>
 		<os.installed.protoc.version>2.3.0</os.installed.protoc.version>
@@ -74,12 +81,12 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>
-			<version>1.9.9</version>
+			<version>1.9.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.9</version>
+			<version>1.9.10</version>
 		</dependency>
 		<!-- For JDK 1.5 11.0.2, for JDK 1.6 then change for 12.0.1+ -->
 		<dependency>

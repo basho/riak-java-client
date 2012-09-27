@@ -203,12 +203,6 @@ public class TestClientHelper {
         verify(mockHttpClient).execute(any(HttpHead.class));
     }
 
-    @Test public void fetchMeta_adds_default_R_value() throws IOException {
-        stubResponse(true);
-        impl.fetchMeta(bucket, key, meta);
-        assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
-    }
-
     @Test public void fetch_GETs_object_URL() throws IOException {
         when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
         stubResponse(false);
@@ -216,23 +210,11 @@ public class TestClientHelper {
         verify(mockHttpClient).execute(any(HttpGet.class));
     }
     
-    @Test public void fetch_adds_default_R_value() throws IOException {
-        stubResponse(true);
-        impl.fetch(bucket, key, meta);
-        assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
-    }
-    
     @Test public void stream_GETs_object_URL() throws IOException {
         when(mockHttpClient.execute(any(HttpRequestBase.class))).thenAnswer(pathVerifier("/" + bucket + "/" + key));
         stubResponse(false);
         impl.stream(bucket, key, mock(StreamHandler.class), meta);
         verify(mockHttpClient).execute(any(HttpGet.class));
-    }
-
-    @Test public void stream_adds_default_R_value() throws IOException {
-        stubResponse(true);
-        impl.stream(bucket, key, mock(StreamHandler.class), meta);
-        assertEquals(Integer.toString(Constants.DEFAULT_R), meta.getQueryParam(Constants.QP_R));
     }
     
     @Test public void delete_DELETEs_object_URL() throws IOException {
