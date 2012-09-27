@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.raw.RawClient;
@@ -89,7 +89,7 @@ public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> 
     }
 
     /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.MapReduce#writeInput(org.codehaus.jackson.JsonGenerator)
+     * @see com.basho.riak.newapi.query.MapReduce#writeInput(com.fasterxml.jackson.core.JsonGenerator)
      */
     @Override protected void writeInput(final JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeObject(this);

@@ -15,7 +15,7 @@ package com.basho.riak.client.query;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;

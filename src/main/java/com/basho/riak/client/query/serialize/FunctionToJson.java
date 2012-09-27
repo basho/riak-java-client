@@ -13,7 +13,7 @@
  */
 package com.basho.riak.client.query.serialize;
 
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.functions.JSBucketKeyFunction;
