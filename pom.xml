@@ -39,24 +39,18 @@
 		</developer>
 	</developers>
 
-    <scm>
-        <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
-        <url>http://github.com/basho/riak-java-client</url>
-    </scm>
+    	<scm>
+        	<connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
+        	<developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
+        	<url>http://github.com/basho/riak-java-client</url>
+    	</scm>
 
-    <properties>
-        <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <cobertura.version>2.4</cobertura.version>
-    </properties>
-
-	<properties>
-		<os.installed.protoc.version>2.3.0</os.installed.protoc.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cobertura.version>2.4</cobertura.version>
-	</properties>
+    	<properties>
+        	<os.installed.protoc.version>2.3.0</os.installed.protoc.version>
+        	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        	<cobertura.version>2.4</cobertura.version>
+    	</properties>
 
 	<distributionManagement>
 		<snapshotRepository>
