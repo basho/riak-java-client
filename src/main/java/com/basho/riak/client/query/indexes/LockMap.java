@@ -21,7 +21,7 @@ import com.google.common.collect.MapMaker;
     }
 
     public LockMap(final int concurrencyLevel, final int initialCapacity) {
-        locks = new MapMaker().concurrencyLevel(concurrencyLevel).initialCapacity(initialCapacity).weakKeys().weakValues().makeMap();
+        locks = new MapMaker().concurrencyLevel(concurrencyLevel).initialCapacity(initialCapacity).weakValues().makeMap();
     }
 
     public Object getLock(final K key) {
