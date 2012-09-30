@@ -13,7 +13,7 @@ import com.google.common.collect.MapMaker;
     private final ConcurrentMap<K, Object> locks;
 
     public LockMap() {
-        this(8, 64);
+        this(16, 64);
     }
 
     public LockMap(final int concurrencyLevel) {

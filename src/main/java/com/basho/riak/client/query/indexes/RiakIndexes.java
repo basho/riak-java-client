@@ -35,7 +35,7 @@ public class RiakIndexes {
     private final ConcurrentMap<IntIndex, Set<Integer>> intIndexes = Maps.newConcurrentMap();
     // A lock map with an initial concurrency level of 16 and capacity of 64.
     // You can tune it up depending on your needs.
-    private final LockMap<String> lockMap = new LockMap<String>(16, 64);
+    private final LockMap<String> lockMap = new LockMap<String>();
 
     public RiakIndexes(final Map<BinIndex, Set<String>> binIndexes, final Map<IntIndex, Set<Integer>> intIndexes) {
         for (Map.Entry<BinIndex, Set<String>> bi : binIndexes.entrySet()) {
