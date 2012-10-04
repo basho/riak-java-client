@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <version>1.0.7-SNAPSHOT</version>
     <name>Riak Client for Java</name>
     <description>HttpClient-based client for Riak</description>
@@ -44,7 +44,7 @@
         <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
         <url>http://github.com/basho/riak-java-client</url>
     </scm>
-	
+
     <properties>
         <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -66,13 +66,13 @@
     </distributionManagement>
 
     <dependencies>
-		<!-- Apache Commons -->
+        <!-- Apache Commons -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.1.1</version>
         </dependency>
-                <!-- Protocol BUffers -->
+        <!-- Protocol Buffers -->
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
@@ -83,7 +83,7 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.2</version>
         </dependency>
-		<!-- Testing -->
+        <!-- Testing -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -160,6 +160,20 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <groupId>org.apache.felix</groupId>
+                <version>2.3.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            org.apache.commons.codec.binary;version="[1.4,2)",
+                            *;resolution:=optional
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -167,10 +181,10 @@
             <id>itest</id>
             <build>
                 <plugins>
-					<!--
-						Run integration tests (ITest*.java) by executing `mvn
-						-Pitest verify`
-					-->
+                    <!--
+                        Run integration tests (ITest*.java) by executing `mvn
+                        -Pitest verify`
+                    -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>failsafe-maven-plugin</artifactId>
@@ -211,7 +225,7 @@
                             </execution>
                         </executions>
                     </plugin>
-					<!-- NOTE: source and javadoc jars automatically generated on release (http://maven.apache.org/pom.html#The_Super_POM) -->
+                    <!-- NOTE: source and javadoc jars automatically generated on release (http://maven.apache.org/pom.html#The_Super_POM) -->
                 </plugins>
             </build>
         </profile>
@@ -346,7 +360,7 @@
             </build>
         </profile>
     </profiles>
-	
+
     <reporting>
         <plugins>
             <plugin>
