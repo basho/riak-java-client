@@ -18,6 +18,7 @@ import static com.basho.riak.client.http.Hosts.RIAK_PORT;
 import static com.google.protobuf.ByteString.copyFrom;
 import static com.google.protobuf.ByteString.copyFromUtf8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -32,6 +33,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.AllTests;
+import com.basho.riak.client.IRiakClient;
+import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.RiakFactory;
+import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.RequestMeta;
@@ -171,5 +176,17 @@ public class ITestDataLoad {
 
         assertEquals(originalVclock.size(), o.getVclock().size());
         c.delete(bucket, key);
+    }
+
+    @Test public void storeNullKey() throws Exception {
+        final IRiakClient c = RiakFactory.pbcClient(RIAK_HOST, RIAK_PORT);
+        c.setClientId("TSNK".getBytes());
+        final String bucket = UUID.randomUUID().toString();
+        final String key = null;
+
+        Bucket b = c.createBucket(bucket).allowSiblings(false).execute();
+        IRiakObject stored = b.store(key, ExpectedValues.CONTENT).returnBody(true).execute();
+        assertNotNull(stored.getKey());
+        assertEquals(ExpectedValues.CONTENT, stored.getValueAsString());
     }
 }
