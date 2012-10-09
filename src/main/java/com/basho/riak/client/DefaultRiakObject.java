@@ -88,10 +88,6 @@ public class DefaultRiakObject implements IRiakObject {
             throw new IllegalArgumentException("Bucket cannot be null");
         }
 
-        if (key == null) {
-            throw new IllegalArgumentException("Key cannot be null");
-        }
-
         this.bucket = bucket;
         this.key = key;
         this.vclock = vclock;

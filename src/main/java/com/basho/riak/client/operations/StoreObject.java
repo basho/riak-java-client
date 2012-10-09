@@ -26,7 +26,6 @@ import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.VClockUtil;
-import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
@@ -73,7 +72,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      * @param bucket
      *            location of data to store
      * @param key
-     *            location of data to store
+     *            location of data to store (if null, Riak will generate one)
      * @param retrier
      *            the Retrier to use for this operation
      */
@@ -81,6 +80,9 @@ public class StoreObject<T> implements RiakOperation<T> {
         this.client = client;
         this.retrier = retrier;
         fetchObject = new FetchObject<T>(client, bucket, key, retrier);
+        if (key == null) {
+            doNotFetch = true;
+        }
     }
 
     /**
