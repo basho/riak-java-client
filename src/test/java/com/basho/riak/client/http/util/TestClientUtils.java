@@ -28,7 +28,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +62,7 @@ public class TestClientUtils {
 
         HttpClient httpClient = ClientUtils.newHttpClient(config);
 
-        assertEquals(maxConnections, ((ThreadSafeClientConnManager) httpClient.getConnectionManager()).getMaxTotal());
+        assertEquals(maxConnections, ((PoolingClientConnectionManager) httpClient.getConnectionManager()).getMaxTotal());
     }
 
     @Test public void newHttpClient_sets_connection_timeout() {
