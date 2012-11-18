@@ -99,7 +99,9 @@ public class JSONErrorParser {
      * @throws IOException
      */
     private static final Map<String, String> parseError(final String json) throws IOException {
-        return objectMapper.readValue(json, TypeFactory.mapType(HashMap.class, String.class, String.class));
+    	
+        return objectMapper.readValue(json,
+        		TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, String.class));
     }
 
     /**

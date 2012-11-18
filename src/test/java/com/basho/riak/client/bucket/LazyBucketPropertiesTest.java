@@ -13,21 +13,24 @@
  */
 package com.basho.riak.client.bucket;
 
-import com.basho.riak.client.RiakRetryFailedException;
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.raw.RawClient;

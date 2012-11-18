@@ -596,7 +596,9 @@ public final class ConversionUtil {
 
             public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
                 try {
-                    return OBJECT_MAPPER.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
+                	
+                    return OBJECT_MAPPER.readValue(getResultRaw(),
+                    		TypeFactory.defaultInstance().constructCollectionType(Collection.class, resultType));
                 } catch (IOException e) {
                     throw new ConversionException(e);
                 }

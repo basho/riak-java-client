@@ -122,7 +122,7 @@ public class ConversionUtilTest {
         };
         
         try {
-            VClock vclock = VClockUtil.getVClock(o);
+            VClockUtil.getVClock(o);
             fail("Excepted IllegalArgumentException to be thrown");
         } catch (RuntimeException e) {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);

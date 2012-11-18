@@ -50,7 +50,7 @@ public class RiakIndexField {
             // Verify it's a Set<String> or Set<Integer>
             Type t = field.getGenericType();
             if (t instanceof ParameterizedType) {
-                Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                Class<?> genericType = (Class<?>)((ParameterizedType)t).getActualTypeArguments()[0];
                 if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
                     throw new IllegalArgumentException(field.getType().toString());
                 }
