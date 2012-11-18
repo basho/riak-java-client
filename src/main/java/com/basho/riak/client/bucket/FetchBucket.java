@@ -15,6 +15,8 @@ package com.basho.riak.client.bucket;
 
 import java.util.concurrent.Callable;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import com.basho.riak.client.RiakRetryFailedException;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.http.RiakClient;
@@ -40,6 +42,7 @@ import com.basho.riak.client.raw.RawClient;
  * </p>
  * @author russell
  */
+@NotThreadSafe
 public class FetchBucket implements RiakOperation<Bucket> {
 
     private final RawClient client;

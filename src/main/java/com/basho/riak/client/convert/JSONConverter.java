@@ -51,7 +51,7 @@ public class JSONConverter<T> implements Converter<T> {
     private final UsermetaConverter<T> usermetaConverter;
     private final RiakIndexConverter<T> riakIndexConverter;
     private final RiakLinksConverter<T> riakLinksConverter;
-    private String defaultKey;
+    private final String defaultKey;
 
     /**
      * Create a JSONConverter for creating instances of <code>clazz</code> from

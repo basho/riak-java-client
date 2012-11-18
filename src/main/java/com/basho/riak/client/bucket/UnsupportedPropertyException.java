@@ -13,12 +13,15 @@
  */
 package com.basho.riak.client.bucket;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.basho.riak.client.raw.Transport;
 
 /**
  * @author russell
  * 
  */
+@Immutable
 @SuppressWarnings("serial") public class UnsupportedPropertyException extends UnsupportedOperationException {
 
     private final Transport transport;
@@ -37,14 +40,14 @@ import com.basho.riak.client.raw.Transport;
     /**
      * @return the transport
      */
-    public synchronized Transport getTransport() {
+    public Transport getTransport() {
         return transport;
     }
 
     /**
      * @return the property
      */
-    public synchronized String getProperty() {
+    public String getProperty() {
         return property;
     }
 

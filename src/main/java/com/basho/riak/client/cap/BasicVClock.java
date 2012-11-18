@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.cap;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.basho.riak.client.util.CharsetUtils;
 
 /**
@@ -20,6 +22,7 @@ import com.basho.riak.client.util.CharsetUtils;
  * @author russell
  * 
  */
+@Immutable
 public class BasicVClock implements VClock {
 
     private final byte[] value;

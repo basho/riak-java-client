@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.convert;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.basho.riak.client.bucket.DefaultBucket;
 
 /**
@@ -22,6 +24,7 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * @see JSONConverter
  * @see DefaultBucket
  */
+@Immutable
 public class NoKeySpecifedException extends RuntimeException {
 
     /**

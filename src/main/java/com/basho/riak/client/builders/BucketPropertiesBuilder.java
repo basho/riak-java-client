@@ -3,6 +3,8 @@ package com.basho.riak.client.builders;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.bucket.DefaultBucketProperties;
 import com.basho.riak.client.bucket.TunableCAPProps;
@@ -22,6 +24,7 @@ import com.basho.riak.client.query.functions.NamedFunction;
  * @author russell
  * 
  */
+@NotThreadSafe
 public final class BucketPropertiesBuilder {
 
     private NamedErlangFunction linkWalkFunction;

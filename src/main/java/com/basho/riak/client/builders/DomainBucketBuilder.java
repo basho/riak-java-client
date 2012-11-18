@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.builders;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.ClobberMutation;
@@ -44,6 +46,7 @@ import com.basho.riak.client.raw.StoreMeta;
  * @param <T>
  *            the type of the DomainBucket to be built
  */
+@NotThreadSafe
 public class DomainBucketBuilder<T> {
 
     private final Bucket bucket;

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.RiakKey;
@@ -44,6 +46,7 @@ import com.basho.riak.client.util.UnmodifiableIterator;
  * 
  * @author russell
  */
+@ThreadSafe
 public class DefaultRiakObject implements IRiakObject {
 
     /**

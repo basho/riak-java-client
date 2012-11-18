@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -97,7 +99,7 @@ public class ClientHelper {
      * See
      * {@link RiakClient#setBucketSchema(String, com.basho.riak.client.http.RiakBucketInfo, RequestMeta)}
      */
-    public HttpResponse setBucketSchema(String bucket, JSONObject schema, RequestMeta meta) {
+    public HttpResponse setBucketSchema(String bucket, @Nullable JSONObject schema, @Nullable RequestMeta meta) {
         if (schema == null) {
             schema = new JSONObject();
         }
@@ -119,7 +121,7 @@ public class ClientHelper {
      * Same as {@link RiakClient#getBucketSchema(String, RequestMeta)}, except
      * only returning the HTTP response.
      */
-    public HttpResponse getBucketSchema(String bucket, RequestMeta meta) {
+    public HttpResponse getBucketSchema(String bucket, @Nullable RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -172,7 +174,7 @@ public class ClientHelper {
     /**
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
-    public HttpResponse store(RiakObject object, RequestMeta meta) {
+    public HttpResponse store(RiakObject object, @Nullable RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -195,7 +197,7 @@ public class ClientHelper {
     /**
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
-    public HttpResponse fetchMeta(String bucket, String key, RequestMeta meta) {
+    public HttpResponse fetchMeta(String bucket, String key, @Nullable RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -221,7 +223,7 @@ public class ClientHelper {
      * 
      * @return Same as {@link RiakClient}
      */
-    public HttpResponse fetch(String bucket, String key, RequestMeta meta, boolean streamResponse) {
+    public HttpResponse fetch(String bucket, String key, @Nullable RequestMeta meta, boolean streamResponse) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -230,14 +232,14 @@ public class ClientHelper {
         return executeMethod(bucket, key, get, meta, streamResponse);
     }
 
-    public HttpResponse fetch(String bucket, String key, RequestMeta meta) {
+    public HttpResponse fetch(String bucket, String key, @Nullable RequestMeta meta) {
         return fetch(bucket, key, meta, false);
     }
 
     /**
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
-    public boolean stream(String bucket, String key, StreamHandler handler, RequestMeta meta) throws IOException {
+    public boolean stream(String bucket, String key, StreamHandler handler, @Nullable RequestMeta meta) throws IOException {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -266,7 +268,7 @@ public class ClientHelper {
     /**
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
-    public HttpResponse delete(String bucket, String key, RequestMeta meta) {
+    public HttpResponse delete(String bucket, String key, @Nullable RequestMeta meta) {
         if (meta == null) {
             meta = new RequestMeta();
         }
@@ -429,7 +431,7 @@ public class ClientHelper {
      *             If an error occurs during communication with the Riak server
      *             (i.e. HttpClient threw an IOException)
      */
-    HttpResponse executeMethod(String bucket, String key, HttpRequestBase httpMethod, RequestMeta meta,
+    HttpResponse executeMethod(String bucket, String key, HttpRequestBase httpMethod, @Nullable RequestMeta meta,
                                boolean streamResponse) {
 
         if (meta != null) {

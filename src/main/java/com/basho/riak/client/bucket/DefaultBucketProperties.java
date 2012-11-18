@@ -15,6 +15,8 @@ package com.basho.riak.client.bucket;
 
 import java.util.Collection;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.builders.BucketPropertiesBuilder;
 import com.basho.riak.client.cap.Quorum;
@@ -35,6 +37,7 @@ import com.basho.riak.client.query.functions.NamedFunction;
  * @see WriteBucket
  * @see FetchBucket
  */
+@Immutable
 public class DefaultBucketProperties implements BucketProperties {
 
     private final Boolean allowSiblings;
