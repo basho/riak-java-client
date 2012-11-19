@@ -15,7 +15,6 @@ package com.basho.riak.pbc;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.protobuf.RiakKvPB.RpbContent;

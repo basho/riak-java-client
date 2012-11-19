@@ -83,9 +83,13 @@ public class RiakLink {
     
     @Override public int hashCode() {
     	
-    	int value = String.valueOf(bucket).hashCode();
-    	value += 3 * String.valueOf(key).hashCode();
-    	value += 7 * String.valueOf(tag).hashCode();
+    	String b = bucket != null ? bucket : "";
+    	String k = key != null ? key : "";
+    	String t = tag != null ? tag : "";
+    	
+    	int value = b.hashCode();
+    	value += 3 * k.hashCode();
+    	value += 7 * t.hashCode();
     	
     	return value;
     }
