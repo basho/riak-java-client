@@ -31,7 +31,7 @@ public abstract class AbstractLogicalFilter implements LogicalFilter {
     private final Collection<Object[]> filters = new LinkedList<Object[]>();
 
 	public AbstractLogicalFilter(KeyFilter... filters) {
-		synchronized (filters) {
+		synchronized (this.filters) {
 			for (KeyFilter filter : filters) {
 				this.filters.add(filter.asArray());
 			}
