@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import com.basho.riak.client.DefaultRiakObject;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
@@ -34,6 +36,7 @@ import com.basho.riak.client.util.CharsetUtils;
  * Creates instances of {@link DefaultRiakObject}
  * @author russell
  */
+@NotThreadSafe
 public class RiakObjectBuilder {
     private final String bucket;
     private final String key;
@@ -187,9 +190,7 @@ public class RiakObjectBuilder {
      * @return this
      */
     public RiakObjectBuilder addLink(String bucket, String key, String tag) {
-        synchronized (links) {
-            links.add(new RiakLink(bucket, key, tag));
-        }
+        links.add(new RiakLink(bucket, key, tag));
         return this;
     }
 
@@ -254,9 +255,7 @@ public class RiakObjectBuilder {
      * @return this
      */
     public RiakObjectBuilder addUsermeta(String key, String value) {
-        synchronized (userMeta) {
-            userMeta.put(key, value);
-        }
+        userMeta.put(key, value);
         return this;
     }
 

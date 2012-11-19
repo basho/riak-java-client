@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.bucket.FetchBucket;
 import com.basho.riak.client.bucket.WriteBucket;
@@ -13,9 +15,9 @@ import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.query.BucketKeyMapReduce;
 import com.basho.riak.client.query.BucketMapReduce;
 import com.basho.riak.client.query.IndexMapReduce;
-import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.NodeStats;
+import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
@@ -45,6 +47,7 @@ import com.basho.riak.client.raw.query.indexes.IndexQuery;
  * @see HTTPClientAdapter
  * @see DefaultRetrier
  */
+@ThreadSafe
 public final class DefaultRiakClient implements IRiakClient {
 
     private final RawClient rawClient;

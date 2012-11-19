@@ -15,16 +15,23 @@ package com.basho.riak.client.cap;
 
 import java.security.SecureRandom;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 
 /**
  * A random clientId generator. Thanks Krestan Krab of Trifork.
  * @author russell
  * 
  */
+@ThreadSafe
 public class ClientId {
 
-    static SecureRandom rnd = new SecureRandom();
-
+    private static final SecureRandom rnd = new SecureRandom();
+    
+    private ClientId() {
+    	
+    }
+    
     /**
      * @return a generated client id
      */

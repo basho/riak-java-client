@@ -34,7 +34,7 @@ import org.apache.http.client.HttpRequestRetryHandler;
 @Deprecated
 public class RiakConfig {
 
-    public static Pattern BASE_URL_PATTERN = Pattern.compile("^((?:[^:]*://)?[^/]*)");
+    public final static Pattern BASE_URL_PATTERN = Pattern.compile("^((?:[^:]*://)?[^/]*)");
 
     private String url = null;
     private String baseUrl = null;
@@ -47,16 +47,10 @@ public class RiakConfig {
     public RiakConfig() {}
 
     public RiakConfig(String url) {
-        if (url == null || url.length() == 0)
-            throw new IllegalArgumentException();
-
         this.setUrl(url);
     }
     
     public RiakConfig(URL url) {
-       if (url == null) {
-          throw new IllegalArgumentException();
-       }
        
        String protocol = url.getProtocol().toLowerCase();
        if(!protocol.equals("http") && !protocol.equals("https")) {

@@ -75,7 +75,7 @@ public class RequestMeta implements IRequestMeta {
 	 * @see com.trifork.riak.IRequestMeta#returnBody(boolean)
 	 */
 	public IRequestMeta returnBody(boolean ret) {
-		returnBody = Boolean.valueOf(ret);
+		returnBody = ret;
 		return this;
 	}
 
@@ -83,7 +83,7 @@ public class RequestMeta implements IRequestMeta {
 	 * @see com.trifork.riak.IRequestMeta#w(int)
 	 */
 	public IRequestMeta w(int w) {
-	    writeQuorum = new Integer(w);
+	    writeQuorum = w;
 		return this;
 	}
 
@@ -91,7 +91,7 @@ public class RequestMeta implements IRequestMeta {
 	 * @see com.trifork.riak.IRequestMeta#dw(int)
 	 */
 	public IRequestMeta dw(int dw) {
-	    durableWriteQuorum = new Integer(dw);
+	    durableWriteQuorum = dw;
 		return this;
 	}
 	

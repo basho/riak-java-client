@@ -100,7 +100,8 @@ public class PBMapReduceResult implements MapReduceResult {
      */
     public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
         try {
-            return objectMapper.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
+            return objectMapper.readValue(getResultRaw(),
+            		TypeFactory.defaultInstance().constructCollectionType(Collection.class, resultType));
         } catch (IOException e) {
             throw new ConversionException(e);
         }

@@ -13,12 +13,16 @@
  */
 package com.basho.riak.pbc;
 
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Encapsulates greater detail about the result of a fetch.
  * 
  * @author russell
  * 
  */
+@Immutable
 public class FetchResponse {
 
     private final RiakObject[] objects;
@@ -33,7 +37,7 @@ public class FetchResponse {
      * @param vclock
      *            the vclock in the response (if any)
      */
-    protected FetchResponse(RiakObject[] objects, boolean unchanged, byte[] vclock) {
+    protected FetchResponse(RiakObject[] objects, boolean unchanged, @Nullable byte[] vclock) {
         this.objects = objects;
         this.unchanged = unchanged;
         if(vclock != null) {
@@ -47,7 +51,7 @@ public class FetchResponse {
      * @return the objects
      */
     public RiakObject[] getObjects() {
-        return objects;
+        return objects.clone();
     }
 
     /**
@@ -61,11 +65,13 @@ public class FetchResponse {
     /**
      * @return the vclock (if one is present) from the response.
      */
+    @Nullable
     public byte[] getVClock() {
         if (this.vclock != null) {
             return this.vclock.clone();
         }
-        return this.vclock;
+        
+        return null;
     }
 
     /**

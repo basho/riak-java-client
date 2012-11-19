@@ -14,11 +14,11 @@
 package com.basho.riak.client.convert.reflect;
 
 import java.lang.reflect.Field;
-
-import com.basho.riak.client.convert.RiakIndex;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
+
+import com.basho.riak.client.convert.RiakIndex;
 
 /**
  * @author russell
@@ -36,21 +36,21 @@ public class RiakIndexField {
      * @param field
      */
     public RiakIndexField(final Field field) {
-        if (field == null || field.getAnnotation(RiakIndex.class) == null ||
+        if (field.getAnnotation(RiakIndex.class) == null ||
             "".equals(field.getAnnotation(RiakIndex.class).name()) ||
             (!field.getType().equals(String.class) &&
                 !field.getType().equals(Integer.class) && 
                 !field.getType().equals(int.class)) &&
                 !Set.class.isAssignableFrom(field.getType())
             ) {
-            throw new IllegalArgumentException(field.getType().toString());
+            throw new IllegalArgumentException("Illegal creation.  FieldType: " + String.valueOf(field.getType()));
         }
 
         if (Set.class.isAssignableFrom(field.getType())) {
             // Verify it's a Set<String> or Set<Integer>
             Type t = field.getGenericType();
             if (t instanceof ParameterizedType) {
-                Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                Class<?> genericType = (Class<?>)((ParameterizedType)t).getActualTypeArguments()[0];
                 if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
                     throw new IllegalArgumentException(field.getType().toString());
                 }

@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.convert;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.basho.riak.client.IRiakObject;
 
 /**
@@ -20,6 +22,7 @@ import com.basho.riak.client.IRiakObject;
  * @author russell
  * 
  */
+@Immutable
 public class ConversionException extends RuntimeException {
 
     /**

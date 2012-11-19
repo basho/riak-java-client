@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.RiakKey;
@@ -44,12 +46,13 @@ import com.basho.riak.client.util.UnmodifiableIterator;
  * 
  * @author russell
  */
+@ThreadSafe
 public class DefaultRiakObject implements IRiakObject {
 
     /**
      * The default content type assigned when persisted in Riak if non is provided.
      */
-    public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
     private final String bucket;
     @RiakKey private final String key;

@@ -13,10 +13,13 @@
  */
 package com.basho.riak.client;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * @author russell
  * 
  */
+@Immutable
 public class RiakException extends Exception {
 
     /**

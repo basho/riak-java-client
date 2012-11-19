@@ -20,7 +20,7 @@ public class BucketProperties {
 				allowMult = Boolean.valueOf(props.getAllowMult());
 			}
 			if (props.hasNVal()) {
-				nValue = new Integer(props.getNVal());
+				nValue = props.getNVal();
 			}
 		}
 	}

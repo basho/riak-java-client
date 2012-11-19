@@ -14,4 +14,5 @@
 /**
  * <i>Deprecated please see com.basho.riak.http.client.mapreduce.filter</i>
  */
+@Deprecated
 package com.basho.riak.client.mapreduce.filter;

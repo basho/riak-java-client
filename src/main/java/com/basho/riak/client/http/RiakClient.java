@@ -27,12 +27,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Primary interface for interacting with Riak via HTTP.
  */
+@Immutable
 public class RiakClient {
 
-    private ClientHelper helper;
+    private final ClientHelper helper;
 
     /* (non-Javadoc)
      * @see com.basho.riak.client.HttpRiakClient#getConfig()

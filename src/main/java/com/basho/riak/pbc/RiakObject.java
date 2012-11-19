@@ -25,6 +25,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.http.BinIndex;
 import com.basho.riak.client.http.IntIndex;
 import com.basho.riak.client.http.RiakIndex;
@@ -36,23 +39,24 @@ import com.google.protobuf.ByteString;
 /**
  * PBC model of the data/meta data for a bucket/key entry in Riak
  */
+@ThreadSafe
 public class RiakObject {
 
 	private ByteString vclock;
-	private ByteString bucket;
-	private ByteString key;
+	private final ByteString bucket;
+	private final ByteString key;
 	
-	private ByteString value;
+	private final ByteString value;
 
 	private String contentType;
-	private List<RiakLink> links = Collections.synchronizedList(new ArrayList<RiakLink>());
+	private final List<RiakLink> links = Collections.synchronizedList(new ArrayList<RiakLink>());
     private final Object indexLock = new Object();
-    @SuppressWarnings("rawtypes") private List<RiakIndex> indexes = new ArrayList<RiakIndex>();
+    @SuppressWarnings("rawtypes") @GuardedBy("indexLock") private final List<RiakIndex> indexes = new ArrayList<RiakIndex>();
 	private String vtag;
 	private String contentEncoding;
 	private String charset;
-	private Object userMetaDataLock = new Object();
-	private Map<String,String> userMetaData = new LinkedHashMap<String, String>();
+	private final Object userMetaDataLock = new Object();
+	@GuardedBy("userMetaDataLock") private final Map<String,String> userMetaData = new LinkedHashMap<String, String>();
 	private Integer lastModified;
 	private Integer lastModifiedUsec;
 	
@@ -66,13 +70,12 @@ public class RiakObject {
 		this.charset = str(content.getCharset());
 		this.contentEncoding = str(content.getContentEncoding());
 		this.vtag = str(content.getVtag());
-		this.links = content.getLinksCount() == 0
-			? Collections.synchronizedList(new ArrayList<RiakLink>())
-			: Collections.synchronizedList(RiakLink.decode(content.getLinksList()));
+		
+		this.links.addAll(RiakLink.decode(content.getLinksList()));
 		
 		if (content.hasLastMod()) {
-			this.lastModified = new Integer(content.getLastMod());
-			this.lastModifiedUsec = new Integer(content.getLastModUsecs());
+			this.lastModified = content.getLastMod();
+			this.lastModifiedUsec = content.getLastModUsecs();
 		}
 
 		if (content.getUsermetaCount() > 0) {
@@ -83,9 +86,7 @@ public class RiakObject {
 							 str(um.getValue()));
 			}
 
-			synchronized (userMetaDataLock) {
-			    userMetaData.putAll(tmpUserMetaData);
-            }
+			userMetaData.putAll(tmpUserMetaData);
 		}
 
         if (content.getIndexesCount() > 0) {
@@ -104,9 +105,7 @@ public class RiakObject {
                 }
             }
 
-            synchronized (indexLock) {
-                this.indexes.addAll(indexes);
-            }
+            this.indexes.addAll(indexes);
         }
 	}
 

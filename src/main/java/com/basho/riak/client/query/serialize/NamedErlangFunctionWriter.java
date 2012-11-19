@@ -15,6 +15,8 @@ package com.basho.riak.client.query.serialize;
 
 import java.io.IOException;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.query.functions.NamedErlangFunction;
@@ -24,6 +26,7 @@ import com.basho.riak.client.query.functions.NamedErlangFunction;
  * @author russell
  * 
  */
+@NotThreadSafe
 public class NamedErlangFunctionWriter implements FunctionWriter {
 
     private final NamedErlangFunction function;

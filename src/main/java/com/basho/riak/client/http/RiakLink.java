@@ -80,6 +80,19 @@ public class RiakLink {
     public void setTag(String tag) {
         this.tag = tag;
     }
+    
+    @Override public int hashCode() {
+    	
+    	String b = bucket != null ? bucket : "";
+    	String k = key != null ? key : "";
+    	String t = tag != null ? tag : "";
+    	
+    	int value = b.hashCode();
+    	value += 3 * k.hashCode();
+    	value += 7 * t.hashCode();
+    	
+    	return value;
+    }
 
     @Override public boolean equals(Object obj) {
         if (!(obj instanceof RiakLink))

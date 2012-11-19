@@ -16,6 +16,8 @@ package com.basho.riak.client;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakClientFactory;
 import com.basho.riak.client.raw.config.ClusterConfig;
@@ -61,6 +63,7 @@ import com.basho.riak.pbc.RiakClient;
  * @see Configuration
  * @see ClusterConfig
  */
+@ThreadSafe
 public class RiakFactory {
 
     private static final ConcurrentHashMap<Class<? extends Configuration>, RiakClientFactory> REGISTRY =

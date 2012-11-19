@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.bucket;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Parameter wrapper class for the set of vclock prune properties
  * 
@@ -20,6 +22,7 @@ package com.basho.riak.client.bucket;
  * @see BucketProperties
  * 
  */
+@Immutable
 public class VClockPruneProps {
 
     private final Integer smallVClock;

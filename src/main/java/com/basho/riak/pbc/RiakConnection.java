@@ -27,6 +27,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.protobuf.RiakPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
 
@@ -35,6 +37,7 @@ import com.google.protobuf.MessageLite;
  *
  * See <a href="http://wiki.basho.com/PBC-API.html">Basho Wiki</a> for more details.
  */
+@ThreadSafe
 class RiakConnection
 {
 

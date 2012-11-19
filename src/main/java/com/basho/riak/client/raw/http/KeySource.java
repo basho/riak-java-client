@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.response.BucketResponse;
 
@@ -93,6 +95,7 @@ public class KeySource implements Iterator<String> {
      * resource is closed when the iterator is no longer reachable.
      * 
      */
+    @ThreadSafe
     static class ReaperTask extends TimerTask {
         private final BucketResponse bucketResponse;
         private WeakReference<?> ref;

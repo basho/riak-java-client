@@ -127,13 +127,13 @@ public class BranchableInputStream extends InputStream {
         }
     }
 
-    class LinkedChunk {
-        int offset;
-        int len;
-        byte[] buf;
-        LinkedChunk next = null;
+    private static class LinkedChunk {
+    	private int offset;
+    	private int len;
+    	private byte[] buf;
+    	private LinkedChunk next = null;
 
-        LinkedChunk(int offset, int size) {
+        private LinkedChunk(int offset, int size) {
             this.offset = offset;
             buf = new byte[size];
             len = 0;

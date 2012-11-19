@@ -117,8 +117,9 @@ public class BranchableInputStream extends InputStream {
             chunk = null;
         }
     }
-
-    class LinkedChunk {
+    
+    //Visible for test.
+    protected static class LinkedChunk {
         int offset;
         int len;
         byte[] buf;

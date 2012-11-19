@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.AbstractHttpEntity;
@@ -45,6 +48,7 @@ import com.basho.riak.client.http.util.Constants;
 /**
  * A Riak object.
  */
+@ThreadSafe
 public class RiakObject {
 
     private static final byte[] EMPTY = new byte[] {};
@@ -55,7 +59,7 @@ public class RiakObject {
     private byte[] value;
     private List<RiakLink> links;
     private final Object indexLock = new Object();
-    @SuppressWarnings("rawtypes") private List<RiakIndex> indexes;
+    @GuardedBy("indexLock") @SuppressWarnings("rawtypes") private List<RiakIndex> indexes;
     private Map<String, String> userMetaData;
     private String contentType;
     private String vclock;

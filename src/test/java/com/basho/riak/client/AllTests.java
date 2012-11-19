@@ -14,8 +14,6 @@
 package com.basho.riak.client;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import junit.runner.Version;
 
@@ -24,7 +22,6 @@ import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
-import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runners.Suite;
 
@@ -75,12 +72,12 @@ import com.basho.riak.client.itest.ITestDomainBucketHTTP;
 import com.basho.riak.client.itest.ITestDomainBucketPB;
 import com.basho.riak.client.itest.ITestHTTPBucket;
 import com.basho.riak.client.itest.ITestHTTPClient;
+import com.basho.riak.client.itest.ITestHTTPClusterStats;
 import com.basho.riak.client.itest.ITestHTTPLinkWalk;
+import com.basho.riak.client.itest.ITestHTTPStats;
 import com.basho.riak.client.itest.ITestPBBucket;
 import com.basho.riak.client.itest.ITestPBClient;
 import com.basho.riak.client.itest.ITestPBLinkWalk;
-import com.basho.riak.client.itest.ITestHTTPStats;
-import com.basho.riak.client.itest.ITestHTTPClusterStats;
 import com.basho.riak.client.operations.DeleteObjectTest;
 import com.basho.riak.client.operations.FetchObjectTest;
 import com.basho.riak.client.operations.StoreObjectTest;

@@ -222,14 +222,15 @@ public class AnnotationInfo {
      * @return a {@link RiakIndexes} made of the values of the RiakIndex
      *         annotated fields
      */
-    public <T> RiakIndexes getIndexes(T obj) {
+    @SuppressWarnings("unchecked")
+	public <T> RiakIndexes getIndexes(T obj) {
         final RiakIndexes riakIndexes = new RiakIndexes();
 
         for (RiakIndexField f : indexFields) {
             if (Set.class.isAssignableFrom(f.getType())) {
                 Type t = f.getField().getGenericType();
                 if (t instanceof ParameterizedType) {
-                    Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                    Class<?> genericType = (Class<?>)((ParameterizedType)t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
                         riakIndexes.addBinSet(f.getIndexName(), (Set<String>)getFieldValue(f.getField(), obj)); 
                     } else if (Integer.class.equals(genericType)) {
@@ -267,7 +268,7 @@ public class AnnotationInfo {
             if (Set.class.isAssignableFrom(f.getType())) {
                 Type t = f.getField().getGenericType();
                 if (t instanceof ParameterizedType) {
-                    Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                    Class<?> genericType = (Class<?>)((ParameterizedType)t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
                         val = indexes.getBinIndex(f.getIndexName());
                     } else if (Integer.class.equals(genericType)) {

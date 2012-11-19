@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.bucket;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.basho.riak.client.cap.Quorum;
 
 /**
@@ -21,6 +23,7 @@ import com.basho.riak.client.cap.Quorum;
  * @author russell
  * 
  */
+@Immutable
 public class TunableCAPProps {
 
     private final Quorum r;

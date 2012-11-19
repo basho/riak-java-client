@@ -14,4 +14,5 @@
 /**
  * <i>Deprecated please see com.basho.riak.http.client.response</i>
  */
+@Deprecated
 package com.basho.riak.client.response;
