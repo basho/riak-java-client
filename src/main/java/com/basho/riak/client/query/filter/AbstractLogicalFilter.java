@@ -16,23 +16,25 @@ package com.basho.riak.client.query.filter;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Shared code for the set of "logical" filters.
  * @author russell
  *
  */
+@ThreadSafe
 public abstract class AbstractLogicalFilter implements LogicalFilter {
 
-
+	@GuardedBy("filters")
     private final Collection<Object[]> filters = new LinkedList<Object[]>();
 
-    public AbstractLogicalFilter(KeyFilter... filters) {
-        synchronized (this.filters) {
-            for (KeyFilter filter : filters) {
-                this.filters.add(filter.asArray());
-            }
-        }
-    }
+	public AbstractLogicalFilter(KeyFilter... filters) {
+		for (KeyFilter filter : filters) {
+			this.filters.add(filter.asArray());
+		}
+	}
 
     public AbstractLogicalFilter add(KeyFilter filter) {
         synchronized (filter) {

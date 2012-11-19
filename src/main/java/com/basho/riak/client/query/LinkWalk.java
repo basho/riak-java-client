@@ -16,6 +16,9 @@ package com.basho.riak.client.query;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
@@ -31,11 +34,13 @@ import com.basho.riak.client.raw.query.LinkWalkSpec;
  * 
  * @see IRiakClient#walk(IRiakObject)
  */
+@ThreadSafe
 public class LinkWalk implements RiakOperation<WalkResult> {
 
     private final RawClient client;
     private final String startBucket;
     private final String startKey;
+    @GuardedBy("steps")
     private final LinkedList<LinkWalkStep> steps = new LinkedList<LinkWalkStep>();
 
     /**

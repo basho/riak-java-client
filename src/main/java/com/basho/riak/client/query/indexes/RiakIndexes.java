@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.IRiakObject;
 
 /**
@@ -28,6 +30,7 @@ import com.basho.riak.client.IRiakObject;
  * @author russell
  * 
  */
+@ThreadSafe
 public class RiakIndexes {
 
     private final ConcurrentMap<BinIndex, Set<String>> binIndexes = new ConcurrentHashMap<BinIndex, Set<String>>();

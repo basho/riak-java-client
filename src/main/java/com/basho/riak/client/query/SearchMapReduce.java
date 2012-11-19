@@ -74,9 +74,9 @@ public class SearchMapReduce extends MapReduce {
      */
     @Override protected void writeInput(JsonGenerator jsonGenerator) throws IOException {
         jsonGenerator.writeObject(new Object() {
-            @SuppressWarnings("unused") @JsonProperty String module = "riak_search";
-            @SuppressWarnings("unused") @JsonProperty String function = "mapred_search";
-            @SuppressWarnings("unused") @JsonProperty String[] arg = new String[] { bucket, query };
+            @JsonProperty String module = "riak_search";
+            @JsonProperty String function = "mapred_search";
+            @JsonProperty String[] arg = new String[] { bucket, query };
         });
     }
 

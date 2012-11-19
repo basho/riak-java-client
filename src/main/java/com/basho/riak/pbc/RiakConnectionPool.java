@@ -23,6 +23,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.raw.pbc.PoolSemaphore;
 import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
@@ -38,6 +40,7 @@ import com.google.protobuf.ByteString;
  * @author russell
  * 
  */
+@ThreadSafe
 public class RiakConnectionPool {
 
     /**

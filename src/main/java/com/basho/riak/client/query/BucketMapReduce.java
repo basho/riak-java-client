@@ -19,6 +19,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -33,10 +36,12 @@ import com.basho.riak.client.util.UnmodifiableIterator;
  * 
  * @see IRiakClient#mapReduce(String)
  */
+@ThreadSafe
 public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
 
     private final String bucket;
     private final Object keyFiltersLock = new Object();
+    @GuardedBy("keyFiltersLock")
     private final Collection<KeyFilter> keyFilters;
 
     /**
@@ -138,8 +143,8 @@ public class BucketMapReduce extends MapReduce implements Iterable<KeyFilter> {
     @Override protected void writeInput(JsonGenerator jsonGenerator) throws IOException {
         if (hasFilters()) {
             jsonGenerator.writeObject(new Object() {
-                @SuppressWarnings("unused") @JsonProperty String bucket = getBucket();
-                @SuppressWarnings("unused") @JsonProperty Collection<Object[]> key_filters = getKeyFilters();
+                @JsonProperty String bucket = getBucket();
+                @JsonProperty Collection<Object[]> key_filters = getKeyFilters();
             });
 
         } else {

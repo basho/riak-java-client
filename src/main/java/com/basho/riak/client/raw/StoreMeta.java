@@ -17,12 +17,15 @@ import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 import java.util.Date;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Encapsulates the optional parameters for a store operation on Riak
  * 
  * @author russell
  * @see RawClient#store(com.basho.riak.client.IRiakObject, StoreMeta)
  */
+@ThreadSafe
 public class StoreMeta {
 
     private static final StoreMeta EMPTY = new StoreMeta(null, null, null, false, null, null);

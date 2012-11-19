@@ -17,6 +17,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
 
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
@@ -42,12 +46,15 @@ import com.basho.riak.client.raw.query.MapReduceSpec;
  * @see IRiakClient#mapReduce()
  * @see IRiakClient#mapReduce(String)
  */
+@ThreadSafe
 public abstract class MapReduce implements RiakOperation<MapReduceResult> {
-
+	private static final long TIMEOUT_NOT_SET = -1L;
+	
     private final RawClient client;
-
-    private Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
-    private Long timeout;
+    
+    @GuardedBy("phases")
+    private final Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+    private final AtomicLong timeout = new AtomicLong(TIMEOUT_NOT_SET);
 
     /**
      * Create the MapRedcue operation with the {@link RawClient} to delegate to.
@@ -122,8 +129,9 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
             writePhases(jg);
 
             jg.writeEndArray();
-            if (timeout != null) {
-                jg.writeNumberField("timeout", timeout);
+            long to = timeout.get();
+            if (to != TIMEOUT_NOT_SET) {
+                jg.writeNumberField("timeout", to);
             }
 
             jg.writeEndObject();
@@ -210,7 +218,7 @@ public abstract class MapReduce implements RiakOperation<MapReduceResult> {
      * @return this
      */
     public MapReduce timeout(long timeout) {
-        this.timeout = timeout;
+        this.timeout.set(timeout);
         return this;
     }
 

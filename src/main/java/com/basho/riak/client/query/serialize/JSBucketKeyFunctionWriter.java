@@ -15,6 +15,8 @@ package com.basho.riak.client.query.serialize;
 
 import java.io.IOException;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.query.functions.JSBucketKeyFunction;
@@ -24,6 +26,7 @@ import com.basho.riak.client.query.functions.JSBucketKeyFunction;
  * @author russell
  *
  */
+@NotThreadSafe
 public class JSBucketKeyFunctionWriter implements FunctionWriter {
     
     private final JSBucketKeyFunction function;

@@ -55,7 +55,6 @@ public class DomainBucketBuilder<T> {
     // The default resolver, it doesn't resolve
     private ConflictResolver<T> resolver = new DefaultResolver<T>();
     private Converter<T> converter;
-    private Mutation<T> mutation = null;
     private MutationProducer<T> mutationProducer;
     private Retrier retrier = DefaultRetrier.attempts(3);
 
@@ -82,13 +81,7 @@ public class DomainBucketBuilder<T> {
      */
     public DomainBucket<T> build() {
         // if there is no Mutation or MutationProducer create a default one.
-        if (mutation != null && mutationProducer == null) {
-            mutationProducer = new MutationProducer<T>() {
-                public Mutation<T> produce(T o) {
-                    return mutation;
-                }
-            };
-        } else if (mutation == null && mutationProducer == null) {
+        if (mutationProducer == null) {
             mutationProducer = new MutationProducer<T>() {
 
                 public Mutation<T> produce(T o) {

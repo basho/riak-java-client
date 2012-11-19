@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.apache.http.client.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -65,7 +67,7 @@ public class RiakClient {
         this(config, null);
     }
 
-    public RiakClient(RiakConfig config, String clientId) {
+    public RiakClient(RiakConfig config, @Nullable String clientId) {
         helper = new ClientHelper(config, clientId);
     }
 

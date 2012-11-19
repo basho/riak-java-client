@@ -15,6 +15,8 @@ package com.basho.riak.client.query.serialize;
 
 import java.io.IOException;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.query.functions.NamedJSFunction;
@@ -24,6 +26,7 @@ import com.basho.riak.client.query.functions.NamedJSFunction;
  * @author russell
  *
  */
+@ThreadSafe
 public class NamedJSFunctionWriter implements FunctionWriter {
     
     private final NamedJSFunction function;

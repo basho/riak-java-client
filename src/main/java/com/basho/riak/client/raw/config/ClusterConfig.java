@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 import com.basho.riak.client.raw.http.HTTPClientConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 
@@ -32,6 +35,7 @@ import com.basho.riak.client.raw.pbc.PBClientConfig;
  *            concrete {@link Configuration} type
  * 
  */
+@ThreadSafe
 public abstract class ClusterConfig<T extends Configuration> implements Configuration {
 
     /**
@@ -40,6 +44,7 @@ public abstract class ClusterConfig<T extends Configuration> implements Configur
     public static final int UNLIMITED_CONNECTIONS = 0;
 
     private final int totalMaximumConnections;
+    @GuardedBy("this")
     private final List<T> nodes = new ArrayList<T>();
 
     /**

@@ -1438,7 +1438,7 @@ public class NodeStats implements Iterable<NodeStats>
     }
 
 
-    private class NodeStatsIterator implements Iterator<NodeStats>
+    private static class NodeStatsIterator implements Iterator<NodeStats>
     {
 
         private NodeStats current;

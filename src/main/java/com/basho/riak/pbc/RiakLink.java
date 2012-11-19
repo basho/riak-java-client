@@ -54,9 +54,11 @@ public class RiakLink {
 
 	public static List<RiakLink> decode(List<RpbLink> list) {
 		List<RiakLink>  res = new ArrayList<RiakLink>();
-		for (int i = 0; i < list.size(); i++) {
-			res.add ( new RiakLink(list.get(i)) );
-		}	
+		
+		for (RpbLink o : list) {
+			res.add(new RiakLink(o));
+		}
+		
 		return res;
 	}
 

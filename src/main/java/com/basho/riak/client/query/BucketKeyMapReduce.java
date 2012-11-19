@@ -18,6 +18,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.IRiakClient;
@@ -29,10 +32,11 @@ import com.basho.riak.client.util.UnmodifiableIterator;
  * @author russell
  * @see IRiakClient#mapReduce()
  */
-
+@ThreadSafe
 public class BucketKeyMapReduce extends MapReduce implements Iterable<String[]> {
 
     private final Object inputsLock = new Object();
+    @GuardedBy("inputsLock")
     private final Collection<String[]> inputs = new LinkedList<String[]>();
 
     /**
