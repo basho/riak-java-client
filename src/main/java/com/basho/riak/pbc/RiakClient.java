@@ -356,7 +356,7 @@ public class RiakClient implements RiakMessageCodes {
 		}
 	}
 
-  class BulkReader implements Runnable {
+  private static class BulkReader implements Runnable {
 
 		private ByteString[] vclocks;
 		private final RiakConnection c;

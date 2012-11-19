@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
@@ -240,9 +241,6 @@ public class ClientHelper {
      * Same as {@link RiakClient}, except only returning the HTTP response
      */
     public boolean stream(String bucket, String key, StreamHandler handler, @Nullable RequestMeta meta) throws IOException {
-        if (meta == null) {
-            meta = new RequestMeta();
-        }
 
         HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, key));
         try {
@@ -436,10 +434,11 @@ public class ClientHelper {
 
         if (meta != null) {
             Map<String, String> headers = meta.getHeaders();
-            for (String header : headers.keySet()) {
-                httpMethod.addHeader(header, headers.get(header));
+            
+            for (Entry<String, String> header : headers.entrySet()) {
+            	httpMethod.addHeader(header.getKey(), header.getValue());
             }
-
+            
             Map<String, String> queryParams = meta.getQueryParamMap();
             if (!queryParams.isEmpty()) {
                 URI originalURI = httpMethod.getURI();

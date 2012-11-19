@@ -31,9 +31,9 @@ import com.basho.riak.client.http.util.Constants;
  * @author russell
  */
 public class CharsetUtils {
-    public static Charset ASCII = Charset.forName("ASCII");
-    public static Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
-    public static Charset UTF_8 = Charset.forName("UTF-8");
+    public final static Charset ASCII = Charset.forName("ASCII");
+    public final static Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+    public final static Charset UTF_8 = Charset.forName("UTF-8");
 
     /**
      * RegEx pattern to get the charset from a content-type value.

@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.apache.http.util.EncodingUtils;
 
 /**
@@ -197,6 +199,7 @@ public class Multipart {
     /**
      * A single part of a multipart entity
      */
+    @NotThreadSafe
     public static class Part {
         private Map<String, String> headers;
         private byte[] body = null;

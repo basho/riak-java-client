@@ -71,8 +71,8 @@ public class RiakObject {
 			: Collections.synchronizedList(RiakLink.decode(content.getLinksList()));
 		
 		if (content.hasLastMod()) {
-			this.lastModified = new Integer(content.getLastMod());
-			this.lastModifiedUsec = new Integer(content.getLastModUsecs());
+			this.lastModified = content.getLastMod();
+			this.lastModifiedUsec = content.getLastModUsecs();
 		}
 
 		if (content.getUsermetaCount() > 0) {

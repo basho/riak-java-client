@@ -52,7 +52,7 @@ public class DefaultRiakObject implements IRiakObject {
     /**
      * The default content type assigned when persisted in Riak if non is provided.
      */
-    public static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
     private final String bucket;
     @RiakKey private final String key;

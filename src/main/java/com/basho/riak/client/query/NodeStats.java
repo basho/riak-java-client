@@ -654,7 +654,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String[] connectedNodes()
     {
-        return connected_nodes;
+        return connected_nodes.clone();
     }
     
     /**
@@ -771,7 +771,7 @@ public class NodeStats implements Iterable<NodeStats>
      */
     public String[] ringMembers()
     {
-        return ring_members;
+        return ring_members.clone();
     }
     
     /**

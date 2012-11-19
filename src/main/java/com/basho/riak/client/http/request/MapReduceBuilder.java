@@ -509,7 +509,7 @@ public class MapReduceBuilder {
         query.put(phaseJson);
     }
 
-    private class MapReducePhase {
+    private static class MapReducePhase {
         Types type;
         MapReduceFunction function;
         Object arg;

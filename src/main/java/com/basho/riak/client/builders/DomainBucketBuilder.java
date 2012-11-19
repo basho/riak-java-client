@@ -55,7 +55,7 @@ public class DomainBucketBuilder<T> {
     // The default resolver, it doesn't resolve
     private ConflictResolver<T> resolver = new DefaultResolver<T>();
     private Converter<T> converter;
-    private Mutation<T> mutation;
+    private Mutation<T> mutation = null;
     private MutationProducer<T> mutationProducer;
     private Retrier retrier = DefaultRetrier.attempts(3);
 

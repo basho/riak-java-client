@@ -37,7 +37,7 @@ public class MapReduceResponse {
 
 	public MapReduceResponse(RpbMapRedResp resp, ByteString contentType2) {
 		if (resp.hasPhase()) {
-			this.phase = new Integer(resp.getPhase());
+			this.phase = resp.getPhase();
 		} else {
 			this.phase = null;
 		}
