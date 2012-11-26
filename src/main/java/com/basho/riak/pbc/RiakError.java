@@ -20,7 +20,7 @@ package com.basho.riak.pbc;
 
 import java.io.IOException;
 
-import com.basho.riak.pbc.RPB.RpbErrorResp;
+import com.basho.riak.protobuf.RiakPB.RpbErrorResp;
 
 /**
  * Exception created from a PBC error response message

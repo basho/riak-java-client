@@ -39,7 +39,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.basho.riak.client.util.CharsetUtils;
-import com.basho.riak.pbc.RPB.RpbContent;
+import com.basho.riak.protobuf.RiakKvPB.RpbContent;
 import com.google.protobuf.ByteString;
 
 

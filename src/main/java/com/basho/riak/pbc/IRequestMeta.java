@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString;
  */
 public interface IRequestMeta {
 
-	public abstract void preparePut(RPB.RpbPutReq.Builder builder);
+	public abstract void preparePut(com.basho.riak.protobuf.RiakKvPB.RpbPutReq.Builder builder);
 
 	public abstract IRequestMeta returnBody(boolean ret);
 

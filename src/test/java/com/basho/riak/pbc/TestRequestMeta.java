@@ -17,6 +17,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.basho.riak.protobuf.RiakKvPB;
+
 /**
  * @author russell
  *
@@ -29,7 +31,7 @@ public class TestRequestMeta {
         final int w = 3;
         final boolean returnBody = true;
         final String contentType = "application/json";
-        final RPB.RpbPutReq.Builder builder = RPB.RpbPutReq.newBuilder();
+        final RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder();
         
         IRequestMeta requestMeta = new RequestMeta();
         requestMeta.dw(dw).w(w).returnBody(returnBody).contentType(contentType);
@@ -45,7 +47,7 @@ public class TestRequestMeta {
 
     @Test
     public void nullsGetPrimativeDefaults() {
-        final RPB.RpbPutReq.Builder builder = RPB.RpbPutReq.newBuilder();
+        final RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder();
 
         IRequestMeta requestMeta = new RequestMeta();
 

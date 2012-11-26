@@ -36,15 +36,17 @@ import org.json.JSONObject;
 
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.util.CharsetUtils;
-import com.basho.riak.pbc.RPB.RpbDelReq;
-import com.basho.riak.pbc.RPB.RpbGetClientIdResp;
-import com.basho.riak.pbc.RPB.RpbGetReq;
-import com.basho.riak.pbc.RPB.RpbGetResp;
-import com.basho.riak.pbc.RPB.RpbGetServerInfoResp;
-import com.basho.riak.pbc.RPB.RpbListBucketsResp;
-import com.basho.riak.pbc.RPB.RpbMapRedReq;
-import com.basho.riak.pbc.RPB.RpbPutReq;
-import com.basho.riak.pbc.RPB.RpbPutResp;
+import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakPB;
+import com.basho.riak.protobuf.RiakKvPB.RpbDelReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbGetClientIdResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbGetReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbGetResp;
+import com.basho.riak.protobuf.RiakPB.RpbGetServerInfoResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbListBucketsResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbMapRedReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbPutReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbPutResp;
 import com.google.protobuf.ByteString;
 
 /**
@@ -86,12 +88,12 @@ public class RiakClient implements RiakMessageCodes {
 	}
 
 	public RiakClient(InetAddress addr, int port) throws IOException {
-		this.pool = new RiakConnectionPool(0, RiakConnectionPool.LIMITLESS, addr, port, 1000, BUFFER_SIZE_KB, 1000);
+		this.pool = new RiakConnectionPool(0, RiakConnectionPool.LIMITLESS, addr, port, 1000, BUFFER_SIZE_KB, 1000,0);
 		this.pool.start();
 	}
 
 	public RiakClient(String host, int port, int bufferSizeKb)  throws IOException {
-	    this.pool = new RiakConnectionPool(0, RiakConnectionPool.LIMITLESS, InetAddress.getByName(host), port, 1000, bufferSizeKb, 1000);
+	    this.pool = new RiakConnectionPool(0, RiakConnectionPool.LIMITLESS, InetAddress.getByName(host), port, 1000, bufferSizeKb, 1000,0);
 	    this.pool.start();
 	}
 
@@ -181,7 +183,7 @@ public class RiakClient implements RiakMessageCodes {
 			byte[] data = c.receive(MSG_GetClientIdResp);
 			if (data == null)
 				return null;
-			RpbGetClientIdResp res = RPB.RpbGetClientIdResp.parseFrom(data);
+			RpbGetClientIdResp res = RiakKvPB.RpbGetClientIdResp.parseFrom(data);
 			clientId = res.getClientId().toByteArray();
 			return CharsetUtils.asUTF8String(clientId);
 		} finally {
@@ -197,7 +199,7 @@ public class RiakClient implements RiakMessageCodes {
 			if (data == null)
 				return Collections.emptyMap();
 
-			RpbGetServerInfoResp res = RPB.RpbGetServerInfoResp.parseFrom(data);
+			RpbGetServerInfoResp res = RiakPB.RpbGetServerInfoResp.parseFrom(data);
 			if (res.hasNode()) {
 				this.node = res.getNode().toStringUtf8();
 			}
@@ -223,7 +225,7 @@ public class RiakClient implements RiakMessageCodes {
 
 	public RiakObject[] fetch(ByteString bucket, ByteString key, int readQuorum)
 			throws IOException {
-		RpbGetReq req = RPB.RpbGetReq.newBuilder().setBucket(bucket)
+		RpbGetReq req = RiakKvPB.RpbGetReq.newBuilder().setBucket(bucket)
 				.setKey(key).setR(readQuorum).build();
 
 		RiakConnection c = getConnection();
@@ -243,7 +245,7 @@ public class RiakClient implements RiakMessageCodes {
 
     // All the fetch parameters
     public FetchResponse fetch(ByteString bucket, ByteString key, FetchMeta fetchMeta) throws IOException {
-        RpbGetReq.Builder b = RPB.RpbGetReq.newBuilder().setBucket(bucket).setKey(key);
+        RpbGetReq.Builder b = RiakKvPB.RpbGetReq.newBuilder().setBucket(bucket).setKey(key);
         fetchMeta.write(b);
         RiakConnection c = getConnection();
 
@@ -262,7 +264,7 @@ public class RiakClient implements RiakMessageCodes {
 
 	public RiakObject[] fetch(ByteString bucket, ByteString key)
 			throws IOException {
-		RpbGetReq req = RPB.RpbGetReq.newBuilder().setBucket(bucket)
+		RpbGetReq req = RiakKvPB.RpbGetReq.newBuilder().setBucket(bucket)
 				.setKey(key).build();
 
 		RiakConnection c = getConnection();
@@ -281,7 +283,7 @@ public class RiakClient implements RiakMessageCodes {
             return new FetchResponse(NO_RIAK_OBJECTS, false, null);
         }
 
-        RpbGetResp resp = RPB.RpbGetResp.parseFrom(rep);
+        RpbGetResp resp = RiakKvPB.RpbGetResp.parseFrom(rep);
         int count = resp.getContentCount();
         RiakObject[] out = new RiakObject[count];
         ByteString vclock = resp.getVclock();
@@ -310,7 +312,7 @@ public class RiakClient implements RiakMessageCodes {
 			for (int i = 0; i < values.length; i++) {
 				RiakObject value = values[i];
 
-				RPB.RpbPutReq.Builder builder = RPB.RpbPutReq.newBuilder()
+				RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder()
 						.setBucket(value.getBucketBS())
 						.setKey(value.getKeyBS()).setContent(
 								value.buildContent());
@@ -370,7 +372,7 @@ public class RiakClient implements RiakMessageCodes {
 				for (int i = 0; i < vclocks.length; i++) {
 					byte[] data = c.receive(MSG_PutResp);
 					if (data != null) {
-						RpbPutResp resp = RPB.RpbPutResp.parseFrom(data);
+						RpbPutResp resp = RiakKvPB.RpbPutResp.parseFrom(data);
 						if (resp.hasVclock()) {
 							vclocks[i] = resp.getVclock();
 						}
@@ -392,7 +394,7 @@ public class RiakClient implements RiakMessageCodes {
 	public RiakObject[] store(RiakObject value, IRequestMeta meta)
 			throws IOException {
 
-		RPB.RpbPutReq.Builder builder = RPB.RpbPutReq.newBuilder().setBucket(
+		RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder().setBucket(
 				value.getBucketBS()).setKey(value.getKeyBS()).setContent(
 				value.buildContent());
 
@@ -413,7 +415,7 @@ public class RiakClient implements RiakMessageCodes {
 				return NO_RIAK_OBJECTS;
 			}
 
-			RpbPutResp resp = RPB.RpbPutResp.parseFrom(r);
+			RpbPutResp resp = RiakKvPB.RpbPutResp.parseFrom(r);
 
 			RiakObject[] res = new RiakObject[resp.getContentCount()];
 			ByteString vclock = resp.getVclock();
@@ -436,7 +438,7 @@ public class RiakClient implements RiakMessageCodes {
 	}
 
 	public void delete(ByteString bucket, ByteString key, DeleteMeta deleteMeta) throws IOException {
-	    RpbDelReq.Builder builder = RPB.RpbDelReq.newBuilder().setBucket(bucket)
+	    RpbDelReq.Builder builder = RiakKvPB.RpbDelReq.newBuilder().setBucket(bucket)
         .setKey(key);
 
 	    deleteMeta.write(builder);
@@ -459,7 +461,7 @@ public class RiakClient implements RiakMessageCodes {
 
 	public void delete(ByteString bucket, ByteString key, int rw)
 			throws IOException {
-		RpbDelReq req = RPB.RpbDelReq.newBuilder().setBucket(bucket)
+		RpbDelReq req = RiakKvPB.RpbDelReq.newBuilder().setBucket(bucket)
 				.setKey(key).setRw(rw).build();
 
 		RiakConnection c = getConnection();
@@ -477,7 +479,7 @@ public class RiakClient implements RiakMessageCodes {
 	}
 
 	public void delete(ByteString bucket, ByteString key) throws IOException {
-		RpbDelReq req = RPB.RpbDelReq.newBuilder().setBucket(bucket)
+		RpbDelReq req = RiakKvPB.RpbDelReq.newBuilder().setBucket(bucket)
 				.setKey(key).build();
 
 		RiakConnection c = getConnection();
@@ -504,7 +506,7 @@ public class RiakClient implements RiakMessageCodes {
 			release(c);
 		}
 
-		RpbListBucketsResp resp = RPB.RpbListBucketsResp.parseFrom(data);
+		RpbListBucketsResp resp = RiakKvPB.RpbListBucketsResp.parseFrom(data);
 		ByteString[] out = new ByteString[resp.getBucketsCount()];
 		for (int i = 0; i < out.length; i++) {
 			out[i] = resp.getBuckets(i);
@@ -517,7 +519,7 @@ public class RiakClient implements RiakMessageCodes {
 
 		RiakConnection c = getConnection();
 		try {
-			c.send(MSG_GetBucketReq, RPB.RpbGetBucketReq.newBuilder()
+			c.send(MSG_GetBucketReq, RiakKvPB.RpbGetBucketReq.newBuilder()
 					.setBucket(bucket).build());
 
 			byte[] data = c.receive(MSG_GetBucketResp);
@@ -526,7 +528,7 @@ public class RiakClient implements RiakMessageCodes {
 				return bp;
 			}
 
-			bp.init(RPB.RpbGetBucketResp.parseFrom(data));
+			bp.init(RiakKvPB.RpbGetBucketResp.parseFrom(data));
 			return bp;
 		} finally {
 			release(c);
@@ -537,7 +539,7 @@ public class RiakClient implements RiakMessageCodes {
 	public void setBucketProperties(ByteString bucket, BucketProperties props)
 			throws IOException {
 
-		RPB.RpbSetBucketReq req = RPB.RpbSetBucketReq.newBuilder().setBucket(
+		RiakKvPB.RpbSetBucketReq req = RiakKvPB.RpbSetBucketReq.newBuilder().setBucket(
 				bucket).setProps(props.build()).build();
 
 		RiakConnection c = getConnection();
@@ -554,7 +556,7 @@ public class RiakClient implements RiakMessageCodes {
 	public KeySource listKeys(ByteString bucket) throws IOException {
 
 		RiakConnection c = getConnection();
-		c.send(MSG_ListKeysReq, RPB.RpbListKeysReq.newBuilder().setBucket(
+		c.send(MSG_ListKeysReq, RiakKvPB.RpbListKeysReq.newBuilder().setBucket(
 				bucket).build());
 
 		return new KeySource(this, c);
@@ -580,7 +582,7 @@ public class RiakClient implements RiakMessageCodes {
 		if (contentType == null) {
 			throw new IllegalArgumentException("no content type");
 		}
-		RpbMapRedReq req = RPB.RpbMapRedReq.newBuilder().setRequest(request)
+		RpbMapRedReq req = RiakKvPB.RpbMapRedReq.newBuilder().setRequest(request)
 				.setContentType(meta.getContentType()).build();
 
 		c.send(MSG_MapRedReq, req);

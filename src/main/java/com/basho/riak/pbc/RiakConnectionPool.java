@@ -24,7 +24,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import com.basho.riak.client.raw.pbc.PoolSemaphore;
-import com.basho.riak.pbc.RPB.RpbSetClientIdReq;
+import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
 
 /**
@@ -138,6 +138,7 @@ public class RiakConnectionPool {
     private final int bufferSizeKb;
     private final int initialSize;
     private final long idleConnectionTTLNanos;
+    private final int requestTimeoutMillis;
     private final ScheduledExecutorService idleReaper;
     private final ScheduledExecutorService shutdownExecutor;
     // what state the pool is in (see enum State)
@@ -165,13 +166,17 @@ public class RiakConnectionPool {
      * @param idleConnectionTTLMillis
      *            How long for an idle connection to exist before it is reaped,
      *            0 mean forever
+     * @param requestTimeoutMillis 
+     *            The SO_TIMEOUT flag on the socket; read/write timeout
+     *            0 means forever
      * @throws IOException
      *             If the initial connection creation throws an IOException
      */
     public RiakConnectionPool(int initialSize, int maxSize, InetAddress host, int port,
-            long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis) throws IOException {
+            long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis,
+            int requestTimeoutMillis) throws IOException {
         this(initialSize, getSemaphore(maxSize), host, port, connectionWaitTimeoutMillis, bufferSizeKb,
-             idleConnectionTTLMillis);
+             idleConnectionTTLMillis, requestTimeoutMillis);
 
         if (initialSize > maxSize && (maxSize > 0)) {
             state = State.SHUTTING_DOWN;
@@ -200,11 +205,15 @@ public class RiakConnectionPool {
      * @param idleConnectionTTLMillis
      *            How long for an idle connection to exist before it is reaped,
      *            0 mean forever
+     * @param requestTimeoutMillis 
+     *            The SO_TIMEOUT flag on the socket; read/write timeout
+     *            0 means forever
      * @throws IOException
      *             If the initial connection creation throws an IOException
      */
     public RiakConnectionPool(int initialSize, Semaphore poolSemaphore, InetAddress host, int port,
-            long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis) throws IOException {
+            long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis,
+            int requestTimeoutMillis) throws IOException {
         this.permits = poolSemaphore;
         this.available = new ConcurrentLinkedQueue<RiakConnection>();
         this.inUse = new ConcurrentLinkedQueue<RiakConnection>();
@@ -212,6 +221,7 @@ public class RiakConnectionPool {
         this.host = host;
         this.port = port;
         this.connectionWaitTimeoutNanos = TimeUnit.NANOSECONDS.convert(connectionWaitTimeoutMillis, TimeUnit.MILLISECONDS);
+        this.requestTimeoutMillis = requestTimeoutMillis;
         this.initialSize = initialSize;
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
@@ -282,7 +292,10 @@ public class RiakConnectionPool {
     private void warmUp() throws IOException {
         if (permits.tryAcquire(initialSize)) {
             for (int i = 0; i < this.initialSize; i++) {
-                available.add(new RiakConnection(this.host, this.port, this.bufferSizeKb, this));
+                available.add(new RiakConnection(this.host, this.port, 
+                    this.bufferSizeKb, this, 
+                    TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), 
+                    requestTimeoutMillis));
             }
         } else {
             throw new RuntimeException("Unable to create initial connections");
@@ -330,7 +343,7 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private void setClientIdOnConnection(RiakConnection c, byte[] clientId) throws IOException {
-        RpbSetClientIdReq req = RPB.RpbSetClientIdReq.newBuilder().setClientId(ByteString.copyFrom(clientId)).build();
+        RpbSetClientIdReq req = com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq.newBuilder().setClientId(ByteString.copyFrom(clientId)).build();
 
         try {
             c.send(RiakMessageCodes.MSG_SetClientIdReq, req);
@@ -374,20 +387,26 @@ public class RiakConnectionPool {
     private RiakConnection createConnection(int attempts) throws IOException {
         try {
             if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
+                boolean releasePermit = true;
                 try {
-                    return new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS));
-                } catch(SocketTimeoutException e) {
-                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage());
+                    RiakConnection connection = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
+                    releasePermit = false;
+                    return connection;
+                } catch (SocketTimeoutException e) {
+                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
                 } catch (IOException e) {
-                    permits.release();
                     throw e;
+                } finally {
+                    if (releasePermit) {
+                        permits.release();
+                    }
                 }
             } else {
                 throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-
+            
             if (attempts > 0) {
                 return createConnection(attempts - 1);
             } else {

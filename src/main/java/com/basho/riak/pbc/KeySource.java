@@ -21,7 +21,7 @@ package com.basho.riak.pbc;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-import com.basho.riak.pbc.RPB.RpbListKeysResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbListKeysResp;
 import com.google.protobuf.ByteString;
 
 /**
@@ -83,7 +83,7 @@ public class KeySource extends RiakStreamClient<ByteString> {
                     throw new IOException("received empty response");
                 }
 
-                r = RPB.RpbListKeysResp.parseFrom(data);
+                r = com.basho.riak.protobuf.RiakKvPB.RpbListKeysResp.parseFrom(data);
                 i = 0;
             } catch (IOException e) {
                 close();

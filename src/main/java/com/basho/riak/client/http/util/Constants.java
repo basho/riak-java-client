@@ -82,17 +82,12 @@ public interface Constants {
     // Content types used in Riak
     public static String CTYPE_ANY = "*/*";
     public static String CTYPE_JSON = "application/json";
-    public static String CTYPE_JSON_UTF8 = "application/json;charset=UTF-8";
+    public static String CTYPE_JSON_UTF8 = "application/json; charset=UTF-8";
     public static String CTYPE_OCTET_STREAM = "application/octet-stream";
     public static String CTYPE_MULTIPART_MIXED = "multipart/mixed";
     public static String CTYPE_TEXT = "text/plain";
     public static String CTYPE_TEXT_UTF8 = "text/plain; charset=UTF-8";
 
-    // Default r, w, and dw values to use when not specified
-    public static Integer DEFAULT_R = 2;
-    public static Integer DEFAULT_W = null;
-    public static Integer DEFAULT_DW = null;
-    
     // Values for the "keys" query parameter
     public static String NO_KEYS = "false";
     public static String INCLUDE_KEYS = "true";

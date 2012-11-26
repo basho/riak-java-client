@@ -21,8 +21,8 @@ package com.basho.riak.pbc;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.basho.riak.pbc.RPB.RpbLink;
-import com.basho.riak.pbc.RPB.RpbLink.Builder;
+import com.basho.riak.protobuf.RiakKvPB.RpbLink;
+import com.basho.riak.protobuf.RiakKvPB.RpbLink.Builder;
 import com.google.protobuf.ByteString;
 
 /**

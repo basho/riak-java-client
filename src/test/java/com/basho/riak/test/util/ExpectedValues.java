@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.basho.riak.client.http.util.Constants;
-import com.basho.riak.pbc.RPB.RpbLink;
-import com.basho.riak.pbc.RPB.RpbPair;
+import com.basho.riak.protobuf.RiakKvPB.RpbLink;
+import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
 
 /**

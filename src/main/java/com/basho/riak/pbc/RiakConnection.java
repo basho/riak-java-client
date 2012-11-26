@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-import com.basho.riak.pbc.RPB.RpbErrorResp;
+import com.basho.riak.protobuf.RiakPB.RpbErrorResp;
 import com.google.protobuf.MessageLite;
 
 /**
@@ -47,22 +47,25 @@ class RiakConnection
 	private byte[] clientId;
 	private volatile long idleStart;
 
-	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool) throws IOException {
-		this(new InetSocketAddress(addr, port), bufferSizeKb, pool, 0);
+	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool, final long connectTimeoutMillis, final int requestTimeoutMillis) throws IOException {
+		this(new InetSocketAddress(addr, port), bufferSizeKb, pool, connectTimeoutMillis, requestTimeoutMillis);
 	}
 
-	public RiakConnection(InetAddress addr, int port, int bufferSizeKb, final RiakConnectionPool pool, final long timeoutMillis) throws IOException {
-		this(new InetSocketAddress(addr, port), bufferSizeKb, pool, timeoutMillis);
-	}
-
-	public RiakConnection(SocketAddress addr, int bufferSizeKb, final RiakConnectionPool pool, final long timeoutMillis) throws IOException {
-		if (timeoutMillis > Integer.MAX_VALUE || timeoutMillis < Integer.MIN_VALUE) {
+	public RiakConnection(SocketAddress addr, int bufferSizeKb, final RiakConnectionPool pool, final long connectTimeoutMillis, final int requestTimeoutMillis) throws IOException {
+        
+		if (connectTimeoutMillis > Integer.MAX_VALUE || connectTimeoutMillis < Integer.MIN_VALUE) {
 			throw new IllegalArgumentException("Cannot cast timeout to int without changing value");
 		}
 
 		this.pool = pool;
 		sock = new Socket();
-		sock.connect(addr, (int) timeoutMillis);
+        
+        // With the original Java IO the SO_TIMEOUT value is used for read/write operations
+        if (requestTimeoutMillis > 0) {
+            sock.setSoTimeout(requestTimeoutMillis);
+        }
+		
+        sock.connect(addr, (int) connectTimeoutMillis);
 
 		sock.setSendBufferSize(1024 * bufferSizeKb);
 
@@ -118,7 +121,7 @@ class RiakConnection
 		}
 
 		if (get_code == RiakClient.MSG_ErrorResp) {
-			RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(data);
+			RpbErrorResp err = com.basho.riak.protobuf.RiakPB.RpbErrorResp.parseFrom(data);
 			throw new RiakError(err);
 		}
 
@@ -137,7 +140,7 @@ class RiakConnection
 			len = din.readInt();
 			get_code = din.read();
 			if (code == RiakClient.MSG_ErrorResp) {
-				RpbErrorResp err = com.basho.riak.pbc.RPB.RpbErrorResp.parseFrom(din);
+				RpbErrorResp err = com.basho.riak.protobuf.RiakPB.RpbErrorResp.parseFrom(din);
 				throw new RiakError(err);
 			}
 		} catch (IOException e) {

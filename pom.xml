@@ -5,7 +5,7 @@
   <groupId>com.basho.riak</groupId>
   <artifactId>riak-client</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.6.1-SNAPSHOT</version>
+  <version>1.0.7.1-SNAPSHOT</version>
   <name>Riak Client for Java</name>
   <description>HttpClient-based client for Riak</description>
   <url>https://github.com/basho/riak-java-client</url>
@@ -40,17 +40,18 @@
     </developer>
   </developers>
 
-  <scm>
-    <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
-    <url>http://github.com/basho/riak-java-client</url>
-  </scm>
-
-  <properties>
-    <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cobertura.version>2.4</cobertura.version>
-  </properties>
+    <scm>
+        <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
+        <url>http://github.com/basho/riak-java-client</url>
+    </scm>
+	
+    <properties>
+        <os.installed.protoc.version>2.3.0</os.installed.protoc.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <cobertura.version>2.4</cobertura.version>
+    </properties>
 
   <!-- Take this out put use our own for bamboo build
   <distributionManagement>
@@ -87,12 +88,6 @@
       <artifactId>httpclient</artifactId>
       <version>4.1.1</version>
     </dependency>
-    <!-- Protocol BUffers -->
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>${os.installed.protoc.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-core-asl</artifactId>
@@ -116,6 +111,21 @@
       <version>4.4</version>
       <scope>test</scope>
     </dependency>
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20090211</version>
+      </dependency>
+      <dependency>
+          <groupId>com.basho.riak.protobuf</groupId>
+          <artifactId>riak-pb</artifactId>
+          <version>1.2</version>
+      </dependency>
+      <dependency>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+          <version>2.4.1</version>
+      </dependency>
   </dependencies>
   <build>
     <plugins>

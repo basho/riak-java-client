@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,8 @@ import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.cookie.DateParseException;
+import org.apache.http.impl.cookie.DateUtils;
 import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,6 +60,9 @@ import com.basho.riak.client.util.CharsetUtils;
 public class ClientUtils {
 
     private static final String COMMA = ",";
+    private static final String[] DATE_FORMATS = new String[] {
+            DateUtils.PATTERN_RFC1123, DateUtils.PATTERN_RFC1036, DateUtils.PATTERN_ASCTIME };
+
     // Matches the scheme, host and port of a URL
     private static String URL_PATH_MASK = "^(?:[A-Za-z0-9+-\\.]+://)?[^/]*";
     private static Random rng = new Random();
@@ -577,6 +583,14 @@ public class ClientUtils {
             return tmp.toByteArray();
         } catch (IOException e) {
             throw new RiakIORuntimeException(e);
+        }
+    }
+
+    public static Date parseDate(String date) {
+        try {
+            return DateUtils.parseDate(date, DATE_FORMATS);
+        } catch (DateParseException e) {
+            return null;
         }
     }
 }

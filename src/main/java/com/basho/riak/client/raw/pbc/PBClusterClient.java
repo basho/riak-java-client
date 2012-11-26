@@ -94,13 +94,15 @@ public class PBClusterClient extends ClusterClient<PBClientConfig> {
             pool = new RiakConnectionPool(node.getInitialPoolSize(), node.getPoolSize(),
                                           InetAddress.getByName(node.getHost()), node.getPort(),
                                           node.getConnectionWaitTimeoutMillis(), node.getSocketBufferSizeKb(),
-                                          node.getIdleConnectionTTLMillis());
+                                          node.getIdleConnectionTTLMillis(),
+                                          node.getRequestTimeoutMillis());
         } else {
             pool = new RiakConnectionPool(node.getInitialPoolSize(), new PoolSemaphore(clusterSemaphore,
                                                                                        node.getPoolSize()),
                                           InetAddress.getByName(node.getHost()), node.getPort(),
                                           node.getConnectionWaitTimeoutMillis(), node.getSocketBufferSizeKb(),
-                                          node.getIdleConnectionTTLMillis());
+                                          node.getIdleConnectionTTLMillis(),
+                                          node.getRequestTimeoutMillis());
         }
         return pool;
     }

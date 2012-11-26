@@ -104,7 +104,7 @@ public class JSONConverter<T> implements Converter<T> {
             if (key == null) {
                 throw new NoKeySpecifedException(domainObject);
             }
-
+            
             final byte[] value = objectMapper.writeValueAsBytes(domainObject);
             Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);
             RiakIndexes indexes = riakIndexConverter.getIndexes(domainObject);
@@ -147,6 +147,7 @@ public class JSONConverter<T> implements Converter<T> {
         try {
             T domainObject = objectMapper.readValue(json, clazz);
             KeyUtil.setKey(domainObject, riakObject.getKey());
+            VClockUtil.setVClock(domainObject, riakObject.getVClock());
             usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
             riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexes()),
                                                domainObject);
@@ -157,5 +158,14 @@ public class JSONConverter<T> implements Converter<T> {
         } catch (IOException e) {
             throw new ConversionException(e);
         }
+    }
+    
+    /**
+     * Returns the {@link ObjectMapper} being used.
+     * This is a convenience method to allow changing its behavior.
+     * @return The Jackson ObjectMapper
+     */
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 }
