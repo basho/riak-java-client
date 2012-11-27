@@ -13,34 +13,26 @@
  */
 package com.basho.riak.client.raw.http;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.params.HttpParams;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import com.basho.riak.client.raw.RiakClientFactory;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * @author russell
@@ -84,14 +76,9 @@ public class HTTPRiakClientFactoryTest {
         HttpResponse response = mock(HttpResponse.class);
         HttpEntity entity = mock(HttpEntity.class);
 
-        byte[] stats = "{\"nodename\": \"node@127.0.0.1\"}".getBytes();
-        InputStream stream = new ByteArrayInputStream(stats);
-
         when(httpClient.execute(any(HttpRequestBase.class))).thenReturn(response);
         when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"));
         when(response.getEntity()).thenReturn(entity);
-        when(entity.getContentLength()).thenReturn((long) stats.length);
-        when(entity.getContent()).thenReturn(stream);
         when(httpClient.getParams()).thenReturn(httpParams);
 
         HTTPClientConfig conf = b.withUrl("http://www.google.com/notriak").withHttpClient(httpClient).withMapreducePath("/notAPath").withMaxConnctions(200).withTimeout(9000).build();
@@ -103,12 +90,7 @@ public class HTTPRiakClientFactoryTest {
 
         client.delete("b", "k");
 
-        // two calls expected, first is a get for stats on initialization, second is the delete
-        ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
-        verify(httpClient, times(2)).execute(captor.capture());
-        List<HttpUriRequest> values = captor.getAllValues();
-        assertTrue(values.get(0) instanceof HttpGet);
-        assertTrue(values.get(1) instanceof HttpDelete);
+        verify(httpClient).execute(any(HttpDelete.class));
     }
 
 }
