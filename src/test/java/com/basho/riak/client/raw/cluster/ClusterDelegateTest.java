@@ -21,6 +21,8 @@ import com.basho.riak.client.raw.config.Configuration;
 public class ClusterDelegateTest {
 
     @Test public void nodeLifecycle() throws Exception {
+        final Set<String> buckets = mock(Set.class);
+        when(buckets.isEmpty()).thenReturn(false);
 
         final String NODE_0 = "client0@127.0.0.1";
         final String NODE_1 = "client1@127.0.0.1";
@@ -29,6 +31,8 @@ public class ClusterDelegateTest {
         final RawClient client1 = mock(RawClient.class);
         when(client0.getNodeName()).thenReturn(NODE_0);
         when(client1.getNodeName()).thenReturn(NODE_1);
+        when(client0.listBuckets()).thenReturn(buckets);
+        when(client1.listBuckets()).thenReturn(buckets);
         final List<RawClient> clients = Arrays.asList(client0, client1);
 
         // set up the client to blow up the first time it's used and behave correctly the second time

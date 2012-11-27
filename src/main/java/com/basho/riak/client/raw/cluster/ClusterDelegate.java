@@ -160,6 +160,7 @@ public class ClusterDelegate {
                 }
                 notifyObservers();
             } catch (RuntimeException re) {
+              // keep runtime exceptions from killing scheduled thread
             }
         }
       
@@ -172,8 +173,6 @@ public class ClusterDelegate {
           } catch (IOException ioe) {
             return false;
           }
-          
         }
     }
-
 }
