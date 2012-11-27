@@ -595,4 +595,7 @@ public class RiakClient implements RiakMessageCodes {
     pool.shutdown();
   }
 
+  public String getPoolName() {
+    return String.format("%s:%s", pool.getHostName(), pool.getPort());
+  }
 }

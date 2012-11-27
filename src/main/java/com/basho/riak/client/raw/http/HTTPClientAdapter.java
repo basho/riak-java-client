@@ -72,7 +72,7 @@ public class HTTPClientAdapter implements RawClient {
      */
     public HTTPClientAdapter(final RiakClient client) throws IOException {
         this.client = client;
-        this.nodeName = stats().nodename();
+        this.nodeName = client.getConfig().getBaseUrl();
     }
 
     /**

@@ -97,7 +97,7 @@ public class PBClientAdapter implements RawClient {
      */
     public PBClientAdapter(com.basho.riak.pbc.RiakClient delegate) throws IOException {
         this.client = delegate;
-        this.nodeName = this.client.getServerInfo().get("node");
+        this.nodeName = delegate.getPoolName();
     }
 
     /* (non-Javadoc)

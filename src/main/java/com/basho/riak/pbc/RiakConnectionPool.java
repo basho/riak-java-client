@@ -507,4 +507,12 @@ public class RiakConnectionPool {
     public String getPoolState() {
         return state.name();
     }
+
+    public String getHostName() {
+      return host.getHostName();
+    }
+
+    public int getPort() {
+      return port;
+    }
 }
