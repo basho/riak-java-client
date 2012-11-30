@@ -36,7 +36,7 @@ import com.basho.riak.client.bucket.DefaultBucket;
  *     private String myKeyString;
  *     
  *     \@RiakLinks
- *     private Collection<RiakLinks> links;
+ *     private Collection<RiakLink> links;
  * }
  * </pre></code>
  * </p>
