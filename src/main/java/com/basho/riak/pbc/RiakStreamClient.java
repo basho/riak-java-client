@@ -61,6 +61,7 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 				// the reference was lost; cancel this timer and
 				// close the connection
 				cancel();
+                conn.close();
 				conn.release();
 			} else if (conn.isClosed()) {
 				cancel();
