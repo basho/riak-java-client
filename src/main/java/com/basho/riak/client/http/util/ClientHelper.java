@@ -16,7 +16,6 @@ package com.basho.riak.client.http.util;
 import static com.basho.riak.client.util.CharsetUtils.utf8StringToBytes;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
@@ -34,9 +33,10 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -288,12 +288,8 @@ public class ClientHelper {
      */
     public HttpResponse mapReduce(String job, RequestMeta meta) {
         HttpPost post = new HttpPost(config.getMapReduceUrl());
-        try {
-            StringEntity entity = new StringEntity(job, Constants.CTYPE_JSON_UTF8, CharsetUtils.UTF_8.name());
-            post.setEntity(entity);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("StringEntity should always support UTF-8 charset", e);
-        }
+        StringEntity entity = new StringEntity(job, ContentType.APPLICATION_JSON);
+        post.setEntity(entity);
         return executeMethod(null, null, post, meta);
     }
 
@@ -451,11 +447,9 @@ public class ClientHelper {
                 // For this, HC4.1 authors, I hate you
                 URI newURI;
                 try {
-                    newURI = URIUtils.createURI(originalURI.getScheme(),
-                                                           originalURI.getHost(),
-                                                           originalURI.getPort(),
-                                                           originalURI.getRawPath(),
-                                                           URLEncodedUtils.format(newQuery, "UTF-8"), null);
+                    newURI = new URIBuilder(originalURI)
+                                 .setQuery(URLEncodedUtils.format(newQuery, "UTF-8"))
+                                 .build();
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
                     throw new RiakIORuntimeException(e);

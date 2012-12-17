@@ -36,7 +36,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.cookie.DateParseException;
 import org.apache.http.impl.cookie.DateUtils;
 import org.apache.http.params.HttpParams;
@@ -80,10 +80,10 @@ public class ClientUtils {
         ClientConnectionManager m;
 
         if (http == null) {
-            m = new ThreadSafeClientConnManager();
+            m = new PoolingClientConnectionManager();
             if (config.getMaxConnections() != null) {
-                ((ThreadSafeClientConnManager) m).setMaxTotal(config.getMaxConnections());
-                ((ThreadSafeClientConnManager) m).setDefaultMaxPerRoute(config.getMaxConnections());
+                ((PoolingClientConnectionManager) m).setMaxTotal(config.getMaxConnections());
+                ((PoolingClientConnectionManager) m).setDefaultMaxPerRoute(config.getMaxConnections());
             }
             http = new DefaultHttpClient(m);
 
