@@ -398,9 +398,9 @@ public class RiakClient implements RiakMessageCodes {
 				value.getBucketBS()).setContent(
 				value.buildContent());
 
-        if (value.getKeyBS() != null ) {
-            builder.setKey(value.getKeyBS());
-        }
+		if (value.getKeyBS() != null) {
+			builder.setKey(value.getKeyBS());
+		}
 
 		if (value.getVclock() != null) {
 			builder.setVclock(value.getVclock());
@@ -424,8 +424,8 @@ public class RiakClient implements RiakMessageCodes {
 			RiakObject[] res = new RiakObject[resp.getContentCount()];
 			ByteString vclock = resp.getVclock();
 
-            // The key parameter will be set only if the server generated a 
-            // key for the object so we check and set it accordingly
+			// The key parameter will be set only if the server generated a 
+			// key for the object so we check and set it accordingly
 			for (int i = 0; i < res.length; i++) {
 				res[i] = new RiakObject(vclock, value.getBucketBS(), 
                     (resp.hasKey()) ? resp.getKey() : value.getKeyBS(), 
