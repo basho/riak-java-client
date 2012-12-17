@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.basho.riak.client.http.RiakConfig;
 import org.apache.http.HttpStatus;
 
 import com.basho.riak.client.IRiakObject;
@@ -487,5 +488,11 @@ public class HTTPClientAdapter implements RawClient {
             }
         }
     }
-    
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.http.RiakClient#getConfig()
+     */
+    public RiakConfig getConfig() {
+      return client.getConfig();
+    }
 }
