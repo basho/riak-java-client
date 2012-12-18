@@ -391,13 +391,15 @@ public class ClientUtils {
      */
     public static List<RiakLink> parseLinkHeader(String header) {
         List<RiakLink> links = new ArrayList<RiakLink>();
-        Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
-        for (Entry<String, Map<String, String>> e: parsedLinks.entrySet()) {
+        Map<String, List<Map<String, String>>> parsedLinks = LinkHeader.parse(header);
+        for (Entry<String, List<Map<String, String>>> e: parsedLinks.entrySet()) {
         	String url = e.getKey();
-        	RiakLink link = parseOneLink(url, e.getValue());
-        	if (link != null) {
-        		links.add(link);
-        	}
+            for (Map<String,String> params : e.getValue()) {
+                RiakLink link = parseOneLink(url, params);
+                if (link != null) {
+                    links.add(link);
+                }
+            }
         }
         return links;
     }
