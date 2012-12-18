@@ -29,14 +29,14 @@ public abstract class AbstractLogicalFilter implements LogicalFilter {
     public AbstractLogicalFilter(KeyFilter... filters) {
         synchronized (this.filters) {
             for (KeyFilter filter : filters) {
-                this.filters.add(filter.asArray());
+                this.filters.add(new Object[] { filter.asArray() });
             }
         }
     }
 
     public AbstractLogicalFilter add(KeyFilter filter) {
         synchronized (filter) {
-            filters.add(filter.asArray());
+            filters.add(new Object[] { filter.asArray() });
         }
         return this;
     }
