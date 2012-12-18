@@ -172,7 +172,7 @@ public class PBClientAdapter implements RawClient {
      * , com.basho.riak.client.raw.StoreMeta)
      */
     public RiakResponse store(IRiakObject riakObject, StoreMeta storeMeta) throws IOException {
-        if (riakObject == null || riakObject.getKey() == null || riakObject.getBucket() == null) {
+        if (riakObject == null || riakObject.getBucket() == null) {
             throw new IllegalArgumentException(
                                                "object cannot be null, object's key cannot be null, object's bucket cannot be null");
         }
