@@ -40,8 +40,11 @@ public class LogicalAndFilterTest {
         LogicalAndFilter laf = new LogicalAndFilter(filters);
         laf.add(new SimilarToFilter("hippo", 2));
         
-        assertArrayEquals(new Object[] { "and", new FloatToStringFilter().asArray(), new IntToStringFilter().asArray(),
-                                        new SetMemberFilter("rita", "sue", "bob").asArray(), new SimilarToFilter("hippo", 2).asArray() }, laf.asArray());
+        assertArrayEquals(new Object[] { "and", new Object[] { new FloatToStringFilter().asArray() }, 
+                                                new Object[] { new IntToStringFilter().asArray() },
+                                                new Object[] { new SetMemberFilter("rita", "sue", "bob").asArray() }, 
+                                                new Object[] { new SimilarToFilter("hippo", 2).asArray() }},
+                                                laf.asArray());
     }
 
 }
