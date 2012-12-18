@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import com.basho.riak.client.raw.pbc.PoolSemaphore;
 import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * A bounded or boundless pool of {@link RiakConnection}s to be reused by {@link RiakClient}
@@ -132,7 +133,7 @@ public class RiakConnectionPool {
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
-    private final ConcurrentLinkedQueue<RiakConnection> available;
+    private final PriorityBlockingQueue<RiakConnection> available;
     private final ConcurrentLinkedQueue<RiakConnection> inUse;
     private final long connectionWaitTimeoutNanos;
     private final int bufferSizeKb;
@@ -215,7 +216,7 @@ public class RiakConnectionPool {
             long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis,
             int requestTimeoutMillis) throws IOException {
         this.permits = poolSemaphore;
-        this.available = new ConcurrentLinkedQueue<RiakConnection>();
+        this.available = new PriorityBlockingQueue<RiakConnection>();
         this.inUse = new ConcurrentLinkedQueue<RiakConnection>();
         this.bufferSizeKb = bufferSizeKb;
         this.host = host;
@@ -255,12 +256,7 @@ public class RiakConnectionPool {
                                 }
                             }
                             c = available.peek();
-                        } else {
-                            // since the queue is FIFO short-circuit and stop
-                            // looking, if the first element isn't too old, the
-                            // rest can't be
-                            c = null;
-                        }
+                        } 
                     }
                 }
             }, idleConnectionTTLNanos, idleConnectionTTLNanos, TimeUnit.NANOSECONDS);
