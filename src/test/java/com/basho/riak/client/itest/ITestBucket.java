@@ -118,6 +118,15 @@ public abstract class ITestBucket {
         assertNull(fetched);
     }
 
+    @Test public void storeWithNullKey() throws Exception {
+        Bucket b = client.fetchBucket(bucketName).execute();
+        IRiakObject o = b.store(null, "value").withoutFetch().returnBody(true).execute();
+        
+        String k = o.getKey();
+        assertNotNull(k);
+        
+    }
+    
     @Ignore("non-deterministic")
     @Test public void byDefaultSiblingsThrowUnresolvedExceptionOnStore() throws Exception {
         final Bucket b = client.createBucket(bucketName).allowSiblings(true).execute();
