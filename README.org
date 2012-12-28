@@ -3,6 +3,8 @@ This document describes how to use the Java client to interact with Riak. See th
 
 In addition, we are now working on a "cookbook" for using the Riak Java client. See the [[https://github.com/basho/riak-java-client/wiki/Cookbook][Cookbook section on the Github Wiki]] for complete, compilable examples of using the Java client. 
 
+You can also browse the [[http://basho.github.com/riak-java-client/][Javadocs]].
+
 * Overview
 Riak is a dynamo style, distributed key-value store that provides a [[http://wiki.basho.com/MapReduce.html][map reduce]]
 query interface. It exposes both a [[http://wiki.basho.com/REST-API.html][REST]] and [[http://wiki.basho.com/PBC-API.html][protocol buffers]] API. This
@@ -25,14 +27,12 @@ The current riak-java-client is available from maven central. Add the dependency
     <dependency>
         <groupId>com.basho.riak</groupId>
         <artifactId>riak-client</artifactId>
-        <version>1.0.6</version>
+        <version>1.0.7</version>
         <type>pom</type>
     </dependency>
 #+END_SRC
 
 Maven artifacts are published to the [[https://oss.sonatype.org/index.html#nexus-search;quick~riak][Sonatype OSS Repository]].
-
-You can also browse the [[http://basho.github.com/riak-java-client/][Javadocs]].
 
 
 ** Quick start

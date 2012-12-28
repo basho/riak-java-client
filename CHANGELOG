@@ -1,3 +1,50 @@
+1.0.7 
+-------------
+This is a bugfix and feature release
+
+Worth special mention:
+
+056dea5 - You can now perform a store operation with a null key and have Riak generate the key
+
+
+875cee3 Brian Roach Merge branch 'master' of github.com:basho/riak-java-client
+ca9c508 Brian Roach bumped riak-pb and Jackson versions
+0c3c5db Brian Roach Merge pull request #184 from basho/pb-pool-lifo
+2211096 Brian Roach Merge pull request #165 from basho/gh164-multiple-links-to-same-obj
+539b249 Brian Roach Merge pull request #187 from basho/gh181-LogicalOrFilter-bug
+056dea5 Brian Roach Merge pull request #168 from basho/gh141-store-with-null-key
+7084e30 Brian Roach Added iTest for null key
+28dc9de Brian Roach Fixed M/R logical keyfilters
+ec3602d Brian Roach Merge pull request #161 from michaelklishin/expose-riak-config-for-http-client-adapter
+8806925 Brian Roach Merge pull request #176 from jplock/httpclient4.2.1
+a007c20 Brian Roach formatting changes
+169ed10 Brian Roach Merge pull request #180 from mshinn/master
+f886b94 Brian Roach Merge pull request #186 from basho/gh185-pb-list-keys
+76d2686 Brian Roach formatting fixed
+d3415f4 Brian Roach Close connection when list keys not exhausted
+ec71a9f Brian Roach Merge pull request #183 from agemooij/patch-1
+05361c9 Brian Roach Merge pull request #173 from mattbishop/master
+b34c917 Brian Roach Changed connection pool from FIFO to LIFO
+a11b1e1 Age Mooij Updated the README with a link to the Javadocs
+d3183c1 Matthew Shinn Add support for scanning annotations on super classes
+737be1c Matthew Shinn Fix typo in class javadoc
+7882948 Justin Plock Upgraded from httpclient 4.2.1 to 4.2.2
+996b799 Justin Plock Upgraded httpclient from 4.1.1 to 4.2.1
+783651a mbishop Fix for Issue 172.
+bb597a4 mbishop Add ignores for Intellij.
+0da6104 Brian Roach UTF-8 encoding for maven
+00f3aed Brian Roach Merge pull request #134 from shikhar/patch-1
+9c3b4f6 Brian Roach Merge pull request #169 from basho/gh167-http-adds-r2
+62b1ad7 Brian Roach Removed r=2 default for fetch requests
+d290303 Brian Roach Allow store operation with null key
+78b6cac Brian Roach Client will now support multiple links to the same object over HTTP
+33262ba Brian Roach [maven-release-plugin] prepare for next development iteration
+399acc9 Michael S. Klishin Make raw HTTP client expose riak config
+be1948f Shikhar Bhushan times argument is immutable
+
+
+
+
 1.0.6
 -------------
 This is a bugfix and feature relese
