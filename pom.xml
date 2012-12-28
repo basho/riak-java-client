@@ -76,12 +76,12 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.2</version>
+            <version>1.9.11</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.2</version>
+            <version>1.9.11</version>
         </dependency>
         <!-- Testing -->
         <dependency>
@@ -104,7 +104,7 @@
         <dependency>
             <groupId>com.basho.riak.protobuf</groupId>
             <artifactId>riak-pb</artifactId>
-            <version>1.2</version>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
