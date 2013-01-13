@@ -140,7 +140,7 @@ public final class ConversionUtil {
 
         for (@SuppressWarnings("rawtypes") com.basho.riak.client.http.RiakIndex i : indexes) {
             if (i instanceof com.basho.riak.client.http.IntIndex) {
-                builder.addIndex(i.getName(), (Integer) i.getValue());
+                builder.addIndex(i.getName(), (Long) i.getValue());
             }
             if (i instanceof com.basho.riak.client.http.BinIndex) {
                 builder.addIndex(i.getName(), (String) i.getValue());
@@ -275,9 +275,9 @@ public final class ConversionUtil {
         }
 
         // copy the indexes
-        for (Map.Entry<IntIndex, Set<Integer>> i : riakObject.allIntIndexes().entrySet()) {
+        for (Map.Entry<IntIndex, Set<Long>> i : riakObject.allIntIndexes().entrySet()) {
             String name = i.getKey().getFullname();
-            for (Integer v : i.getValue()) {
+            for (Long v : i.getValue()) {
                 result.addIndex(name, v);
             }
         }

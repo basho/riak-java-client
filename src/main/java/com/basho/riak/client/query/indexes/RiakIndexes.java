@@ -31,9 +31,9 @@ import com.basho.riak.client.IRiakObject;
 public class RiakIndexes {
 
     private final ConcurrentMap<BinIndex, Set<String>> binIndexes = new ConcurrentHashMap<BinIndex, Set<String>>();
-    private final ConcurrentMap<IntIndex, Set<Integer>> intIndexes = new ConcurrentHashMap<IntIndex, Set<Integer>>();
+    private final ConcurrentMap<IntIndex, Set<Long>> intIndexes = new ConcurrentHashMap<IntIndex, Set<Long>>();
 
-    public RiakIndexes(final Map<BinIndex, Set<String>> binIndexes, final Map<IntIndex, Set<Integer>> intIndexes) {
+    public RiakIndexes(final Map<BinIndex, Set<String>> binIndexes, final Map<IntIndex, Set<Long>> intIndexes) {
         for (Map.Entry<BinIndex, Set<String>> bi : binIndexes.entrySet()) {
             Set<String> v = bi.getValue();
             if (v != null) {
@@ -41,10 +41,10 @@ public class RiakIndexes {
             }
         }
 
-        for (Map.Entry<IntIndex, Set<Integer>> ii : intIndexes.entrySet()) {
-            Set<Integer> v = ii.getValue();
+        for (Map.Entry<IntIndex, Set<Long>> ii : intIndexes.entrySet()) {
+            Set<Long> v = ii.getValue();
             if (v != null) {
-                this.intIndexes.put(ii.getKey(), new HashSet<Integer>(ii.getValue()));
+                this.intIndexes.put(ii.getKey(), new HashSet<Long>(ii.getValue()));
             }
         }
     }
@@ -64,8 +64,8 @@ public class RiakIndexes {
     /**
      * @return a *copy* of the {@link IntIndex}s
      */
-    public Map<IntIndex, Set<Integer>> getIntIndexes() {
-        return new HashMap<IntIndex, Set<Integer>>(intIndexes);
+    public Map<IntIndex, Set<Long>> getIntIndexes() {
+        return new HashMap<IntIndex, Set<Long>>(intIndexes);
     }
 
     /**
@@ -135,16 +135,16 @@ public class RiakIndexes {
      *            the value
      * @return this
      */
-    public RiakIndexes add(String index, int value) {
+    public RiakIndexes add(String index, long value) {
         final IntIndex key = IntIndex.named(index);
         final String lock = key.getFullname().intern();
         // even though it is a concurrent hashmap, we need
         // fine grained access control for the
         // key's value set
         synchronized (lock) {
-            Set<Integer> values = intIndexes.get(key);
+            Set<Long> values = intIndexes.get(key);
             if (values == null) {
-                values = new HashSet<Integer>();
+                values = new HashSet<Long>();
             }
             values.add(value);
             intIndexes.put(key, values);
@@ -161,7 +161,7 @@ public class RiakIndexes {
      *            the set of values
      * @return this
      */
-    public RiakIndexes addIntSet(String index, Set<Integer> newValues) {
+    public RiakIndexes addIntSet(String index, Set<? extends Number> newValues) {
         final IntIndex key = IntIndex.named(index);
         final String lock = key.getFullname().intern();
         // even though it is a concurrent hashmap, we need
@@ -169,13 +169,19 @@ public class RiakIndexes {
         // key's value set
         synchronized (lock) {
         
-            Set<Integer> values = intIndexes.get(key);
+            Set<Long> values = intIndexes.get(key);
             
             if (values == null) {
-                values = new HashSet<Integer>();
+                values = new HashSet<Long>();
             }
             
-            values.addAll(newValues);
+            // This was modified when changing the internals from Integer
+            // to Long for int_ indexes in order to minimize external 
+            // code changes by users. 
+            for (Number n : newValues) {
+                values.add(n.longValue());
+            }
+            
             intIndexes.put(key,values);
         }
         
@@ -236,11 +242,11 @@ public class RiakIndexes {
      *            the name of the index
      * @return a copy of the values (or the empty set if index is not present)
      */
-    public Set<Integer> getIntIndex(String name) {
-        Set<Integer> values = intIndexes.get(IntIndex.named(name));
+    public Set<Long> getIntIndex(String name) {
+        Set<Long> values = intIndexes.get(IntIndex.named(name));
         if (values == null) {
-            return new HashSet<Integer>();
+            return new HashSet<Long>();
         }
-        return new HashSet<Integer>(values);
+        return new HashSet<Long>(values);
     }
 }

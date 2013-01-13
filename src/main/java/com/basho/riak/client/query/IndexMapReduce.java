@@ -62,13 +62,13 @@ public class IndexMapReduce extends MapReduce {
                 jsonGenerator.writeStringField(INDEX, index);
             }
 
-            public void write(String bucket, String index, int from, int to) throws IOException {
+            public void write(String bucket, String index, long from, long to) throws IOException {
                 writeCommon(bucket, index);
                 jsonGenerator.writeNumberField(START, from);
                 jsonGenerator.writeNumberField(END, to);
             }
 
-            public void write(String bucket, String index, int value) throws IOException {
+            public void write(String bucket, String index, long value) throws IOException {
                 writeCommon(bucket, index);
                 jsonGenerator.writeNumberField(KEY, value);
             }

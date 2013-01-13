@@ -32,6 +32,7 @@ import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.UsermetaField;
 import com.basho.riak.client.query.indexes.RiakIndexes;
+import java.util.HashSet;
 
 /**
  * Class that contains the Riak annotated fields for an annotated class
@@ -232,8 +233,16 @@ public class AnnotationInfo {
                     Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
                         riakIndexes.addBinSet(f.getIndexName(), (Set<String>)getFieldValue(f.getField(), obj)); 
+                    } else if (Long.class.equals(genericType) ||Integer.class.equals(genericType)) {                        
+                        riakIndexes.addIntSet(f.getIndexName(), (Set<Long>)getFieldValue(f.getField(), obj));
                     } else if (Integer.class.equals(genericType)) {
-                        riakIndexes.addIntSet(f.getIndexName(), (Set<Integer>)getFieldValue(f.getField(), obj));
+                        // Supporting Integer as legacy. All new code should use Long
+                        Set<Integer> iSet = (Set<Integer>) getFieldValue(f.getField(), obj);
+                        Set<Long> lSet = new HashSet<Long>();
+                        for (Integer i : iSet) {
+                            lSet.add(i.longValue());
+                        }
+                        riakIndexes.addIntSet(f.getIndexName(), lSet);
                     }
                 }
             } else {
@@ -242,9 +251,12 @@ public class AnnotationInfo {
                 if (val != null) {
                     if (val instanceof String) {
                         riakIndexes.add(f.getIndexName(), (String) val);
+                    } else if (val instanceof Long)  {
+                        riakIndexes.add(f.getIndexName(), (Long) val);
                     } else if (val instanceof Integer) {
-                        riakIndexes.add(f.getIndexName(), (Integer) val);
-                    } 
+                        // Supporting int / Integer for legacy. New code should use long / Long
+                        riakIndexes.add(f.getIndexName(), ((Integer) val).longValue());
+                    }
                 }
             }
         }
@@ -279,10 +291,18 @@ public class AnnotationInfo {
                 }
             } else {
                 if (Integer.class.equals(f.getType()) || int.class.equals(f.getType())) {
-                    val = indexes.getIntIndex(f.getIndexName());
+                    // Support Integer / int for legacy. New code should use Long / long
+                    Set<Long> lSet = indexes.getIntIndex(f.getIndexName());
+                    Set<Integer> iSet = new HashSet<Integer>();
+                    for (Long l : lSet ) {
+                        iSet.add(l.intValue());
+                    }
+                    val = iSet;
                 } else if (String.class.equals(f.getType())) {
                     val = indexes.getBinIndex(f.getIndexName());
-                }
+                } else if (Long.class.equals(f.getType()) || long.class.equals(f.getType())) {
+                    val = indexes.getIntIndex(f.getIndexName());
+                } 
             
                 if (val != null && !val.isEmpty()) {
                     setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value

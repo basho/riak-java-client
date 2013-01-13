@@ -17,7 +17,7 @@ package com.basho.riak.client.query.indexes;
  * @author russell
  * 
  */
-public final class IntIndex extends RiakIndex<Integer> {
+public final class IntIndex extends RiakIndex<Number> {
 
     private static final String SUFFIX = "_int";
 

@@ -228,14 +228,14 @@ public interface IRiakObject extends Iterable<RiakLink> {
      * 
      * @return a copy of the int indexes for this object
      */
-    Map<IntIndex, Set<Integer>> allIntIndexes();
+    Map<IntIndex, Set<Long>> allIntIndexes();
 
     /**
      * Get a copy of the values for the given bin index
      * @param string the index name
      * @return a Set of value
      */
-    Set<Integer> getIntIndex(String string);
+    Set<Long> getIntIndex(String string);
 
     // Mutate
     /**
@@ -320,7 +320,7 @@ public interface IRiakObject extends Iterable<RiakLink> {
      *            index value
      * @return this RiakObject.
      */
-    IRiakObject addIndex(String index, int value);
+    IRiakObject addIndex(String index, long value);
 
     /**
      * Remove a {@link BinIndex} from this RiakObject.

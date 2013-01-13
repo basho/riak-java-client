@@ -214,7 +214,7 @@ public class RiakObjectBuilder {
      *            the {@link RiakIndex} to add
      * @return this
      */
-    public RiakObjectBuilder addIndex(String index, int value) {
+    public RiakObjectBuilder addIndex(String index, long value) {
         this.indexes.add(index, value);
         return this;
     }

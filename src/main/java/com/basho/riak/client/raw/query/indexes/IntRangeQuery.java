@@ -23,7 +23,7 @@ import com.basho.riak.client.query.indexes.IntIndex;
  * @author russell
  * 
  */
-public final class IntRangeQuery extends AbstractRangeQuery<Integer> {
+public final class IntRangeQuery extends AbstractRangeQuery<Long> {
 
     /**
      * Create a range query
@@ -37,7 +37,7 @@ public final class IntRangeQuery extends AbstractRangeQuery<Integer> {
      * @param to
      *            the end of the range
      */
-    public IntRangeQuery(IntIndex index, String bucket, Integer from, Integer to) {
+    public IntRangeQuery(IntIndex index, String bucket, Long from, Long to) {
         super(index.getFullname(), bucket, from, to);
     }
 

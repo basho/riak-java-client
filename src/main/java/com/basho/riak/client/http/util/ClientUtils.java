@@ -191,7 +191,7 @@ public class ClientUtils {
      *            the index value (or values for a range)
      * @return URL for an index query
      */
-    public static String makeURI(RiakConfig config, String bucket, String index, int[] values) {
+    public static String makeURI(RiakConfig config, String bucket, String index, long[] values) {
         StringBuilder url = makeBaseIndexURI(config, bucket, index).append(values[0]);
         if (values.length > 1) {
             url.append("/").append(values[1]);
@@ -448,7 +448,7 @@ public class ClientUtils {
                         }
                     } else if (name.endsWith(IntIndex.SUFFIX)) {
                         while (st.hasMoreElements()) {
-                            indexes.add(new IntIndex(name, Integer.parseInt(st.nextToken().trim())));
+                            indexes.add(new IntIndex(name, Long.parseLong(st.nextToken().trim())));
                         }
                     }
                 }

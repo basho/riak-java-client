@@ -410,7 +410,7 @@ public class DefaultRiakObject implements IRiakObject {
      * 
      * @see com.basho.riak.client.IRiakObject#allIntIndexes()
      */
-    public Map<IntIndex, Set<Integer>> allIntIndexes() {
+    public Map<IntIndex, Set<Long>> allIntIndexes() {
         return indexes.getIntIndexes();
     }
 
@@ -419,7 +419,7 @@ public class DefaultRiakObject implements IRiakObject {
      * 
      * @see com.basho.riak.client.IRiakObject#getIntIndex(java.lang.String)
      */
-    public Set<Integer> getIntIndex(String name) {
+    public Set<Long> getIntIndex(String name) {
         return indexes.getIntIndex(name);
     }
 
@@ -432,9 +432,9 @@ public class DefaultRiakObject implements IRiakObject {
     }
 
     /* (non-Javadoc)
-     * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, int)
+     * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, long)
      */
-    public IRiakObject addIndex(String index, int value) {
+    public IRiakObject addIndex(String index, long value) {
         indexes.add(index, value);
         return this;
     }
