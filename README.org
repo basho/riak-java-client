@@ -437,7 +437,7 @@ Adding Key Filters is just like adding phases:
 Please see the [[http://wiki.basho.com/Key-Filters.html][Key Filters documentation]] for more details about key filters and
 the 
 #+BEGIN_SRC java
-    com.basho.riak.client.query.filters.*
+    com.basho.riak.client.query..*
 #+END_SRC
 package for the available filters.
 
