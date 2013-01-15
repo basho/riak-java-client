@@ -149,7 +149,7 @@ public class JSONConverter<T> implements Converter<T> {
             KeyUtil.setKey(domainObject, riakObject.getKey());
             VClockUtil.setVClock(domainObject, riakObject.getVClock());
             usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
-            riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexes()),
+            riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexesV2()),
                                                domainObject);
             riakLinksConverter.populateLinks(riakObject.getLinks(), domainObject);
             return domainObject;

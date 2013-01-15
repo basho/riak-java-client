@@ -150,7 +150,7 @@ public final class ConversionUtil {
 
         for (@SuppressWarnings("rawtypes") com.basho.riak.client.http.RiakIndex i : indexes) {
             if (i instanceof com.basho.riak.client.http.IntIndex) {
-                builder.addIndex(i.getName(), (Integer) i.getValue());
+                builder.addIndex(i.getName(), (Long) i.getValue());
             }
             if (i instanceof com.basho.riak.client.http.BinIndex) {
                 builder.addIndex(i.getName(), (String) i.getValue());
@@ -236,7 +236,7 @@ public final class ConversionUtil {
      * @return a {@link RiakObject} populate with {@link IRiakObject}'s data
      */
     static com.basho.riak.client.http.RiakObject convert(IRiakObject object, final RiakClient client) {
-        final List<com.basho.riak.client.http.RiakIndex<Integer>> intIndexes = convertIntIndexes(object.allIntIndexes());
+        final List<com.basho.riak.client.http.RiakIndex<Long>> intIndexes = convertIntIndexes(object.allIntIndexesV2());
         final List<com.basho.riak.client.http.RiakIndex<String>> binIndexes = convertBinIndexes(object.allBinIndexes());
 
         @SuppressWarnings("rawtypes") final List<com.basho.riak.client.http.RiakIndex> allIndexes = new ArrayList<com.basho.riak.client.http.RiakIndex>(intIndexes);
@@ -277,12 +277,12 @@ public final class ConversionUtil {
      * @param allIntIndexes
      * @return
      */
-    private static List<com.basho.riak.client.http.RiakIndex<Integer>> convertIntIndexes(Map<IntIndex, Set<Integer>> intIndexes) {
-        final List<com.basho.riak.client.http.RiakIndex<Integer>> converted = new ArrayList<com.basho.riak.client.http.RiakIndex<Integer>>();
+    private static List<com.basho.riak.client.http.RiakIndex<Long>> convertIntIndexes(Map<IntIndex, Set<Long>> intIndexes) {
+        final List<com.basho.riak.client.http.RiakIndex<Long>> converted = new ArrayList<com.basho.riak.client.http.RiakIndex<Long>>();
 
-        for (Map.Entry<IntIndex, Set<Integer>> index : intIndexes.entrySet()) {
+        for (Map.Entry<IntIndex, Set<Long>> index : intIndexes.entrySet()) {
             String name = index.getKey().getFullname();
-            for (Integer v : index.getValue()) {
+            for (Long v : index.getValue()) {
                 converted.add(new com.basho.riak.client.http.IntIndex(name, v));
             }
         }

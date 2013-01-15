@@ -31,6 +31,7 @@ import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import java.util.HashSet;
 
 /**
  * The default implementation of {@link IRiakObject}
@@ -406,23 +407,56 @@ public class DefaultRiakObject implements IRiakObject {
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.IRiakObject#allIntIndexes()
+     * @depricated
+     * @see #allIntIndexesV2()
      */
+    @Deprecated
     public Map<IntIndex, Set<Integer>> allIntIndexes() {
-        return indexes.getIntIndexes();
+        Map<IntIndex, Set<Long>> longMap = indexes.getIntIndexes();
+        Map<IntIndex, Set<Integer>> intMap = new HashMap<IntIndex, Set<Integer>>(longMap.size());
+        for (Map.Entry<IntIndex, Set<Long>> e : longMap.entrySet()) {
+            Set<Long> longSet = e.getValue();
+            Set<Integer> intSet = new HashSet<Integer>(longSet.size());
+            for (Long l : longSet) {
+                intSet.add(l.intValue());
+            }
+            intMap.put(e.getKey(), intSet);
+        }
+        return intMap;
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.basho.riak.client.IRiakObject#getIntIndex(java.lang.String)
+     * @see #allIntIndexesV2(java.lang.String)
      */
+    public Map<IntIndex, Set<Long>> allIntIndexesV2() {
+        return indexes.getIntIndexes();
+    }
+    
+    /*
+     * @depricated
+     * @see #getIntIndexV2(java.lang.String)
+     */
+    @Deprecated
     public Set<Integer> getIntIndex(String name) {
-        return indexes.getIntIndex(name);
+        Set<Long> longSet = indexes.getIntIndex(name);
+        Set<Integer> intSet = new HashSet<Integer>(longSet.size());
+        for (Long l : longSet) {
+            intSet.add(l.intValue());
+        }
+        return intSet;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakObject#getIntIndexV2(java.lang.String)
+     */
+    public Set<Long> getIntIndexV2(String name) {
+        return indexes.getIntIndex(name);
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, java.lang.String)
      */
@@ -432,9 +466,9 @@ public class DefaultRiakObject implements IRiakObject {
     }
 
     /* (non-Javadoc)
-     * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, int)
+     * @see com.basho.riak.client.IRiakObject#addIndex(java.lang.String, long)
      */
-    public IRiakObject addIndex(String index, int value) {
+    public IRiakObject addIndex(String index, long value) {
         indexes.add(index, value);
         return this;
     }

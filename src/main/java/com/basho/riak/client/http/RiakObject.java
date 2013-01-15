@@ -563,7 +563,7 @@ public class RiakObject {
      *            the value to add to the index
      * @return this
      */
-    public RiakObject addIndex(String name, int value) {
+    public RiakObject addIndex(String name, long value) {
         synchronized (indexLock) {
             indexes.add(new IntIndex(name, value));
         }
