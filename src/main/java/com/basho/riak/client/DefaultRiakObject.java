@@ -408,7 +408,7 @@ public class DefaultRiakObject implements IRiakObject {
 
     /*
      * @depricated
-     * @see #allIntIndexes()
+     * @see #allIntIndexesV2()
      */
     @Deprecated
     public Map<IntIndex, Set<Integer>> allIntIndexes() {
@@ -426,17 +426,17 @@ public class DefaultRiakObject implements IRiakObject {
     }
 
     /*
-     * @depricated
-     * @see #allIntIndexesV2()
+     * (non-Javadoc)
+     * 
+     * @see #allIntIndexesV2(java.lang.String)
      */
     public Map<IntIndex, Set<Long>> allIntIndexesV2() {
         return indexes.getIntIndexes();
     }
     
     /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.client.IRiakObject#getIntIndex(java.lang.String)
+     * @depricated
+     * @see #getIntIndexV2(java.lang.String)
      */
     @Deprecated
     public Set<Integer> getIntIndex(String name) {
