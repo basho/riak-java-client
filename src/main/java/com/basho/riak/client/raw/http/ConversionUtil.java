@@ -236,7 +236,7 @@ public final class ConversionUtil {
      * @return a {@link RiakObject} populate with {@link IRiakObject}'s data
      */
     static com.basho.riak.client.http.RiakObject convert(IRiakObject object, final RiakClient client) {
-        final List<com.basho.riak.client.http.RiakIndex<Long>> intIndexes = convertIntIndexes(object.allIntIndexes());
+        final List<com.basho.riak.client.http.RiakIndex<Long>> intIndexes = convertIntIndexes(object.allIntIndexesV2());
         final List<com.basho.riak.client.http.RiakIndex<String>> binIndexes = convertBinIndexes(object.allBinIndexes());
 
         @SuppressWarnings("rawtypes") final List<com.basho.riak.client.http.RiakIndex> allIndexes = new ArrayList<com.basho.riak.client.http.RiakIndex>(intIndexes);

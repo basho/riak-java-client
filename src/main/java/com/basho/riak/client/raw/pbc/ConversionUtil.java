@@ -275,7 +275,7 @@ public final class ConversionUtil {
         }
 
         // copy the indexes
-        for (Map.Entry<IntIndex, Set<Long>> i : riakObject.allIntIndexes().entrySet()) {
+        for (Map.Entry<IntIndex, Set<Long>> i : riakObject.allIntIndexesV2().entrySet()) {
             String name = i.getKey().getFullname();
             for (Long v : i.getValue()) {
                 result.addIndex(name, v);

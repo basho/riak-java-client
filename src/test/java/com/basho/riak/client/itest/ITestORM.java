@@ -192,7 +192,7 @@ public abstract class ITestORM extends ITestBucket {
         // retrieve as riak object and check indexes are present
         IRiakObject iro = users.fetch(userId).execute();
 
-        Map<IntIndex, Set<Long>> intIndexes = iro.allIntIndexes();
+        Map<IntIndex, Set<Long>> intIndexes = iro.allIntIndexesV2();
 
         assertEquals(1, intIndexes.size());
         Set<Long> si = intIndexes.get(IntIndex.named("shoe-size"));
