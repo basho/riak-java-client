@@ -83,7 +83,7 @@ public class RiakObjectBuilder {
         rob.lastModified = o.getLastModified();
         rob.value = o.getValue();
         rob.links = o.getLinks();
-        rob.indexes = new RiakIndexes(o.allBinIndexes(), o.allIntIndexes());
+        rob.indexes = new RiakIndexes(o.allBinIndexes(), o.allIntIndexesV2());
         rob.userMeta = o.getMeta();
         return rob;
     }
@@ -214,7 +214,7 @@ public class RiakObjectBuilder {
      *            the {@link RiakIndex} to add
      * @return this
      */
-    public RiakObjectBuilder addIndex(String index, int value) {
+    public RiakObjectBuilder addIndex(String index, long value) {
         this.indexes.add(index, value);
         return this;
     }

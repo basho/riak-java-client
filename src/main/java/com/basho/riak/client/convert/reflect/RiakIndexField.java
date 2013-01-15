@@ -36,22 +36,27 @@ public class RiakIndexField {
      * @param field
      */
     public RiakIndexField(final Field field) {
+        // Supporting int / Integer for legacy. New code should use long / Long
         if (field == null || field.getAnnotation(RiakIndex.class) == null ||
             "".equals(field.getAnnotation(RiakIndex.class).name()) ||
             (!field.getType().equals(String.class) &&
                 !field.getType().equals(Integer.class) && 
-                !field.getType().equals(int.class)) &&
+                !field.getType().equals(int.class) &&
+                !field.getType().equals(long.class) &&
+                !field.getType().equals(Long.class)) &&
                 !Set.class.isAssignableFrom(field.getType())
             ) {
             throw new IllegalArgumentException(field.getType().toString());
         }
 
         if (Set.class.isAssignableFrom(field.getType())) {
-            // Verify it's a Set<String> or Set<Integer>
+            // Verify it's a Set<String> or Set<Long>. Set<Integer> supported for legacy
             Type t = field.getGenericType();
             if (t instanceof ParameterizedType) {
                 Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
-                if (!genericType.equals(String.class) && !genericType.equals(Integer.class)) {
+                if (!genericType.equals(String.class) && 
+                    !genericType.equals(Integer.class) && 
+                    !genericType.equals(Long.class)) {
                     throw new IllegalArgumentException(field.getType().toString());
                 }
             } else {

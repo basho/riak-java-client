@@ -17,15 +17,15 @@ package com.basho.riak.client.http;
  * @author russell
  * 
  */
-public class IntIndex extends RiakIndex<Integer> {
+public class IntIndex extends RiakIndex<Long> {
 
     public static final String SUFFIX = "_int";
-    private final int value;
+    private final long value;
 
     /**
      * @param indexName
      */
-    public IntIndex(String indexName, int value) {
+    public IntIndex(String indexName, long value) {
         super(indexName);
         this.value = value;
     }
@@ -35,7 +35,7 @@ public class IntIndex extends RiakIndex<Integer> {
      * 
      * @see com.basho.riak.client.http.RiakIndex#getValue()
      */
-    @Override public Integer getValue() {
+    @Override public Long getValue() {
         return value;
     }
 
@@ -47,7 +47,7 @@ public class IntIndex extends RiakIndex<Integer> {
     @Override public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + value;
+        result = prime * result + (int) (this.value ^ (this.value >>> 32));
         return result;
     }
 

@@ -218,25 +218,37 @@ public interface IRiakObject extends Iterable<RiakLink> {
     Set<String> getBinIndex(String string);
 
     /**
-     * Secondary indexes for this object.
-     * 
-     * See <a
-     * href="http://blog.basho.com/2011/09/14/Secondary-Indexes-in-Riak/">basho
-     * wiki</a> for more details.
-     * 
-     * TODO update doc link when 2i hits the wiki
-     * 
-     * @return a copy of the int indexes for this object
+     * @deprecated 
+     * @see #allIntIndexesV2()  
      */
+    @Deprecated
     Map<IntIndex, Set<Integer>> allIntIndexes();
 
     /**
-     * Get a copy of the values for the given bin index
+     * Secondary indexes for this object.
+     * 
+     * See <a
+     * href="http://docs.basho.com/riak/latest/tutorials/querying/Secondary-Indexes/">basho
+     * Docs</a> for more details.
+     * 
+     * @return a copy of the int_ indexes for this object
+     */
+    Map<IntIndex, Set<Long>> allIntIndexesV2();
+	
+    /**
+     * @deprecated 
+     * @see #getIntIndexV2(java.lang.String) 
+     */
+    @Deprecated
+    Set<Integer> getIntIndex(String string);
+
+    /**
+     * Get a copy of the values for the given int_ index
      * @param string the index name
      * @return a Set of value
      */
-    Set<Integer> getIntIndex(String string);
-
+    Set<Long> getIntIndexV2(String string);
+	
     // Mutate
     /**
      * Set this IRiakObject's value.
@@ -320,7 +332,7 @@ public interface IRiakObject extends Iterable<RiakLink> {
      *            index value
      * @return this RiakObject.
      */
-    IRiakObject addIndex(String index, int value);
+    IRiakObject addIndex(String index, long value);
 
     /**
      * Remove a {@link BinIndex} from this RiakObject.

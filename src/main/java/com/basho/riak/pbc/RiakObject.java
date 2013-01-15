@@ -98,7 +98,7 @@ public class RiakObject {
                 if (name.endsWith(BinIndex.SUFFIX)) {
                     indexes.add(new BinIndex(name, value));
                 } else if (name.endsWith(IntIndex.SUFFIX)) {
-                    indexes.add(new IntIndex(name, Integer.parseInt(value)));
+                    indexes.add(new IntIndex(name, Long.parseLong(value)));
                 } else {
                     throw new RuntimeException("unkown index type " + name);
                 }
@@ -345,7 +345,7 @@ public class RiakObject {
      *            the value to add to the index
      * @return this
      */
-    public RiakObject addIndex(String name, int value) {
+    public RiakObject addIndex(String name, long value) {
         synchronized (indexLock) {
             indexes.add(new IntIndex(name, value));
         }

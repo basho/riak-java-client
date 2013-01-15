@@ -318,11 +318,11 @@ public class ClientHelper {
      * @param indexName
      *            the name of the index
      * @param values
-     *            an array of ints, if only 1 long, then a value, if longer
+     *            an array of longs, if only 1 element, then a value, if longer
      *            the 1st 2 elements are treated as the bounds for a range
      * @return an {@link HttpResponse}
      */
-    public HttpResponse fetchIndex(String bucket, String indexName, int[] values) {
+    public HttpResponse fetchIndex(String bucket, String indexName, long[] values) {
         HttpGet get = new HttpGet(ClientUtils.makeURI(config, bucket, indexName, values));
         return executeMethod(bucket, null, get, null);
     }

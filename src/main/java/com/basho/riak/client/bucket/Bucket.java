@@ -179,7 +179,7 @@ public interface Bucket extends BucketProperties {
      * Creates a {@link FetchIndex} operation for the given index name and type
      * 
      * @param <T>
-     *            the index type (currently String or Integer)
+     *            the index type (currently String or Long)
      * @param index
      *            an index
      * @return a {@link FetchIndex} operation for further configuration and

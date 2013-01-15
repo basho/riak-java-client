@@ -448,11 +448,11 @@ public class HTTPClientAdapter implements RawClient {
                 res.capture(client.index(bucket, index, value));
             }
 
-            public void write(final String bucket, final String index, final int value) throws IOException {
+            public void write(final String bucket, final String index, final long value) throws IOException {
                 res.capture(client.index(bucket, index, value));
             }
 
-            public void write(final String bucket, final String index, final int from, final int to) throws IOException {
+            public void write(final String bucket, final String index, final long from, final long to) throws IOException {
                 res.capture(client.index(bucket, index, from, to));
             }
         };
