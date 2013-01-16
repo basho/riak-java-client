@@ -44,10 +44,12 @@ import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.raw.Transport;
+import com.basho.riak.client.raw.http.ResultCapture;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
+import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.IRequestMeta;
@@ -426,18 +428,27 @@ public class PBClientAdapter implements RawClient {
      * raw.query.IndexQuery)
      */
     public List<String> fetchIndex(IndexQuery indexQuery) throws IOException {
-        final MapReduce mr = new IndexMapReduce(this, indexQuery);
+        final ResultCapture<List<String>> res = new ResultCapture<List<String>>();
+	IndexWriter executor = new IndexWriter() {
+            public void write(String bucket, String index, String from, String to) throws IOException {
+                res.capture(client.index(bucket, index, from, to));
+            }
 
-        mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY, Args.REDUCE_PHASE_ONLY_1);
-        // only return the key, to match the http rest api
-        mr.addReducePhase(new JSSourceFunction("function(v) { return v.map(function(e) { return e[1]; }); }"), Args.REDUCE_PHASE_ONLY_1);
+            public void write(final String bucket, final String index, final String value) throws IOException {
+                res.capture(client.index(bucket, index, value));
+            }
 
-        try {
-            MapReduceResult result = mr.execute();
-            return new ArrayList<String>(result.getResult(String.class));
-        } catch (RiakException e) {
-            throw new IOException(e);
-        }
+            public void write(final String bucket, final String index, final long value) throws IOException {
+                res.capture(client.index(bucket, index, value));
+            }
+
+            public void write(final String bucket, final String index, final long from, final long to) throws IOException {
+                res.capture(client.index(bucket, index, from, to));
+            }
+        };
+        indexQuery.write(executor);
+	return res.get();
+	
     }
 
     /*

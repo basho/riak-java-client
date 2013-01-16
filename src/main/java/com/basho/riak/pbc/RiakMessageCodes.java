@@ -47,5 +47,7 @@ interface RiakMessageCodes {
 	public static final int MSG_SetBucketResp = 22;
 	public static final int MSG_MapRedReq = 23;
 	public static final int MSG_MapRedResp = 24;
+	public static final int MSG_IndexReq = 25;
+	public static final int MSG_IndexResp = 26;
 
 }
