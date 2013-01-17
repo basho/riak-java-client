@@ -155,8 +155,8 @@ public class PBClientAdapter implements RawClient {
 
         FetchResponse fr = client.fetch(bucket, key, convert(fetchMeta));
 
-        if (fr.hasSiblings()) {
-            // do a full fetch to get the sibling values
+        if (fr.hasSiblings() && fetchMeta.hasHeadOnly()) {
+            // do a full fetch to get the sibling values. This matches the HTTP client behavior
             FetchMeta fm = FetchMeta.Builder.from(fetchMeta).headOnly(false).build();
             fr = client.fetch(bucket, key, convert(fm));
         }
