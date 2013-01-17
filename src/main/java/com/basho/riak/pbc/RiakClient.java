@@ -313,23 +313,22 @@ public class RiakClient implements RiakMessageCodes {
 	 * @throws IOException 
 	 */
 	public List<String> index(String bucket, String indexName, String value) 
-		throws IOException {
-	    RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
-					.setBucket(ByteString.copyFromUtf8(bucket))
-					.setIndex(ByteString.copyFromUtf8(indexName))
-					.setKey(ByteString.copyFromUtf8(value))
-					.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
-					.build();
-	    
-	    RiakConnection c = getConnection();
-	    
-	    try {
-		c.send(MSG_IndexReq, req);
-		return processIndexReply(c);
-	    } finally {
-		release(c);
-	    }
-	    
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setKey(ByteString.copyFromUtf8(value))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
 	}
 	
 	/**
@@ -347,23 +346,23 @@ public class RiakClient implements RiakMessageCodes {
 	 * @throws IOException 
 	 */
 	public List<String> index(String bucket, String indexName, String start, String end) 
-		throws IOException {
-	    RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
-					.setBucket(ByteString.copyFromUtf8(bucket))
-					.setIndex(ByteString.copyFromUtf8(indexName))
-					.setRangeMin(ByteString.copyFromUtf8(start))
-					.setRangeMax(ByteString.copyFromUtf8(end))
-					.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
-					.build();
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setRangeMin(ByteString.copyFromUtf8(start))
+									.setRangeMax(ByteString.copyFromUtf8(end))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
+									.build();
 
-	    RiakConnection c = getConnection();
-	    
-	    try {
-		c.send(MSG_IndexReq, req);
-		return processIndexReply(c);
-	    } finally {
-		release(c);
-	    }
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
 	}
 	
 	/**
@@ -379,23 +378,22 @@ public class RiakClient implements RiakMessageCodes {
 	 * @throws IOException 
 	 */
 	public List<String> index(String bucket, String indexName, long value) 
-		throws IOException {
-	    RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
-					.setBucket(ByteString.copyFromUtf8(bucket))
-					.setIndex(ByteString.copyFromUtf8(indexName))
-					.setKey(ByteString.copyFromUtf8(String.valueOf(value)))
-					.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
-					.build();
-	    
-	    RiakConnection c = getConnection();
-	    
-	    try {
-		c.send(MSG_IndexReq, req);
-		return processIndexReply(c);
-	    } finally {
-		release(c);
-	    }
-	    
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setKey(ByteString.copyFromUtf8(String.valueOf(value)))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
 	}
 	
 	/**
@@ -413,46 +411,43 @@ public class RiakClient implements RiakMessageCodes {
 	 * @throws IOException 
 	 */
 	public List<String> index(String bucket, String indexName, long start, long end) 
-		throws IOException {
-	    RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
-					.setBucket(ByteString.copyFromUtf8(bucket))
-					.setIndex(ByteString.copyFromUtf8(indexName))
-					.setRangeMin(ByteString.copyFromUtf8(String.valueOf(start)))
-					.setRangeMax(ByteString.copyFromUtf8(String.valueOf(end)))
-					.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
-					.build();
-	    
-	    RiakConnection c = getConnection();
-	    
-	    try {
-		c.send(MSG_IndexReq, req);
-		return processIndexReply(c);
-	    } finally {
-		release(c);
-	    }
-	    
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setRangeMin(ByteString.copyFromUtf8(String.valueOf(start)))
+									.setRangeMax(ByteString.copyFromUtf8(String.valueOf(end)))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
 	}
 	
 	private List<String> processIndexReply(RiakConnection c) throws IOException {
-	    byte[] rep = c.receive(MSG_IndexResp);
-	    
-	    if (null == rep) {
-		return Collections.EMPTY_LIST;
-	    }
-	    
-	    RiakKvPB.RpbIndexResp resp = RiakKvPB.RpbIndexResp.parseFrom(rep);
-	    
-	    List<String> keys = new ArrayList<String>(resp.getKeysCount());
-	    
-	    for (ByteString bs : resp.getKeysList()) {
-		keys.add(bs.toStringUtf8());
-	    }
-	    
-	    return keys;
-	    
-	    
+		byte[] rep = c.receive(MSG_IndexResp);
+
+		if (null == rep) {
+			return Collections.EMPTY_LIST;
+		}
+
+		RiakKvPB.RpbIndexResp resp = RiakKvPB.RpbIndexResp.parseFrom(rep);
+
+		List<String> keys = new ArrayList<String>(resp.getKeysCount());
+
+		for (ByteString bs : resp.getKeysList()) {
+			keys.add(bs.toStringUtf8());
+		}
+
+		return keys;
 	}
-	
+
 	
 	// /////////////////////
 
