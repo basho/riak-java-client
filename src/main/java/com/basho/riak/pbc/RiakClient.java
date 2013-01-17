@@ -48,6 +48,8 @@ import com.basho.riak.protobuf.RiakKvPB.RpbMapRedReq;
 import com.basho.riak.protobuf.RiakKvPB.RpbPutReq;
 import com.basho.riak.protobuf.RiakKvPB.RpbPutResp;
 import com.google.protobuf.ByteString;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Low level protocol buffers client.
@@ -296,6 +298,157 @@ public class RiakClient implements RiakMessageCodes {
         return new FetchResponse(out, unchanged, vclock.toByteArray());
 	}
 
+	// /////////////////////
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the name of the index (e.g. 'user_bin')
+	 * @param value
+	 *	    the index value
+	 * @return List<String>
+	 *	    list of keys for the index
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, String value) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setKey(ByteString.copyFromUtf8(value))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the name of the index (e.g. 'user_bin')
+	 * @param start
+	 *	    the start value in a range (e.g 'a')
+	 * @param end
+	 *	    the end value in a range (e.g. 'z')
+	 * @return 
+	 *	    a List<String> of keys for this index range
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, String start, String end) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setRangeMin(ByteString.copyFromUtf8(start))
+									.setRangeMax(ByteString.copyFromUtf8(end))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the index (e.g. 'age_int')
+	 * @param value
+	 *	    a long for the index value
+	 * @return
+	 *	    a List<String> of keys for this index value
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, long value) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setKey(ByteString.copyFromUtf8(String.valueOf(value)))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the index (e.g. 'age_int')
+	 * @param start
+	 *	    the start value in a range (e.g 16)
+	 * @param end
+	 *	    the end value in a range (e.g. 32)
+	 * @return
+	 *	    List<String> of the keys for this index range
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, long start, long end) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setRangeMin(ByteString.copyFromUtf8(String.valueOf(start)))
+									.setRangeMax(ByteString.copyFromUtf8(String.valueOf(end)))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	private List<String> processIndexReply(RiakConnection c) throws IOException {
+		byte[] rep = c.receive(MSG_IndexResp);
+
+		if (null == rep) {
+			return Collections.EMPTY_LIST;
+		}
+
+		RiakKvPB.RpbIndexResp resp = RiakKvPB.RpbIndexResp.parseFrom(rep);
+
+		List<String> keys = new ArrayList<String>(resp.getKeysCount());
+
+		for (ByteString bs : resp.getKeysList()) {
+			keys.add(bs.toStringUtf8());
+		}
+
+		return keys;
+	}
+
+	
 	// /////////////////////
 
 	public ByteString[] store(RiakObject[] values, RequestMeta meta)
