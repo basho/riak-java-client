@@ -243,6 +243,23 @@ public class FetchObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * Causes the client to retrieve only the metadata and not the value
+     * of this object. If siblings are present the client 
+     * does a second get and retrieves all the values. This is due to how 
+     * the HTTP API handles siblings. 
+     * 
+     * Note: The {@link Converter} being used must be able to handle an empty
+     * value. 
+     * 
+     * @return this
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#headOnly(boolean headOnly)
+     */
+    public FetchObject<T> headOnly() {
+        builder.headOnly(true);
+        return this;
+    }
+
+    /**
      * A {@link Converter} to use to convert the data fetched to some other type
      * @param converter
      * @return this
