@@ -55,14 +55,14 @@ public class RiakIndexes {
     public RiakIndexes() {}
 
     /**
-     * @return a *copy* of the {@link BinIndex}s
+     * @return a *shallow copy* of the {@link BinIndex}s
      */
     public Map<BinIndex, Set<String>> getBinIndexes() {
         return new HashMap<BinIndex, Set<String>>(binIndexes);
     }
 
     /**
-     * @return a *copy* of the {@link IntIndex}s
+     * @return a *shallow copy* of the {@link IntIndex}s
      */
     public Map<IntIndex, Set<Long>> getIntIndexes() {
         return new HashMap<IntIndex, Set<Long>>(intIndexes);
@@ -79,17 +79,11 @@ public class RiakIndexes {
      */
     public RiakIndexes add(String index, String value) {
         final BinIndex key = BinIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-            Set<String> values = binIndexes.get(key);
-            if (values == null) {
-                values = new HashSet<String>();
-            }
+        Set<String> newSet = new HashSet<String>();
+        Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
+        Set<String> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { 
             values.add(value);
-            binIndexes.put(key, values);
         }
         return this;
     }
@@ -106,22 +100,12 @@ public class RiakIndexes {
     public RiakIndexes addBinSet(String index, Set<String> newValues) {
         
         final BinIndex key = BinIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-        
-            Set<String> values = binIndexes.get(key);
-            
-            if (values == null) {
-                values = new HashSet<String>();
-            }
-            
+        Set<String> newSet = new HashSet<String>();
+        Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
+        Set<String> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { 
             values.addAll(newValues);
-            binIndexes.put(key,values);
         }
-        
         return this;
     }
     
@@ -137,17 +121,11 @@ public class RiakIndexes {
      */
     public RiakIndexes add(String index, long value) {
         final IntIndex key = IntIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-            Set<Long> values = intIndexes.get(key);
-            if (values == null) {
-                values = new HashSet<Long>();
-            }
+        Set<Long> newSet = new HashSet<Long>();
+        Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
+        Set<Long> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { 
             values.add(value);
-            intIndexes.put(key, values);
         }
         return this;
     }
@@ -163,28 +141,16 @@ public class RiakIndexes {
      */
     public RiakIndexes addIntSet(String index, Set<? extends Number> newValues) {
         final IntIndex key = IntIndex.named(index);
-        final String lock = key.getFullname().intern();
-        // even though it is a concurrent hashmap, we need
-        // fine grained access control for the
-        // key's value set
-        synchronized (lock) {
-        
-            Set<Long> values = intIndexes.get(key);
-            
-            if (values == null) {
-                values = new HashSet<Long>();
-            }
-            
-            // This was modified when changing the internals from Integer
-            // to Long for int_ indexes in order to minimize external 
-            // code changes by users. 
+        Set<Long> newSet = new HashSet<Long>();
+        Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
+        Set<Long> values = prevSet == null ? newSet : prevSet;
+        synchronized (values) { 
+            // This was done when changing internals from Integer to Long to preserve
+            // external usage
             for (Number n : newValues) {
                 values.add(n.longValue());
             }
-            
-            intIndexes.put(key,values);
         }
-        
         return this;
     }
     
