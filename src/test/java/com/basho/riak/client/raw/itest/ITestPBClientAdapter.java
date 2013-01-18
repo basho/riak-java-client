@@ -19,6 +19,7 @@ import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.pbc.PBClientConfig;
 import com.basho.riak.client.raw.pbc.PBRiakClientFactory;
+import org.junit.Test;
 
 /**
  * @author russell
@@ -34,5 +35,12 @@ public class ITestPBClientAdapter extends ITestRawClientAdapter {
     @Override protected RawClient getClient() throws IOException {
         PBClientConfig config = new PBClientConfig.Builder().withHost(Hosts.RIAK_HOST).withPort(Hosts.RIAK_PORT).build();
         return PBRiakClientFactory.getInstance().newClient(config);
+    }
+    
+    @Test
+    @Override public void headWithSiblings() throws Exception {
+        // This space intentionally left blank. 
+        // (The PBClientAdapter no longer does a second fetch for values if 
+        // siblings are present ... it simply isn't needed)
     }
 }
