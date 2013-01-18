@@ -15,11 +15,11 @@ package com.basho.riak.client.query;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * A {@link MapReduce} operation that takes a 2i index query as input

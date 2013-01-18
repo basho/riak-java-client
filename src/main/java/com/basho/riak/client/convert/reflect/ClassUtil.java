@@ -35,7 +35,7 @@ public final class ClassUtil {
      * @throw {@link IllegalArgumentException} if cannot set accessibility
      */
     public static <T extends Member> T checkAndFixAccess(T member) {
-        org.codehaus.jackson.map.util.ClassUtil.checkAndFixAccess(member);
+         com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member);
         return member;
     }
 

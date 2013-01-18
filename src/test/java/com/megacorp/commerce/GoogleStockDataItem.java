@@ -13,9 +13,9 @@
  */
 package com.megacorp.commerce;
 
-import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.basho.riak.client.convert.RiakKey;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class GoogleStockDataItem {
     //{"Date":"2010-01-05","Open":627.18,"High":627.84,"Low":621.54,"Close":623.99,"Volume":3004700,"Adj. Close":623.99}

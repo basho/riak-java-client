@@ -18,13 +18,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.module.SimpleModule;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * @author russell
@@ -38,7 +38,7 @@ public class NamedErlangFunctionDeserializerTest {
      */
     @Before public void setUp() throws Exception {
         objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new SimpleModule("test_quorm_deserialzer", new Version(1, 0, 0, "SNAPSHOT"))
+        objectMapper.registerModule(new SimpleModule("test_quorm_deserialzer", new Version(1, 0, 0, "SNAPSHOT",null,null))
                                     .addDeserializer(NamedErlangFunction.class, new NamedErlangFunctionDeserializer()));
     }
 
