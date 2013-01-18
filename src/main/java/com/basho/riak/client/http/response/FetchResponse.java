@@ -95,7 +95,8 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
             object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),
                                     headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta,
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
-                                    headers.get(Constants.HDR_ETAG), indexes);
+                                    headers.get(Constants.HDR_ETAG), indexes, 
+                                    headers.get(Constants.HDR_DELETED) != null ? true : false);
 
             Long contentLength = null;
             try {

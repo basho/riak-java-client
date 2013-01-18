@@ -351,4 +351,12 @@ public interface IRiakObject extends Iterable<RiakLink> {
      * @return this RiakObject
      */
     IRiakObject removeIntIndex(String index);
+    
+    /**
+     * Return if either the X-Riak-Deleted (HTTP) or deleted (PB) header/field
+     * was returned for this object
+     * 
+     * @return true if the header/field was set
+     */
+    boolean isDeleted();
 }

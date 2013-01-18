@@ -130,6 +130,7 @@ public final class ConversionUtil {
         builder.withValue(o.getValueAsBytes());
         builder.withVClock(nullSafeGetBytes(o.getVclock()));
         builder.withVtag(o.getVtag());
+        builder.withDeleted(o.isDeleted());
 
         String lastModified = o.getLastmod();
 
@@ -253,7 +254,7 @@ public final class ConversionUtil {
                                                                                            object.getVClockAsString(),
                                                                                            formatDate(object.getLastModified()),
                                                                                            object.getVtag(),
-                                                                                           allIndexes);
+                                                                                           allIndexes, false);
         return riakObject;
     }
 
