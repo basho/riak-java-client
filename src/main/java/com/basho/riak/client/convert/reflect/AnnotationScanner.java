@@ -13,12 +13,13 @@
  */
 package com.basho.riak.client.convert.reflect;
 
-import com.basho.riak.client.cap.VClock;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakLinks;
@@ -53,6 +54,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
         Field linksField = null;
         List<UsermetaField> usermetaItemFields = new ArrayList<UsermetaField>();
         List<RiakIndexField> indexFields = new ArrayList<RiakIndexField>();
+        List<RiakIndexMethod> indexMethods = new ArrayList<RiakIndexMethod>();
 
         Class currentClass = classToScan;
         while(currentClass != Object.class) {
@@ -101,6 +103,13 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
             }
             currentClass = currentClass.getSuperclass();
         }
-        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields, linksField, riakVClockField);
+        final Method[] methods = classToScan.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(RiakIndex.class)) {
+                indexMethods.add(new RiakIndexMethod(ClassUtil.checkAndFixAccess(method)));
+            }
+        }
+
+        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields, indexMethods, linksField, riakVClockField);
     }
 }
