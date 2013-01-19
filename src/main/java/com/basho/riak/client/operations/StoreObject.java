@@ -132,19 +132,21 @@ public class StoreObject<T> implements RiakOperation<T> {
             storeMeta.lastModified(o.getLastModified());
         }
 
-        final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
-            public RiakResponse call() throws Exception {
-                return client.store(o, storeMeta);
+        final boolean hasMutated = mutation instanceof CriteriaMutation<?> ? ((CriteriaMutation<T>) mutation).hasMutated() : true;
+        if (hasMutated) {
+            final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
+              public RiakResponse call() throws Exception {
+                  return client.store(o, storeMeta);
+              }
+          });
+            final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
+            for (IRiakObject s : stored) {
+                storedSiblings.add(converter.toDomain(s));
             }
-        });
-
-        final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
-
-        for (IRiakObject s : stored) {
-            storedSiblings.add(converter.toDomain(s));
+            return resolver.resolve(storedSiblings);
+        } else {
+            return mutated;
         }
-
-        return resolver.resolve(storedSiblings);
     }
 
     /**
