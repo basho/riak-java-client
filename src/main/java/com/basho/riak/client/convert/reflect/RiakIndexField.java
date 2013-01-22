@@ -82,7 +82,7 @@ public class RiakIndexField {
         return indexName;
     }
     
-    @SuppressWarnings("rawtypes") public Class getType() {
+    public Class<?> getType() {
         return type;
     }
 }
