@@ -14,11 +14,11 @@
 package com.basho.riak.client.convert.reflect;
 
 import java.lang.reflect.Field;
-
-import com.basho.riak.client.convert.RiakIndex;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
+
+import com.basho.riak.client.convert.RiakIndex;
 
 /**
  * @author russell
@@ -81,8 +81,8 @@ public class RiakIndexField {
     public String getIndexName() {
         return indexName;
     }
-    
-    @SuppressWarnings("rawtypes") public Class getType() {
+
+    public Class<?> getType() {
         return type;
     }
 }
