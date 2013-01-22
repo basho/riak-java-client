@@ -28,13 +28,13 @@ package com.basho.riak.client.cap;
  * Mutation<IRiakObject> m = new ConditionalStoreMutation<IRiakObject>() {
  *     private boolean modified;
  * 
- *     @Override
+ *     {@literal @}Override
  *     IRiakObject apply(IRiakObject original) {
  *          // I didn't do anything!
  *          modifed = false; 
  *     }
  * 
- *     @Overrive
+ *     {@literal @}Overrive
  *     boolean hasMutated() {
  *         return modified;
  *     }
