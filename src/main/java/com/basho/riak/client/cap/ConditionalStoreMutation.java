@@ -25,7 +25,7 @@ package com.basho.riak.client.cap;
  * </p>
  * <p>For example:
  * <code><pre>
- * Mutation<IRiakObject> m = new ConditionalStoreMutation<IRiakObject>() {
+ * Mutation&lt;IRiakObject&gt m = new ConditionalStoreMutation&lt;IRiakObject&gt;() {
  *     private boolean modified;
  * 
  *     {@literal @}Override
