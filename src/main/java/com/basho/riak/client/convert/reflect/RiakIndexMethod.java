@@ -57,7 +57,7 @@ public class RiakIndexMethod
             if (t instanceof ParameterizedType)
             {
                 final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
-                if (!genericType.equals(String.class) && !genericType.equals(Integer.class))
+                if (!genericType.equals(String.class) && !genericType.equals(Integer.class) && !genericType.equals(Long.class))
                 {
                     throw new IllegalArgumentException(method.getReturnType().toString());
                 }
