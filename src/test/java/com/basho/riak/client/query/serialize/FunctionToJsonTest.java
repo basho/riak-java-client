@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-import org.codehaus.jackson.JsonGenerator;
 import org.junit.Test;
 
 import com.basho.riak.client.query.functions.Function;
@@ -35,6 +34,7 @@ import com.basho.riak.client.query.serialize.JSBucketKeyFunctionWriter;
 import com.basho.riak.client.query.serialize.JSSourceFunctionWriter;
 import com.basho.riak.client.query.serialize.NamedErlangFunctionWriter;
 import com.basho.riak.client.query.serialize.NamedJSFunctionWriter;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * @author russell
