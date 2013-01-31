@@ -18,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.module.SimpleModule;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.Before;
 import org.junit.Test;
 

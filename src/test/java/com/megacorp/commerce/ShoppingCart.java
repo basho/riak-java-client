@@ -18,10 +18,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
-
 import com.basho.riak.client.convert.RiakKey;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A simple domain object for the sake of ITests.
@@ -32,12 +31,14 @@ import com.basho.riak.client.convert.RiakKey;
 public class ShoppingCart implements Iterable<String> {
 
     @RiakKey private final String userId;
-    @JsonProperty private final Set<String> items;
+    @JsonProperty
+    private final Set<String> items;
 
     /**
      * @param userId
      */
-    @JsonCreator public ShoppingCart(@JsonProperty("userId") String userId) {
+    @JsonCreator
+    public ShoppingCart(@JsonProperty("userId") String userId) {
         this.userId = userId;
         items = new CopyOnWriteArraySet<String>();
     }

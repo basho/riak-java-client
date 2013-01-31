@@ -13,13 +13,12 @@
  */
 package com.basho.riak.client.query.serialize;
 
-import org.codehaus.jackson.JsonGenerator;
-
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.functions.JSBucketKeyFunction;
 import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Helper to write a Function to a JsonGenerator

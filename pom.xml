@@ -4,10 +4,10 @@
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
     <packaging>bundle</packaging>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0-jackson_2.1-SNAPSHOT</version>
     <name>Riak Client for Java</name>
-    <description>HttpClient-based client for Riak</description>
-    <url>https://github.com/basho/riak-java-client</url>
+    <description>HttpClient-based client for Riak - with jackson 2.1</description>
+    <url>https://github.com/mcaprari/riak-java-client</url>
 
     <licenses>
         <license>
@@ -40,9 +40,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
-        <url>http://github.com/basho/riak-java-client</url>
+        <connection>scm:git:ssh://git@github.com/mcaprari/riak-java-client.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/mcaprari/riak-java-client.git</developerConnection>
+        <url>http://github.com/mcaprari/riak-java-client</url>
     </scm>
 
     <properties>
@@ -74,14 +74,19 @@
         </dependency>
         <!-- Protocol Buffers -->
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.11</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.1.2</version>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.11</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.1.2</version>
         </dependency>
         <!-- Testing -->
         <dependency>

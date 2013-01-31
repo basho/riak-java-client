@@ -15,11 +15,10 @@ package com.megacorp.commerce;
 
 import java.util.Collection;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakLinks;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author russell

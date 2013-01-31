@@ -17,11 +17,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
-
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Exceptions come back from Riak as JSON, parses exceptions, and throws the
@@ -99,7 +97,7 @@ public class JSONErrorParser {
      * @throws IOException
      */
     private static final Map<String, String> parseError(final String json) throws IOException {
-        return objectMapper.readValue(json, TypeFactory.mapType(HashMap.class, String.class, String.class));
+        return objectMapper.readValue(json, objectMapper.getTypeFactory().constructMapType(HashMap.class, String.class, String.class));
     }
 
     /**

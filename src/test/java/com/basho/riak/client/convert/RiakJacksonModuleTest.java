@@ -17,7 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.codehaus.jackson.map.Module.SetupContext;
+import com.fasterxml.jackson.databind.Module;
 import org.junit.Test;
 
 /**
@@ -28,11 +28,11 @@ public class RiakJacksonModuleTest {
 
     /**
      * Test method for
-     * {@link com.basho.riak.client.convert.RiakJacksonModule#setupModule(org.codehaus.jackson.map.Module.SetupContext)}
+     * {@link com.basho.riak.client.convert.RiakJacksonModule#setupModule(com.fasterxml.jackson.databind.Module.SetupContext)}
      * .
      */
     @Test public void setupAddsRiakbeanSerializerModifierToContext() {
-        SetupContext setupContext = mock(SetupContext.class);
+        Module.SetupContext setupContext = mock(Module.SetupContext.class);
         RiakJacksonModule module = new RiakJacksonModule();
         module.setupModule(setupContext);
         verify(setupContext, times(1)).addBeanSerializerModifier(RiakBeanSerializerModifier.getInstance());
