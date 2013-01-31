@@ -17,11 +17,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-
 import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakUsermeta;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * An other example entity, this time with user meta data

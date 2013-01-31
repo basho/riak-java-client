@@ -15,20 +15,19 @@ package com.basho.riak.client.raw.http;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.JsonToken;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
-
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
 /**
  * @author russell
  *
  */
-public class QuorumDeserializer extends JsonDeserializer<Quorum>{
+public class QuorumDeserializer extends JsonDeserializer<Quorum> {
 
     /* (non-Javadoc)
      * @see org.codehaus.jackson.map.JsonDeserializer#deserialize(org.codehaus.jackson.JsonParser, org.codehaus.jackson.map.DeserializationContext)

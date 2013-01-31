@@ -15,9 +15,8 @@ package com.basho.riak.client.query.serialize;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
-
 import com.basho.riak.client.query.functions.JSBucketKeyFunction;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Writes a {@link JSBucketKeyFunction} to a {@link JsonGenerator}

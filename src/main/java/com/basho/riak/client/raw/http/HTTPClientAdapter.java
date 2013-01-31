@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.basho.riak.client.http.RiakConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;
 
 import com.basho.riak.client.IRiakObject;
@@ -54,7 +55,6 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.

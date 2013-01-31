@@ -21,15 +21,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
-
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.indexes.RiakIndexes;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -59,7 +58,7 @@ public class JSONConverter<T> implements Converter<T> {
      * instances of <code>clazz</code>
      * 
      * @param clazz the type to convert to/from
-     * @param b the bucket
+     * @param bucket the bucket
      */
     public JSONConverter(Class<T> clazz, String bucket) {
         this(clazz, bucket, null);

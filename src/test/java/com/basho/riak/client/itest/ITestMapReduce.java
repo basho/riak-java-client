@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -178,10 +178,11 @@ public abstract class ITestMapReduce {
         		"{\"Date\":\"2010-01-06\",\"Open\":625.86,\"High\":625.86,\"Low\":606.36,\"Close\":608.26,\"Volume\":3978700,\"Adj. Close\":608.26}," +
         		"{\"Date\":\"2010-01-07\",\"Open\":609.4,\"High\":610,\"Low\":592.65,\"Close\":594.1,\"Volume\":6414300,\"Adj. Close\":594.1}," +
         		"{\"Date\":\"2010-01-08\",\"Open\":592,\"High\":603.25,\"Low\":589.11,\"Close\":602.02,\"Volume\":4724300,\"Adj. Close\":602.02}]";
-        
-        final LinkedList<GoogleStockDataItem> expected = new ObjectMapper()
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final LinkedList<GoogleStockDataItem> expected = objectMapper
                                     .readValue(json, 
-                                               TypeFactory.collectionType(LinkedList.class, GoogleStockDataItem.class));
+                                               objectMapper.getTypeFactory().constructCollectionType(LinkedList.class, GoogleStockDataItem.class));
         
         final Bucket b = client.createBucket("goog").execute();
         final DomainBucket<GoogleStockDataItem> bucket = DomainBucket.builder(b, GoogleStockDataItem.class).build();
@@ -256,9 +257,10 @@ public abstract class ITestMapReduce {
                 "{\"Date\":\"2010-01-07\",\"Open\":609.4,\"High\":610,\"Low\":592.65,\"Close\":594.1,\"Volume\":6414300,\"Adj. Close\":594.1}," +
                 "{\"Date\":\"2010-01-08\",\"Open\":592,\"High\":603.25,\"Low\":589.11,\"Close\":602.02,\"Volume\":4724300,\"Adj. Close\":602.02}]";
 
-        final LinkedList<GoogleStockDataItem> expected = new ObjectMapper()
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final LinkedList<GoogleStockDataItem> expected = objectMapper
                                     .readValue(json,
-                                               TypeFactory.collectionType(LinkedList.class, GoogleStockDataItem.class));
+                                            objectMapper.getTypeFactory().constructCollectionType(LinkedList.class, GoogleStockDataItem.class));
 
         final Bucket b = client.createBucket(bucketName).execute();
         final DomainBucket<GoogleStockDataItem> bucket = DomainBucket.builder(b, GoogleStockDataItem.class).build();

@@ -15,9 +15,8 @@ package com.basho.riak.client.query.serialize;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
-
 import com.basho.riak.client.query.functions.JSSourceFunction;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Writes a {@link JSSourceFunction} to a {@link JsonGenerator}
