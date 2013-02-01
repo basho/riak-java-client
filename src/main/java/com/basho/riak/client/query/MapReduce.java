@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
+
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
@@ -30,6 +27,10 @@ import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.serialize.FunctionToJson;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.MapReduceSpec;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * An operation for defining and runnig a Map/Reduce query on Riak.

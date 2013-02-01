@@ -18,11 +18,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Map/Reduce over a set of bucket/key/keydata inputs.

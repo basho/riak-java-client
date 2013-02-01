@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,6 +48,8 @@ import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.megacorp.commerce.GoogleStockDataItem;
 
 /**
@@ -181,7 +181,7 @@ public abstract class ITestMapReduce {
         
         final LinkedList<GoogleStockDataItem> expected = new ObjectMapper()
                                     .readValue(json, 
-                                               TypeFactory.collectionType(LinkedList.class, GoogleStockDataItem.class));
+                                               TypeFactory.defaultInstance().constructCollectionType(LinkedList.class, GoogleStockDataItem.class));
         
         final Bucket b = client.createBucket("goog").execute();
         final DomainBucket<GoogleStockDataItem> bucket = DomainBucket.builder(b, GoogleStockDataItem.class).build();
@@ -258,7 +258,7 @@ public abstract class ITestMapReduce {
 
         final LinkedList<GoogleStockDataItem> expected = new ObjectMapper()
                                     .readValue(json,
-                                               TypeFactory.collectionType(LinkedList.class, GoogleStockDataItem.class));
+                                               TypeFactory.defaultInstance().constructCollectionType(LinkedList.class, GoogleStockDataItem.class));
 
         final Bucket b = client.createBucket(bucketName).execute();
         final DomainBucket<GoogleStockDataItem> bucket = DomainBucket.builder(b, GoogleStockDataItem.class).build();
