@@ -13,18 +13,19 @@
  */
 package com.basho.riak.client.convert;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.introspect.AnnotatedField;
-import org.codehaus.jackson.map.introspect.AnnotatedMember;
-import org.codehaus.jackson.map.introspect.BasicBeanDescription;
-import org.codehaus.jackson.map.ser.BeanPropertyWriter;
-import org.codehaus.jackson.map.ser.BeanSerializerModifier;
+
 
 /**
  * {@link BeanSerializerModifier} that drops {@link RiakKey} and
@@ -56,7 +57,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
      * org.codehaus.jackson.map.introspect.BasicBeanDescription, java.util.List)
      */
     @Override public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
-                                                               BasicBeanDescription beanDesc,
+                                                               BeanDescription beanDesc,
                                                                List<BeanPropertyWriter> beanProperties) {
 
         List<BeanPropertyWriter> keptProperties = new LinkedList<BeanPropertyWriter>();

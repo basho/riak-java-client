@@ -19,13 +19,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.annotate.JsonProperty;
+
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.query.filter.KeyFilter;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * Map/Reduce over a bucket, optionally add Key Filters to narrow the inputs.

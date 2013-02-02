@@ -27,15 +27,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.http.impl.cookie.DateUtils;
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.module.SimpleModule;
-import org.codehaus.jackson.map.type.TypeFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -73,6 +64,15 @@ import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
  * Static methods used internally by {@link HTTPClientAdapter} for converting
@@ -368,14 +368,14 @@ public final class ConversionUtil {
             throw new JsonMappingException("no 'props' field found");
         }
 
-        builder.allowSiblings(props.path(Constants.FL_SCHEMA_ALLOW_MULT).getBooleanValue());
-        builder.lastWriteWins(props.path(Constants.FL_SCHEMA_LAST_WRITE_WINS).getBooleanValue());
-        builder.nVal(props.path(Constants.FL_SCHEMA_NVAL).getIntValue());
-        builder.backend(props.path(Constants.FL_SCHEMA_BACKEND).getTextValue());
-        builder.smallVClock(props.path(Constants.FL_SCHEMA_SMALL_VCLOCK).getIntValue());
-        builder.bigVClock(props.path(Constants.FL_SCHEMA_BIG_VCLOCK).getIntValue());
-        builder.youngVClock(props.path(Constants.FL_SCHEMA_YOUNG_VCLOCK).getLongValue());
-        builder.oldVClock(props.path(Constants.FL_SCHEMA_OLD_VCLOCK).getLongValue());
+        builder.allowSiblings(props.path(Constants.FL_SCHEMA_ALLOW_MULT).asBoolean());
+        builder.lastWriteWins(props.path(Constants.FL_SCHEMA_LAST_WRITE_WINS).asBoolean());
+        builder.nVal(props.path(Constants.FL_SCHEMA_NVAL).asInt());
+        builder.backend(props.path(Constants.FL_SCHEMA_BACKEND).textValue());
+        builder.smallVClock(props.path(Constants.FL_SCHEMA_SMALL_VCLOCK).asInt());
+        builder.bigVClock(props.path(Constants.FL_SCHEMA_BIG_VCLOCK).asInt());
+        builder.youngVClock(props.path(Constants.FL_SCHEMA_YOUNG_VCLOCK).asLong());
+        builder.oldVClock(props.path(Constants.FL_SCHEMA_OLD_VCLOCK).asLong());
 
         for (JsonNode n : props.path(Constants.FL_SCHEMA_PRECOMMIT)) {
             if (n.path(Constants.FL_SCHEMA_FUN_NAME).isMissingNode()) {
@@ -401,17 +401,17 @@ public final class ConversionUtil {
             builder.pw(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_PW), Quorum.class));
         }
         if(!props.path(Constants.FL_SCHEMA_BASIC_QUORUM).isMissingNode()) {
-            builder.basicQuorum(props.path(Constants.FL_SCHEMA_BASIC_QUORUM).getBooleanValue());
+            builder.basicQuorum(props.path(Constants.FL_SCHEMA_BASIC_QUORUM).asBoolean());
         }
         if(!props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).isMissingNode()) {
-            builder.notFoundOK(props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).getBooleanValue());
+            builder.notFoundOK(props.path(Constants.FL_SCHEMA_NOT_FOUND_OK).asBoolean());
         }
 
         builder.chashKeyFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_CHASHFUN),
                                                            NamedErlangFunction.class));
         builder.linkWalkFunction(OBJECT_MAPPER.treeToValue(props.path(Constants.FL_SCHEMA_LINKFUN),
                                                            NamedErlangFunction.class));
-        builder.search(props.path(Constants.FL_SCHEMA_SEARCH).getBooleanValue());
+        builder.search(props.path(Constants.FL_SCHEMA_SEARCH).asBoolean());
 
         return builder.build();
     }
@@ -597,7 +597,8 @@ public final class ConversionUtil {
 
             public <T> Collection<T> getResult(Class<T> resultType) throws ConversionException {
                 try {
-                    return OBJECT_MAPPER.readValue(getResultRaw(), TypeFactory.collectionType(Collection.class, resultType));
+                    return OBJECT_MAPPER.readValue(getResultRaw(), 
+                                                   OBJECT_MAPPER.getTypeFactory().constructCollectionType(Collection.class, resultType));
                 } catch (IOException e) {
                     throw new ConversionException(e);
                 }

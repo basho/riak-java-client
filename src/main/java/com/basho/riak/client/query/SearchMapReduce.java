@@ -15,10 +15,11 @@ package com.basho.riak.client.query;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.annotate.JsonProperty;
+
 
 import com.basho.riak.client.raw.RawClient;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * A {@link MapReduce} operation that uses a Riak Search query as input.

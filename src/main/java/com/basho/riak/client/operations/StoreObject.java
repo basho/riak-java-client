@@ -133,27 +133,37 @@ public class StoreObject<T> implements RiakOperation<T> {
             storeMeta.lastModified(o.getLastModified());
         }
 
-        final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
-            public RiakResponse call() throws Exception {
-                return client.store(o, storeMeta);
-            }
-        });
-
-        final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
-
-        // both HTTP and Protocol buffers will return tombstone siblings on a 
-        // returnbody=true. There is no 'deletedvclock' option in RpbPutReq and
-        // HTTP just always returns them. This makes returnbody=true consistent 
-        // with a fetch operation. See: returnDeletedVClock() below
+        final boolean hasMutated = 
+            mutation instanceof ConditionalStoreMutation<?> 
+            ? ((ConditionalStoreMutation<T>)mutation).hasMutated() 
+            : true;
         
-        for (IRiakObject s : stored) {
-            if (s.isDeleted() && !deletedVClockWithReturnbody) {
-                continue;
-            }
-            storedSiblings.add(converter.toDomain(s));
-        }
+        if (hasMutated) {
+            final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
+                public RiakResponse call() throws Exception {
+                    return client.store(o, storeMeta);
+                }
+            });
+        
+            final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
 
-        return resolver.resolve(storedSiblings);
+            // both HTTP and Protocol buffers will return tombstone siblings on a 
+            // returnbody=true. There is no 'deletedvclock' option in RpbPutReq and
+            // HTTP just always returns them. This makes returnbody=true consistent 
+            // with a fetch operation. See: returnDeletedVClock() below
+
+            for (IRiakObject s : stored) {
+                if (s.isDeleted() && !deletedVClockWithReturnbody) {
+                    continue;
+                }
+                storedSiblings.add(converter.toDomain(s));
+            } 
+            
+            return resolver.resolve(storedSiblings);
+            
+        } else {
+            return mutated;
+        }
     }
 
     /**

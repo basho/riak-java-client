@@ -13,7 +13,8 @@
  */
 package com.basho.riak.client.query.functions;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 /**
  * An M/R function arg that mandates that Riak only run the reduce phase once,

@@ -15,6 +15,7 @@ package com.basho.riak.client.convert.reflect;
 
 import static com.basho.riak.client.convert.reflect.ClassUtil.getFieldValue;
 import static com.basho.riak.client.convert.reflect.ClassUtil.setFieldValue;
+import static com.basho.riak.client.convert.reflect.ClassUtil.getMethodValue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -49,6 +50,7 @@ public class AnnotationInfo {
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
     private final List<RiakIndexField> indexFields;
+    private final List<RiakIndexMethod> indexMethods;
     private final Field riakLinksField;
     private final Field riakVClockField;
     private final Field riakTombstoneField;
@@ -58,14 +60,21 @@ public class AnnotationInfo {
      * @param usermetaItemFields
      * @param usermetaMapField
      * @param riakLinksField 
-     * @param indexFields 
+     * @param indexFields
+     * 
      */
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, Field usermetaMapField, List<RiakIndexField> indexFields, Field riakLinksField, Field riakVClockField, Field riakTombstoneField) {
+
+    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, 
+                          Field usermetaMapField, List<RiakIndexField> indexFields, 
+                          List<RiakIndexMethod> indexMethods, Field riakLinksField, 
+                          Field riakVClockField, Field riakTombstoneField) {
+
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
         validateUsermetaMapField(usermetaMapField);
         this.usermetaMapField = usermetaMapField;
         this.indexFields = indexFields;
+        this.indexMethods = indexMethods;
         validateRiakLinksField(riakLinksField);
         this.riakLinksField = riakLinksField;
         this.riakVClockField = riakVClockField;
@@ -245,14 +254,15 @@ public class AnnotationInfo {
 
     /**
      * @return a {@link RiakIndexes} made of the values of the RiakIndex
-     *         annotated fields
+     *         annotated fields and methods. For methods it is expected to be
+     *         a Set&lt;Long&gt; or Set&lt;String&gt;
      */
-    public <T> RiakIndexes getIndexes(T obj) {
+    @SuppressWarnings("unchecked") public <T> RiakIndexes getIndexes(T obj) {
         final RiakIndexes riakIndexes = new RiakIndexes();
 
         for (RiakIndexField f : indexFields) {
             if (Set.class.isAssignableFrom(f.getType())) {
-                Type t = f.getField().getGenericType();
+                final Type t = f.getField().getGenericType();
                 if (t instanceof ParameterizedType) {
                     Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
@@ -270,7 +280,7 @@ public class AnnotationInfo {
                     }
                 }
             } else {
-                Object val = getFieldValue(f.getField(), obj);
+                final Object val = getFieldValue(f.getField(), obj);
                 // null is not an index value
                 if (val != null) {
                     if (val instanceof String) {
@@ -285,6 +295,43 @@ public class AnnotationInfo {
             }
         }
 
+        for (RiakIndexMethod m : indexMethods) {
+            if (Set.class.isAssignableFrom(m.getType())) {
+                final Type t = m.getMethod().getGenericReturnType();
+                if (t instanceof ParameterizedType) {
+                    final Object val = getMethodValue(m.getMethod(), obj);
+                    if (val != null) {
+                        final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
+                        if (String.class.equals(genericType)) {
+                            riakIndexes.addBinSet(m.getIndexName(), (Set<String>) val);
+                        } else if (Long.class.equals(genericType)) {
+                            riakIndexes.addIntSet(m.getIndexName(), (Set<Long>) val);
+                        } else if (Integer.class.equals(genericType)) {
+                            // Supporting Integer as legacy. All new code should use Long
+                            Set<Integer> iSet = (Set<Integer>) val;
+                            Set<Long> lSet = new HashSet<Long>();
+                            for (Integer i : iSet) {
+                                lSet.add(i.longValue());
+                            }
+                            riakIndexes.addIntSet(m.getIndexName(), lSet);
+                        }
+                    }
+                }
+            } else {
+                final Object val = getMethodValue(m.getMethod(), obj);
+                // null is not an index value
+                if (val != null) {
+                    if (val instanceof String) {
+                        riakIndexes.add(m.getIndexName(), (String) val);
+                    } else if (val instanceof Long) {
+                        riakIndexes.add(m.getIndexName(), (Long) val);
+                    } else if (val instanceof Integer) {
+                        riakIndexes.add(m.getIndexName(), ((Integer) val).longValue());
+                    }
+                }
+            }
+        }
+        
         return riakIndexes;
     }
 
@@ -301,9 +348,9 @@ public class AnnotationInfo {
             Set<?> val = null;
             
             if (Set.class.isAssignableFrom(f.getType())) {
-                Type t = f.getField().getGenericType();
+                final Type t = f.getField().getGenericType();
                 if (t instanceof ParameterizedType) {
-                    Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
+                    final Class<?> genericType = (Class<?>)((ParameterizedType)t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
                         val = indexes.getBinIndex(f.getIndexName());
                     } else if (Integer.class.equals(genericType)) {
