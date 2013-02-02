@@ -366,7 +366,7 @@ public abstract class ITestBucket {
                         FetchObject<IRiakObject> fo = b.fetch(key).returnDeletedVClock(true);
                         IRiakObject o = fo.execute();
 
-                        if (o.isDeleted()) {
+                        if (o != null && o.isDeleted()) {
                             endLatch.countDown();
                             Thread.currentThread().interrupt();
                             putterThread.interrupt();
