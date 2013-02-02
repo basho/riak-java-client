@@ -56,11 +56,12 @@ public class StoreObject<T> implements RiakOperation<T> {
 
     private boolean returnBody = false;
     private boolean doNotFetch = false;
-
+    private boolean deletedVClockWithReturnbody = false;
+    
     private Mutation<T> mutation;
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
-
+    
     /**
      * Create a new StoreObject operation for the object in <code>bucket</code>
      * at <code>key</code>.
@@ -140,7 +141,15 @@ public class StoreObject<T> implements RiakOperation<T> {
 
         final Collection<T> storedSiblings = new ArrayList<T>(stored.numberOfValues());
 
+        // both HTTP and Protocol buffers will return tombstone siblings on a 
+        // returnbody=true. There is no 'deletedvclock' option in RpbPutReq and
+        // HTTP just always returns them. This makes returnbody=true consistent 
+        // with a fetch operation. See: returnDeletedVClock() below
+        
         for (IRiakObject s : stored) {
+            if (s.isDeleted() && !deletedVClockWithReturnbody) {
+                continue;
+            }
             storedSiblings.add(converter.toDomain(s));
         }
 
@@ -249,6 +258,7 @@ public class StoreObject<T> implements RiakOperation<T> {
      */
     public StoreObject<T> returnDeletedVClock(boolean returnDeletedVClock) {
         this.fetchObject.returnDeletedVClock(returnDeletedVClock);
+        deletedVClockWithReturnbody = true;
         return this;
     }
 

@@ -80,6 +80,27 @@ public class AnnotationHelper {
         return vclock;
     }
     
+    public <T> T setRiakTombstone(T obj, boolean isTombstone) {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        if (annotationInfo.hasRiakTombstone()) {
+            annotationInfo.setRiakTombstone(obj, isTombstone);
+        }
+        
+        return obj;
+    }
+    
+    public <T> Boolean getRiakTombstone(T obj) {
+        Boolean tombstone = null;
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        
+        if (annotationInfo.hasRiakTombstone()) {
+            tombstone = annotationInfo.getRiakTombstone(obj);
+        }
+        
+        return tombstone;
+    }
+    
+    
     public <T> Map<String, String> getUsermetaData(T obj) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
         return annotationInfo.getUsermetaData(obj);
