@@ -149,7 +149,7 @@ public abstract class ITestTombstone
         assertTrue(pojo.isTombstone);
         assertNull(pojo.value);
         
-        emptyBucket(bucketName, client);
+        emptyBucket(bucket2, client);
     
     }
     
@@ -166,7 +166,7 @@ public abstract class ITestTombstone
         b.store("key", pojo).withoutFetch().execute();
         pojo = b.fetch("key", AnnotatedPojo.class).withResolver(new PojoTombstoneResolver()).returnDeletedVClock(true).execute();
         
-        emptyBucket(bucketName, client);
+        emptyBucket(bucket2, client);
         
     }
     
