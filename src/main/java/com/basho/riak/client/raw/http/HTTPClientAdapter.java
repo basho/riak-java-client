@@ -54,7 +54,10 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.math.BigInteger;
 
 /**
  * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.
@@ -482,7 +485,11 @@ public class HTTPClientAdapter implements RawClient {
                 + r.getStatusCode());
         } else {
             try {
-                return new ObjectMapper().readValue(r.getBodyAsString(), NodeStats.class);
+                NodeStats.UndefinedStatDeserializer usd = new NodeStats.UndefinedStatDeserializer();
+                SimpleModule module = new SimpleModule("UndefinedStatDeserializer", 
+                                                       new Version(1,0,0,null,null,null));
+                module.addDeserializer(BigInteger.class, usd);
+                return new ObjectMapper().registerModule(module).readValue(r.getBodyAsString(), NodeStats.class);
             } catch (IOException e) {
                 throw new IOException("Could not parse stats JSON response, body: " + r.getBodyAsString(),e);
             }
