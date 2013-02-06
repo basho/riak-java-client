@@ -23,7 +23,7 @@ import com.basho.riak.client.convert.reflect.AnnotationHelper;
 public class TombstoneUtil
 {
     /**
-     * Attempts to inject <code>vclock</code> as the value of the {@link RiakVClock}
+     * Attempts to inject <code>isTombstone</code> as the value of the {@link RiakTombstone}
      * annotated field of <code>domainObject</code>
      * 
      * @param <T>
@@ -44,16 +44,16 @@ public class TombstoneUtil
     }
     
     /**
-     * Attempts to get a vector clock from <code>domainObject</code> by looking for a
-     * {@link TiakTombstone} annotated field. If non-present it simply returns
+     * Attempts to get boolean from <code>domainObject</code> by looking for a
+     * {@link RiakTombstone} annotated field. If non-present it simply returns
      * <code>null</code>
      * 
      * @param <T>
      *            the type of <code>domainObject</code>
      * @param domainObject
      *            the object to search for a key
-     * @return either the value found on <code>domainObject</code>;s
-     *         {@link RiakVClock} field or <code>null</code>
+     * @return either the value found on <code>domainObject</code>'s
+     *         {@link RiakTombstone} field or <code>null</code>
      */
     public static <T> Boolean getTombstone(T domainObject) {
         return AnnotationHelper.getInstance().getRiakTombstone(domainObject);
