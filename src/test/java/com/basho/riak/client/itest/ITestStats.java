@@ -17,8 +17,16 @@ package com.basho.riak.client.itest;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.query.NodeStats;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.io.IOException;
+import java.math.BigInteger;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -36,5 +44,22 @@ public abstract class ITestStats
     }
     
     protected abstract IRiakClient getClient() throws RiakException;
+    
+    @Test public void testDeserializer() throws IOException
+    {
+        NodeStats.UndefinedStatDeserializer usd = new NodeStats.UndefinedStatDeserializer();
+        SimpleModule module = new SimpleModule("UndefinedStatDeserializer", 
+                                                       new Version(1,0,0,null,null,null));
+        module.addDeserializer(BigInteger.class, usd);
+    
+        String json = "{\"vnode_gets\":\"deprecated\",\"vnode_gets_total\":12345678}";
+        
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(module);
+        NodeStats stats = mapper.readValue(json, NodeStats.class);
+        assertEquals(stats.vnodeGets(), BigInteger.ZERO);
+        assertEquals(stats.vnodeGetsTotal(), BigInteger.valueOf(12345678));
+    
+    }
     
 }
