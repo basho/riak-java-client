@@ -70,6 +70,7 @@ public interface Constants {
     public static String HDR_LINK = "link";
     public static String HDR_LOCATION = "location";
     public static String HDR_VCLOCK = "x-riak-vclock";
+    public static String HDR_DELETED = "x-riak-deleted";
     // Declared twice because of Erlang has bizarre HTTP header case handling.
     // If a header name is 21 chars or shorteer, it is auto-capitalized between
     // dashes. Otherwise, it is passed as is. Therefore, we just make sure this

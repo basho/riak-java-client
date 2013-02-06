@@ -45,6 +45,7 @@ public class AnnotationInfo {
 
     private static final String NO_RIAK_KEY_FIELD_PRESENT = "no riak key field present";
     private static final String NO_RIAK_VCLOCK_FIELD_PRESENT = "no riak vclock field present";
+    private static final String NO_RIAK_TOMBSTONE_FIELD_PRESENT = "no riak tombstone field present";
     private final Field riakKeyField;
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
@@ -52,6 +53,7 @@ public class AnnotationInfo {
     private final List<RiakIndexMethod> indexMethods;
     private final Field riakLinksField;
     private final Field riakVClockField;
+    private final Field riakTombstoneField;
 
     /**
      * @param riakKeyField
@@ -61,10 +63,12 @@ public class AnnotationInfo {
      * @param indexFields
      * 
      */
+
     public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, 
                           Field usermetaMapField, List<RiakIndexField> indexFields, 
                           List<RiakIndexMethod> indexMethods, Field riakLinksField, 
-                          Field riakVClockField) {
+                          Field riakVClockField, Field riakTombstoneField) {
+
         this.riakKeyField = riakKeyField;
         this.usermetaItemFields = usermetaItemFields;
         validateUsermetaMapField(usermetaMapField);
@@ -74,6 +78,7 @@ public class AnnotationInfo {
         validateRiakLinksField(riakLinksField);
         this.riakLinksField = riakLinksField;
         this.riakVClockField = riakVClockField;
+        this.riakTombstoneField = riakTombstoneField;
     }
 
     /**
@@ -183,6 +188,27 @@ public class AnnotationInfo {
         }
     }
     
+    public boolean hasRiakTombstone() {
+        return riakTombstoneField != null;
+    }
+    
+    public <T> boolean getRiakTombstone(T obj)
+    {
+        if (!hasRiakTombstone()) {
+            throw new IllegalStateException(NO_RIAK_TOMBSTONE_FIELD_PRESENT);
+        }
+        
+        boolean tombstone = (Boolean)getFieldValue(riakTombstoneField, obj);
+        return tombstone;
+    }
+    
+    public <T> void setRiakTombstone(T obj, Boolean isDeleted) {
+        if (!hasRiakTombstone()) {
+            throw new IllegalStateException(NO_RIAK_TOMBSTONE_FIELD_PRESENT);
+        }
+        
+        setFieldValue(riakTombstoneField, obj, isDeleted);
+    }
     
     @SuppressWarnings({ "unchecked", "rawtypes" }) public <T> Map<String, String> getUsermetaData(T obj) {
         final Map<String, String> usermetaData = new LinkedHashMap<String, String>();

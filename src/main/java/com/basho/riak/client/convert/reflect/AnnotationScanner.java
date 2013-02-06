@@ -23,6 +23,7 @@ import java.util.concurrent.Callable;
 import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakLinks;
+import com.basho.riak.client.convert.RiakTombstone;
 import com.basho.riak.client.convert.RiakUsermeta;
 import com.basho.riak.client.convert.RiakVClock;
 import com.basho.riak.client.convert.UsermetaField;
@@ -50,6 +51,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
     public AnnotationInfo call() throws Exception {
         Field riakKeyField = null;
         Field riakVClockField = null;
+        Field riakTombstoneField = null;
         Field usermetaMapField = null;
         Field linksField = null;
         List<UsermetaField> usermetaItemFields = new ArrayList<UsermetaField>();
@@ -81,6 +83,15 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
                     riakVClockField = ClassUtil.checkAndFixAccess(field);
                 }
 
+                if (riakTombstoneField == null && field.isAnnotationPresent(RiakTombstone.class)) {
+                    
+                    // restrict the field to boolean
+                    if (!field.getType().equals(Boolean.TYPE)) {
+                        throw new IllegalArgumentException(field.getType().toString());
+                    }
+                    riakTombstoneField = ClassUtil.checkAndFixAccess(field);
+                }
+                
                 if (field.isAnnotationPresent(RiakUsermeta.class)) {
                     RiakUsermeta a = field.getAnnotation(RiakUsermeta.class);
                     String key = a.key();
@@ -112,6 +123,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
         }
         
         return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, 
-                                  indexFields, indexMethods, linksField, riakVClockField);
+                                  indexFields, indexMethods, linksField, riakVClockField,
+                                  riakTombstoneField);
     }
 }

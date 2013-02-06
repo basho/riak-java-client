@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +33,7 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.util.CharsetUtils;
 
@@ -215,13 +217,11 @@ public abstract class ITestClientBasic {
                         FetchObject<IRiakObject> fo = b.fetch(key).returnDeletedVClock(true);
                         IRiakObject o = fo.execute();
 
-                        if (fo.hasDeletedVclock()) {
+                        if (o != null && o.isDeleted()) {
                             endLatch.countDown();
                             Thread.currentThread().interrupt();
                             putterThread.interrupt();
                             deleterThread.interrupt();
-                            assertNull(o);
-
                         }
                     } catch (RiakException e) {
                         // no-op, keep going
@@ -237,14 +237,47 @@ public abstract class ITestClientBasic {
         getterThread.start();
 
         boolean sawDeletedVClock = endLatch.await(10, TimeUnit.SECONDS);
-
+        
         if (!sawDeletedVClock) {
             putterThread.interrupt();
             getterThread.interrupt();
             deleterThread.interrupt();
-        } else {
-            assertTrue(sawDeletedVClock); // somewhat redundant, but it's a
-                                          // test.
+        } 
+        
+        // There's a *slight* chance this test may fail on a really slow 
+        // machine but otherwise it should be true.
+        assertTrue(sawDeletedVClock); 
+        
+    }
+    
+    @Test public void deletedVclockSiblings() throws Exception {
+        
+        final String key = "j";
+        final String bucket2 = bucketName + "_dsiblings";
+        final Bucket b = client.createBucket(bucket2).allowSiblings(true).execute();
+        
+        b.store(key,"something").execute();
+        b.delete(key).execute();
+        b.store(key,"something").execute();
+        
+        // We will now have siblings, once of which is a tombstone. Fetching 
+        // the key back while setting returnDeletedVClock() should give us 
+        // siblings, whereas without it we should only get back the non-deleted
+        // object
+        
+        IRiakObject ro = b.fetch(key).execute();
+        assertNotNull(ro);
+        assertEquals(ro.getValueAsString(), "something");
+        
+        try {
+            ro = b.fetch(key).returnDeletedVClock(true).execute();
+            fail("Expected siblings to exist, including deleted vclock");
+        } catch (UnresolvedConflictException e) {
+            // no-op this is what we expect 
         }
+        
+        emptyBucket(bucket2, client);
+        
+        
     }
 }

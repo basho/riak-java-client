@@ -97,16 +97,35 @@ public class FetchObject<T> implements RiakOperation<T> {
      */
     public T execute() throws UnresolvedConflictException, RiakRetryFailedException, ConversionException {
         // fetch, resolve
+        final FetchMeta fetchMeta = builder.build();
         Callable<RiakResponse> command = new Callable<RiakResponse>() {
             public RiakResponse call() throws Exception {
-                return client.fetch(bucket, key, builder.build());
+                return client.fetch(bucket, key, fetchMeta);
             }
         };
 
         rawResponse = retrier.attempt(command);
         final Collection<T> siblings = new ArrayList<T>(rawResponse.numberOfValues());
+        
+        // When talking about tombstones, our two protocols have 
+        // different behaviors. 
+        //
+        // When using Protocol Buffers Riak will not return a deleted vclock 
+        // object unless explicitly told to do so in the request. If only
+        // 
+        // HTTP has no such request header/parameter and will always return 
+        // the vclock of a deleted item or sibling. 
+        // 
+        // Unfortunately due to how the orig. HTTP client is designed it would 
+        // take significant effot to rewrite it not to return the vclock from a 404 
+        // back up to here based on the request meta, 
+        // so we simply explicitly check it here now that we have an object(s)
 
         for (IRiakObject o : rawResponse) {
+            if (o.isDeleted() && (fetchMeta.getReturnDeletedVClock() == null || 
+                !fetchMeta.getReturnDeletedVClock()) ) {
+                continue;
+            }
             siblings.add(converter.toDomain(o));
         }
 
@@ -296,7 +315,11 @@ public class FetchObject<T> implements RiakOperation<T> {
      * @return true if the fetch was to a deleted key but the
      *         returnDeletedVClock parameter was set, and the response has that
      *         vclock
+     * 
+     * @deprecated 
+     * @see {@link IRiakObject#isDeleted() }
      */
+    @Deprecated
     public boolean hasDeletedVclock() {
         validatePostExecute();
         return rawResponse.isDeleted();

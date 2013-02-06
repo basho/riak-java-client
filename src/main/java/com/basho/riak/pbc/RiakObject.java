@@ -41,7 +41,7 @@ public class RiakObject {
 	private ByteString vclock;
 	private ByteString bucket;
 	private ByteString key;
-	
+	private boolean deleted;
 	private ByteString value;
 
 	private String contentType;
@@ -61,6 +61,7 @@ public class RiakObject {
 		this.vclock = vclock;
 		this.bucket = bucket;
 		this.key = key;
+		this.deleted = content.getDeleted();
 		this.value = content.getValue();
 		this.contentType = str(content.getContentType());
 		this.charset = str(content.getCharset());
@@ -159,6 +160,10 @@ public class RiakObject {
 		} else {
 			return null;
 		}
+	}
+	
+	public boolean getDeleted() {
+		return this.deleted;
 	}
 	
 	public ByteString getVclock() {

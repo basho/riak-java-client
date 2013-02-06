@@ -545,7 +545,7 @@ public class ClientUtils {
                 RiakObject o = new RiakObject(riak, partBucket, partKey, part.getBody(),
                                               headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta, vclock,
                                               headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG),
-                                              indexes);
+                                              indexes, headers.get(Constants.HDR_DELETED) != null ? true : false);
                 objects.add(o);
             }
         }

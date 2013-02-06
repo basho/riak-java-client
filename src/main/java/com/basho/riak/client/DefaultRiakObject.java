@@ -57,6 +57,7 @@ public class DefaultRiakObject implements IRiakObject {
     private final VClock vclock;
     private final String vtag;
     private final long lastModified;
+    private final boolean isDeleted;
 
     private final Object linksLock = new Object();
     private final Collection<RiakLink> links;
@@ -83,7 +84,7 @@ public class DefaultRiakObject implements IRiakObject {
      */
     public DefaultRiakObject(String bucket, String key, VClock vclock, String vtag, final Date lastModified,
             String contentType, byte[] value, final Collection<RiakLink> links, final Map<String, String> userMeta,
-            final RiakIndexes indexes) {
+            final RiakIndexes indexes, final boolean isDeleted) {
 
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
@@ -91,6 +92,7 @@ public class DefaultRiakObject implements IRiakObject {
 
         this.bucket = bucket;
         this.key = key;
+        this.isDeleted = isDeleted;
         this.vclock = vclock;
         this.vtag = vtag;
         this.lastModified = lastModified == null ? 0 : lastModified.getTime();
@@ -487,5 +489,10 @@ public class DefaultRiakObject implements IRiakObject {
     public IRiakObject removeIntIndex(String index) {
         indexes.removeAll(IntIndex.named(index));
         return this;
+    }
+    
+    @Override
+    public boolean isDeleted() {
+        return this.isDeleted;
     }
 }

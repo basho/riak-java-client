@@ -100,14 +100,7 @@ public final class ConversionUtil {
         if (fetchResponse.isUnchanged()) {
             return RiakResponse.unmodified();
         }
-        RiakObject[] objects = fetchResponse.getObjects();
-        byte[] vclock = fetchResponse.getVClock();
-
-        // no objects + vclock == deleted vclock
-        if ((objects == null || objects.length == 0) && vclock != null) {
-            return new RiakResponse(vclock);
-        }
-
+        
         return convert(fetchResponse.getObjects());
     }
 
@@ -121,6 +114,7 @@ public final class ConversionUtil {
         builder.withValue(nullSafeToBytes(o.getValue()));
         builder.withVClock(nullSafeToBytes(o.getVclock()));
         builder.withVtag(o.getVtag());
+        builder.withDeleted(o.getDeleted());
 
         Date lastModified = o.getLastModified();
 
