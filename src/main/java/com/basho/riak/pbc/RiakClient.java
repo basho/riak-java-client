@@ -287,6 +287,18 @@ public class RiakClient implements RiakMessageCodes {
 
         RpbGetResp resp = RiakKvPB.RpbGetResp.parseFrom(rep);
         int count = resp.getContentCount();
+        
+        // To unify the behavior of having just a tombstone vs. siblings
+        // that include a tombstone, we create an empty object and mark
+        // it deleted
+        if (count == 0) {
+            RiakKvPB.RpbGetResp.Builder responseBuilder = resp.toBuilder();
+            RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.getDefaultInstance().toBuilder();
+            contentBuilder.setDeleted(true).setValue(ByteString.EMPTY);
+            resp = responseBuilder.addContent(contentBuilder.build()).build();
+            count = 1;
+        }
+        
         RiakObject[] out = new RiakObject[count];
         ByteString vclock = resp.getVclock();
         for (int i = 0; i < count; i++) {

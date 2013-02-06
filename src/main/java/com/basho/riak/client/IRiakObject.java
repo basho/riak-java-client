@@ -351,4 +351,16 @@ public interface IRiakObject extends Iterable<RiakLink> {
      * @return this RiakObject
      */
     IRiakObject removeIntIndex(String index);
+    
+    /**
+     * Check to see if this object is a tombstone (deleted)
+     * 
+     * Note: The request has to have been made specifying tombstones
+     * (deleted vclocks) are to be returned. 
+     * @see {@link com.basho.riak.client.operations.FetchObject#returnDeletedVClock(boolean) 
+     * @see {@link com.basho.riak.client.operations.StoreObject#returnDeletedVClock(boolean) 
+     * 
+     * @return true if the object is a tombstone
+     */
+    boolean isDeleted();
 }

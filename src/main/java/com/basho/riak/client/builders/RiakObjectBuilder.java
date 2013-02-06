@@ -45,7 +45,7 @@ public class RiakObjectBuilder {
     private RiakIndexes indexes = new RiakIndexes();
     private Map<String, String> userMeta = new HashMap<String, String>();
     private String contentType;
-
+    private boolean isDeleted = false;
     /**
      * Create a new builder for a {@link IRiakObject} at bucket/key
      * 
@@ -85,6 +85,7 @@ public class RiakObjectBuilder {
         rob.links = o.getLinks();
         rob.indexes = new RiakIndexes(o.allBinIndexes(), o.allIntIndexesV2());
         rob.userMeta = o.getMeta();
+        rob.isDeleted = o.isDeleted();
         return rob;
     }
 
@@ -94,7 +95,7 @@ public class RiakObjectBuilder {
      */
     public IRiakObject build() {
         return new DefaultRiakObject(bucket, key, vclock, vtag, lastModified, contentType, value, links, userMeta,
-                                     indexes);
+                                     indexes, isDeleted);
     }
 
     /**
@@ -278,6 +279,11 @@ public class RiakObjectBuilder {
      */
     public RiakObjectBuilder withVClock(VClock vclock) {
         this.vclock = vclock;
+        return this;
+    }
+    
+    public RiakObjectBuilder withDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
         return this;
     }
 

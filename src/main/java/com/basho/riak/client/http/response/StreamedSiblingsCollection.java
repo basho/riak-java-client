@@ -73,7 +73,8 @@ public class StreamedSiblingsCollection extends CollectionWrapper<RiakObject> {
 
             RiakObject o = new RiakObject(riak, partBucket, partKey, null, headers.get(Constants.HDR_CONTENT_TYPE),
                                  links, usermeta, vclock, headers.get(Constants.HDR_LAST_MODIFIED),
-                                 headers.get(Constants.HDR_ETAG), indexes);
+                                 headers.get(Constants.HDR_ETAG), indexes,
+                                 headers.get(Constants.HDR_DELETED) != null ? true : false);
             o.setValueStream(part.getStream());
             cache(o);
             return true;

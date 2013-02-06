@@ -92,10 +92,22 @@ public class FetchResponse extends HttpResponseDecorator implements WithBodyResp
 
             object = siblings.iterator().next();
         } else if (r.isSuccess()) {
-            object = new RiakObject(riak, r.getBucket(), r.getKey(), r.getBody(),
+            
+            // There is a bug in Riak where the x-riak-deleted header is not returned
+            // with a tombstone on a 404 (x-riak-vclock exists). The following block can
+            // be removed once that is fixed
+            byte[] body = r.getBody();
+            if (r.getStatusCode() == 404) {
+                headers.put(Constants.HDR_DELETED, "true");
+                body = new byte[0]; // otherwise this will be "not found"
+            }
+            
+            
+            object = new RiakObject(riak, r.getBucket(), r.getKey(), body,
                                     headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta,
                                     headers.get(Constants.HDR_VCLOCK), headers.get(Constants.HDR_LAST_MODIFIED),
-                                    headers.get(Constants.HDR_ETAG), indexes);
+                                    headers.get(Constants.HDR_ETAG), indexes, 
+                                    headers.get(Constants.HDR_DELETED) != null ? true : false);
 
             Long contentLength = null;
             try {

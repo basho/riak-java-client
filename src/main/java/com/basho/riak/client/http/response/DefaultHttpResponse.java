@@ -114,7 +114,8 @@ public class DefaultHttpResponse implements HttpResponse {
                ((status == 300 || status == 304) && Constants.HTTP_HEAD_METHOD.equals(method)) ||
                ((status == 300 || status == 304) && Constants.HTTP_GET_METHOD.equals(method)) ||
                ((status == 300) && Constants.HTTP_PUT_METHOD.equals(method)) ||
-               ((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method));
+               ((status == 404) && Constants.HTTP_DELETE_METHOD.equals(method)) ||
+               ((status == 404) && headers.containsKey(Constants.HDR_VCLOCK)); // tombstone
     }
 
     public boolean isError() {
