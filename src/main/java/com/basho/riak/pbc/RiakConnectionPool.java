@@ -261,7 +261,13 @@ public class RiakConnectionPool {
                                     permits.release();
                                 }
                             }
+                        } else {
+                            // Since we are descending and this is a LIFO, 
+                            // if the current connection hasn't been idle beyond 
+                            // the threshold, there's no reason to descend further
+                            break;
                         }
+                        
                     }
                 }
             }, idleConnectionTTLNanos, idleConnectionTTLNanos, TimeUnit.NANOSECONDS);
