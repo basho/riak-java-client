@@ -1,3 +1,72 @@
+1.1.0
+-----
+
+This is a bugfix and feature release
+
+Especially worth noting is that 2i is now supported natively via protocol buffers
+and the int_index is no longer limited to 2^31:
+21c8f2f Brian Roach Change 2i to use long values
+ab25101 Brian Roach Changed PB client to use native 2i
+
+Tombstones are now properly handled/supported: 
+416a901 Brian Roach Fixing tombstone support
+
+CPU utilization bug in the protocol buffers connection pool is fixed:
+7ae4f8d Brian Roach Merge pull request #212 from basho/gh211-idle-reaper-bug
+
+You can now perform conditional mutations avoiding a store operation if not needed:
+c751322 Brian Roach Merge pull request #202 from basho/gh200-conditional-store-mutation
+
+Complete list of commits:
+7ae4f8d Brian Roach Merge pull request #212 from basho/gh211-idle-reaper-bug
+5341dc3 Brian Roach Added small optimization
+50ed46d Brian Roach Fixes problem with idle connection reaping
+9c46c4d Brian Roach Merge pull request #209 from basho/gh208-deprecated-stats
+dc16ae2 Brian Roach Merge pull request #195 from basho/gh157-expose-deleted
+d96f781 Brian Roach Fixed javadoc
+d28cd4c Brian Roach Merge pull request #194 from basho/gh153-expose-head
+8d573d3 Brian Roach Small change to javadoc
+918b48f Brian Roach Merge branch 'gh153-expose-head' of github.com:basho/riak-java-client into gh153-expose-head
+c0622e4 Brian Roach Made UndefinedStatDeserializer global
+19002bb Brian Roach Added to all tests, fixed small bug in test
+5777dd5 Brian Roach Added tests for tombstone handling
+d0dda77 Brian Roach Removed last usage of FetchObject.hasDeletedVclock
+b005f84 Brian Roach Merge branch 'master' into gh157-expose-deleted
+416a901 Brian Roach Fixing tombstone support
+1cc8387 Brian Roach Merge pull request #193 from basho/gh192-pb-fetches-twice
+8461f7c Brian Roach Merge pull request #196 from basho/gh170-jackson-upgrade
+e8a50f7 Brian Roach Merge pull request #205 from guidomedina/fix-riakindex-at-setoflongs
+932433d guido.medina Add tests for @RiakIndex at methods of return type Set<Long>
+952fc4c guido.medina @RiakIndex fails if method return type is Set<Long>
+3cd6b51 Brian Roach Merge pull request #201 from basho/httpclientconfig-typo
+70f11d8 Chris Molozian Replaced spaces with tabs in changeset for previous commit.
+f75a514 Brian Roach Merge pull request #203 from basho/gh199-riakindex-annotated-methods
+e6c8a42 Brian Roach POJO methods can now be annotated with @RiakIndex
+c751322 Brian Roach Merge pull request #202 from basho/gh200-conditional-store-mutation
+340d4d5 Brian Roach Really fixed Javadoc. Honest.
+5925997 Brian Roach Fixed javadoc
+b2da148 Brian Roach Adds ConditionalStoreMutation
+b60f04d Chris Molozian Fixed a typo in HTTPClientConfig Builder API. For API compatibility reasons, the old method remains but has been deprecated.
+7dee6c9 Brian Roach Merge pull request #197 from basho/gh160-avoid-string-intern
+8434942 Brian Roach Removes global locking on interned String
+6c4b896 Brian Roach Removed test for removed behavior
+dbdf16a Brian Roach Removed second fetch entirely
+4a33c9e Brian Roach Wrong end of line chars
+d27956a Brian Roach This updates the client to use Jackson 2.x
+f772d56 Brian Roach Preserve and expose x-riak-deleted / PB deleted
+972e5ff Brian Roach Expose FetchMeta.headOnly() in FetchObject
+db25216 Brian Roach Added missing conditional
+5fb82fe Brian Roach Merge pull request #191 from basho/gh188-pb-native-2i
+82b10ee Brian Roach formatting
+ab25101 Brian Roach Changed PB client to use native 2i
+6a7c770 Brian Roach Fixed typo in README
+b1c9bec Brian Roach Merge pull request #189 from basho/gh112-index-is-int
+3e46905 Brian Roach Fixed comments / @Depricated tag
+64d1c01 Brian Roach Modify method names to preserve backward compat
+21c8f2f Brian Roach Change 2i to use long values
+6c9f3ee Brian Roach [maven-release-plugin] prepare for next development iteration
+
+
 1.0.7 
 -------------
 This is a bugfix and feature release
