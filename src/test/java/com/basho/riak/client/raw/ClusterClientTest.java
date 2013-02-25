@@ -77,11 +77,10 @@ public class ClusterClientTest {
     }
 
     @Test public void ping() throws IOException {
-        for (int i = 0; i < 4; i++) {
-            client.ping();
-        }
+        client.ping();
+        
 
-        verify(client1, times(2)).ping();
+        verify(client1, times(1)).ping();
         verify(client2, times(1)).ping();
         verify(client3, times(1)).ping();
     }

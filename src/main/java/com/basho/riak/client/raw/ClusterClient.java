@@ -267,12 +267,14 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.getClientId();
     }
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.raw.RawClient#ping()
+    /* 
+     * Pings every node in the cluster. If any node is down, will
+     * throw an exception.
      */
     public void ping() throws IOException {
-        final RawClient delegate = getDelegate();
-        delegate.ping();
+        for(RawClient rc : cluster) {
+            rc.ping();
+        }
     }
 
     /* (non-Javadoc)
