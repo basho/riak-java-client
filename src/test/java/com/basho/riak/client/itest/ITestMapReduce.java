@@ -41,7 +41,14 @@ import com.basho.riak.client.bucket.RiakBucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.http.Hosts;
 import com.basho.riak.client.query.MapReduceResult;
+import com.basho.riak.client.query.filter.BetweenFilter;
+import com.basho.riak.client.query.filter.EndsWithFilter;
+import com.basho.riak.client.query.filter.KeyFilter;
 import com.basho.riak.client.query.filter.LessThanFilter;
+import com.basho.riak.client.query.filter.LogicalAndFilter;
+import com.basho.riak.client.query.filter.LogicalFilterGroup;
+import com.basho.riak.client.query.filter.LogicalOrFilter;
+import com.basho.riak.client.query.filter.StartsWithFilter;
 import com.basho.riak.client.query.filter.StringToIntFilter;
 import com.basho.riak.client.query.filter.TokenizeFilter;
 import com.basho.riak.client.query.functions.JSSourceFunction;
@@ -169,6 +176,47 @@ public abstract class ITestMapReduce {
         assertEquals(new Integer(0), items.get(0));
         assertEquals(new Integer(23), items.get(23));
         assertEquals(new Integer(49), items.get(49));
+        
+        StartsWithFilter startsWith = new StartsWithFilter("java_");
+        LogicalFilterGroup groupStartsWith = new LogicalFilterGroup(startsWith);
+        
+        TokenizeFilter tokenizeFilter = new TokenizeFilter( "_", 2 );
+        StringToIntFilter stringToIntFilter = new StringToIntFilter(); 
+        BetweenFilter betweenFilter = new BetweenFilter( 2, 3);
+        
+        LogicalFilterGroup groupBetween = 
+            new LogicalFilterGroup( tokenizeFilter, 
+                                    stringToIntFilter, 
+                                    betweenFilter );
+        
+        LogicalAndFilter laf = new LogicalAndFilter(groupStartsWith, groupBetween);
+        
+        result = client.mapReduce(BUCKET_NAME)
+            .addKeyFilter(laf)
+            .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), false)
+            .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
+            .execute();
+            
+        assertNotNull(result);
+        items = new LinkedList<Integer>(result.getResult(Integer.class));
+        assertEquals(2, items.size());
+        assertEquals(new Integer(2), items.get(0));
+        assertEquals(new Integer(3), items.get(1));
+        
+        KeyFilter[] filters = new KeyFilter[] {new EndsWithFilter("2"),new EndsWithFilter("1")};
+        LogicalOrFilter lof = new LogicalOrFilter(filters);
+        
+        result = client.mapReduce(BUCKET_NAME)
+            .addKeyFilter(lof)
+            .addMapPhase(new NamedJSFunction("Riak.mapValuesJson"), false)
+            .addReducePhase(new NamedErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
+            .execute();
+        
+        assertNotNull(result);
+        items = new LinkedList<Integer>(result.getResult(Integer.class));
+        assertEquals(40, items.size());
+        assertEquals(new Integer(12), items.get(3));
+        
     }
     
     @Test public void mapResultToDomainObject() throws IOException, RiakException {
