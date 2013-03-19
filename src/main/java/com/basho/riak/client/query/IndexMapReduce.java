@@ -15,11 +15,11 @@ package com.basho.riak.client.query;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerator;
 
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * A {@link MapReduce} operation that takes a 2i index query as input
@@ -62,13 +62,13 @@ public class IndexMapReduce extends MapReduce {
                 jsonGenerator.writeStringField(INDEX, index);
             }
 
-            public void write(String bucket, String index, int from, int to) throws IOException {
+            public void write(String bucket, String index, long from, long to) throws IOException {
                 writeCommon(bucket, index);
                 jsonGenerator.writeNumberField(START, from);
                 jsonGenerator.writeNumberField(END, to);
             }
 
-            public void write(String bucket, String index, int value) throws IOException {
+            public void write(String bucket, String index, long value) throws IOException {
                 writeCommon(bucket, index);
                 jsonGenerator.writeNumberField(KEY, value);
             }

@@ -38,4 +38,8 @@ public class ConversionException extends RuntimeException {
     public ConversionException(Throwable cause) {
         super(cause);
     }
+    
+    public ConversionException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

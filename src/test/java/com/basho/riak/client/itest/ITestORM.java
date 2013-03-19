@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -39,6 +37,8 @@ import com.basho.riak.client.cap.DefaultRetrier;
 import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.megacorp.commerce.Customer;
 import com.megacorp.commerce.Department;
 import com.megacorp.commerce.LegacyCart;
@@ -156,9 +156,9 @@ public abstract class ITestORM extends ITestBucket {
         JsonNode value = new ObjectMapper().readTree(iro.getValueAsString());
 
         assertEquals(3, value.size());
-        assertEquals(username, value.get("username").getTextValue());
-        assertEquals(email, value.get("emailAddress").getTextValue());
-        assertEquals(null, value.get("shoeSize").getTextValue());
+        assertEquals(username, value.get("username").textValue());
+        assertEquals(email, value.get("emailAddress").textValue());
+        assertEquals(null, value.get("shoeSize").textValue());
         assertEquals(2, meta.size());
         assertEquals(languageCode, meta.get("language-pref"));
         assertEquals(blue, meta.get(favColor));
@@ -192,10 +192,10 @@ public abstract class ITestORM extends ITestBucket {
         // retrieve as riak object and check indexes are present
         IRiakObject iro = users.fetch(userId).execute();
 
-        Map<IntIndex, Set<Integer>> intIndexes = iro.allIntIndexes();
+        Map<IntIndex, Set<Long>> intIndexes = iro.allIntIndexesV2();
 
         assertEquals(1, intIndexes.size());
-        Set<Integer> si = intIndexes.get(IntIndex.named("shoe-size"));
+        Set<Long> si = intIndexes.get(IntIndex.named("shoe-size"));
         assertEquals(1, si.size());
         assertEquals(shoeSize, si.iterator().next().intValue());
 

@@ -13,18 +13,19 @@
  */
 package com.basho.riak.client.convert;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.introspect.AnnotatedField;
-import org.codehaus.jackson.map.introspect.AnnotatedMember;
-import org.codehaus.jackson.map.introspect.BasicBeanDescription;
-import org.codehaus.jackson.map.ser.BeanPropertyWriter;
-import org.codehaus.jackson.map.ser.BeanSerializerModifier;
+
 
 /**
  * {@link BeanSerializerModifier} that drops {@link RiakKey} and
@@ -56,7 +57,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
      * org.codehaus.jackson.map.introspect.BasicBeanDescription, java.util.List)
      */
     @Override public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
-                                                               BasicBeanDescription beanDesc,
+                                                               BeanDescription beanDesc,
                                                                List<BeanPropertyWriter> beanProperties) {
 
         List<BeanPropertyWriter> keptProperties = new LinkedList<BeanPropertyWriter>();
@@ -92,6 +93,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
         RiakIndex index = null;
         RiakVClock vclock = null;
 		JsonProperty jacksonJsonProperty = null;
+        RiakTombstone tombstone = null;
 
         AnnotatedMember member = beanPropertyWriter.getMember();
         if (member instanceof AnnotatedField) {
@@ -101,6 +103,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
             links = element.getAnnotation(RiakLinks.class);
             index = element.getAnnotation(RiakIndex.class);
             vclock = element.getAnnotation(RiakVClock.class);
+            tombstone = element.getAnnotation(RiakTombstone.class);
             jacksonJsonProperty = element.getAnnotation(JsonProperty.class);
         } else {
             @SuppressWarnings("rawtypes") Class clazz = member.getDeclaringClass();
@@ -112,6 +115,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
                 links = field.getAnnotation(RiakLinks.class);
                 index = field.getAnnotation(RiakIndex.class);
                 vclock = field.getAnnotation(RiakVClock.class);
+                tombstone = field.getAnnotation(RiakTombstone.class);
                 jacksonJsonProperty = field.getAnnotation(JsonProperty.class);
             } catch (SecurityException e) {
                 throw new RuntimeException(e);
@@ -123,7 +127,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
         if (jacksonJsonProperty != null) {
             return true;
 		} else {
-            return key == null && usermeta == null && links == null && vclock == null && index == null;
+            return key == null && usermeta == null && links == null && vclock == null && index == null && tombstone == null;
         }
     }
 }

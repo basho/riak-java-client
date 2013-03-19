@@ -65,14 +65,25 @@ public class RiakIndexConverterTest
                       rIndexes.getBinIndex("favorite_languages"));
         assertNotNull("Expected RiakIndexes IntIndexes to be populated", 
                       rIndexes.getBinIndex("other_numbers"));
+        assertNotNull("Expected Method RiakIndexes IntIndexes to be populated",
+                      rIndexes.getIntIndex("calculated_longs"));
+        assertNotNull("Expected Method RiakIndexes IntIndexes to be populated",
+                      rIndexes.getIntIndex("calculated_integers"));
+        assertNotNull("Expected Method RiakIndexes BinIndexes to be populated",
+                      rIndexes.getBinIndex("calculated_strings"));
         assertEquals(langSet.size(), rIndexes.getBinIndex("favorite_languages").size());
         assertEquals(luckySet.size(), rIndexes.getIntIndex("other_numbers").size());
         assertEquals(1, rIndexes.getIntIndex("lucky_numbers").size()); 
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIntIndex("calculated_longs").size());
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIntIndex("calculated_integers").size());
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getBinIndex("calculated_strings").size());
         
     }
     
     private static final class DomainObject
     {
+        public static final int CALCULATIONS_COUNT = 5;
+        
         @RiakIndex(name = "favorite_languages") 
         public Set<String> favoriteLanguages;
         // int field should end up with first entry of index set
@@ -80,6 +91,34 @@ public class RiakIndexConverterTest
         public int lucky_number;
         @RiakIndex(name = "other_numbers")
         public Set<Integer> otherNumbers;
+
+        @RiakIndex(name = "calculated_longs")
+        public Set<Long> getCalculatedLongs() {
+          final Set<Long> calculatedLongs = new HashSet<Long>();
+          for (long i = 0; i < CALCULATIONS_COUNT; i++) {
+                calculatedLongs.add(i);
+          }
+          return calculatedLongs;
+        }
+
+        @RiakIndex(name = "calculated_integers")
+        public Set<Integer> getCalculatedIntegers() {
+            final Set<Integer> calculatedIntegers = new HashSet<Integer>();
+            for (int i = 0; i < CALCULATIONS_COUNT; i++) {
+                calculatedIntegers.add(i);
+            }
+            return calculatedIntegers;
+        }
+
+        @RiakIndex(name = "calculated_strings") 
+        public Set<String> getCalculatedStrings() {
+            final Set<String> calculatedStrings = new HashSet<String>();
+            for (int i = 0; i < CALCULATIONS_COUNT; i++) {
+                calculatedStrings.add(String.valueOf(i));
+            }
+            return calculatedStrings;
+        }
+        
     }
     
     

@@ -534,8 +534,8 @@ public class RiakClient {
      *            an int for the index value
      * @return {@link IndexResponse}
      */
-    public IndexResponse index(String bucket, String indexName, int value) {
-        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new int[] { value }));
+    public IndexResponse index(String bucket, String indexName, long value) {
+        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new long[] { value }));
     }
 
     /**
@@ -570,8 +570,8 @@ public class RiakClient {
      *            the end value in a range (e.g. 32)
      * @return an {@link IndexResponse}
      */
-    public IndexResponse index(String bucket, String indexName, int start, int end) {
-        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new int[] { start, end }));
+    public IndexResponse index(String bucket, String indexName, long start, long end) {
+        return makeIndexResponse(helper.fetchIndex(bucket, indexName, new long[] { start, end }));
 
     }
 

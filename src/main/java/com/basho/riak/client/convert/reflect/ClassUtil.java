@@ -15,7 +15,8 @@ package com.basho.riak.client.convert.reflect;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
-
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 /**
  * Reflection/class utilities. Delegates to
  * {@link org.codehaus.jackson.map.util.ClassUtil}.
@@ -35,7 +36,7 @@ public final class ClassUtil {
      * @throw {@link IllegalArgumentException} if cannot set accessibility
      */
     public static <T extends Member> T checkAndFixAccess(T member) {
-        org.codehaus.jackson.map.util.ClassUtil.checkAndFixAccess(member);
+         com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member);
         return member;
     }
 
@@ -58,4 +59,19 @@ public final class ClassUtil {
         return value;
     }
 
+    public static <T> Object getMethodValue(Method m, T obj) {
+        Object value = null;
+        try {
+            value = m.invoke(obj);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Unable to get Riak annotated method value", e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unable to get Riak annotated method value", e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalStateException("Unable to get Riak annotated method value", e);
+        }
+
+        return value;
+    }
+    
 }

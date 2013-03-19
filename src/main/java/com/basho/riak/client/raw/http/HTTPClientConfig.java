@@ -359,12 +359,21 @@ public class HTTPClientConfig implements Configuration {
 		}
 
 		/**
+		 * @deprecated As of 1.0.8, replaced by {@link #withMaxConnections(int)}
+		 * @see #withMaxConnections(int)
+		 */
+		@Deprecated
+		public Builder withMaxConnctions(int maxConnections) {
+			return withMaxConnections(maxConnections);
+		}
+
+		/**
 		 * Maximum number of connections this client may have open at any time.
-		 * 
-		 * @param maxConnections
+		 *
+		 * @param maxConnections The maximum of connections open in this client.
 		 * @return this
 		 */
-		public Builder withMaxConnctions(int maxConnections) {
+		public Builder withMaxConnections(int maxConnections) {
 			this.maxConnections = maxConnections;
 			return this;
 		}

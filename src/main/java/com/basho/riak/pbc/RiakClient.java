@@ -48,6 +48,8 @@ import com.basho.riak.protobuf.RiakKvPB.RpbMapRedReq;
 import com.basho.riak.protobuf.RiakKvPB.RpbPutReq;
 import com.basho.riak.protobuf.RiakKvPB.RpbPutResp;
 import com.google.protobuf.ByteString;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Low level protocol buffers client.
@@ -285,6 +287,18 @@ public class RiakClient implements RiakMessageCodes {
 
         RpbGetResp resp = RiakKvPB.RpbGetResp.parseFrom(rep);
         int count = resp.getContentCount();
+        
+        // To unify the behavior of having just a tombstone vs. siblings
+        // that include a tombstone, we create an empty object and mark
+        // it deleted
+        if (count == 0) {
+            RiakKvPB.RpbGetResp.Builder responseBuilder = resp.toBuilder();
+            RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.getDefaultInstance().toBuilder();
+            contentBuilder.setDeleted(true).setValue(ByteString.EMPTY);
+            resp = responseBuilder.addContent(contentBuilder.build()).build();
+            count = 1;
+        }
+        
         RiakObject[] out = new RiakObject[count];
         ByteString vclock = resp.getVclock();
         for (int i = 0; i < count; i++) {
@@ -296,6 +310,157 @@ public class RiakClient implements RiakMessageCodes {
         return new FetchResponse(out, unchanged, vclock.toByteArray());
 	}
 
+	// /////////////////////
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the name of the index (e.g. 'user_bin')
+	 * @param value
+	 *	    the index value
+	 * @return List<String>
+	 *	    list of keys for the index
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, String value) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setKey(ByteString.copyFromUtf8(value))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the name of the index (e.g. 'user_bin')
+	 * @param start
+	 *	    the start value in a range (e.g 'a')
+	 * @param end
+	 *	    the end value in a range (e.g. 'z')
+	 * @return 
+	 *	    a List<String> of keys for this index range
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, String start, String end) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setRangeMin(ByteString.copyFromUtf8(start))
+									.setRangeMax(ByteString.copyFromUtf8(end))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the index (e.g. 'age_int')
+	 * @param value
+	 *	    a long for the index value
+	 * @return
+	 *	    a List<String> of keys for this index value
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, long value) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setKey(ByteString.copyFromUtf8(String.valueOf(value)))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param bucket
+	 *	    the bucket name
+	 * @param indexName
+	 *	    the index (e.g. 'age_int')
+	 * @param start
+	 *	    the start value in a range (e.g 16)
+	 * @param end
+	 *	    the end value in a range (e.g. 32)
+	 * @return
+	 *	    List<String> of the keys for this index range
+	 * @throws IOException 
+	 */
+	public List<String> index(String bucket, String indexName, long start, long end) 
+			throws IOException {
+		RiakKvPB.RpbIndexReq req = RiakKvPB.RpbIndexReq.newBuilder()
+									.setBucket(ByteString.copyFromUtf8(bucket))
+									.setIndex(ByteString.copyFromUtf8(indexName))
+									.setRangeMin(ByteString.copyFromUtf8(String.valueOf(start)))
+									.setRangeMax(ByteString.copyFromUtf8(String.valueOf(end)))
+									.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range)
+									.build();
+
+		RiakConnection c = getConnection();
+
+		try {
+			c.send(MSG_IndexReq, req);
+			return processIndexReply(c);
+		} finally {
+			release(c);
+		}
+	}
+	
+	private List<String> processIndexReply(RiakConnection c) throws IOException {
+		byte[] rep = c.receive(MSG_IndexResp);
+
+		if (null == rep) {
+			return Collections.EMPTY_LIST;
+		}
+
+		RiakKvPB.RpbIndexResp resp = RiakKvPB.RpbIndexResp.parseFrom(rep);
+
+		List<String> keys = new ArrayList<String>(resp.getKeysCount());
+
+		for (ByteString bs : resp.getKeysList()) {
+			keys.add(bs.toStringUtf8());
+		}
+
+		return keys;
+	}
+
+	
 	// /////////////////////
 
 	public ByteString[] store(RiakObject[] values, RequestMeta meta)
@@ -395,8 +560,12 @@ public class RiakClient implements RiakMessageCodes {
 			throws IOException {
 
 		RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder().setBucket(
-				value.getBucketBS()).setKey(value.getKeyBS()).setContent(
+				value.getBucketBS()).setContent(
 				value.buildContent());
+
+		if (value.getKeyBS() != null) {
+			builder.setKey(value.getKeyBS());
+		}
 
 		if (value.getVclock() != null) {
 			builder.setVclock(value.getVclock());
@@ -420,9 +589,12 @@ public class RiakClient implements RiakMessageCodes {
 			RiakObject[] res = new RiakObject[resp.getContentCount()];
 			ByteString vclock = resp.getVclock();
 
+			// The key parameter will be set only if the server generated a 
+			// key for the object so we check and set it accordingly
 			for (int i = 0; i < res.length; i++) {
-				res[i] = new RiakObject(vclock, value.getBucketBS(), value
-						.getKeyBS(), resp.getContent(i));
+				res[i] = new RiakObject(vclock, value.getBucketBS(), 
+                    (resp.hasKey()) ? resp.getKey() : value.getKeyBS(), 
+                    resp.getContent(i));
 			}
 
 			return res;

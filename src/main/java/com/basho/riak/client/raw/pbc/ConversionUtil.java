@@ -100,14 +100,7 @@ public final class ConversionUtil {
         if (fetchResponse.isUnchanged()) {
             return RiakResponse.unmodified();
         }
-        RiakObject[] objects = fetchResponse.getObjects();
-        byte[] vclock = fetchResponse.getVClock();
-
-        // no objects + vclock == deleted vclock
-        if ((objects == null || objects.length == 0) && vclock != null) {
-            return new RiakResponse(vclock);
-        }
-
+        
         return convert(fetchResponse.getObjects());
     }
 
@@ -121,6 +114,7 @@ public final class ConversionUtil {
         builder.withValue(nullSafeToBytes(o.getValue()));
         builder.withVClock(nullSafeToBytes(o.getVclock()));
         builder.withVtag(o.getVtag());
+        builder.withDeleted(o.getDeleted());
 
         Date lastModified = o.getLastModified();
 
@@ -140,7 +134,7 @@ public final class ConversionUtil {
 
         for (@SuppressWarnings("rawtypes") com.basho.riak.client.http.RiakIndex i : indexes) {
             if (i instanceof com.basho.riak.client.http.IntIndex) {
-                builder.addIndex(i.getName(), (Integer) i.getValue());
+                builder.addIndex(i.getName(), (Long) i.getValue());
             }
             if (i instanceof com.basho.riak.client.http.BinIndex) {
                 builder.addIndex(i.getName(), (String) i.getValue());
@@ -275,9 +269,9 @@ public final class ConversionUtil {
         }
 
         // copy the indexes
-        for (Map.Entry<IntIndex, Set<Integer>> i : riakObject.allIntIndexes().entrySet()) {
+        for (Map.Entry<IntIndex, Set<Long>> i : riakObject.allIntIndexesV2().entrySet()) {
             String name = i.getKey().getFullname();
-            for (Integer v : i.getValue()) {
+            for (Long v : i.getValue()) {
                 result.addIndex(name, v);
             }
         }

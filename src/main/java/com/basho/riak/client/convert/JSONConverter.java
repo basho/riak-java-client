@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
@@ -30,6 +30,8 @@ import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.indexes.RiakIndexes;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -140,23 +142,35 @@ public class JSONConverter<T> implements Converter<T> {
     public T toDomain(IRiakObject riakObject) throws ConversionException {
         if (riakObject == null) {
             return null;
-        }
+        } else if (riakObject.isDeleted()) {
+            try {
+                T domainObject = clazz.newInstance();
+                TombstoneUtil.setTombstone(domainObject, true);
+                return domainObject;
+            } catch (InstantiationException ex) {
+                throw new ConversionException("POJO does not provide no-arg constructor",ex);
+            } catch (IllegalAccessException ex) {
+                throw new ConversionException(ex);
+            }
+            
+        } else {
 
-        String json = asString(riakObject.getValue(), getCharset(riakObject.getContentType()));
+            String json = asString(riakObject.getValue(), getCharset(riakObject.getContentType()));
 
-        try {
-            T domainObject = objectMapper.readValue(json, clazz);
-            KeyUtil.setKey(domainObject, riakObject.getKey());
-            VClockUtil.setVClock(domainObject, riakObject.getVClock());
-            usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
-            riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexes()),
-                                               domainObject);
-            riakLinksConverter.populateLinks(riakObject.getLinks(), domainObject);
-            return domainObject;
-        } catch (JsonProcessingException e) {
-            throw new ConversionException(e);
-        } catch (IOException e) {
-            throw new ConversionException(e);
+            try {
+                T domainObject = objectMapper.readValue(json, clazz);
+                KeyUtil.setKey(domainObject, riakObject.getKey());
+                VClockUtil.setVClock(domainObject, riakObject.getVClock());
+                usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
+                riakIndexConverter.populateIndexes(new RiakIndexes(riakObject.allBinIndexes(), riakObject.allIntIndexesV2()),
+                                                   domainObject);
+                riakLinksConverter.populateLinks(riakObject.getLinks(), domainObject);
+                return domainObject;
+            } catch (JsonProcessingException e) {
+                throw new ConversionException(e);
+            } catch (IOException e) {
+                throw new ConversionException(e);
+            }
         }
     }
     

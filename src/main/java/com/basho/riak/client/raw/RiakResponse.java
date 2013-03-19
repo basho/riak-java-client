@@ -64,7 +64,14 @@ public class RiakResponse implements Iterable<IRiakObject> {
      * item is deleted.
      * 
      * @param vclock
+     * 
+     * @deprecated As of release 1.1.0
+     * @see {@link IRiakObject#isDeleted() }
+     * 
+     * If only a tombstone exists this RiakResponse will contain an IRiakObject
+     * with no value and marked as deleted. 
      */
+    @Deprecated
     public RiakResponse(byte[] vclock) {
         if (vclock == null) {
             throw new IllegalArgumentException("vclock cannot be null");
@@ -164,7 +171,11 @@ public class RiakResponse implements Iterable<IRiakObject> {
      * 
      * @see FetchObject#returnDeletedVClock(boolean)
      * @see FetchMeta#getReturnDeletedVClock()
+     * 
+     * @deprecated
+     * @see {@link IRiakObject#isDeleted() }
      */
+    @Deprecated
     public boolean isDeleted() {
         return deleted;
     }

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,6 +119,15 @@ public abstract class ITestBucket {
         assertNull(fetched);
     }
 
+    @Test public void storeWithNullKey() throws Exception {
+        Bucket b = client.fetchBucket(bucketName).execute();
+        IRiakObject o = b.store(null, "value").withoutFetch().returnBody(true).execute();
+        
+        String k = o.getKey();
+        assertNotNull(k);
+        
+    }
+    
     @Ignore("non-deterministic")
     @Test public void byDefaultSiblingsThrowUnresolvedExceptionOnStore() throws Exception {
         final Bucket b = client.createBucket(bucketName).allowSiblings(true).execute();
@@ -356,12 +366,12 @@ public abstract class ITestBucket {
                         FetchObject<IRiakObject> fo = b.fetch(key).returnDeletedVClock(true);
                         IRiakObject o = fo.execute();
 
-                        if (fo.hasDeletedVclock()) {
+                        if (o != null && o.isDeleted()) {
                             endLatch.countDown();
                             Thread.currentThread().interrupt();
                             putterThread.interrupt();
                             deleterThread.interrupt();
-                            assertNull(o);
+                            assertArrayEquals(new byte[0], o.getValue());
 
                         }
                     } catch (RiakException e) {
@@ -383,10 +393,10 @@ public abstract class ITestBucket {
             putterThread.interrupt();
             getterThread.interrupt();
             deleterThread.interrupt();
-        } else {
-            assertTrue(sawDeletedVClock); // somewhat redundant, but it's a
-                                          // test.
         }
+            
+        assertTrue(sawDeletedVClock); 
+        
     }
 
     /**

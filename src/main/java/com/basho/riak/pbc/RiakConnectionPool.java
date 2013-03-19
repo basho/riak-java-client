@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import com.basho.riak.client.raw.pbc.PoolSemaphore;
 import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
+import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * A bounded or boundless pool of {@link RiakConnection}s to be reused by {@link RiakClient}
@@ -132,7 +134,7 @@ public class RiakConnectionPool {
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
-    private final ConcurrentLinkedQueue<RiakConnection> available;
+    private final LinkedBlockingDeque<RiakConnection> available;
     private final ConcurrentLinkedQueue<RiakConnection> inUse;
     private final long connectionWaitTimeoutNanos;
     private final int bufferSizeKb;
@@ -215,7 +217,7 @@ public class RiakConnectionPool {
             long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis,
             int requestTimeoutMillis) throws IOException {
         this.permits = poolSemaphore;
-        this.available = new ConcurrentLinkedQueue<RiakConnection>();
+        this.available = new LinkedBlockingDeque<RiakConnection>();
         this.inUse = new ConcurrentLinkedQueue<RiakConnection>();
         this.bufferSizeKb = bufferSizeKb;
         this.host = host;
@@ -241,8 +243,13 @@ public class RiakConnectionPool {
         if (idleConnectionTTLNanos > 0) {
             idleReaper.scheduleWithFixedDelay(new Runnable() {
                 public void run() {
-                    RiakConnection c = available.peek();
-                    while (c != null) {
+                    // Note this will not throw a ConncurrentModificationException
+                    // and if hasNext() returns true you are guaranteed that
+                    // the next() will return a value (even if it has already
+                    // been removed from the Deque between those calls). 
+                    Iterator<RiakConnection> i = available.descendingIterator();
+                    while (i.hasNext()) {
+                        RiakConnection c = i.next();
                         long connIdleStartNanos = c.getIdleStartTimeNanos();
                         if (connIdleStartNanos + idleConnectionTTLNanos < System.nanoTime()) {
                             if (c.getIdleStartTimeNanos() == connIdleStartNanos) {
@@ -254,13 +261,13 @@ public class RiakConnectionPool {
                                     permits.release();
                                 }
                             }
-                            c = available.peek();
                         } else {
-                            // since the queue is FIFO short-circuit and stop
-                            // looking, if the first element isn't too old, the
-                            // rest can't be
-                            c = null;
+                            // Since we are descending and this is a LIFO, 
+                            // if the current connection hasn't been idle beyond 
+                            // the threshold, there's no reason to descend further
+                            break;
                         }
+                        
                     }
                 }
             }, idleConnectionTTLNanos, idleConnectionTTLNanos, TimeUnit.NANOSECONDS);
@@ -292,10 +299,13 @@ public class RiakConnectionPool {
     private void warmUp() throws IOException {
         if (permits.tryAcquire(initialSize)) {
             for (int i = 0; i < this.initialSize; i++) {
-                available.add(new RiakConnection(this.host, this.port, 
-                    this.bufferSizeKb, this, 
-                    TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), 
-                    requestTimeoutMillis));
+                RiakConnection c = 
+                    new RiakConnection(this.host, this.port, 
+                                       this.bufferSizeKb, this, 
+                                       TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), 
+                                       requestTimeoutMillis);
+                c.beginIdle();
+                available.add(c);
             }
         } else {
             throw new RuntimeException("Unable to create initial connections");
@@ -438,7 +448,7 @@ public class RiakConnectionPool {
         if (inUse.remove(c)) {
             if (!c.isClosed()) {
                 c.beginIdle();
-                available.offer(c);
+                available.offerFirst(c);
             } else {
                 // don't put a closed connection in the pool, release a permit
                 permits.release();

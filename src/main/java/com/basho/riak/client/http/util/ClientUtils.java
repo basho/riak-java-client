@@ -36,7 +36,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AllClientPNames;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.cookie.DateParseException;
 import org.apache.http.impl.cookie.DateUtils;
 import org.apache.http.params.HttpParams;
@@ -80,10 +80,10 @@ public class ClientUtils {
         ClientConnectionManager m;
 
         if (http == null) {
-            m = new ThreadSafeClientConnManager();
+            m = new PoolingClientConnectionManager();
             if (config.getMaxConnections() != null) {
-                ((ThreadSafeClientConnManager) m).setMaxTotal(config.getMaxConnections());
-                ((ThreadSafeClientConnManager) m).setDefaultMaxPerRoute(config.getMaxConnections());
+                ((PoolingClientConnectionManager) m).setMaxTotal(config.getMaxConnections());
+                ((PoolingClientConnectionManager) m).setDefaultMaxPerRoute(config.getMaxConnections());
             }
             http = new DefaultHttpClient(m);
 
@@ -191,7 +191,7 @@ public class ClientUtils {
      *            the index value (or values for a range)
      * @return URL for an index query
      */
-    public static String makeURI(RiakConfig config, String bucket, String index, int[] values) {
+    public static String makeURI(RiakConfig config, String bucket, String index, long[] values) {
         StringBuilder url = makeBaseIndexURI(config, bucket, index).append(values[0]);
         if (values.length > 1) {
             url.append("/").append(values[1]);
@@ -391,13 +391,15 @@ public class ClientUtils {
      */
     public static List<RiakLink> parseLinkHeader(String header) {
         List<RiakLink> links = new ArrayList<RiakLink>();
-        Map<String, Map<String, String>> parsedLinks = LinkHeader.parse(header);
-        for (Entry<String, Map<String, String>> e: parsedLinks.entrySet()) {
+        Map<String, List<Map<String, String>>> parsedLinks = LinkHeader.parse(header);
+        for (Entry<String, List<Map<String, String>>> e: parsedLinks.entrySet()) {
         	String url = e.getKey();
-        	RiakLink link = parseOneLink(url, e.getValue());
-        	if (link != null) {
-        		links.add(link);
-        	}
+            for (Map<String,String> params : e.getValue()) {
+                RiakLink link = parseOneLink(url, params);
+                if (link != null) {
+                    links.add(link);
+                }
+            }
         }
         return links;
     }
@@ -446,7 +448,7 @@ public class ClientUtils {
                         }
                     } else if (name.endsWith(IntIndex.SUFFIX)) {
                         while (st.hasMoreElements()) {
-                            indexes.add(new IntIndex(name, Integer.parseInt(st.nextToken().trim())));
+                            indexes.add(new IntIndex(name, Long.parseLong(st.nextToken().trim())));
                         }
                     }
                 }
@@ -543,7 +545,7 @@ public class ClientUtils {
                 RiakObject o = new RiakObject(riak, partBucket, partKey, part.getBody(),
                                               headers.get(Constants.HDR_CONTENT_TYPE), links, usermeta, vclock,
                                               headers.get(Constants.HDR_LAST_MODIFIED), headers.get(Constants.HDR_ETAG),
-                                              indexes);
+                                              indexes, headers.get(Constants.HDR_DELETED) != null ? true : false);
                 objects.add(o);
             }
         }

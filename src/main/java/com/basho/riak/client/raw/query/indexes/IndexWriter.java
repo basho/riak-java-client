@@ -32,7 +32,7 @@ public interface IndexWriter {
 
     void write(String bucket, String index, String from, String to) throws IOException;
 
-    void write(String bucket, String index, int value) throws IOException;
+    void write(String bucket, String index, long value) throws IOException;
 
-    void write(String bucket, String index, int from, int to) throws IOException;
+    void write(String bucket, String index, long from, long to) throws IOException;
 }

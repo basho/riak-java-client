@@ -23,7 +23,7 @@ import com.basho.riak.client.query.indexes.IntIndex;
  * @author russell
  * 
  */
-public class IntValueQuery extends AbstractValueQuery<Integer> {
+public class IntValueQuery extends AbstractValueQuery<Long> {
 
     /**
      * Create a query that matches <code>value</code> in <code>index</code>
@@ -35,7 +35,7 @@ public class IntValueQuery extends AbstractValueQuery<Integer> {
      * @param value
      *            the value to match
      */
-    public IntValueQuery(IntIndex index, String bucket, Integer value) {
+    public IntValueQuery(IntIndex index, String bucket, Long value) {
         super(index.getFullname(), bucket, value);
     }
 

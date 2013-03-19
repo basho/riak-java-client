@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.basho.riak.client.http.RiakConfig;
 import org.apache.http.HttpStatus;
 
 import com.basho.riak.client.IRiakObject;
@@ -53,7 +54,10 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.math.BigInteger;
 
 /**
  * Adapts the http.{@link RiakClient} to the new {@link RawClient} interface.
@@ -205,11 +209,7 @@ public class HTTPClientAdapter implements RawClient {
 
         if (values.length > 0) {
             response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVclock()), values);
-        } else {
-            if(resp.getVclock() != null) { // a deleted vclock
-                response = new RiakResponse(CharsetUtils.utf8StringToBytes(resp.getVclock()));
-            }
-        }
+        } 
 
         return response;
     }
@@ -449,11 +449,11 @@ public class HTTPClientAdapter implements RawClient {
                 res.capture(client.index(bucket, index, value));
             }
 
-            public void write(final String bucket, final String index, final int value) throws IOException {
+            public void write(final String bucket, final String index, final long value) throws IOException {
                 res.capture(client.index(bucket, index, value));
             }
 
-            public void write(final String bucket, final String index, final int from, final int to) throws IOException {
+            public void write(final String bucket, final String index, final long from, final long to) throws IOException {
                 res.capture(client.index(bucket, index, from, to));
             }
         };
@@ -483,7 +483,11 @@ public class HTTPClientAdapter implements RawClient {
                 + r.getStatusCode());
         } else {
             try {
-                return new ObjectMapper().readValue(r.getBodyAsString(), NodeStats.class);
+                NodeStats.UndefinedStatDeserializer usd = new NodeStats.UndefinedStatDeserializer();
+                SimpleModule module = new SimpleModule("UndefinedStatDeserializer", 
+                                                       new Version(1,0,0,null,null,null));
+                module.addDeserializer(BigInteger.class, usd);
+                return new ObjectMapper().registerModule(module).readValue(r.getBodyAsString(), NodeStats.class);
             } catch (IOException e) {
                 throw new IOException("Could not parse stats JSON response, body: " + r.getBodyAsString(),e);
             }
@@ -494,6 +498,13 @@ public class HTTPClientAdapter implements RawClient {
      * @see com.basho.riak.client.raw.RawClient#getNodeName()
      */
     public String getNodeName() {
-      return this.nodeName;
+        return this.nodeName;
+    }
+
+    /* (non-Javadoc)
+     * @see com.basho.riak.client.http.RiakClient#getConfig()
+     */
+    public RiakConfig getConfig() {
+        return client.getConfig();
     }
 }

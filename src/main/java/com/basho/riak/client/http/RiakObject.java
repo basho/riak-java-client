@@ -52,6 +52,7 @@ public class RiakObject {
     private RiakClient riak;
     private String bucket;
     private String key;
+    private boolean isDeleted;
     private byte[] value;
     private List<RiakLink> links;
     private final Object indexLock = new Object();
@@ -93,13 +94,15 @@ public class RiakObject {
      *            This object's entity tag assigned by Riak
      */
     public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
-            List<RiakLink> links, Map<String, String> userMetaData, String vclock, String lastmod, String vtag, @SuppressWarnings("rawtypes") List<RiakIndex> indexes) {
+            List<RiakLink> links, Map<String, String> userMetaData, String vclock, String lastmod, 
+            String vtag, @SuppressWarnings("rawtypes") List<RiakIndex> indexes, boolean isDeleted) {
         this.riak = riak;
         this.bucket = bucket;
         this.key = key;
         this.vclock = vclock;
         this.lastmod = lastmod;
         this.vtag = vtag;
+        this.isDeleted = isDeleted;
 
         safeSetValue(value);
         this.contentType = contentType == null ? Constants.CTYPE_OCTET_STREAM : contentType;
@@ -138,7 +141,7 @@ public class RiakObject {
      */
     public RiakObject(RiakClient riak, String bucket, String key, byte[] value, String contentType,
             List<RiakLink> links, Map<String, String> userMetaData, String vclock, String lastmod, String vtag) {
-       this(riak, bucket, key, value, contentType, links, userMetaData, vclock, lastmod, vtag, null);
+       this(riak, bucket, key, value, contentType, links, userMetaData, vclock, lastmod, vtag, null, false);
     }
 
     public RiakObject(RiakClient riak, String bucket, String key) {
@@ -229,6 +232,7 @@ public class RiakObject {
         vclock = object.vclock;
         lastmod = object.lastmod;
         vtag = object.vtag;
+        isDeleted = object.isDeleted;
     }
 
     /**
@@ -244,6 +248,7 @@ public class RiakObject {
         vtag = object.vtag;
         valueStream = object.valueStream;
         valueStreamLength = object.valueStreamLength;
+        isDeleted = object.isDeleted;
     }
 
     /* (non-Javadoc)
@@ -297,6 +302,10 @@ public class RiakObject {
         return (value == null ? null : asString(value, getCharset(contentType)));
     }
 
+    public boolean isDeleted() {
+        return this.isDeleted;
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.HttpRiakObject#getValueAsBytes()
      */
@@ -563,7 +572,7 @@ public class RiakObject {
      *            the value to add to the index
      * @return this
      */
-    public RiakObject addIndex(String name, int value) {
+    public RiakObject addIndex(String name, long value) {
         synchronized (indexLock) {
             indexes.add(new IntIndex(name, value));
         }

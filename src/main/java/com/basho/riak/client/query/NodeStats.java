@@ -15,18 +15,18 @@
  */
 package com.basho.riak.client.query;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.JsonToken;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * The encapsulation of the data returned by the Riak <code>/stats</code> 
@@ -190,17 +190,13 @@ public class NodeStats implements Iterable<NodeStats>
     @JsonProperty private BigInteger rings_reconciled_total;    // Riak 1.1
     @JsonProperty private BigInteger rings_reconciled;          // Riak 1.1
     @JsonProperty private BigInteger gossip_received;           // Riak 1.1
-    @JsonDeserialize(using=UndefinedStatDeserializer.class)
     @JsonProperty private BigInteger converge_delay_min;        // Riak 1.1
     @JsonProperty private BigInteger converge_delay_max;        // Riak 1.1
     @JsonProperty private BigInteger converge_delay_mean;       // Riak 1.1
-    @JsonDeserialize(using=UndefinedStatDeserializer.class)
     @JsonProperty private BigInteger converge_delay_last;       // Riak 1.1
-    @JsonDeserialize(using=UndefinedStatDeserializer.class)
     @JsonProperty private BigInteger rebalance_delay_min;       // Riak 1.1
     @JsonProperty private BigInteger rebalance_delay_max;       // Riak 1.1
     @JsonProperty private BigInteger rebalance_delay_mean;      // Riak 1.1 
-    @JsonDeserialize(using=UndefinedStatDeserializer.class)
     @JsonProperty private BigInteger rebalance_delay_last;      // Riak 1.1
     @JsonProperty private BigInteger riak_kv_vnodes_running;    // Riak 1.1
     @JsonProperty private BigInteger riak_kv_vnodeq_min;        // Riak 1.1
@@ -1472,24 +1468,25 @@ public class NodeStats implements Iterable<NodeStats>
 
     }
 
-}
-/* There's a few stats that are currently not being properly serialized
-*  to JSON by Riak that have a string value ("undefined") instead of 0 (or
-* any integer value). This fixes those. 
-*/
-class UndefinedStatDeserializer extends JsonDeserializer<BigInteger>
-{
-    @Override
-    public BigInteger deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException
+    /* There's a few stats that are currently not being properly serialized
+    *  to JSON by Riak that have a string value ("undefined") instead of 0 (or
+    * any integer value). This fixes those. 
+    */
+    public static class UndefinedStatDeserializer extends JsonDeserializer<BigInteger>
     {
-        if (jp.getCurrentToken() == JsonToken.VALUE_STRING)
+        @Override
+        public BigInteger deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException
         {
-            return BigInteger.valueOf(0L);
-        }
-        else
-            return BigInteger.valueOf(jp.getLongValue());
-        
-    }
+            if (jp.getCurrentToken() == JsonToken.VALUE_STRING)
+            {
+                return BigInteger.valueOf(0L);
+            }
+            else
+                return BigInteger.valueOf(jp.getLongValue());
 
+        }
+
+    }
 }
+
     

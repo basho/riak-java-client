@@ -35,7 +35,7 @@ import com.google.protobuf.MessageLite;
  *
  * See <a href="http://wiki.basho.com/PBC-API.html">Basho Wiki</a> for more details.
  */
-class RiakConnection
+class RiakConnection implements Comparable<RiakConnection>
 {
 
 	static final int DEFAULT_RIAK_PB_PORT = 8087;
@@ -219,4 +219,18 @@ class RiakConnection
 	{
 		return clientId != null && clientId.length > 0;
 	}
+
+    /** 
+     * The natural ordering is descending by idle start time
+     */ 
+    public int compareTo(RiakConnection c)
+    {
+        if (c.getIdleStartTimeNanos() < this.getIdleStartTimeNanos()) {
+            return -1;
+        } else if (c.getIdleStartTimeNanos() > this.getIdleStartTimeNanos()) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }

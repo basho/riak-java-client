@@ -95,8 +95,8 @@ public class FetchIndex<T> implements RiakOperation<List<String>> {
     private IndexQuery makeValueQuery() {
         if (value.getClass().equals(String.class)) {
             return new BinValueQuery((BinIndex) index, bucket, (String) value);
-        } else if (value.getClass().equals(Integer.class)) {
-            return new IntValueQuery((IntIndex) index, bucket, (Integer) value);
+        } else if (Number.class.isAssignableFrom(value.getClass())) {
+            return new IntValueQuery((IntIndex) index, bucket, ((Number)value).longValue());
         }
         return null;
     }
@@ -107,8 +107,9 @@ public class FetchIndex<T> implements RiakOperation<List<String>> {
     private IndexQuery makeRangeQuery() {
         if (to.getClass().equals(String.class)) {
             return new BinRangeQuery((BinIndex) index, bucket, (String) from, (String) to);
-        } else if (to.getClass().equals(Integer.class)) {
-            return new IntRangeQuery((IntIndex) index, bucket, (Integer) from, (Integer) to);
+        } else if (Number.class.isAssignableFrom(to.getClass())) {
+            return new IntRangeQuery((IntIndex) index, bucket, 
+                                     ((Number)from).longValue(), ((Number) to).longValue());
         } else {
             throw new RuntimeException("Unkown range query type " + to.getClass());
         }

@@ -16,6 +16,7 @@ package com.basho.riak.client.http.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -58,11 +59,13 @@ public class LinkHeader {
      *            e.g. {@literal </path/to/resource1>; param="value",
      *            </path/to/resource2>}
      * 
-     * @return A map of links to their parameters. Parameters are a map of
-     *         parameter name to value.
+     * @return A map of links to their parameters. Parameters are a list of maps of
+     *         parameter name to value. (A URI can appear multiple times in the 
+     *         Link header, each Map in the List represents a set of parameters)
      */
-    public static Map<String, Map<String, String>> parse(String header) {
-        Map<String, Map<String, String>> out = new LinkedHashMap<String, Map<String, String>>();
+    public static Map<String, List<Map<String, String>>> parse(String header) {
+        Map<String, List<Map<String, String>>> out = 
+            new LinkedHashMap<String, List<Map<String, String>>>();
 
         if (header == null || header.length() == 0)
             return out;
@@ -85,7 +88,16 @@ public class LinkHeader {
                     }
                 }
             }
-            out.put(url, parsedLink);
+            
+            List<Map<String, String>> existing = out.get(url);
+            
+            if (existing == null) {
+                existing = new LinkedList<Map<String,String>>();
+                out.put(url, existing);
+            }
+                
+            existing.add(parsedLink);
+            
         }
 
         return out;

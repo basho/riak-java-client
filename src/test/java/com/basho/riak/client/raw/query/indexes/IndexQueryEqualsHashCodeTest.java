@@ -43,8 +43,8 @@ public class IndexQueryEqualsHashCodeTest {
     private static final String BIN_RANGE_FROM = "a";
     private static final String BIN_RANGE_TO = "z";
 
-    private static final int INT_RANGE_FROM = 0;
-    private static final int INT_RANGE_TO = 100;
+    private static final long INT_RANGE_FROM = 0;
+    private static final long INT_RANGE_TO = 100;
 
     @Test public void binRangeQueries() {
         BinRangeQuery brq1 = new BinRangeQuery(BI1, BUCKET_1, BIN_RANGE_FROM, BIN_RANGE_TO);

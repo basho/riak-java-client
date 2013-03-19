@@ -15,6 +15,7 @@ package com.basho.riak.client.convert.reflect;
 
 import com.basho.riak.client.cap.VClock;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -22,6 +23,7 @@ import java.util.concurrent.Callable;
 import com.basho.riak.client.convert.RiakIndex;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.convert.RiakLinks;
+import com.basho.riak.client.convert.RiakTombstone;
 import com.basho.riak.client.convert.RiakUsermeta;
 import com.basho.riak.client.convert.RiakVClock;
 import com.basho.riak.client.convert.UsermetaField;
@@ -49,53 +51,79 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
     public AnnotationInfo call() throws Exception {
         Field riakKeyField = null;
         Field riakVClockField = null;
+        Field riakTombstoneField = null;
         Field usermetaMapField = null;
         Field linksField = null;
         List<UsermetaField> usermetaItemFields = new ArrayList<UsermetaField>();
         List<RiakIndexField> indexFields = new ArrayList<RiakIndexField>();
+        List<RiakIndexMethod> indexMethods = new ArrayList<RiakIndexMethod>();
 
-        final Field[] fields = classToScan.getDeclaredFields();
+        Class currentClass = classToScan;
+        while(currentClass != Object.class) {
 
-        for (Field field : fields) {
+            final Field[] fields = currentClass.getDeclaredFields();
 
-            if (field.isAnnotationPresent(RiakKey.class)) {
-                
-                riakKeyField = ClassUtil.checkAndFixAccess(field);
-            }
+            for (Field field : fields) {
 
-            if (field.isAnnotationPresent(RiakVClock.class)) {
-                
-                // restrict the field type to byte[] or VClock
-                if (!(field.getType().isArray() && 
-                       field.getType().getComponentType().equals(byte.class)) &&
-                     !field.getType().isAssignableFrom(VClock.class)
-                    ) {
-                    throw new IllegalArgumentException(field.getType().toString());
-                }
-                
-                riakVClockField = ClassUtil.checkAndFixAccess(field);
-            }
-            
-            if (field.isAnnotationPresent(RiakUsermeta.class)) {
-                RiakUsermeta a = field.getAnnotation(RiakUsermeta.class);
-                String key = a.key();
+                if (riakKeyField == null && field.isAnnotationPresent(RiakKey.class)) {
 
-                if (!"".equals(key)) {
-                    usermetaItemFields.add(new UsermetaField(ClassUtil.checkAndFixAccess(field)));
-                } else {
-                    usermetaMapField = ClassUtil.checkAndFixAccess(field);
+                    riakKeyField = ClassUtil.checkAndFixAccess(field);
                 }
 
-            }
+                if (riakVClockField == null && field.isAnnotationPresent(RiakVClock.class)) {
 
-            if(field.isAnnotationPresent(RiakIndex.class)) {
-                indexFields.add(new RiakIndexField(ClassUtil.checkAndFixAccess(field)));
-            }
+                    // restrict the field type to byte[] or VClock
+                    if (!(field.getType().isArray() &&
+                            field.getType().getComponentType().equals(byte.class)) &&
+                            !field.getType().isAssignableFrom(VClock.class)
+                            ) {
+                        throw new IllegalArgumentException(field.getType().toString());
+                    }
 
-            if (field.isAnnotationPresent(RiakLinks.class)) {
-                linksField = ClassUtil.checkAndFixAccess(field);
+                    riakVClockField = ClassUtil.checkAndFixAccess(field);
+                }
+
+                if (riakTombstoneField == null && field.isAnnotationPresent(RiakTombstone.class)) {
+                    
+                    // restrict the field to boolean
+                    if (!field.getType().equals(Boolean.TYPE)) {
+                        throw new IllegalArgumentException(field.getType().toString());
+                    }
+                    riakTombstoneField = ClassUtil.checkAndFixAccess(field);
+                }
+                
+                if (field.isAnnotationPresent(RiakUsermeta.class)) {
+                    RiakUsermeta a = field.getAnnotation(RiakUsermeta.class);
+                    String key = a.key();
+
+                    if (!"".equals(key)) {
+                        usermetaItemFields.add(new UsermetaField(ClassUtil.checkAndFixAccess(field)));
+                    } else if (usermetaMapField == null) {
+                        usermetaMapField = ClassUtil.checkAndFixAccess(field);
+                    }
+
+                }
+
+                if(field.isAnnotationPresent(RiakIndex.class)) {
+                    indexFields.add(new RiakIndexField(ClassUtil.checkAndFixAccess(field)));
+                }
+
+                if (linksField == null && field.isAnnotationPresent(RiakLinks.class)) {
+                    linksField = ClassUtil.checkAndFixAccess(field);
+                }
+            }
+            currentClass = currentClass.getSuperclass();
+        }
+        
+        final Method[] methods = classToScan.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(RiakIndex.class)) {
+                indexMethods.add(new RiakIndexMethod(ClassUtil.checkAndFixAccess(method)));
             }
         }
-        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, indexFields, linksField, riakVClockField);
+        
+        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, 
+                                  indexFields, indexMethods, linksField, riakVClockField,
+                                  riakTombstoneField);
     }
 }
