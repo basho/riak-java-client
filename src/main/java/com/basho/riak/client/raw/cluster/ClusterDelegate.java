@@ -165,14 +165,12 @@ public class ClusterDelegate {
         }
       
         public boolean isClientHealthy(RawClient client) {
-          try {
-            //-- First check to see if client is up
-            client.ping();
-            //-- Check to see if client has joined ring by check to see if it has any buckets
-            return !client.listBuckets().isEmpty();
-          } catch (IOException ioe) {
-            return false;
-          }
+            try {
+                client.ping();
+                return true;
+            } catch (IOException ioe) {
+                return false;
+            }
         }
     }
 }
