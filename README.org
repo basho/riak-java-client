@@ -33,6 +33,8 @@ The current riak-java-client is available from maven central. Add the dependency
 
 Maven artifacts are published to the [[https://oss.sonatype.org/index.html#nexus-search;quick~riak][Sonatype OSS Repository]].
 
+As a convenience we also provide an [[http://riak-java-client.s3.amazonaws.com/riak-client-1.1.0-jar-with-dependencies.jar][all-in-one .jar file you can include in non-maven projects]]
+that includes all the dependencies.  
 
 ** Quick start
 Assuming you're running Riak on localhost on the default ports getting started is as simple as:
