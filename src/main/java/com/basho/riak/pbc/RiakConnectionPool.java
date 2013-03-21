@@ -130,19 +130,15 @@ public class RiakConnectionPool {
      * Constant to use for <code>maxSize</code> when creating an unbounded pool
      */
     public static final int LIMITLESS = 0;
-    private static final int CONNECTION_ACQUIRE_ATTEMPTS = 3;
-    private final InetAddress host;
-    private final int port;
     private final Semaphore permits;
     private final LinkedBlockingDeque<RiakConnection> available;
     private final ConcurrentLinkedQueue<RiakConnection> inUse;
-    private final long connectionWaitTimeoutNanos;
-    private final int bufferSizeKb;
     private final int initialSize;
     private final long idleConnectionTTLNanos;
-    private final int requestTimeoutMillis;
     private final ScheduledExecutorService idleReaper;
     private final ScheduledExecutorService shutdownExecutor;
+    private final long connectionWaitTimeoutMillis;
+    private final RiakConnectionFactory riakConnectionFactory;
     // what state the pool is in (see enum State)
     private volatile State state;
 
@@ -192,7 +188,7 @@ public class RiakConnectionPool {
      * 
      * @param initialSize
      *            the number of connections to create at pool creation time
-     * @param clusterSemaphore
+     * @param poolSemaphore
      *            a {@link Semaphore} set with the number of permits for the
      *            pool (and maybe cluster (see {@link PoolSemaphore}))
      * @param host
@@ -216,14 +212,21 @@ public class RiakConnectionPool {
     public RiakConnectionPool(int initialSize, Semaphore poolSemaphore, InetAddress host, int port,
             long connectionWaitTimeoutMillis, int bufferSizeKb, long idleConnectionTTLMillis,
             int requestTimeoutMillis) throws IOException {
+        this(
+            initialSize,
+            poolSemaphore,
+            idleConnectionTTLMillis,
+            connectionWaitTimeoutMillis,
+            new RiakConnectionFactory(host, port, bufferSizeKb, connectionWaitTimeoutMillis, requestTimeoutMillis)
+        );
+    }
+
+    RiakConnectionPool(int initialSize, Semaphore poolSemaphore, long idleConnectionTTLMillis, long connectionWaitTimeoutMillis, RiakConnectionFactory riakConnectionFactory) throws IOException {
         this.permits = poolSemaphore;
         this.available = new LinkedBlockingDeque<RiakConnection>();
         this.inUse = new ConcurrentLinkedQueue<RiakConnection>();
-        this.bufferSizeKb = bufferSizeKb;
-        this.host = host;
-        this.port = port;
-        this.connectionWaitTimeoutNanos = TimeUnit.NANOSECONDS.convert(connectionWaitTimeoutMillis, TimeUnit.MILLISECONDS);
-        this.requestTimeoutMillis = requestTimeoutMillis;
+        this.connectionWaitTimeoutMillis = connectionWaitTimeoutMillis;
+        this.riakConnectionFactory = riakConnectionFactory;
         this.initialSize = initialSize;
         this.idleConnectionTTLNanos = TimeUnit.NANOSECONDS.convert(idleConnectionTTLMillis, TimeUnit.MILLISECONDS);
         this.idleReaper = Executors.newScheduledThreadPool(1);
@@ -258,7 +261,6 @@ public class RiakConnectionPool {
                                 boolean removed = available.remove(c);
                                 if (removed) {
                                     c.close();
-                                    permits.release();
                                 }
                             }
                         } else {
@@ -297,18 +299,10 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private void warmUp() throws IOException {
-        if (permits.tryAcquire(initialSize)) {
-            for (int i = 0; i < this.initialSize; i++) {
-                RiakConnection c = 
-                    new RiakConnection(this.host, this.port, 
-                                       this.bufferSizeKb, this, 
-                                       TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), 
-                                       requestTimeoutMillis);
-                c.beginIdle();
-                available.add(c);
-            }
-        } else {
-            throw new RuntimeException("Unable to create initial connections");
+        for (int i = 0; i < this.initialSize; i++) {
+            RiakConnection c = riakConnectionFactory.createConnection(this);
+            c.beginIdle();
+            available.add(c);
         }
     }
 
@@ -380,47 +374,41 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private RiakConnection getConnection() throws IOException {
-        RiakConnection c = available.poll();
-
-        if (c == null) {
-           c = createConnection(CONNECTION_ACQUIRE_ATTEMPTS);
-        }
-
-        inUse.offer(c);
-        return c;
-    }
-
-    /**
-     * @param attempts
-     * @return
-     */
-    private RiakConnection createConnection(int attempts) throws IOException {
         try {
-            if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
-                boolean releasePermit = true;
-                try {
-                    RiakConnection connection = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
-                    releasePermit = false;
-                    return connection;
-                } catch (SocketTimeoutException e) {
-                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
-                } catch (IOException e) {
-                    throw e;
-                } finally {
-                    if (releasePermit) {
-                        permits.release();
-                    }
+            if (permits.tryAcquire(connectionWaitTimeoutMillis, TimeUnit.MILLISECONDS)) {
+                RiakConnection c = available.poll();
+
+                if (c == null) {
+                   c = createConnection();
                 }
+
+                inUse.offer(c);
+                return c;
             } else {
                 throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            
-            if (attempts > 0) {
-                return createConnection(attempts - 1);
-            } else {
-                throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
+            throw new IOException("failed to get connection from connection pool, thread interrupted", ie);
+        }
+    }
+
+    /**
+     * @return
+     */
+    private RiakConnection createConnection() throws IOException {
+        boolean releasePermit = true;
+        try {
+            RiakConnection connection = riakConnectionFactory.createConnection(this);
+            releasePermit = false;
+            return connection;
+        } catch (SocketTimeoutException e) {
+            throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            if (releasePermit) {
+                permits.release();
             }
         }
     }
@@ -449,10 +437,8 @@ public class RiakConnectionPool {
             if (!c.isClosed()) {
                 c.beginIdle();
                 available.offerFirst(c);
-            } else {
-                // don't put a closed connection in the pool, release a permit
-                permits.release();
             }
+            permits.release();
         } else {
             // not our connection?
             throw new IllegalArgumentException("connection not managed by this pool");
@@ -519,10 +505,28 @@ public class RiakConnectionPool {
     }
 
     public String getHostName() {
-      return host.getHostName();
+      return riakConnectionFactory.getHost().getHostName();
     }
 
     public int getPort() {
-      return port;
+      return riakConnectionFactory.getPort();
+    }
+
+    /**
+     * The number of connections currently in use
+     *
+     * @return The number of connections currently in use
+     */
+    public int getInUseCount() {
+        return inUse.size();
+    }
+
+    /**
+     * The number of connections that are not currently in use
+     *
+     * @return The maximum number of connections for this pool minus the number of in-use connections
+     */
+    public int getNotInUseCount() {
+        return permits.availablePermits();
     }
 }
