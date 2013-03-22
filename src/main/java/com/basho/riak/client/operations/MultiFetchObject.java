@@ -169,7 +169,7 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
      */
     public static int getMaximumPoolSize()
     {
-        return threadPool.getCorePoolSize();
+        return threadPool.getMaximumPoolSize();
     }
     
     /**
@@ -298,9 +298,6 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
     /**
      * *NOTE* HTTP Only.
      * 
-     * TODO using generics and transports make this generic Transport for either
-     * Date/VClock
-     * 
      * @param modifiedSince
      *            a last modified date.
      * 
@@ -308,22 +305,6 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
      */
     public MultiFetchObject<T> modifiedSince(Date modifiedSince) {
         builder.modifiedSince(modifiedSince);
-        return this;
-    }
-
-    /**
-     * *NOTE* PB Only.
-     * 
-     * TODO using generics and transports make this generic T for either
-     * Date/VClock
-     * 
-     * @param vclock
-     *            a vclock
-     * 
-     * @return this
-     */
-    public MultiFetchObject<T> ifModified(VClock vclock) {
-        builder.vclock(vclock);
         return this;
     }
 
