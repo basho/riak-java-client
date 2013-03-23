@@ -297,19 +297,13 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private void warmUp() throws IOException {
-        if (permits.tryAcquire(initialSize)) {
-            for (int i = 0; i < this.initialSize; i++) {
-                RiakConnection c = 
-                    new RiakConnection(this.host, this.port, 
-                                       this.bufferSizeKb, this, 
-                                       TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), 
-                                       requestTimeoutMillis);
-                c.beginIdle();
-                available.add(c);
-            }
-        } else {
-            throw new RuntimeException("Unable to create initial connections");
+        
+        for (int i = 0; i < this.initialSize; i++) {
+            RiakConnection c = getConnection();
+            c.beginIdle();
+            available.add(c);
         }
+        
     }
 
     /**
@@ -380,48 +374,39 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private RiakConnection getConnection() throws IOException {
-        RiakConnection c = available.poll();
-
-        if (c == null) {
-           c = createConnection(CONNECTION_ACQUIRE_ATTEMPTS);
-        }
-
-        inUse.offer(c);
-        return c;
-    }
-
-    /**
-     * @param attempts
-     * @return
-     */
-    private RiakConnection createConnection(int attempts) throws IOException {
-        try {
-            if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
-                boolean releasePermit = true;
-                try {
-                    RiakConnection connection = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
-                    releasePermit = false;
-                    return connection;
-                } catch (SocketTimeoutException e) {
-                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
-                } catch (IOException e) {
-                    throw e;
-                } finally {
-                    if (releasePermit) {
-                        permits.release();
+        RiakConnection c = null;
+        for (int i = 0; c == null && i < CONNECTION_ACQUIRE_ATTEMPTS; i++) {
+            try {
+                if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
+                    c = available.poll();
+                    if (c == null) {
+                        boolean releasePermit = true;
+                        try {
+                            c = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
+                            releasePermit = false;
+                        } catch (SocketTimeoutException e) {
+                            throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
+                        } catch (IOException e) {
+                            throw e;
+                        } finally {
+                            if (releasePermit) {
+                                permits.release();
+                            }
+                        }
                     }
+                } else {
+                    throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
                 }
-            } else {
-                throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            
-            if (attempts > 0) {
-                return createConnection(attempts - 1);
-            } else {
-                throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
-            }
+        }
+        
+        if (c == null) {
+            throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
+        } else {
+            inUse.offer(c);
+            return c;
         }
     }
 
@@ -446,13 +431,12 @@ public class RiakConnectionPool {
         }
 
         if (inUse.remove(c)) {
+            // don't put a closed connection in the pool
             if (!c.isClosed()) {
                 c.beginIdle();
                 available.offerFirst(c);
-            } else {
-                // don't put a closed connection in the pool, release a permit
-                permits.release();
-            }
+            } 
+            permits.release();
         } else {
             // not our connection?
             throw new IllegalArgumentException("connection not managed by this pool");
