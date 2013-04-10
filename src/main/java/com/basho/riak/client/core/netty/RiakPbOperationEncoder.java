@@ -23,6 +23,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class RiakPbOperationEncoder extends MessageToMessageEncoder<FutureOperation>
 {

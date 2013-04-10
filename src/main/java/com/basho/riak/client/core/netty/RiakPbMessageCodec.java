@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class RiakPbMessageCodec extends CombinedChannelDuplexHandler 
     implements ChannelInboundByteHandler, ChannelOutboundMessageHandler<RiakPbMessage>
@@ -126,7 +127,7 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
         public void channelInactive(ChannelHandlerContext ctx) throws Exception
         {
             super.channelInactive(ctx);
-            long missingResponses = inFlight.get();
+            int missingResponses = inFlight.get();
             if (missingResponses > 0)
             {
                 ctx.fireExceptionCaught(new PrematureChannelClosureException(

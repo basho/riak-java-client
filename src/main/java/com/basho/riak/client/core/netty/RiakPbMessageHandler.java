@@ -23,6 +23,7 @@ import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<RiakPbMessage>
 {

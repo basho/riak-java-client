@@ -18,6 +18,7 @@ package com.basho.riak.client.core;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class NoNodesAvailableException extends Exception
 {

@@ -22,6 +22,7 @@ import io.netty.channel.socket.SocketChannel;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class PbChannelInitializer extends ChannelInitializer<SocketChannel>
 {
