@@ -24,7 +24,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class RiakPBOperationEncoder extends MessageToMessageEncoder<FutureOperation>
+public class RiakPbOperationEncoder extends MessageToMessageEncoder<FutureOperation>
 {
 
     @Override

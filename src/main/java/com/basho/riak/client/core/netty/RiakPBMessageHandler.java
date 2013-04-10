@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.RiakPBMessage;
+import com.basho.riak.client.core.RiakPbMessage;
 import com.basho.riak.client.core.RiakResponseListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
@@ -24,18 +24,18 @@ import io.netty.channel.ChannelInboundMessageHandlerAdapter;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class RiakPBMessageHandler extends ChannelInboundMessageHandlerAdapter<RiakPBMessage>
+public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<RiakPbMessage>
 {
 
     private final RiakResponseListener listener;
     
-    public RiakPBMessageHandler(RiakResponseListener listener)
+    public RiakPbMessageHandler(RiakResponseListener listener)
     {
         this.listener = listener;
     }
     
     @Override
-    public void messageReceived(ChannelHandlerContext chc, RiakPBMessage msg) throws Exception
+    public void messageReceived(ChannelHandlerContext chc, RiakPbMessage msg) throws Exception
     {
         listener.onSuccess(chc.channel(), msg);
         chc.channel().pipeline().remove(this);

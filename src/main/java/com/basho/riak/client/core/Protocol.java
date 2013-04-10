@@ -15,9 +15,10 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.netty.HTTPChannelInitializer;
-import com.basho.riak.client.core.netty.PBChannelInitializer;
-import com.basho.riak.client.core.netty.RiakPBMessageHandler;
+import com.basho.riak.client.core.netty.HttpChannelInitializer;
+import com.basho.riak.client.core.netty.PbChannelInitializer;
+import com.basho.riak.client.core.netty.RiakHttpMessageHandler;
+import com.basho.riak.client.core.netty.RiakPbMessageHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -42,13 +43,13 @@ public enum Protocol
         @Override
         ChannelInitializer<SocketChannel> channelInitializer()
         {
-            return new PBChannelInitializer();
+            return new PbChannelInitializer();
         }
         
         @Override
         ChannelHandler responseHandler(RiakResponseListener listener)
         {
-            return new RiakPBMessageHandler(listener);
+            return new RiakPbMessageHandler(listener);
         }
         
         
@@ -66,14 +67,13 @@ public enum Protocol
         @Override
         ChannelInitializer<SocketChannel> channelInitializer()
         {
-            return new HTTPChannelInitializer();
+            return new HttpChannelInitializer();
         }
         
         @Override
         ChannelHandler responseHandler(RiakResponseListener listener)
         {
-            // TODO: add response handler
-            return null;
+            return new RiakHttpMessageHandler(listener);
         }
         
     };

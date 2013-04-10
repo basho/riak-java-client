@@ -23,10 +23,10 @@ import io.netty.channel.socket.SocketChannel;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class PBChannelInitializer extends ChannelInitializer<SocketChannel>
+public class PbChannelInitializer extends ChannelInitializer<SocketChannel>
 {
 
-    public PBChannelInitializer()
+    public PbChannelInitializer()
     {
     }
 
@@ -34,9 +34,9 @@ public class PBChannelInitializer extends ChannelInitializer<SocketChannel>
     public void initChannel(SocketChannel ch) throws Exception
     {
         ChannelPipeline p = ch.pipeline();
-        p.addLast("riakPBEncoder", new RiakPBMessageEncoder());
-        p.addLast("riakPBOperationEncoder", new RiakPBOperationEncoder());
-        p.addLast("riakPBDecoder", new RiakPBMessageDecoder());
+        p.addLast("riakPBCodec", new RiakPbMessageCodec());
+        p.addLast("riakPBOperationEncoder", new RiakPbOperationEncoder());
+        
     }
     
 }

@@ -15,29 +15,39 @@
  */
 package com.basho.riak.client.core;
 
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpResponse;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class RiakPbMessage implements RiakResponse
+public class RiakHttpMessage implements RiakResponse
 {
-    private final byte code;
-    private final byte[] data;
+    private final HttpResponse response;
+    private final List<HttpContent> contentList;
     
-    public RiakPbMessage(int code, byte[] data)
+    public RiakHttpMessage(HttpResponse response)
     {
-        this.code = (byte) code;
-        this.data = data;
+        this.response = response;
+        contentList = new LinkedList<>();
     }
     
-    public byte getCode()
+    public HttpResponse getResponse()
     {
-        return code;
+        return response;
     }
     
-    public byte[] getData()
+    public List<HttpContent> getContent()
     {
-        return data;
+        return contentList;
+    }
+    
+    public void addContent(HttpContent content)
+    {
+        contentList.add(content);
     }
 }

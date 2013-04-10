@@ -24,10 +24,10 @@ import io.netty.handler.codec.http.HttpClientCodec;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class HTTPChannelInitializer extends ChannelInitializer<SocketChannel>
+public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
 {
 
-    public HTTPChannelInitializer()
+    public HttpChannelInitializer()
     {
     }
 

@@ -20,7 +20,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.socket.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -99,7 +99,6 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         for (Map.Entry<Protocol, ConnectionPool.Builder> e : builder.protocolMap.entrySet())
         {
             ConnectionPool cp = e.getValue().withExecutor(executor).withBootstrap(bootstrap).build();
-            cp.addStateListener(this);
             connectionPoolMap.put(e.getKey(), cp);
         }
         this.state = State.CREATED;
@@ -122,6 +121,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         stateCheck(State.CREATED);
         for (Map.Entry<Protocol, ConnectionPool> e : connectionPoolMap.entrySet())
         {
+            e.getValue().addStateListener(this);
             e.getValue().start();
         }
         state = State.RUNNING;
@@ -283,8 +283,15 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public void onException(Channel channel, Throwable t)
     {
         InProgressOperation inProgress = inProgressMap.remove(channel.id());
-        inProgress.getOperation().setException(t);
-        connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
+        // There is an edge case where a write could fail after the message encoding
+        // occured in the pipeline. In that case we'll get an exception from the 
+        // handler due to it thinking there was a request in flight 
+        // but will not have an entry in inProgress
+        if (inProgress != null)
+        {
+            inProgress.getOperation().setException(t);
+            connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
+        }
     }
     
     // The only Netty future we are listening to is the WriteFuture
