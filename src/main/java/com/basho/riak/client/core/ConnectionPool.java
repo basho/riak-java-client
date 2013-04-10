@@ -532,6 +532,15 @@ public class ConnectionPool implements ChannelFutureListener
         return state;
     }
     
+    /**
+     * Returns the protocol for this pool
+     * @return The protocol
+     */
+    public Protocol getProtocol()
+    {
+        return this.protocol;
+    }
+    
     private class ChannelWithIdleTime
     {
         private Channel channel;

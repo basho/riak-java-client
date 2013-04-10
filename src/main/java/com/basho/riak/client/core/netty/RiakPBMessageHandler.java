@@ -34,6 +34,7 @@ public class RiakPBMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
         this.listener = listener;
     }
     
+    @Override
     public void messageReceived(ChannelHandlerContext chc, RiakPBMessage msg) throws Exception
     {
         listener.onSuccess(chc.channel(), msg);

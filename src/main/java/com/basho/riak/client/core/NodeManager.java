@@ -20,11 +20,12 @@ import java.util.List;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public interface NodeManager extends NodeStateListener
 {
     void init(List<RiakNode> nodes);
     RiakNode selectNode(RiakNode previous);
     void addNode(RiakNode newNode);
-    RiakNode removeNode(RiakNode node);
+    boolean removeNode(RiakNode node);
 }

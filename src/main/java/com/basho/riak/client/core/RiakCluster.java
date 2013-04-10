@@ -25,7 +25,10 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class RiakCluster implements OperationRetrier, NodeStateListener
 {
 
-    private enum State { CREATED, RUNNING, SHUTDOWN }
+    private enum State { CREATED, RUNNING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;
     private final NodeManager nodeManager;
@@ -46,6 +49,8 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     private final ScheduledExecutorService executor;
     private final Bootstrap bootstrap;
     private final List<RiakNode> nodes;
+    
+    private ScheduledFuture<?> shutdownFuture;
     
     private volatile State state;
     
@@ -62,21 +67,30 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
             this.nodeManager = builder.nodeManager;
         }
             
-        this.executor = builder.executor;
         this.bootstrap = builder.bootstrap;
         
         nodes = Collections.synchronizedList(new ArrayList<RiakNode>(builder.riakNodeBuilders.size()));
         for (RiakNode.Builder nodeBuilder : builder.riakNodeBuilders)
         {
-            if (executor != null)
+            if (builder.executor != null)
             {
-                nodeBuilder.withExecutor(executor);
+                nodeBuilder.withExecutor(builder.executor);
             }
             if (bootstrap != null)
             {
                 nodeBuilder.withBootstrap(bootstrap);
             }
             nodes.add(nodeBuilder.build());
+        }
+        
+        if (builder.executor != null)
+        {
+            executor = builder.executor;
+        }
+        else
+        {
+            // We still need an executor if none was provided. 
+            executor = Executors.newSingleThreadScheduledExecutor();
         }
         
         nodeManager.init(nodes);
@@ -109,13 +123,13 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     public synchronized void stop()
     {
         stateCheck(State.RUNNING);
-        // TODO: everything
-        state = State.SHUTDOWN;
-        for (RiakNode node : nodes)
-        {
-            node.addStateListener(this);
-            node.stop();
-        }
+        state = State.SHUTTING_DOWN;
+        
+        // Wait for all in-progress operations to drain
+        // then shut down nodes.
+        shutdownFuture = executor.scheduleWithFixedDelay(new ShutdownTask(), 
+                                                         500, 500, 
+                                                         TimeUnit.MILLISECONDS);
     }
     
     public void execute(FutureOperation operation)
@@ -132,8 +146,6 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     // TODO: Streaming also
     private void execute(FutureOperation operation, RiakNode previousNode) 
     {
-        stateCheck(State.RUNNING);
-        
         RiakNode node = nodeManager.selectNode(previousNode);
         inProgressMap.put(operation, node);
         
@@ -164,7 +176,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         return newNode;
     }
     
-    public synchronized RiakNode removeNode(RiakNode node)
+    public synchronized boolean removeNode(RiakNode node)
     {
         stateCheck(State.CREATED, State.RUNNING);
         nodes.remove(node);
@@ -175,20 +187,22 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     @Override
     public void nodeStateChanged(RiakNode node, RiakNode.State state)
     {
+        // We only listen for state changes after telling all the nodes
+        // to shutdown.
         if (state == RiakNode.State.SHUTDOWN)
         {
             nodes.remove(node);
-        }
-        
-        if (nodes.isEmpty())
-        {
-            if (executor != null)
+            
+            if (nodes.isEmpty())
             {
+                this.state = State.SHUTDOWN;
                 executor.shutdown();
-            }
-            if (bootstrap != null)
-            {
-                bootstrap.shutdown();
+                if (bootstrap != null)
+                {
+                    bootstrap.shutdown();
+                    logger.debug("RiakCluster shut down bootstrap");
+                }
+                logger.info("RiakCluster has shut down");
             }
         }
     }
@@ -196,6 +210,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     @Override
     public void operationFailed(FutureOperation operation, int remainingRetries)
     {
+        logger.debug("operation failed; remaining retries: {}", remainingRetries);
         if (remainingRetries > 0)
         {
             RiakNode previousNode = inProgressMap.get(operation);
@@ -206,9 +221,30 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     @Override
     public void operationComplete(FutureOperation operation, int remainingRetries)
     {
+        logger.debug("operation complete; remaining retries: {}", remainingRetries);
         inProgressMap.remove(operation);
     }
 
+    private class ShutdownTask implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            if (inProgressMap.isEmpty())
+            {
+                logger.info("All operations have completed");
+                for (RiakNode node : nodes)
+                {
+                    node.addStateListener(RiakCluster.this);
+                    node.shutdown();
+                    shutdownFuture.cancel(false);
+                }
+            }
+        }
+        
+    }
+    
+    
     public static class Builder
     {
         public final static int DEFAULT_EXECUTION_ATTEMPTS = 3;
@@ -220,21 +256,15 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         private ScheduledExecutorService executor;
         private Bootstrap bootstrap;
         
-        public Builder(List<RiakNode.Builder> riakNodes)
+        public Builder(List<RiakNode.Builder> riakNodeBuilders)
         {
-            this.riakNodeBuilders = new ArrayList<>(riakNodes);
+            this.riakNodeBuilders = new ArrayList<>(riakNodeBuilders);
         }
         
         public Builder(RiakNode.Builder node)
         {
             this.riakNodeBuilders = new ArrayList<>(1);
             this.riakNodeBuilders.add(node);
-        }
-        
-        public Builder addNode(RiakNode.Builder node)
-        {
-            this.riakNodeBuilders.add(node);
-            return this;
         }
         
         public Builder withExecutionAttempts(int numberOfAttempts)

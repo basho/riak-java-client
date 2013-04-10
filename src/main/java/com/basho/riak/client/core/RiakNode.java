@@ -129,7 +129,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         return this;
     }
     
-    public synchronized void stop()
+    public synchronized void shutdown()
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         
@@ -235,6 +235,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
                 this.state = State.RUNNING;
                 notifyStateListeners();
                 logger.info("RiakNode running; {}", remoteAddress);
+                break;
             case SHUTTING_DOWN:
                 if (this.state == State.RUNNING ||  this.state == State.HEALTH_CHECKING)
                 {
@@ -242,8 +243,10 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
                     notifyStateListeners();
                     logger.info("RiakNode shutting down due to pool shutdown; {}", remoteAddress);
                 }
+                break;
             case SHUTDOWN:
-                if (this.state != State.SHUTDOWN)
+                connectionPoolMap.remove(pool.getProtocol());
+                if (connectionPoolMap.isEmpty())
                 {
                     this.state = State.SHUTDOWN;
                     notifyStateListeners();
@@ -257,6 +260,9 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
                     }
                     logger.info("RiakNode shut down due to pool shutdown; {}", remoteAddress);
                 }
+                break;
+            default:
+                break;
         }
     }
 
@@ -316,6 +322,14 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         }
     }
     
+    /**
+     * Returns the {@code remoteAddress} for this RiakNode
+     * @return The IP address or FQDN as a {@code String}
+     */
+    public String getRemoteAddress()
+    {
+        return this.remoteAddress;
+    }
     
     /**
      * Builder used to construct a RiakNode.
