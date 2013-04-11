@@ -44,8 +44,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RiakNode implements ChannelFutureListener, RiakResponseListener, PoolStateListener
 {
-
-    
     public enum State
     {
         CREATED, RUNNING, HEALTH_CHECKING, SHUTTING_DOWN, SHUTDOWN;
@@ -270,8 +268,8 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public void onSuccess(Channel channel, RiakResponse response)
     {
         InProgressOperation inProgress = inProgressMap.remove(channel.id());
-        inProgress.getOperation().setResponse(response);
         connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
+        inProgress.getOperation().setResponse(response);
     }
 
     /**
@@ -289,8 +287,8 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         // but will not have an entry in inProgress
         if (inProgress != null)
         {
-            inProgress.getOperation().setException(t);
             connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
+            inProgress.getOperation().setException(t);
         }
     }
     
