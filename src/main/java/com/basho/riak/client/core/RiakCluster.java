@@ -16,7 +16,6 @@
 package com.basho.riak.client.core;
 
 
-import com.basho.riak.client.operations.FutureOperation;
 import io.netty.bootstrap.Bootstrap;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -25,10 +24,12 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,13 +45,15 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;
     private final NodeManager nodeManager;
-    private final Map<FutureOperation, RiakNode> inProgressMap =
-        Collections.synchronizedMap(new IdentityHashMap<FutureOperation, RiakNode>());
+    private final AtomicInteger inFlightCount = new AtomicInteger();
     private final ScheduledExecutorService executor;
     private final Bootstrap bootstrap;
     private final List<RiakNode> nodes;
+    private final LinkedBlockingQueue<FutureOperation> retryQueue =
+        new LinkedBlockingQueue<>();
     
     private ScheduledFuture<?> shutdownFuture;
+    private ScheduledFuture<?> retrierFuture;
     
     private volatile State state;
     
@@ -90,7 +93,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         else
         {
             // We still need an executor if none was provided. 
-            executor = Executors.newSingleThreadScheduledExecutor();
+            executor = new ScheduledThreadPoolExecutor(2);
         }
         
         nodeManager.init(nodes);
@@ -117,12 +120,15 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
             node.addStateListener(nodeManager);
             node.start();
         }
+        retrierFuture = executor.schedule(new RetryTask(), 0, TimeUnit.SECONDS);
+        logger.info("RiakCluster is starting.");
         state = State.RUNNING;
     }
 
     public synchronized void stop()
     {
         stateCheck(State.RUNNING);
+        logger.info("RiakCluster is shutting down.");
         state = State.SHUTTING_DOWN;
         
         // Wait for all in-progress operations to drain
@@ -132,31 +138,19 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
                                                          TimeUnit.MILLISECONDS);
     }
     
+    // TODO: Harden to keep operations from being execute multiple times?
     public void execute(FutureOperation operation)
     {
         stateCheck(State.RUNNING);
-        if (inProgressMap.containsKey(operation))
-        {
-            throw new IllegalStateException("Operation already executing");
-        }
         operation.setRetrier(this, executionAttempts);
+        inFlightCount.incrementAndGet();
         this.execute(operation, null);
     }
     
     // TODO: Streaming also
     private void execute(FutureOperation operation, RiakNode previousNode) 
     {
-        RiakNode node = nodeManager.selectNode(previousNode);
-        inProgressMap.put(operation, node);
-        
-        if (null == node)
-        {
-            operation.setException(new NoNodesAvailableException());
-        }
-        else
-        {
-            node.execute(operation);
-        }
+        nodeManager.executeOnNode(operation);
     }
     
     public synchronized RiakNode addNode(RiakNode.Builder builder) throws UnknownHostException
@@ -213,26 +207,55 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         logger.debug("operation failed; remaining retries: {}", remainingRetries);
         if (remainingRetries > 0)
         {
-            RiakNode previousNode = inProgressMap.get(operation);
-            execute(operation, previousNode);
+            retryQueue.add(operation);
+        }
+        else
+        {
+            inFlightCount.decrementAndGet();
         }
     }
 
     @Override
     public void operationComplete(FutureOperation operation, int remainingRetries)
     {
+        inFlightCount.decrementAndGet();
         logger.debug("operation complete; remaining retries: {}", remainingRetries);
-        inProgressMap.remove(operation);
     }
 
+    private class RetryTask implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            while (!Thread.interrupted())
+            {
+                FutureOperation operation;
+                try
+                {
+                    operation = retryQueue.take();
+                }
+                catch (InterruptedException ex)
+                {
+                    break;
+                }
+                
+                execute(operation, operation.getLastNode());
+            }
+            
+            logger.info("Retrier shutting down.");
+        }
+        
+    }
+    
     private class ShutdownTask implements Runnable
     {
         @Override
         public void run()
         {
-            if (inProgressMap.isEmpty())
+            if (inFlightCount.get() == 0)
             {
                 logger.info("All operations have completed");
+                retrierFuture.cancel(true);
                 for (RiakNode node : nodes)
                 {
                     node.addStateListener(RiakCluster.this);

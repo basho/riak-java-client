@@ -76,9 +76,7 @@ public class ConnectionPool implements ChannelFutureListener
     private int minConnections;
     private long idleTimeoutInNanos;
     private int connectionTimeout;
-    private int readTimeout;
-    private int permitTimeout;
-    
+    private int readTimeout;    
 
     private ConnectionPool(Builder builder) throws UnknownHostException
     {
@@ -86,7 +84,6 @@ public class ConnectionPool implements ChannelFutureListener
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
         this.minConnections = builder.minConnections;
         this.readTimeout = builder.readTimeout;
-        this.permitTimeout = builder.permitTimeout;
         this.protocol = builder.protocol;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
@@ -173,6 +170,7 @@ public class ConnectionPool implements ChannelFutureListener
         }
     }
     
+    // We're listening to Netty close futures
     @Override
     public void operationComplete(ChannelFuture future) throws Exception
     {
@@ -202,16 +200,11 @@ public class ConnectionPool implements ChannelFutureListener
             List<Channel> minChannels = new LinkedList<>();
             for (int i = 0; i < minConnections; i++)
             {
-                try
+                Channel channel = getConnection();
+                if (channel != null)
                 {
-                    minChannels.add(doGetConnection());
+                    minChannels.add(channel);
                 }
-                catch (ConnectionFailedException | PermitTimeoutException | InterruptedException ex)
-                {
-                    // No-op. Error is logged in doGetConnection() and
-                    // at this point we don't really care
-                }
-                
             }
             
             for (Channel c : minChannels)
@@ -257,77 +250,70 @@ public class ConnectionPool implements ChannelFutureListener
     /**
      * Get a Netty channel from this pool.
      * 
-     * @return a connected channel.
-     * @throws ConnectionFailedException if a connection can not be made
+     * @return a connected channel or {@code null} if all connections are in use or
+     * a new connection can not be made.
      */
-    public Channel getConnection() throws ConnectionFailedException, InterruptedException, PermitTimeoutException
+    public Channel getConnection() 
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
-        return doGetConnection();
-    }
-        
-    private Channel doGetConnection() throws ConnectionFailedException, InterruptedException, PermitTimeoutException
-    {
-        boolean acquired = false;
+        boolean acquired = permits.tryAcquire();
         Channel channel = null;
-        try
-        {
-            acquired = permits.tryAcquire(permitTimeout, TimeUnit.MILLISECONDS);
-        }
-        catch (InterruptedException ex)
-        {
-            Thread.currentThread().interrupt();
-            logger.error("Thread interrupted getting permit for connection");
-            throw ex;
-        }
-            
         if (acquired)
         {
-            ChannelWithIdleTime cwi = available.poll();
-            if (cwi == null)
+            try
             {
-                ChannelFuture f = bootstrap.connect();
-                try
-                {
-                    f.await();
-                }
-                catch (InterruptedException ex)
-                {
-                    permits.release();
-                    Thread.currentThread().interrupt();
-                    logger.error("Thread interrupted waiting for connection", ex);
-                    throw ex;
-                }
-                
-                if (!f.isSuccess())
-                {
-                    permits.release();
-                    logger.error("Connection attempt failed: {}:{}; {}", 
-                                 remoteAddress, port, f.cause().toString());
-                    throw new ConnectionFailedException(f.cause());
-                }
+                channel = doGetConnection();
+            }
+            catch (ConnectionFailedException ex)
+            {
+                permits.release();
+            }
+        }
+        return channel;
+    }
+        
+    private Channel doGetConnection() throws ConnectionFailedException
+    {
+        Channel channel;
+        ChannelWithIdleTime cwi = available.poll();
+        if (cwi == null)
+        {
+            ChannelFuture f = bootstrap.connect();
+            // Any channels that don't connect will trigger a close operation as well
+            f.channel().closeFuture().addListener(this);
+            
+            try
+            {
+                f.await();
+            }
+            catch (InterruptedException ex)
+            {
+                logger.info("Thread interrupted waiting for new connection to be made; {}", 
+                            remoteAddress);
+                Thread.currentThread().interrupt();
+                throw new ConnectionFailedException(ex);
+            }
+           
+            if (!f.isSuccess())
+            {
+                logger.error("Connection attempt failed: {}:{}; {}", 
+                             remoteAddress, port, f.cause().toString());
+                throw new ConnectionFailedException(f.cause());
+            }
 
-                channel = f.channel();
-                channel.closeFuture().addListener(this);
-            }
-            else
-            {
-                channel = cwi.getChannel();
-                // If the channel from available is closed, try again. This will result in
-                // the caller always getting a connection or an exception. If closed 
-                // the channel is simply discarded so this also acts as a purge
-                // for dead channels during a health check. 
-                if (channel.closeFuture().isDone())
-                {
-                    return doGetConnection();
-                }
-                
-            }
+            channel = f.channel();
         }
         else
         {
-            logger.info("Could not aquire pool permit; {}:{}", remoteAddress, port);
-            throw new PermitTimeoutException();
+            channel = cwi.getChannel();
+            // If the channel from available is closed, try again. This will result in
+            // the caller always getting a connection or an exception. If closed 
+            // the channel is simply discarded so this also acts as a purge
+            // for dead channels during a health check. 
+            if (channel.closeFuture().isDone())
+            {
+                return doGetConnection();
+            }
         }
 
         inUse.add(channel);
@@ -376,12 +362,10 @@ public class ConnectionPool implements ChannelFutureListener
     /**
      * Returns the number of permits currently available in this pool. 
      * The number of available permits indicates how many additional
-     * connections can be acquired from this pool without blocking /
-     * waiting on a permit.
+     * connections can be acquired from this pool without blocking
      * 
      * @return the number of available permits.
      * @see Builder#withMaxConnections(int) 
-     * @see Builder#withPermitTimeout(int) 
      */
     public int availablePermits()
     {
@@ -501,28 +485,6 @@ public class ConnectionPool implements ChannelFutureListener
         this.readTimeout = readTimeout;
     }
 
-    /**
-     * Returns the permit timeout in milliseconds for this pool.
-     * @return the permitTimeout
-     * @see Builder#withPermitTimeout(int) 
-     */
-    public int getPermitTimeout()
-    {
-        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        return permitTimeout;
-    }
-
-    /**
-     * Sets the permit timeout for this pool
-     * @param permitTimeout the permitTimeout to set
-     * @see Builder#withPermitTimeout(int) 
-     */
-    public void setPermitTimeout(int permitTimeout)
-    {
-        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        this.permitTimeout = permitTimeout;
-    }
-    
     /**
      * Returns the current state of this pool.
      * @return the current state
@@ -650,32 +612,35 @@ public class ConnectionPool implements ChannelFutureListener
                             recentlyClosed.poll();
                         }
                         
-                        // See: getConnection() - this will purge closed
+                        // See: doGetConnection() - this will purge closed
                         // connections from the available queue and either 
                         // return/create a new one (meaning the node is up) or throw
                         // an exception if a connection can't be made.
-                        Channel c = getConnection();
-                        returnConnection(c);
+                        Channel c = doGetConnection();
+                        inUse.remove(c);
+                        closeConnection(c);
                         if (state == State.HEALTH_CHECKING)
                         {
-                            logger.debug("ConnectionPool recovered; {} {}", remoteAddress, protocol);
+                            logger.info("ConnectionPool recovered; {} {}", remoteAddress, protocol);
                             state = State.RUNNING;
                             notifyStateListeners();
                         }
                         
                     }
-                    catch (ConnectionFailedException | InterruptedException ex)
+                    catch (ConnectionFailedException ex)
                     {
                         if (state == State.RUNNING)
                         {
-                            logger.debug("ConnectionPool health checking; {} {}", remoteAddress, protocol);
+                            logger.error("ConnectionPool health checking; {} {} {}", 
+                                         remoteAddress, protocol, ex);
                             state = State.HEALTH_CHECKING;
                             notifyStateListeners();
                         }
-                    }
-                    catch (PermitTimeoutException ex)
-                    {
-                        // No-op; non-deterministic (?)
+                        else
+                        {
+                            logger.error("ConnectionPool failed health check; {} {} {}", 
+                                         remoteAddress, protocol, ex);
+                        }
                     }
                     
                 }
@@ -690,11 +655,6 @@ public class ConnectionPool implements ChannelFutureListener
          * @see #withRemoteAddress(java.lang.String) 
          */
         public final static String DEFAULT_REMOTE_ADDRESS = "127.0.0.1";
-        /**
-         * The default permit timeout in milliseconds to be used if not specified: {@value #DEFAULT_PERMIT_TIMEOUT}
-         * @see #withPermitTimeout(int) 
-         */
-        public final static int DEFAULT_PERMIT_TIMEOUT = 1000;
         /**
          * The default minimum number of connections to maintain if not specified: {@value #DEFAULT_MIN_CONNECTIONS}
          * @see #withMinConnections(int) 
@@ -729,7 +689,6 @@ public class ConnectionPool implements ChannelFutureListener
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
         private int readTimeout = DEFAULT_READ_TIMEOUT;
-        private int permitTimeout = DEFAULT_PERMIT_TIMEOUT;
         private Bootstrap bootstrap;
         private boolean ownsBootstrap;
         private ScheduledExecutorService executor;
@@ -737,7 +696,7 @@ public class ConnectionPool implements ChannelFutureListener
 
         /**
          * Constructs a Builder 
-         * @param port the port on the remote host 
+         * @param protocol - the protocol for this pool
          */
         public Builder(Protocol protocol)
         {
@@ -834,20 +793,6 @@ public class ConnectionPool implements ChannelFutureListener
         }
         
         /**
-         * Set the timeout to be used when acquiring a connection from the
-         * pool. This only comes into play when all connections are in use
-         * and you are waiting for one to be returned by another thread. 
-         * @param permitTimeoutInMillis
-         * @return this
-         * @see #DEFAULT_PERMIT_TIMEOUT
-         */
-        public Builder withPermitTimeout(int permitTimeoutInMillis)
-        {
-            this.permitTimeout = permitTimeoutInMillis;
-            return this;
-        }
-        
-        /**
          * The Netty bootstrap to be used with this pool. If not provided one 
          * will be created with its own {@code NioEventLoopGroup}.
          * @param bootstrap
@@ -874,9 +819,7 @@ public class ConnectionPool implements ChannelFutureListener
         
         public ConnectionPool build() throws UnknownHostException
         {
-            
-            
-            return new ConnectionPool(this);
+           return new ConnectionPool(this);
         }
         
     }

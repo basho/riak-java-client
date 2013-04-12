@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.operations.FutureOperation;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -59,7 +58,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     private final boolean ownsBootstrap;
     private final List<NodeStateListener> stateListeners = 
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
-   
+    
     private volatile State state;
     private Map<Integer, InProgressOperation> inProgressMap = 
         new ConcurrentHashMap<>();
@@ -159,48 +158,44 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             }
         }
     }
+    
     // TODO: Streaming also - idea: BlockingDeque extension with listener
-    public void execute(FutureOperation operation) 
+    
+    /**
+     * Submits the operation to be executed on this node.  
+     * @param operation The operation to perform
+     * @return {@code true} if this operation was accepted, {@code false} if there
+     * were no available connections. 
+     * @throws IllegalStateException if this node is not in the {@code RUNNING} or {@code HEALTH_CHECKING} state
+     * @throws IllegalArgumentException if the protocol required for the operation is not supported by this node
+     */
+    public boolean execute(FutureOperation operation) 
     {
-        // In the case of execute() we want to catch this and put it in the operation
-        try
-        {
-            stateCheck(State.RUNNING);
-        }
-        catch (IllegalStateException ex)
-        {
-            operation.setException(ex);
-            return;
-        }
-        
+        stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         
         Protocol protoToUse = chooseProtocol(operation);
         
         if (null == protoToUse)
         {
-            operation.setException(new IllegalArgumentException("Node does not support required protocol"));
-            return;
+            throw new IllegalArgumentException("Node does not support required protocol");
         }
         
-        Channel channel;
-        
-        try
+        operation.setLastNode(this);
+        Channel channel = connectionPoolMap.get(protoToUse).getConnection();
+        if (channel != null)
         {
-            channel = connectionPoolMap.get(protoToUse).getConnection();
+            // add callback handler to end of pipeline which will callback to here
+            // These remove themselves once they notify the listener
+            channel.pipeline().addLast("riakResponseHandler", protoToUse.responseHandler(this));
+            inProgressMap.put(channel.id(), new InProgressOperation(protoToUse, operation));
+            ChannelFuture writeFuture = channel.write(operation); 
+            writeFuture.addListener(this);
+            return true;
         }
-        catch (ConnectionFailedException | PermitTimeoutException | InterruptedException ex)
+        else
         {
-            operation.setException(ex);
-            return;
+            return false;
         }
-        
-        // add callback handler to end of pipeline which will callback to here
-        // These remove themselves once they notify the listener
-        channel.pipeline().addLast("riakResponseHandler", protoToUse.responseHandler(this));
-        
-        inProgressMap.put(channel.id(), new InProgressOperation(protoToUse, operation));
-        ChannelFuture writeFuture = channel.write(operation); 
-        writeFuture.addListener(this);
     }
     
     private Protocol chooseProtocol(FutureOperation operation)
@@ -272,11 +267,6 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         inProgress.getOperation().setResponse(response);
     }
 
-    /**
-     * 
-     * @param channel
-     * @param t
-     */
     @Override
     public void onException(Channel channel, Throwable t)
     {
@@ -300,8 +290,8 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         if (!future.isSuccess())
         {
             InProgressOperation inProgress = inProgressMap.remove(future.channel().id());
-            inProgress.getOperation().setException(future.cause());
             connectionPoolMap.get(inProgress.getProtocol()).returnConnection(future.channel());
+            inProgress.getOperation().setException(future.cause());
         }
     }
     
@@ -363,7 +353,16 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         private Bootstrap bootstrap;
         private boolean ownsBootstrap;
         private final EnumMap<Protocol, ConnectionPool.Builder> protocolMap = 
-            new EnumMap<>(Protocol.class);;
+            new EnumMap<>(Protocol.class);
+        
+        
+        public Builder(Protocol p)
+        {
+            getPoolBuilder(p);
+        }
+        
+        // Used by the from() method
+        private Builder() {}
         
         /**
          * Sets the remote address for this RiakNode. 
@@ -383,7 +382,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @return this
          * @see {@link Protocol}
          */
-        public Builder withProtocol(Protocol p)
+        public Builder addProtocol(Protocol p)
         {
             getPoolBuilder(p);
             return this;
@@ -545,14 +544,6 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          */
         public RiakNode build() throws UnknownHostException 
         {
-            // If no proto has been specified we default to a node with
-            // both with the default pool settings. 
-            if (protocolMap.isEmpty())
-            {
-                getPoolBuilder(Protocol.PB);
-                getPoolBuilder(Protocol.HTTP);
-            }
-            
             return new RiakNode(this);
         }
         

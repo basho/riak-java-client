@@ -37,6 +37,7 @@ public class HttpChannelInitializer extends ChannelInitializer<SocketChannel>
     {
         ChannelPipeline p = ch.pipeline();
         p.addLast("codec", new HttpClientCodec(4096, 8192, 8192, true));
+        p.addLast("riakHttpOperationEncoder", new RiakHttpOperationEncoder());
     }
     
 }

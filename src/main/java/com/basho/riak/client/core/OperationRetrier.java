@@ -15,8 +15,6 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.operations.FutureOperation;
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
