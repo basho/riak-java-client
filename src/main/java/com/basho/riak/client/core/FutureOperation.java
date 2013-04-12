@@ -16,15 +16,12 @@
 package com.basho.riak.client.core;
 
 
-import com.basho.riak.client.FutureListener;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -35,12 +32,10 @@ import org.slf4j.LoggerFactory;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class FutureOperation<T> implements Future<T>
+public abstract class FutureOperation<T> implements RiakFuture<T>
 {
     private enum State { CREATED, WRITTEN, COMPLETE, CANCELLED }
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
-    private final List<FutureListener> futureListeners = 
-        Collections.synchronizedList(new LinkedList<FutureListener>());
     private final List<Protocol> protocolPreflist = new LinkedList<>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
@@ -49,36 +44,9 @@ public abstract class FutureOperation<T> implements Future<T>
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;
-    private RiakNode lastNode;
+    private volatile RiakNode lastNode;
     
-    public final void addListener(FutureListener<T> listener)
-    {
-        if (state == State.COMPLETE)
-        {
-            listener.operationComplete(this);
-        }
-        else
-        {
-            futureListeners.add(listener);
-        }
-    }
-
-    public final void removeListener(FutureListener<T> listener)
-    {
-        futureListeners.remove(listener);
-    }
     
-    private void notifyListeners()
-    {
-        synchronized(futureListeners)
-        {
-            for (Iterator<FutureListener> it = futureListeners.iterator(); it.hasNext();)
-            {
-                FutureListener<T> listener = it.next();
-                listener.operationComplete(this);
-            }
-        }
-    }
     
     final synchronized void setRetrier(OperationRetrier retrier, int numRetries)
     {
@@ -119,7 +87,6 @@ public abstract class FutureOperation<T> implements Future<T>
         {
             retrier.operationComplete(this, numRetries);
         }
-        notifyListeners();
     }
 
     synchronized void setException(Throwable t)
@@ -134,10 +101,6 @@ public abstract class FutureOperation<T> implements Future<T>
         else
         {
             numRetries--;
-        }
-        
-        if (retrier != null)
-        {
             retrier.operationFailed(this, numRetries);
         }
     }

@@ -21,9 +21,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -40,7 +38,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RiakCluster implements OperationRetrier, NodeStateListener
 {
-
     private enum State { CREATED, RUNNING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;

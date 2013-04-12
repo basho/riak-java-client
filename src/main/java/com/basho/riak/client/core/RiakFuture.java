@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright 2013 Brian Roach <roach at basho dot com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
  */
 package com.basho.riak.client.core;
 
+import java.util.concurrent.Future;
+
 /**
- *
+ * Currently a placeholder so that we can add/remove functionality from {@code Future<T>}
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class PermitTimeoutException extends Exception
+public interface RiakFuture<T> extends Future<T>
 {
-    private static final long serialVersionUID = -8767473064467510449L;
-    
-    
     
 }
