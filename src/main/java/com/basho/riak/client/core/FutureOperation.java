@@ -36,7 +36,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 {
     private enum State { CREATED, WRITTEN, COMPLETE, CANCELLED }
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
-    private final List<Protocol> protocolPreflist = new LinkedList<>(Arrays.asList(Protocol.values()));
+    private final List<Protocol> protocolPreflist = new LinkedList<Protocol>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int numRetries = 0;

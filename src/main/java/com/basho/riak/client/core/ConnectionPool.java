@@ -130,9 +130,9 @@ public class ConnectionPool implements ChannelFutureListener
             this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
         }
         
-        this.available = new LinkedBlockingDeque<>(builder.maxConnections);
-        this.inUse = new ConcurrentLinkedQueue<>();
-        this.recentlyClosed = new ConcurrentLinkedQueue<>();
+        this.available = new LinkedBlockingDeque<ChannelWithIdleTime>(builder.maxConnections);
+        this.inUse = new ConcurrentLinkedQueue<Channel>();
+        this.recentlyClosed = new ConcurrentLinkedQueue<ChannelWithIdleTime>();
         this.state = State.CREATED;
     }
     
@@ -197,7 +197,7 @@ public class ConnectionPool implements ChannelFutureListener
         stateCheck(State.CREATED);
         if (minConnections > 0)
         {
-            List<Channel> minChannels = new LinkedList<>();
+            List<Channel> minChannels = new LinkedList<Channel>();
             for (int i = 0; i < minConnections; i++)
             {
                 Channel channel = getConnection();

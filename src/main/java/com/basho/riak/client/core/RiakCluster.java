@@ -47,7 +47,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     private final Bootstrap bootstrap;
     private final List<RiakNode> nodes;
     private final LinkedBlockingQueue<FutureOperation> retryQueue =
-        new LinkedBlockingQueue<>();
+        new LinkedBlockingQueue<FutureOperation>();
     
     private ScheduledFuture<?> shutdownFuture;
     private ScheduledFuture<?> retrierFuture;
@@ -278,12 +278,12 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         
         public Builder(List<RiakNode.Builder> riakNodeBuilders)
         {
-            this.riakNodeBuilders = new ArrayList<>(riakNodeBuilders);
+            this.riakNodeBuilders = new ArrayList<RiakNode.Builder>(riakNodeBuilders);
         }
         
         public Builder(RiakNode.Builder node)
         {
-            this.riakNodeBuilders = new ArrayList<>(1);
+            this.riakNodeBuilders = new ArrayList<RiakNode.Builder>(1);
             this.riakNodeBuilders.add(node);
         }
         

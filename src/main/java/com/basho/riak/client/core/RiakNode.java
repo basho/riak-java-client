@@ -50,7 +50,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     
     private final Logger logger = LoggerFactory.getLogger(RiakNode.class);
     private final EnumMap<Protocol, ConnectionPool> connectionPoolMap =
-        new EnumMap<>(Protocol.class);
+        new EnumMap<Protocol, ConnectionPool>(Protocol.class);
     private final String remoteAddress;
     private final ScheduledExecutorService executor; 
     private final boolean ownsExecutor;
@@ -61,7 +61,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     
     private volatile State state;
     private Map<Integer, InProgressOperation> inProgressMap = 
-        new ConcurrentHashMap<>();
+        new ConcurrentHashMap<Integer, InProgressOperation>();
     
     // TODO: Harden to prevent operation from being executed > 1 times?
     // TODO: how many channels on one event loop? 
@@ -353,7 +353,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         private Bootstrap bootstrap;
         private boolean ownsBootstrap;
         private final EnumMap<Protocol, ConnectionPool.Builder> protocolMap = 
-            new EnumMap<>(Protocol.class);
+            new EnumMap<Protocol, ConnectionPool.Builder>(Protocol.class);
         
         
         public Builder(Protocol p)
@@ -551,7 +551,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses) 
             throws UnknownHostException
         {
-            List<RiakNode> nodes = new ArrayList<>(remoteAddresses.size());
+            List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.size());
             for (String remoteAddress : remoteAddresses)
             {
                 builder.withRemoteAddress(remoteAddress);
@@ -562,7 +562,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         
         public static List<RiakNode.Builder> createBuilderList(Builder builder, List<String> remoteAddresses)
         {
-            List<RiakNode.Builder> builders = new ArrayList<>(remoteAddresses.size());
+            List<RiakNode.Builder> builders = new ArrayList<RiakNode.Builder>(remoteAddresses.size());
             for (String remoteAddress : remoteAddresses)
             {
                 Builder b = Builder.from(builder);

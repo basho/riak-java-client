@@ -33,7 +33,7 @@ public class RiakHttpMessage implements RiakResponse
     public RiakHttpMessage(HttpResponse response)
     {
         this.response = response;
-        contentList = new LinkedList<>();
+        contentList = new LinkedList<HttpContent>();
     }
     
     public HttpResponse getResponse()
