@@ -21,8 +21,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import java.net.UnknownHostException;
 import java.util.Deque;
-import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import static org.junit.Assert.assertEquals;
@@ -74,18 +72,22 @@ public class ConnectionPoolTest
         final int READ_TIMEOUT = 2005;
         final String REMOTE_ADDRESS = "localhost";
         final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
+        final Bootstrap BOOTSTRAP = PowerMockito.spy(new Bootstrap());
         
-        ConnectionPool.Builder builder = new ConnectionPool.Builder(Protocol.PB);
-        builder.withIdleTimeout(IDLE_TIMEOUT);
-        builder.withConnectionTimeout(CONNECTION_TIMEOUT);
-        builder.withMinConnections(MIN_CONNECTIONS);
-        builder.withMaxConnections(MAX_CONNECTIONS);
-        builder.withPort(PORT);
-        builder.withReadTimeout(READ_TIMEOUT);
-        builder.withRemoteAddress(REMOTE_ADDRESS);
-        builder.withExecutor(EXECUTOR);
+        doReturn(BOOTSTRAP).when(BOOTSTRAP).clone();
         
-        ConnectionPool pool = builder.build();
+        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+                                    .withIdleTimeout(IDLE_TIMEOUT)
+                                    .withConnectionTimeout(CONNECTION_TIMEOUT)
+                                    .withMinConnections(MIN_CONNECTIONS)
+                                    .withMaxConnections(MAX_CONNECTIONS)
+                                    .withPort(PORT)
+                                    .withReadTimeout(READ_TIMEOUT)
+                                    .withRemoteAddress(REMOTE_ADDRESS)
+                                    .withExecutor(EXECUTOR)
+                                    .withBootstrap(BOOTSTRAP)
+                                    .build();
+        
         assertEquals(pool.getProtocol(), Protocol.PB);
         assertEquals(pool.getPoolState(), State.CREATED);
         assertEquals(pool.getMaxConnections(), MAX_CONNECTIONS);
@@ -95,6 +97,7 @@ public class ConnectionPoolTest
         assertEquals(pool.getRemoteAddress(), REMOTE_ADDRESS);
         assertEquals(pool.getReadTimeout(), READ_TIMEOUT);
         assertEquals(pool.getExecutor(), EXECUTOR);
+        assertEquals(pool.getBootstrap(), BOOTSTRAP);
         assertEquals(pool.availablePermits(), MAX_CONNECTIONS);
     }
     
