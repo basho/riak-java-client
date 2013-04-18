@@ -63,7 +63,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     }
 
     @Override
-    public void executeOnNode(FutureOperation operation)
+    public void executeOnNode(FutureOperation operation, RiakNode previousNode)
     {
         try
         {

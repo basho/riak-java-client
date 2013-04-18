@@ -147,7 +147,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     // TODO: Streaming also
     private void execute(FutureOperation operation, RiakNode previousNode) 
     {
-        nodeManager.executeOnNode(operation);
+        nodeManager.executeOnNode(operation, previousNode);
     }
     
     public synchronized RiakNode addNode(RiakNode.Builder builder) throws UnknownHostException

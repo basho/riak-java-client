@@ -103,7 +103,7 @@ public class RiakClusterTest
         Whitebox.setInternalState(cluster, "state", RiakCluster.State.RUNNING);
         cluster.execute(operation);
         assertEquals(1, cluster.inFlightCount());
-        verify(nodeManager).executeOnNode(operation);
+        verify(nodeManager).executeOnNode(operation, null);
         cluster.operationComplete(operation, 2);
         assertEquals(0, cluster.inFlightCount());
         

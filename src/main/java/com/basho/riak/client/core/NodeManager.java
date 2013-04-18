@@ -25,7 +25,7 @@ import java.util.List;
 public interface NodeManager extends NodeStateListener
 {
     void init(List<RiakNode> nodes);
-    void executeOnNode(FutureOperation operation);
+    void executeOnNode(FutureOperation operation, RiakNode previousNode);
     void addNode(RiakNode newNode);
     boolean removeNode(RiakNode node);
 }
