@@ -130,7 +130,7 @@ public class ConnectionPool implements ChannelFutureListener
             this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
         }
         
-        this.available = new LinkedBlockingDeque<ChannelWithIdleTime>(builder.maxConnections);
+        this.available = new LinkedBlockingDeque<ChannelWithIdleTime>();
         this.inUse = new ConcurrentLinkedQueue<Channel>();
         this.recentlyClosed = new ConcurrentLinkedQueue<ChannelWithIdleTime>();
         this.state = State.CREATED;
@@ -153,9 +153,9 @@ public class ConnectionPool implements ChannelFutureListener
         stateListeners.add(listener);
     }
     
-    public void removeStateListener(PoolStateListener listener)
+    public boolean removeStateListener(PoolStateListener listener)
     {
-        stateListeners.remove(listener);
+        return stateListeners.remove(listener);
     }
     
     private void notifyStateListeners()
@@ -200,16 +200,21 @@ public class ConnectionPool implements ChannelFutureListener
             List<Channel> minChannels = new LinkedList<Channel>();
             for (int i = 0; i < minConnections; i++)
             {
-                Channel channel = getConnection();
-                if (channel != null)
+                Channel channel = null;
+                try
                 {
+                    channel = doGetConnection();
                     minChannels.add(channel);
+                }
+                catch (ConnectionFailedException ex)
+                {
+                    // no-op, we don't care right now
                 }
             }
             
             for (Channel c : minChannels)
             {
-                returnConnection(c);
+                available.offerFirst(new ChannelWithIdleTime(c));
             }
         }
         
@@ -263,6 +268,7 @@ public class ConnectionPool implements ChannelFutureListener
             try
             {
                 channel = doGetConnection();
+                inUse.add(channel);
             }
             catch (ConnectionFailedException ex)
             {
@@ -297,7 +303,7 @@ public class ConnectionPool implements ChannelFutureListener
             if (!f.isSuccess())
             {
                 logger.error("Connection attempt failed: {}:{}; {}", 
-                             remoteAddress, port, f.cause().toString());
+                             remoteAddress, port, f.cause());
                 throw new ConnectionFailedException(f.cause());
             }
 
@@ -316,7 +322,6 @@ public class ConnectionPool implements ChannelFutureListener
             }
         }
 
-        inUse.add(channel);
         return channel;
     }
     
@@ -369,7 +374,7 @@ public class ConnectionPool implements ChannelFutureListener
      */
     public int availablePermits()
     {
-        stateCheck(State.RUNNING, State.HEALTH_CHECKING);
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
         return permits.availablePermits();
     }
     
@@ -392,7 +397,14 @@ public class ConnectionPool implements ChannelFutureListener
     public void setMinConnections(int minConnections)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        this.minConnections = minConnections;
+        if (minConnections <= getMaxConnections())
+        {
+            this.minConnections = minConnections;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Min connections greater than max connections");
+        }
         // TODO: Start / reap delta?
     }
 
@@ -414,7 +426,14 @@ public class ConnectionPool implements ChannelFutureListener
     public void setMaxConnections(int maxConnections)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        permits.setMaxPermits(maxConnections);
+        if (maxConnections >= getMinConnections())
+        {
+            permits.setMaxPermits(maxConnections);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Max connections less than min connections");
+        }
         // TODO: reap delta? 
     }
 
@@ -503,6 +522,25 @@ public class ConnectionPool implements ChannelFutureListener
         return this.protocol;
     }
     
+    /**
+     * Returns the remote address this pool is connecting to.
+     * @return The remote address, either an IP or a FQDN
+     */
+    public String getRemoteAddress()
+    {
+        return this.remoteAddress;
+    }
+    
+    ScheduledExecutorService getExecutor()
+    {
+        return this.executor;
+    }
+    
+    Bootstrap getBootstrap()
+    {
+        return this.bootstrap;
+    }
+    
     private class ChannelWithIdleTime
     {
         private Channel channel;
@@ -525,44 +563,104 @@ public class ConnectionPool implements ChannelFutureListener
         }
     }
     
+    private void reapIdleConnections()
+    {
+        // with all the concurrency there's really no reason to keep 
+        // checking the sizes. This is really just a "best guess"
+        int currentNum = inUse.size() + available.size();
+        if (currentNum > minConnections)
+        {
+            // Note this will not throw a ConncurrentModificationException
+            // and if hasNext() returns true you are guaranteed that
+            // the next() will return a value (even if it has already
+            // been removed from the Deque between those calls). 
+            Iterator<ChannelWithIdleTime> i = available.descendingIterator();
+            while(i.hasNext() && currentNum > minConnections)
+            {
+                ChannelWithIdleTime cwi = i.next();
+                if (cwi.getIdleStart() + idleTimeoutInNanos < System.nanoTime())
+                {
+                    boolean removed = available.remove(cwi);
+                    if (removed)
+                    {
+                        Channel c = cwi.getChannel();
+                        closeConnection(c);
+                        currentNum--;
+                        logger.debug("Idle channel closed; {} {}", remoteAddress, protocol );
+                    }
+                }
+                else 
+                {
+                    // Since we are descending and this is a LIFO, 
+                    // if the current connection hasn't been idle beyond 
+                    // the threshold, there's no reason to descend further
+                    break;
+                }
+            }
+        }
+    }
+    
+    // TODO: Magic numbers; probably should be configurable and less magic
+    private void checkHealth()
+    {
+        if (state == State.RUNNING || state == State.HEALTH_CHECKING)
+        {
+            if (recentlyClosed.size() > 4 || state == State.HEALTH_CHECKING)
+            {
+                try
+                {
+                    // purge recentlyClosed past a certain age
+                    // sliding window should be larger than the
+                    // frequency of this task
+                    long current = System.nanoTime();
+                    long window = 3000000000L; // 3 seconds 
+                    for (ChannelWithIdleTime cwi = recentlyClosed.peek(); 
+                         cwi != null && current - cwi.getIdleStart() > window;
+                         cwi = recentlyClosed.peek())
+                    {
+                        recentlyClosed.poll();
+                    }
+
+                    // See: doGetConnection() - this will purge closed
+                    // connections from the available queue and either 
+                    // return/create a new one (meaning the node is up) or throw
+                    // an exception if a connection can't be made.
+                    Channel c = doGetConnection();
+                    closeConnection(c);
+                    if (state == State.HEALTH_CHECKING)
+                    {
+                        logger.info("ConnectionPool recovered; {} {}", remoteAddress, protocol);
+                        state = State.RUNNING;
+                        notifyStateListeners();
+                    }
+
+                }
+                catch (ConnectionFailedException ex)
+                {
+                    if (state == State.RUNNING)
+                    {
+                        logger.error("ConnectionPool health checking; {} {} {}", 
+                                     remoteAddress, protocol, ex);
+                        state = State.HEALTH_CHECKING;
+                        notifyStateListeners();
+                    }
+                    else
+                    {
+                        logger.error("ConnectionPool failed health check; {} {} {}", 
+                                     remoteAddress, protocol, ex);
+                    }
+                }
+
+            }
+        }
+    }
+    
     private class IdleReaper implements Runnable
     {
         @Override
         public void run()
         {
-            // with all the concurrency there's really no reason to keep 
-            // checking the sizes. This is really just a "best guess"
-            int currentNum = inUse.size() + available.size();
-            if (currentNum > minConnections)
-            {
-                // Note this will not throw a ConncurrentModificationException
-                // and if hasNext() returns true you are guaranteed that
-                // the next() will return a value (even if it has already
-                // been removed from the Deque between those calls). 
-                Iterator<ChannelWithIdleTime> i = available.descendingIterator();
-                while(i.hasNext() && currentNum > minConnections)
-                {
-                    ChannelWithIdleTime cwi = i.next();
-                    if (cwi.getIdleStart() + idleTimeoutInNanos < System.nanoTime())
-                    {
-                        boolean removed = available.remove(cwi);
-                        if (removed)
-                        {
-                            Channel c = cwi.getChannel();
-                            closeConnection(c);
-                            currentNum--;
-                            logger.debug("Idle channel closed; {} {}", remoteAddress, protocol );
-                        }
-                    }
-                    else 
-                    {
-                        // Since we are descending and this is a LIFO, 
-                        // if the current connection hasn't been idle beyond 
-                        // the threshold, there's no reason to descend further
-                        break;
-                    }
-                }
-            }
+            reapIdleConnections();
         }
     }
     
@@ -588,63 +686,12 @@ public class ConnectionPool implements ChannelFutureListener
         }
     }
     
-    // TODO: Magic numbers; probably should be configurable and less magic
     private class HealthMonitorTask implements Runnable
     {
         @Override
         public void run()
         {
-            if (state == State.RUNNING || state == State.HEALTH_CHECKING)
-            {
-                if (recentlyClosed.size() > 5 || state == State.HEALTH_CHECKING)
-                {
-                    try
-                    {
-                        // purge recentlyClosed past a certain age
-                        // sliding window should be larger than the
-                        // frequency of this task
-                        long current = System.nanoTime();
-                        long window = 3000000000L; // 3 seconds 
-                        for (ChannelWithIdleTime cwi = recentlyClosed.peek(); 
-                             cwi != null && current - cwi.getIdleStart() > window;
-                             cwi = recentlyClosed.peek())
-                        {
-                            recentlyClosed.poll();
-                        }
-                        
-                        // See: doGetConnection() - this will purge closed
-                        // connections from the available queue and either 
-                        // return/create a new one (meaning the node is up) or throw
-                        // an exception if a connection can't be made.
-                        Channel c = doGetConnection();
-                        inUse.remove(c);
-                        closeConnection(c);
-                        if (state == State.HEALTH_CHECKING)
-                        {
-                            logger.info("ConnectionPool recovered; {} {}", remoteAddress, protocol);
-                            state = State.RUNNING;
-                            notifyStateListeners();
-                        }
-                        
-                    }
-                    catch (ConnectionFailedException ex)
-                    {
-                        if (state == State.RUNNING)
-                        {
-                            logger.error("ConnectionPool health checking; {} {} {}", 
-                                         remoteAddress, protocol, ex);
-                            state = State.HEALTH_CHECKING;
-                            notifyStateListeners();
-                        }
-                        else
-                        {
-                            logger.error("ConnectionPool failed health check; {} {} {}", 
-                                         remoteAddress, protocol, ex);
-                        }
-                    }
-                    
-                }
-            }
+            checkHealth();
         }
     }
     
@@ -736,7 +783,14 @@ public class ConnectionPool implements ChannelFutureListener
          */
         public Builder withMinConnections(int minConnections)
         {
-            this.minConnections = minConnections;
+            if (maxConnections == DEFAULT_MAX_CONNECTIONS || minConnections <= maxConnections)
+            {
+                this.minConnections = minConnections;
+            }
+            else
+            {
+                throw new IllegalArgumentException("Min connections greater than max connections");
+            }
             return this;
         }
         
@@ -749,7 +803,14 @@ public class ConnectionPool implements ChannelFutureListener
          */
         public Builder withMaxConnections(int maxConnections)
         {
-            this.maxConnections = maxConnections;
+            if (maxConnections >= minConnections)
+            {
+                this.maxConnections = maxConnections;
+            }
+            else
+            {
+                throw new IllegalArgumentException("Max connections less than min connections");
+            }
             return this;
         }
         

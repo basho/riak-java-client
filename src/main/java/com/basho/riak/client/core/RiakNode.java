@@ -200,6 +200,8 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     
     private Protocol chooseProtocol(FutureOperation operation)
     {
+        // I seriously have no idea why this is unchecked
+        @SuppressWarnings("unchecked") 
         List<Protocol> prefList = operation.getProtocolPreflist();
         Protocol protoToUse = null;
         for (Protocol p : prefList)
