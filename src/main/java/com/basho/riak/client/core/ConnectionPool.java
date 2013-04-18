@@ -519,7 +519,16 @@ public class ConnectionPool implements ChannelFutureListener
      */
     public Protocol getProtocol()
     {
-        return this.protocol;
+        return protocol;
+    }
+    
+    /**
+     * returns the port for this pool
+     * @return the port number
+     */
+    public int getPort()
+    {
+        return port;
     }
     
     /**

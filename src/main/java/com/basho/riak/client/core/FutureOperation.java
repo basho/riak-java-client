@@ -70,7 +70,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         return Collections.unmodifiableList(protocolPreflist);
     }
 
-    protected final synchronized void supportedProtocol(Protocol... protocols)
+    protected final synchronized void supportedProtocols(Protocol... protocols)
     {
         stateCheck(State.CREATED);
         protocolPreflist.clear();

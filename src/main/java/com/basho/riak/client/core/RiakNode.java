@@ -95,7 +95,11 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         
         for (Map.Entry<Protocol, ConnectionPool.Builder> e : builder.protocolMap.entrySet())
         {
-            ConnectionPool cp = e.getValue().withExecutor(executor).withBootstrap(bootstrap).build();
+            ConnectionPool cp = e.getValue()
+                                .withRemoteAddress(remoteAddress)
+                                .withExecutor(executor)
+                                .withBootstrap(bootstrap)
+                                .build();
             connectionPoolMap.put(e.getKey(), cp);
         }
         this.state = State.CREATED;
@@ -142,9 +146,9 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         stateListeners.add(listener);
     }
     
-    public void removeStateListener(NodeStateListener listener)
+    public boolean removeStateListener(NodeStateListener listener)
     {
-        stateListeners.remove(listener);
+        return stateListeners.remove(listener);
     }
     
     private void notifyStateListeners()
@@ -471,20 +475,6 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         {
             ConnectionPool.Builder builder = getPoolBuilder(p);
             builder.withReadTimeout(readTimeoutInMillis);
-            return this;
-        }
-        
-        /**
-         * Specifies the permit timeout for the specific protocol
-         * @param p
-         * @param permitTimeoutInMillis
-         * @return this
-         * @see {@link ConnectionPool.Builder#withPermitTimeout(int) 
-         */
-        public Builder withPermitTimeout(Protocol p, int permitTimeoutInMillis)
-        {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withReadTimeout(permitTimeoutInMillis);
             return this;
         }
         
