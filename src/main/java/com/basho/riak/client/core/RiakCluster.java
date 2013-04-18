@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RiakCluster implements OperationRetrier, NodeStateListener
 {
-    private enum State { CREATED, RUNNING, SHUTTING_DOWN, SHUTDOWN }
+    enum State { CREATED, RUNNING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;
     private final NodeManager nodeManager;
@@ -174,6 +174,16 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         return nodeManager.removeNode(node);
     }
     
+    public List<RiakNode> getNodes()
+    {
+        stateCheck(State.CREATED, State.RUNNING);
+        return Collections.unmodifiableList(nodes);
+    }
+    
+    int inFlightCount()
+    {
+        return inFlightCount.get();
+    }
     
     @Override
     public void nodeStateChanged(RiakNode node, RiakNode.State state)
@@ -183,6 +193,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         if (state == RiakNode.State.SHUTDOWN)
         {
             nodes.remove(node);
+            nodeManager.removeNode(node);
             
             if (nodes.isEmpty())
             {
@@ -219,6 +230,12 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         logger.debug("operation complete; remaining retries: {}", remainingRetries);
     }
 
+    private void retryOperation() throws InterruptedException
+    {
+        FutureOperation operation = retryQueue.take();
+        execute(operation, operation.getLastNode());
+    }
+    
     private class RetryTask implements Runnable
     {
         @Override
@@ -226,17 +243,14 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         {
             while (!Thread.interrupted())
             {
-                FutureOperation operation;
                 try
                 {
-                    operation = retryQueue.take();
+                    retryOperation();
                 }
                 catch (InterruptedException ex)
                 {
                     break;
                 }
-                
-                execute(operation, operation.getLastNode());
             }
             
             logger.info("Retrier shutting down.");
@@ -257,8 +271,8 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
                 {
                     node.addStateListener(RiakCluster.this);
                     node.shutdown();
-                    shutdownFuture.cancel(false);
                 }
+                shutdownFuture.cancel(false);
             }
         }
         
