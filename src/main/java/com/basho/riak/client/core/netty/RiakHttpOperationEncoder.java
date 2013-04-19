@@ -15,8 +15,8 @@
  */
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.Protocol;
 import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.Protocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 

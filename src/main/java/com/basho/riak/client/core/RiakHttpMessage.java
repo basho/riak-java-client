@@ -25,7 +25,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakHttpMessage implements RiakResponse
+public final class RiakHttpMessage implements RiakResponse
 {
     private final HttpResponse response;
     private final List<HttpContent> contentList;
