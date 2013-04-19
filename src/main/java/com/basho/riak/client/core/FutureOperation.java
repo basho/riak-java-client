@@ -72,7 +72,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
     protected final synchronized void supportedProtocols(Protocol... protocols)
     {
-        stateCheck(State.CREATED, State.RETRY);
+        stateCheck(State.CREATED);
         protocolPreflist.clear();
         protocolPreflist.addAll(Arrays.asList(protocols));
     }
