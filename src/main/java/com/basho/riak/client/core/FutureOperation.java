@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FutureOperation<T> implements RiakFuture<T>
 {
-    private enum State { CREATED, WRITTEN, COMPLETE, CANCELLED }
+    private enum State { CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED }
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
     private final List<Protocol> protocolPreflist = new LinkedList<Protocol>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
@@ -72,7 +72,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
     protected final synchronized void supportedProtocols(Protocol... protocols)
     {
-        stateCheck(State.CREATED);
+        stateCheck(State.CREATED, State.RETRY);
         protocolPreflist.clear();
         protocolPreflist.addAll(Arrays.asList(protocols));
     }
@@ -92,22 +92,28 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     synchronized void setException(Throwable t)
     {
         this.exception = t;
-        state = State.COMPLETE;
         
         if (numRetries == 0)
         {
+            state = State.COMPLETE;
             latch.countDown();
         }
         else
         {
             numRetries--;
+            state = State.RETRY;
+        }
+        
+        if (retrier != null)
+        {
             retrier.operationFailed(this, numRetries);
         }
+        
     }
 
     public synchronized final Object channelMessage(Protocol p)
     {
-        stateCheck(State.CREATED, State.COMPLETE);
+        stateCheck(State.CREATED, State.RETRY);
         Object message = createChannelMessage(p);
         state = State.WRITTEN;
         return message;
@@ -134,7 +140,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     @Override
     public final T get() throws InterruptedException, ExecutionException
     {
-        stateCheck(State.WRITTEN, State.COMPLETE);
+        stateCheck(State.WRITTEN, State.RETRY, State.COMPLETE);
         latch.await();
         
         if (exception != null)
@@ -153,7 +159,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     @Override
     public final T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
-        stateCheck(State.WRITTEN, State.COMPLETE);
+        stateCheck(State.WRITTEN, State.RETRY, State.COMPLETE);
         boolean succeed = latch.await(timeout, unit);
         
         if (!succeed)

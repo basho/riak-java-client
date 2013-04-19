@@ -60,7 +60,7 @@ public class DefaultNodeManagerTest
         nodeManager.init(mockNodes);
         
         List<RiakNode> nodes = Whitebox.getInternalState(nodeManager, "healthy");
-        assertEquals(5, nodes.size());
+        assertEquals(mockNodes.size(), nodes.size());
     }
     
     @Test
@@ -86,6 +86,10 @@ public class DefaultNodeManagerTest
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         nodeManager.executeOnNode(operation, null);
+        for (int i = 0; i < mockNodes.size(); i++)
+        {
+            verify(mockNodes.get(i)).execute(operation);
+        }
         verify(operation).setException(argThat(new IsException()));
     }
     
@@ -103,7 +107,7 @@ public class DefaultNodeManagerTest
     }
     
     @Test
-    public void restoreHealthNode()
+    public void restoreHealthyNode()
     {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);

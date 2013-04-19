@@ -135,6 +135,7 @@ public class RiakNodeTest
         assertTrue(removed);
     }
     
+    @Test
     public void nodeNotifiesListeners() throws UnknownHostException, Exception
     {
         RiakNode node = new RiakNode.Builder(Protocol.PB).build();
