@@ -30,7 +30,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<Object>
 {
-        private final RiakResponseListener listener;
+    private final RiakResponseListener listener;
     private RiakHttpMessage message;
     
     public RiakHttpMessageHandler(RiakResponseListener listener)
@@ -40,8 +40,8 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        listener.onException(ctx.channel(), cause);
         ctx.channel().pipeline().remove(this);
+        listener.onException(ctx.channel(), cause);
     }
     
     @Override

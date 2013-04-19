@@ -25,9 +25,9 @@ public final class RiakPbMessage implements RiakResponse
     private final byte code;
     private final byte[] data;
     
-    public RiakPbMessage(int code, byte[] data)
+    public RiakPbMessage(byte code, byte[] data)
     {
-        this.code = (byte) code;
+        this.code = code;
         this.data = data;
     }
     
