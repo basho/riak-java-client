@@ -220,7 +220,7 @@ public class ConnectionPool implements ChannelFutureListener
             }
         }
         
-        idleReaperFuture = executor.scheduleWithFixedDelay(new IdleReaper(), 5, 15, TimeUnit.SECONDS);
+        idleReaperFuture = executor.scheduleWithFixedDelay(new IdleReaper(), 1, 5, TimeUnit.SECONDS);
         healthMonitorFuture = executor.scheduleWithFixedDelay(new HealthMonitorTask(), 1000, 500, TimeUnit.MILLISECONDS);
         state = State.RUNNING;
         logger.info("ConnectionPool started; {} {}", remoteAddress, protocol);

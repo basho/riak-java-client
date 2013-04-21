@@ -16,9 +16,15 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
+import io.netty.channel.Channel;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.reflect.Whitebox;
 
 
 /**
@@ -40,6 +46,38 @@ public class ConnectionPoolFixtureTest extends FixtureTest
         pool.shutdown();
         
         PowerMockito.verifyPrivate(pool).invoke("checkHealth", new Object[0]);
+        
+    }
+    
+    @Test
+    public void idleConnectionsAreRemoved() throws UnknownHostException, InterruptedException
+    {
+        ConnectionPool pool = PowerMockito.spy(new ConnectionPool.Builder(Protocol.HTTP)
+                               .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                               .withMinConnections(10)
+                               .withIdleTimeout(1000)
+                               .build());
+        
+        pool.start();
+        List<Channel> channelList = new LinkedList<Channel>();
+        for (int i = 0; i < 12; i++)
+        {
+            channelList.add(pool.getConnection());
+        }
+        
+        for (Channel c : channelList)
+        {
+            pool.returnConnection(c);
+        }
+        
+        LinkedBlockingDeque<?> available = Whitebox.getInternalState(pool, "available");
+        assertEquals(available.size(), 12);
+        
+        Thread.sleep(10000);
+        
+        assertEquals(available.size(), 10);
+        
+        pool.shutdown();
         
     }
     
