@@ -30,11 +30,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -233,7 +235,7 @@ public class ConnectionPool implements ChannelFutureListener
      * {@link Builder} when constructing the pool they will *not* be shut down
      * in this call. 
      */
-    public synchronized void shutdown()
+    public synchronized void shutdown() 
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         state = State.SHUTTING_DOWN;
@@ -612,56 +614,57 @@ public class ConnectionPool implements ChannelFutureListener
     // TODO: Magic numbers; probably should be configurable and less magic
     private void checkHealth()
     {
-        if (state == State.RUNNING || state == State.HEALTH_CHECKING)
+        try
         {
-            if (recentlyClosed.size() > 4 || state == State.HEALTH_CHECKING)
+            // purge recentlyClosed past a certain age
+            // sliding window should be larger than the
+            // frequency of this task
+            long current = System.nanoTime();
+            long window = 3000000000L; // 3 seconds 
+            for (ChannelWithIdleTime cwi = recentlyClosed.peek(); 
+                 cwi != null && current - cwi.getIdleStart() > window;
+                 cwi = recentlyClosed.peek())
             {
-                try
-                {
-                    // purge recentlyClosed past a certain age
-                    // sliding window should be larger than the
-                    // frequency of this task
-                    long current = System.nanoTime();
-                    long window = 3000000000L; // 3 seconds 
-                    for (ChannelWithIdleTime cwi = recentlyClosed.peek(); 
-                         cwi != null && current - cwi.getIdleStart() > window;
-                         cwi = recentlyClosed.peek())
-                    {
-                        recentlyClosed.poll();
-                    }
+                recentlyClosed.poll();
+            }
 
-                    // See: doGetConnection() - this will purge closed
-                    // connections from the available queue and either 
-                    // return/create a new one (meaning the node is up) or throw
-                    // an exception if a connection can't be made.
-                    Channel c = doGetConnection();
-                    closeConnection(c);
-                    if (state == State.HEALTH_CHECKING)
-                    {
-                        logger.info("ConnectionPool recovered; {} {}", remoteAddress, protocol);
-                        state = State.RUNNING;
-                        notifyStateListeners();
-                    }
+            // See: doGetConnection() - this will purge closed
+            // connections from the available queue and either 
+            // return/create a new one (meaning the node is up) or throw
+            // an exception if a connection can't be made.
+            Channel c = doGetConnection();
+            closeConnection(c);
+            
+            if (state == State.HEALTH_CHECKING)
+            {
+                logger.info("ConnectionPool recovered; {} {}", remoteAddress, protocol);
+                state = State.RUNNING;
+                notifyStateListeners();
+            }
 
-                }
-                catch (ConnectionFailedException ex)
-                {
-                    if (state == State.RUNNING)
-                    {
-                        logger.error("ConnectionPool health checking; {} {} {}", 
-                                     remoteAddress, protocol, ex);
-                        state = State.HEALTH_CHECKING;
-                        notifyStateListeners();
-                    }
-                    else
-                    {
-                        logger.error("ConnectionPool failed health check; {} {} {}", 
-                                     remoteAddress, protocol, ex);
-                    }
-                }
-
+        }
+        catch (ConnectionFailedException ex)
+        {
+            if (state == State.RUNNING)
+            {
+                logger.error("ConnectionPool health checking; {} {} {}", 
+                             remoteAddress, protocol, ex);
+                state = State.HEALTH_CHECKING;
+                notifyStateListeners();
+            }
+            else
+            {
+                logger.error("ConnectionPool failed health check; {} {} {}", 
+                             remoteAddress, protocol, ex);
             }
         }
+        catch(IllegalStateException e)
+        {
+            // no-op; there's a race condition where the bootstrap is shutting down
+            // right when a healthcheck occurs and netty will throw this
+        }
+                
+            
     }
     
     private class IdleReaper implements Runnable
@@ -683,24 +686,30 @@ public class ConnectionPool implements ChannelFutureListener
                 logger.debug("ConnectionPool shutting down {} {}", remoteAddress, protocol);
                 state = State.SHUTDOWN;
                 notifyStateListeners();
-                if (ownsBootstrap)
-                {
-                    bootstrap.shutdown();
-                }
                 if (ownsExecutor)
                 {
                     executor.shutdown();
                 }
+                if (ownsBootstrap)
+                {
+                    bootstrap.shutdown();
+                }
+                
             }
         }
     }
     
+    // TODO: Magic numbers; probably should be configurable and less magic
     private class HealthMonitorTask implements Runnable
     {
         @Override
         public void run()
         {
-            checkHealth();
+            if ( (state == State.RUNNING || state == State.HEALTH_CHECKING) &&
+                 (recentlyClosed.size() > 4 || state == State.HEALTH_CHECKING))
+            {
+                checkHealth();
+            }
         }
     }
     

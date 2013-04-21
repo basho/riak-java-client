@@ -113,5 +113,10 @@
             <version>1.7.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.basho.riak.protobuf</groupId>
+            <artifactId>riak-pb</artifactId>
+            <version>1.2.1</version>
+        </dependency>
     </dependencies>
 </project>
