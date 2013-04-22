@@ -15,15 +15,21 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.ConnectionPool.State;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import io.netty.channel.Channel;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import static org.mockito.Mockito.*;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 
@@ -31,6 +37,8 @@ import org.powermock.reflect.Whitebox;
  *
  * @author Brian Roach <roach at basho dot com>
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(ConnectionPool.class)
 public class ConnectionPoolFixtureTest extends FixtureTest
 {
     
@@ -45,18 +53,18 @@ public class ConnectionPoolFixtureTest extends FixtureTest
         Thread.sleep(3000);
         pool.shutdown();
         
-        PowerMockito.verifyPrivate(pool).invoke("checkHealth", new Object[0]);
+        PowerMockito.verifyPrivate(pool, atLeastOnce()).invoke("checkHealth", new Object[0]);
         
     }
     
     @Test
     public void idleConnectionsAreRemoved() throws UnknownHostException, InterruptedException
     {
-        ConnectionPool pool = PowerMockito.spy(new ConnectionPool.Builder(Protocol.HTTP)
+        ConnectionPool pool = new ConnectionPool.Builder(Protocol.HTTP)
                                .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                                .withMinConnections(10)
                                .withIdleTimeout(1000)
-                               .build());
+                               .build();
         
         pool.start();
         List<Channel> channelList = new LinkedList<Channel>();
@@ -79,6 +87,37 @@ public class ConnectionPoolFixtureTest extends FixtureTest
         
         pool.shutdown();
         
+    }
+    
+    @Test
+    public void nodeGoingDown() throws UnknownHostException, IOException, InterruptedException
+    {
+        ConnectionPool pool = new ConnectionPool.Builder(Protocol.HTTP)
+                               .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                               .withMinConnections(10)
+                               .withIdleTimeout(1000)
+                               .build();
+        
+        PoolStateListener mockListener = mock(PoolStateListener.class);
+        pool.start();
+        pool.addStateListener(mockListener);
+        
+        try
+        {   
+            fixture.shutdown();
+        
+            Thread.sleep(2000);
+
+            verify(mockListener).poolStateChanged(pool, ConnectionPool.State.HEALTH_CHECKING);
+            assertEquals(pool.getPoolState(), State.HEALTH_CHECKING);
+
+            pool.shutdown();
+        }
+        finally
+        {
+            fixture = new NetworkTestFixture();
+            new Thread(fixture).start();
+        }
     }
     
 }

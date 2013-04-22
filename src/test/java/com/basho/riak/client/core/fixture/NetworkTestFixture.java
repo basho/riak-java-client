@@ -210,8 +210,18 @@ public class NetworkTestFixture implements Runnable
         }
     }
     
-    public void shutdown() throws IOException
+    public synchronized void shutdown() throws IOException
     {
-        selector.close();
+        if (selector.isOpen())
+        {      
+            for (Iterator<SelectionKey> i = selector.keys().iterator(); i.hasNext();)
+            {
+                SelectionKey key = i.next(); 
+                key.cancel();
+                key.channel().close();
+            }
+
+            selector.close();
+        }
     }
 }
