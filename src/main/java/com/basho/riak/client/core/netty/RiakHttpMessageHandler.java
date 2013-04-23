@@ -71,8 +71,9 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
                 int index = 0;
                 for (ByteBuf buffer : chunks)
                 {
-                    buffer.readBytes(bytes, index, buffer.readableBytes());
-                    index += buffer.readableBytes();
+                    int readable = buffer.readableBytes();
+                    buffer.readBytes(bytes, index, readable);
+                    index += readable;
                     buffer.release();
                 }
                 
