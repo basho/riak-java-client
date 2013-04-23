@@ -47,7 +47,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private volatile RiakNode lastNode;
     
     
-    
     final synchronized void setRetrier(OperationRetrier retrier, int numRetries)
     {
         stateCheck(State.CREATED);
@@ -140,7 +139,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     @Override
     public final T get() throws InterruptedException, ExecutionException
     {
-        stateCheck(State.WRITTEN, State.RETRY, State.COMPLETE);
         latch.await();
         
         if (exception != null)
@@ -159,7 +157,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     @Override
     public final T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
-        stateCheck(State.WRITTEN, State.RETRY, State.COMPLETE);
         boolean succeed = latch.await(timeout, unit);
         
         if (!succeed)
@@ -195,7 +192,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     
     abstract protected T convert(RiakResponse rawResponse);
     abstract protected Object createChannelMessage(Protocol p);
-    
     
     
 }

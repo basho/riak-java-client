@@ -15,10 +15,8 @@
  */
 package com.basho.riak.client.core;
 
-import io.netty.handler.codec.http.HttpContent;
+import com.basho.riak.client.core.converters.RiakResponseConverter;
 import io.netty.handler.codec.http.HttpResponse;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  *
@@ -28,12 +26,11 @@ import java.util.List;
 public final class RiakHttpMessage implements RiakResponse
 {
     private final HttpResponse response;
-    private final List<HttpContent> contentList;
+    private byte[] content;
     
     public RiakHttpMessage(HttpResponse response)
     {
         this.response = response;
-        contentList = new LinkedList<HttpContent>();
     }
     
     public HttpResponse getResponse()
@@ -41,13 +38,19 @@ public final class RiakHttpMessage implements RiakResponse
         return response;
     }
     
-    public List<HttpContent> getContent()
+    public byte[] getContent()
     {
-        return contentList;
+        return content;
     }
     
-    public void addContent(HttpContent content)
+    public void setContent(byte[] content)
     {
-        contentList.add(content);
+        this.content = content;
+    }
+
+    @Override
+    public <T> T convertResponse(RiakResponseConverter<T> converter)
+    {
+        return converter.convert(response, content);
     }
 }

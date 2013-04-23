@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.converters.RiakResponseConverter;
+
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -39,5 +41,11 @@ public final class RiakPbMessage implements RiakResponse
     public byte[] getData()
     {
         return data;
+    }
+ 
+    @Override
+    public <T> T convertResponse(RiakResponseConverter<T> converter)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

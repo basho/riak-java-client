@@ -13,16 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.core;
+package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.core.converters.RiakResponseConverter;
+import com.basho.riak.client.RiakObject;
+import io.netty.handler.codec.http.HttpResponse;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public interface RiakResponse
+
+public class GetRespConverter implements RiakResponseConverter<RiakObject>
 {
-    <T> T convertResponse(RiakResponseConverter<T> converter);
+
+    @Override
+    public RiakObject convert(HttpResponse response, byte[] content)
+    {
+        return new RiakObject(new String(content));
+    }
+
+    @Override
+    public RiakObject convert(byte pbMessageCode, byte[] data)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 }

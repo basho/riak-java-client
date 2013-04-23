@@ -17,12 +17,15 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakHttpMessage;
 import com.basho.riak.client.core.RiakResponseListener;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +77,9 @@ public class RiakHttpMessageHandlerTest
     {
         HttpResponse response = mock(HttpResponse.class);
         LastHttpContent lastContent = mock(LastHttpContent.class);
-        
+        ByteBuf bb = Unpooled.buffer();
+        bb.writeByte((byte)1);
+        doReturn(bb).when(lastContent).data();
         handler.messageReceived(mockContext, response);
         handler.messageReceived(mockContext, lastContent);
         
@@ -93,7 +98,9 @@ public class RiakHttpMessageHandlerTest
     {
         HttpResponse response = mock(HttpResponse.class);
         LastHttpContent lastContent = mock(LastHttpContent.class);
-        
+        ByteBuf bb = Unpooled.buffer();
+        bb.writeByte((byte)1);
+        doReturn(bb).when(lastContent).data();
         handler.messageReceived(mockContext, response);
         handler.messageReceived(mockContext, lastContent);
         
@@ -107,6 +114,11 @@ public class RiakHttpMessageHandlerTest
         HttpContent content = mock(HttpContent.class);
         LastHttpContent lastContent = mock(LastHttpContent.class);
         
+        ByteBuf bb = Unpooled.buffer();
+        bb.writeByte((byte)1);
+        doReturn(bb).when(content).data();
+        doReturn(bb.copy()).when(lastContent).data();
+        
         handler.messageReceived(mockContext, response);
         handler.messageReceived(mockContext, content);
         handler.messageReceived(mockContext, lastContent);
@@ -115,8 +127,7 @@ public class RiakHttpMessageHandlerTest
         
         verify(mockListener).onSuccess(mockChannel, message);
         assertEquals(message.getResponse(), response);
-        assertEquals(message.getContent().size(), 2);
-        assertEquals(message.getContent().get(0), content);
-        assertEquals(message.getContent().get(1), lastContent);
+        byte[] bytes = new byte[] {1,1};
+        assertArrayEquals(message.getContent(), bytes);
     }
 }

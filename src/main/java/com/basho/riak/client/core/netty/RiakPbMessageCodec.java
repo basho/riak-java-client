@@ -115,7 +115,7 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
                 inbndn.resetReaderIndex();
                 return null;
             }
-
+            
             byte code = inbndn.readByte();
             byte[] array = new byte[length - 1];
             inbndn.readBytes(array);

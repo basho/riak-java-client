@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.core;
+package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.core.converters.RiakResponseConverter;
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpResponse;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public interface RiakResponse
+public interface RiakResponseConverter<T>
 {
-    <T> T convertResponse(RiakResponseConverter<T> converter);
+    T convert(HttpResponse response, byte[] content);
+    T convert(byte pbMessageCode, byte[] data);
 }

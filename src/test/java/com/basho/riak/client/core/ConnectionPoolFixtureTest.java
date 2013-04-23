@@ -120,4 +120,39 @@ public class ConnectionPoolFixtureTest extends FixtureTest
         }
     }
     
+    @Test
+    public void nodeRecovery() throws UnknownHostException, IOException, InterruptedException
+    {
+        ConnectionPool pool = new ConnectionPool.Builder(Protocol.HTTP)
+                               .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                               .withMinConnections(10)
+                               .withIdleTimeout(1000)
+                               .build();
+        
+        PoolStateListener mockListener = mock(PoolStateListener.class);
+        pool.start();
+        pool.addStateListener(mockListener);
+        
+        try
+        {   
+            fixture.shutdown();
+        
+            Thread.sleep(2000);
+
+            verify(mockListener).poolStateChanged(pool, ConnectionPool.State.HEALTH_CHECKING);
+            assertEquals(pool.getPoolState(), State.HEALTH_CHECKING);
+
+        }
+        finally
+        {
+            fixture = new NetworkTestFixture();
+            new Thread(fixture).start();
+        }
+        
+        Thread.sleep(1000);
+        
+        verify(mockListener).poolStateChanged(pool, ConnectionPool.State.RUNNING);
+        assertEquals(pool.getPoolState(), State.RUNNING);
+    }
+    
 }

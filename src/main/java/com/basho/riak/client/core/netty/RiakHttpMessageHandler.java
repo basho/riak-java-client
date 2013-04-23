@@ -17,11 +17,16 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakHttpMessage;
 import com.basho.riak.client.core.RiakResponseListener;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -32,10 +37,13 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
 {
     private final RiakResponseListener listener;
     private RiakHttpMessage message;
+    private final List<ByteBuf> chunks;
+    private int totalContentLength;
     
     public RiakHttpMessageHandler(RiakResponseListener listener)
     {
         this.listener = listener;
+        this.chunks = new LinkedList<ByteBuf>();
     }
     
     @Override
@@ -54,10 +62,21 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
         
         if (msg instanceof HttpContent)
         {
-            message.addContent((HttpContent)msg);
-        
+            chunks.add(((HttpContent)msg).data().retain());
+            totalContentLength += ((HttpContent)msg).data().readableBytes();
+            
             if (msg instanceof LastHttpContent)
             {
+                byte[] bytes = new byte[totalContentLength];
+                int index = 0;
+                for (ByteBuf buffer : chunks)
+                {
+                    buffer.readBytes(bytes, index, buffer.readableBytes());
+                    index += buffer.readableBytes();
+                    buffer.release();
+                }
+                
+                message.setContent(bytes);
                 listener.onSuccess(chc.channel(), message);
                 chc.channel().pipeline().remove(this);
             }

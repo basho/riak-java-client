@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.converters.RiakResponseConverter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -159,6 +160,5 @@ public class FutureOperationTest
         {
             return "Fake!";
         }
-        
     }
 }
