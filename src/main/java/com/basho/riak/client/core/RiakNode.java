@@ -333,6 +333,15 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     }
     
     /**
+     * Returns the current state of this node.
+     * @return The state
+     */
+    public State getNodeState()
+    {
+        return this.state;
+    }
+    
+    /**
      * Builder used to construct a RiakNode.
      * 
      * <p>If a protocol is not specified protocol buffers will be used on the default 
