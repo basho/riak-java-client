@@ -37,31 +37,35 @@ import java.util.Iterator;
  */
 public class NetworkTestFixture implements Runnable
 {
-    public static int ACCEPT_THEN_CLOSE = 5000;
+    public static int ACCEPT_THEN_CLOSE = 0;
     
-    public static int PB_CLOSE_BEFORE_WRITE = 5001;
-    public static int PB_FULL_WRITE_THEN_CLOSE = 5002;
-    public static int PB_PARTIAL_WRITE_THEN_CLOSE = 5003;
-    public static int PB_FULL_WRITE_STAY_OPEN = 5004;
-    public static int PB_PARTIAL_WRITE_STAY_OPEN = 5005;
+    public static int PB_CLOSE_BEFORE_WRITE = 1;
+    public static int PB_FULL_WRITE_THEN_CLOSE = 2;
+    public static int PB_PARTIAL_WRITE_THEN_CLOSE = 3;
+    public static int PB_FULL_WRITE_STAY_OPEN = 4;
+    public static int PB_PARTIAL_WRITE_STAY_OPEN = 5;
     
     
-    public static int HTTP_FULL_WRITE_THEN_CLOSE = 5006;
-    public static int HTTP_PARTIAL_WRITE_THEN_CLOSE = 5007;
-    public static int HTTP_FULL_WRITE_STAY_OPEN = 5008;
-    public static int HTTP_PARTIAL_WRITE_STAY_OPEN = 5009;
-    public static int HTTP_CLOSE_BEFORE_WRITE = 5010;
+    public static int HTTP_FULL_WRITE_THEN_CLOSE = 6;
+    public static int HTTP_PARTIAL_WRITE_THEN_CLOSE = 7;
+    public static int HTTP_FULL_WRITE_STAY_OPEN = 8;
+    public static int HTTP_PARTIAL_WRITE_STAY_OPEN = 9;
+    public static int HTTP_CLOSE_BEFORE_WRITE = 10;
     
     private Selector selector;
     
-    
     public NetworkTestFixture() throws IOException
+    {
+        this(5000);
+    }
+    
+    public NetworkTestFixture(int startingPort) throws IOException
     {
         selector = Selector.open();
         
         ServerSocketChannel server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", ACCEPT_THEN_CLOSE));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + ACCEPT_THEN_CLOSE));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         SelectionKey key = server.keyFor(selector);
@@ -69,7 +73,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", HTTP_CLOSE_BEFORE_WRITE ));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + HTTP_CLOSE_BEFORE_WRITE ));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -78,7 +82,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", HTTP_FULL_WRITE_THEN_CLOSE ));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + HTTP_FULL_WRITE_THEN_CLOSE ));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -86,7 +90,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", HTTP_PARTIAL_WRITE_THEN_CLOSE));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + HTTP_PARTIAL_WRITE_THEN_CLOSE));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -94,7 +98,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", HTTP_FULL_WRITE_STAY_OPEN ));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + HTTP_FULL_WRITE_STAY_OPEN ));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -102,7 +106,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", HTTP_PARTIAL_WRITE_STAY_OPEN));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + HTTP_PARTIAL_WRITE_STAY_OPEN));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -110,7 +114,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", PB_CLOSE_BEFORE_WRITE ));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_CLOSE_BEFORE_WRITE ));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -118,7 +122,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", PB_FULL_WRITE_THEN_CLOSE ));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_FULL_WRITE_THEN_CLOSE ));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -126,7 +130,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", PB_PARTIAL_WRITE_THEN_CLOSE));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_PARTIAL_WRITE_THEN_CLOSE));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -134,7 +138,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", PB_FULL_WRITE_STAY_OPEN ));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_FULL_WRITE_STAY_OPEN ));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);
@@ -142,7 +146,7 @@ public class NetworkTestFixture implements Runnable
         
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        server.socket().bind(new InetSocketAddress("127.0.0.1", PB_PARTIAL_WRITE_STAY_OPEN));
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_PARTIAL_WRITE_STAY_OPEN));
         server.configureBlocking(false); 
         server.register(selector, SelectionKey.OP_ACCEPT); 
         key = server.keyFor(selector);

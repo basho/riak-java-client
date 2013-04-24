@@ -39,7 +39,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private final List<Protocol> protocolPreflist = new LinkedList<Protocol>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
-    private volatile int numRetries = 0;
+    private volatile int remainingTries = 0;
     private volatile RiakResponse rawResponse;
     private volatile Throwable exception;
     private volatile T converted;
@@ -47,11 +47,11 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private volatile RiakNode lastNode;
     
     
-    final synchronized void setRetrier(OperationRetrier retrier, int numRetries)
+    final synchronized void setRetrier(OperationRetrier retrier, int numTries)
     {
         stateCheck(State.CREATED);
         this.retrier = retrier;
-        this.numRetries = numRetries;
+        this.remainingTries = numTries;
     }
 
     final RiakNode getLastNode()
@@ -78,13 +78,14 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     
     synchronized void setResponse(RiakResponse rawResponse)
     {
+        remainingTries--;
         this.rawResponse = rawResponse;
         exception = null;
         state = State.COMPLETE;
         latch.countDown();
         if (retrier != null)
         {
-            retrier.operationComplete(this, numRetries);
+            retrier.operationComplete(this, remainingTries);
         }
     }
 
@@ -92,20 +93,20 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     {
         this.exception = t;
         
-        if (numRetries == 0)
+        remainingTries--;
+        if (remainingTries == 0)
         {
             state = State.COMPLETE;
             latch.countDown();
         }
         else
         {
-            numRetries--;
             state = State.RETRY;
         }
         
         if (retrier != null)
         {
-            retrier.operationFailed(this, numRetries);
+            retrier.operationFailed(this, remainingTries);
         }
         
     }

@@ -27,11 +27,12 @@ import org.junit.BeforeClass;
 public class FixtureTest
 {
     static NetworkTestFixture fixture;
+    static int startingPort = 5000;
     
     @BeforeClass
     public static void installFixture() throws IOException
     {
-        fixture = new NetworkTestFixture();
+        fixture = new NetworkTestFixture(startingPort);
         new Thread(fixture).start();
     }
     

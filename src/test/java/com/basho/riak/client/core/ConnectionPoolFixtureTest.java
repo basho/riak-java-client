@@ -46,7 +46,7 @@ public class ConnectionPoolFixtureTest extends FixtureTest
     public void closedConnectionsTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
     {
         ConnectionPool pool = PowerMockito.spy(new ConnectionPool.Builder(Protocol.HTTP)
-                               .withPort(NetworkTestFixture.ACCEPT_THEN_CLOSE)
+                               .withPort(startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                                .withMinConnections(10)
                                .build());
         pool.start();
@@ -61,7 +61,7 @@ public class ConnectionPoolFixtureTest extends FixtureTest
     public void idleConnectionsAreRemoved() throws UnknownHostException, InterruptedException
     {
         ConnectionPool pool = new ConnectionPool.Builder(Protocol.HTTP)
-                               .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                               .withPort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                                .withMinConnections(10)
                                .withIdleTimeout(1000)
                                .build();
@@ -93,7 +93,7 @@ public class ConnectionPoolFixtureTest extends FixtureTest
     public void nodeGoingDown() throws UnknownHostException, IOException, InterruptedException
     {
         ConnectionPool pool = new ConnectionPool.Builder(Protocol.HTTP)
-                               .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                               .withPort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                                .withMinConnections(10)
                                .withIdleTimeout(1000)
                                .build();
@@ -115,7 +115,7 @@ public class ConnectionPoolFixtureTest extends FixtureTest
         }
         finally
         {
-            fixture = new NetworkTestFixture();
+            fixture = new NetworkTestFixture(startingPort);
             new Thread(fixture).start();
         }
     }
@@ -124,7 +124,7 @@ public class ConnectionPoolFixtureTest extends FixtureTest
     public void nodeRecovery() throws UnknownHostException, IOException, InterruptedException
     {
         ConnectionPool pool = new ConnectionPool.Builder(Protocol.HTTP)
-                               .withPort(NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                               .withPort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                                .withMinConnections(10)
                                .withIdleTimeout(1000)
                                .build();
@@ -145,7 +145,7 @@ public class ConnectionPoolFixtureTest extends FixtureTest
         }
         finally
         {
-            fixture = new NetworkTestFixture();
+            fixture = new NetworkTestFixture(startingPort);
             new Thread(fixture).start();
         }
         

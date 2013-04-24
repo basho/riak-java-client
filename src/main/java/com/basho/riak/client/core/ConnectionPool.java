@@ -179,7 +179,7 @@ public class ConnectionPool implements ChannelFutureListener
         // to the healthcheck task to purge the available queue of dead
         // connections and make decisions on what to do 
         recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-        logger.debug("Channel closed; {} {}", remoteAddress, protocol.toString());
+        logger.debug("Channel closed; {}:{} {}", remoteAddress, port, protocol.toString());
     }
     
     /**
@@ -200,7 +200,7 @@ public class ConnectionPool implements ChannelFutureListener
             List<Channel> minChannels = new LinkedList<Channel>();
             for (int i = 0; i < minConnections; i++)
             {
-                Channel channel = null;
+                Channel channel;
                 try
                 {
                     channel = doGetConnection();
@@ -221,7 +221,7 @@ public class ConnectionPool implements ChannelFutureListener
         idleReaperFuture = executor.scheduleWithFixedDelay(new IdleReaper(), 1, 5, TimeUnit.SECONDS);
         healthMonitorFuture = executor.scheduleWithFixedDelay(new HealthMonitorTask(), 1000, 500, TimeUnit.MILLISECONDS);
         state = State.RUNNING;
-        logger.info("ConnectionPool started; {} {}", remoteAddress, protocol);
+        logger.info("ConnectionPool started; {}:{} {}", remoteAddress, port, protocol);
         notifyStateListeners();
         return this;
     }
@@ -237,6 +237,7 @@ public class ConnectionPool implements ChannelFutureListener
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         state = State.SHUTTING_DOWN;
+        logger.info("Connection pool shutting down {}:{} {}", remoteAddress, port, protocol);
         notifyStateListeners();
         idleReaperFuture.cancel(true);
         healthMonitorFuture.cancel(true);
@@ -593,9 +594,9 @@ public class ConnectionPool implements ChannelFutureListener
                     if (removed)
                     {
                         Channel c = cwi.getChannel();
+                        logger.debug("Idle channel closed; {}:{} {}", remoteAddress, port, protocol );
                         closeConnection(c);
                         currentNum--;
-                        logger.debug("Idle channel closed; {} {}", remoteAddress, protocol );
                     }
                 }
                 else 
@@ -635,7 +636,7 @@ public class ConnectionPool implements ChannelFutureListener
             
             if (state == State.HEALTH_CHECKING)
             {
-                logger.info("ConnectionPool recovered; {} {}", remoteAddress, protocol);
+                logger.info("ConnectionPool recovered; {}:{} {}", remoteAddress, port, protocol);
                 state = State.RUNNING;
                 notifyStateListeners();
             }
@@ -645,15 +646,15 @@ public class ConnectionPool implements ChannelFutureListener
         {
             if (state == State.RUNNING)
             {
-                logger.error("ConnectionPool health checking; {} {} {}", 
-                             remoteAddress, protocol, ex);
+                logger.error("ConnectionPool health checking; {}:{} {} {}", 
+                             remoteAddress, port, protocol, ex);
                 state = State.HEALTH_CHECKING;
                 notifyStateListeners();
             }
             else
             {
-                logger.error("ConnectionPool failed health check; {} {} {}", 
-                             remoteAddress, protocol, ex);
+                logger.error("ConnectionPool failed health check; {}:{} {} {}", 
+                             remoteAddress, port, protocol, ex);
             }
         }
         catch(IllegalStateException e)
@@ -681,7 +682,7 @@ public class ConnectionPool implements ChannelFutureListener
         {
             if (inUse.isEmpty())
             {
-                logger.debug("ConnectionPool shutting down {} {}", remoteAddress, protocol);
+                
                 state = State.SHUTDOWN;
                 notifyStateListeners();
                 if (ownsExecutor)
@@ -692,7 +693,7 @@ public class ConnectionPool implements ChannelFutureListener
                 {
                     bootstrap.shutdown();
                 }
-                
+                logger.debug("ConnectionPool shut down {}:{} {}", remoteAddress, port, protocol);
             }
         }
     }

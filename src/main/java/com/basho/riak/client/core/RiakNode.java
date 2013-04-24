@@ -133,7 +133,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public synchronized void shutdown()
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
-        
+        logger.info("Riak node shutting down; {}", remoteAddress);
         for (Map.Entry<Protocol, ConnectionPool> e : connectionPoolMap.entrySet())
         {
             e.getValue().shutdown();
@@ -194,6 +194,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             inProgressMap.put(channel.id(), new InProgressOperation(protoToUse, operation));
             ChannelFuture writeFuture = channel.write(operation); 
             writeFuture.addListener(this);
+            logger.debug("Operation executed on node {} {}", remoteAddress, channel.remoteAddress());
             return true;
         }
         else
@@ -268,6 +269,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     @Override
     public void onSuccess(Channel channel, RiakResponse response)
     {
+        logger.debug("Operation onSuccess() channel: {}", channel.remoteAddress());
         InProgressOperation inProgress = inProgressMap.remove(channel.id());
         connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
         inProgress.getOperation().setResponse(response);
@@ -276,6 +278,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     @Override
     public void onException(Channel channel, Throwable t)
     {
+        logger.debug("Operation onException() channel: {}", channel.remoteAddress());
         InProgressOperation inProgress = inProgressMap.remove(channel.id());
         // There is an edge case where a write could fail after the message encoding
         // occured in the pipeline. In that case we'll get an exception from the 
@@ -296,6 +299,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         if (!future.isSuccess())
         {
             InProgressOperation inProgress = inProgressMap.remove(future.channel().id());
+            logger.info("Write failed on node {} {}", remoteAddress, inProgress.getProtocol());
             connectionPoolMap.get(inProgress.getProtocol()).returnConnection(future.channel());
             inProgress.getOperation().setException(future.cause());
         }

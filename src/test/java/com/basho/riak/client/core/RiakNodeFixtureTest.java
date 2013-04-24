@@ -46,7 +46,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         RiakNode node = 
             new RiakNode.Builder(Protocol.HTTP)
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.HTTP, NetworkTestFixture.HTTP_FULL_WRITE_STAY_OPEN)
+                        .withPort(Protocol.HTTP, startingPort + NetworkTestFixture.HTTP_FULL_WRITE_STAY_OPEN)
                         .build();
         
         node.start();
@@ -63,7 +63,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         RiakNode node = 
             new RiakNode.Builder(Protocol.HTTP)
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.HTTP, NetworkTestFixture.ACCEPT_THEN_CLOSE)
+                        .withPort(Protocol.HTTP, startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                         .build();
         node.start();
         GetOperation operation = new GetOperation();
@@ -78,7 +78,7 @@ public class RiakNodeFixtureTest extends FixtureTest
             new RiakNode.Builder(Protocol.HTTP)
                         .withRemoteAddress("127.0.0.1")
                         .withMinConnections(Protocol.HTTP, 10)
-                        .withPort(Protocol.HTTP, NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                        .withPort(Protocol.HTTP, startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                         .build();
 
         node.start();
@@ -94,7 +94,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         }
         finally
         {
-            fixture = new NetworkTestFixture();
+            fixture = new NetworkTestFixture(startingPort);
             new Thread(fixture).start();
         }
         
