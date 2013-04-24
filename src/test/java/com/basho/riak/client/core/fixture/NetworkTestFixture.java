@@ -25,6 +25,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
@@ -52,7 +53,8 @@ public class NetworkTestFixture implements Runnable
     public static int HTTP_PARTIAL_WRITE_STAY_OPEN = 9;
     public static int HTTP_CLOSE_BEFORE_WRITE = 10;
     
-    private Selector selector;
+    private final Selector selector;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
     
     public NetworkTestFixture() throws IOException
     {
@@ -157,75 +159,99 @@ public class NetworkTestFixture implements Runnable
     @Override
     public void run() 
     {
-        while(selector.isOpen())
+        OUTER:
+        while(true)
         {
             try
             {
-                selector.select();
-                for (Iterator<SelectionKey> i = selector.selectedKeys().iterator(); i.hasNext();)
+                lock.readLock().lock();
+                if (selector.isOpen())
                 {
-                    SelectionKey key = i.next(); 
-                    i.remove(); 
-                    
-                    if (key.isAcceptable())
+                    try
                     {
-                        Acceptor h = (Acceptor) key.attachment();
-                        SocketChannel client;
-                        switch(h.type)
+                        selector.select(1000);
+                        for (Iterator<SelectionKey> i = selector.selectedKeys().iterator(); i.hasNext();)
                         {
-                            case ACCEPT_THEN_READ:
-                                client = h.getServerSocketChannel().accept();
-                                client.configureBlocking(false);
-                                client.socket().setTcpNoDelay(true); 
-                                client.register(selector, SelectionKey.OP_READ);
-                                SelectionKey clientKey = client.keyFor(selector);
-                                clientKey.attach(h.duplicate());
-                                break;
-                            case ACCEPT_THEN_CLOSE:
-                                client = h.getServerSocketChannel().accept();
-                                client.close();
-                                break;
+                            SelectionKey key = i.next(); 
+                            i.remove(); 
+
+                            if (key.isAcceptable())
+                            {
+                                Acceptor h = (Acceptor) key.attachment();
+                                SocketChannel client;
+                                switch(h.type)
+                                {
+                                    case ACCEPT_THEN_READ:
+                                        client = h.getServerSocketChannel().accept();
+                                        client.configureBlocking(false);
+                                        client.socket().setTcpNoDelay(true); 
+                                        client.register(selector, SelectionKey.OP_READ);
+                                        SelectionKey clientKey = client.keyFor(selector);
+                                        clientKey.attach(h.duplicate());
+                                        break;
+                                    case ACCEPT_THEN_CLOSE:
+                                        client = h.getServerSocketChannel().accept();
+                                        client.close();
+                                        break;
+                                }
+                            }
+
+                            if (key.isReadable()) { 
+                                Acceptor h = (Acceptor) key.attachment();
+                                try
+                                {
+                                    h.handle(key);
+                                }
+                                catch (IOException e)
+                                {
+                                    key.channel().close();
+                                    key.cancel();
+                                }
+                            } 
+
                         }
                     }
-                    
-                    if (key.isReadable()) { 
-                        Acceptor h = (Acceptor) key.attachment();
-                        try
-                        {
-                            h.handle(key);
-                        }
-                        catch (IOException e)
-                        {
-                            key.channel().close();
-                            key.cancel();
-                        }
-                    } 
-                    
+                    catch (IOException ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                    catch (ClosedSelectorException e)
+                    {
+                        // no op
+                    }
+                }
+                else
+                {
+                    break OUTER;
                 }
             }
-            catch (IOException ex)
+            finally
             {
-                ex.printStackTrace();
-            }
-            catch (ClosedSelectorException e)
-            {
-                // no op
+                lock.readLock().unlock();
             }
         }
     }
     
-    public synchronized void shutdown() throws IOException
+    public void shutdown() throws IOException
     {
-        if (selector.isOpen())
-        {      
-            for (Iterator<SelectionKey> i = selector.keys().iterator(); i.hasNext();)
-            {
-                SelectionKey key = i.next(); 
-                key.cancel();
-                key.channel().close();
-            }
+        try
+        {
+            lock.writeLock().lock();
+            if (selector.isOpen())
+            {      
+                for (Iterator<SelectionKey> i = selector.keys().iterator(); i.hasNext();)
+                {
+                    SelectionKey key = i.next(); 
+                    key.cancel();
+                    key.channel().close();
+                }
 
-            selector.close();
+                selector.close();
+            }
+        }
+        finally
+        {
+            lock.writeLock().unlock();
         }
     }
 }

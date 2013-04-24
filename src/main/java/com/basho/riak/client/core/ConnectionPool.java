@@ -76,14 +76,12 @@ public class ConnectionPool implements ChannelFutureListener
     private int minConnections;
     private long idleTimeoutInNanos;
     private int connectionTimeout;
-    private int readTimeout;    
 
     private ConnectionPool(Builder builder) throws UnknownHostException
     {
         this.connectionTimeout = builder.connectionTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
         this.minConnections = builder.minConnections;
-        this.readTimeout = builder.readTimeout;
         this.protocol = builder.protocol;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
@@ -179,7 +177,7 @@ public class ConnectionPool implements ChannelFutureListener
         // to the healthcheck task to purge the available queue of dead
         // connections and make decisions on what to do 
         recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-        logger.debug("Channel closed; {}:{} {}", remoteAddress, port, protocol.toString());
+        logger.debug("Channel closed; {}:{} {}", remoteAddress, port, protocol);
     }
     
     /**
@@ -484,28 +482,6 @@ public class ConnectionPool implements ChannelFutureListener
     }
 
     /**
-     * Returns the read timeout in milliseconds for connections in this pool
-     * @return the readTimeout
-     * @see Builder#withReadTimeout(int) 
-     */
-    public int getReadTimeout()
-    {
-        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        return readTimeout;
-    }
-
-    /**
-     * Sets the read timeout for connections in this pool
-     * @param readTimeout the readTimeout to set
-     * @see Builder#withReadTimeout(int) 
-     */
-    public void setReadTimeout(int readTimeout)
-    {
-        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        this.readTimeout = readTimeout;
-    }
-
-    /**
      * Returns the current state of this pool.
      * @return the current state
      */
@@ -739,11 +715,7 @@ public class ConnectionPool implements ChannelFutureListener
          * @see #withConnectionTimeout(int) 
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
-        /**
-         * The default read timeout in milliseconds if not specified: {@value #DEFAULT_READ_TIMEOUT}
-         * @see #withReadTimeout(int) 
-         */
-        public final static int DEFAULT_READ_TIMEOUT = 0;
+        
         
         private final Protocol protocol;
         private int port;
@@ -752,7 +724,6 @@ public class ConnectionPool implements ChannelFutureListener
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-        private int readTimeout = DEFAULT_READ_TIMEOUT;
         private Bootstrap bootstrap;
         private boolean ownsBootstrap;
         private ScheduledExecutorService executor;
@@ -855,18 +826,6 @@ public class ConnectionPool implements ChannelFutureListener
         public Builder withConnectionTimeout(int connectionTimeoutInMillis)
         {
             this.connectionTimeout = connectionTimeoutInMillis;
-            return this;
-        }
-        
-        /**
-         * Set the read timeout used when reading from a socket
-         * @param readTimeoutInMillis
-         * @return this
-         * @see #DEFAULT_READ_TIMEOUT
-         */
-        public Builder withReadTimeout(int readTimeoutInMillis)
-        {
-            this.readTimeout = readTimeoutInMillis;
             return this;
         }
         

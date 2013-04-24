@@ -56,7 +56,6 @@ public class ConnectionPoolTest
         assertEquals(pool.getIdleTimeout(), ConnectionPool.Builder.DEFAULT_IDLE_TIMEOUT);
         assertEquals(pool.getMinConnections(), ConnectionPool.Builder.DEFAULT_MIN_CONNECTIONS);
         assertEquals(pool.getRemoteAddress(), ConnectionPool.Builder.DEFAULT_REMOTE_ADDRESS);
-        assertEquals(pool.getReadTimeout(), ConnectionPool.Builder.DEFAULT_READ_TIMEOUT);
         assertNotNull(pool.getExecutor());
         assertNotNull(pool.getBootstrap());
     }
@@ -69,7 +68,6 @@ public class ConnectionPoolTest
         final int MIN_CONNECTIONS = 2002;
         final int MAX_CONNECTIONS = 2003;
         final int PORT = 2004;
-        final int READ_TIMEOUT = 2005;
         final String REMOTE_ADDRESS = "localhost";
         final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
         final Bootstrap BOOTSTRAP = PowerMockito.spy(new Bootstrap());
@@ -82,7 +80,6 @@ public class ConnectionPoolTest
                                     .withMinConnections(MIN_CONNECTIONS)
                                     .withMaxConnections(MAX_CONNECTIONS)
                                     .withPort(PORT)
-                                    .withReadTimeout(READ_TIMEOUT)
                                     .withRemoteAddress(REMOTE_ADDRESS)
                                     .withExecutor(EXECUTOR)
                                     .withBootstrap(BOOTSTRAP)
@@ -95,7 +92,6 @@ public class ConnectionPoolTest
         assertEquals(pool.getIdleTimeout(), IDLE_TIMEOUT);
         assertEquals(pool.getMinConnections(), MIN_CONNECTIONS);
         assertEquals(pool.getRemoteAddress(), REMOTE_ADDRESS);
-        assertEquals(pool.getReadTimeout(), READ_TIMEOUT);
         assertEquals(pool.getExecutor(), EXECUTOR);
         assertEquals(pool.getBootstrap(), BOOTSTRAP);
         assertEquals(pool.availablePermits(), MAX_CONNECTIONS);

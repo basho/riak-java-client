@@ -18,13 +18,12 @@ package com.basho.riak.client.core.netty;
 import com.basho.riak.client.core.RiakHttpMessage;
 import com.basho.riak.client.core.RiakResponseListener;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.timeout.ReadTimeoutException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,6 +38,7 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
     private RiakHttpMessage message;
     private final List<ByteBuf> chunks;
     private int totalContentLength;
+    private boolean timedOut = false;
     
     public RiakHttpMessageHandler(RiakResponseListener listener)
     {
@@ -47,9 +47,21 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
     }
     
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        ctx.channel().pipeline().remove(this);
-        listener.onException(ctx.channel(), cause);
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception 
+    {
+        if (cause instanceof ReadTimeoutException)
+        {
+            timedOut = true;
+            listener.onException(ctx.channel(), cause);
+        }
+        else
+        {
+            if (!timedOut)
+            {
+                listener.onException(ctx.channel(), cause);
+            }
+            ctx.channel().pipeline().remove(this);
+        }
     }
     
     @Override

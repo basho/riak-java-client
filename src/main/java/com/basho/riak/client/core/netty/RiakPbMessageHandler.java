@@ -19,6 +19,7 @@ import com.basho.riak.client.core.RiakPbMessage;
 import com.basho.riak.client.core.RiakResponseListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.handler.timeout.ReadTimeoutException;
 
 /**
  *
@@ -29,6 +30,7 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
 {
 
     private final RiakResponseListener listener;
+    private boolean timedOut = false;
     
     public RiakPbMessageHandler(RiakResponseListener listener)
     {
@@ -44,9 +46,21 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
-        listener.onException(ctx.channel(), cause);
-        ctx.channel().pipeline().remove(this);
+            throws Exception 
+    {
+        if (cause instanceof ReadTimeoutException)
+        {
+            timedOut = true;
+            listener.onException(ctx.channel(), cause);
+        }
+        else
+        {
+            if (!timedOut)
+            {
+                listener.onException(ctx.channel(), cause);
+            }
+            ctx.channel().pipeline().remove(this);
+        }
     }
     
 }

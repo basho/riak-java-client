@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.converters.RiakResponseConverter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -55,29 +54,29 @@ public class FutureOperationTest
     @Test
     public void notifiesRetrier()
     {
-        final int NUM_RETRIES = 1;
+        final int NUM_TRIES = 2;
         
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         RiakResponse response = mock(RiakResponse.class);
         
-        operation.setRetrier(retrier, NUM_RETRIES);
+        operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
-        verify(retrier).operationFailed(operation, NUM_RETRIES - 1 );
+        verify(retrier).operationFailed(operation, NUM_TRIES - 1 );
         
         operation.setResponse(response);
-        verify(retrier).operationComplete(operation, NUM_RETRIES - 1);
+        verify(retrier).operationComplete(operation, NUM_TRIES - 2);
     }
     
     @Test
     public void exceptionWithNoRemainingRetriesIsDone()
     {
-        final int NUM_RETRIES = 0;
+        final int NUM_TRIES = 1;
         
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         
-        operation.setRetrier(retrier, NUM_RETRIES);
+        operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
         verify(retrier).operationFailed(operation, 0);
         assertTrue(operation.isDone());
@@ -87,11 +86,11 @@ public class FutureOperationTest
     @Test
     public void exceptionWithRemainingRetriesIsNotDone()
     {
-        final int NUM_RETRIES = 1;
+        final int NUM_TRIES = 2;
         
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        operation.setRetrier(retrier, NUM_RETRIES);
+        operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
         assertFalse(operation.isDone());
     }
@@ -99,30 +98,30 @@ public class FutureOperationTest
     @Test
     public void resultWithRemainingRetriesIsDone()
     {
-        final int NUM_RETRIES = 3;
+        final int NUM_TRIES = 3;
         
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         RiakResponse response = mock(RiakResponse.class);
         
-        operation.setRetrier(retrier, NUM_RETRIES);
+        operation.setRetrier(retrier, NUM_TRIES);
         operation.setResponse(response);
-        verify(retrier).operationComplete(operation, NUM_RETRIES);
+        verify(retrier).operationComplete(operation, NUM_TRIES - 1);
         assertTrue(operation.isDone());
     }
     
     @Test
     public void isDoneAllowsGet() throws InterruptedException, ExecutionException
     {
-        final int NUM_RETRIES = 3;
+        final int NUM_TRIES = 3;
         
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         RiakResponse response = mock(RiakResponse.class);
         
-        operation.setRetrier(retrier, NUM_RETRIES);
+        operation.setRetrier(retrier, NUM_TRIES);
         operation.setResponse(response);
-        verify(retrier).operationComplete(operation, NUM_RETRIES);
+        verify(retrier).operationComplete(operation, NUM_TRIES - 1);
         assertTrue(operation.isDone());
         assertNotNull(operation.get());
     }
@@ -130,12 +129,12 @@ public class FutureOperationTest
     @Test(expected = TimeoutException.class)
     public void notDoneBlocksGet() throws InterruptedException, ExecutionException, TimeoutException
     {
-        final int NUM_RETRIES = 3;
+        final int NUM_TRIES = 3;
         
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         
-        operation.setRetrier(retrier, NUM_RETRIES);
+        operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
         assertFalse(operation.isDone());
         operation.get(10, TimeUnit.MILLISECONDS);

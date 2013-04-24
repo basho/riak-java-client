@@ -39,7 +39,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private final List<Protocol> protocolPreflist = new LinkedList<Protocol>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
-    private volatile int remainingTries = 0;
+    private volatile int remainingTries = 1;
     private volatile RiakResponse rawResponse;
     private volatile Throwable exception;
     private volatile T converted;

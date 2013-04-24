@@ -21,6 +21,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,13 +64,14 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     private volatile State state;
     private Map<Integer, InProgressOperation> inProgressMap = 
         new ConcurrentHashMap<Integer, InProgressOperation>();
+    private volatile int readTimeoutInMillis;
     
     // TODO: Harden to prevent operation from being executed > 1 times?
     // TODO: how many channels on one event loop? 
     private RiakNode(Builder builder) throws UnknownHostException
     {
         this.remoteAddress = builder.remoteAddress;
-        
+        this.readTimeoutInMillis = builder.readTimeout;
         if (builder.executor == null)
         {
             executor = Executors.newSingleThreadScheduledExecutor();
@@ -190,6 +193,12 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         {
             // add callback handler to end of pipeline which will callback to here
             // These remove themselves once they notify the listener
+            if (readTimeoutInMillis > 0)
+            {
+                channel.pipeline()
+                    .addLast("readTimeoutHandler", 
+                             new ReadTimeoutHandler(readTimeoutInMillis, TimeUnit.MILLISECONDS));
+            }
             channel.pipeline().addLast("riakResponseHandler", protoToUse.responseHandler(this));
             inProgressMap.put(channel.id(), new InProgressOperation(protoToUse, operation));
             ChannelFuture writeFuture = channel.write(operation); 
@@ -270,6 +279,10 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public void onSuccess(Channel channel, RiakResponse response)
     {
         logger.debug("Operation onSuccess() channel: {}", channel.remoteAddress());
+        if (readTimeoutInMillis > 0)
+        {
+            channel.pipeline().remove("readTimeoutHandler");
+        }
         InProgressOperation inProgress = inProgressMap.remove(channel.id());
         connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
         inProgress.getOperation().setResponse(response);
@@ -278,7 +291,11 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     @Override
     public void onException(Channel channel, Throwable t)
     {
-        logger.debug("Operation onException() channel: {}", channel.remoteAddress());
+        logger.debug("Operation onException() channel: {} {}", channel.remoteAddress(), t);
+        if (readTimeoutInMillis > 0)
+        {
+            channel.pipeline().remove("readTimeoutHandler");
+        }
         InProgressOperation inProgress = inProgressMap.remove(channel.id());
         // There is an edge case where a write could fail after the message encoding
         // occured in the pipeline. In that case we'll get an exception from the 
@@ -346,6 +363,28 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     }
     
     /**
+     * Returns the read timeout in milliseconds for connections in this pool
+     * @return the readTimeout
+     * @see Builder#withReadTimeout(int) 
+     */
+    public int getReadTimeout()
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
+        return readTimeoutInMillis;
+    }
+
+    /**
+     * Sets the read timeout for connections in this pool
+     * @param readTimeout the readTimeout to set
+     * @see Builder#withReadTimeout(int) 
+     */
+    public void setReadTimeout(int readTimeoutInMillis)
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
+        this.readTimeoutInMillis = readTimeoutInMillis;
+    }
+    
+    /**
      * Builder used to construct a RiakNode.
      * 
      * <p>If a protocol is not specified protocol buffers will be used on the default 
@@ -365,12 +404,19 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @see #withRemoteAddress(java.lang.String) 
          */
         public final static String DEFAULT_REMOTE_ADDRESS = "127.0.0.1";
+        /**
+         * The default read timeout in milliseconds if not specified: {@value #DEFAULT_READ_TIMEOUT}
+         * A value of {@code 0} means to wait indefinitely 
+         * @see #withReadTimeout(int) 
+         */
+        public final static int DEFAULT_READ_TIMEOUT = 0;
         
         private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
         private ScheduledExecutorService executor;
         private boolean ownsExecutor;
         private Bootstrap bootstrap;
         private boolean ownsBootstrap;
+        private int readTimeout = DEFAULT_READ_TIMEOUT;
         private final EnumMap<Protocol, ConnectionPool.Builder> protocolMap = 
             new EnumMap<Protocol, ConnectionPool.Builder>(Protocol.class);
         
@@ -478,16 +524,15 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         }
         
         /**
-         * Specifies the read timeout for the specific protocol
+         * Specifies the read timeout when waiting for a reply from Riak
          * @param p
          * @param readTimeoutInMillis
          * @return this
-         * @see {@link ConnectionPool.Builder#withReadTimeout(int) 
+         * @see {@link #DEFAULT_READ_TIMEOUT}
          */
-        public Builder withReadTimeout(Protocol p, int readTimeoutInMillis)
+        public Builder withReadTimeout(int readTimeoutInMillis)
         {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withReadTimeout(readTimeoutInMillis);
+            this.readTimeout = readTimeoutInMillis;
             return this;
         }
         
