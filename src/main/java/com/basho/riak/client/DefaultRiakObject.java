@@ -34,7 +34,16 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- *
+ * The default implementation of {@link RiakObject}
+ * <p>
+ * Is as immutable as possible. 
+ * The value, content type, charset,links and user meta data are all mutable.
+ * It is safe to use the instances of this class from multiple threads.
+ * </p>
+ * <p>
+ * Due to the large number of arguments, the {@link Builder} is used to create instances.
+ * </p>
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @author Russel Brown <russelldb at basho dot com>
  * @since 2.0
@@ -458,6 +467,20 @@ public class DefaultRiakObject implements RiakObject
     }
 
     @Override
+    public RiakObject removeFromBinIndex(String indexName, String value)
+    {
+        indexes.remove(indexName, value);
+        return this;
+    }
+    
+    @Override
+    public RiakObject removeFromIntIndex(String indexName, long value)
+    {
+        indexes.remove(indexName, value);
+        return this;
+    }
+    
+    @Override
     public boolean isDeleted()
     {
         return isDeleted;
@@ -494,7 +517,7 @@ public class DefaultRiakObject implements RiakObject
         }
 
         /**
-         * Creates a builder prepopulated from the give {@link RiakObject}.
+         * Creates a builder pre-populated from the given {@link RiakObject}.
          *
          * @param o the {@link RiakObject} to copy
          * @return a {@link Builder} with all fields set from <code>o</code>

@@ -342,7 +342,8 @@ public interface RiakObject
     RiakObject removeUsermeta(String key);
 
     /**
-     * Add a {@link BinIndex} to this objects indexes.
+     * Add an index value to a {@link BinIndex}. If the index does
+     * not currently exist it will be created.
      * 
      * @param index
      *            index name
@@ -353,7 +354,8 @@ public interface RiakObject
     RiakObject addIndex(String index, String value);
 
     /**
-     * Add an {@link IntIndex} to this objects indexes.
+     * Add an index value to an {@link IntIndex}. If the index
+     * does not currently exist it will be created.
      * 
      * @param index
      *            index name
@@ -380,6 +382,22 @@ public interface RiakObject
      * @return this RiakObject
      */
     RiakObject removeIntIndex(String index);
+    
+    /**
+     * Remove an index value from the specified {@link BinIndex}
+     * @param indexName the name of the index
+     * @param value the value to remove
+     * @return this
+     */
+    RiakObject removeFromBinIndex(String indexName, String value);
+    
+    /**
+     * Remove an index value from the specified {@link IntIndex}
+     * @param indexName the name of the index
+     * @param value the value to remove
+     * @return this
+     */
+    RiakObject removeFromIntIndex(String indexName, long value);
     
     /**
      * Check to see if this object is a tombstone (deleted)

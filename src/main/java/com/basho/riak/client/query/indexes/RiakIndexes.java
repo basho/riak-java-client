@@ -19,20 +19,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Container for the set of index/values for a {@link com.basho.riak.client.RiakObject}
  * 
  * @author Russel Brown <russelldb at basho dot com>
+ * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
 public class RiakIndexes
 {
-    private final ConcurrentMap<BinIndex, Set<String>> binIndexes = new ConcurrentHashMap<BinIndex, Set<String>>();
-    private final ConcurrentMap<IntIndex, Set<Long>> intIndexes = new ConcurrentHashMap<IntIndex, Set<Long>>();
-
+    private final Map<BinIndex, Set<String>> binIndexes = new HashMap<BinIndex, Set<String>>();
+    private final Map<IntIndex, Set<Long>> intIndexes = new HashMap<IntIndex, Set<Long>>();
+    
+    // This class is meant to be threadsafe, but the old implementation 
+    // was doing copies via constructors with ConcurrentHashMap which if done concurrently with a 
+    // mutation could produce inconsistent results as it has a weakly consistent iterator.
+    // Using a real lock solves this issue. 
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    
     public RiakIndexes(final Map<BinIndex, Set<String>> binIndexes, final Map<IntIndex, Set<Long>> intIndexes)
     {
         for (Map.Entry<BinIndex, Set<String>> bi : binIndexes.entrySet())
@@ -40,7 +46,7 @@ public class RiakIndexes
             Set<String> v = bi.getValue();
             if (v != null)
             {
-                this.binIndexes.put(bi.getKey(), new HashSet<String>(bi.getValue()));
+                this.binIndexes.put(bi.getKey(), new HashSet<String>(v));
             }
         }
 
@@ -49,7 +55,7 @@ public class RiakIndexes
             Set<Long> v = ii.getValue();
             if (v != null)
             {
-                this.intIndexes.put(ii.getKey(), new HashSet<Long>(ii.getValue()));
+                this.intIndexes.put(ii.getKey(), new HashSet<Long>(v));
             }
         }
     }
@@ -59,19 +65,48 @@ public class RiakIndexes
     }
 
     /**
-     * @return a *shallow copy* of the {@link BinIndex}s
+     * @return a copy of the {@link BinIndex}s
      */
     public Map<BinIndex, Set<String>> getBinIndexes()
     {
-        return new HashMap<BinIndex, Set<String>>(binIndexes);
+        try
+        {
+            lock.readLock().lock();
+            HashMap<BinIndex, Set<String>> copy = new HashMap<BinIndex, Set<String>>();
+            for (Map.Entry<BinIndex, Set<String>> bi : binIndexes.entrySet())
+            {
+                Set<String> v = bi.getValue();
+                copy.put(bi.getKey(), new HashSet<String>(v));
+            }
+            return copy;
+        }
+        finally
+        {
+            lock.readLock().unlock();
+        }
+        
     }
 
     /**
-     * @return a *shallow copy* of the {@link IntIndex}s
+     * @return a copy of the {@link IntIndex}s
      */
     public Map<IntIndex, Set<Long>> getIntIndexes()
     {
-        return new HashMap<IntIndex, Set<Long>>(intIndexes);
+        try
+        {
+            lock.readLock().lock();
+            HashMap<IntIndex, Set<Long>> copy = new HashMap<IntIndex, Set<Long>>();
+            for (Map.Entry<IntIndex, Set<Long>> ii : intIndexes.entrySet())
+            {
+                Set<Long> v = ii.getValue();
+                copy.put(ii.getKey(), new HashSet<Long>(v));
+            }
+            return copy;
+        }
+        finally
+        {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -83,15 +118,23 @@ public class RiakIndexes
      */
     public RiakIndexes add(String index, String value)
     {
-        final BinIndex key = BinIndex.named(index);
-        Set<String> newSet = new HashSet<String>();
-        Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
-        Set<String> values = prevSet == null ? newSet : prevSet;
-        synchronized (values)
+        try
         {
+            lock.writeLock().lock();
+            final BinIndex key = BinIndex.named(index);
+            Set<String> values = binIndexes.get(key);
+            if (null == values)
+            {
+                values = new HashSet<String>();
+                binIndexes.put(key, values);
+            }
             values.add(value);
+            return this;
         }
-        return this;
+        finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -104,15 +147,23 @@ public class RiakIndexes
     public RiakIndexes addBinSet(String index, Set<String> newValues)
     {
 
-        final BinIndex key = BinIndex.named(index);
-        Set<String> newSet = new HashSet<String>();
-        Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
-        Set<String> values = prevSet == null ? newSet : prevSet;
-        synchronized (values)
+        try
         {
+            lock.writeLock().lock();
+            final BinIndex key = BinIndex.named(index);
+            Set<String> values = binIndexes.get(key);
+            if (null == values)
+            {
+                values = new HashSet<String>();
+                binIndexes.put(key, values);
+            }
             values.addAll(newValues);
+            return this;
         }
-        return this;
+        finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -124,15 +175,23 @@ public class RiakIndexes
      */
     public RiakIndexes add(String name, long value)
     {
-        final IntIndex key = IntIndex.named(name);
-        Set<Long> newSet = new HashSet<Long>();
-        Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
-        Set<Long> values = prevSet == null ? newSet : prevSet;
-        synchronized (values)
+        try
         {
+            lock.writeLock().unlock();
+            final IntIndex key = IntIndex.named(name);
+            Set<Long> values = intIndexes.get(key);
+            if (null == values)
+            {
+                values = new HashSet<Long>();
+                intIndexes.put(key, values);
+            }
             values.add(value);
+            return this;
         }
-        return this;
+        finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -144,15 +203,23 @@ public class RiakIndexes
      */
     public RiakIndexes addIntSet(String name, Set<Long> newValues)
     {
-        final IntIndex key = IntIndex.named(name);
-        Set<Long> newSet = new HashSet<Long>();
-        Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
-        Set<Long> values = prevSet == null ? newSet : prevSet;
-        synchronized (values)
+        try
         {
+            lock.writeLock().lock();
+            final IntIndex key = IntIndex.named(name);
+            Set<Long> values = intIndexes.get(key);
+            if (null == values)
+            {
+                values = new HashSet<Long>();
+                intIndexes.put(key, values);
+            }
             values.addAll(newValues);
+            return this;
         }
-        return this;
+        finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -162,10 +229,42 @@ public class RiakIndexes
      */
     public RiakIndexes removeAll(BinIndex index)
     {
-        binIndexes.remove(index);
-        return this;
+        try
+        {
+            lock.writeLock().lock();
+            binIndexes.remove(index);
+            return this;
+        }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
+    /**
+     * Remove a value from a {@link BinIndex}
+     * 
+     * @param indexName the index name
+     * @param value the index value to remove
+     */
+    public RiakIndexes remove(String indexName, String value)
+    {
+        try
+        {
+            lock.writeLock().lock();
+            Set<String> values = binIndexes.get(BinIndex.named(indexName));
+            if (values != null)
+            {
+                values.remove(value);
+            }
+        }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
+        return this;
+    }
+    
     /**
      * Remove the IntIndex
      *
@@ -173,10 +272,42 @@ public class RiakIndexes
      */
     public RiakIndexes removeAll(IntIndex index)
     {
-        intIndexes.remove(index);
-        return this;
+        try
+        {
+            lock.writeLock().lock();
+            intIndexes.remove(index);
+            return this;
+        }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
     }
 
+    /**
+     * Remove a value from a {@link IntIndex}
+     * 
+     * @param indexName the index name
+     * @param value the index value to remove
+     */
+    public RiakIndexes remove(String indexName, Long value)
+    {
+        try
+        {
+            lock.writeLock().lock();
+            Set<Long> values = intIndexes.get(IntIndex.named(indexName));
+            if (values != null)
+            {
+                values.remove(value);
+            }
+        }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
+        return this;
+    }
+    
     /**
      * Copy a RiakIndexes to a new instance
      *
@@ -196,12 +327,20 @@ public class RiakIndexes
      */
     public Set<String> getBinIndex(String name)
     {
-        Set<String> values = binIndexes.get(BinIndex.named(name));
-        if (values == null)
+        try
         {
-            return new HashSet<String>();
+            lock.readLock().lock();
+            Set<String> values = binIndexes.get(BinIndex.named(name));
+            if (values == null)
+            {
+                return new HashSet<String>();
+            }
+            return new HashSet<String>(values);
         }
-        return new HashSet<String>(values);
+        finally
+        {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -212,11 +351,19 @@ public class RiakIndexes
      */
     public Set<Long> getIntIndex(String name)
     {
-        Set<Long> values = intIndexes.get(IntIndex.named(name));
-        if (values == null)
+        try
         {
-            return new HashSet<Long>();
+            lock.readLock().lock();
+            Set<Long> values = intIndexes.get(IntIndex.named(name));
+            if (values == null)
+            {
+                return new HashSet<Long>();
+            }
+            return new HashSet<Long>(values);
         }
-        return new HashSet<Long>(values);
+        finally
+        {
+            lock.readLock().unlock();
+        }
     }
 }
