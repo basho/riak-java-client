@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.converters;
 
+import com.basho.riak.client.DefaultRiakObject;
 import com.basho.riak.client.RiakObject;
 import io.netty.handler.codec.http.HttpResponse;
 
@@ -30,7 +31,7 @@ public class GetRespConverter implements RiakResponseConverter<RiakObject>
     @Override
     public RiakObject convert(HttpResponse response, byte[] content)
     {
-        return new RiakObject(new String(content));
+        return new DefaultRiakObject.Builder().withBucket("bucket").withValue(content).build();
     }
 
     @Override
