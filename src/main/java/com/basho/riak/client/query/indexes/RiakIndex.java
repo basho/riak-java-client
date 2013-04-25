@@ -32,7 +32,6 @@ public abstract class RiakIndex<T>
 
     /**
      * @param name
-     * @param fullname
      */
     protected RiakIndex(String name)
     {

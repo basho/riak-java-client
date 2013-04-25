@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Container for the set of index/values for a {@link RiakObject}
+ * Container for the set of index/values for a {@link com.basho.riak.client.RiakObject}
  * 
  * @author Russel Brown <russelldb at basho dot com>
  * @since 1.0
@@ -98,7 +98,7 @@ public class RiakIndexes
      * Add a new {@link BinIndex} set of values to the set
      *
      * @param index the index name
-     * @param values the set of values
+     * @param newValues the set of values
      * @return this
      */
     public RiakIndexes addBinSet(String index, Set<String> newValues)
@@ -122,9 +122,9 @@ public class RiakIndexes
      * @param value the value
      * @return this
      */
-    public RiakIndexes add(String index, long value)
+    public RiakIndexes add(String name, long value)
     {
-        final IntIndex key = IntIndex.named(index);
+        final IntIndex key = IntIndex.named(name);
         Set<Long> newSet = new HashSet<Long>();
         Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
         Set<Long> values = prevSet == null ? newSet : prevSet;
@@ -139,12 +139,12 @@ public class RiakIndexes
      * Add a new set of {@link IntIndex} values to the set
      *
      * @param name name of the index
-     * @param values the set of values
+     * @param newValues the set of values
      * @return this
      */
-    public RiakIndexes addIntSet(String index, Set<Long> newValues)
+    public RiakIndexes addIntSet(String name, Set<Long> newValues)
     {
-        final IntIndex key = IntIndex.named(index);
+        final IntIndex key = IntIndex.named(name);
         Set<Long> newSet = new HashSet<Long>();
         Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
         Set<Long> values = prevSet == null ? newSet : prevSet;

@@ -449,7 +449,7 @@ public class ConnectionPool implements ChannelFutureListener
 
     /**
      * Sets the connection idle timeout for this pool
-     * @param idleTimeout the idleTimeout to set
+     * @param idleTimeoutInMillis the idleTimeout to set
      * @see Builder#withIdleTimeout(int) 
      */
     public void setIdleTimeout(int idleTimeoutInMillis)
@@ -461,7 +461,7 @@ public class ConnectionPool implements ChannelFutureListener
     /**
      * Returns the connection timeout in milliseconds for this pool
      * @return the connectionTimeout
-     * @see Builder#withIdleTimeout(int) 
+     * @see Builder#withConnectionTimeout(int) 
      */
     public int getConnectionTimeout()
     {
@@ -471,7 +471,7 @@ public class ConnectionPool implements ChannelFutureListener
 
     /**
      * Sets the connection timeout for this pool
-     * @param connectionTimeout the connectionTimeout to set
+     * @param connectionTimeoutInMillis the connectionTimeout to set
      * @see Builder#withConnectionTimeout(int) 
      */
     public void setConnectionTimeout(int connectionTimeoutInMillis)

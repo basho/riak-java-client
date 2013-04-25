@@ -494,9 +494,9 @@ public class DefaultRiakObject implements RiakObject
         }
 
         /**
-         * Creates a builder prepopulated from the give {@link IRiakObject}.
+         * Creates a builder prepopulated from the give {@link RiakObject}.
          *
-         * @param o the {@link IRiakObject} to copy
+         * @param o the {@link RiakObject} to copy
          * @return a {@link Builder} with all fields set from <code>o</code>
          */
         public static Builder from(RiakObject o)
@@ -681,7 +681,7 @@ public class DefaultRiakObject implements RiakObject
          * the last modified date on this Riak object
          *
          * @param lastModified
-         * @return
+         * @return this
          */
         public Builder withLastModified(long lastModified)
         {
@@ -724,11 +724,10 @@ public class DefaultRiakObject implements RiakObject
         }
 
         /**
-         * A Collection of {@link RiakIndex}es for the new riak object
+         * A Collection of {@link com.basho.riak.client.query.indexes.RiakIndex}es for the new riak object
          *
-         * @param indexes the {@link Collection} of {@link RiakIndex}es for the
-         * Riak object, is copied over the current collection, not merged! NOTE:
-         * this will be copied.
+         * @param indexes the {@link Collection} of {@link com.basho.riak.client.query.indexes.RiakIndex}es for the
+         * Riak object, is copied over the current collection, not merged! 
          * @return this
          */
         public Builder withIndexes(RiakIndexes indexes)
@@ -738,9 +737,10 @@ public class DefaultRiakObject implements RiakObject
         }
 
         /**
-         * Add a {@link RiakIndex} to the new riak object's collection.
+         * Add a {@link com.basho.riak.client.query.indexes.RiakIndex} to the new riak object's collection.
          *
-         * @param index the {@link RiakIndex} to add
+         * @param index the name of the index
+         * @param value the index value
          * @return this
          */
         public Builder addIndex(String index, long value)
@@ -750,9 +750,10 @@ public class DefaultRiakObject implements RiakObject
         }
 
         /**
-         * Add a {@link RiakIndex} to the new riak object's collection.
+         * Add a {@link com.basho.riak.client.query.indexes.RiakIndex} to the new riak object's collection.
          *
-         * @param index the {@link RiakIndex} to add
+         * @param index the name of the index
+         * @param value the index value
          * @return this
          */
         public Builder addIndex(String index, String value)

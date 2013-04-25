@@ -103,7 +103,6 @@ public interface RiakObject
      * The object's key encoded with the provided {@code Charset}
      * 
      * @return The object's key.
-     * @throws 
      */
     String getKeyAsString(Charset charset);
     
@@ -221,7 +220,6 @@ public interface RiakObject
      * An iterable view on the user meta entries.
      * 
      * @return an iterable view of the set of user meta data.
-     * @see Entry
      */
     Iterable<Map.Entry<String, String>> userMetaEntries();
 
@@ -229,11 +227,9 @@ public interface RiakObject
      * Secondary indexes for this object.
      * 
      * See <a
-     * href="http://blog.basho.com/2011/09/14/Secondary-Indexes-in-Riak/">basho
-     * wiki</a> for more details.
-     * 
-     * TODO update doc link when 2i hits the wiki
-     * 
+     * href="http://docs.basho.com/riak/latest/tutorials/querying/Secondary-Indexes/">basho
+     * docs</a> for more details.
+     
      * @return a copy of the string indexes for this object.
      */
     Map<BinIndex, Set<String>> allBinIndexes();
@@ -389,10 +385,7 @@ public interface RiakObject
      * Check to see if this object is a tombstone (deleted)
      * 
      * Note: The request has to have been made specifying tombstones
-     * (deleted vclocks) are to be returned. 
-     * @see {@link com.basho.riak.client.operations.FetchObject#returnDeletedVClock(boolean) 
-     * @see {@link com.basho.riak.client.operations.StoreObject#returnDeletedVClock(boolean) 
-     * 
+     * (deleted vclocks) are to be returned.  
      * @return true if the object is a tombstone
      */
     boolean isDeleted();

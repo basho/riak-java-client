@@ -375,7 +375,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
 
     /**
      * Sets the read timeout for connections in this pool
-     * @param readTimeout the readTimeout to set
+     * @param readTimeoutInMillis the readTimeout to set
      * @see Builder#withReadTimeout(int) 
      */
     public void setReadTimeout(int readTimeoutInMillis)
@@ -445,7 +445,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * 
          * @param p - the protocol
          * @return this
-         * @see {@link Protocol}
+         * @see Protocol
          */
         public Builder addProtocol(Protocol p)
         {
@@ -458,7 +458,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @param p - the protocol
          * @param port - the port
          * @return this
-         * @see {@link Protocol}
+         * @see Protocol
          */
         public Builder withPort(Protocol p, int port)
         {
@@ -472,7 +472,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @param p 
          * @param minConnections
          * @return this
-         * @see {@link ConnectionPool.Builder#withMinConnections(int) 
+         * @see ConnectionPool.Builder#withMinConnections(int) 
          */
         public Builder withMinConnections(Protocol p, int minConnections)
         {
@@ -486,7 +486,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @param p
          * @param maxConnections
          * @return this
-         * @see {@link ConnectionPool.Builder#withMaxConnections(int) 
+         * @see ConnectionPool.Builder#withMaxConnections(int) 
          */
         public Builder withMaxConnections(Protocol p, int maxConnections)
         {
@@ -500,7 +500,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @param p
          * @param idleTimeoutInMillis
          * @return this
-         * @see {@link ConnectionPool.Builder#withIdleTimeout(int) 
+         * @see ConnectionPool.Builder#withIdleTimeout(int) 
          */
         public Builder withIdleTimeout(Protocol p, int idleTimeoutInMillis)
         {
@@ -514,7 +514,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * @param p
          * @param connectionTimeoutInMillis
          * @return this
-         * @see {@link ConnectionPool.Builder#withConnectionTimeout(int) 
+         * @see ConnectionPool.Builder#withConnectionTimeout(int) 
          */
         public Builder withConnectionTimeout(Protocol p, int connectionTimeoutInMillis)
         {
@@ -525,10 +525,9 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         
         /**
          * Specifies the read timeout when waiting for a reply from Riak
-         * @param p
          * @param readTimeoutInMillis
          * @return this
-         * @see {@link #DEFAULT_READ_TIMEOUT}
+         * @see #DEFAULT_READ_TIMEOUT
          */
         public Builder withReadTimeout(int readTimeoutInMillis)
         {
@@ -541,7 +540,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * This same executor will be used for this node's connection pool(s)
          * @param executor
          * @return this
-         * @see {@link ConnectionPool.Builder#withExecutor(java.util.concurrent.ScheduledExecutorService) 
+         * @see ConnectionPool.Builder#withExecutor(java.util.concurrent.ScheduledExecutorService) 
          */
         public Builder withExecutor(ScheduledExecutorService executor)
         {
@@ -554,7 +553,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          * This same Bootstrap will be used for this node's underlying connection pool(s)
          * @param bootstrap
          * @return this
-         * @see {@link ConnectionPool.Builder#withBootstrap(io.netty.bootstrap.Bootstrap) 
+         * @see ConnectionPool.Builder#withBootstrap(io.netty.bootstrap.Bootstrap) 
          */
         public Builder withBootstrap(Bootstrap bootstrap)
         {
