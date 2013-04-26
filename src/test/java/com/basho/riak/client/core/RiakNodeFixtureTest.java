@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -122,17 +123,23 @@ public class RiakNodeFixtureTest extends FixtureTest
         @Override
         protected RiakObject convert(RiakResponse rawResponse)
         {
-            RiakObject ro = rawResponse.convertResponse(new GetRespConverter());
-            return ro;
+            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket".getBytes(), "key".getBytes()));
+            return rol.get(0);
         }
 
         @Override
         protected Object createChannelMessage(Protocol p)
         {
-            HttpRequest message = new DefaultFullHttpRequest(
-            HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-            message.headers().set(HttpHeaders.Names.HOST, "localhost");
-            return message;
+            switch(p)
+            {
+                case HTTP:
+                    HttpRequest message = new DefaultFullHttpRequest(
+                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+                    message.headers().set(HttpHeaders.Names.HOST, "localhost");
+                    return message;
+                default:
+                    throw new IllegalArgumentException("Protocol not supported: " + p);
+            }
         }
     }
 }

@@ -15,9 +15,9 @@
  */
 package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.DefaultRiakObject;
 import com.basho.riak.client.RiakObject;
 import io.netty.handler.codec.http.HttpResponse;
+import java.util.List;
 
 /**
  *
@@ -25,17 +25,25 @@ import io.netty.handler.codec.http.HttpResponse;
  * @since 2.0
  */
 
-public class GetRespConverter implements RiakResponseConverter<RiakObject>
+public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
 {
-
-    @Override
-    public RiakObject convert(HttpResponse response, byte[] content)
+    private final byte[] key;
+    private final byte[] bucket;
+    
+    public GetRespConverter(byte[] bucket, byte[] key)
     {
-        return new DefaultRiakObject.Builder().withBucket("bucket").withValue(content).build();
+        this.bucket = bucket;
+        this.key = key;
+    }
+    
+    @Override
+    public List<RiakObject> convert(HttpResponse response, byte[] content)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public RiakObject convert(byte pbMessageCode, byte[] data)
+    public List<RiakObject> convert(byte pbMessageCode, byte[] data)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

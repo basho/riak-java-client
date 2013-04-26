@@ -46,7 +46,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * 
  * @author Brian Roach <roach at basho dot com>
  * @author Russel Brown <russelldb at basho dot com>
- * @since 2.0
+ * @since 1.0
  */
 public class DefaultRiakObject implements RiakObject
 {
@@ -63,6 +63,7 @@ public class DefaultRiakObject implements RiakObject
     private volatile String vtag;
     private volatile long lastModified;
     private volatile boolean isDeleted;
+    private volatile boolean isModified = true;
     private volatile String contentType;
     private volatile Charset charset; // = Charset.forName("ISO-8859-1");
     private final ReentrantReadWriteLock linkLock = new ReentrantReadWriteLock();
@@ -485,6 +486,12 @@ public class DefaultRiakObject implements RiakObject
     {
         return isDeleted;
     }
+    
+    @Override
+    public boolean isModified()
+    {
+        return isModified;
+    }
 
     /**
      * Creates instances of {@link DefaultRiakObject}
@@ -503,6 +510,7 @@ public class DefaultRiakObject implements RiakObject
         private String vtag;
         private Date lastModified;
         private boolean isDeleted;
+        private boolean isModified = true;
         private String contentType = DEFAULT_CONTENT_TYPE;
         private Charset charset; // = Charset.forName("ISO-8859-1");
         private Collection<RiakLink> links = new ArrayList<RiakLink>();
@@ -851,6 +859,19 @@ public class DefaultRiakObject implements RiakObject
         public Builder withDeleted(boolean isDeleted)
         {
             this.isDeleted = isDeleted;
+            return this;
+        }
+        
+        /**
+         * Marks  this object as being not modified in Riak
+         * 
+         * @see FetchMeta.Builder#modifiedSince(java.util.Date) 
+         * @param isModified
+         * @return this
+         */
+        public Builder withModified(boolean isModified)
+        {
+            this.isModified = isModified;
             return this;
         }
     }

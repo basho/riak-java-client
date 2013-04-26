@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 
+import com.basho.riak.client.cap.UnresolvedConflictException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -191,7 +192,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         }
     }
     
-    abstract protected T convert(RiakResponse rawResponse);
+    abstract protected T convert(RiakResponse rawResponse) throws UnresolvedConflictException;
     abstract protected Object createChannelMessage(Protocol p);
     
     

@@ -407,4 +407,15 @@ public interface RiakObject
      * @return true if the object is a tombstone
      */
     boolean isDeleted();
+    
+    /**
+     * Check to see if this object is modified.
+     * 
+     * This will return true unless this object represents the result of a conditional
+     * fetch where the object had not been modified since the supplied constraint
+     * 
+     * @see FetchMeta.Builder#modifiedSince
+     * @return true unless the conditional fetch returned no object
+     */
+    boolean isModified();
 }
