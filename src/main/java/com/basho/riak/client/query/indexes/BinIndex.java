@@ -22,7 +22,7 @@ package com.basho.riak.client.query.indexes;
  */
 public class BinIndex extends RiakIndex<String> {
 
-    private static final String SUFFIX = "_bin";
+    public static final String SUFFIX = "_bin";
 
     protected BinIndex(String name) {
         super(name);

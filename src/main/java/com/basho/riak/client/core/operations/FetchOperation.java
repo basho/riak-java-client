@@ -19,7 +19,6 @@ import com.basho.riak.client.FetchMeta;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.Protocol;
@@ -28,7 +27,6 @@ import com.basho.riak.client.core.RiakResponse;
 import com.basho.riak.client.core.converters.GetRespConverter;
 import com.basho.riak.client.util.Constants;
 import com.basho.riak.client.util.RiakMessageCodes;
-import com.basho.riak.client.util.UrlEncoder;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -36,13 +34,16 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringEncoder;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * An operation used to fetch an object from Riak.
@@ -51,16 +52,15 @@ import java.util.List;
  * @author Russel Brown <russelldb at basho dot com>
  * @since 2.0
  */
-// TODO: Head only request
 public class FetchOperation<T> extends FutureOperation<T>
 {
-    private final byte[] bucket;
-    private final byte[] key;
+    private final String bucket;
+    private final String key;
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     private FetchMeta fetchMeta;
     
-    public FetchOperation(byte[] bucket, byte[] key)
+    public FetchOperation(String bucket, String key)
     {
         if (null == bucket)
         {
@@ -73,8 +73,8 @@ public class FetchOperation<T> extends FutureOperation<T>
         }
 
         
-        this.bucket = Arrays.copyOf(bucket, bucket.length);
-        this.key = Arrays.copyOf(key, key.length);
+        this.bucket = bucket;
+        this.key = key;
     }
 
     /**
@@ -123,7 +123,7 @@ public class FetchOperation<T> extends FutureOperation<T>
     }
     
     @Override
-    protected T convert(RiakResponse rawResponse) throws UnresolvedConflictException
+    protected T convert(RiakResponse rawResponse) throws ExecutionException
     {
         List<RiakObject> riakObjectList = 
             rawResponse.convertResponse(new GetRespConverter(bucket, key));
@@ -161,14 +161,66 @@ public class FetchOperation<T> extends FutureOperation<T>
     {
         
         StringBuilder uriBuilder = new StringBuilder("/buckets/");
+        try
+        {
+            uriBuilder.append(URLEncoder.encode(bucket, "UTF-8"));
+            uriBuilder.append("/keys/");
+            uriBuilder.append(URLEncoder.encode(key, "UTF-8"));
+        }
+        catch (UnsupportedEncodingException ex)
+        {
+            throw new IllegalStateException("UTF-8 must be supported",ex);
+        }
         
-        uriBuilder.append(UrlEncoder.urlEncode(bucket));
-        uriBuilder.append("/keys/");
-        uriBuilder.append(UrlEncoder.urlEncode(key));
-        uriBuilder.append(buildParamString(fetchMeta));
+        QueryStringEncoder encoder = new QueryStringEncoder(uriBuilder.toString());
+        
+        if (fetchMeta.hasR())
+        {
+            Quorum quorum = fetchMeta.getR();
+            if (quorum.isSymbolic())
+            {
+                encoder.addParam(Constants.QP_R, quorum.getName());
+            }
+            else
+            {
+                encoder.addParam(Constants.QP_R, String.valueOf(quorum.getIntValue()));
+            }
+        }
+        
+        if (fetchMeta.hasPr())
+        {
+            Quorum quorum = fetchMeta.getPr();
+            if (quorum.isSymbolic())
+            {
+                encoder.addParam(Constants.QP_PR, quorum.getName());
+            }
+            else
+            {
+                encoder.addParam(Constants.QP_PR, String.valueOf(quorum.getIntValue()));
+            }
+        }
+        
+        if (fetchMeta.hasNotFoundOk())
+        {
+            encoder.addParam(Constants.QP_NOT_FOUND_OK, fetchMeta.getNotFoundOK().toString());
+        }
+        
+        if (fetchMeta.hasBasicQuorum())
+        {
+           encoder.addParam(Constants.QP_BASIC_QUORUM, fetchMeta.getBasicQuorum().toString());
+        }
+        
+        HttpMethod method = HttpMethod.GET;
+        if (fetchMeta.hasHeadOnly())
+        {
+            if (fetchMeta.getHeadOnly())
+            {
+                method = HttpMethod.HEAD;
+            }
+        }
         
         HttpRequest message = 
-            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uriBuilder.toString());
+            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, encoder.toString());
         
         String hostname = "localhost";
         try
@@ -194,8 +246,13 @@ public class FetchOperation<T> extends FutureOperation<T>
     private Object pbChannelMessage(FetchMeta fetchMeta)
     {
         RiakKvPB.RpbGetReq.Builder builder = RiakKvPB.RpbGetReq.newBuilder();
-        builder.setBucket(ByteString.copyFrom(bucket));
-        builder.setKey(ByteString.copyFrom(key));
+        builder.setBucket(ByteString.copyFromUtf8(bucket));
+        builder.setKey(ByteString.copyFromUtf8(key));
+        
+        if (fetchMeta.hasHeadOnly())
+        {
+            builder.setHead(fetchMeta.getHeadOnly());
+        }
         
         if (fetchMeta.hasReturnDeletedVClock())
         {
@@ -230,69 +287,5 @@ public class FetchOperation<T> extends FutureOperation<T>
         RiakKvPB.RpbGetReq req = builder.build();
         return new RiakPbMessage(RiakMessageCodes.MSG_GetReq ,req.toByteArray());
         
-    }
-    
-    private String buildParamString(FetchMeta fetchMeta)
-    {
-        StringBuilder paramBuilder = new StringBuilder("?");
-        
-        if (fetchMeta.hasR())
-        {
-            Quorum quorum = fetchMeta.getR();
-            paramBuilder.append(Constants.QP_R);
-            paramBuilder.append("=");
-            if (quorum.isSymbolic())
-            {
-                paramBuilder.append(quorum.getName());
-            }
-            else
-            {
-                paramBuilder.append(quorum.getIntValue());
-            }
-            paramBuilder.append("&");
-        }
-        
-        if (fetchMeta.hasPr())
-        {
-            Quorum quorum = fetchMeta.getPr();
-            paramBuilder.append(Constants.QP_PR);
-            paramBuilder.append("=");
-            if (quorum.isSymbolic())
-            {
-                paramBuilder.append(quorum.getName());
-            }
-            else
-            {
-                paramBuilder.append(quorum.getIntValue());
-            }
-            paramBuilder.append("&");
-        }
-        
-        if (fetchMeta.hasNotFoundOk())
-        {
-            paramBuilder.append(Constants.QP_NOT_FOUND_OK);
-            paramBuilder.append("=");
-            paramBuilder.append(fetchMeta.getNotFoundOK().toString());
-            paramBuilder.append("&");
-        }
-        
-        if (fetchMeta.hasBasicQuorum())
-        {
-            paramBuilder.append(Constants.QP_BASIC_QUORUM);
-            paramBuilder.append("=");
-            paramBuilder.append(fetchMeta.getBasicQuorum().toString());
-            paramBuilder.append("&");
-        }
-        
-        if (paramBuilder.length() == 1)
-        {
-            // only has '?'
-            return "";
-        }
-        else
-        {
-            // Discard trailing '&'
-            return paramBuilder.substring(0, paramBuilder.length() - 1);
-        }
-    }
+    }    
 }

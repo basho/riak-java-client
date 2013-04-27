@@ -36,13 +36,13 @@ import java.util.concurrent.ExecutionException;
 public class FetchObject<T> implements ClientOperation<T>
 {
     private final RiakCluster riakCluster;
-    private final byte[] bucket;
-    private final byte[] key;
+    private final String bucket;
+    private final String key;
     private final FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder();
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     
-    public FetchObject(RiakCluster cluster, byte[] bucket, byte[] key)
+    public FetchObject(RiakCluster cluster, String bucket, String key)
     {
         this.bucket = bucket;
         this.key = key;

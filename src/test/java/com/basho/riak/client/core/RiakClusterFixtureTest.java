@@ -131,7 +131,7 @@ public class RiakClusterFixtureTest
         @Override
         protected RiakObject convert(RiakResponse rawResponse)
         {
-            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket".getBytes(), "key".getBytes()));
+            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket", "key"));
             return rol.get(0);
         }
 

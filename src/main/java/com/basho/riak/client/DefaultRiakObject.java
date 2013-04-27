@@ -56,8 +56,8 @@ public class DefaultRiakObject implements RiakObject
      * provided.
      */
     public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
-    private volatile byte[] key;
-    private volatile byte[] bucket;
+    private volatile String key;
+    private volatile String bucket;
     private volatile byte[] value;
     private volatile VClock vclock;
     private volatile String vtag;
@@ -65,7 +65,7 @@ public class DefaultRiakObject implements RiakObject
     private volatile boolean isDeleted;
     private volatile boolean isModified = true;
     private volatile String contentType;
-    private volatile Charset charset; // = Charset.forName("ISO-8859-1");
+    private volatile String charset; 
     private final ReentrantReadWriteLock linkLock = new ReentrantReadWriteLock();
     private final Collection<RiakLink> links;
     private final ReentrantReadWriteLock metaLock = new ReentrantReadWriteLock();
@@ -79,8 +79,8 @@ public class DefaultRiakObject implements RiakObject
             throw new IllegalArgumentException("Bucket can not be null");
         }
         
-        this.key = (null == builder.key ? null : Arrays.copyOf(builder.key, builder.key.length));
-        this.bucket = Arrays.copyOf(builder.bucket, builder.bucket.length);
+        this.key = builder.key;
+        this.bucket = builder.bucket;
         this.value = Arrays.copyOf(builder.value, builder.value.length);
         this.vclock = builder.vclock;
         this.vtag = builder.vtag;
@@ -93,45 +93,21 @@ public class DefaultRiakObject implements RiakObject
     }
 
     @Override
-    public String getKeyAsString()
+    public String getKey()
     {
-        return new String(key);
+        return key;
     }
 
     @Override
-    public String getKeyAsString(Charset charset)
+    public String getBucket()
     {
-        return new String(key, charset);
-    }
-
-    @Override
-    public byte[] getKey()
-    {
-        return Arrays.copyOf(key, key.length);
-    }
-
-    @Override
-    public String getBucketAsString()
-    {
-        return new String(bucket);
-    }
-
-    @Override
-    public String getBucketAsString(Charset charset)
-    {
-        return new String(bucket, charset);
-    }
-
-    @Override
-    public byte[] getBucket()
-    {
-        return Arrays.copyOf(bucket, bucket.length);
+        return bucket;
     }
 
     @Override
     public String getValueAsString()
     {
-        return new String(value, charset == null ? Charset.defaultCharset() : charset);
+        return new String(value, charset == null ? Charset.forName("UTF-8") : Charset.forName(charset));
     }
 
     @Override
@@ -172,7 +148,7 @@ public class DefaultRiakObject implements RiakObject
     }
 
     @Override
-    public Charset getCharset()
+    public String getCharset()
     {
         return charset;
     }
@@ -186,15 +162,15 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public void setValue(String value)
     {
-        this.value = value.getBytes();
-        this.charset = Charset.defaultCharset();
+        this.value = value.getBytes(Charset.forName("UTF-8"));
+        this.charset = "UTF-8";
     }
 
     @Override
     public void setValue(String value, Charset charset)
     {
-        this.value = value.getBytes();
-        this.charset = charset;
+        this.value = value.getBytes(charset);
+        this.charset = charset.name();
     }
 
     @Override
@@ -213,7 +189,7 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public void setCharset(Charset charset)
     {
-        this.charset = charset;
+        this.charset = charset.name();
     }
 
     @Override
@@ -503,8 +479,8 @@ public class DefaultRiakObject implements RiakObject
     public static class Builder
     {
 
-        private byte[] key;
-        private byte[] bucket;
+        private String key;
+        private String bucket;
         private byte[] value;
         private VClock vclock;
         private String vtag;
@@ -512,8 +488,8 @@ public class DefaultRiakObject implements RiakObject
         private boolean isDeleted;
         private boolean isModified = true;
         private String contentType = DEFAULT_CONTENT_TYPE;
-        private Charset charset; // = Charset.forName("ISO-8859-1");
-        private Collection<RiakLink> links = new ArrayList<RiakLink>();
+        private String charset; 
+        private List<RiakLink> links = new ArrayList<RiakLink>();
         private Map<String, String> userMeta = new HashMap<String, String>();
         private RiakIndexes indexes = new RiakIndexes();
 
@@ -555,42 +531,10 @@ public class DefaultRiakObject implements RiakObject
         /**
          * Set the key.
          *
-         * The key is stored internally as a byte array. The default encoding
-         * will be used to convert the provided string.
-         *
-         * @param key
+         * @param key 
          * @return this
          */
         public Builder withKey(String key)
-        {
-            this.key = key.getBytes();
-            return this;
-        }
-
-        /**
-         * Set the key.
-         *
-         * The key is stored internally as a byte array. The provided
-         * {@code Charset} will be used to convert the provided string.
-         *
-         * @param key
-         * @param charset - the {@code Charset} to use for encoding to a byte
-         * array
-         * @return this
-         */
-        public Builder withKey(String key, Charset charset)
-        {
-            this.key = key.getBytes(charset);
-            return this;
-        }
-
-        /**
-         * Set the key
-         *
-         * @param key
-         * @return this
-         */
-        public Builder withKey(byte[] key)
         {
             this.key = key;
             return this;
@@ -599,42 +543,10 @@ public class DefaultRiakObject implements RiakObject
         /**
          * Set the bucket name.
          *
-         * The bucket is stored internally as a byte array. The default encoding
-         * will be used to convert the provided string.
-         *
-         * @param bucket - the name of the bucket
+         * @param bucket the name of the bucket
          * @return this
          */
         public Builder withBucket(String bucket)
-        {
-            this.bucket = bucket.getBytes();
-            return this;
-        }
-
-        /**
-         * Set the bucket name.
-         *
-         * The bucket is stored internally as a byte array. The provided
-         * {@code Charset} will be used to convert the provided string.
-         *
-         * @param bucket - the name of the bucket
-         * @param charset - the {@code Charset} to use for encoding to a byte
-         * array
-         * @return this
-         */
-        public Builder withBucket(String bucket, Charset charset)
-        {
-            this.bucket = bucket.getBytes(charset);
-            return this;
-        }
-
-        /**
-         * Set the bucket name
-         *
-         * @param bucket
-         * @return this
-         */
-        public Builder withBucket(byte[] bucket)
         {
             this.bucket = bucket;
             return this;
@@ -653,7 +565,7 @@ public class DefaultRiakObject implements RiakObject
         }
 
         /**
-         * Convenience method uses default {@code Charset} for converting the
+         * Convenience method uses utf8 charset for converting the
          * provided {@code String} to a byte array.
          *
          * @param value a UTF-8 encoded string
@@ -661,14 +573,17 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder withValue(String value)
         {
-            this.value = value.getBytes();
-            this.charset = Charset.defaultCharset();
+            this.value = value.getBytes(Charset.forName("UTF-8"));
+            this.charset = "UTF-8";
             return this;
         }
 
         /**
          * Convenience method uses provided {@code Charset} for converting the
-         * provided {@code String} to a byte array.
+         * provided {@code String} to a byte array. 
+         * 
+         * The provided {@code Charset} will be preserved and stored with the 
+         * object in Riak
          *
          * @param value
          * @param charset - {@code Charset} used to convert value
@@ -677,10 +592,22 @@ public class DefaultRiakObject implements RiakObject
         public Builder withValue(String value, Charset charset)
         {
             this.value = value.getBytes(charset);
-            this.charset = charset;
+            this.charset = charset.name();
             return this;
         }
 
+        /**
+         * Set the character set for this object's content
+         * 
+         * @param charset
+         * @return this
+         */
+        public Builder withCharset(String charset)
+        {
+            this.charset = charset;
+            return this;
+        }
+        
         /**
          * The vector clock value for the constructed riak object
          *
@@ -728,7 +655,7 @@ public class DefaultRiakObject implements RiakObject
          * will be copied.
          * @return this
          */
-        public Builder withLinks(Collection<RiakLink> links)
+        public Builder withLinks(List<RiakLink> links)
         {
             if (links != null)
             {

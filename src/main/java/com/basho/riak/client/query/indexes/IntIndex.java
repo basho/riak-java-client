@@ -23,7 +23,7 @@ package com.basho.riak.client.query.indexes;
 public final class IntIndex extends RiakIndex<Number>
 {
 
-    private static final String SUFFIX = "_int";
+    public static final String SUFFIX = "_int";
 
     /**
      * @param name

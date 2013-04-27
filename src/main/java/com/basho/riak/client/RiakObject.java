@@ -41,26 +41,12 @@ import java.util.Set;
 public interface RiakObject
 {
     /**
-     * The name of this objects bucket encoded with the default {@code Charset}
+     * The name of this objects bucket
      * 
      * @return the bucket name.
      */
-    String getBucketAsString();
+    String getBucket();
 
-    /**
-     * The name of this objects bucket encoded with the specified {@code Charset}
-     * 
-     * @return the bucket name.
-     */
-    String getBucketAsString(Charset charset);
-    
-    /**
-     * The name of this objects bucket as a byte array. 
-     * 
-     * @return the bucket name.
-     */
-    byte[] getBucket();
-    
     /**
      * The value.
      * 
@@ -69,9 +55,10 @@ public interface RiakObject
     byte[] getValue();
 
     /**
-     * Convenience method. 
+     * Convenience method. The value will be coerced to a {@code String} using the 
+     * object's {@code Charset}. If no {@code Charset} is available utf8 will be used.
      * 
-     * @return the byte[] coerced to a {@code String} using the object's {@code Charset}
+     * @return the byte[] coerced to a {@code String} using the object's {@code Charset} or utf8
      */
     String getValueAsString();
 
@@ -93,25 +80,11 @@ public interface RiakObject
     String getVClockAsString();
 
     /**
-     * The object's key encoded using the system default {@code Charset}.
+     * The object's key 
      * 
      * @return The objects key.
      */
-    String getKeyAsString();
-
-    /**
-     * The object's key encoded with the provided {@code Charset}
-     * 
-     * @return The object's key.
-     */
-    String getKeyAsString(Charset charset);
-    
-    /**
-     * The object's key. 
-     * 
-     * @return The object's key.
-     */
-    byte[] getKey();
+    String getKey();
     
     /**
      * If this object has a version tag (if it is one of a set of siblings)
@@ -141,7 +114,7 @@ public interface RiakObject
      * @return the object's Charset. If this has not been set {@code null} is 
      * returned
      */
-    Charset getCharset();
+    String getCharset();
     
     /**
      * A List of {@link RiakLink}s from this object. See also <a
