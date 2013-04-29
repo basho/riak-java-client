@@ -16,7 +16,6 @@
 package com.basho.riak.client.core;
 
 
-import com.basho.riak.client.cap.UnresolvedConflictException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -60,7 +59,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
      * No conversion will be done to the raw response from Riak.
      * <p>
      * This option is included with people interested in building their own
-     * clients on top of the core in mind. 
+     * clients on top of the core in mind.
      * </p>
      * <p>
      * If set to {@code true} then {@link #convert(com.basho.riak.client.core.RiakResponse) }
@@ -102,7 +101,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         protocolPreflist.addAll(Arrays.asList(protocols));
     }
     
-    synchronized void setResponse(RiakResponse rawResponse)
+    synchronized final void setResponse(RiakResponse rawResponse)
     {
         remainingTries--;
         this.rawResponse = rawResponse;
@@ -115,7 +114,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         }
     }
 
-    synchronized void setException(Throwable t)
+    synchronized final void setException(Throwable t)
     {
         this.exception = t;
         

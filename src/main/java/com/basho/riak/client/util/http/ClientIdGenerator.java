@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.core;
+package com.basho.riak.client.util.http;
 
-import com.basho.riak.client.core.converters.RiakResponseConverter;
-import java.util.concurrent.ExecutionException;
+import java.util.Random;
+import javax.xml.bind.DatatypeConverter;
 
 /**
- *
+ * If using HTTP without vnode_vclocks enabled in Riak the client must
+ * uniquely identify itself.
+ * 
  * @author Brian Roach <roach at basho dot com>
- * @since 2.0
  */
-public interface RiakResponse
+public final class ClientIdGenerator
 {
-    <T> T convertResponse(RiakResponseConverter<T> converter) throws ExecutionException;
+    public static String generateClientId()
+    {
+        byte[] rnd = new byte[4];
+        new Random().nextBytes(rnd);
+        return Base64.encodeToString(rnd, true);
+    }
 }

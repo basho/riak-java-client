@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -85,7 +86,8 @@ public class RiakClusterFixtureTest
         try
         {
             RiakObject response = operation.get();
-            assertEquals(response.getValueAsString().trim(), "not found");
+            assertEquals(response.getValueAsString(), null);
+            assertTrue(response.notFound());
         }
         catch(InterruptedException e)
         {
@@ -129,9 +131,9 @@ public class RiakClusterFixtureTest
     static class GetOperation extends FutureOperation<RiakObject>
     {
         @Override
-        protected RiakObject convert(RiakResponse rawResponse)
+        protected RiakObject convert(RiakResponse rawResponse) throws ExecutionException
         {
-            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket", "key"));
+            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket", "key", false));
             return rol.get(0);
         }
 

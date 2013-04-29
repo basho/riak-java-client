@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -76,6 +77,9 @@ public class RiakHttpMessageHandlerTest
     public void notifiesListenerOnComplete() throws Exception
     {
         HttpResponse response = mock(HttpResponse.class);
+        HttpResponseStatus status = mock(HttpResponseStatus.class);
+        doReturn(status).when(response).getStatus();
+        doReturn(200).when(status).code();
         LastHttpContent lastContent = mock(LastHttpContent.class);
         ByteBuf bb = Unpooled.buffer();
         bb.writeByte((byte)1);
@@ -97,6 +101,9 @@ public class RiakHttpMessageHandlerTest
     public void removesSelfFromPipelineOnCompletion() throws Exception
     {
         HttpResponse response = mock(HttpResponse.class);
+        HttpResponseStatus status = mock(HttpResponseStatus.class);
+        doReturn(status).when(response).getStatus();
+        doReturn(200).when(status).code();
         LastHttpContent lastContent = mock(LastHttpContent.class);
         ByteBuf bb = Unpooled.buffer();
         bb.writeByte((byte)1);
@@ -111,6 +118,9 @@ public class RiakHttpMessageHandlerTest
     public void producesCorrectResponse() throws Exception
     {
         HttpResponse response = mock(HttpResponse.class);
+        HttpResponseStatus status = mock(HttpResponseStatus.class);
+        doReturn(status).when(response).getStatus();
+        doReturn(200).when(status).code();
         HttpContent content = mock(HttpContent.class);
         LastHttpContent lastContent = mock(LastHttpContent.class);
         

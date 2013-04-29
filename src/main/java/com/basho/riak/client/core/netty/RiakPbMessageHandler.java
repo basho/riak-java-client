@@ -17,6 +17,9 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakPbMessage;
 import com.basho.riak.client.core.RiakResponseListener;
+import com.basho.riak.client.util.pb.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakPB;
+import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.handler.timeout.ReadTimeoutException;
@@ -40,7 +43,18 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
     @Override
     public void messageReceived(ChannelHandlerContext chc, RiakPbMessage msg) throws Exception
     {
-        listener.onSuccess(chc.channel(), msg);
+        if (msg.getCode() == RiakMessageCodes.MSG_ErrorResp)
+        {
+            RiakPB.RpbErrorResp error = RiakPB.RpbErrorResp.newBuilder()
+                                                .setErrcode(msg.getCode())
+                                                .setErrmsg(ByteString.copyFrom(msg.getData()))
+                                                .build(); 
+            listener.onException(chc.channel(), new RiakResponseException(RiakMessageCodes.MSG_ErrorResp, error.getErrmsg().toStringUtf8()));
+        }
+        else
+        {
+            listener.onSuccess(chc.channel(), msg);
+        }
         chc.channel().pipeline().remove(this);
     }
     

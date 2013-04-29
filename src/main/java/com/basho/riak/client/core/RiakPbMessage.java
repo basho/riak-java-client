@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.converters.RiakResponseConverter;
+import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -44,8 +45,8 @@ public final class RiakPbMessage implements RiakResponse
     }
  
     @Override
-    public <T> T convertResponse(RiakResponseConverter<T> converter)
+    public <T> T convertResponse(RiakResponseConverter<T> converter) throws ExecutionException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return converter.convert(code, data);
     }
 }

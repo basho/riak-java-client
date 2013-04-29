@@ -20,6 +20,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
+import com.basho.riak.client.util.CharsetUtils;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +64,9 @@ public class DefaultRiakObject implements RiakObject
     private volatile String vtag;
     private volatile long lastModified;
     private volatile boolean isDeleted;
-    private volatile boolean isModified = true;
+    private volatile boolean isModified;
+    private volatile boolean notFound;
     private volatile String contentType;
-    private volatile String charset; 
     private final ReentrantReadWriteLock linkLock = new ReentrantReadWriteLock();
     private final Collection<RiakLink> links;
     private final ReentrantReadWriteLock metaLock = new ReentrantReadWriteLock();
@@ -81,15 +82,22 @@ public class DefaultRiakObject implements RiakObject
         
         this.key = builder.key;
         this.bucket = builder.bucket;
-        this.value = Arrays.copyOf(builder.value, builder.value.length);
+        
+        if (builder.value != null)
+        {
+            this.value = Arrays.copyOf(builder.value, builder.value.length);
+        }
+        
         this.vclock = builder.vclock;
         this.vtag = builder.vtag;
         this.lastModified = (null == builder.lastModified ? 0 : builder.lastModified.getTime());
         this.contentType = (null == builder.contentType ? DEFAULT_CONTENT_TYPE : builder.contentType);
-        this.charset = builder.charset;
         this.links = new ArrayList<RiakLink>(builder.links);
         this.userMeta = new HashMap<String,String>(builder.userMeta);
         this.indexes = RiakIndexes.from(builder.indexes);
+        this.isDeleted = builder.isDeleted;
+        this.isModified = builder.isModified;
+        this.notFound = builder.notFound;
     }
 
     @Override
@@ -107,7 +115,7 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public String getValueAsString()
     {
-        return new String(value, charset == null ? Charset.forName("UTF-8") : Charset.forName(charset));
+        return CharsetUtils.asString(value, CharsetUtils.getCharset(contentType));
     }
 
     @Override
@@ -150,7 +158,7 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public String getCharset()
     {
-        return charset;
+        return CharsetUtils.getDeclaredCharset(contentType);
     }
 
     @Override
@@ -162,15 +170,15 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public void setValue(String value)
     {
-        this.value = value.getBytes(Charset.forName("UTF-8"));
-        this.charset = "UTF-8";
+        this.value = CharsetUtils.utf8StringToBytes(value);
+        this.contentType = CharsetUtils.addUtf8Charset(contentType);
     }
 
     @Override
     public void setValue(String value, Charset charset)
     {
-        this.value = value.getBytes(charset);
-        this.charset = charset.name();
+        this.value = CharsetUtils.asBytes(value, charset);
+        this.contentType = CharsetUtils.addCharset(charset, contentType);
     }
 
     @Override
@@ -189,7 +197,7 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public void setCharset(Charset charset)
     {
-        this.charset = charset.name();
+        this.contentType = CharsetUtils.addCharset(charset, contentType);
     }
 
     @Override
@@ -392,6 +400,24 @@ public class DefaultRiakObject implements RiakObject
     }
 
     @Override
+    public boolean hasIndexes()
+    {
+        return indexes.size() != 0;
+    }
+    
+    @Override
+    public boolean hasIntIndex(String name)
+    {
+        return indexes.hasIntIndex(name);
+    }
+    
+    @Override 
+    public boolean hasBinIndex(String name)
+    {
+        return indexes.hasBinIndex(name);
+    }
+    
+    @Override
     public Map<BinIndex, Set<String>> allBinIndexes()
     {
         return indexes.getBinIndexes();
@@ -469,6 +495,11 @@ public class DefaultRiakObject implements RiakObject
         return isModified;
     }
 
+    @Override
+    public boolean notFound()
+    {
+        return notFound;
+    }
     /**
      * Creates instances of {@link DefaultRiakObject}
      *
@@ -487,8 +518,8 @@ public class DefaultRiakObject implements RiakObject
         private Date lastModified;
         private boolean isDeleted;
         private boolean isModified = true;
+        private boolean notFound;
         private String contentType = DEFAULT_CONTENT_TYPE;
-        private String charset; 
         private List<RiakLink> links = new ArrayList<RiakLink>();
         private Map<String, String> userMeta = new HashMap<String, String>();
         private RiakIndexes indexes = new RiakIndexes();
@@ -513,13 +544,15 @@ public class DefaultRiakObject implements RiakObject
             rob.bucket = o.getBucket();
             rob.vclock = o.getVClock();
             rob.contentType = o.getContentType();
-            rob.charset = o.getCharset();
             rob.lastModified = o.getLastModified();
             rob.value = o.getValue();
             rob.links = o.getLinks();
             rob.indexes = new RiakIndexes(o.allBinIndexes(), o.allIntIndexes());
             rob.userMeta = o.getMeta();
             rob.isDeleted = o.isDeleted();
+            rob.vtag = o.getVtag();
+            rob.isModified = o.isModified();
+            rob.notFound = o.notFound();
             return rob;
         }
 
@@ -573,8 +606,8 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder withValue(String value)
         {
-            this.value = value.getBytes(Charset.forName("UTF-8"));
-            this.charset = "UTF-8";
+            this.value = CharsetUtils.utf8StringToBytes(value);
+            this.contentType = CharsetUtils.addUtf8Charset(contentType);
             return this;
         }
 
@@ -591,20 +624,21 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder withValue(String value, Charset charset)
         {
-            this.value = value.getBytes(charset);
-            this.charset = charset.name();
+            this.value = CharsetUtils.asBytes(value, charset);
+            this.contentType = CharsetUtils.addCharset(charset, contentType);
             return this;
         }
 
         /**
-         * Set the character set for this object's content
+         * Set the character set for this object's content. This is added to
+         * the content type. If a charset is already present it is replaced.
          * 
          * @param charset
          * @return this
          */
         public Builder withCharset(String charset)
         {
-            this.charset = charset;
+            this.contentType = CharsetUtils.addCharset(charset, contentType);
             return this;
         }
         
@@ -674,10 +708,7 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder addLink(String bucket, String key, String tag)
         {
-            synchronized (links)
-            {
-                links.add(new RiakLink(bucket, key, tag));
-            }
+            links.add(new RiakLink(bucket, key, tag));
             return this;
         }
 
@@ -746,10 +777,7 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder addUsermeta(String key, String value)
         {
-            synchronized (userMeta)
-            {
-                userMeta.put(key, value);
-            }
+            userMeta.put(key, value);
             return this;
         }
 
@@ -799,6 +827,18 @@ public class DefaultRiakObject implements RiakObject
         public Builder withModified(boolean isModified)
         {
             this.isModified = isModified;
+            return this;
+        }
+        
+        /**
+         * Marks this object as not being found in Riak
+         * 
+         * @param notFound
+         * @return this
+         */
+        public Builder withNotFound(boolean notFound)
+        {
+            this.notFound = notFound;
             return this;
         }
     }

@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.core;
-
-import com.basho.riak.client.core.converters.RiakResponseConverter;
-import java.util.concurrent.ExecutionException;
+package com.basho.riak.client.core.netty;
 
 /**
- *
+ * 
  * @author Brian Roach <roach at basho dot com>
- * @since 2.0
  */
-public interface RiakResponse
+public class RiakResponseException extends Exception
 {
-    <T> T convertResponse(RiakResponseConverter<T> converter) throws ExecutionException;
+    private static final long serialVersionUID = 2843706291883485752L;
+    private final int code;
+    
+    public RiakResponseException(int code, String message)
+    {
+        super(message);
+        this.code = code;
+    }
+    
+    public int getCode()
+    {
+        return code;
+    }
+    
 }

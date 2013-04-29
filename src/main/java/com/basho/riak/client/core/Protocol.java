@@ -19,6 +19,7 @@ import com.basho.riak.client.core.netty.HttpChannelInitializer;
 import com.basho.riak.client.core.netty.PbChannelInitializer;
 import com.basho.riak.client.core.netty.RiakHttpMessageHandler;
 import com.basho.riak.client.core.netty.RiakPbMessageHandler;
+import com.basho.riak.client.util.http.ClientIdGenerator;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
@@ -52,11 +53,18 @@ public enum Protocol
             return new RiakPbMessageHandler(listener);
         }
         
+        @Override
+        public String getClientId()
+        {
+            return null;
+        }
+        
         
     },
     HTTP
     {
         private final int DEFAULT_HTTP_PORT = 8098;
+        private final String clientId = ClientIdGenerator.generateClientId();
         
         @Override
         int defaultPort()
@@ -76,9 +84,16 @@ public enum Protocol
             return new RiakHttpMessageHandler(listener);
         }
         
+        @Override
+        public String getClientId()
+        {
+            return clientId;
+        }
+        
     };
     
     abstract int defaultPort();
     abstract ChannelInitializer<SocketChannel> channelInitializer();
     abstract ChannelHandler responseHandler(RiakResponseListener listener);
+    abstract public String getClientId();
 }

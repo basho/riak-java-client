@@ -16,6 +16,7 @@
 package com.basho.riak.client.cap;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -37,6 +38,19 @@ public class BasicVClock implements VClock
             throw new IllegalArgumentException("VClock value cannot be null");
         }
         this.value = Arrays.copyOf(value, value.length);
+    }
+    
+    /**
+     * Create BasicVclock from utf8 String.
+     * @param value the vector clock bytes. NOTE: copies the value
+     * @throws IllegalArgumentException if <code>value</code> is null
+     */
+    public BasicVClock(String vclock)
+    {
+        if (vclock == null) {
+            throw new IllegalArgumentException("VClock value cannot be null");
+        }
+        this.value = vclock.getBytes(Charset.forName("UTF-8"));
     }
     
     @Override

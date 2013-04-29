@@ -56,9 +56,9 @@ public interface RiakObject
 
     /**
      * Convenience method. The value will be coerced to a {@code String} using the 
-     * object's {@code Charset}. If no {@code Charset} is available utf8 will be used.
+     * object's {@code Charset} determined from the content type. 
      * 
-     * @return the byte[] coerced to a {@code String} using the object's {@code Charset} or utf8
+     * @return the byte[] coerced to a {@code String} using the object's {@code Charset} 
      */
     String getValueAsString();
 
@@ -111,7 +111,8 @@ public interface RiakObject
     /**
      * The {@code Charset} for this object's value. 
      * 
-     * @return the object's Charset. If this has not been set {@code null} is 
+     * @return the object's Charset. If this can not be determined from the 
+     * content type {@code null} is 
      * returned
      */
     String getCharset();
@@ -197,12 +198,34 @@ public interface RiakObject
     Iterable<Map.Entry<String, String>> userMetaEntries();
 
     /**
+     * Does this object have any secondary indexes?
+     * @return true if this RiakObject has secondary indexes 
+     */
+    boolean hasIndexes();
+    
+    /**
+     * Does this RiakObject have this {@link IntIndex}
+     * 
+     * @param name the name of the IntIndex
+     * @return true if it has it
+     */
+    boolean hasIntIndex(String name);
+    
+    /**
+     * Does this RiakObject have this {@link BinIndex}
+     * 
+     * @param name the name of the BinIndex
+     * @return true if it has it
+     */
+    boolean hasBinIndex(String name);
+    
+    /**
      * Secondary indexes for this object.
      * 
      * See <a
      * href="http://docs.basho.com/riak/latest/tutorials/querying/Secondary-Indexes/">basho
      * docs</a> for more details.
-     
+     *
      * @return a copy of the string indexes for this object.
      */
     Map<BinIndex, Set<String>> allBinIndexes();
@@ -272,7 +295,8 @@ public interface RiakObject
     void setContentType(String contentType);
 
     /**
-     * Set the {@code Charset} of this object's payload.
+     * Set the {@code Charset} of this object's payload. This is added
+     * to the content type. If a charset is already present it is replaced.
      * 
      * @param charset the {@code Charset} of the object's payload. 
      * @see #getValueAsString() 
@@ -391,4 +415,10 @@ public interface RiakObject
      * @return true unless the conditional fetch returned no object
      */
     boolean isModified();
+    
+    /**
+     * Check to see if this object was not found
+     * @return true unless the result of a fetch was not found
+     */
+    boolean notFound();
 }

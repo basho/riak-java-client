@@ -55,7 +55,8 @@ public class RiakNodeFixtureTest extends FixtureTest
         boolean accepted = node.execute(operation);
         assertTrue(accepted);
         RiakObject response = operation.get();
-        assertEquals(response.getValueAsString().trim(), "not found");
+        assertEquals(response.getValueAsString(), null);
+        assertTrue(response.notFound());
     }
     
     @Test(expected=ExecutionException.class)
@@ -121,9 +122,9 @@ public class RiakNodeFixtureTest extends FixtureTest
     static class GetOperation extends FutureOperation<RiakObject>
     {
         @Override
-        protected RiakObject convert(RiakResponse rawResponse)
+        protected RiakObject convert(RiakResponse rawResponse) throws ExecutionException
         {
-            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket", "key"));
+            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket", "key", false));
             return rol.get(0);
         }
 

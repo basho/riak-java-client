@@ -26,7 +26,7 @@ import com.basho.riak.client.core.RiakPbMessage;
 import com.basho.riak.client.core.RiakResponse;
 import com.basho.riak.client.core.converters.GetRespConverter;
 import com.basho.riak.client.util.Constants;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.client.util.pb.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -72,7 +72,6 @@ public class FetchOperation<T> extends FutureOperation<T>
             throw new IllegalArgumentException("key can not be null");
         }
 
-        
         this.bucket = bucket;
         this.key = key;
     }
@@ -126,7 +125,9 @@ public class FetchOperation<T> extends FutureOperation<T>
     protected T convert(RiakResponse rawResponse) throws ExecutionException
     {
         List<RiakObject> riakObjectList = 
-            rawResponse.convertResponse(new GetRespConverter(bucket, key));
+            rawResponse.convertResponse(
+                new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)
+            );
         
         List<T> convertedObjects = new ArrayList<T>(riakObjectList.size());
         
@@ -135,7 +136,18 @@ public class FetchOperation<T> extends FutureOperation<T>
             convertedObjects.add(domainObjectConverter.toDomain(ro));
         }
         
-        return conflictResolver.resolve(convertedObjects);
+        if (convertedObjects.isEmpty())
+        {
+            return null;
+        }
+        else if (convertedObjects.size() == 1)
+        {
+            return convertedObjects.get(0);
+        }
+        else
+        {
+            return conflictResolver.resolve(convertedObjects);
+        }
     }
 
     @Override
@@ -220,7 +232,7 @@ public class FetchOperation<T> extends FutureOperation<T>
         }
         
         HttpRequest message = 
-            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, encoder.toString());
+            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, encoder.toString());
         
         String hostname = "localhost";
         try
@@ -232,6 +244,7 @@ public class FetchOperation<T> extends FutureOperation<T>
         
         message.headers().set(HttpHeaders.Names.HOST, hostname);
         message.headers().set(HttpHeaders.Names.ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
+        message.headers().set(Constants.HDR_CLIENT_ID, Protocol.HTTP.getClientId());
         
         Date modifiedSince = fetchMeta.getIfModifiedSince();
         if (modifiedSince != null)

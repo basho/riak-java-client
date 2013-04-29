@@ -89,8 +89,19 @@ public class RiakHttpMessageHandler extends ChannelInboundMessageHandlerAdapter<
                     buffer.release();
                 }
                 
+                int responseCode = message.getResponse().getStatus().code();
                 message.setContent(bytes);
-                listener.onSuccess(chc.channel(), message);
+                
+                if ( responseCode < 200 || 
+                    (responseCode >= 400 && responseCode != 404 && responseCode != 412 ) )
+                {
+                    listener.onException(chc.channel(), new RiakResponseException(responseCode, new String(bytes)));
+                }
+                else
+                { 
+                    message.setContent(bytes);
+                    listener.onSuccess(chc.channel(), message);
+                }
                 chc.channel().pipeline().remove(this);
             }
         }

@@ -77,7 +77,7 @@ public class RiakPbMessageHandlerTest
     public void notifiesListenerOnComplete() throws Exception
     {
         RiakPbMessage message = PowerMockito.mock(RiakPbMessage.class);
-        
+        doReturn((byte)10).when(message).getCode();
         handler.messageReceived(mockContext, message);
         
         verify(mockListener).onSuccess(mockChannel, message);
@@ -94,7 +94,7 @@ public class RiakPbMessageHandlerTest
     public void removesSelfFromPipelineOnCompletion() throws Exception
     {
         RiakPbMessage message = PowerMockito.mock(RiakPbMessage.class);
-
+        doReturn((byte)10).when(message).getCode();
         handler.messageReceived(mockContext, message);
         
         verify(mockPipeline).remove(handler);

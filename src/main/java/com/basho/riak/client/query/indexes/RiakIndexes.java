@@ -366,4 +366,19 @@ public class RiakIndexes
             lock.readLock().unlock();
         }
     }
+    
+    public int size()
+    {
+        return binIndexes.size() + intIndexes.size();
+    }
+    
+    public boolean hasIntIndex(String name)
+    {
+        return intIndexes.containsKey(IntIndex.named(name));
+    }
+    
+    public boolean hasBinIndex(String name)
+    {
+        return binIndexes.containsKey(BinIndex.named(name));
+    }
 }

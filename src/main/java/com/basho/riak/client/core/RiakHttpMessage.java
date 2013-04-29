@@ -17,6 +17,7 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.converters.RiakResponseConverter;
 import io.netty.handler.codec.http.HttpResponse;
+import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -49,7 +50,7 @@ public final class RiakHttpMessage implements RiakResponse
     }
 
     @Override
-    public <T> T convertResponse(RiakResponseConverter<T> converter)
+    public <T> T convertResponse(RiakResponseConverter<T> converter) throws ExecutionException
     {
         return converter.convert(response, content);
     }
