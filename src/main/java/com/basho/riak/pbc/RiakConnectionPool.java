@@ -28,6 +28,8 @@ import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A bounded or boundless pool of {@link RiakConnection}s to be reused by {@link RiakClient}
@@ -228,7 +230,7 @@ public class RiakConnectionPool {
         this.idleReaper = Executors.newScheduledThreadPool(1);
         this.shutdownExecutor = Executors.newScheduledThreadPool(1);
         this.state = State.CREATED;
-        warmUp();
+        
     }
 
     /**
@@ -257,7 +259,6 @@ public class RiakConnectionPool {
                                 boolean removed = available.remove(c);
                                 if (removed) {
                                     c.close();
-                                    permits.release();
                                 }
                             }
                         } else {
@@ -271,7 +272,7 @@ public class RiakConnectionPool {
                 }
             }, idleConnectionTTLNanos, idleConnectionTTLNanos, TimeUnit.NANOSECONDS);
         }
-
+        warmUp();
         state = State.RUNNING;
     }
 
@@ -295,12 +296,16 @@ public class RiakConnectionPool {
      * If there are any initial connections to create, do it.
      * @throws IOException
      */
-    private void warmUp() throws IOException {
+    private void warmUp() {
         
         for (int i = 0; i < this.initialSize; i++) {
-            RiakConnection c = getConnection();
-            c.beginIdle();
-            available.add(c);
+            try {
+                RiakConnection c = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
+                c.beginIdle();
+                available.add(c);
+            } catch (IOException ex) {
+               // No-op
+            }
         }
         
     }
