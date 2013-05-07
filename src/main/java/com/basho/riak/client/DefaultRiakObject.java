@@ -121,7 +121,14 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public byte[] getValue()
     {
-        return Arrays.copyOf(value, value.length);
+        if (value != null && value.length > 0)
+        {
+            return Arrays.copyOf(value, value.length);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     @Override

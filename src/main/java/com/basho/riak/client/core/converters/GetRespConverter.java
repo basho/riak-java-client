@@ -70,7 +70,7 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
         int statusCode = response.getStatus().code();
         HttpHeaders headers = response.headers();
 
-        if (statusCode == 300) // Siblings
+        if (statusCode == 300 && !isHeadRequest) // Siblings
         {
             String contentType = headers.get(Constants.HDR_CONTENT_TYPE);
 
@@ -82,12 +82,14 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
             return parseMultipart(headers, content);
         }
         else if ( (statusCode >= 200 && statusCode <300) ||
-                  (statusCode == 404 && headers.contains(Constants.HDR_VCLOCK)) )
+                  (statusCode == 404 && headers.contains(Constants.HDR_VCLOCK)) ||
+                  (statusCode == 300 && isHeadRequest ))
         {
             
             // There is a bug in Riak where the x-riak-deleted header is not returned
-            // with a tombstone on a 404 (x-riak-vclock exists). The following block can
-            // be removed once that is fixed
+            // with a tombstone on a 404 (the x-riak-vclock header will exist where it 
+            // won't on a "real" 404). The following block and the above conditional 
+            // can be changed once that is fixed. 
             if (statusCode == 404) {
                 headers.add(Constants.HDR_DELETED, "true");
                 content = new byte[0]; // otherwise this will be "not found"
@@ -161,94 +163,109 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
                 + RiakMessageCodes.MSG_GetResp
                 + " received " + pbMessageCode, null);
         }
-
-        try
+        else if (data.length == 0) // not found
         {
-            RiakKvPB.RpbGetResp resp = RiakKvPB.RpbGetResp.parseFrom(data);
-            int count = resp.getContentCount();
-
-            // To unify the behavior of having just a tombstone vs. siblings
-            // that include a tombstone, we create an empty object and mark
-            // it deleted
-            if (count == 0)
-            {
-                RiakKvPB.RpbGetResp.Builder responseBuilder = resp.toBuilder();
-                RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.getDefaultInstance().toBuilder();
-                contentBuilder.setDeleted(true).setValue(ByteString.EMPTY);
-                resp = responseBuilder.addContent(contentBuilder.build()).build();
-                count = 1;
-            }
-
-            List<RiakObject> objectList = new ArrayList<RiakObject>(count);
-            ByteString vclock = resp.getVclock();
-
-            for (int i = 0; i < count; i++)
-            {
-                RiakKvPB.RpbContent content = resp.getContent(i);
-                DefaultRiakObject.Builder builder =
-                    new DefaultRiakObject.Builder()
-                    .withKey(key)
-                    .withBucket(bucket)
-                    .withValue(content.getValue().toByteArray())
-                    .withVClock(new BasicVClock(vclock.toByteArray()))
-                    .withContentType(nullSafeByteStringToUtf8(content.getContentType()))
-                    .withCharset(nullSafeByteStringToUtf8(content.getCharset()))
-                    .withVtag(nullSafeByteStringToUtf8(content.getVtag()))
-                    .withDeleted(content.getDeleted());
-
-                if (content.getLinksCount() > 0)
-                {
-                    builder.withLinks(decodeLinks(content));
-                }
-
-                if (content.hasLastMod())
-                {
-                    int lastMod = content.getLastMod();
-                    int lastModUsec = content.getLastModUsecs();
-                    builder.withLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
-                }
-
-                if (content.getUsermetaCount() > 0)
-                {
-                    Map<String, String> userMeta = new LinkedHashMap<String, String>();
-                    for (int j = 0; j < content.getUsermetaCount(); j++)
-                    {
-                        RpbPair pair = content.getUsermeta(j);
-                        userMeta.put(pair.getKey().toStringUtf8(), nullSafeByteStringToUtf8(pair.getValue()));
-                    }
-                    builder.withUsermeta(userMeta);
-                }
-
-                if (content.getIndexesCount() > 0)
-                {
-                    for (RpbPair p : content.getIndexesList())
-                    {
-                        String name = p.getKey().toStringUtf8();
-                        String value = p.getKey().toStringUtf8();
-
-                        if (name.endsWith(BinIndex.SUFFIX))
-                        {
-                            builder.addIndex(name, value);
-                        }
-                        else if (name.endsWith(IntIndex.SUFFIX))
-                        {
-                            builder.addIndex(name, Long.valueOf(value));
-                        }
-                        else
-                        {
-                            throw new ExecutionException("Unknown index type" + name, null);
-                        }
-                    }
-                }
-
-                objectList.add(builder.build());
-            }
-
+            List<RiakObject> objectList = new ArrayList<RiakObject>(1);
+            objectList.add(new DefaultRiakObject.Builder()
+                                .withKey(key)
+                                .withBucket(bucket)
+                                .withNotFound(true)
+                                .withModified(false)
+                                .build()
+                            );
             return objectList;
         }
-        catch (InvalidProtocolBufferException ex)
+        else // We have a reply and it isn't not-found
         {
-            throw new ExecutionException(ex);
+            try
+            {
+                RiakKvPB.RpbGetResp resp = RiakKvPB.RpbGetResp.parseFrom(data);
+                int count = resp.getContentCount();
+
+                // To unify the behavior of having just a tombstone vs. siblings
+                // that include a tombstone, we create an empty object and mark
+                // it deleted
+                if (count == 0)
+                {
+                    RiakKvPB.RpbGetResp.Builder responseBuilder = resp.toBuilder();
+                    RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.getDefaultInstance().toBuilder();
+                    contentBuilder.setDeleted(true).setValue(ByteString.EMPTY);
+                    resp = responseBuilder.addContent(contentBuilder.build()).build();
+                    count = 1;
+                }
+
+                List<RiakObject> objectList = new ArrayList<RiakObject>(count);
+                ByteString vclock = resp.getVclock();
+
+                for (int i = 0; i < count; i++)
+                {
+                    RiakKvPB.RpbContent content = resp.getContent(i);
+                    DefaultRiakObject.Builder builder =
+                        new DefaultRiakObject.Builder()
+                        .withKey(key)
+                        .withBucket(bucket)
+                        .withValue(content.getValue().toByteArray())
+                        .withVClock(new BasicVClock(vclock.toByteArray()))
+                        .withContentType(nullSafeByteStringToUtf8(content.getContentType()))
+                        .withCharset(nullSafeByteStringToUtf8(content.getCharset()))
+                        .withVtag(nullSafeByteStringToUtf8(content.getVtag()))
+                        .withDeleted(content.getDeleted())
+                        .withModified(!resp.getUnchanged());
+
+                    if (content.getLinksCount() > 0)
+                    {
+                        builder.withLinks(decodeLinks(content));
+                    }
+
+                    if (content.hasLastMod())
+                    {
+                        int lastMod = content.getLastMod();
+                        int lastModUsec = content.getLastModUsecs();
+                        builder.withLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
+                    }
+
+                    if (content.getUsermetaCount() > 0)
+                    {
+                        Map<String, String> userMeta = new LinkedHashMap<String, String>();
+                        for (int j = 0; j < content.getUsermetaCount(); j++)
+                        {
+                            RpbPair pair = content.getUsermeta(j);
+                            userMeta.put(pair.getKey().toStringUtf8(), nullSafeByteStringToUtf8(pair.getValue()));
+                        }
+                        builder.withUsermeta(userMeta);
+                    }
+
+                    if (content.getIndexesCount() > 0)
+                    {
+                        for (RpbPair p : content.getIndexesList())
+                        {
+                            String name = p.getKey().toStringUtf8();
+                            String value = p.getKey().toStringUtf8();
+
+                            if (name.endsWith(BinIndex.SUFFIX))
+                            {
+                                builder.addIndex(name, value);
+                            }
+                            else if (name.endsWith(IntIndex.SUFFIX))
+                            {
+                                builder.addIndex(name, Long.valueOf(value));
+                            }
+                            else
+                            {
+                                throw new ExecutionException("Unknown index type" + name, null);
+                            }
+                        }
+                    }
+
+                    objectList.add(builder.build());
+                }
+
+                return objectList;
+            }
+            catch (InvalidProtocolBufferException ex)
+            {
+                throw new ExecutionException(ex);
+            }
         }
     }
 

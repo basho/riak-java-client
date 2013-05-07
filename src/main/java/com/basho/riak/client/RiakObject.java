@@ -50,7 +50,7 @@ public interface RiakObject
     /**
      * The value.
      * 
-     * @return byte[] of this object value.
+     * @return byte[] of this object value or {@code null} if no value has been set.
      */
     byte[] getValue();
 
