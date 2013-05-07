@@ -130,7 +130,6 @@ public class RiakConnectionPool {
      * Constant to use for <code>maxSize</code> when creating an unbounded pool
      */
     public static final int LIMITLESS = 0;
-    private static final int CONNECTION_ACQUIRE_ATTEMPTS = 3;
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
@@ -375,39 +374,35 @@ public class RiakConnectionPool {
      */
     private RiakConnection getConnection() throws IOException {
         RiakConnection c = null;
-        for (int i = 0; c == null && i < CONNECTION_ACQUIRE_ATTEMPTS; i++) {
-            try {
-                if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
-                    c = available.poll();
-                    if (c == null) {
-                        boolean releasePermit = true;
-                        try {
-                            c = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
-                            releasePermit = false;
-                        } catch (SocketTimeoutException e) {
-                            throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
-                        } catch (IOException e) {
-                            throw e;
-                        } finally {
-                            if (releasePermit) {
-                                permits.release();
-                            }
+        try {
+            if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
+                c = available.poll();
+                if (c == null) {
+                    boolean releasePermit = true;
+                    try {
+                        c = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
+                        releasePermit = false;
+                    } catch (SocketTimeoutException e) {
+                        throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
+                    } catch (IOException e) {
+                        throw e;
+                    } finally {
+                        if (releasePermit) {
+                            permits.release();
                         }
                     }
-                } else {
-                    throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } else {
+                throw new AcquireConnectionTimeoutException("timeout acquiring connection permit from pool");
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("interrupted whilst waiting to acquire connection");
         }
         
-        if (c == null) {
-            throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
-        } else {
-            inUse.offer(c);
-            return c;
-        }
+        inUse.offer(c);
+        return c;
+        
     }
 
     /**
