@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakLink;
@@ -87,6 +88,7 @@ public class JSONConverter<T> implements Converter<T> {
         this.riakIndexConverter = new RiakIndexConverter<T>();
         this.riakLinksConverter = new RiakLinksConverter<T>();
         objectMapper.registerModule(new RiakJacksonModule());
+        objectMapper.registerModule(new JodaModule());
     }
 
     /**
