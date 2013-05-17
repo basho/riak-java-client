@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -19,7 +19,7 @@ import java.util.Date;
 
 /**
  * Encapsulates the optional parameters for a store operation on Riak
- * 
+ *
  * @author russell
  * @see RawClient#store(com.basho.riak.client.IRiakObject, StoreMeta)
  */
@@ -34,6 +34,7 @@ public class StoreMeta {
     private final Boolean returnHead;
     private final Boolean ifNoneMatch;
     private final Boolean ifNotModified;
+    private final Boolean withoutFetch;
     // these two are HTTP API specific for ifNoneMatch and ifNotModified
     // which are different to the PB options of the same name
     private String[] etags;
@@ -41,7 +42,7 @@ public class StoreMeta {
 
     /**
      * Create a StoreMeta, accepts <code>null</code>s for any parameter
-     * 
+     *
      * @param w
      *            the write quorum for a store operation
      * @param dw
@@ -58,19 +59,20 @@ public class StoreMeta {
      *            in Riak
      */
     public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNoneMatch, Boolean ifNotModified) {
-        this(null == w ? null : new Quorum(w), 
-             null == dw ? null : new Quorum(dw), 
-             null == pw ? null : new Quorum(pw), 
-             returnBody, 
-             null, 
-             ifNoneMatch, 
-             ifNotModified
+        this(null == w ? null : new Quorum(w),
+             null == dw ? null : new Quorum(dw),
+             null == pw ? null : new Quorum(pw),
+             returnBody,
+             null,
+             ifNoneMatch,
+             ifNotModified,
+             false
             );
     }
 
     /**
      * Create a StoreMeta, accepts <code>null</code>s for any parameter
-     * 
+     *
      * @param w
      *            the write quorum for a store operation
      * @param dw
@@ -90,19 +92,20 @@ public class StoreMeta {
      */
     public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
                      Boolean ifNotModified) {
-        this(null == w ? null : new Quorum(w), 
-             null == dw ? null : new Quorum(dw), 
-             null == pw ? null : new Quorum(pw), 
-             returnBody, 
-             returnHead, 
-             ifNoneMatch, 
-             ifNotModified
+        this(null == w ? null : new Quorum(w),
+             null == dw ? null : new Quorum(dw),
+             null == pw ? null : new Quorum(pw),
+             returnBody,
+             returnHead,
+             ifNoneMatch,
+             ifNotModified,
+             false
         );
     }
-    
+
     /**
      * Create a StoreMeta, accepts <code>null</code>s for any parameter
-     * 
+     *
      * @param w
      *            the write quorum for a store operation
      * @param dw
@@ -119,9 +122,12 @@ public class StoreMeta {
      * @param ifNotModified
      *            only store is the vclock supplied on store matches the vclock
      *            in Riak
+     * @param withoutFetch
+     *            eliminates fetching the existing value before storing the
+     *            current one.
      */
     public StoreMeta(Quorum w, Quorum dw, Quorum pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
-            Boolean ifNotModified) {
+            Boolean ifNotModified, Boolean withoutFetch) {
         this.w = w;
         this.dw = dw;
         this.pw = pw;
@@ -129,6 +135,7 @@ public class StoreMeta {
         this.returnHead = returnHead;
         this.ifNoneMatch = ifNoneMatch;
         this.ifNotModified = ifNotModified;
+        this.withoutFetch = withoutFetch;
     }
 
     /**
@@ -181,7 +188,7 @@ public class StoreMeta {
 
     /**
      * Has the pw parameter been set?
-     * 
+     *
      * @return <code>true</code> if pw parameter is set, <code>false</code>
      *         otherwise
      */
@@ -191,7 +198,7 @@ public class StoreMeta {
 
     /**
      * Get the value for the pw parameter
-     * 
+     *
      * @return the pw or <code>null</code> if it is not set.
      */
     public Quorum getPw() {
@@ -200,7 +207,7 @@ public class StoreMeta {
 
     /**
      * Has the ifNoneMatch parameter been set?
-     * 
+     *
      * @return <code>true</code> if ifNoneMatch parameter is set,
      *         <code>false</code> otherwise
      */
@@ -210,7 +217,7 @@ public class StoreMeta {
 
     /**
      * Get the value of the ifNoneMatch parameter
-     * 
+     *
      * @return the ifNoneMatch or <code>null</code> if not set.
      */
     public Boolean getIfNoneMatch() {
@@ -226,7 +233,7 @@ public class StoreMeta {
 
     /**
      * Has the ifNotModified parameter been set?
-     * 
+     *
      * @return <code>true</code> if ifNotModified parameter is set,
      *         <code>false</code> otherwise
      */
@@ -234,9 +241,9 @@ public class StoreMeta {
         return ifNotModified != null;
     }
 
-    /**
+   /**
      * Get the value of the ifNoneMatch parameter
-     * 
+     *
      * @return the ifNotModified or <code>null</code> if not set.
      */
     public Boolean getIfNotModified() {
@@ -248,6 +255,31 @@ public class StoreMeta {
      */
     public boolean isIfNotModified() {
         return hasIfNotModified() && ifNotModified;
+    }
+
+    /**
+     * Has the withoutFetch parameter been set?
+     * @return <code>true</code> if withoutFetch parameter is set,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasWithoutFetch() {
+        return withoutFetch != null;
+    }
+
+    /**
+     * Get the value of withoutFetch parameter
+     *
+     * @return the withoutFetch or <code>null</code> if not set.
+     */
+    public boolean getWithoutFetch() {
+        return withoutFetch;
+    }
+
+    /**
+     * @return true if hasWithoutFetch && withoutFetch, false otherwise
+     */
+    public boolean isWithoutFetch() {
+        return hasWithoutFetch() && withoutFetch;
     }
 
     /**
@@ -273,7 +305,7 @@ public class StoreMeta {
 
     /**
      * Optional supporting data for ifNoneMatch for the HTTP API
-     * 
+     *
      * @param etags
      *            the array of etags to provide for ifNoneMatch
      * @return this.
@@ -307,7 +339,7 @@ public class StoreMeta {
 
     /**
      * Optional supporting parameter for ifNotModified for the HTTP API
-     * 
+     *
      * @param lastModified
      *            a Date
      * @return this
@@ -324,7 +356,7 @@ public class StoreMeta {
      * @return a StoreMeta with only the headOnly set to true
      */
     public static StoreMeta headOnly() {
-        return new StoreMeta((Quorum)null, null, null, null, true, null, null);
+        return new StoreMeta((Quorum)null, null, null, null, true, null, null, null);
     }
 
     public static class Builder {
@@ -335,9 +367,10 @@ public class StoreMeta {
         private Boolean returnHead;
         private Boolean ifNotModified;
         private Boolean ifNoneMatch;
+        private Boolean withoutFetch;
 
         public StoreMeta build() {
-            return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNoneMatch, ifNotModified);
+            return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNoneMatch, ifNotModified, withoutFetch);
         }
 
         public Builder w(int w) {
@@ -349,12 +382,12 @@ public class StoreMeta {
             this.w = new Quorum(w);
             return this;
         }
-        
+
         public Builder w(Quorum w) {
             this.w = w;
             return this;
         }
-        
+
         public Builder dw(int dw) {
             this.dw = new Quorum(dw);
             return this;
@@ -364,12 +397,12 @@ public class StoreMeta {
             this.dw = new Quorum(dw);
             return this;
         }
-        
+
         public Builder dw(Quorum dw) {
             this.dw = dw;
             return this;
         }
-        
+
         public Builder pw(int pw) {
             this.pw = new Quorum(pw);
             return this;
@@ -379,12 +412,12 @@ public class StoreMeta {
             this.pw = new Quorum(pw);
             return this;
         }
-        
+
         public Builder pw(Quorum pw) {
             this.pw = pw;
             return this;
         }
-        
+
         public Builder returnBody(boolean returnBody) {
             this.returnBody = returnBody;
             return this;
@@ -402,6 +435,11 @@ public class StoreMeta {
 
         public Builder ifNoneMatch(boolean ifNoneMatch) {
             this.ifNoneMatch = ifNoneMatch;
+            return this;
+        }
+
+        public Builder withoutFetch(boolean withoutFetch) {
+            this.withoutFetch = withoutFetch;
             return this;
         }
     }

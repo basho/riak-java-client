@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -31,7 +31,7 @@ import com.basho.riak.client.raw.StoreMeta;
 
 /**
  * For creating a {@link DomainBucket}
- * 
+ *
  * <p>
  * Defaults are as follows:
  * <ul>
@@ -150,7 +150,7 @@ public class DomainBucketBuilder<T> {
         deleteMetaBuilder.w(w);
         return this;
     }
-    
+
     /**
      * The read quorum for fetch/store operations on the built {@link DomainBucket}
      * @param r
@@ -172,7 +172,7 @@ public class DomainBucketBuilder<T> {
         deleteMetaBuilder.r(r);
         return this;
     }
-    
+
     /**
      *The read write quorum for delete operations on the built {@link DomainBucket}
      * @param rw
@@ -192,7 +192,7 @@ public class DomainBucketBuilder<T> {
         deleteMetaBuilder.rw(rw);
         return this;
     }
-    
+
     /**
      * The durable write quorum for store operations on the built {@link DomainBucket}
      * @param dw
@@ -203,7 +203,7 @@ public class DomainBucketBuilder<T> {
         deleteMetaBuilder.dw(dw);
         return this;
     }
-    
+
     /**
      * The durable write quorum for store operations on the built {@link DomainBucket}
      * @param dw - {@link Quora} to use
@@ -214,7 +214,7 @@ public class DomainBucketBuilder<T> {
         deleteMetaBuilder.dw(dw);
         return this;
     }
-    
+
     /**
      * @param notFoundOK
      * @return this
@@ -252,6 +252,24 @@ public class DomainBucketBuilder<T> {
     }
 
     /**
+     * Configure store operation to execute without fetch
+     *
+     * Care must be taken when using this option:
+     *
+     * 1) <code>null</code> will be passed to the {@link Mutation} object (if
+     *    you are using the default {@link ClobberMutation} this is fine).
+     * 2) A vector clock should be provided by the object returned from your
+     *    {@link Mutation}.
+     *
+     * @param withoutFetch
+     * @return this
+     */
+    public DomainBucketBuilder<T> withoutFetch(boolean withoutFetch) {
+      storeMetaBuilder.withoutFetch(withoutFetch);
+      return this;
+    }
+
+    /**
      * @param ifNoneMatch
      * @return this
      */
@@ -279,7 +297,7 @@ public class DomainBucketBuilder<T> {
         fetchMetaBuilder.pr(pr);
         return this;
     }
-    
+
     /**
      * @param pw
      * @return this
@@ -299,7 +317,7 @@ public class DomainBucketBuilder<T> {
         storeMetaBuilder.pw(pw);
         return this;
     }
-    
+
     /**
      * A {@link MutationProducer} to provide the {@link Mutation} to use in store operations.
      * @param mutationProducer
