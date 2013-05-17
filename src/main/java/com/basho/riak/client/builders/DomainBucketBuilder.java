@@ -55,6 +55,7 @@ public class DomainBucketBuilder<T> {
     private Mutation<T> mutation;
     private MutationProducer<T> mutationProducer;
     private Retrier retrier = DefaultRetrier.attempts(3);
+    private boolean withoutFetch;
 
     private FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder();
     private StoreMeta.Builder storeMetaBuilder = new StoreMeta.Builder();
@@ -96,7 +97,7 @@ public class DomainBucketBuilder<T> {
 
         return new DomainBucket<T>(bucket, resolver, converter, mutationProducer,
                     storeMetaBuilder.returnBody(returnBody).build(), fetchMetaBuilder.build(), deleteMetaBuilder.build(),
-                    clazz, retrier);
+                    clazz, retrier, withoutFetch);
     }
 
     /**
@@ -319,4 +320,19 @@ public class DomainBucketBuilder<T> {
         this.converter = converter;
         return this;
     }
+    
+    /**
+     * Sets whether a store operation should fetch existing value(s) from Riak 
+     * (and the vector clock) and perform conflict resolution if required.
+     * 
+     * Note this should only be used if you understand the ramifications. 
+     * @see com.basho.riak.client.operations.StoreObject#withoutFetch() 
+     * @param withoutFetch
+     * @return this
+     */
+    public DomainBucketBuilder<T> withoutFetch(boolean withoutFetch) {
+        this.withoutFetch = withoutFetch;
+        return this;
+    }
+    
 }
