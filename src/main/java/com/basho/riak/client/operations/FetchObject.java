@@ -50,7 +50,7 @@ public class FetchObject<T> implements RiakOperation<T> {
 
     private Retrier retrier;
 
-    private FetchMeta.Builder builder = new Builder();
+    private FetchMeta.Builder builder;
 
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
@@ -77,8 +77,36 @@ public class FetchObject<T> implements RiakOperation<T> {
         this.client = client;
         this.key = key;
         this.retrier = retrier;
+        this.builder = new FetchMeta.Builder();
     }
 
+    /**
+     * Create a new FetchOperation that delegates to the given
+     * <code>client</code> to fetch the data from <code>bucket</code> at
+     * <code>key</code> using <code>retrier</code>
+     * <p>
+     * Use {@link Bucket} to create a Fetch operation, also consider using
+     * {@link DomainBucket}
+     * 
+     * @param client
+     *            the {@link RawClient} to use for the operation
+     * @param bucket
+     *            the name of the bucket to get the data item from
+     * @param key
+     *            the name of the key to get the data item from
+     * @param retrier
+     *            the {@link Retrier} to use when executing the operation.
+     * @param fetchMeta
+     *            the {@link FetchMeta} to use when executing the operation
+     */
+    public FetchObject(final RawClient client, final String bucket, final String key, final Retrier retrier, FetchMeta fetchMeta) {
+        this.bucket = bucket;
+        this.client = client;
+        this.key = key;
+        this.retrier = retrier;
+        this.builder = FetchMeta.Builder.from(fetchMeta);
+    }
+    
     /**
      * Attempts to fetch the data at <code>bucket/key</code>, convert it with
      * {@link Converter} and resolve any siblings with {@link ConflictResolver}

@@ -81,8 +81,10 @@ import com.basho.riak.client.itest.ITestPBClient;
 import com.basho.riak.client.itest.ITestPBLinkWalk;
 import com.basho.riak.client.itest.ITestHTTPStats;
 import com.basho.riak.client.itest.ITestHTTPClusterStats;
+import com.basho.riak.client.itest.ITestHTTPMultiFetch;
 import com.basho.riak.client.itest.ITestPBTombstone;
 import com.basho.riak.client.itest.ITestHTTPTombstone;
+import com.basho.riak.client.itest.ITestPBMultiFetch;
 import com.basho.riak.client.operations.DeleteObjectTest;
 import com.basho.riak.client.operations.FetchObjectTest;
 import com.basho.riak.client.operations.StoreObjectTest;
@@ -136,6 +138,8 @@ import com.basho.riak.pbc.itest.ITestRiakConnectionPool;
     ITestHTTPClusterStats.class,
     ITestPBTombstone.class,
     ITestHTTPTombstone.class,
+    ITestPBMultiFetch.class,
+    ITestHTTPMultiFetch.class,
     com.basho.riak.pbc.itest.ITestMapReduce.class,
     ITestHTTPLinkWalk.class,
     ITestPBLinkWalk.class,
