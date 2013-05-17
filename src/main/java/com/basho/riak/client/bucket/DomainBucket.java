@@ -89,6 +89,7 @@ public class DomainBucket<T> {
     private final DeleteMeta deleteMeta;
     private final Class<T> clazz;
     private final Retrier retrier;
+    private final boolean withoutFetch;
 
   
     /**
@@ -116,10 +117,13 @@ public class DomainBucket<T> {
      *            the Class type of the DomainBucket
      * @param retrier
      *            the {@link Retrier} to use for each operation
+     * @param withoutFetch
+     *            controls whether a store operation should do a fetch first
+     *            @see StoreObject#withoutFetch() 
      */
     public DomainBucket(Bucket bucket, ConflictResolver<T> resolver, Converter<T> converter,
             MutationProducer<T> mutationProducer, StoreMeta storeMeta, FetchMeta fetchMeta, DeleteMeta deleteMeta,
-            Class<T> clazz, final Retrier retrier) {
+            Class<T> clazz, final Retrier retrier, boolean withoutFetch) {
         this.bucket = bucket;
         this.resolver = resolver;
         this.converter = converter;
@@ -129,8 +133,15 @@ public class DomainBucket<T> {
         this.deleteMeta = deleteMeta;
         this.clazz = clazz;
         this.retrier = retrier;
+        this.withoutFetch = withoutFetch;
     }
 
+    public DomainBucket(Bucket bucket, ConflictResolver<T> resolver, Converter<T> converter,
+            MutationProducer<T> mutationProducer, StoreMeta storeMeta, FetchMeta fetchMeta, DeleteMeta deleteMeta,
+            Class<T> clazz, final Retrier retrier) {
+        this(bucket, resolver, converter, mutationProducer, storeMeta, fetchMeta, deleteMeta, clazz, retrier, false);
+    }
+    
     /**
      * Store <code>o</code> in Riak.
      * <code>T</code> must have a field annotated with {@link RiakKey}.
@@ -155,6 +166,10 @@ public class DomainBucket<T> {
             .withMutator(mutation)
             .withResolver(resolver)
             .withRetrier(retrier);
+        
+        if (withoutFetch) {
+            so.withoutFetch();
+        }
 
         if (fetchMeta.getR() != null) {
             so.r(fetchMeta.getR());
