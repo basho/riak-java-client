@@ -18,10 +18,12 @@ import com.basho.riak.client.RiakException;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.operations.MultiFetchObject;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.indexes.FetchIndex;
 import com.basho.riak.client.query.indexes.RiakIndex;
+import java.util.List;
 
 /**
  * The primary interface for working with Key/Value data in Riak, a factory for key/value {@link RiakOperation}s.
@@ -139,6 +141,49 @@ public interface Bucket extends BucketProperties {
      */
     <T> FetchObject<T> fetch(T o);
 
+    /**
+     * Creates a {@link MultiFetchObject} that returns the datum at <code>keys</code>
+     * as a list of {@link IRiakObject} futures on <code>execute()</code>.
+     * 
+     * @param keys the keys
+     * @return a {@link MultiFetchObject}
+     * @see MultiFetchObject
+     */
+    MultiFetchObject<IRiakObject> multiFetch(String[] keys);
+    
+    /**
+     * Creates a {@link MultiFetchObject} operation that returns the datum at
+     * <code>keys</code> as a list of type <code>T</code> futures on
+     * <code>execute()</code>.
+     * 
+     * @param <T>
+     *            the Type to return
+     * @param keys
+     *            the list of keys under which the data is stored
+     * @param type
+     *            the Class of the type to return
+     * @return a {@link MultiFetchObject}
+     * @see MultiFetchObject
+     */
+    <T> MultiFetchObject<T> multiFetch(List<String> keys, Class<T> type);
+    
+    
+    /**
+     * Creates a {@link MultiFetchObject} operation that returns the data at
+     * <code>o</code>'s annotated {@link RiakKey} field as a list of type
+     * <code>T</code> futures on <code>execute()</code>.
+     * 
+     * @param <T>
+     *            the Type to return
+     * @param o
+     *            a List of <code>T</code> that has the keys annotated with
+     *            {@link RiakKey}
+     * @return a {@link MultiFetchObject}
+     * @see MultiFetchObject
+     */
+    <T> MultiFetchObject<T> multiFetch(List<T> o);
+    
+    
     /**
      * Creates a {@link DeleteObject} operation that will delete the data at
      * <code>o</code>'s {@link RiakKey} annotated field value on

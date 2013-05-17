@@ -24,10 +24,14 @@ import com.basho.riak.client.convert.KeyUtil;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.operations.MultiFetchObject;
 import com.basho.riak.client.operations.StoreObject;
+import com.basho.riak.client.query.MultiFetchFuture;
 import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.StoreMeta;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A domain bucket is a wrapper around a {@link Bucket} that is strongly typed and uses
@@ -276,6 +280,87 @@ public class DomainBucket<T> {
         return fo.execute();
     }
 
+    /**
+     * Fetch data stored at <code>keys</code> in this bucket as a List of
+     * {@link MultiFetchFuture} objects that will return instances of {@code T}
+     * 
+     * <p>
+     * This is equivalent to creating and executing a {@link MultiFetchObject}
+     * configured with the {@link Converter}, {@link ConflictResolver},
+     * {@link Retrier} and r value specified in the constructor.
+     * </p>
+     * 
+     * @param keys
+     * @return A list of futures
+     * @see MultiFetchObject
+     */
+    public List<MultiFetchFuture<T>> multiFetch(String[] keys)
+    {
+        final MultiFetchObject<T> fo = bucket.multiFetch(Arrays.asList(keys), clazz)
+            .withConverter(converter)
+            .withResolver(resolver)
+            .withRetrier(retrier);
+        
+            if (fetchMeta.hasR()) {
+            fo.r(fetchMeta.getR());
+        }
+
+        if (fetchMeta.hasPr()) {
+            fo.pr(fetchMeta.getPr());
+        }
+
+        if (fetchMeta.hasBasicQuorum()) {
+            fo.basicQuorum(fetchMeta.getBasicQuorum());
+        }
+
+        if (fetchMeta.hasNotFoundOk()) {
+            fo.notFoundOK(fetchMeta.getNotFoundOK());
+        }
+        return fo.execute();
+            
+    }
+    
+    /**
+     * Fetch data stored at the keys extracted from each <code>obj</code>'s
+     * {@link RiakKey} annotated field as an instance of
+     * <code>T</code>.
+     * 
+     * <p>
+     * This is equivalent to creating and executing a {@link MultiFetchObject}
+     * configured with the {@link Converter}, {@link ConflictResolver},
+     * {@link Retrier} and r value specified in the constructor.
+     * </p>
+     * 
+     * @param keys
+     * @return a list of futures
+     * @see MultiFetchObject
+     */
+    public List<MultiFetchFuture<T>> multiFetch(List<T> objs)
+    {
+        final MultiFetchObject<T> fo = bucket.multiFetch(objs)
+            .withConverter(converter)
+            .withResolver(resolver)
+            .withRetrier(retrier);
+        
+        if (fetchMeta.hasR()) {
+            fo.r(fetchMeta.getR());
+        }
+
+        if (fetchMeta.hasPr()) {
+            fo.pr(fetchMeta.getPr());
+        }
+
+        if (fetchMeta.hasBasicQuorum()) {
+            fo.basicQuorum(fetchMeta.getBasicQuorum());
+        }
+
+        if (fetchMeta.hasNotFoundOk()) {
+            fo.notFoundOK(fetchMeta.getNotFoundOK());
+        }
+        return fo.execute();
+        
+    }
+    
     /**
      * Delete the key/value stored at the key extracted from <code>o</code>'s
      * {@link RiakKey} annotated field.

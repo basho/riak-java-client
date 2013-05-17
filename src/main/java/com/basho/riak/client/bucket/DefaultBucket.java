@@ -37,6 +37,7 @@ import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.operations.MultiFetchObject;
 import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
@@ -45,6 +46,9 @@ import com.basho.riak.client.query.indexes.FetchIndex;
 import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.util.CharsetUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Default implementation of {@link Bucket} for creating {@link RiakOperation}s
@@ -613,5 +617,52 @@ public class DefaultBucket implements Bucket {
      */
     public <T> FetchIndex<T> fetchIndex(RiakIndex<T> index) {
         return new FetchIndex<T>(client, name, index, retrier);
+    }
+
+    /**
+     * (non-Javadoc)
+     * @see com.basho.riak.client.bucket.Bucket#multiFetch(java.lang.String[]) 
+     */
+    public MultiFetchObject<IRiakObject> multiFetch(String[] keys)
+    {
+        return new MultiFetchObject<IRiakObject>(client, name, Arrays.asList(keys), retrier)
+        .withResolver(new DefaultResolver<IRiakObject>())
+        .withConverter(new PassThroughConverter());
+    }
+
+    /**
+     * (non-Javadoc)
+     * @see com.basho.riak.client.bucket.Bucket#multiFetch(java.util.List, java.lang.Class) 
+     */
+    public <T> MultiFetchObject<T> multiFetch(List<String> keys, Class<T> type)
+    {
+        Converter<T> converter = getDefaultConverter(type, keys.get(0));
+        return new MultiFetchObject<T>(client, name, keys, retrier)
+            .withConverter(converter)
+            .withResolver(new DefaultResolver<T>());
+    }
+
+    /**
+     * (non-Javadoc)
+     * @see com.basho.riak.client.bucket.Bucket#multiFetch(java.util.List) 
+     */
+    public <T> MultiFetchObject<T> multiFetch(List<T> objs)
+    {
+        T o = objs.get(0);
+        @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
+        List<String> keyList = new ArrayList<String>(objs.size());
+        for (T obj : objs)
+        {
+            String key = getKey(obj);
+            if (key == null) {
+                throw new NoKeySpecifedException(o);
+            }
+            keyList.add(key);
+        }
+        
+        Converter<T> converter = getDefaultConverter(clazz);
+        return new MultiFetchObject<T>(client, name, keyList, retrier)
+            .withConverter(converter)
+            .withResolver(new DefaultResolver<T>());
     }
 }
