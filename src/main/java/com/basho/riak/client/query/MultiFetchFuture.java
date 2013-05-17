@@ -21,6 +21,10 @@ import java.util.concurrent.FutureTask;
 /**
  * A Future for an individual fetch done as part of a MultiFetch.
  * 
+ * The {@link #getKey() } method is provided in the case where an object
+ * is not found; {@link #get() } will return {@code null} and this method allows
+ * the user to know which key was not present in Riak. 
+ * 
  * @see {@link MultiFetchObject}
  * 
  * @author Brian Roach <roach at basho dot com>

@@ -42,9 +42,33 @@ import java.util.concurrent.TimeUnit;
  * methods to create a mutli-fetch operation. 
  * </p>
  * <p>
- * Riak itself does not support pipelining of requests. The MutlFetchObject addresses
+ * Riak itself does not support pipelining of requests. The MutliFetchObject addresses
  * this issue by using a threadpool to parallelize a set of fetch operations for
  * a given set of keys.
+ * </p>
+ * <p>
+ * The result of calling {@link #execute() } is a {@code List} of {@link MultiFetchFuture}
+ * objects each one representing a fetch operation. The simplest use would be a loop where 
+ * you iterate through and wait for them to complete:
+ * 
+ * <pre>
+ * {@code
+ * List<MultiFetchFuture<MyPojo>> futures = bucket.multiFetch(keys).execute();
+ * List<MyPojo> myResults = new ArrayList<MyPojo>();
+ * for (MultiFetchFuture<MyPojo> f : futures)
+ * {
+ *     try 
+ *     {
+ *          MyPojo mp = f.get();
+ *          myResults.add(mp);
+ *     }
+ *     catch (ExecutionException e)
+ *     {
+ *         // log error, etc.
+ *     }
+ * }
+ * }
+ * </pre>
  * </p>
  * <p>
  * <b>Thread Pool:</b><br/>
@@ -52,20 +76,22 @@ import java.util.concurrent.TimeUnit;
  * performed by a single instance of the client use the same pool. This is to prevent resource 
  * starvation in the case of multiple simultaneous multi-fetch operations. Idle threads
  * (including core threads) are timed out after 5 seconds.<br/><br/>
- * The defaults for corePoolSize and maximumPoolSize are determined by the Java
+ * The defaults for {@code corePoolSize} is determined by the Java
  * Runtime using:<br/><br/>
  * {@code Runtime.getRuntime().availableProcessors() * 2;}
  * </p>
  * <p>
- * Advanced users can tune this via the {@link #setCorePoolSize(int)} and 
- * {@link #setMaximumPoolSize(int)} methods; these are passed directly to their 
- * counterparts in the {@link ThreadPoolExecutor}. The queue feeding the threadpool 
- * is unbounded. 
+ * Advanced users can tune this via the {@link #setCorePoolSize(int)}  
+ * method; this is passed directly to its counterpart in the 
+ * {@link ThreadPoolExecutor}. The queue feeding the threadpool 
+ * is unbounded therefore {@link ThreadPoolExecutor#setMaximumPoolSize(int) } 
+ * has no effect and is simply set to match. 
  * </p>
  * <p>
  * Be aware that because requests are being parallelized performance is also
  * dependent on the client's underlying connection pool. If there are no connections 
- * available performance will not be increased over making the requests sequentially. 
+ * available performance will suffer initially as connections will need to be established
+ * or worse they could time out. 
  * </p>
  * 
  * @author Brian Roach <roach at basho dot com>
@@ -151,28 +177,6 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
     }
 
     /**
-     * Sets the maximum number of threads in the internal {@link ThreadPoolExecutor}.
-     * 
-     * @param size - the new maximum
-     * @see ThreadPoolExecutor#setMaximumPoolSize(int) 
-     */
-    public static void setMaximumPoolSize(int size)
-    {
-        threadPool.setMaximumPoolSize(size);
-    }
-    
-    /**
-     * Returns the maximum allowed number of threads from the internal {@link ThreadPoolExecutor}
-     * 
-     * @return the maximum allowed number of threads
-     * @see ThreadPoolExecutor#getMaximumPoolSize() 
-     */
-    public static int getMaximumPoolSize()
-    {
-        return threadPool.getMaximumPoolSize();
-    }
-    
-    /**
      * Sets the core number of threads in the internal {@link ThreadPoolExecutor}.
      * 
      * @param size - the new core size
@@ -181,6 +185,7 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
     public static void setCorePoolSize(int size)
     {
         threadPool.setCorePoolSize(size);
+        threadPool.setMaximumPoolSize(size);
     }
     
     /**
@@ -312,7 +317,7 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
      * Causes the client to retrieve only the metadata and not the value
      * of this object. 
      * 
-     * Note if you are using HTTP If siblings are present the client 
+     * <b>Note if you are using HTTP:<b> If siblings are present the client 
      * does a second get and retrieves all the values. This is due to how 
      * the HTTP API handles siblings. 
      * 
