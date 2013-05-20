@@ -1,3 +1,31 @@
+1.1.1
+-----
+This is a bugfix and feature release
+
+Especially worth noting is a new MultiFetchObject available via the Bucket interface
+341869f Brian Roach Merge pull request #225 from basho/add_multi_get
+
+c490a3b Brian Sparrow Merge pull request #234 from basho/gh233-add-without-fetch-to-domainbucket
+42b0da3 Brian Roach Allows withoutFetch() in DomainBucket
+48fe34a Brian Roach bumped jackson-datatype-joda to v2.1.2
+72a38b4 Brian Roach Merge pull request #229 from sargun/master
+341869f Brian Roach Merge pull request #225 from basho/add_multi_get
+828476a Brian Roach Fixed typos, copyright, added usage example
+ad55972 Sargun Dhillon Registering Joda time support with JSONConvertertor's object mapper, as it was removed earlier
+84d9728 Brian Roach Fixed getMaximumPoolSize() removed ifModified()
+6525b88 Brian Roach Adds new multi-fetch functionality
+5cfdae0 Brian Roach Update README.org
+66fcd65 Brian Roach Merge pull request #217 from basho/gh216-mapreduce-logicalfiltergroup
+7cf623a Brian Roach MapReduce failure using LogicalFilterGroup
+6a47223 Brian Roach Merge pull request #215 from ieure/master
+0401e52 Ian Eure Update README.org
+28f7d04 Brian Roach Merge pull request #214 from basho/clusterclient-ping
+de58901 Brian Roach Sane ping() for ClusterClient
+b9ab655 Brian Roach [maven-release-plugin] prepare for next development iteration
+
+
+
+
 1.1.0
 -----
 
