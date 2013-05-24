@@ -56,8 +56,6 @@ public class ConnectionPoolTest
         assertEquals(pool.getIdleTimeout(), ConnectionPool.Builder.DEFAULT_IDLE_TIMEOUT);
         assertEquals(pool.getMinConnections(), ConnectionPool.Builder.DEFAULT_MIN_CONNECTIONS);
         assertEquals(pool.getRemoteAddress(), ConnectionPool.Builder.DEFAULT_REMOTE_ADDRESS);
-        assertNotNull(pool.getExecutor());
-        assertNotNull(pool.getBootstrap());
     }
     
     @Test

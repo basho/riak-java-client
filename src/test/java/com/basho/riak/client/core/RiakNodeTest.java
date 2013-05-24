@@ -105,8 +105,6 @@ public class RiakNodeTest
         assertEquals(pool.getIdleTimeout(), IDLE_TIMEOUT);
         assertEquals(pool.getMinConnections(), MIN_CONNECTIONS);
         assertEquals(pool.getRemoteAddress(), REMOTE_ADDRESS);
-        assertEquals(pool.getExecutor(), EXECUTOR);
-        assertEquals(pool.getBootstrap(), BOOTSTRAP);
         assertEquals(pool.availablePermits(), MAX_CONNECTIONS);
         assertEquals(pool.getPort(), PORT);
         
@@ -119,8 +117,7 @@ public class RiakNodeTest
         assertEquals(pool.getMinConnections(), ConnectionPool.Builder.DEFAULT_MIN_CONNECTIONS);
         assertEquals(pool.getRemoteAddress(), REMOTE_ADDRESS);
         assertEquals(pool.getPort(), Protocol.HTTP.defaultPort());
-        assertEquals(pool.getExecutor(), EXECUTOR);
-        assertEquals(pool.getBootstrap(), BOOTSTRAP);
+        
     }
     
     @Test

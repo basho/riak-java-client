@@ -41,7 +41,7 @@ public class RiakClusterTest
     public void builderCreatesCluster() throws UnknownHostException
     {
         RiakNode.Builder nodeBuilder = new RiakNode.Builder(Protocol.PB);
-        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder).build();
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
         assertTrue(!cluster.getNodes().isEmpty());
     }
     
@@ -53,8 +53,8 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder(Protocol.PB));
         doReturn(node).when(nodeBuilder).build();
         
-        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder).withNodeManager(nodeManager).build();
-        cluster.addNode(nodeBuilder);
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
+        cluster.addNode(nodeBuilder.build());
         assertEquals(2, cluster.getNodes().size());
         verify(nodeManager).addNode(node);
     }
@@ -68,7 +68,7 @@ public class RiakClusterTest
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(nodeManager).removeNode(node);
         
-        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder).withNodeManager(nodeManager).build();
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         assertTrue(cluster.removeNode(node));
         verify(nodeManager).removeNode(node);
         assertEquals(0, cluster.getNodes().size());
@@ -83,7 +83,7 @@ public class RiakClusterTest
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(nodeManager).removeNode(node);
         
-        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder).withNodeManager(nodeManager).build();
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         cluster.nodeStateChanged(node, RiakNode.State.SHUTDOWN);
         RiakCluster.State state = Whitebox.getInternalState(cluster, "state");
         assertEquals(state, RiakCluster.State.SHUTDOWN);
@@ -99,7 +99,7 @@ public class RiakClusterTest
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(node).execute(operation);
         
-        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder).withNodeManager(nodeManager).build();
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         Whitebox.setInternalState(cluster, "state", RiakCluster.State.RUNNING);
         cluster.execute(operation);
         assertEquals(1, cluster.inFlightCount());

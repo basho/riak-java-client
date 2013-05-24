@@ -23,13 +23,13 @@ public class App
         RiakNode.Builder builder = new RiakNode.Builder(Protocol.PB)
                                         .withMinConnections(Protocol.PB, 10);
         
-        RiakCluster cluster = new RiakCluster.Builder(builder).build();
+        RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         
         FutureOperation<RiakObject> fetchOp = 
             new FetchOperation<RiakObject>("test_bucket", "test_key2")
                     .withConverter(new PassThroughConverter())
-                    .withResolver(new DefaultResolver());
+                    .withResolver(new DefaultResolver<RiakObject>());
         
         cluster.execute(fetchOp);
         

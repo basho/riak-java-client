@@ -67,14 +67,14 @@ public class RiakClusterFixtureTest
     @Test
     public void operationSuccess() throws UnknownHostException, InterruptedException, ExecutionException
     {
-        List<RiakNode.Builder> list = new LinkedList<RiakNode.Builder>();
+        List<RiakNode> list = new LinkedList<RiakNode>();
         
         for (int i = 5000; i < 8000; i += 1000)
         {
             RiakNode.Builder builder = new RiakNode.Builder(Protocol.HTTP)
                                         .withMinConnections(Protocol.HTTP, 10)
                                         .withPort(Protocol.HTTP, i + NetworkTestFixture.HTTP_FULL_WRITE_STAY_OPEN);
-            list.add(builder);
+            list.add(builder.build());
         }
         
         RiakCluster cluster = new RiakCluster.Builder(list).build();
@@ -101,14 +101,14 @@ public class RiakClusterFixtureTest
     @Test(expected=ExecutionException.class)
     public void operationFail() throws UnknownHostException, ExecutionException, InterruptedException
     {
-        List<RiakNode.Builder> list = new LinkedList<RiakNode.Builder>();
+        List<RiakNode> list = new LinkedList<RiakNode>();
         
         for (int i = 5000; i < 8000; i += 1000)
         {
             RiakNode.Builder builder = new RiakNode.Builder(Protocol.HTTP)
                                         .withMinConnections(Protocol.HTTP, 10)
                                         .withPort(Protocol.HTTP, i + NetworkTestFixture.ACCEPT_THEN_CLOSE);
-            list.add(builder);
+            list.add(builder.build());
         }
         
         RiakCluster cluster = new RiakCluster.Builder(list).build();

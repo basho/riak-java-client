@@ -55,7 +55,6 @@ public class ConnectionPool implements ChannelFutureListener
         CREATED, RUNNING, HEALTH_CHECKING, SHUTTING_DOWN, SHUTDOWN;
     }
 
-    private final Bootstrap bootstrap;
     private final LinkedBlockingDeque<ChannelWithIdleTime> available;
     private final ConcurrentLinkedQueue<Channel> inUse;
     private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed;
@@ -64,18 +63,19 @@ public class ConnectionPool implements ChannelFutureListener
     private final String remoteAddress;
     private final Protocol protocol;
     private final int port;
-    private final ScheduledExecutorService executor;
-    private final boolean ownsExecutor;
-    private final boolean ownsBootstrap;
     private final List<PoolStateListener> stateListeners = 
         Collections.synchronizedList(new LinkedList<PoolStateListener>());
     
+    private volatile Bootstrap bootstrap;
+    private volatile boolean ownsBootstrap;
+    private volatile ScheduledExecutorService executor;
+    private volatile boolean ownsExecutor;
     private volatile State state;
-    private ScheduledFuture<?> idleReaperFuture;
-    private ScheduledFuture<?> healthMonitorFuture;
-    private int minConnections;
-    private long idleTimeoutInNanos;
-    private int connectionTimeout;
+    private volatile ScheduledFuture<?> idleReaperFuture;
+    private volatile ScheduledFuture<?> healthMonitorFuture;
+    private volatile int minConnections;
+    private volatile long idleTimeoutInNanos;
+    private volatile int connectionTimeout;
 
     private ConnectionPool(Builder builder) throws UnknownHostException
     {
@@ -85,33 +85,11 @@ public class ConnectionPool implements ChannelFutureListener
         this.protocol = builder.protocol;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
+        this.executor = builder.executor;
         
-        if (builder.bootstrap == null)
-        {
-            this.bootstrap = new Bootstrap()
-                .group(new NioEventLoopGroup())
-                .channel(NioSocketChannel.class);
-            ownsBootstrap = true;
-        }
-        else
+        if (builder.bootstrap != null)
         {
             this.bootstrap = builder.bootstrap.clone();
-            this.ownsBootstrap = false;
-        }
-        
-        this.bootstrap.handler(protocol.channelInitializer())
-                      .remoteAddress(new InetSocketAddress(remoteAddress, port));
-        
-        
-        if (builder.executor == null)
-        {
-            this.executor = Executors.newSingleThreadScheduledExecutor();
-            this.ownsExecutor = true;
-        }
-        else
-        {
-            this.executor = builder.executor;
-            this.ownsExecutor = false;
         }
         
         if (builder.maxConnections < 1)
@@ -121,11 +99,6 @@ public class ConnectionPool implements ChannelFutureListener
         else
         {
             permits = new AdjustableSemaphore(builder.maxConnections);
-        }
-        
-        if (connectionTimeout > 0)
-        {
-            this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
         }
         
         this.available = new LinkedBlockingDeque<ChannelWithIdleTime>();
@@ -193,6 +166,28 @@ public class ConnectionPool implements ChannelFutureListener
     public synchronized ConnectionPool start()
     {
         stateCheck(State.CREATED);
+        if (bootstrap == null)
+        {
+            this.bootstrap = new Bootstrap()
+                .group(new NioEventLoopGroup())
+                .channel(NioSocketChannel.class);
+            ownsBootstrap = true;
+        }
+        
+        bootstrap.handler(protocol.channelInitializer())
+                      .remoteAddress(new InetSocketAddress(remoteAddress, port));
+        
+        if (connectionTimeout > 0)
+        {
+            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
+        }
+        
+        if (executor == null)
+        {
+            executor = Executors.newSingleThreadScheduledExecutor();
+            ownsExecutor = true;
+        }
+        
         if (minConnections > 0)
         {
             List<Channel> minChannels = new LinkedList<Channel>();
@@ -361,6 +356,43 @@ public class ConnectionPool implements ChannelFutureListener
         // about it.
         c.closeFuture().removeListener(this);
         c.close();
+    }
+    
+    /**
+     * Sets the {@link ScheduledExecutorService} for this pool.
+     * 
+     * @param executor
+     * @throws IllegalArgumentException if it was already set via the builder.
+     * @throws IllegalStateException if the pool has already been started.
+     * @see Builder#withExecutor(java.util.concurrent.ScheduledExecutorService) 
+     */
+    public void setExecutor(ScheduledExecutorService executor)
+    {
+        stateCheck(State.CREATED);
+        if (this.executor != null)
+        {
+            throw new IllegalArgumentException("Executor already set");
+        }
+        this.executor = executor;
+    }
+    
+    /**
+     * Sets the Netty {@link Bootstrap} for this pool.
+     * {@link Bootstrap#clone()} is called to clone the bootstrap.
+     * 
+     * @param bootstrap
+     * @throws IllegalArgumentException if it was already set via the builder.
+     * @throws IllegalStateException if the pool has already been started.
+     * @see Builder#withBootstrap(io.netty.bootstrap.Bootstrap) 
+     */
+    public void setBootstrap(Bootstrap bootstrap)
+    {
+        stateCheck(State.CREATED);
+        if (this.bootstrap != null)
+        {
+            throw new IllegalArgumentException("Bootstrap already set");
+        }
+        this.bootstrap = bootstrap.clone();
     }
     
     /**

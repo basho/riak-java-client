@@ -54,13 +54,13 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     private final EnumMap<Protocol, ConnectionPool> connectionPoolMap =
         new EnumMap<Protocol, ConnectionPool>(Protocol.class);
     private final String remoteAddress;
-    private final ScheduledExecutorService executor; 
-    private final boolean ownsExecutor;
-    private final Bootstrap bootstrap;
-    private final boolean ownsBootstrap;
     private final List<NodeStateListener> stateListeners = 
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
     
+    private volatile ScheduledExecutorService executor; 
+    private volatile boolean ownsExecutor;
+    private volatile Bootstrap bootstrap;
+    private volatile boolean ownsBootstrap;
     private volatile State state;
     private Map<Integer, InProgressOperation> inProgressMap = 
         new ConcurrentHashMap<Integer, InProgressOperation>();
@@ -72,36 +72,17 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     {
         this.remoteAddress = builder.remoteAddress;
         this.readTimeoutInMillis = builder.readTimeout;
-        if (builder.executor == null)
+        this.executor = builder.executor;
+        
+        if (builder.bootstrap != null)
         {
-            executor = Executors.newSingleThreadScheduledExecutor();
-            ownsExecutor = true;
-        }
-        else
-        {
-            this.executor = builder.executor;
-            this.ownsExecutor = false;
-        }
-
-        if (builder.bootstrap == null)
-        {
-            bootstrap = new Bootstrap()
-                .group(new NioEventLoopGroup())
-                .channel(NioSocketChannel.class);
-            ownsBootstrap = true;
-        }
-        else
-        {
-            this.bootstrap = builder.bootstrap;
-            this.ownsBootstrap = false;
+            this.bootstrap = builder.bootstrap.clone();
         }
         
         for (Map.Entry<Protocol, ConnectionPool.Builder> e : builder.protocolMap.entrySet())
         {
             ConnectionPool cp = e.getValue()
                                 .withRemoteAddress(remoteAddress)
-                                .withExecutor(executor)
-                                .withBootstrap(bootstrap)
                                 .build();
             connectionPoolMap.put(e.getKey(), cp);
         }
@@ -123,9 +104,26 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public synchronized RiakNode start()
     {
         stateCheck(State.CREATED);
+        
+        if (executor == null)
+        {
+            executor = Executors.newSingleThreadScheduledExecutor();
+            ownsExecutor = true;
+        }
+        
+        if (bootstrap == null)
+        {
+            bootstrap = new Bootstrap()
+                .group(new NioEventLoopGroup())
+                .channel(NioSocketChannel.class);
+            ownsBootstrap = true;
+        }
+        
         for (Map.Entry<Protocol, ConnectionPool> e : connectionPoolMap.entrySet())
         {
             e.getValue().addStateListener(this);
+            e.getValue().setBootstrap(bootstrap);
+            e.getValue().setExecutor(executor);
             e.getValue().start();
         }
         state = State.RUNNING;
@@ -142,6 +140,44 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             e.getValue().shutdown();
         }
         // Notifications from the pools change our state. 
+    }
+    
+    /**
+     * Sets the Netty {@link Bootstrap} for this Node's connection pool(s).
+     * {@link Bootstrap#clone()} is called to clone the bootstrap.
+     * 
+     * @param bootstrap
+     * @throws IllegalArgumentException if it was already set via the builder.
+     * @throws IllegalStateException if the node has already been started.
+     * @see Builder#withBootstrap(io.netty.bootstrap.Bootstrap) 
+     */
+    public void setBootstrap(Bootstrap bootstrap)
+    {
+        stateCheck(State.CREATED);
+        if (this.bootstrap != null)
+        {
+            throw new IllegalArgumentException("Bootstrap already set");
+        }
+        
+        this.bootstrap = bootstrap.clone();
+    }
+    
+    /**
+     * Sets the {@link ScheduledExecutorService} for this Node and its pool(s).
+     * 
+     * @param executor
+     * @throws IllegalArgumentException if it was already set via the builder.
+     * @throws IllegalStateException if the node has already been started.
+     * @see Builder#withExecutor(java.util.concurrent.ScheduledExecutorService) 
+     */
+    public void setExecutor(ScheduledExecutorService executor)
+    {
+        stateCheck(State.CREATED);
+        if (this.executor != null)
+        {
+            throw new IllegalArgumentException("Executor already set");
+        }
+        this.executor = executor;
     }
     
     public void addStateListener(NodeStateListener listener)

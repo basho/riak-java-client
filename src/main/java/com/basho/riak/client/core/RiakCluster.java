@@ -17,6 +17,8 @@ package com.basho.riak.client.core;
 
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * A modeled Riak Cluster.
+ * 
+ * <p>
+ * This class represents a Riak Cluster upon which operations are executed. 
+ * Instances are created using the {@link Builder}
+ * </p>
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -67,20 +75,15 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
             this.nodeManager = builder.nodeManager;
         }
             
-        this.bootstrap = builder.bootstrap;
-        
-        nodes = Collections.synchronizedList(new ArrayList<RiakNode>(builder.riakNodeBuilders.size()));
-        for (RiakNode.Builder nodeBuilder : builder.riakNodeBuilders)
+        if (builder.bootstrap != null)
         {
-            if (builder.executor != null)
-            {
-                nodeBuilder.withExecutor(builder.executor);
-            }
-            if (bootstrap != null)
-            {
-                nodeBuilder.withBootstrap(bootstrap);
-            }
-            nodes.add(nodeBuilder.build());
+            this.bootstrap = builder.bootstrap.clone();
+        }
+        else
+        {
+            this.bootstrap = new Bootstrap()
+                .group(new NioEventLoopGroup())
+                .channel(NioSocketChannel.class);
         }
         
         if (builder.executor != null)
@@ -91,6 +94,15 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         {
             // We still need an executor if none was provided. 
             executor = new ScheduledThreadPoolExecutor(2);
+        }
+        
+        nodes = Collections.synchronizedList(new ArrayList<RiakNode>(builder.riakNodes.size()));
+        for (RiakNode node : builder.riakNodes)
+        {
+            node.setExecutor(executor);
+            node.setBootstrap(bootstrap);
+            node.addStateListener(nodeManager);
+            nodes.add(node);
         }
         
         nodeManager.init(nodes);
@@ -112,9 +124,9 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     public synchronized void start()
     {
         stateCheck(State.CREATED);
+        
         for (RiakNode node : nodes)
         {
-            node.addStateListener(nodeManager);
             node.start();
         }
         retrierFuture = executor.schedule(new RetryTask(), 0, TimeUnit.SECONDS);
@@ -150,23 +162,27 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         nodeManager.executeOnNode(operation, previousNode);
     }
     
-    public synchronized RiakNode addNode(RiakNode.Builder builder) throws UnknownHostException
+    /**
+     * Adds a {@link RiakNode} to this cluster. 
+     * The node can not have been started nor have its Bootstrap or Executor
+     * set.
+     * @param node the RiakNode to add
+     * @throws IllegalArgumentException if the node's Bootstrap or Executor are already set.
+     */
+    public synchronized void addNode(RiakNode node) throws UnknownHostException
     {
         stateCheck(State.CREATED, State.RUNNING);
-        if (executor != null)
-        {
-            builder.withExecutor(executor);
-        }
-        if (bootstrap != null)
-        {
-            builder.withBootstrap(bootstrap);
-        }
-        RiakNode newNode = builder.build();
-        nodes.add(newNode);
-        nodeManager.addNode(newNode);
-        return newNode;
+        node.setExecutor(executor);
+        node.setBootstrap(bootstrap);
+        nodes.add(node);
+        nodeManager.addNode(node);
     }
     
+    /**
+     * Removes the provided node from the cluster. 
+     * @param node
+     * @return true if the node was in the cluster, false otherwise.
+     */
     public synchronized boolean removeNode(RiakNode node)
     {
         stateCheck(State.CREATED, State.RUNNING);
@@ -174,6 +190,10 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
         return nodeManager.removeNode(node);
     }
     
+    /**
+     * Returns the list of nodes in this cluster.
+     * @return An unmodifiable list of RiakNodes
+     */
     public List<RiakNode> getNodes()
     {
         stateCheck(State.CREATED, State.RUNNING);
@@ -199,11 +219,8 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
             {
                 this.state = State.SHUTDOWN;
                 executor.shutdown();
-                if (bootstrap != null)
-                {
-                    bootstrap.shutdown();
-                    logger.debug("RiakCluster shut down bootstrap");
-                }
+                bootstrap.shutdown();
+                logger.debug("RiakCluster shut down bootstrap");
                 logger.info("RiakCluster has shut down");
             }
         }
@@ -279,52 +296,102 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
     }
     
     
+    /**
+     * Builder used to create {@link RiakCluster} instances.
+     */
     public static class Builder
     {
         public final static int DEFAULT_EXECUTION_ATTEMPTS = 3;
         
-        private final List<RiakNode.Builder> riakNodeBuilders;
+        private final List<RiakNode> riakNodes;
         
         private int executionAttempts = DEFAULT_EXECUTION_ATTEMPTS;
         private NodeManager nodeManager;
         private ScheduledExecutorService executor;
         private Bootstrap bootstrap;
         
-        public Builder(List<RiakNode.Builder> riakNodeBuilders)
+        /**
+         * Instantiate a Builder containing the supplied {@link RiakNode}s
+         * @param riakNodes - a List of unstarted RiakNode objects
+         */
+        public Builder(List<RiakNode> riakNodes)
         {
-            this.riakNodeBuilders = new ArrayList<RiakNode.Builder>(riakNodeBuilders);
+            this.riakNodes = new ArrayList<RiakNode>(riakNodes);
         }
         
-        public Builder(RiakNode.Builder node)
+        /**
+         * Instantiate a Builder containing a single {@link RiakNode}
+         * @param node
+         */
+        public Builder(RiakNode node)
         {
-            this.riakNodeBuilders = new ArrayList<RiakNode.Builder>(1);
-            this.riakNodeBuilders.add(node);
+            this.riakNodes = new ArrayList<RiakNode>(1);
+            this.riakNodes.add(node);
         }
         
+        /**
+         * Sets the number of times the {@link RiakCluster} will attempt an 
+         * operation before returning it as failed. 
+         * @param numberOfAttempts
+         * @return this 
+         */
         public Builder withExecutionAttempts(int numberOfAttempts)
         {
             this.executionAttempts = numberOfAttempts;
             return this;
         }
         
+        /**
+         * Sets the {@link NodeManager} for this {@link RiakCluster}
+         * 
+         * If none is provided the {@link DefaultNodeManager} will be used
+         * @param nodeManager
+         * @return
+         */
         public Builder withNodeManager(NodeManager nodeManager)
         {
             this.nodeManager = nodeManager;
             return this;
         }
             
+        /**
+         * Sets the Threadpool for this cluster. 
+         * 
+         * This threadpool is passed down to the {@link RiakNode}s and their 
+         * underlying {@link ConnectionPool}s. At the very least it needs to have
+         * two threads available. It is not necessary to supply your own as the 
+         * {@link RiakCluster} will instantiate one upon construction if this is
+         * not set.
+         * @param executor
+         * @return this
+         */
         public Builder withExecutor(ScheduledExecutorService executor)
         {
             this.executor = executor;
             return this;
         }
         
+        /**
+         * The Netty {@link Bootstrap} this cluster will use.
+         * 
+         * This Bootstrap is passed down to the {@link RiakNode}s and their 
+         * underlying {@link ConnectionPool}s. It is not necessary to supply your
+         * own as the {@link RiakCluster} will instantiate one upon construction
+         * if this is not set.
+         * @param bootstrap
+         * @return this
+         */
         public Builder withBootstrap(Bootstrap bootstrap)
         {
             this.bootstrap = bootstrap;
             return this;
         }
         
+        /**
+         * Instantiates the {@link RiakCluster}
+         * @return a new RiakCluster
+         * @throws UnknownHostException if a node fails to start due to a DNS lookup
+         */
         public RiakCluster build() throws UnknownHostException
         {
             return new RiakCluster(this);
