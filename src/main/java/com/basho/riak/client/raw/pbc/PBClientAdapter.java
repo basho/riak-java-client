@@ -371,7 +371,7 @@ public class PBClientAdapter implements RawClient {
 
             // Results with a single phase are packaged slightly differently, so
             // determine what we got back
-            boolean singlePhase = true;
+            boolean singlePhase = false;
             Iterator<LinkedList> listIt = bkeys.iterator();
             if (listIt.hasNext()) {
                 LinkedList aList = listIt.next();
