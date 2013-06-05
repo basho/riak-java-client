@@ -369,14 +369,31 @@ public class PBClientAdapter implements RawClient {
             BucketKeyMapReduce mr = new BucketKeyMapReduce(this);
             int stepCnt = 0;
 
-            for (LinkedList<List<String>> step : bkeys) {
-                // TODO find a way to *enforce* order here (custom
-                // deserializer?)
-                stepCnt++;
-                for (List<String> input : step) {
+            // Results with a single phase are packaged slightly differently, so
+            // determine what we got back
+            boolean singlePhase = false;
+            Iterator<LinkedList> listIt = bkeys.iterator();
+            if (listIt.hasNext()) {
+                LinkedList aList = listIt.next();
+                if (aList.getFirst() instanceof java.lang.String) singlePhase = true;
+            }
+            if (singlePhase) {
+                for (List<String> input : bkeys) {
+                    stepCnt++;
                     // use the step count as key data so we can aggregate the
                     // results into the correct steps when they come back
                     mr.addInput(input.get(0), input.get(1), Integer.toString(stepCnt));
+                }
+            } else {
+                for (LinkedList<List<String>> step : bkeys) {
+                    // TODO find a way to *enforce* order here (custom
+                    // deserializer?)
+                    stepCnt++;
+                    for (List<String> input : step) {
+                        // use the step count as key data so we can aggregate the
+                        // results into the correct steps when they come back
+                        mr.addInput(input.get(0), input.get(1), Integer.toString(stepCnt));
+                    }
                 }
             }
 

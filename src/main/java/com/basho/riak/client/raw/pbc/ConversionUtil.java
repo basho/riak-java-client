@@ -428,8 +428,10 @@ public final class ConversionUtil {
                 b.withLastModified(lastModDate.getTime());
 
             List<List<String>> links = (List<List<String>>) meta.get("Links");
-            for (List<String> link : links) {
-                b.addLink(link.get(0), link.get(1), link.get(2));
+            if (links != null) {
+                for (List<String> link : links) {
+                    b.addLink(link.get(0), link.get(1), link.get(2));
+                }
             }
 
             Map<String, String> userMetaData = (Map<String, String>) meta.get("X-Riak-Meta");

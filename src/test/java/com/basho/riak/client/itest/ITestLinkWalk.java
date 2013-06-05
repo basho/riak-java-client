@@ -122,6 +122,105 @@ public abstract class ITestLinkWalk {
         assertTrue(keys.contains("fourth"));
     }
 
+    // Test the case in which the final nodes of the walk do not have any links themselves
+    @Test public void test_walk_without_final_link() throws RiakException {
+        final IRiakClient client = getClient();
+
+        final String freundTag = "freund";
+
+        final String[] first = { "benutzer_1234", "{e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;namee86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;:e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;Brian Roache86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;}" };
+        final String[] second = { "benutzer_2345","{e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;namee86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;:e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;Russell Browne86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;}" };
+        final String[] third = { "benutzer_3456","{e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;namee86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;:e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;Sean Cribbse86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;}" };
+
+        final Bucket b = client.createBucket(bucketName).execute();
+        final RiakBucket bucket = RiakBucket.newRiakBucket(b);
+
+        IRiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, first[0]).withValue(first[1]).addLink(bucketName,
+                                                                                                        second[0],
+                                                                                                        freundTag).build();
+
+        IRiakObject o2 = RiakObjectBuilder.newBuilder(bucketName, second[0]).withValue(second[1]).addLink(bucketName,
+                                                                                                          third[0],
+                                                                                                          freundTag).build();
+
+        IRiakObject o3 = RiakObjectBuilder.newBuilder(bucketName, third[0]).withValue(third[1]).build();
+
+        bucket.store(o1);
+        bucket.store(o2);
+        bucket.store(o3);
+
+        // Perform walk
+        WalkResult result = client.walk(o1).addStep(bucketName, freundTag, true).addStep(bucketName, freundTag).execute();
+        assertNotNull(result);
+
+        int stepsCnt = 0;
+        List<String> keys = new ArrayList<String>();
+        for (Collection<IRiakObject> s : result) {
+
+            for (IRiakObject object : s) {
+                keys.add(object.getKey());
+           }
+
+            stepsCnt++;
+        }
+
+        assertEquals(2, stepsCnt);
+
+        assertTrue(keys.contains("benutzer_2345"));
+        assertTrue(keys.contains("benutzer_3456"));
+    }
+
+    /**
+     * Tests the case where a the Link Walking tree has only a depth of one
+     *
+     */
+    @Test public void test_walk_depth_of_one() throws RiakException {
+        final IRiakClient client = getClient();
+
+        final String friendTag = "friend";
+
+        final String[] first = { "user_1234", "{e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;namee86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;:e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;Brian Roache86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;}" };
+        final String[] second = { "user_2345","{e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;namee86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;:e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;Russell Browne86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;}" };
+        final String[] third = { "user_3456","{e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;namee86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;:e86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;Sean Cribbse86cfcd75c1dbaa5bacb8e6d6415951a19054778quot;}" };
+
+        final Bucket b = client.createBucket(bucketName).execute();
+        final RiakBucket bucket = RiakBucket.newRiakBucket(b);
+
+        IRiakObject o1 = RiakObjectBuilder.newBuilder(bucketName, first[0]).withValue(first[1]).addLink(bucketName,
+                                                                                                       second[0],
+                                                                                                       friendTag).addLink(bucketName,
+                                                                                                                          third[0],
+                                                                                                                          friendTag).build();
+
+        IRiakObject o2 = RiakObjectBuilder.newBuilder(bucketName, second[0]).withValue(second[1]).build();
+
+        IRiakObject o3 = RiakObjectBuilder.newBuilder(bucketName, third[0]).withValue(third[1]).build();
+
+        bucket.store(o1);
+        bucket.store(o2);
+        bucket.store(o3);
+
+        // Perform walk
+        WalkResult result = client.walk(o1).addStep(bucketName, friendTag, true).addStep(bucketName, friendTag).execute();
+        assertNotNull(result);
+
+        int stepsCnt = 0;
+        List<String> keys = new ArrayList<String>();
+        for (Collection<IRiakObject> s : result) {
+
+            for (IRiakObject object : s) {
+                keys.add(object.getKey());
+           }
+
+            stepsCnt++;
+        }
+
+        assertEquals(2, stepsCnt);
+
+        assertTrue(keys.contains("user_2345"));
+        assertTrue(keys.contains("user_3456"));
+    }
+
     /**
      * @return
      * @throws RiakException
