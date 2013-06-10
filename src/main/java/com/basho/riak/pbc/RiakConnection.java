@@ -150,7 +150,7 @@ class RiakConnection implements Comparable<RiakConnection>
 		}
 
 		if (len != 1 || code != get_code) {
-			throw new IOException("bad message code");
+			throw new IOException("bad message code. Expected: " + code + " actual: " + get_code);
 		}
 	}
 
