@@ -96,6 +96,8 @@ public interface IRiakClient {
     /**
      * Iterate over the bucket names in Riak. This is a streaming operation.
      * 
+     * <b> This is only available in Riak 1.4 and later</b>
+     * 
      * You *must* call {@link StreamingIterator#close() } on the returned
      * {@link StreamingIterator} if you do not iterate through the entire set.
      * 

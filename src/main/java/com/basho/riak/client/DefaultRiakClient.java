@@ -86,6 +86,11 @@ public final class DefaultRiakClient implements IRiakClient {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakClient#listBucketsStreaming()
+     */
     public StreamingOperation<String> listBucketsStreaming() throws RiakException {
         try {
             return rawClient.listBucketsStreaming();

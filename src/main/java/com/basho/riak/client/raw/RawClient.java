@@ -164,6 +164,8 @@ public interface RawClient {
     /**
      * Iterate over the bucket names in Riak. This is a streaming operation.
      * 
+     * <b>This is only available in Riak 1.4 or later.</b>
+     * 
      * * You *must* call {@link StreamingOperation#cancel() } on the returned
      * {@link StreamingOperation} if you do not iterate through the entire set.
      * 
