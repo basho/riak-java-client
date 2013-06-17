@@ -118,4 +118,5 @@ public interface Constants {
 
     // List bucket operation parameters
     public static String LIST_BUCKETS = "true";
+    public static String STREAM_BUCKETS = "stream";
 }

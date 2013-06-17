@@ -1,8 +1,8 @@
 package com.basho.riak.pbc;
 
-import com.basho.riak.protobuf.RiakKvPB.RpbBucketProps;
-import com.basho.riak.protobuf.RiakKvPB.RpbGetBucketResp;
-import com.basho.riak.protobuf.RiakKvPB.RpbBucketProps.Builder;
+import com.basho.riak.protobuf.RiakPB.RpbBucketProps;
+import com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder;
+import com.basho.riak.protobuf.RiakPB.RpbGetBucketResp;
 
 /**
  * PBC's limited model of Riak Bucket properties.

@@ -686,12 +686,19 @@ public class RiakClient implements RiakMessageCodes {
 		return out;
 	}
 
+    public BucketSource listBucketsStreaming() throws IOException {
+        RiakConnection c = getConnection();
+		c.send(MSG_ListBucketsReq, RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true).build());
+
+		return new BucketSource(this, c);
+    }
+    
 	public BucketProperties getBucketProperties(ByteString bucket)
 			throws IOException {
 
 		RiakConnection c = getConnection();
 		try {
-			c.send(MSG_GetBucketReq, RiakKvPB.RpbGetBucketReq.newBuilder()
+			c.send(MSG_GetBucketReq, RiakPB.RpbGetBucketReq.newBuilder()
 					.setBucket(bucket).build());
 
 			byte[] data = c.receive(MSG_GetBucketResp);
@@ -700,7 +707,7 @@ public class RiakClient implements RiakMessageCodes {
 				return bp;
 			}
 
-			bp.init(RiakKvPB.RpbGetBucketResp.parseFrom(data));
+			bp.init(RiakPB.RpbGetBucketResp.parseFrom(data));
 			return bp;
 		} finally {
 			release(c);
@@ -711,7 +718,7 @@ public class RiakClient implements RiakMessageCodes {
 	public void setBucketProperties(ByteString bucket, BucketProperties props)
 			throws IOException {
 
-		RiakKvPB.RpbSetBucketReq req = RiakKvPB.RpbSetBucketReq.newBuilder().setBucket(
+		RiakPB.RpbSetBucketReq req = RiakPB.RpbSetBucketReq.newBuilder().setBucket(
 				bucket).setProps(props.build()).build();
 
 		RiakConnection c = getConnection();

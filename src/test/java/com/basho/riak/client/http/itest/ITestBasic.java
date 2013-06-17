@@ -254,7 +254,7 @@ public class ITestBasic {
         storeresp = c.store(o2, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
-        ListBucketsResponse resp = c.listBuckets();
+        ListBucketsResponse resp = c.listBuckets(false);
 
         Set<String> buckets = resp.getBuckets();
 
