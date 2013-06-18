@@ -35,7 +35,9 @@ import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.raw.StreamingOperation;
 import com.basho.riak.client.util.CharsetUtils;
+import java.util.HashSet;
 
 /**
  * @author russell
@@ -120,11 +122,22 @@ public abstract class ITestClientBasic {
         b1.store("key", "value").execute();
         b2.store("key", "value").execute();
 
+        // Non-streaming
         Set<String> buckets = client.listBuckets();
 
         assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
         assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
 
+        // Streaming
+        StreamingOperation<String> sOperation = client.listBucketsStreaming();
+        buckets = new HashSet<String>();
+        while (sOperation.hasNext()) {
+            buckets.add(sOperation.next());
+        }
+        
+        assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
+        assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
+        
         emptyBucket(bucket2, client);
         emptyBucket(bucket1, client);
     }
