@@ -42,6 +42,10 @@ public class RiakLink {
      *            the link tag
      */
     public RiakLink(String bucket, String key, String tag) {
+        if (null == bucket || null == key || null == tag) {
+            throw new IllegalArgumentException("Bucket, key, and tag must all be non-null");
+        }
+        
         this.bucket = bucket;
         this.key = key;
         this.tag = tag;
