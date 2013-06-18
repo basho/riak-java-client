@@ -50,6 +50,7 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.query.indexes.BinIndex;
@@ -126,6 +127,18 @@ public abstract class ITestBucket {
         String k = o.getKey();
         assertNotNull(k);
         
+    }
+    
+    public static class MyPojo {
+        @RiakKey public String key;
+        public String value = "Some Value";
+    }
+    
+    @Test public void storePojoWithNullKey() throws Exception {
+        Bucket b = client.fetchBucket(bucketName).execute();
+        MyPojo p = b.store(new MyPojo()).withoutFetch().returnBody(true).execute();
+        String k = p.key;
+        assertNotNull(k);
     }
     
     @Ignore("non-deterministic")
