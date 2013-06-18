@@ -78,6 +78,12 @@ public class RiakIndexes {
      * @return this
      */
     public RiakIndexes add(String index, String value) {
+        if (null == index) {
+            throw new IllegalArgumentException("Index name can not be null");
+        }
+        if (null == value) {
+            throw new IllegalArgumentException("Index value can not be null");
+        }
         final BinIndex key = BinIndex.named(index);
         Set<String> newSet = new HashSet<String>();
         Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
@@ -98,7 +104,14 @@ public class RiakIndexes {
      * @return this
      */    
     public RiakIndexes addBinSet(String index, Set<String> newValues) {
-        
+        if (null == index) {
+            throw new IllegalArgumentException("Index name can not be null");
+        }
+        for (String s : newValues) {
+            if (null == s) {
+                throw new IllegalArgumentException("null value not allowed in index set");
+            }
+        }
         final BinIndex key = BinIndex.named(index);
         Set<String> newSet = new HashSet<String>();
         Set<String> prevSet = binIndexes.putIfAbsent(key, newSet);
@@ -120,6 +133,9 @@ public class RiakIndexes {
      * @return this
      */
     public RiakIndexes add(String index, long value) {
+        if (null == index) {
+            throw new IllegalArgumentException("Index name can not be null");
+        }
         final IntIndex key = IntIndex.named(index);
         Set<Long> newSet = new HashSet<Long>();
         Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
@@ -140,6 +156,9 @@ public class RiakIndexes {
      * @return this
      */
     public RiakIndexes addIntSet(String index, Set<? extends Number> newValues) {
+        if (null == index) {
+            throw new IllegalArgumentException("Index name can not be null");
+        }
         final IntIndex key = IntIndex.named(index);
         Set<Long> newSet = new HashSet<Long>();
         Set<Long> prevSet = intIndexes.putIfAbsent(key, newSet);
@@ -148,6 +167,9 @@ public class RiakIndexes {
             // This was done when changing internals from Integer to Long to preserve
             // external usage
             for (Number n : newValues) {
+                if (null == n) {
+                    throw new IllegalArgumentException("Index value set can not contain null values");
+                }
                 values.add(n.longValue());
             }
         }
