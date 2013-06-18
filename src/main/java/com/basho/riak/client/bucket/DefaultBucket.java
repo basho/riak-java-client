@@ -455,10 +455,7 @@ public class DefaultBucket implements Bucket {
     public <T> StoreObject<T> store(final T o) {
         @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) o.getClass();
         final String key = getKey(o);
-        if (key == null) {
-            throw new NoKeySpecifedException(o);
-        }
-
+        
         Converter<T> converter = getDefaultConverter(clazz);
 
         return new StoreObject<T>(client, name, key, retrier)

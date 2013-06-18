@@ -31,8 +31,6 @@ import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.query.indexes.RiakIndexes;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -104,10 +102,6 @@ public class JSONConverter<T> implements Converter<T> {
     public IRiakObject fromDomain(T domainObject, VClock vclock) throws ConversionException {
         try {
             String key = getKey(domainObject, this.defaultKey);
-
-            if (key == null) {
-                throw new NoKeySpecifedException(domainObject);
-            }
             
             final byte[] value = objectMapper.writeValueAsBytes(domainObject);
             Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);

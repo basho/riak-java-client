@@ -25,6 +25,7 @@ import com.basho.riak.client.bucket.DomainBucket;
 import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.convert.VClockUtil;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.RawClient;
@@ -53,7 +54,8 @@ public class StoreObject<T> implements RiakOperation<T> {
     private Retrier retrier;
 
     private final StoreMeta.Builder storeMetaBuilder = new StoreMeta.Builder();
-
+    private final boolean hasKey;
+    
     private boolean returnBody = false;
     private boolean doNotFetch = false;
     private boolean deletedVClockWithReturnbody = false;
@@ -82,6 +84,7 @@ public class StoreObject<T> implements RiakOperation<T> {
         this.client = client;
         this.retrier = retrier;
         fetchObject = new FetchObject<T>(client, bucket, key, retrier);
+        hasKey = key != null;
     }
 
     /**
@@ -105,6 +108,11 @@ public class StoreObject<T> implements RiakOperation<T> {
      *         fails because a match exists
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
+        
+        if (!hasKey && !doNotFetch) {
+            throw new IllegalArgumentException("Can not store object will null key without calling withoutFetch()");
+        }
+        
         T resolved = null;
         VClock vclock = null;
         
