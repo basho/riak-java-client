@@ -313,8 +313,8 @@ public class DefaultBucket implements Bucket {
      * at present all {@link RawClient#listKeys(String)} operations return a
      * stream of keys. 
      * 
-     * You *must* call {@link StreamingIterator#close() } on the returned
-     * {@link StreamingIterator} if you do not iterate through the entire set.
+     * You *must* call {@link StreamingOperation#cancel() } on the returned
+     * {@link StreamingOperation} if you do not iterate through the entire set.
      * 
      * As a safeguard the stream is closed automatically when the iterator is
      * weakly reachable but due to the nature of the GC it is inadvisable to 

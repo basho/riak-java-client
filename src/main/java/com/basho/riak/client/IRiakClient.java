@@ -98,8 +98,8 @@ public interface IRiakClient {
      * 
      * <b> This is only available in Riak 1.4 and later</b>
      * 
-     * You *must* call {@link StreamingIterator#close() } on the returned
-     * {@link StreamingIterator} if you do not iterate through the entire set.
+     * You *must* call {@link StreamingOperation#cancel() } on the returned
+     * {@link StreamingOperation} if you do not iterate through the entire set.
      * 
      * As a safeguard the stream is closed automatically when the iterator is
      * weakly reachable but due to the nature of the GC it is inadvisable to 
