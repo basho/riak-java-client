@@ -106,6 +106,7 @@ public interface Constants {
     public static String QP_PW = "pw";
     public static String QP_NOT_FOUND_OK = "notfound_ok";
     public static String QP_BASIC_QUORUM = "basic_quorum";
+    public static String QP_ASIS = "asis";
 
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";

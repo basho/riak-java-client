@@ -497,6 +497,10 @@ public class RiakClient implements RiakMessageCodes {
 					if (meta.durableWriteQuorum != null) {
 						builder.setDw(meta.durableWriteQuorum.intValue());
 					}
+                    
+                    if (meta.asis != null) {
+                        builder.setAsis(meta.asis.booleanValue());
+                    }
 				}
 
 				RpbPutReq req = builder.build();
