@@ -281,4 +281,8 @@ public class RequestMeta {
     public RequestMeta setAccept(String contentTypes) {
         return setHeader(Constants.HDR_ACCEPT, contentTypes);
     }
+    
+    public RequestMeta setAsis(boolean asis) {
+        return setHeader(Constants.QP_ASIS, String.valueOf(asis));
+    }
 }

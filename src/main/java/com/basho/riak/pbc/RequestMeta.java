@@ -33,6 +33,7 @@ public class RequestMeta implements IRequestMeta {
 	Boolean ifNotModified;
 	Boolean ifNoneMatch;
 	Boolean returnHead;
+    Boolean asis;
 	
 	public RequestMeta() {
 	}
@@ -68,6 +69,10 @@ public class RequestMeta implements IRequestMeta {
 
         if (returnHead != null) {
             builder.setReturnHead(returnHead.booleanValue());
+        }
+        
+        if (asis != null) {
+            builder.setAsis(asis.booleanValue());
         }
 	}
 
@@ -127,6 +132,11 @@ public class RequestMeta implements IRequestMeta {
 
     public IRequestMeta returnHead(boolean returnHead) {
         this.returnHead = returnHead;
+        return this;
+    }
+    
+    public IRequestMeta asis(boolean asis) {
+        this.asis = asis;
         return this;
     }
 }

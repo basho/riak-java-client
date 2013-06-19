@@ -227,6 +227,10 @@ public final class ConversionUtil {
         if (storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()) {
             requestMeta.setIfUnmodifiedSince(storeMeta.getLastModified());
         }
+        
+        if (storeMeta.hasAsis()) {
+            requestMeta.setAsis(storeMeta.getAsis());
+        }
 
         return requestMeta;
     }
