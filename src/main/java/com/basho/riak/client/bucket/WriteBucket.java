@@ -136,13 +136,10 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Is this bucket last_write_wins?
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport.
      * @param lastWriteWins
      * @return this
      */
     public WriteBucket lastWriteWins(boolean lastWriteWins) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_LAST_WRITE_WINS);
         builder.lastWriteWins(lastWriteWins);
         return this;
     }
@@ -159,39 +156,30 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Which backend this bucket uses.
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param backend
      * @return this
      */
     public WriteBucket backend(String backend) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_BACKEND);
         builder.backend(backend);
         return this;
     }
 
     /**
      * A Collection of precommit hooks for this bucket
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param precommitHooks
      * @return
      */
     public WriteBucket precommitHooks(Collection<NamedFunction> precommitHooks) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_PRECOMMIT);
         builder.precommitHooks(precommitHooks);
         return this;
     }
 
     /**
      * Add a precommit hook to the Collection of hooks to be written.
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param preCommitHook
      * @return this
      */
     public WriteBucket addPrecommitHook(NamedFunction preCommitHook) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_PRECOMMIT);
         if(preCommitHook != null) {
             if(precommitHooks == null) {
                 precommitHooks = new ArrayList<NamedFunction>();
@@ -203,13 +191,10 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Add a collection of postcommit hooks to the bucket to be written.
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param postCommitHooks
      * @return
      */
     public WriteBucket postcommitHooks(Collection<NamedErlangFunction> postCommitHooks) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_POSTCOMMIT);
         builder.postcommitHooks(postCommitHooks);
         return this;
     }
@@ -222,7 +207,6 @@ public class WriteBucket implements RiakOperation<Bucket> {
      * @return
      */
     public WriteBucket addPostcommitHook(NamedErlangFunction postcommitHook) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_POSTCOMMIT);
         if(postcommitHook != null) {
             if(postcommitHooks == null) {
                 postcommitHooks = new ArrayList<NamedErlangFunction>();
@@ -234,232 +218,181 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * Set the chash_key_fun on the bucket to be written
-     * NOTE: at present this is not supported by the PB API and has no effect for that client.
      * @param chashKeyFunction
      * @return
      */
     public WriteBucket chashKeyFunction(NamedErlangFunction chashKeyFunction) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_CHASHFUN);
         builder.chashKeyFunction(chashKeyFunction);
         return this;
     }
 
     /**
      * Set the link_walk_fun used by Riak on the bucket to be written.
-     * NOTE: at present this is not supported by the PB API and has no effect for that client.
      * @param linkWalkFunction
      * @return
      */
     public WriteBucket linkWalkFunction(NamedErlangFunction linkWalkFunction) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_LINKFUN);
         builder.linkWalkFunction(linkWalkFunction);
         return this;
     }
 
     /**
      * set the small vclock prune size
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param smallVClock
      * @return
      */
     public WriteBucket smallVClock(int smallVClock) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_SMALL_VCLOCK);
         builder.smallVClock(smallVClock);
         return this;
     }
 
     /**
      * set the big_vclock prune size
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param bigVClock
      * @return
      */
     public WriteBucket bigVClock(int bigVClock) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_BIG_VCLOCK);
         builder.bigVClock(bigVClock);
         return this;
     }
 
     /**
      * set the young_vclock prune age
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param youngVClock
      * @return
      */
     public WriteBucket youngVClock(long youngVClock) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_YOUNG_VCLOCK);
         builder.youngVClock(youngVClock);
         return this;
     }
 
     /**
      * set the old_vclock prune age
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param oldVClock
      * @return
      */
     public WriteBucket oldVClock(long oldVClock) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_OLD_VCLOCK);
         builder.oldVClock(oldVClock);
         return this;
     }
 
     /**
      * The default r Quorom for the bucket
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param r
      * @return
      */
     public WriteBucket r(Quora r) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_R);
         builder.r(r);
         return this;
     }
 
     /**
      * The default r quorom as an int
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param r
      * @return
      */
     public WriteBucket r(int r) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_R);
         builder.r(r);
         return this;
     }
 
     /**
      * The default w quorom
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param w
      * @return
      */
     public WriteBucket w(Quora w) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_W);
         builder.w(w);
         return this;
     }
 
     /**
      * The default w quorom as an int
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param w
      * @return
      */
     public WriteBucket w(int w) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_W);
         builder.w(w);
         return this;
     }
 
     /**
      * The default rw quorom
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param rw
      * @return
      */
     public WriteBucket rw(Quora rw) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_RW);
         builder.rw(rw);
         return this;
     }
 
     /**
      * The default rw quorom as an int
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param rw
      * @return
      */
     public WriteBucket rw(int rw) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_RW);
         builder.rw(rw);
         return this;
     }
 
     /**
      * The default dw quorom
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param dw
      * @return
      */
     public WriteBucket dw(Quora dw) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_DW);
         builder.dw(dw);
         return this;
     }
 
     /**
      * The default dw quorom as an int
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param dw
      * @return
      */
     public WriteBucket dw(int dw) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_DW);
         builder.dw(dw);
         return this;
     }
 
     /**
      * The default pr quorom
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param pr
      * @return
      */
     public WriteBucket pr(Quora pr) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_PR);
         builder.pr(pr);
         return this;
     }
 
     /**
      * The default pr quorom as an int
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param pr
      * @return
      */
     public WriteBucket pr(int pr) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_PR);
         builder.pr(pr);
         return this;
     }
 
     /**
      * The default pw quorom
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
      * @param pw
      * @return
      */
     public WriteBucket pw(Quora pw) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_PW);
         builder.pw(pw);
         return this;
     }
 
     /**
      * The default dw quorom as an int
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport 
+     * 
      * @param dw
      * @return
      */
     public WriteBucket pw(int pw) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_PW);
         builder.pw(pw);
         return this;
     }
@@ -472,20 +405,17 @@ public class WriteBucket implements RiakOperation<Bucket> {
      * @return
      */
     public WriteBucket basicQuorum(boolean basicQuorum) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_BASIC_QUORUM);
         builder.basicQuorum(basicQuorum);
         return this;
     }
 
     /**
      * The default notfound_ok value
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
+     * 
      * @param notFoundOK
      * @return
      */
     public WriteBucket notFoundOK(boolean notFoundOK) {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_NOT_FOUND_OK);
         builder.notFoundOK(notFoundOK);
         return this;
     }
@@ -505,12 +435,10 @@ public class WriteBucket implements RiakOperation<Bucket> {
     /**
      * convenience for setting search=true **and** adding the search precommit
      * hook (support for both pre-1.0 and 1.0 search)
-     * NOTE: at present this is not supported by PB API and 
-     * an {@link UnsupportedPropertyException} will be thrown if called for that transport
+     * 
      * @return this
      */
     public WriteBucket enableForSearch() {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_SEARCH);
         addPrecommitHook(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK);
         builder.search(true);
         return this;
@@ -518,15 +446,11 @@ public class WriteBucket implements RiakOperation<Bucket> {
 
     /**
      * convenience for setting search=false **and** removing the search
-     * precommit hook (support for both pre-1.0 and 1.0 search) NOTE: at present
-     * this is not supported by PB API and an
-     * {@link UnsupportedPropertyException} will be thrown if called for that
-     * transport
+     * precommit hook (support for both pre-1.0 and 1.0 search) 
      * 
      * @return this
      */
     public WriteBucket disableSearch() {
-        httpOnly(client.getTransport(), Constants.FL_SCHEMA_SEARCH);
         if (precommitHooks != null) {
             precommitHooks.remove(NamedErlangFunction.SEARCH_PRECOMMIT_HOOK);
         }
@@ -534,11 +458,6 @@ public class WriteBucket implements RiakOperation<Bucket> {
         return this;
     }
 
-    private void httpOnly(Transport transport, String propertyName) {
-        if(!Transport.HTTP.equals(transport)) {
-            throw new UnsupportedPropertyException(transport, propertyName);
-        }
-    }
     /**
      * Prior to the addition of this method there was no way to prevent 
      * {@link #execute() } from fetching the {@link BucketProperties} from Riak
