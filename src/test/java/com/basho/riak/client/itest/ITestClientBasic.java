@@ -33,6 +33,7 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.raw.StreamingOperation;
@@ -80,15 +81,19 @@ public abstract class ITestClientBasic {
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
         assertFalse(b.getAllowSiblings());
+        assertEquals(b.getR().getSymbolicValue(), Quora.QUORUM);
+        assertEquals(b.getW().getSymbolicValue(), Quora.QUORUM);
 
-        b = client.updateBucket(b).nVal(4).allowSiblings(true).execute();
+        b = client.updateBucket(b).nVal(4).r(2).w(2).allowSiblings(true).execute();
 
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(4), b.getNVal());
         assertTrue(b.getAllowSiblings());
+        assertEquals(2, b.getR().getIntValue());
+        assertEquals(2, b.getW().getIntValue());
 
-        client.updateBucket(b).allowSiblings(false).nVal(3).execute();
+        client.updateBucket(b).allowSiblings(false).nVal(3).r(Quora.QUORUM).w(Quora.QUORUM).execute();
     }
 
     @Test public void createBucket() throws RiakException {
