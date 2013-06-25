@@ -352,6 +352,18 @@ public class HTTPClientAdapter implements RawClient {
         }
     }
 
+    /**
+     * (non-Javadoc)
+     * 
+     * @see RawClient#resetBucketProperties(java.lang.String) 
+     */
+    public void resetBucketProperties(String bucketName) throws IOException {
+        HttpResponse response = client.resetBucketSchema(bucketName);
+        if (!response.isSuccess()) {
+            throw new IOException(response.getBodyAsString());
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * 

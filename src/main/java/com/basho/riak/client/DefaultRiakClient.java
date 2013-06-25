@@ -22,6 +22,8 @@ import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The default implementation of IRiakClient.
@@ -120,6 +122,18 @@ public final class DefaultRiakClient implements IRiakClient {
         return new WriteBucket(rawClient, bucketName, retrier);
     }
 
+    /**
+     * (non-Javadoc)
+     * @see RawClient#resetBucketProperties(java.lang.String) 
+     * 
+     */
+    public void resetBucket(String bucketName) throws RiakException {
+        try {
+            rawClient.resetBucketProperties(bucketName);
+        } catch (IOException ex) {
+            throw new RiakException(ex);
+        }
+    }
     // CLIENT ID
 
     /* (non-Javadoc)

@@ -278,6 +278,13 @@ public class PBClientAdapter implements RawClient {
 
     }
 
+    public void resetBucketProperties(String bucket) throws IOException {
+        if (null == bucket || bucket.equalsIgnoreCase("")) {
+            throw new IllegalArgumentException("Bucket name can not be null or empty");
+        }
+        client.resetBucketProperties(ByteString.copyFromUtf8(bucket));
+    }
+    
     /*
      * (non-Javadoc)
      * 

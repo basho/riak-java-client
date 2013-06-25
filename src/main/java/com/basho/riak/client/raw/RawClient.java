@@ -204,6 +204,12 @@ public interface RawClient {
     void updateBucket(String name, BucketProperties bucketProperties) throws IOException;
 
     /**
+     * Reset the bucket properties for this bucket back to the default values
+     * @param bucketName 
+     */
+    void resetBucketProperties(String bucketName) throws IOException;
+    
+    /**
      * An unmodifiable view of the keys for the bucket named
      * <code>bucketName</code>
      * 

@@ -140,6 +140,12 @@ public interface IRiakClient {
     WriteBucket createBucket(String bucketName);
 
     /**
+     * Reset a bucket's properties back to the defaults
+     * @param bucketName 
+     */
+    void resetBucket(String bucketName) throws RiakException;
+    
+    /**
      * Create a {@link LinkWalk} operation that starts at startObject.
      * 
      * See also <a href="http://wiki.basho.com/Links.html">Link Walking</a> on the basho site.

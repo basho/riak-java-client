@@ -106,6 +106,26 @@ public abstract class ITestClientBasic {
         client.updateBucket(b).allowSiblings(false).nVal(3).execute();
     }
 
+    @Test public void resetBucketProps() throws RiakException, InterruptedException {
+        Bucket b = client.createBucket(bucketName).nVal(4).r(2).w(2).allowSiblings(true).execute();
+        assertNotNull(b);
+        assertEquals(bucketName, b.getName());
+        assertEquals(new Integer(4), b.getNVal());
+        assertTrue(b.getAllowSiblings());
+        assertEquals(2, b.getR().getIntValue());
+        assertEquals(2, b.getW().getIntValue());
+        
+        client.resetBucket(bucketName);
+        b = client.fetchBucket(bucketName).execute();
+
+        assertNotNull(b);
+        assertEquals(bucketName, b.getName());
+        assertEquals(new Integer(3), b.getNVal());
+        assertFalse(b.getAllowSiblings());
+        assertEquals(b.getR().getSymbolicValue(), Quora.QUORUM);
+        assertEquals(b.getW().getSymbolicValue(), Quora.QUORUM);
+    }
+    
     @Test public void clientIds() throws Exception {
         final byte[] clientId = CharsetUtils.utf8StringToBytes("abcd");
 
