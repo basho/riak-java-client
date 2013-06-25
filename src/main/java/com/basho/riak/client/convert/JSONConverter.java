@@ -184,7 +184,7 @@ public class JSONConverter<T> implements Converter<T> {
      * This is a convenience method to allow changing its behavior.
      * @return The Jackson ObjectMapper
      */
-    public ObjectMapper getObjectMapper() {
+    public static ObjectMapper getObjectMapper() {
         return OBJECT_MAPPER;
     }
 
