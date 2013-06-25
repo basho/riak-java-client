@@ -733,6 +733,19 @@ public class RiakClient implements RiakMessageCodes {
 			release(c);
 		}
 	}
+    
+    public void resetBucketProperties(ByteString bucket) throws IOException {
+        RiakPB.RpbResetBucketReq req = RiakPB.RpbResetBucketReq.newBuilder().setBucket(
+            bucket).build();
+        
+        RiakConnection c = getConnection();
+        try {
+            c.send(MSG_ResetBucketReq, req);
+            c.receive_code(MSG_ResetBucketResp);
+        } finally {
+            release(c);
+        }
+    }
 
 	// /////////////////////
 

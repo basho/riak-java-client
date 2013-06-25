@@ -107,6 +107,10 @@ public class RiakClient {
         }
     }
 
+    public HttpResponse resetBucketSchema(String bucket) {
+        return helper.resetBucketSchema(bucket);
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.HttpRiakClient#getBucketSchema(java.lang.String)
      */

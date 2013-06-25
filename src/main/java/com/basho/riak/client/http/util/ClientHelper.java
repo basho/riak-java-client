@@ -129,6 +129,15 @@ public class ClientHelper {
         return listBucket(bucket, meta, false);
     }
 
+    public HttpResponse resetBucketSchema(String bucket) {
+        if (null == bucket || bucket.equalsIgnoreCase("")) {
+            throw new IllegalArgumentException("bucket name can not be null or empty");
+        }
+        String url = config.getBaseUrl() + "/buckets/" + ClientUtils.urlEncode(bucket) + "/props";
+        HttpDelete delete = new HttpDelete(url);
+        return executeMethod(null, null, delete, null, false);
+    }
+    
     /**
      * List the buckets in Riak
      * 

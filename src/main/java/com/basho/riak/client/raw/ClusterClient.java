@@ -208,6 +208,11 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         delegate.updateBucket(name, bucketProperties);
     }
 
+    public void resetBucketProperties(String bucketName) throws IOException {
+        final RawClient delegate = getDelegate();
+        delegate.resetBucketProperties(bucketName);
+    }
+    
     /*
      * (non-Javadoc)
      * 
