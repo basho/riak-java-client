@@ -17,8 +17,8 @@ package com.basho.riak.client.raw.http;
 
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.raw.RiakStreamingRuntimeException;
-import com.basho.riak.client.raw.StreamingOperation;
+import com.basho.riak.client.query.RiakStreamingRuntimeException;
+import com.basho.riak.client.query.StreamingOperation;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -109,6 +109,16 @@ public class BucketSource implements StreamingOperation<String>
             set.add(next());
         }
         return set;
+    }
+
+    public boolean hasContinuation()
+    {
+        return false;
+    }
+
+    public String getContinuation()
+    {
+        return null;
     }
     
     /**

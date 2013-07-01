@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.raw;
+package com.basho.riak.client.query;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -38,4 +38,15 @@ public interface StreamingOperation<T> extends Iterable<T>, Iterator<T>
      * Cancels the operation and cleans up the underlying network connection
      */
     void cancel();
+    
+    /**
+     * If this is a paginated operation, a "continuation" value may be available
+     */
+    boolean hasContinuation();
+    
+    /**
+     * Get the continuation value 
+     * @return A string representation of the continuation value or null if not present
+     */
+    String getContinuation();
 }

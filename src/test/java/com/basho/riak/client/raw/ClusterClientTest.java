@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.query.StreamingOperation;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.IndexEntry;
+import com.basho.riak.client.query.StreamingOperation;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.client.raw.config.Configuration;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -295,6 +298,11 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.fetchIndex(indexQuery);
     }
 
+    public StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetchIndex(indexSpec);
+    }
+    
     public void shutdown(){
         for(RawClient rc : cluster){
             rc.shutdown();

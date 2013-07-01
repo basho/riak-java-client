@@ -37,15 +37,17 @@ import com.basho.riak.client.query.functions.JSSourceFunction;
 import com.basho.riak.client.query.functions.NamedErlangFunction;
 import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
+import com.basho.riak.client.IndexEntry;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
-import com.basho.riak.client.raw.StreamingOperation;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.ResultCapture;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -55,6 +57,8 @@ import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.pbc.BucketSource;
 import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.IRequestMeta;
+import com.basho.riak.pbc.IndexRequest;
+import com.basho.riak.pbc.IndexSource;
 import com.basho.riak.pbc.KeySource;
 import com.basho.riak.pbc.MapReduceResponseSource;
 import com.basho.riak.pbc.RequestMeta;
@@ -248,7 +252,7 @@ public class PBClientAdapter implements RawClient {
      */ 
     public StreamingOperation<String> listBucketsStreaming() throws IOException {
         final BucketSource bucketSource = client.listBucketsStreaming();
-        return new PBStreamingOperation(bucketSource);
+        return new PBStreamingList(bucketSource);
     }
     
     /*
@@ -297,7 +301,7 @@ public class PBClientAdapter implements RawClient {
         }
 
         final KeySource keySource = client.listKeys(ByteString.copyFromUtf8(bucketName));
-        return new PBStreamingOperation(keySource);
+        return new PBStreamingList(keySource);
     }
 
     /**
@@ -462,6 +466,14 @@ public class PBClientAdapter implements RawClient {
 	
     }
 
+    public PBStreamingIndex fetchIndex(IndexSpec indexSpec) throws IOException {
+        
+        IndexRequest req = convert(indexSpec);
+        
+        final IndexSource indexSource = client.index(req);
+        return new PBStreamingIndex(indexSource);
+    }
+    
     /*
      * (non-Javadoc)
      * 

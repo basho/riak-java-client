@@ -13,18 +13,22 @@
  */
 package com.basho.riak.client.query.indexes;
 
+import com.basho.riak.client.IndexEntry;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.operations.RiakOperation;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.indexes.BinRangeQuery;
 import com.basho.riak.client.raw.query.indexes.BinValueQuery;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IntRangeQuery;
 import com.basho.riak.client.raw.query.indexes.IntValueQuery;
+import java.io.IOException;
 
 /**
  * @author russell
@@ -39,6 +43,9 @@ public class FetchIndex<T> implements RiakOperation<List<String>> {
     protected T value;
     protected T from;
     protected T to;
+    protected boolean returnTerms;
+    protected Integer maxResults;
+    protected String continuation;
 
     private Retrier retrier;
 
@@ -73,6 +80,59 @@ public class FetchIndex<T> implements RiakOperation<List<String>> {
         return keys;
     }
 
+    public StreamingOperation<IndexEntry> executeStreaming() throws RiakException  {
+        if (value == null && (to == null || from == null)) {
+            throw new IllegalStateException("Must set either value or range");
+        }
+        
+        IndexSpec.Builder builder = makeIndexSpecBuilder();
+        
+        builder.withMaxResults(maxResults)
+                .withReturnKeyAndIndex(returnTerms)
+                .withContinuation(continuation);
+        
+        try {
+            return client.fetchIndex(builder.build());
+        } catch (IOException ex) {
+            throw new RiakException(ex);
+        }
+        
+                
+    }
+    
+    private IndexSpec.Builder makeIndexSpecBuilder() {
+        if (isRange()) {
+            return makeRangeSpecBuilder();
+        } else {
+            return makeValueSpecBuilder();
+        }
+    }
+    
+    private IndexSpec.Builder makeRangeSpecBuilder() {
+        if (to.getClass().equals(String.class)) {
+            return new IndexSpec.Builder(index.getFullname(), bucket)
+                                    .withRangeStart((String)from)
+                                    .withRangeEnd((String)to);
+        } else if (Number.class.isAssignableFrom(value.getClass())) {
+            return new IndexSpec.Builder(index.getFullname(), bucket)
+                                    .withRangeStart(((Number)from).longValue())
+                                    .withRangeEnd(((Number)to).longValue());
+        }
+        
+        return null;
+    }
+    
+    private IndexSpec.Builder makeValueSpecBuilder() {
+        if (value.getClass().equals(String.class)) {
+            return new IndexSpec.Builder(index.getFullname(), bucket)
+                                    .withIndexKey((String)value);
+        } else if (Number.class.isAssignableFrom(value.getClass())) {
+            return new IndexSpec.Builder(index.getFullname(), bucket)
+                                    .withIndexKey(((Number)value).longValue());
+        }
+        return null;
+    }
+    
     /**
      * @return
      */
@@ -127,6 +187,21 @@ public class FetchIndex<T> implements RiakOperation<List<String>> {
 
     public FetchIndex<T> to(T to) {
         this.to = to;
+        return this;
+    }
+    
+    public FetchIndex<T> maxResults(int maxResults) {
+        this.maxResults = maxResults;
+        return this;
+    }
+    
+    public FetchIndex<T> returnKeyAndIndexValue(boolean returnBoth) {
+        this.returnTerms = returnBoth;
+        return this;
+    }
+    
+    public FetchIndex<T> withContinuation(String continuation) {
+        this.continuation = continuation;
         return this;
     }
 }

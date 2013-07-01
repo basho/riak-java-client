@@ -36,7 +36,7 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.operations.FetchObject;
-import com.basho.riak.client.raw.StreamingOperation;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.util.CharsetUtils;
 import java.util.HashSet;
 

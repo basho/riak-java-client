@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.IndexEntry;
+import com.basho.riak.client.query.StreamingOperation;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +25,7 @@ import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -295,6 +298,11 @@ public interface RawClient {
      */
     List<String> fetchIndex(IndexQuery indexQuery) throws IOException;
 
+    /**
+     * Performs a 2i query as a streaming operation
+     */
+    StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) throws IOException; 
+    
     /**
      * The raw transport name.
      * @return the {@link Transport} for the client or null if not implemented.
