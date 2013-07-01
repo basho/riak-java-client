@@ -95,8 +95,8 @@ public abstract class ITestORM extends ITestBucket {
 
         try {
             carts.store(cart).returnBody(false).withRetrier(new DefaultRetrier(3)).execute();
-            fail("Expected NoKeySpecifiedException");
-        } catch (NoKeySpecifedException e) {
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
             // NO-OP
         }
 
