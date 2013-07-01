@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -46,7 +47,13 @@ import com.basho.riak.client.query.indexes.RiakIndexes;
  */
 public class JSONConverter<T> implements Converter<T> {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Object mapper per domain class is expensive, a singleton (and ThreadSafe) will do.
+    private static final ObjectMapper OBJECT_MAPPER= new ObjectMapper();
+    static {
+        OBJECT_MAPPER.registerModule(new RiakJacksonModule());
+        OBJECT_MAPPER.registerModule(new JodaModule());
+    }
+
     private final Class<T> clazz;
     private final String bucket;
     private final UsermetaConverter<T> usermetaConverter;
@@ -60,7 +67,7 @@ public class JSONConverter<T> implements Converter<T> {
      * instances of <code>clazz</code>
      * 
      * @param clazz the type to convert to/from
-     * @param b the bucket
+     * @param bucket the bucket
      */
     public JSONConverter(Class<T> clazz, String bucket) {
         this(clazz, bucket, null);
@@ -85,8 +92,6 @@ public class JSONConverter<T> implements Converter<T> {
         this.usermetaConverter = new UsermetaConverter<T>();
         this.riakIndexConverter = new RiakIndexConverter<T>();
         this.riakLinksConverter = new RiakLinksConverter<T>();
-        objectMapper.registerModule(new RiakJacksonModule());
-        objectMapper.registerModule(new JodaModule());
     }
 
     /**
@@ -103,7 +108,7 @@ public class JSONConverter<T> implements Converter<T> {
         try {
             String key = getKey(domainObject, this.defaultKey);
             
-            final byte[] value = objectMapper.writeValueAsBytes(domainObject);
+            final byte[] value = OBJECT_MAPPER.writeValueAsBytes(domainObject);
             Map<String, String> usermetaData = usermetaConverter.getUsermetaData(domainObject);
             RiakIndexes indexes = riakIndexConverter.getIndexes(domainObject);
             Collection<RiakLink> links = riakLinksConverter.getLinks(domainObject);
@@ -154,7 +159,7 @@ public class JSONConverter<T> implements Converter<T> {
             String json = asString(riakObject.getValue(), getCharset(riakObject.getContentType()));
 
             try {
-                T domainObject = objectMapper.readValue(json, clazz);
+                T domainObject = OBJECT_MAPPER.readValue(json, clazz);
                 KeyUtil.setKey(domainObject, riakObject.getKey());
                 VClockUtil.setVClock(domainObject, riakObject.getVClock());
                 usermetaConverter.populateUsermeta(riakObject.getMeta(), domainObject);
@@ -169,13 +174,22 @@ public class JSONConverter<T> implements Converter<T> {
             }
         }
     }
-    
+
     /**
      * Returns the {@link ObjectMapper} being used.
      * This is a convenience method to allow changing its behavior.
      * @return The Jackson ObjectMapper
      */
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
+    public static ObjectMapper getObjectMapper() {
+        return OBJECT_MAPPER;
     }
+
+    /**
+     * Convenient method to register a Jackson module into the singleton Object mapper used by domain objects.
+     * @param jacksonModule Module to register.
+     */
+    public static void registerJacksonModule(final Module jacksonModule) {
+        OBJECT_MAPPER.registerModule(jacksonModule);
+    }
+
 }
