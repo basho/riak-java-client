@@ -15,13 +15,13 @@
  */
 package com.basho.riak.client.raw.pbc;
 
-import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.query.RiakStreamingRuntimeException;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.pbc.RiakStreamClient;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 
 /**
@@ -38,14 +38,14 @@ public abstract class PBStreamingOperation<S,T> implements StreamingOperation<T>
         this.client = client;
     }
     
-    public Set<T> getAll() 
+    public List<T> getAll() 
     {
-        Set<T> set = new HashSet<T>();
+        List<T> list = new ArrayList<T>();
         while (hasNext())
         {
-            set.add(next());
+            list.add(next());
         }
-        return set;
+        return list;
     }
 
     public void cancel()

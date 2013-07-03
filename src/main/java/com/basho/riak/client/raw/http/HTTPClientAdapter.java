@@ -24,14 +24,17 @@ import com.basho.riak.client.http.RiakConfig;
 import org.apache.http.HttpStatus;
 
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.IndexEntry;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
 import com.basho.riak.client.http.response.IndexResponse;
+import com.basho.riak.client.http.response.IndexResponseV2;
 import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.StoreResponse;
@@ -48,6 +51,7 @@ import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
 import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -477,6 +481,13 @@ public class HTTPClientAdapter implements RawClient {
         return convert(res.get());
     }
 
+    public StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) {
+        
+        IndexRequest req = convert(indexSpec);
+        IndexResponseV2 response = client.index(req);
+        return new IndexSource(response);
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#getTransport()
      */

@@ -64,8 +64,19 @@ public class IndexSource extends RiakStreamClient<IndexEntry>
         
         if (request.returnTerms())
         {
-            RpbPair pair = pbResponse.getResults(index++);
-            return new IndexEntry(pair.getKey(), pair.getValue());
+            /**
+             * Unfortunately Riak ignores return_terms if it's not a range
+             * query, resulting in this hack
+             */
+            if (request.isRangeQuery())
+            {
+                RpbPair pair = pbResponse.getResults(index++);
+                return new IndexEntry(pair.getKey(), pair.getValue());
+            }
+            else
+            {
+                return new IndexEntry(ByteString.copyFromUtf8(request.getIndexKey()), pbResponse.getKeys(index++));
+            }
         }
         else
         {
@@ -76,7 +87,7 @@ public class IndexSource extends RiakStreamClient<IndexEntry>
     
     private boolean responseIsExhausted()
     {
-        if (request.returnTerms())
+        if (request.returnTerms() && request.isRangeQuery())
         {
             return index == pbResponse.getResultsCount();
         }

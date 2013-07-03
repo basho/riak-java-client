@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.pbc;
+package com.basho.riak.client.http.request;
 
-import com.basho.riak.protobuf.RiakKvPB.RpbIndexReq;
-import com.google.protobuf.ByteString;
+import com.basho.riak.client.http.RiakConfig;
+import com.basho.riak.client.http.util.ClientUtils;
 
 /**
  *
@@ -31,8 +31,7 @@ public class IndexRequest
     private final String rangeEnd;
     private final boolean returnTerms;
     private final Integer maxResults;
-    private ByteString continuation;
-    
+    private String continuation;
     
     private IndexRequest(Builder builder)
     {
@@ -47,54 +46,67 @@ public class IndexRequest
         
     }
     
-    public void setContinuation(ByteString continuation)
+    public void setContinuation(String continuation)
     {
         this.continuation = continuation;
     }
 
-    public RpbIndexReq buildProtocolBufferReq()
+    public String makeURIString(RiakConfig config)
     {
-        RpbIndexReq.Builder builder = RpbIndexReq.newBuilder();
-        builder.setBucket(ByteString.copyFromUtf8(bucketName))
-                .setIndex(ByteString.copyFromUtf8(indexName))
-                .setStream(true);
+        StringBuilder sb = new StringBuilder(config.getBaseUrl())
+                                .append("/buckets/")
+                                .append(ClientUtils.urlEncode(bucketName))
+                                .append("/index/")
+                                .append(indexName)
+                                .append("/");
         
-        if (indexKey != null) 
+        if (indexKey != null)
         {
-            builder.setKey(ByteString.copyFromUtf8(indexKey));
-            builder.setQtype(RpbIndexReq.IndexQueryType.eq);
+            sb.append(indexKey);
         }
         else
         {
-            builder.setRangeMin(ByteString.copyFromUtf8(rangeStart));
-            builder.setRangeMax(ByteString.copyFromUtf8(rangeEnd));
-            builder.setQtype(RpbIndexReq.IndexQueryType.range);
+            sb.append(rangeStart)
+              .append("/")  
+              .append(rangeEnd);
         }
         
-        builder.setReturnTerms(returnTerms);
-        if (maxResults != null)
-        {
-            builder.setMaxResults(maxResults);
-        }
-        
-        if (continuation != null)
-        {
-            builder.setContinuation(continuation);
-        }
-        
-        return builder.build();
-        
-        
+        return sb.toString();
     }
     
-    public boolean returnTerms()
+    
+    /**
+     * @return the returnTerms
+     */
+    public boolean isReturnTerms()
     {
         return returnTerms;
     }
-    
-    public boolean isRangeQuery()
+
+    public boolean hasMaxResults()
     {
-        return indexKey == null;
+        return maxResults != null;
+    }
+    
+    /**
+     * @return the maxResults
+     */
+    public Integer getMaxResults()
+    {
+        return maxResults;
+    }
+
+    public boolean hasContinuation()
+    {
+        return continuation != null;
+    }
+    
+    /**
+     * @return the continuation
+     */
+    public String getContinuation()
+    {
+        return continuation;
     }
     
     public String getIndexKey()
@@ -111,7 +123,7 @@ public class IndexRequest
         private String rangeEnd;
         private boolean returnTerms;
         private Integer maxResults;
-        private ByteString continuation;
+        private String continuation;
         
         public Builder (String bucketName, String indexName)
         {
@@ -173,7 +185,7 @@ public class IndexRequest
             return this;
         }
         
-        public Builder withContinuation(ByteString continuation)
+        public Builder withContinuation(String continuation)
         {
             this.continuation = continuation;
             return this;

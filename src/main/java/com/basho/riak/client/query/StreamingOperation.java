@@ -17,6 +17,7 @@ package com.basho.riak.client.query;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,7 +33,7 @@ public interface StreamingOperation<T> extends Iterable<T>, Iterator<T>
      * @return a List containing all elements resulting from the operation
      * @throws IOException if a network error occurs 
      */
-    Set<T> getAll();
+    List<T> getAll();
     
     /**
      * Cancels the operation and cleans up the underlying network connection
