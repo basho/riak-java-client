@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http;
 
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.MapReduceBuilder;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
@@ -599,6 +600,20 @@ public class RiakClient {
         }
     }
 
+    public IndexResponseV2 index(IndexRequest request) {
+        HttpResponse r = helper.fetchIndex(request);
+        try {
+            return new IndexResponseV2(request, r);
+        } catch (JSONException e) {
+            try {
+                return new IndexResponseV2(request, helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException("helper.toss() returns a unsuccessful result, so IndexResponseV2 shouldn't try to parse it or throw");
+            }
+        }
+    }
+    
+    
     public void shutdown()
     {
     }

@@ -17,11 +17,13 @@ package com.basho.riak.client.raw.http;
 
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.response.ListBucketsResponse;
-import com.basho.riak.client.raw.RiakStreamingRuntimeException;
-import com.basho.riak.client.raw.StreamingOperation;
+import com.basho.riak.client.query.RiakStreamingRuntimeException;
+import com.basho.riak.client.query.StreamingOperation;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Timer;
@@ -102,13 +104,23 @@ public class BucketSource implements StreamingOperation<String>
         throw new UnsupportedOperationException("Not supported");
     }
 
-    public Set<String> getAll() 
+    public List<String> getAll() 
     {
-        Set<String> set = new HashSet<String>();
+        List<String> list = new ArrayList<String>();
         while (hasNext()) {
-            set.add(next());
+            list.add(next());
         }
-        return set;
+        return list;
+    }
+
+    public boolean hasContinuation()
+    {
+        return false;
+    }
+
+    public String getContinuation()
+    {
+        return null;
     }
     
     /**

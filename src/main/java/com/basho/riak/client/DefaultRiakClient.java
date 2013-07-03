@@ -17,7 +17,7 @@ import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.raw.RawClient;
-import com.basho.riak.client.raw.StreamingOperation;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;

@@ -20,9 +20,11 @@ import java.util.TimerTask;
 
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.response.BucketResponse;
-import com.basho.riak.client.raw.RiakStreamingRuntimeException;
-import com.basho.riak.client.raw.StreamingOperation;
+import com.basho.riak.client.query.RiakStreamingRuntimeException;
+import com.basho.riak.client.query.StreamingOperation;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -93,18 +95,28 @@ public class KeySource implements StreamingOperation<String> {
         throw new UnsupportedOperationException();
     }
 
-    public Set<String> getAll() 
+    public List<String> getAll() 
     {
-        Set<String> set = new HashSet<String>();
+        List<String> list = new ArrayList<String>();
         while (hasNext()) {
-            set.add(next());
+            list.add(next());
         }
-        return set;
+        return list;
     }
 
     public Iterator<String> iterator()
     {
         return this;
+    }
+
+    public boolean hasContinuation()
+    {
+        return false;
+    }
+
+    public String getContinuation()
+    {
+        return null;
     }
 
 

@@ -50,6 +50,7 @@ import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
 import com.basho.riak.pbc.CommitHook;
@@ -583,5 +584,24 @@ public final class ConversionUtil {
         } else {
             return com.basho.riak.pbc.DeleteMeta.empty();
         }
+    }
+    
+    static com.basho.riak.pbc.IndexRequest convert(IndexSpec indexSpec) {
+        com.basho.riak.pbc.IndexRequest.Builder builder = 
+            new com.basho.riak.pbc.IndexRequest.Builder(indexSpec.getBucketName(), indexSpec.getIndexName())
+                .withIndexKey(indexSpec.getIndexKey())
+                .withRangeStart(indexSpec.getRangeStart())
+                .withRangeEnd(indexSpec.getRangeEnd())
+                .withReturnKeyAndIndex(indexSpec.isReturnTerms())
+                .withMaxResults(indexSpec.getMaxResults());
+        
+        if (indexSpec.getContinuation() != null)
+        {
+            builder.withContinuation(ByteString.copyFromUtf8(indexSpec.getContinuation()));
+        }
+        
+        return builder.build();
+        
+        
     }
 }

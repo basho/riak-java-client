@@ -460,7 +460,25 @@ public class RiakClient implements RiakMessageCodes {
 		return keys;
 	}
 
-	
+	/**
+     * Streaming secondary index query. 
+     * 
+     * <b>Requires Riak 1.4</b>
+     * 
+     * Note that you *must* call {@link IndexSource#close() } if you do not 
+     * iterate through the entire result set. 
+     * 
+     * @param request a {@link IndexRequest} containing the query parameters
+     * @return A streaming {@link IndexSource} 
+     * @throws IOException 
+     */
+    public IndexSource index(IndexRequest request) throws IOException {
+        RiakKvPB.RpbIndexReq req = request.buildProtocolBufferReq();
+        RiakConnection c = getConnection();
+        c.send(MSG_IndexReq, req);
+        return new IndexSource(this, c, request);
+    }
+    
 	// /////////////////////
 
 	public ByteString[] store(RiakObject[] values, RequestMeta meta)

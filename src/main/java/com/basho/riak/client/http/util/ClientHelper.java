@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakConfig;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.DefaultHttpResponse;
@@ -340,6 +341,27 @@ public class ClientHelper {
         return executeMethod(bucket, null, get, null);
     }
 
+    public HttpResponse fetchIndex(IndexRequest request) {
+        
+        RequestMeta meta = new RequestMeta();
+        meta.setQueryParam(Constants.QP_INDEX_STREAM, "true");
+        if (request.hasMaxResults())
+        {
+            meta.setQueryParam(Constants.QP_INDEX_MAX_RESULTS, request.getMaxResults().toString());
+        }
+        if (request.isReturnTerms())
+        {
+            meta.setQueryParam(Constants.QP_INDEX_RETURN_TERMS, "true");
+        }
+        if (request.hasContinuation())
+        {
+            meta.setQueryParam(Constants.QP_INDEX_CONTINUATION, request.getContinuation());
+        }
+        HttpGet get = new HttpGet(request.makeURIString(config));
+        
+        return executeMethod(null, null, get, meta, false);
+    }
+    
     /**
      * Same as {@link RiakClient#ping}
      * @return the ping HttpResponse

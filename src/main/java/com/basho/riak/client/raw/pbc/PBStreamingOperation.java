@@ -15,39 +15,37 @@
  */
 package com.basho.riak.client.raw.pbc;
 
-import com.basho.riak.client.raw.RiakStreamingRuntimeException;
-import com.basho.riak.client.raw.StreamingOperation;
-import static com.basho.riak.client.raw.pbc.ConversionUtil.nullSafeToStringUtf8;
+import com.basho.riak.client.query.RiakStreamingRuntimeException;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.pbc.RiakStreamClient;
-import com.google.protobuf.ByteString;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class PBStreamingOperation implements StreamingOperation<String>
+public abstract class PBStreamingOperation<S,T> implements StreamingOperation<T>
 {
 
-    final private RiakStreamClient<ByteString> client;
+    final protected RiakStreamClient<S> client;
     
-    public PBStreamingOperation(RiakStreamClient<ByteString> client)
+    public PBStreamingOperation(RiakStreamClient<S> client)
     {
         this.client = client;
     }
     
-    public Set<String> getAll() 
+    public List<T> getAll() 
     {
-        Set<String> set = new HashSet<String>();
+        List<T> list = new ArrayList<T>();
         while (hasNext())
         {
-            set.add(next());
+            list.add(next());
         }
-        return set;
+        return list;
     }
 
     public void cancel()
@@ -55,11 +53,13 @@ public class PBStreamingOperation implements StreamingOperation<String>
         client.close();
     }
 
-    public Iterator<String> iterator()
+    public Iterator<T> iterator()
     {
         return this;
     }
 
+    public abstract T next();
+    
     public boolean hasNext()
     {
         boolean hasNext = false;
@@ -76,21 +76,19 @@ public class PBStreamingOperation implements StreamingOperation<String>
             
     }
 
-    public String next()
-    {
-        try
-        {
-            return nullSafeToStringUtf8(client.next());
-        }
-        catch (IOException ex)
-        {
-            throw new RiakStreamingRuntimeException(ex);
-        }
-    }
-
     public void remove()
     {
         throw new UnsupportedOperationException("Not supported");
+    }
+
+    public boolean hasContinuation()
+    {
+        return client.hasContinuation();
+    }
+
+    public String getContinuation()
+    {
+        return client.getContinuation() == null ? null : client.getContinuation().toStringUtf8();
     }
 
     

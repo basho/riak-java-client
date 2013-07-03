@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.query.StreamingOperation;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,6 +47,7 @@ import com.basho.riak.client.raw.pbc.PBClusterConfig;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import java.util.ArrayList;
 
 /**
  * Tests that the abstract {@link ClusterClient} delegates and round robins
@@ -275,7 +277,7 @@ public class ClusterClientTest {
      */
     @Test public void listKeys() throws IOException {
         StreamingOperation so = mock(StreamingOperation.class);
-        Set<String> expectedKeys = new HashSet<String>(Arrays.asList("key1", "key2", "key3"));
+        List<String> expectedKeys = new ArrayList<String>(Arrays.asList("key1", "key2", "key3"));
         when(so.getAll()).thenReturn(expectedKeys);
         
         for (RawClient rc : cluster) {

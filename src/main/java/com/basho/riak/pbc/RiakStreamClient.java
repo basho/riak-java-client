@@ -18,6 +18,7 @@
 
 package com.basho.riak.pbc;
 
+import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ public abstract class RiakStreamClient<T> implements Iterable<T> {
 
 	private RiakClient client;
 	protected RiakConnection conn;
+    protected ByteString continuation;
 	private ReaperTask reaper;
 
 	protected RiakStreamClient(RiakClient client, RiakConnection conn) {
@@ -42,6 +44,16 @@ public abstract class RiakStreamClient<T> implements Iterable<T> {
 		this.reaper = new ReaperTask(this, conn);
 	}
 
+    public boolean hasContinuation()
+    {
+        return continuation != null;
+    }
+    
+    public ByteString getContinuation()
+    {
+        return continuation;
+    }
+    
 	static class ReaperTask extends TimerTask {
 		private final RiakConnection conn;
 		private WeakReference<?> ref;
