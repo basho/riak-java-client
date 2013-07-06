@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -17,12 +17,12 @@ import com.basho.riak.client.bucket.DefaultBucket;
 
 /**
  * Thrown by an operation that requires a key but doesn't have one.
- * 
+ *
  * @author russell
  * @see JSONConverter
  * @see DefaultBucket
  */
-public class NoKeySpecifedException extends RuntimeException {
+public class NoKeySpecifiedException extends RuntimeException {
 
     /**
      * eclipse generated id
@@ -33,12 +33,12 @@ public class NoKeySpecifedException extends RuntimeException {
     /**
      * Construct an exception, pass the domainObject for which the key cannot be
      * found.
-     * 
+     *
      * @param domainObject
      *            some object that was attempted to be stored/fetched/deleted
      *            from Riak but has no {@link RiakKey} field.
      */
-    public NoKeySpecifedException(final Object domainObject) {
+    public NoKeySpecifiedException(final Object domainObject) {
         this.domainObject = domainObject;
     }
 
