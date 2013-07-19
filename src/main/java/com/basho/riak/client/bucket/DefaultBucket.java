@@ -35,6 +35,7 @@ import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.operations.CounterObject;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.MultiFetchObject;
@@ -672,4 +673,9 @@ public class DefaultBucket implements Bucket {
             .withConverter(converter)
             .withResolver(new DefaultResolver<T>());
     }
+    
+    public CounterObject counter(String counter) {
+        return new CounterObject(client, name, counter);
+    }
+    
 }

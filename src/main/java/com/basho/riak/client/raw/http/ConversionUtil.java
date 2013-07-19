@@ -208,8 +208,10 @@ public final class ConversionUtil {
         
         if (storeMeta.hasReturnBody() && storeMeta.getReturnBody()) {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(true));
+            requestMeta.setQueryParam(Constants.QP_RETURNVALUE, Boolean.toString(true));
         } else {
             requestMeta.setQueryParam(Constants.QP_RETURN_BODY, Boolean.toString(false));
+            requestMeta.setQueryParam(Constants.QP_RETURNVALUE, Boolean.toString(false));
         }
 
         if (storeMeta.hasPw()) {

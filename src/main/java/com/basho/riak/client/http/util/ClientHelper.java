@@ -55,6 +55,7 @@ import com.basho.riak.client.http.response.RiakIORuntimeException;
 import com.basho.riak.client.http.response.RiakResponseRuntimeException;
 import com.basho.riak.client.http.response.StreamHandler;
 import com.basho.riak.client.util.CharsetUtils;
+import java.nio.charset.Charset;
 
 /**
  * This class performs the actual HTTP requests underlying the operations in
@@ -359,6 +360,43 @@ public class ClientHelper {
         }
         HttpGet get = new HttpGet(request.makeURIString(config));
         
+        return executeMethod(null, null, get, meta, false);
+    }
+    
+    public HttpResponse incrementCounter(String bucket, String counter, long increment, RequestMeta meta) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (meta.getClientId() == null) {
+            meta.setClientId(clientId);
+        }
+        
+        String uri = config.getBaseUrl() + 
+                    "/buckets/" +
+                    ClientUtils.urlEncode(bucket) +
+                    "/counters/" + ClientUtils.urlEncode(counter);
+        
+        HttpPost post = new HttpPost(uri);
+        StringEntity entity = new StringEntity(String.valueOf(increment), Charset.forName("UTF-8"));
+        post.setEntity(entity);
+        
+        return executeMethod(null, null, post, meta, false);
+        
+    }
+    
+    public HttpResponse fetchCounter(String bucket, String counter, RequestMeta meta) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (meta.getClientId() == null) {
+            meta.setClientId(clientId);
+        }
+        
+        String uri = config.getBaseUrl() + 
+                    "/buckets/" +
+                    ClientUtils.urlEncode(bucket) +
+                    "/counters/" + ClientUtils.urlEncode(counter);
+        HttpGet get = new HttpGet(uri);
         return executeMethod(null, null, get, meta, false);
     }
     
