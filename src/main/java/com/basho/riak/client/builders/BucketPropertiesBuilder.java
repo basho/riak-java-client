@@ -86,17 +86,17 @@ public final class BucketPropertiesBuilder {
         return b;
     }
 
-    public BucketPropertiesBuilder allowSiblings(boolean allowSiblings) {
+    public BucketPropertiesBuilder allowSiblings(Boolean allowSiblings) {
         this.allowSiblings = allowSiblings;
         return this;
     }
 
-    public BucketPropertiesBuilder lastWriteWins(boolean lastWriteWins) {
+    public BucketPropertiesBuilder lastWriteWins(Boolean lastWriteWins) {
         this.lastWriteWins = lastWriteWins;
         return this;
     }
 
-    public BucketPropertiesBuilder nVal(int nVal) {
+    public BucketPropertiesBuilder nVal(Integer nVal) {
         this.nVal = nVal;
         return this;
     }
@@ -150,7 +150,7 @@ public final class BucketPropertiesBuilder {
      * @param smallVClock
      * @return
      */
-    public BucketPropertiesBuilder smallVClock(int smallVClock) {
+    public BucketPropertiesBuilder smallVClock(Integer smallVClock) {
         this.smallVClock = smallVClock;
         return this;
     }
@@ -159,7 +159,7 @@ public final class BucketPropertiesBuilder {
      * @param bigVClock
      * @return
      */
-    public BucketPropertiesBuilder bigVClock(int bigVClock) {
+    public BucketPropertiesBuilder bigVClock(Integer bigVClock) {
         this.bigVClock = bigVClock;
         return this;
     }
@@ -168,7 +168,7 @@ public final class BucketPropertiesBuilder {
      * @param youngVClock
      * @return
      */
-    public BucketPropertiesBuilder youngVClock(long youngVClock) {
+    public BucketPropertiesBuilder youngVClock(Long youngVClock) {
         this.youngVClock = youngVClock;
         return this;
     }
@@ -177,7 +177,7 @@ public final class BucketPropertiesBuilder {
      * @param oldVClock
      * @return
      */
-    public BucketPropertiesBuilder oldVClock(long oldVClock) {
+    public BucketPropertiesBuilder oldVClock(Long oldVClock) {
         this.oldVClock = oldVClock;
         return this;
     }
@@ -191,7 +191,7 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
-    public BucketPropertiesBuilder r(int r) {
+    public BucketPropertiesBuilder r(Integer r) {
         this.r = new Quorum(r);
         return this;
     }
@@ -210,7 +210,7 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
-    public BucketPropertiesBuilder w(int w) {
+    public BucketPropertiesBuilder w(Integer w) {
         this.w = new Quorum(w);
         return this;
     }
@@ -229,7 +229,7 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
-    public BucketPropertiesBuilder rw(int rw) {
+    public BucketPropertiesBuilder rw(Integer rw) {
         this.rw = new Quorum(rw);
         return this;
     }
@@ -248,7 +248,7 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
-    public BucketPropertiesBuilder dw(int dw) {
+    public BucketPropertiesBuilder dw(Integer dw) {
         this.dw = new Quorum(dw);
         return this;
     }
@@ -267,7 +267,7 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
-    public BucketPropertiesBuilder pr(int pr) {
+    public BucketPropertiesBuilder pr(Integer pr) {
         this.pr = new Quorum(pr);
         return this;
     }
@@ -286,7 +286,7 @@ public final class BucketPropertiesBuilder {
         return this;
     }
 
-    public BucketPropertiesBuilder pw(int pw) {
+    public BucketPropertiesBuilder pw(Integer pw) {
         this.pw = new Quorum(pw);
         return this;
     }
@@ -302,7 +302,7 @@ public final class BucketPropertiesBuilder {
      * @param basicQuorum
      * @return this
      */
-    public BucketPropertiesBuilder basicQuorum(boolean basicQuorum) {
+    public BucketPropertiesBuilder basicQuorum(Boolean basicQuorum) {
         this.basicQuorum = basicQuorum;
         return this;
     }
@@ -313,7 +313,7 @@ public final class BucketPropertiesBuilder {
      * @param notFoundOK
      * @return this
      */
-    public BucketPropertiesBuilder notFoundOK(boolean notFoundOK) {
+    public BucketPropertiesBuilder notFoundOK(Boolean notFoundOK) {
         this.notFoundOK = notFoundOK;
         return this;
     }
@@ -322,7 +322,7 @@ public final class BucketPropertiesBuilder {
      * Enable the bucket for search
      * @param search
      */
-    public BucketPropertiesBuilder search(boolean search) {
+    public BucketPropertiesBuilder search(Boolean search) {
         this.search = search;
         return this;
     }

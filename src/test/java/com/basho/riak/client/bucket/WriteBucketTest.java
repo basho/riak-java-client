@@ -53,138 +53,28 @@ public class WriteBucketTest {
      * Test method for
      * {@link com.basho.riak.client.bucket.WriteBucket#execute()}.
      */
-    @Test public void unsupportedTransport() {
-        when(client.getTransport()).thenReturn(Transport.PB);
-
-        try {
-            writeBucket.lastWriteWins(false);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_LAST_WRITE_WINS);
-        }
-        try {
-            writeBucket.smallVClock(5);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_SMALL_VCLOCK);
-        }
-        try {
-            writeBucket.bigVClock(20);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_BIG_VCLOCK);
-        }
-        try {
-            writeBucket.youngVClock(40);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_YOUNG_VCLOCK);
-        }
-        try {
-            writeBucket.oldVClock(172800);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_OLD_VCLOCK);
-        }
-        try {
-            writeBucket.r(1);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_R);
-        }
-
-        try {
-            writeBucket.w(1);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_W);
-        }
-        try {
-            writeBucket.dw(Quora.ONE);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_DW);
-        }
-        try {
-            writeBucket.rw(Quora.QUORUM);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_RW);
-        }
-        try {
-            writeBucket.pr(1);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_PR);
-        }
-        try {
-            writeBucket.pw(1);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_PW);
-        }
-        try {
-            writeBucket.notFoundOK(false);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_NOT_FOUND_OK);
-        }
-        try {
-            writeBucket.basicQuorum(true);
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_BASIC_QUORUM);
-        }
-        try {
-            writeBucket.backend("backend");
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_BACKEND);
-        }
-        try {
-            writeBucket.enableForSearch();
-            fail("expected UnsupportedPropertyException");
-        } catch (UnsupportedPropertyException e) {
-            assertEquals(e.getTransport(), Transport.PB);
-            assertEquals(e.getProperty(), Constants.FL_SCHEMA_SEARCH);
-        }
-    }
-
-    /**
-     * Test method for
-     * {@link com.basho.riak.client.bucket.WriteBucket#execute()}.
-     */
     @Test public void supportedTransport() {
-        when(client.getTransport()).thenReturn(Transport.HTTP);
+        
+        for (Transport t : new Transport[] { Transport.HTTP, Transport.PB } )
+        {
+            when(client.getTransport()).thenReturn(t);
 
-        writeBucket.lastWriteWins(false);
-        writeBucket.smallVClock(5);
-        writeBucket.bigVClock(20);
-        writeBucket.youngVClock(40);
-        writeBucket.oldVClock(172800);
-        writeBucket.r(1);
-        writeBucket.w(1);
-        writeBucket.dw(Quora.ONE);
-        writeBucket.rw(Quora.QUORUM);
-        writeBucket.pr(1);
-        writeBucket.pw(1);
-        writeBucket.notFoundOK(false);
-        writeBucket.basicQuorum(true);
-        writeBucket.backend("backend");
-        writeBucket.enableForSearch();
+            writeBucket.lastWriteWins(false);
+            writeBucket.smallVClock(5);
+            writeBucket.bigVClock(20);
+            writeBucket.youngVClock(40);
+            writeBucket.oldVClock(172800);
+            writeBucket.r(1);
+            writeBucket.w(1);
+            writeBucket.dw(Quora.ONE);
+            writeBucket.rw(Quora.QUORUM);
+            writeBucket.pr(1);
+            writeBucket.pw(1);
+            writeBucket.notFoundOK(false);
+            writeBucket.basicQuorum(true);
+            writeBucket.backend("backend");
+            writeBucket.enableForSearch();
+        }
+        
     }
 }

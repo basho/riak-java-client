@@ -17,7 +17,6 @@ import static com.basho.riak.client.raw.http.ConversionUtil.convert;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -25,14 +24,17 @@ import com.basho.riak.client.http.RiakConfig;
 import org.apache.http.HttpStatus;
 
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.IndexEntry;
 import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.http.RiakClient;
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.FetchResponse;
 import com.basho.riak.client.http.response.HttpResponse;
 import com.basho.riak.client.http.response.IndexResponse;
+import com.basho.riak.client.http.response.IndexResponseV2;
 import com.basho.riak.client.http.response.ListBucketsResponse;
 import com.basho.riak.client.http.response.MapReduceResponse;
 import com.basho.riak.client.http.response.StoreResponse;
@@ -47,7 +49,9 @@ import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -306,7 +310,7 @@ public class HTTPClientAdapter implements RawClient {
      * @see com.basho.riak.client.raw.RawClient#listBuckets()
      */
     public Set<String> listBuckets() throws IOException {
-        final ListBucketsResponse lbr = client.listBuckets();
+        final ListBucketsResponse lbr = client.listBuckets(false);
 
         if (!lbr.isSuccess()) {
             throw new IOException("List Buckets failed with status code: " + lbr.getStatusCode());
@@ -314,6 +318,16 @@ public class HTTPClientAdapter implements RawClient {
         return new HashSet<String>(lbr.getBuckets());
     }
 
+    public StreamingOperation<String> listBucketsStreaming() throws IOException {
+        final ListBucketsResponse lbr = client.listBuckets(true);
+        if (!lbr.isSuccess()) {
+            throw new IOException("List Buckets failed with status code: " + lbr.getStatusCode());
+        }
+        else
+        {
+            return new BucketSource(lbr);
+        }
+    }
     /*
      * (non-Javadoc)
      * 
@@ -342,21 +356,28 @@ public class HTTPClientAdapter implements RawClient {
         }
     }
 
+    /**
+     * (non-Javadoc)
+     * 
+     * @see RawClient#resetBucketProperties(java.lang.String) 
+     */
+    public void resetBucketProperties(String bucketName) throws IOException {
+        HttpResponse response = client.resetBucketSchema(bucketName);
+        if (!response.isSuccess()) {
+            throw new IOException(response.getBodyAsString());
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * 
      * @see
      * com.basho.riak.client.raw.RawClient#fetchBucketKeys(java.lang.String)
      */
-    public Iterable<String> listKeys(String bucketName) throws IOException {
+    public StreamingOperation<String> listKeys(String bucketName) throws IOException {
         final BucketResponse bucketResponse = client.streamBucket(bucketName);
         if (bucketResponse.isSuccess()) {
-            final KeySource keyStream = new KeySource(bucketResponse);
-            return new Iterable<String>() {
-                public Iterator<String> iterator() {
-                    return keyStream;
-                }
-            };
+            return new KeySource(bucketResponse);
         } else {
             throw new IOException("stream keys for bucket " + bucketName + " failed with response code : " +
                                   bucketResponse.getStatusCode() + ", body: " + bucketResponse.getBodyAsString());
@@ -460,6 +481,31 @@ public class HTTPClientAdapter implements RawClient {
         return convert(res.get());
     }
 
+    public StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) {
+        
+        IndexRequest req = convert(indexSpec);
+        IndexResponseV2 response = client.index(req);
+        return new IndexSource(response);
+    }
+    
+    /*
+     * (non-javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#incrementCounter(java.lang.String, java.lang.String, long, com.basho.riak.client.raw.StoreMeta) 
+     */
+    public Long incrementCounter(String bucket, String counter, long increment, StoreMeta meta) throws IOException {
+        return client.incrementCounter(bucket, counter, increment, convert(meta));
+    }
+    
+    /*
+     * (non-javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#fetchCounter(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta) 
+     */
+    public Long fetchCounter(String Bucket, String counter, FetchMeta meta) throws IOException {
+        return client.fetchCounter(Bucket, counter, convert(meta));
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.raw.RawClient#getTransport()
      */

@@ -33,6 +33,7 @@ import com.basho.riak.client.AllTests;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.pbc.BucketProperties;
+import com.basho.riak.pbc.BucketSource;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
@@ -164,10 +165,11 @@ public class ITestBasic {
         
         c.store(new RiakObject(bucket, key, content));
 
-        final ByteString[] buckets = c.listBuckets();
-
+        
         boolean testBucketPresent = false;
 
+        // Non-streaming
+        final ByteString[] buckets = c.listBuckets();
         for(ByteString b : buckets) {
             if(b.toStringUtf8().equals(bucket)) {
                 testBucketPresent = true;
@@ -177,6 +179,19 @@ public class ITestBasic {
 
         assertTrue(testBucketPresent);
 
+        // Streaming
+        testBucketPresent = false;
+        BucketSource bs = c.listBucketsStreaming();
+        for (ByteString b : bs) {
+            if(b.toStringUtf8().equals(bucket)) {
+                testBucketPresent = true;
+                break;
+            }
+        }
+        
+        assertTrue(testBucketPresent);
+
+        
         c.delete(bucket, key);
     }
 

@@ -33,6 +33,7 @@ public class RequestMeta implements IRequestMeta {
 	Boolean ifNotModified;
 	Boolean ifNoneMatch;
 	Boolean returnHead;
+    Boolean asis;
 	
 	public RequestMeta() {
 	}
@@ -69,8 +70,31 @@ public class RequestMeta implements IRequestMeta {
         if (returnHead != null) {
             builder.setReturnHead(returnHead.booleanValue());
         }
+        
+        if (asis != null) {
+            builder.setAsis(asis.booleanValue());
+        }
 	}
 
+    public void prepareCounter(com.basho.riak.protobuf.RiakKvPB.RpbCounterUpdateReq.Builder builder)
+    {
+        if (returnBody != null) {
+			builder.setReturnvalue(returnBody.booleanValue());
+		}
+		
+		if (writeQuorum != null) {
+			builder.setW(writeQuorum.intValue());
+		}
+		
+		if (durableWriteQuorum != null) {
+			builder.setDw(durableWriteQuorum.intValue());
+		}
+
+        if (pw != null) {
+            builder.setPw(pw);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see com.trifork.riak.IRequestMeta#returnBody(boolean)
 	 */
@@ -127,6 +151,11 @@ public class RequestMeta implements IRequestMeta {
 
     public IRequestMeta returnHead(boolean returnHead) {
         this.returnHead = returnHead;
+        return this;
+    }
+    
+    public IRequestMeta asis(boolean asis) {
+        this.asis = asis;
         return this;
     }
 }

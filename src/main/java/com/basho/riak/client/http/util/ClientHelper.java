@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakConfig;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.response.BucketResponse;
 import com.basho.riak.client.http.response.DefaultHttpResponse;
@@ -54,6 +55,7 @@ import com.basho.riak.client.http.response.RiakIORuntimeException;
 import com.basho.riak.client.http.response.RiakResponseRuntimeException;
 import com.basho.riak.client.http.response.StreamHandler;
 import com.basho.riak.client.util.CharsetUtils;
+import java.nio.charset.Charset;
 
 /**
  * This class performs the actual HTTP requests underlying the operations in
@@ -129,17 +131,30 @@ public class ClientHelper {
         return listBucket(bucket, meta, false);
     }
 
+    public HttpResponse resetBucketSchema(String bucket) {
+        if (null == bucket || bucket.equalsIgnoreCase("")) {
+            throw new IllegalArgumentException("bucket name can not be null or empty");
+        }
+        String url = config.getBaseUrl() + "/buckets/" + ClientUtils.urlEncode(bucket) + "/props";
+        HttpDelete delete = new HttpDelete(url);
+        return executeMethod(null, null, delete, null, false);
+    }
+    
     /**
      * List the buckets in Riak
      * 
      * @return an {@link HttpResponse} whose body should be the result of asking
      *         Riak to list buckets.
      */
-    public HttpResponse listBuckets() {
+    public HttpResponse listBuckets(boolean streamResponse) {
         final RequestMeta  meta = new RequestMeta();
-        meta.setQueryParam(Constants.QP_BUCKETS, Constants.LIST_BUCKETS);
+        if (streamResponse) {
+            meta.setQueryParam(Constants.QP_BUCKETS, Constants.STREAM_BUCKETS);
+        } else {
+            meta.setQueryParam(Constants.QP_BUCKETS, Constants.LIST_BUCKETS);
+        }
         HttpGet get = new HttpGet(config.getUrl());
-        return executeMethod(null, null, get, meta);
+        return executeMethod(null, null, get, meta, streamResponse);
     }
 
     /**
@@ -327,6 +342,64 @@ public class ClientHelper {
         return executeMethod(bucket, null, get, null);
     }
 
+    public HttpResponse fetchIndex(IndexRequest request) {
+        
+        RequestMeta meta = new RequestMeta();
+        meta.setQueryParam(Constants.QP_INDEX_STREAM, "true");
+        if (request.hasMaxResults())
+        {
+            meta.setQueryParam(Constants.QP_INDEX_MAX_RESULTS, request.getMaxResults().toString());
+        }
+        if (request.isReturnTerms())
+        {
+            meta.setQueryParam(Constants.QP_INDEX_RETURN_TERMS, "true");
+        }
+        if (request.hasContinuation())
+        {
+            meta.setQueryParam(Constants.QP_INDEX_CONTINUATION, request.getContinuation());
+        }
+        HttpGet get = new HttpGet(request.makeURIString(config));
+        
+        return executeMethod(null, null, get, meta, false);
+    }
+    
+    public HttpResponse incrementCounter(String bucket, String counter, long increment, RequestMeta meta) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (meta.getClientId() == null) {
+            meta.setClientId(clientId);
+        }
+        
+        String uri = config.getBaseUrl() + 
+                    "/buckets/" +
+                    ClientUtils.urlEncode(bucket) +
+                    "/counters/" + ClientUtils.urlEncode(counter);
+        
+        HttpPost post = new HttpPost(uri);
+        StringEntity entity = new StringEntity(String.valueOf(increment), Charset.forName("UTF-8"));
+        post.setEntity(entity);
+        
+        return executeMethod(null, null, post, meta, false);
+        
+    }
+    
+    public HttpResponse fetchCounter(String bucket, String counter, RequestMeta meta) {
+        if (meta == null) {
+            meta = new RequestMeta();
+        }
+        if (meta.getClientId() == null) {
+            meta.setClientId(clientId);
+        }
+        
+        String uri = config.getBaseUrl() + 
+                    "/buckets/" +
+                    ClientUtils.urlEncode(bucket) +
+                    "/counters/" + ClientUtils.urlEncode(counter);
+        HttpGet get = new HttpGet(uri);
+        return executeMethod(null, null, get, meta, false);
+    }
+    
     /**
      * Same as {@link RiakClient#ping}
      * @return the ping HttpResponse

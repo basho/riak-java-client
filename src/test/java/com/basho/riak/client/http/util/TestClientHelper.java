@@ -137,9 +137,9 @@ public class TestClientHelper {
     @Test public void listBuckets_GET_adds_qp() throws IOException {
         impl = spy(impl);
         stubResponse(true);
-        impl.listBuckets();
+        impl.listBuckets(false);
         ArgumentCaptor<RequestMeta> metaCaptor = ArgumentCaptor.forClass(RequestMeta.class);
-        verify(impl).executeMethod(eq((String) null), eq((String) null), any(HttpGet.class), metaCaptor.capture());
+        verify(impl).executeMethod(eq((String) null), eq((String) null), any(HttpGet.class), metaCaptor.capture(), eq(false));
 
         RequestMeta capturedMeta = metaCaptor.getValue();
         assertEquals(capturedMeta.getQueryParam(Constants.QP_BUCKETS), Constants.LIST_BUCKETS);

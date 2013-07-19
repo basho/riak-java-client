@@ -14,6 +14,7 @@
 package com.basho.riak.pbc;
 
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.protobuf.RiakKvPB.RpbCounterGetReq;
 import com.basho.riak.protobuf.RiakKvPB.RpbGetReq;
 import com.google.protobuf.ByteString;
 
@@ -87,6 +88,24 @@ public class FetchMeta {
         }
     }
 
+    public void writeCounter(RpbCounterGetReq.Builder b) {
+        if (r != null) {
+            b.setR(r);
+        }
+
+        if (pr != null) {
+            b.setPr(pr);
+        }
+
+        if (notFoundOK != null) {
+            b.setNotfoundOk(notFoundOK);
+        }
+
+        if (basicQuorum != null) {
+            b.setBasicQuorum(basicQuorum);
+        }
+    }
+    
     /**
      * @return an empty fetch meta
      */
