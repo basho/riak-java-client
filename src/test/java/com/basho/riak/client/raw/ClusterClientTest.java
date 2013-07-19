@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.query.StreamingOperation;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,6 +47,7 @@ import com.basho.riak.client.raw.pbc.PBClusterConfig;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
+import java.util.ArrayList;
 
 /**
  * Tests that the abstract {@link ClusterClient} delegates and round robins
@@ -134,7 +136,7 @@ public class ClusterClientTest {
      */
     @Test public void storeWithMeta() throws IOException {
         IRiakObject ro = RiakObjectBuilder.newBuilder(BUCKET, KEY).build();
-        StoreMeta sm = new StoreMeta(QUORUM, QUORUM, QUORUM, false, false, false);
+        StoreMeta sm = new StoreMeta(QUORUM, QUORUM, QUORUM, false, false, false, false);
 
         for (RawClient rc : cluster) {
             when(rc.store(ro, sm)).thenReturn(RR);
@@ -274,14 +276,16 @@ public class ClusterClientTest {
      * .
      */
     @Test public void listKeys() throws IOException {
-        List<String> expectedKeys = Arrays.asList("key1", "key2", "key3");
-
+        StreamingOperation so = mock(StreamingOperation.class);
+        List<String> expectedKeys = new ArrayList<String>(Arrays.asList("key1", "key2", "key3"));
+        when(so.getAll()).thenReturn(expectedKeys);
+        
         for (RawClient rc : cluster) {
-            when(rc.listKeys(BUCKET)).thenReturn(expectedKeys);
+            when(rc.listKeys(BUCKET)).thenReturn(so);
         }
 
         for (int i = 0; i < 1; i++) {
-            Iterable<String> keys = client.listKeys(BUCKET);
+            Iterable<String> keys = client.listKeys(BUCKET).getAll();
             assertEquals(expectedKeys, keys);
         }
 

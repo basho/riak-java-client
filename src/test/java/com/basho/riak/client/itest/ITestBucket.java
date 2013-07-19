@@ -15,6 +15,7 @@ package com.basho.riak.client.itest;
 
 import static com.basho.riak.client.AllTests.emptyBucket;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -42,6 +43,7 @@ import org.junit.Test;
 
 import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
+import com.basho.riak.client.IndexEntry;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakRetryFailedException;
@@ -53,6 +55,7 @@ import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.BucketIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
@@ -297,6 +300,62 @@ public abstract class ITestBucket {
 
     }
 
+    @Test public void fetchIndexStreaming() throws Exception {
+        Assume.assumeTrue(RiakTestProperties.is2iEnabled());
+    
+        final String indexName = "my_index";
+        final String key = "key";
+        final String tmpBucket = bucketName + "1";
+        final String value = "value";
+        final String indexValue = "index_key";
+        
+        Bucket b = client.fetchBucket(tmpBucket).execute();
+        
+        for (int i = 0; i < 5000; i++) {
+            IRiakObject ro = RiakObjectBuilder.newBuilder(tmpBucket, key + String.valueOf(i)).build();
+            ro.setValue(value + String.valueOf(i));
+            ro.addIndex(indexName, i);
+            ro.addIndex(indexName, indexValue);
+            b.store(ro).execute();
+        }
+        
+        StreamingOperation<IndexEntry> executeStreaming = b.fetchIndex(IntIndex.named(indexName))
+                                .from(50).to(100).maxResults(10).executeStreaming();
+        
+        List<IndexEntry> all = executeStreaming.getAll();
+        assertEquals(all.size(), 10);
+        assertEquals(all.get(0).getObjectKey(), key + "50");
+        assertTrue(executeStreaming.hasContinuation());
+        
+        executeStreaming = b.fetchIndex(IntIndex.named(indexName))
+                                .from(50).to(100).maxResults(10)
+                                .withContinuation(executeStreaming.getContinuation())
+                                .executeStreaming();
+        
+        all = executeStreaming.getAll();
+        assertEquals(all.size(), 10);
+        assertEquals(all.get(0).getObjectKey(), key + "60");
+        assertTrue(executeStreaming.hasContinuation());
+
+        
+        executeStreaming = b.fetchIndex(BinIndex.named(indexName))
+                        .withValue(indexValue)
+                        .returnKeyAndIndexValue(true)
+                        .executeStreaming();
+        
+        int count = 0;
+        IndexEntry lastEntry = null;
+        while (executeStreaming.hasNext()) {
+            count++;
+            lastEntry = executeStreaming.next();
+        }
+        assertEquals(count, 5000);
+        assertFalse(executeStreaming.hasContinuation());
+        
+        emptyBucket(bucketName + "1", client);
+        
+    }
+    
     @Test public void conditionalFetch() throws Exception {
         final String key = "key";
         final String originalValue = "first_value";

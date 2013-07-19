@@ -106,6 +106,7 @@ public interface Constants {
     public static String QP_PW = "pw";
     public static String QP_NOT_FOUND_OK = "notfound_ok";
     public static String QP_BASIC_QUORUM = "basic_quorum";
+    public static String QP_ASIS = "asis";
 
     // HTTP method names
     public static String HTTP_HEAD_METHOD = "HEAD";
@@ -118,4 +119,11 @@ public interface Constants {
 
     // List bucket operation parameters
     public static String LIST_BUCKETS = "true";
+    public static String STREAM_BUCKETS = "stream";
+    
+    // 2i features
+    public static final String QP_INDEX_STREAM = "stream";
+    public static final String QP_INDEX_MAX_RESULTS = "max_results";
+    public static final String QP_INDEX_RETURN_TERMS = "return_terms";
+    public static final String QP_INDEX_CONTINUATION = "continuation";
 }

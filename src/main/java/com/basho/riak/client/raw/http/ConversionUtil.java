@@ -40,6 +40,7 @@ import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.http.RiakBucketInfo;
 import com.basho.riak.client.http.RiakClient;
 import com.basho.riak.client.http.RiakObject;
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
 import com.basho.riak.client.http.response.BucketResponse;
@@ -60,6 +61,7 @@ import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.JSONErrorParser;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.util.CharsetUtils;
@@ -226,6 +228,10 @@ public final class ConversionUtil {
 
         if (storeMeta.hasIfNotModified() && storeMeta.getIfNotModified()) {
             requestMeta.setIfUnmodifiedSince(storeMeta.getLastModified());
+        }
+        
+        if (storeMeta.hasAsis()) {
+            requestMeta.setAsis(storeMeta.getAsis());
         }
 
         return requestMeta;
@@ -764,5 +770,16 @@ public final class ConversionUtil {
         }
 
         return rm;
+    }
+    
+    static IndexRequest convert(IndexSpec indexSpec) {
+        return new IndexRequest.Builder(indexSpec.getBucketName(), indexSpec.getIndexName())
+                                .withIndexKey(indexSpec.getIndexKey())
+                                .withRangeStart(indexSpec.getRangeStart())
+                                .withRangeEnd(indexSpec.getRangeEnd())
+                                .withReturnKeyAndIndex(indexSpec.isReturnTerms())
+                                .withMaxResults(indexSpec.getMaxResults())
+                                .withContinuation(indexSpec.getContinuation())
+                                .build();
     }
 }

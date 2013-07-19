@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.IndexEntry;
+import com.basho.riak.client.query.StreamingOperation;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +25,7 @@ import com.basho.riak.client.bucket.BucketProperties;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -162,6 +165,24 @@ public interface RawClient {
     Set<String> listBuckets() throws IOException;
 
     /**
+     * Iterate over the bucket names in Riak. This is a streaming operation.
+     * 
+     * <b>This is only available in Riak 1.4 or later.</b>
+     * 
+     * * You *must* call {@link StreamingOperation#cancel() } on the returned
+     * {@link StreamingOperation} if you do not iterate through the entire set.
+     * 
+     * As a safeguard the stream is closed automatically when the iterator is
+     * weakly reachable but due to the nature of the GC it is inadvisable to 
+     * rely on this to close the iterator. Do not retain a reference to this 
+     * after you have used it.
+     * 
+     * @return An iterable that is backed by a TCP connection 
+     * @throws IOException
+     * */
+    StreamingOperation<String> listBucketsStreaming() throws IOException;
+    
+    /**
      * The set of properties for the given bucket
      * 
      * @param bucketName
@@ -186,16 +207,30 @@ public interface RawClient {
     void updateBucket(String name, BucketProperties bucketProperties) throws IOException;
 
     /**
-     * An unmodifiable {@link Iterator} view of the keys for the bucket named
+     * Reset the bucket properties for this bucket back to the default values
+     * @param bucketName 
+     */
+    void resetBucketProperties(String bucketName) throws IOException;
+    
+    /**
+     * An unmodifiable view of the keys for the bucket named
      * <code>bucketName</code>
      * 
-     * May be backed by a stream or a collection. Be careful, expensive.
+     * * You *must* call {@link StreamingOperation#cancel() } on the returned
+     * {@link StreamingOperation} if you do not iterate through the entire set.
+     * 
+     * As a safeguard the stream is closed automatically when the iterator is
+     * weakly reachable but due to the nature of the GC it is inadvisable to 
+     * rely on this to close the iterator. Do not retain a reference to this
+     * after you have used it.
+     * 
+     * Be careful, expensive.
      * 
      * @param bucketName
-     * @return an unmodifiable, iterable view of the keys for tha bucket
+     * @return an unmodifiable, iterable view of the keys for that bucket backed by a TCP connection
      * @throws IOException
      */
-    Iterable<String> listKeys(String bucketName) throws IOException;
+    StreamingOperation<String> listKeys(String bucketName) throws IOException;
 
     // Query
     /**
@@ -263,6 +298,11 @@ public interface RawClient {
      */
     List<String> fetchIndex(IndexQuery indexQuery) throws IOException;
 
+    /**
+     * Performs a 2i query as a streaming operation
+     */
+    StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) throws IOException; 
+    
     /**
      * The raw transport name.
      * @return the {@link Transport} for the client or null if not implemented.
