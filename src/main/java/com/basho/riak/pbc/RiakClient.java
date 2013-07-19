@@ -37,6 +37,8 @@ import org.json.JSONObject;
 import com.basho.riak.client.http.util.Constants;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakKvPB.RpbCounterGetResp;
+import com.basho.riak.protobuf.RiakKvPB.RpbCounterUpdateResp;
 import com.basho.riak.protobuf.RiakPB;
 import com.basho.riak.protobuf.RiakKvPB.RpbDelReq;
 import com.basho.riak.protobuf.RiakKvPB.RpbGetClientIdResp;
@@ -477,6 +479,75 @@ public class RiakClient implements RiakMessageCodes {
         RiakConnection c = getConnection();
         c.send(MSG_IndexReq, req);
         return new IndexSource(this, c, request);
+    }
+    
+    // /////////////////////
+    
+    public Long incrementCounter(String bucket, String counter, long increment, RequestMeta meta) 
+        throws IOException {
+        return incrementCounter(ByteString.copyFromUtf8(bucket), ByteString.copyFromUtf8(counter), increment, meta);
+    }
+    
+    public Long incrementCounter(ByteString bucket, ByteString counter, long increment, RequestMeta meta)
+        throws IOException {
+        
+        RiakConnection c = getConnection();
+        
+        RiakKvPB.RpbCounterUpdateReq.Builder builder = 
+                RiakKvPB.RpbCounterUpdateReq.newBuilder()
+                    .setBucket(bucket)
+                    .setKey(counter)
+                    .setAmount(increment);
+        
+        if (meta != null) {
+            meta.prepareCounter(builder);
+        }
+        
+        try {
+            c.send(MSG_CounterUpdateReq, builder.build());
+            byte[] r = c.receive(MSG_CounterUpdateResp);
+            if (r == null) {
+                return null;
+            } else {
+                RpbCounterUpdateResp resp = RpbCounterUpdateResp.parseFrom(r);
+                return resp.getValue();
+            }
+            
+        } finally {
+            release(c);
+        }
+    }
+    
+    public Long fetchCounter(String bucket, String counter, FetchMeta meta) throws IOException {
+        return fetchCounter(ByteString.copyFromUtf8(bucket), ByteString.copyFromUtf8(counter), meta);
+    }
+    
+    public Long fetchCounter(ByteString bucket, ByteString counter, FetchMeta meta) throws IOException {
+        
+        RiakConnection c = getConnection();
+        
+        RiakKvPB.RpbCounterGetReq.Builder builder = 
+            RiakKvPB.RpbCounterGetReq.newBuilder()
+                .setBucket(bucket)
+                .setKey(counter);
+        
+        if (meta != null) {
+            meta.writeCounter(builder);
+        }
+        
+        try {
+            c.send(MSG_CounterGetReq, builder.build());
+            byte[] r = c.receive(MSG_CounterGetResp);
+            if (r == null) {
+                return null;
+            } else {
+                RpbCounterGetResp resp = RpbCounterGetResp.parseFrom(r);
+                return resp.getValue();
+            }
+        } finally {
+            release(c);
+        }
+                
     }
     
 	// /////////////////////

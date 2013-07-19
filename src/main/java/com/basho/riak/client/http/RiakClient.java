@@ -613,6 +613,39 @@ public class RiakClient {
         }
     }
     
+    public Long incrementCounter(String bucket, String counter, long increment, RequestMeta meta) {
+        if (null == meta) {
+            meta = new RequestMeta();
+        }
+        setAcceptHeader(meta);
+        HttpResponse r =  helper.incrementCounter(bucket, counter, increment, meta);
+        return parseCounterResponse(r);
+    }
+    
+    public Long fetchCounter(String bucket, String counter, RequestMeta meta) {
+        if (null == meta) {
+            meta = new RequestMeta();
+        }
+        setAcceptHeader(meta);
+        HttpResponse r =  helper.fetchCounter(bucket, counter, meta);
+        return parseCounterResponse(r);
+    }
+    
+    private Long parseCounterResponse(HttpResponse resp) {
+        if (resp.isError() && resp.getStatusCode() != 404) {
+            helper.toss(new RiakResponseRuntimeException(resp));
+            return null;
+        } else if (resp.getStatusCode() == 404) {
+            return null;
+        } else {
+            if (resp.getBodyAsString() != null) {
+                return Long.parseLong(resp.getBodyAsString());
+            } else {
+                // An increment without returnvalue will return an empty result
+                return null;
+            }
+        }
+    }
     
     public void shutdown()
     {

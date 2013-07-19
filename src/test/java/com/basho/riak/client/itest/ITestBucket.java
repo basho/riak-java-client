@@ -53,6 +53,7 @@ import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.http.util.Constants;
+import com.basho.riak.client.operations.CounterObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.query.indexes.BinIndex;
@@ -594,5 +595,29 @@ public abstract class ITestBucket {
         fetched = b.fetch("k").execute();
 
         assertNull(fetched);
+    }
+    
+    @Test public void incrementCounter() throws Exception {
+        Bucket b = client.createBucket(bucketName).allowSiblings(true).execute();
+        CounterObject co = b.counter("test_counter");
+        Long l = co.increment(1L).returnValue(true).execute();
+        assertEquals(l, Long.valueOf(1L));
+        l = co.execute();
+        assertEquals(l, Long.valueOf(2L));
+        l = co.increment(-1L).execute();
+        assertEquals(l, Long.valueOf(1L));
+        client.updateBucket(b).allowSiblings(false).execute();
+    }
+    
+    @Test public void fetchCounter() throws Exception {
+        Bucket b = client.createBucket(bucketName).allowSiblings(true).execute();
+        CounterObject co = b.counter("test_counter");
+        Long l = co.execute();
+        assertNull(l);
+        co.increment(1L).execute();
+        co.increment(null); // resets increment
+        l = co.execute();
+        assertEquals(l, Long.valueOf(1L));
+        client.updateBucket(b).allowSiblings(false).execute();
     }
  }

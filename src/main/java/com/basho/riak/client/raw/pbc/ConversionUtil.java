@@ -224,10 +224,12 @@ public final class ConversionUtil {
         if (storeMeta.hasReturnHead()) {
             requestMeta.returnHead(storeMeta.getReturnHead());
         }
-
-        String contentType = riakObject.getContentType();
-        if (contentType != null) {
-            requestMeta.contentType(contentType);
+        
+        if (riakObject != null) {
+            String contentType = riakObject.getContentType();
+            if (contentType != null) {
+                requestMeta.contentType(contentType);
+            }
         }
 
         if (storeMeta.hasPw()) {

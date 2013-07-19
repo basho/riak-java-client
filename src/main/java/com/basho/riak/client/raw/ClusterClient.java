@@ -303,6 +303,16 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.fetchIndex(indexSpec);
     }
     
+    public Long incrementCounter(String bucket, String counter, long increment, StoreMeta meta) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.incrementCounter(bucket, counter, increment, meta);
+    }
+    
+    public Long fetchCounter(String bucket, String counter, FetchMeta meta) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetchCounter(bucket, counter, meta);
+    }
+    
     public void shutdown(){
         for(RawClient rc : cluster){
             rc.shutdown();

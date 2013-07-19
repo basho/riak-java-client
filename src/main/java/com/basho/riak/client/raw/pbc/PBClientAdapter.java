@@ -475,6 +475,25 @@ public class PBClientAdapter implements RawClient {
     }
     
     /*
+     * (non-javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#incrementCounter(java.lang.String, java.lang.String, long, com.basho.riak.client.raw.StoreMeta) 
+     */
+    public Long incrementCounter(String bucket, String counter, long increment, StoreMeta meta) throws IOException {
+        return client.incrementCounter(bucket, counter, increment, convert(meta, null));
+    }
+    
+    /*
+     * (non-javadoc)
+     * 
+     * @see com.basho.riak.client.raw.RawClient#fetchCounter(java.lang.String, java.lang.String, com.basho.riak.client.raw.FetchMeta) 
+     */
+    public Long fetchCounter(String Bucket, String counter, FetchMeta meta) throws IOException {
+        return client.fetchCounter(Bucket, counter, convert(meta));
+    }
+    
+    
+    /*
      * (non-Javadoc)
      * 
      * @see com.basho.riak.client.raw.RawClient#generateClientId()

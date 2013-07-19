@@ -76,6 +76,25 @@ public class RequestMeta implements IRequestMeta {
         }
 	}
 
+    public void prepareCounter(com.basho.riak.protobuf.RiakKvPB.RpbCounterUpdateReq.Builder builder)
+    {
+        if (returnBody != null) {
+			builder.setReturnvalue(returnBody.booleanValue());
+		}
+		
+		if (writeQuorum != null) {
+			builder.setW(writeQuorum.intValue());
+		}
+		
+		if (durableWriteQuorum != null) {
+			builder.setDw(durableWriteQuorum.intValue());
+		}
+
+        if (pw != null) {
+            builder.setPw(pw);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see com.trifork.riak.IRequestMeta#returnBody(boolean)
 	 */

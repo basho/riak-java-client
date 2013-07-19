@@ -126,4 +126,7 @@ public interface Constants {
     public static final String QP_INDEX_MAX_RESULTS = "max_results";
     public static final String QP_INDEX_RETURN_TERMS = "return_terms";
     public static final String QP_INDEX_CONTINUATION = "continuation";
+    
+    // Counters
+    public static final String QP_RETURNVALUE = "returnvalue";
 }

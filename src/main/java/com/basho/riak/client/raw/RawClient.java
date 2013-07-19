@@ -304,6 +304,27 @@ public interface RawClient {
     StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) throws IOException; 
     
     /**
+     * Increments a counter by the specified increment
+     * 
+     * @param bucket the name of the bucket
+     * @param counter the name (key) of the counter
+     * @param increment the amount to increment. Note this can be a negative value.
+     * @param meta the query parameters
+     * @return null or the new value for the counter if returnBody is set to true in the StoreMeta 
+     */
+    Long incrementCounter(String bucket, String counter, long increment, StoreMeta meta) throws IOException;
+    
+    /**
+     *  Fetch the value for this counter
+     * 
+     * @param bucket the name of the bucket
+     * @param counter the name (key) of the counter
+     * @param meta query parameters 
+     * @return the value of the counter or null if it does not exist
+     */
+    Long fetchCounter(String bucket, String counter, FetchMeta meta) throws IOException;
+    
+    /**
      * The raw transport name.
      * @return the {@link Transport} for the client or null if not implemented.
      */

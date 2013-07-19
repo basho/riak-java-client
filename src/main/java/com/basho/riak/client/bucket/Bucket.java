@@ -16,6 +16,7 @@ package com.basho.riak.client.bucket;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.convert.RiakKey;
+import com.basho.riak.client.operations.CounterObject;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.MultiFetchObject;
@@ -184,6 +185,12 @@ public interface Bucket extends BucketProperties {
      */
     <T> MultiFetchObject<T> multiFetch(List<T> o);
     
+    /**
+     * Creates a {@link CounterObject} operation 
+     * @param counter the name (key) for the counter
+     * @return a new {@link CounterObject}
+     */
+    CounterObject counter(String counter);
     
     /**
      * Creates a {@link DeleteObject} operation that will delete the data at
