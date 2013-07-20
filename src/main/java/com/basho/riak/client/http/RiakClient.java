@@ -468,8 +468,8 @@ public class RiakClient {
      * @throws IOException
      * @throws JSONException
      */
-    public ListBucketsResponse listBuckets() {
-        HttpResponse r = helper.listBuckets();
+    public ListBucketsResponse listBuckets(boolean streaming) {
+        HttpResponse r = helper.listBuckets(streaming);
         try {
             return new ListBucketsResponse(r);
         } catch (JSONException e) {

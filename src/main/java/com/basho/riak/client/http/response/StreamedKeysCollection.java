@@ -57,7 +57,9 @@ public class StreamedKeysCollection extends CollectionWrapper<String> {
                     tokens.nextClean(); // skip over escaped chars
                 }
             }
-        } catch (JSONException e) { /* nop */}
+        } catch (JSONException e) { 
+            throw new RuntimeException(e);
+        }
         
         return false;
     }

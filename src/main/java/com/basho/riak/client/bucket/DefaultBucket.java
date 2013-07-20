@@ -45,6 +45,7 @@ import com.basho.riak.client.query.functions.NamedFunction;
 import com.basho.riak.client.query.indexes.FetchIndex;
 import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.StreamingOperation;
 import com.basho.riak.client.util.CharsetUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -310,13 +311,19 @@ public class DefaultBucket implements Bucket {
     /**
      * Iterate over the keys for this bucket (Expensive, are you sure?) Beware:
      * at present all {@link RawClient#listKeys(String)} operations return a
-     * stream of keys. The stream is closed automatically when the iteratore is
-     * weakly reachable. Do not retain a reference to this {@link Iterable}
+     * stream of keys. 
+     * 
+     * You *must* call {@link StreamingOperation#cancel() } on the returned
+     * {@link StreamingOperation} if you do not iterate through the entire set.
+     * 
+     * As a safeguard the stream is closed automatically when the iterator is
+     * weakly reachable but due to the nature of the GC it is inadvisable to 
+     * rely on this to close the iterator. Do not retain a reference to this {@link Iterable}
      * after you have used it.
      * 
      * @see RawClient#listKeys(String)
      */
-    public Iterable<String> keys() throws RiakException {
+    public StreamingOperation<String> keys() throws RiakException {
         try {
             return client.listKeys(name);
         } catch (IOException e) {

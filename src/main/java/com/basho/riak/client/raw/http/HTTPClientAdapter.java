@@ -17,7 +17,6 @@ import static com.basho.riak.client.raw.http.ConversionUtil.convert;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +46,7 @@ import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
@@ -306,7 +306,7 @@ public class HTTPClientAdapter implements RawClient {
      * @see com.basho.riak.client.raw.RawClient#listBuckets()
      */
     public Set<String> listBuckets() throws IOException {
-        final ListBucketsResponse lbr = client.listBuckets();
+        final ListBucketsResponse lbr = client.listBuckets(false);
 
         if (!lbr.isSuccess()) {
             throw new IOException("List Buckets failed with status code: " + lbr.getStatusCode());
@@ -314,6 +314,16 @@ public class HTTPClientAdapter implements RawClient {
         return new HashSet<String>(lbr.getBuckets());
     }
 
+    public StreamingOperation<String> listBucketsStreaming() throws IOException {
+        final ListBucketsResponse lbr = client.listBuckets(true);
+        if (!lbr.isSuccess()) {
+            throw new IOException("List Buckets failed with status code: " + lbr.getStatusCode());
+        }
+        else
+        {
+            return new BucketSource(lbr);
+        }
+    }
     /*
      * (non-Javadoc)
      * 
@@ -348,15 +358,10 @@ public class HTTPClientAdapter implements RawClient {
      * @see
      * com.basho.riak.client.raw.RawClient#fetchBucketKeys(java.lang.String)
      */
-    public Iterable<String> listKeys(String bucketName) throws IOException {
+    public StreamingOperation<String> listKeys(String bucketName) throws IOException {
         final BucketResponse bucketResponse = client.streamBucket(bucketName);
         if (bucketResponse.isSuccess()) {
-            final KeySource keyStream = new KeySource(bucketResponse);
-            return new Iterable<String>() {
-                public Iterator<String> iterator() {
-                    return keyStream;
-                }
-            };
+            return new KeySource(bucketResponse);
         } else {
             throw new IOException("stream keys for bucket " + bucketName + " failed with response code : " +
                                   bucketResponse.getStatusCode() + ", body: " + bucketResponse.getBodyAsString());

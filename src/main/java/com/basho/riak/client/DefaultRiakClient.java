@@ -17,6 +17,7 @@ import com.basho.riak.client.query.SearchMapReduce;
 import com.basho.riak.client.query.LinkWalk;
 import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.HTTPClientAdapter;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
@@ -85,6 +86,19 @@ public final class DefaultRiakClient implements IRiakClient {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.basho.riak.client.IRiakClient#listBucketsStreaming()
+     */
+    public StreamingOperation<String> listBucketsStreaming() throws RiakException {
+        try {
+            return rawClient.listBucketsStreaming();
+        } catch (IOException ex) {
+            throw new RiakException(ex);
+        }
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.IRiakClient#updateBucket(com.basho.riak.client.bucket.Bucket)
      */

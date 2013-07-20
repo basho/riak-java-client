@@ -23,6 +23,7 @@ import com.basho.riak.client.operations.RiakOperation;
 import com.basho.riak.client.operations.StoreObject;
 import com.basho.riak.client.query.indexes.FetchIndex;
 import com.basho.riak.client.query.indexes.RiakIndex;
+import com.basho.riak.client.raw.StreamingOperation;
 import java.util.List;
 
 /**
@@ -218,7 +219,7 @@ public interface Bucket extends BucketProperties {
      * @return an {@link Iterable} of Strings.
      * @throws RiakException
      */
-    Iterable<String> keys() throws RiakException;
+    StreamingOperation<String> keys() throws RiakException;
 
     /**
      * Creates a {@link FetchIndex} operation for the given index name and type
