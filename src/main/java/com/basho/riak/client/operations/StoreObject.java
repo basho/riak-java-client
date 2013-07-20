@@ -386,6 +386,17 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * If you don't know what this is or what it does, you should not 
+     * be using it. 
+     * @param asis
+     * @return this
+     */
+    public StoreObject<T> asis(boolean asis) {
+        storeMetaBuilder.asis(asis);
+        return this;
+    }
+    
+    /**
      * Default is false (i.e. NOT a conditional store).
      * <p>
      * NOTE: This has different meanings depending on the underlying transport.

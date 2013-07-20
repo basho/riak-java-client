@@ -21,9 +21,10 @@ import com.basho.riak.client.bucket.WriteBucket;
 import com.basho.riak.client.cap.ClientId;
 import com.basho.riak.client.query.*;
 import com.basho.riak.client.query.indexes.FetchIndex;
+import com.basho.riak.client.raw.RawClient;
+import com.basho.riak.client.raw.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
-import java.util.Iterator;
 
 /**
  * Primary high-level interface for accessing Riak.
@@ -87,10 +88,27 @@ public interface IRiakClient {
     /**
      * Set view of buckets in Riak
      * @return a Set<String> of buckets (or empty)
-     * @throws RiakException 
+     * @throws RiakException
+     * @deprecated 
      */
     Set<String> listBuckets() throws RiakException;
 
+    /**
+     * Iterate over the bucket names in Riak. This is a streaming operation.
+     * 
+     * <b> This is only available in Riak 1.4 and later</b>
+     * 
+     * You *must* call {@link StreamingOperation#cancel() } on the returned
+     * {@link StreamingOperation} if you do not iterate through the entire set.
+     * 
+     * As a safeguard the stream is closed automatically when the iterator is
+     * weakly reachable but due to the nature of the GC it is inadvisable to 
+     * rely on this to close the iterator. Do not retain a reference to this {@link Iterable}
+     * after you have used it.
+     * 
+     * @see RawClient#listBucketsStreaming() 
+     */
+    StreamingOperation<String> listBucketsStreaming() throws RiakException;
     /**
      * Create a new {@link FetchBucket} operation, and return it.
      * 
@@ -121,6 +139,12 @@ public interface IRiakClient {
      */
     WriteBucket createBucket(String bucketName);
 
+    /**
+     * Reset a bucket's properties back to the defaults
+     * @param bucketName 
+     */
+    void resetBucket(String bucketName) throws RiakException;
+    
     /**
      * Create a {@link LinkWalk} operation that starts at startObject.
      * 

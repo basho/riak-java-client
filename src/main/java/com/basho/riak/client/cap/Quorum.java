@@ -33,7 +33,26 @@ public final class Quorum {
      * @param i
      */
     public Quorum(int i) {
-        this.quorum = Quora.INTEGER;
+        /**
+         * Magic numbers used by Riak with Protocol Buffers. 
+         * See the comment in the Quora class. 
+         */ 
+        switch (i) {
+            case -2:
+                this.quorum = Quora.ONE;
+                break;
+            case -3:
+                this.quorum = Quora.QUORUM;
+                break;
+            case -4:
+                this.quorum = Quora.ALL;
+                break;
+            case -5:
+                this.quorum = Quora.DEFAULT;
+                break;
+            default:
+                this.quorum = Quora.INTEGER;
+        }
         this.i = i;
     }
 

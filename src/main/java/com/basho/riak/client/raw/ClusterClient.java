@@ -182,6 +182,11 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.listBuckets();
     }
 
+    public StreamingOperation<String> listBucketsStreaming() throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.listBucketsStreaming();
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -203,12 +208,17 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         delegate.updateBucket(name, bucketProperties);
     }
 
+    public void resetBucketProperties(String bucketName) throws IOException {
+        final RawClient delegate = getDelegate();
+        delegate.resetBucketProperties(bucketName);
+    }
+    
     /*
      * (non-Javadoc)
      * 
      * @see com.basho.riak.client.raw.RawClient#listKeys(java.lang.String)
      */
-    public Iterable<String> listKeys(String bucketName) throws IOException {
+    public StreamingOperation<String> listKeys(String bucketName) throws IOException {
         final RawClient delegate = getDelegate();
         return delegate.listKeys(bucketName);
     }

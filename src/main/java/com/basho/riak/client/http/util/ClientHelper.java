@@ -129,17 +129,30 @@ public class ClientHelper {
         return listBucket(bucket, meta, false);
     }
 
+    public HttpResponse resetBucketSchema(String bucket) {
+        if (null == bucket || bucket.equalsIgnoreCase("")) {
+            throw new IllegalArgumentException("bucket name can not be null or empty");
+        }
+        String url = config.getBaseUrl() + "/buckets/" + ClientUtils.urlEncode(bucket) + "/props";
+        HttpDelete delete = new HttpDelete(url);
+        return executeMethod(null, null, delete, null, false);
+    }
+    
     /**
      * List the buckets in Riak
      * 
      * @return an {@link HttpResponse} whose body should be the result of asking
      *         Riak to list buckets.
      */
-    public HttpResponse listBuckets() {
+    public HttpResponse listBuckets(boolean streamResponse) {
         final RequestMeta  meta = new RequestMeta();
-        meta.setQueryParam(Constants.QP_BUCKETS, Constants.LIST_BUCKETS);
+        if (streamResponse) {
+            meta.setQueryParam(Constants.QP_BUCKETS, Constants.STREAM_BUCKETS);
+        } else {
+            meta.setQueryParam(Constants.QP_BUCKETS, Constants.LIST_BUCKETS);
+        }
         HttpGet get = new HttpGet(config.getUrl());
-        return executeMethod(null, null, get, meta);
+        return executeMethod(null, null, get, meta, streamResponse);
     }
 
     /**
