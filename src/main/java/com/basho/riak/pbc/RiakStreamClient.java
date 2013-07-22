@@ -28,7 +28,7 @@ import java.util.TimerTask;
  * A general purpose stream -> iterator adaptor.
  * @param <T>
  */
-abstract class RiakStreamClient<T> implements Iterable<T> {
+public abstract class RiakStreamClient<T> implements Iterable<T> {
 
     static Timer TIMER = new Timer("riak-stream-timeout-thread", true);
 
@@ -92,13 +92,13 @@ abstract class RiakStreamClient<T> implements Iterable<T> {
 
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
-
+	
 			public boolean hasNext() {
 				try {
 					return RiakStreamClient.this.hasNext();
 				} catch (IOException e) {
 					throw new RuntimeException(e);
-				}
+}
 			}
 
 			public T next() {

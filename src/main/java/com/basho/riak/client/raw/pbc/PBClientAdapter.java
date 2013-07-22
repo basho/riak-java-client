@@ -43,6 +43,7 @@ import com.basho.riak.client.raw.ModifiedException;
 import com.basho.riak.client.raw.RawClient;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.StreamingOperation;
 import com.basho.riak.client.raw.Transport;
 import com.basho.riak.client.raw.http.ResultCapture;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
@@ -51,6 +52,7 @@ import com.basho.riak.client.raw.query.MapReduceTimeoutException;
 import com.basho.riak.client.raw.query.indexes.IndexQuery;
 import com.basho.riak.client.raw.query.indexes.IndexWriter;
 import com.basho.riak.client.util.CharsetUtils;
+import com.basho.riak.pbc.BucketSource;
 import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.IRequestMeta;
 import com.basho.riak.pbc.KeySource;
@@ -59,6 +61,8 @@ import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakError;
 import com.google.protobuf.ByteString;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Wraps the pbc.{@link RiakClient} and adapts it to the {@link RawClient}
@@ -240,6 +244,16 @@ public class PBClientAdapter implements RawClient {
     /*
      * (non-Javadoc)
      * 
+     * @see com.basho.riak.client.raw.RawClient#listBucketsStreaming()
+     */ 
+    public StreamingOperation<String> listBucketsStreaming() throws IOException {
+        final BucketSource bucketSource = client.listBucketsStreaming();
+        return new PBStreamingOperation(bucketSource);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
      * @see com.basho.riak.client.raw.RawClient#fetchBucket(java.lang.String)
      */
     public BucketProperties fetchBucket(String bucketName) throws IOException {
@@ -270,34 +284,13 @@ public class PBClientAdapter implements RawClient {
      * @see
      * com.basho.riak.client.raw.RawClient#fetchBucketKeys(java.lang.String)
      */
-    public Iterable<String> listKeys(String bucketName) throws IOException {
+    public StreamingOperation<String> listKeys(String bucketName) throws IOException {
         if (bucketName == null || bucketName.trim().equals("")) {
             throw new IllegalArgumentException("bucketName cannot be null, empty or all whitespace");
         }
 
         final KeySource keySource = client.listKeys(ByteString.copyFromUtf8(bucketName));
-        final Iterator<String> i = new Iterator<String>() {
-
-            private final Iterator<ByteString> delegate = keySource.iterator();
-
-            public boolean hasNext() {
-                return delegate.hasNext();
-            }
-
-            public String next() {
-                return nullSafeToStringUtf8(delegate.next());
-            }
-
-            public void remove() {
-                delegate.remove();
-            }
-        };
-
-        return new Iterable<String>() {
-            public Iterator<String> iterator() {
-                return i;
-            }
-        };
+        return new PBStreamingOperation(keySource);
     }
 
     /**

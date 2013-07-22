@@ -24,6 +24,9 @@ import org.json.JSONObject;
 
 import com.basho.riak.client.http.util.ClientUtils;
 import com.basho.riak.client.http.util.Constants;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.json.JSONTokener;
 
 /**
  * @author russell
@@ -31,7 +34,7 @@ import com.basho.riak.client.http.util.Constants;
  */
 public class ListBucketsResponse extends HttpResponseDecorator implements HttpResponse {
 
-    private final Set<String> buckets;
+    private Collection<String> buckets;
 
     /**
      * Create a list buckets response that parses the resppns ebody json into a
@@ -42,14 +45,21 @@ public class ListBucketsResponse extends HttpResponseDecorator implements HttpRe
     public ListBucketsResponse(final HttpResponse r) throws JSONException, IOException {
         super(r);
 
-        buckets = new HashSet<String>();
-
         if (r != null && r.isSuccess()) {
+            JSONObject json;
             Collection<String> b;
-            JSONObject json = new JSONObject(r.getBodyAsString());
-            JSONArray jsonBuckets = json.optJSONArray(Constants.FL_BUCKETS);
-            b = ClientUtils.jsonArrayAsList(jsonBuckets);
-            buckets.addAll(b);
+            if (!r.isStreamed()) {
+                json = new JSONObject(r.getBodyAsString());
+                JSONArray jsonBuckets = json.optJSONArray(Constants.FL_BUCKETS);
+                buckets = ClientUtils.jsonArrayAsList(jsonBuckets);
+            }
+            else {
+                InputStream stream = r.getStream();
+                JSONTokener tokens = new JSONTokener(new InputStreamReader(stream));
+                buckets = new StreamedBucketsCollection(tokens);
+            }
+        } else {
+            buckets = new HashSet<String>();
         }
     }
 
