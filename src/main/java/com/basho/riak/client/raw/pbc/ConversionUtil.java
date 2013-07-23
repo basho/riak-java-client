@@ -561,7 +561,8 @@ public final class ConversionUtil {
                                                      fm.getBasicQuorum(),
                                                      fm.getHeadOnly(), 
                                                      fm.getReturnDeletedVClock(), 
-                                                     fm.getIfModifiedVClock()
+                                                     fm.getIfModifiedVClock(),
+                                                     fm.getTimeout()
                                                    );
         } else {
             return com.basho.riak.pbc.FetchMeta.empty();
@@ -581,7 +582,8 @@ public final class ConversionUtil {
                                                       dm.hasDw() ? dm.getDw().getIntValue() : null, 
                                                       dm.hasPw() ? dm.getPw().getIntValue() : null , 
                                                       dm.hasRw() ? dm.getRw().getIntValue() : null, 
-                                                      nullSafeToBytes(dm.getVclock())
+                                                      nullSafeToBytes(dm.getVclock()),
+                                                      dm.getTimeout()
                                                     );
         } else {
             return com.basho.riak.pbc.DeleteMeta.empty();

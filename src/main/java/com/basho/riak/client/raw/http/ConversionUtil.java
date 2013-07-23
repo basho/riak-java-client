@@ -235,6 +235,10 @@ public final class ConversionUtil {
         if (storeMeta.hasAsis()) {
             requestMeta.setAsis(storeMeta.getAsis());
         }
+        
+        if (storeMeta.hasTimeout()) {
+            requestMeta.setTimeout(storeMeta.getTimeout());
+        }
 
         return requestMeta;
     }
@@ -716,6 +720,10 @@ public final class ConversionUtil {
         if (fetchMeta.getIfModifiedSince() != null) {
             rm.setIfModifiedSince(fetchMeta.getIfModifiedSince());
         }
+        
+        if (fetchMeta.hasTimeout()) {
+            rm.setTimeout(fetchMeta.getTimeout());
+        }
 
         return rm;
     }
@@ -725,7 +733,7 @@ public final class ConversionUtil {
             return null;
         }
         RequestMeta rm = convert(new FetchMeta(deleteMeta.getR(), deleteMeta.getPr(), null, null, null, null, null,
-                                               null));
+                                               null, deleteMeta.getTimeout()));
 
         if (deleteMeta.hasW()) {
             if (deleteMeta.getW().isSymbolic())

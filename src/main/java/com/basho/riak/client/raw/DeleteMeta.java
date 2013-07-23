@@ -32,6 +32,7 @@ public class DeleteMeta {
     private final Quorum pw;
     private final Quorum rw;
     private final VClock vclock;
+    private final Integer timeout;
 
     /**
      * Any of the parameters may be null.
@@ -44,14 +45,15 @@ public class DeleteMeta {
      * @param rw
      * @param vclock
      */
-    public DeleteMeta(Integer r, Integer pr, Integer w, Integer dw, Integer pw, Integer rw, VClock vclock) {
+    public DeleteMeta(Integer r, Integer pr, Integer w, Integer dw, Integer pw, Integer rw, VClock vclock, Integer timeout) {
         this( null == r ? null : new Quorum(r),
               null == pr ? null : new Quorum(pr),
               null == w ? null : new Quorum(w),
               null == dw ? null : new Quorum(dw),
               null == pw ? null : new Quorum(pw),
               null == rw ? null : new Quorum(rw),
-              vclock
+              vclock,
+              timeout
             );
         
         }
@@ -67,7 +69,7 @@ public class DeleteMeta {
      * @param rw
      * @param vclock
      */
-    public DeleteMeta(Quorum r, Quorum pr, Quorum w, Quorum dw, Quorum pw, Quorum rw, VClock vclock) {
+    public DeleteMeta(Quorum r, Quorum pr, Quorum w, Quorum dw, Quorum pw, Quorum rw, VClock vclock, Integer timeout) {
         this.r = r;
         this.pr = pr;
         this.w = w;
@@ -75,6 +77,7 @@ public class DeleteMeta {
         this.pw = pw;
         this.rw = rw;
         this.vclock = vclock;
+        this.timeout = timeout;
     }
     /**
      * @return true is the r parameter is set, false otherwise.
@@ -173,6 +176,22 @@ public class DeleteMeta {
     public VClock getVclock() {
         return vclock;
     }
+    
+    /**
+     * 
+     * @return true if the timeout parameter is set, false otherwise
+     */
+    public boolean hasTimeout() {
+        return timeout != null;
+    }
+    
+    /**
+     * 
+     * @return the timeout in milliseconds if set, null otherwise
+     */
+    public Integer getTimeout() {
+        return timeout;
+    }
 
     // Builder
     public static class Builder {
@@ -183,9 +202,10 @@ public class DeleteMeta {
         private Quorum pw;
         private Quorum rw;
         private VClock vclock;
+        private Integer timeout;
 
         public DeleteMeta build() {
-            return new DeleteMeta(r, pr, w, dw, pw, rw, vclock);
+            return new DeleteMeta(r, pr, w, dw, pw, rw, vclock, timeout);
         }
 
         public Builder r(int r) {
@@ -280,6 +300,11 @@ public class DeleteMeta {
         
         public Builder vclock(VClock vclock) {
             this.vclock = vclock;
+            return this;
+        }
+        
+        public Builder timeout(Integer timeout) {
+            this.timeout = timeout;
             return this;
         }
     }

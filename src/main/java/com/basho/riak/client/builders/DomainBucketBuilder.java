@@ -302,6 +302,25 @@ public class DomainBucketBuilder<T> {
     }
     
     /**
+     * Set an operation timeout in milliseconds to be sent to Riak
+     * 
+     * As of 1.4 Riak allows a timeout to be sent for get, put, and delete operations. 
+     * The client will receive a timeout error if the operation is not completed 
+     * within the specified time
+     * 
+     * This is applied to all operations performed by this DomainBucket.
+     * 
+     * @param timeout - the timeout in milliseconds
+     * @return this
+     */
+    public DomainBucketBuilder<T> timeout(int timeout) {
+        deleteMetaBuilder.timeout(timeout);
+        storeMetaBuilder.timeout(timeout);
+        fetchMetaBuilder.timeout(timeout);
+        return this;
+    }
+    
+    /**
      * A {@link MutationProducer} to provide the {@link Mutation} to use in store operations.
      * @param mutationProducer
      * @return this

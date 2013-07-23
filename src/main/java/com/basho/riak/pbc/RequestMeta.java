@@ -34,6 +34,7 @@ public class RequestMeta implements IRequestMeta {
 	Boolean ifNoneMatch;
 	Boolean returnHead;
     Boolean asis;
+    Integer timeout;
 	
 	public RequestMeta() {
 	}
@@ -73,6 +74,10 @@ public class RequestMeta implements IRequestMeta {
         
         if (asis != null) {
             builder.setAsis(asis.booleanValue());
+        }
+        
+        if (timeout != null) {
+            builder.setTimeout(timeout);
         }
 	}
 
@@ -156,6 +161,11 @@ public class RequestMeta implements IRequestMeta {
     
     public IRequestMeta asis(boolean asis) {
         this.asis = asis;
+        return this;
+    }
+    
+    public IRequestMeta timeout(int timeout) {
+        this.timeout = timeout;
         return this;
     }
 }
