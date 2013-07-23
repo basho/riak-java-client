@@ -27,7 +27,7 @@ import com.google.protobuf.ByteString;
  */
 public class FetchMeta {
 
-    private static final FetchMeta EMPTY = new FetchMeta(null, null, null, null, null, null, null);
+    private static final FetchMeta EMPTY = new FetchMeta(null, null, null, null, null, null, null, null);
 
     private final Integer r;
     private final Integer pr;
@@ -36,7 +36,14 @@ public class FetchMeta {
     private final Boolean headOnly;
     private final Boolean returnDeletedVClock;
     private final VClock ifModifiedVClock;
+    private final Integer timeout; 
 
+    
+//    public FetchMeta(Integer r, Integer pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
+//            Boolean returnDeletedVClock, VClock ifModifiedVClock) {
+//        this(r, pr, notFoundOK, basicQuorum, headOnly, returnDeletedVClock, ifModifiedVClock, null );
+//    }
+    
     /**
      * @param r
      * @param pr
@@ -44,11 +51,12 @@ public class FetchMeta {
      * @param basicQuorum
      * @param headOnly
      * @param returnDeletedVClock
+     * @param timeout 
      * @param vtag
      *            if not null then a conditional fetch
      */
     public FetchMeta(Integer r, Integer pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
-            Boolean returnDeletedVClock, VClock ifModifiedVClock) {
+            Boolean returnDeletedVClock, VClock ifModifiedVClock, Integer timeout) {
         this.r = r;
         this.pr = pr;
         this.notFoundOK = notFoundOK;
@@ -56,6 +64,7 @@ public class FetchMeta {
         this.headOnly = headOnly;
         this.returnDeletedVClock = returnDeletedVClock;
         this.ifModifiedVClock = ifModifiedVClock;
+        this.timeout = timeout;
     }
 
     public void write(RpbGetReq.Builder b) {
@@ -85,6 +94,10 @@ public class FetchMeta {
 
         if (ifModifiedVClock != null) {
             b.setIfModified(ByteString.copyFrom(ifModifiedVClock.getBytes()));
+        }
+        
+        if (timeout != null) {
+            b.setTimeout(timeout);
         }
     }
 
