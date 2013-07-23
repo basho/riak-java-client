@@ -265,6 +265,24 @@ public class StoreObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * Set an operation timeout in milliseconds to be sent to Riak
+     * 
+     * As of 1.4 Riak allows a timeout to be sent for get, put, and delete operations. 
+     * The client will receive a timeout error if the operation is not completed 
+     * within the specified time
+     * 
+     * @param timeout
+     * @return this
+     * @see com.basho.riak.client.raw.FetchMeta.Builder#timeout
+     */
+    
+    public StoreObject<T> timeout(int timeout) {
+        fetchObject.timeout(timeout);
+        storeMetaBuilder.timeout(timeout);
+        return this;
+    }
+    
+    /**
      * If the object has just been deleted, there maybe a tombstone value
      * vclock, set to true to have this returned in the pre-store fetch.
      * 
@@ -385,6 +403,17 @@ public class StoreObject<T> implements RiakOperation<T> {
         return this;
     }
 
+    /**
+     * If you don't know what this is or what it does, you should not 
+     * be using it. 
+     * @param asis
+     * @return this
+     */
+    public StoreObject<T> asis(boolean asis) {
+        storeMetaBuilder.asis(asis);
+        return this;
+    }
+    
     /**
      * Default is false (i.e. NOT a conditional store).
      * <p>

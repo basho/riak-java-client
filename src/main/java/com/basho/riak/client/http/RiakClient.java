@@ -13,6 +13,7 @@
  */
 package com.basho.riak.client.http;
 
+import com.basho.riak.client.http.request.IndexRequest;
 import com.basho.riak.client.http.request.MapReduceBuilder;
 import com.basho.riak.client.http.request.RequestMeta;
 import com.basho.riak.client.http.request.RiakWalkSpec;
@@ -107,6 +108,10 @@ public class RiakClient {
         }
     }
 
+    public HttpResponse resetBucketSchema(String bucket) {
+        return helper.resetBucketSchema(bucket);
+    }
+    
     /* (non-Javadoc)
      * @see com.basho.riak.client.HttpRiakClient#getBucketSchema(java.lang.String)
      */
@@ -468,8 +473,8 @@ public class RiakClient {
      * @throws IOException
      * @throws JSONException
      */
-    public ListBucketsResponse listBuckets() {
-        HttpResponse r = helper.listBuckets();
+    public ListBucketsResponse listBuckets(boolean streaming) {
+        HttpResponse r = helper.listBuckets(streaming);
         try {
             return new ListBucketsResponse(r);
         } catch (JSONException e) {
@@ -595,6 +600,53 @@ public class RiakClient {
         }
     }
 
+    public IndexResponseV2 index(IndexRequest request) {
+        HttpResponse r = helper.fetchIndex(request);
+        try {
+            return new IndexResponseV2(request, r);
+        } catch (JSONException e) {
+            try {
+                return new IndexResponseV2(request, helper.toss(new RiakResponseRuntimeException(r, e)));
+            } catch (Exception e1) {
+                throw new IllegalStateException("helper.toss() returns a unsuccessful result, so IndexResponseV2 shouldn't try to parse it or throw");
+            }
+        }
+    }
+    
+    public Long incrementCounter(String bucket, String counter, long increment, RequestMeta meta) {
+        if (null == meta) {
+            meta = new RequestMeta();
+        }
+        setAcceptHeader(meta);
+        HttpResponse r =  helper.incrementCounter(bucket, counter, increment, meta);
+        return parseCounterResponse(r);
+    }
+    
+    public Long fetchCounter(String bucket, String counter, RequestMeta meta) {
+        if (null == meta) {
+            meta = new RequestMeta();
+        }
+        setAcceptHeader(meta);
+        HttpResponse r =  helper.fetchCounter(bucket, counter, meta);
+        return parseCounterResponse(r);
+    }
+    
+    private Long parseCounterResponse(HttpResponse resp) {
+        if (resp.isError() && resp.getStatusCode() != 404) {
+            helper.toss(new RiakResponseRuntimeException(resp));
+            return null;
+        } else if (resp.getStatusCode() == 404) {
+            return null;
+        } else {
+            if (resp.getBodyAsString() != null) {
+                return Long.parseLong(resp.getBodyAsString());
+            } else {
+                // An increment without returnvalue will return an empty result
+                return null;
+            }
+        }
+    }
+    
     public void shutdown()
     {
     }

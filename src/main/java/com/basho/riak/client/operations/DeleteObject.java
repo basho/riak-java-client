@@ -330,4 +330,22 @@ public class DeleteObject implements RiakOperation<Void> {
         this.fetchBeforeDelete = fetch;
         return this;
     }
+    
+    
+    /**
+     * Set an operation timeout in milliseconds to be sent to Riak
+     * 
+     * As of 1.4 Riak allows a timeout to be sent for get, put, and delete operations. 
+     * The client will receive a timeout error if the operation is not completed 
+     * within the specified time
+     * 
+     * @param timeout
+     * @return this
+     * 
+     */
+    
+    public DeleteObject timeout(int timeout) {
+        deleteMetaBuilder.timeout(timeout);
+        return this;
+    }
 }

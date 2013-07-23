@@ -291,6 +291,22 @@ public class MultiFetchObject<T> implements RiakOperation<List<MultiFetchFuture<
     }
 
     /**
+     * Set an operation timeout in milliseconds to be sent to Riak
+     * 
+     * As of 1.4 Riak allows a timeout to be sent for get, put, and delete operations. 
+     * The client will receive a timeout error if the operation is not completed 
+     * within the specified time
+     * 
+     * @param timeout the timeout in milliseconds 
+     * @return this
+     */
+    
+    public MultiFetchObject<T> timeout(int timeout) {
+        builder.timeout(timeout);
+        return this;
+    }
+    
+    /**
      * @param returnDeletedVClock
      * @return this
      * @see com.basho.riak.client.raw.FetchMeta.Builder#returnDeletedVClock(boolean)

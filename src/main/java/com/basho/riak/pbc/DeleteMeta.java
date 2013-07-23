@@ -31,7 +31,12 @@ public class DeleteMeta {
     private final Integer pw;
     private final Integer rw;
     private final byte[] vclock;
+    private final Integer timeout;
 
+//    public DeleteMeta(Integer r, Integer pr, Integer w, Integer dw, Integer pw, Integer rw, byte[] vclock) {
+//        this(r, pr, w, dw,pw, rw, vclock, null);
+//    }
+    
     /**
      * @param r
      * @param pr
@@ -40,8 +45,9 @@ public class DeleteMeta {
      * @param pw
      * @param rw
      * @param vclock
+     * @param timeout 
      */
-    public DeleteMeta(Integer r, Integer pr, Integer w, Integer dw, Integer pw, Integer rw, byte[] vclock) {
+    public DeleteMeta(Integer r, Integer pr, Integer w, Integer dw, Integer pw, Integer rw, byte[] vclock, Integer timeout) {
         this.r = r;
         this.pr = pr;
         this.w = w;
@@ -49,6 +55,7 @@ public class DeleteMeta {
         this.pw = pw;
         this.rw = rw;
         this.vclock = vclock == null ? null : vclock.clone();
+        this.timeout = timeout;
     }
 
     /**
@@ -82,12 +89,16 @@ public class DeleteMeta {
         if (vclock != null) {
             builder.setVclock(ByteString.copyFrom(vclock));
         }
+        
+        if (timeout != null) {
+            builder.setTimeout(timeout);
+        }
     }
 
     /**
      * @return an empty DeleteMeta
      */
     public static com.basho.riak.pbc.DeleteMeta empty() {
-        return new DeleteMeta(null, null, null, null, null, null, null);
+        return new DeleteMeta(null, null, null, null, null, null, null, null);
     }
 }

@@ -35,6 +35,7 @@ public class FetchMeta {
     private final Boolean returnDeletedVClock;
     private final VClock ifModifiedVClock;
     private final Date ifModifiedSince;
+    private final Integer timeout;
 
     /**
      * Create a fetch meta with the specified parameters for a conditional fetch
@@ -62,7 +63,7 @@ public class FetchMeta {
      *            Only for PB API!
      */
     public FetchMeta(Integer r, Integer pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
-            Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock) {
+            Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock, Integer timeout) {
         
         // A lot of the old code depends on r and pr being returned as null if
         // they aren't set / passed in as null
@@ -73,7 +74,8 @@ public class FetchMeta {
               headOnly,
               returnDeletedVClock,
               ifModifiedSince,
-              ifModifiedVClock
+              ifModifiedVClock,
+              timeout
             );
         
     }
@@ -104,7 +106,7 @@ public class FetchMeta {
      *            Only for PB API!
      */
     public FetchMeta(Quorum r, Quorum pr, Boolean notFoundOK, Boolean basicQuorum, Boolean headOnly,
-            Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock) {
+            Boolean returnDeletedVClock, Date ifModifiedSince, VClock ifModifiedVClock, Integer timeout) {
         
         this.r = r;
         this.pr = pr;
@@ -115,6 +117,7 @@ public class FetchMeta {
         this.returnDeletedVClock = returnDeletedVClock;
         this.ifModifiedVClock = ifModifiedVClock;
         this.ifModifiedSince = ifModifiedSince;
+        this.timeout = timeout;
     }
     
     /**
@@ -220,13 +223,29 @@ public class FetchMeta {
     }
 
     /**
+     * Returns true if the timeout parameter is set, otherwise false
+     * @return if the timeout is set or not
+     */
+    public boolean hasTimeout() {
+        return timeout != null;
+    }
+    
+    /**
+     * Returns the timeout value if set, otherwise null
+     * @return the timeout in milliseconds
+     */
+    public Integer getTimeout() {
+        return timeout;
+    }
+    
+    /**
      * Convenient way to create a fetch meta with just an r value
      * 
      * @param readQuorum
      * @return a {@link FetchMeta} with just an R value
      */
     public static FetchMeta withR(int readQuorum) {
-        return new FetchMeta(readQuorum, null, null, null, null, null, null, null);
+        return new FetchMeta(readQuorum, null, null, null, null, null, null, null, null);
     }
 
     // Builder
@@ -239,6 +258,7 @@ public class FetchMeta {
         private Boolean returnDeletedVClock;
         private VClock vclock;
         private Date modifiedSince;
+        private Integer timeout;
 
         public static Builder from(FetchMeta fm) {
             Builder b = new Builder();
@@ -253,7 +273,7 @@ public class FetchMeta {
         }
 
         public FetchMeta build() {
-            return new FetchMeta(r, pr, notFoundOK, basicQuorum, headOnly, returnDeletedVClock, modifiedSince, vclock);
+            return new FetchMeta(r, pr, notFoundOK, basicQuorum, headOnly, returnDeletedVClock, modifiedSince, vclock, timeout);
         }
 
         public Builder r(int r) {
@@ -315,6 +335,11 @@ public class FetchMeta {
             this.modifiedSince = modifiedSince;
             return this;
         }
+        
+        public Builder timeout(int timeout) {
+            this.timeout = timeout;
+            return this;
+        }
     }
 
     /**
@@ -322,6 +347,6 @@ public class FetchMeta {
      */
     public static FetchMeta head() {
         // Cast first null to Quorum to avoid ambiguous constructor problem
-        return new FetchMeta((Quorum)null, null, null, null, true, null, null, null);
+        return new FetchMeta((Quorum)null, null, null, null, true, null, null, null, null);
     }
 }
