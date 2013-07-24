@@ -28,6 +28,8 @@ import com.basho.riak.protobuf.RiakKvPB.RpbSetClientIdReq;
 import com.google.protobuf.ByteString;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A bounded or boundless pool of {@link RiakConnection}s to be reused by {@link RiakClient}
@@ -130,7 +132,6 @@ public class RiakConnectionPool {
      * Constant to use for <code>maxSize</code> when creating an unbounded pool
      */
     public static final int LIMITLESS = 0;
-    private static final int CONNECTION_ACQUIRE_ATTEMPTS = 3;
     private final InetAddress host;
     private final int port;
     private final Semaphore permits;
@@ -229,7 +230,7 @@ public class RiakConnectionPool {
         this.idleReaper = Executors.newScheduledThreadPool(1);
         this.shutdownExecutor = Executors.newScheduledThreadPool(1);
         this.state = State.CREATED;
-        warmUp();
+        
     }
 
     /**
@@ -258,7 +259,6 @@ public class RiakConnectionPool {
                                 boolean removed = available.remove(c);
                                 if (removed) {
                                     c.close();
-                                    permits.release();
                                 }
                             }
                         } else {
@@ -272,7 +272,7 @@ public class RiakConnectionPool {
                 }
             }, idleConnectionTTLNanos, idleConnectionTTLNanos, TimeUnit.NANOSECONDS);
         }
-
+        warmUp();
         state = State.RUNNING;
     }
 
@@ -296,20 +296,18 @@ public class RiakConnectionPool {
      * If there are any initial connections to create, do it.
      * @throws IOException
      */
-    private void warmUp() throws IOException {
-        if (permits.tryAcquire(initialSize)) {
-            for (int i = 0; i < this.initialSize; i++) {
-                RiakConnection c = 
-                    new RiakConnection(this.host, this.port, 
-                                       this.bufferSizeKb, this, 
-                                       TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), 
-                                       requestTimeoutMillis);
+    private void warmUp() {
+        
+        for (int i = 0; i < this.initialSize; i++) {
+            try {
+                RiakConnection c = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
                 c.beginIdle();
                 available.add(c);
+            } catch (IOException ex) {
+               // No-op
             }
-        } else {
-            throw new RuntimeException("Unable to create initial connections");
         }
+        
     }
 
     /**
@@ -380,35 +378,23 @@ public class RiakConnectionPool {
      * @throws IOException
      */
     private RiakConnection getConnection() throws IOException {
-        RiakConnection c = available.poll();
-
-        if (c == null) {
-           c = createConnection(CONNECTION_ACQUIRE_ATTEMPTS);
-        }
-
-        inUse.offer(c);
-        return c;
-    }
-
-    /**
-     * @param attempts
-     * @return
-     */
-    private RiakConnection createConnection(int attempts) throws IOException {
+        RiakConnection c = null;
         try {
             if (permits.tryAcquire(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS)) {
-                boolean releasePermit = true;
-                try {
-                    RiakConnection connection = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
-                    releasePermit = false;
-                    return connection;
-                } catch (SocketTimeoutException e) {
-                    throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
-                } catch (IOException e) {
-                    throw e;
-                } finally {
-                    if (releasePermit) {
-                        permits.release();
+                c = available.poll();
+                if (c == null) {
+                    boolean releasePermit = true;
+                    try {
+                        c = new RiakConnection(host, port, bufferSizeKb, this, TimeUnit.MILLISECONDS.convert(connectionWaitTimeoutNanos, TimeUnit.NANOSECONDS), requestTimeoutMillis);
+                        releasePermit = false;
+                    } catch (SocketTimeoutException e) {
+                        throw new AcquireConnectionTimeoutException("timeout from socket connection " + e.getMessage(), e);
+                    } catch (IOException e) {
+                        throw e;
+                    } finally {
+                        if (releasePermit) {
+                            permits.release();
+                        }
                     }
                 }
             } else {
@@ -416,13 +402,12 @@ public class RiakConnectionPool {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            
-            if (attempts > 0) {
-                return createConnection(attempts - 1);
-            } else {
-                throw new IOException("repeatedly interrupted whilst waiting to acquire connection");
-            }
+            throw new IOException("interrupted whilst waiting to acquire connection");
         }
+        
+        inUse.offer(c);
+        return c;
+        
     }
 
     /**
@@ -446,13 +431,12 @@ public class RiakConnectionPool {
         }
 
         if (inUse.remove(c)) {
+            // don't put a closed connection in the pool
             if (!c.isClosed()) {
                 c.beginIdle();
                 available.offerFirst(c);
-            } else {
-                // don't put a closed connection in the pool, release a permit
-                permits.release();
-            }
+            } 
+            permits.release();
         } else {
             // not our connection?
             throw new IllegalArgumentException("connection not managed by this pool");

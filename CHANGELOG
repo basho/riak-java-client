@@ -1,3 +1,36 @@
+1.1.2
+-----
+This is a bugfix/maintenance release
+
+7706316 Brian Roach Merge pull request #259 from guidomedina/gm-objectmapper-read-rawvalue
+4d6dcb4 gmedina Object mapper reads directly from bytes
+872d162 Brian Roach Merge pull request #253 from guidomedina/gmedina-update-jackson
+14c8c51 Brian Roach Merge pull request #252 from guidomedina/gmedina-update-httpclient
+8634f82 Brian Roach Merge pull request #254 from guidomedina/gmedina-optimize-jsonconverter-objectmapper
+71f8c72 Brian Roach Merge pull request #230 from basho/pb-connection-pool-permit-fix
+bbc6b0c Brian Roach Merge pull request #248 from basho/gh245-pojo-with-null-key
+5a3dcad gmedina Object mapper return method should be static.
+64ef88a gmedina Object mapper at JsonConverter is now a singleton instance.
+53dbd0a gmedina Updates Jackson libraries to 2.2.2
+c186894 gmedina Updates HTTP client to 4.2.5.
+84b8d7e Brian Roach removed unused import
+9e61524 Brian Roach Merge pull request #243 from basho/gh242-index-null-pointer
+2f59b6f Brian Roach Fixed storing POJO with null key
+a2434f6 Brian Roach Merge pull request #247 from basho/gh244-add-link-args
+32c8a88 Brian Roach RiakLink checks arguments
+046142f Brian Roach Merge pull request #228 from kkalin78/master
+95a81a3 Brian Roach Added argument checks for indexes
+e56e071 Charlie Voiselle Update README.org
+96c97c4 Brett Hazen Merge pull request #227 from basho/bch-pb-link-walking
+1cb822a Brett Hazen Issue #227: Fixed default setting in single depth link walking in com.basho.riak.client.raw.pbc.PBClientAdapter.linkWalkSecondPhase
+812a6aa Brian Roach [maven-release-plugin] prepare for next development iteration
+34c0295 Brian Roach Moved warmUp finished semaphore changes
+7475c21 Brian Roach removed the connection acquire retry
+2f24cc4 Konstantin Kalin Add expected and actuall code into bad message code expection in recieve_code method of pbc.RiakConnection
+460b631 Brett Hazen Issue #218: Handle Link Walking case with a depth of one (and with no outgoing links)
+4262c6e Brian Roach PB client connection pool optimization
+
+
 1.1.1
 -----
 This is a bugfix and feature release
