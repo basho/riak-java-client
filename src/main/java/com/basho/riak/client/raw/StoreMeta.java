@@ -25,7 +25,7 @@ import java.util.Date;
  */
 public class StoreMeta {
 
-    private static final StoreMeta EMPTY = new StoreMeta(null, null, null, false, null, null);
+    private static final StoreMeta EMPTY = new StoreMeta(null, null, null, false, null, null, null, null);
 
     private final Quorum w;
     private final Quorum dw;
@@ -34,10 +34,13 @@ public class StoreMeta {
     private final Boolean returnHead;
     private final Boolean ifNoneMatch;
     private final Boolean ifNotModified;
+    private final Boolean asis;
+    private final Integer timeout;
     // these two are HTTP API specific for ifNoneMatch and ifNotModified
     // which are different to the PB options of the same name
     private String[] etags;
     private Long lastModified;
+    
 
     /**
      * Create a StoreMeta, accepts <code>null</code>s for any parameter
@@ -57,14 +60,16 @@ public class StoreMeta {
      *            only store is the vclock supplied on store matches the vclock
      *            in Riak
      */
-    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNoneMatch, Boolean ifNotModified) {
+    public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNoneMatch, Boolean ifNotModified, Boolean asis, Integer timeout) {
         this(null == w ? null : new Quorum(w), 
              null == dw ? null : new Quorum(dw), 
              null == pw ? null : new Quorum(pw), 
              returnBody, 
              null, 
              ifNoneMatch, 
-             ifNotModified
+             ifNotModified,
+             asis,
+             timeout
             );
     }
 
@@ -89,14 +94,16 @@ public class StoreMeta {
      *            in Riak
      */
     public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
-                     Boolean ifNotModified) {
+                     Boolean ifNotModified, Boolean asis, Integer timeout) {
         this(null == w ? null : new Quorum(w), 
              null == dw ? null : new Quorum(dw), 
              null == pw ? null : new Quorum(pw), 
              returnBody, 
              returnHead, 
              ifNoneMatch, 
-             ifNotModified
+             ifNotModified,
+             asis,
+             timeout
         );
     }
     
@@ -121,7 +128,7 @@ public class StoreMeta {
      *            in Riak
      */
     public StoreMeta(Quorum w, Quorum dw, Quorum pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
-            Boolean ifNotModified) {
+            Boolean ifNotModified, Boolean asis, Integer timeout) {
         this.w = w;
         this.dw = dw;
         this.pw = pw;
@@ -129,6 +136,8 @@ public class StoreMeta {
         this.returnHead = returnHead;
         this.ifNoneMatch = ifNoneMatch;
         this.ifNotModified = ifNotModified;
+        this.asis = asis;
+        this.timeout = timeout;
     }
 
     /**
@@ -271,6 +280,30 @@ public class StoreMeta {
         return returnHead;
     }
 
+    public boolean hasAsis() {
+        return asis != null;
+    }
+    
+    public boolean getAsis() {
+        return asis;
+    }
+    
+    /**
+     * 
+     * @return true if a timeout has been set, false otherwise
+     */
+    public boolean hasTimeout() {
+        return timeout != null;
+    }
+    
+    /**
+     * 
+     * @return the timeout value, null if it has not been set
+     */
+    public Integer getTimeout() {
+        return timeout;
+    }
+    
     /**
      * Optional supporting data for ifNoneMatch for the HTTP API
      * 
@@ -324,7 +357,7 @@ public class StoreMeta {
      * @return a StoreMeta with only the headOnly set to true
      */
     public static StoreMeta headOnly() {
-        return new StoreMeta((Quorum)null, null, null, null, true, null, null);
+        return new StoreMeta((Quorum)null, null, null, null, true, null, null, null, null);
     }
 
     public static class Builder {
@@ -335,9 +368,11 @@ public class StoreMeta {
         private Boolean returnHead;
         private Boolean ifNotModified;
         private Boolean ifNoneMatch;
+        private Boolean asis;
+        private Integer timeout;
 
         public StoreMeta build() {
-            return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNoneMatch, ifNotModified);
+            return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNoneMatch, ifNotModified, asis, timeout);
         }
 
         public Builder w(int w) {
@@ -402,6 +437,16 @@ public class StoreMeta {
 
         public Builder ifNoneMatch(boolean ifNoneMatch) {
             this.ifNoneMatch = ifNoneMatch;
+            return this;
+        }
+        
+        public Builder asis(boolean asis) {
+            this.asis = asis;
+            return this;
+        }
+        
+        public Builder timeout(int timeout) {
+            this.timeout = timeout;
             return this;
         }
     }

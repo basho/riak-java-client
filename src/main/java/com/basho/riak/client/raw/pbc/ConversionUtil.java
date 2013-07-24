@@ -41,16 +41,22 @@ import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.query.LinkWalkStep.Accumulate;
 import com.basho.riak.client.query.MapReduceResult;
 import com.basho.riak.client.query.WalkResult;
+import com.basho.riak.client.query.functions.NamedErlangFunction;
+import com.basho.riak.client.query.functions.NamedFunction;
+import com.basho.riak.client.query.functions.NamedJSFunction;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.raw.DeleteMeta;
 import com.basho.riak.client.raw.FetchMeta;
 import com.basho.riak.client.raw.RiakResponse;
 import com.basho.riak.client.raw.StoreMeta;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.util.CharsetUtils;
 import com.basho.riak.client.util.UnmodifiableIterator;
+import com.basho.riak.pbc.CommitHook;
 import com.basho.riak.pbc.FetchResponse;
 import com.basho.riak.pbc.MapReduceResponseSource;
+import com.basho.riak.pbc.ModuleFunction;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakObject;
 import com.google.protobuf.ByteString;
@@ -218,10 +224,12 @@ public final class ConversionUtil {
         if (storeMeta.hasReturnHead()) {
             requestMeta.returnHead(storeMeta.getReturnHead());
         }
-
-        String contentType = riakObject.getContentType();
-        if (contentType != null) {
-            requestMeta.contentType(contentType);
+        
+        if (riakObject != null) {
+            String contentType = riakObject.getContentType();
+            if (contentType != null) {
+                requestMeta.contentType(contentType);
+            }
         }
 
         if (storeMeta.hasPw()) {
@@ -236,6 +244,10 @@ public final class ConversionUtil {
             requestMeta.ifNotModified(storeMeta.getIfNotModified());
         }
 
+        if (storeMeta.hasAsis()) {
+            requestMeta.asis(storeMeta.getAsis());
+        }
+        
         return requestMeta;
     }
 
@@ -307,7 +319,56 @@ public final class ConversionUtil {
      * @return
      */
     static com.basho.riak.pbc.BucketProperties convert(BucketProperties p) {
-        return new com.basho.riak.pbc.BucketProperties().nValue(p.getNVal()).allowMult(p.getAllowSiblings());
+        com.basho.riak.pbc.BucketProperties props = 
+            new com.basho.riak.pbc.BucketProperties()
+            .nValue(p.getNVal())
+            .allowMult(p.getAllowSiblings())
+            .lastWriteWins(p.getLastWriteWins())
+            .backend(p.getBackend())
+            .smallVClock(p.getSmallVClock())
+            .bigVClock(p.getBigVClock())
+            .youngVClock(p.getYoungVClock())
+            .oldVclock(p.getOldVClock())
+            .r(p.getR() == null ? null : p.getR().getIntValue())
+            .w(p.getW() == null ? null : p.getW().getIntValue())
+            .rw(p.getRW() == null ? null : p.getRW().getIntValue())
+            .dw(p.getDW() == null ? null : p.getDW().getIntValue())
+            .pr(p.getPR() == null ? null : p.getPR().getIntValue())
+            .pw(p.getPW() == null ? null : p.getPW().getIntValue())
+            .basicQuorum(p.getBasicQuorum())
+            .notFoundOk(p.getNotFoundOK())
+            .searchEnabled(p.getSearch());
+        
+        if (p.getPrecommitHooks() != null) {
+            List<CommitHook> hooklist = new ArrayList<CommitHook>();
+            for (NamedFunction f : p.getPrecommitHooks()) {
+                if (f instanceof NamedJSFunction) {
+                    hooklist.add(new CommitHook(((NamedJSFunction) f).getFunction()));
+                } else {
+                    hooklist.add(new CommitHook(((NamedErlangFunction)f).getMod(),
+                                                ((NamedErlangFunction)f).getFun()));
+                }
+            }
+            props.precommitHooks(hooklist);
+        }
+            
+        if (p.getPostcommitHooks() != null) {
+            List<CommitHook> hooklist = new ArrayList<CommitHook>();
+            for (NamedErlangFunction f : p.getPostcommitHooks()) {
+                hooklist.add(new CommitHook(f.getMod(), f.getFun()));
+            }
+            props.postcommitHooks(hooklist);
+        }
+        
+        if (p.getLinkWalkFunction() != null) {
+            props.linkFun(new ModuleFunction(p.getLinkWalkFunction().getMod(), p.getLinkWalkFunction().getFun()));
+        }
+            
+        if (p.getChashKeyFunction() != null) {
+            props.cHashFun(new ModuleFunction(p.getChashKeyFunction().getMod(), p.getChashKeyFunction().getFun()));
+        }
+        
+        return props;
     }
 
     /**
@@ -315,7 +376,54 @@ public final class ConversionUtil {
      * @return
      */
     static BucketProperties convert(com.basho.riak.pbc.BucketProperties properties) {
-        return new BucketPropertiesBuilder().allowSiblings(properties.getAllowMult()).nVal(properties.getNValue()).build();
+        BucketPropertiesBuilder builder =  new BucketPropertiesBuilder()
+            .allowSiblings(properties.getAllowMult())
+            .nVal(properties.getNValue())   
+            .lastWriteWins(properties.getLastWriteWins())
+            .backend(properties.getBackend())
+            .smallVClock(properties.getSmallVClock())
+            .bigVClock(properties.getBigVClock())
+            .youngVClock(properties.getYoungVClock())
+            .oldVClock(properties.getOldVClock())
+            .r(properties.getR())
+            .w(properties.getW())
+            .rw(properties.getRw())
+            .dw(properties.getDw())
+            .pr(properties.getPr())
+            .pw(properties.getPw())
+            .basicQuorum(properties.getBasicQuorum())
+            .notFoundOK(properties.getNotFoundOk())
+            .search(properties.getSearchEnabled());
+        
+            for (CommitHook hook : properties.getPrecommitHooks()) {
+                if (hook.isJavascript()) {
+                    builder.addPrecommitHook(new NamedJSFunction(hook.getJsName()));
+                } else {
+                    builder.addPrecommitHook(new NamedErlangFunction(hook.getErlModule(), 
+                                                                     hook.getErlFunction()));
+                }
+            }
+        
+            for (CommitHook hook : properties.getPostcommitHooks()) {
+                if (hook.isJavascript()) {
+                    throw new IllegalArgumentException("Post-commit hooks can only be erlang");
+                } else {
+                    builder.addPostcommitHook(new NamedErlangFunction(hook.getErlModule(), 
+                                                                     hook.getErlFunction()));
+                }
+            }
+            
+            if (properties.getcHashFun() != null) {
+                builder.chashKeyFunction(new NamedErlangFunction(properties.getcHashFun().getModule(),
+                                                                 properties.getcHashFun().getFunction()));
+            }
+            
+            if (properties.getLinkFun() != null) {
+                builder.linkWalkFunction(new NamedErlangFunction(properties.getLinkFun().getModule(),
+                                                                 properties.getLinkFun().getFunction()));
+            }
+            
+            return builder.build();
     }
 
     /**
@@ -453,7 +561,8 @@ public final class ConversionUtil {
                                                      fm.getBasicQuorum(),
                                                      fm.getHeadOnly(), 
                                                      fm.getReturnDeletedVClock(), 
-                                                     fm.getIfModifiedVClock()
+                                                     fm.getIfModifiedVClock(),
+                                                     fm.getTimeout()
                                                    );
         } else {
             return com.basho.riak.pbc.FetchMeta.empty();
@@ -473,10 +582,30 @@ public final class ConversionUtil {
                                                       dm.hasDw() ? dm.getDw().getIntValue() : null, 
                                                       dm.hasPw() ? dm.getPw().getIntValue() : null , 
                                                       dm.hasRw() ? dm.getRw().getIntValue() : null, 
-                                                      nullSafeToBytes(dm.getVclock())
+                                                      nullSafeToBytes(dm.getVclock()),
+                                                      dm.getTimeout()
                                                     );
         } else {
             return com.basho.riak.pbc.DeleteMeta.empty();
         }
+    }
+    
+    static com.basho.riak.pbc.IndexRequest convert(IndexSpec indexSpec) {
+        com.basho.riak.pbc.IndexRequest.Builder builder = 
+            new com.basho.riak.pbc.IndexRequest.Builder(indexSpec.getBucketName(), indexSpec.getIndexName())
+                .withIndexKey(indexSpec.getIndexKey())
+                .withRangeStart(indexSpec.getRangeStart())
+                .withRangeEnd(indexSpec.getRangeEnd())
+                .withReturnKeyAndIndex(indexSpec.isReturnTerms())
+                .withMaxResults(indexSpec.getMaxResults());
+        
+        if (indexSpec.getContinuation() != null)
+        {
+            builder.withContinuation(ByteString.copyFromUtf8(indexSpec.getContinuation()));
+        }
+        
+        return builder.build();
+        
+        
     }
 }

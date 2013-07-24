@@ -281,4 +281,12 @@ public class RequestMeta {
     public RequestMeta setAccept(String contentTypes) {
         return setHeader(Constants.HDR_ACCEPT, contentTypes);
     }
+    
+    public RequestMeta setAsis(boolean asis) {
+        return setHeader(Constants.QP_ASIS, String.valueOf(asis));
+    }
+    
+    public RequestMeta setTimeout(int timeout) {
+        return setHeader(Constants.QP_TIMEOUT, String.valueOf(timeout));
+    }
 }

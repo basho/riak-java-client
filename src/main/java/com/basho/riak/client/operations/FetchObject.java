@@ -248,6 +248,21 @@ public class FetchObject<T> implements RiakOperation<T> {
     }
 
     /**
+     * Set an operation timeout in milliseconds to be sent to Riak
+     * 
+     * As of 1.4 Riak allows a timeout to be sent for get, put, and delete operations. 
+     * The client will receive a timeout error if the operation is not completed 
+     * within the specified time
+     * @param timeout the timeout in milliseconds 
+     * @return this
+     */
+    
+    public FetchObject<T> timeout(int timeout) {
+        builder.timeout(timeout);
+        return this;
+    }
+    
+    /**
      * @param returnDeletedVClock
      * @return
      * @see com.basho.riak.client.raw.FetchMeta.Builder#returnDeletedVClock(boolean)
@@ -371,6 +386,8 @@ public class FetchObject<T> implements RiakOperation<T> {
         return rawResponse.getVclock();
     }
 
+    
+    
     /**
      * If the {@link RiakResponse} isn't populated then the request hasn't been
      * executed.

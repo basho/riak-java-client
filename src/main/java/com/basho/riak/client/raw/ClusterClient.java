@@ -13,6 +13,8 @@
  */
 package com.basho.riak.client.raw;
 
+import com.basho.riak.client.IndexEntry;
+import com.basho.riak.client.query.StreamingOperation;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ import com.basho.riak.client.query.NodeStats;
 import com.basho.riak.client.query.WalkResult;
 import com.basho.riak.client.raw.config.ClusterConfig;
 import com.basho.riak.client.raw.config.Configuration;
+import com.basho.riak.client.raw.query.IndexSpec;
 import com.basho.riak.client.raw.query.LinkWalkSpec;
 import com.basho.riak.client.raw.query.MapReduceSpec;
 import com.basho.riak.client.raw.query.MapReduceTimeoutException;
@@ -182,6 +185,11 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.listBuckets();
     }
 
+    public StreamingOperation<String> listBucketsStreaming() throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.listBucketsStreaming();
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -203,12 +211,17 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         delegate.updateBucket(name, bucketProperties);
     }
 
+    public void resetBucketProperties(String bucketName) throws IOException {
+        final RawClient delegate = getDelegate();
+        delegate.resetBucketProperties(bucketName);
+    }
+    
     /*
      * (non-Javadoc)
      * 
      * @see com.basho.riak.client.raw.RawClient#listKeys(java.lang.String)
      */
-    public Iterable<String> listKeys(String bucketName) throws IOException {
+    public StreamingOperation<String> listKeys(String bucketName) throws IOException {
         final RawClient delegate = getDelegate();
         return delegate.listKeys(bucketName);
     }
@@ -285,6 +298,21 @@ public abstract class ClusterClient<T extends Configuration> implements RawClien
         return delegate.fetchIndex(indexQuery);
     }
 
+    public StreamingOperation<IndexEntry> fetchIndex(IndexSpec indexSpec) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetchIndex(indexSpec);
+    }
+    
+    public Long incrementCounter(String bucket, String counter, long increment, StoreMeta meta) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.incrementCounter(bucket, counter, increment, meta);
+    }
+    
+    public Long fetchCounter(String bucket, String counter, FetchMeta meta) throws IOException {
+        final RawClient delegate = getDelegate();
+        return delegate.fetchCounter(bucket, counter, meta);
+    }
+    
     public void shutdown(){
         for(RawClient rc : cluster){
             rc.shutdown();
