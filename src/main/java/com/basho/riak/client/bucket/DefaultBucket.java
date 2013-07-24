@@ -31,7 +31,7 @@ import com.basho.riak.client.cap.Retrier;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.JSONConverter;
-import com.basho.riak.client.convert.NoKeySpecifedException;
+import com.basho.riak.client.convert.NoKeySpecifiedException;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.convert.RiakKey;
 import com.basho.riak.client.http.util.Constants;
@@ -541,7 +541,7 @@ public class DefaultBucket implements Bucket {
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
         final String key = getKey(o);
         if (key == null) {
-            throw new NoKeySpecifedException(o);
+            throw new NoKeySpecifiedException(o);
         }
         Converter<T> converter = getDefaultConverter(clazz);
         return new FetchObject<T>(client, name, key, retrier)
@@ -603,7 +603,7 @@ public class DefaultBucket implements Bucket {
     public <T> DeleteObject delete(T o) {
         final String key = getKey(o);
         if (key == null) {
-            throw new NoKeySpecifedException(o);
+            throw new NoKeySpecifiedException(o);
         }
         return new DeleteObject(client, name, key, retrier);
     }
@@ -660,7 +660,7 @@ public class DefaultBucket implements Bucket {
         {
             String key = getKey(obj);
             if (key == null) {
-                throw new NoKeySpecifedException(o);
+                throw new NoKeySpecifiedException(o);
             }
             keyList.add(key);
         }
