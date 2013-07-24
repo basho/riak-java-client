@@ -1,3 +1,44 @@
+1.4.0
+-----
+This is a large feature release
+
+The 1.4.0 client release goes with Riak 1.4. If you are using an older version
+of Riak, please use the 1.1.2 client
+
+With Riak 1.4 we've reached feature parity between  protocol buffers and HTTP.
+The client will now allow any operation over PB where in the past some things required 
+HTTP. 
+
+One new Riak 1.4 feature in particular stands out; we now have counters. These are 
+accessed/incremented through the new CounterObject which Bucket.counter() returns. 
+For more details see the Javadoc. 
+
+3f2d111 Brian Roach bumped riak-pb in pom to 1.4.0
+d46ef2a Brian Roach Merge pull request #261 from xpe/issue-260
+5159ae0 Brian Roach Merge pull request #246 from basho/gh238-streaming-list-buckets-1.4
+e74f41d Brian Roach Merge branch 'master' into gh238-streaming-list-buckets-1.4
+f67a982 Brian Roach [maven-release-plugin] prepare for next development iteration
+c1e717d Brian Roach Merge branch 'gh237-operation-timeouts' into gh238-streaming-list-buckets-1.4
+4220ea1 Brian Roach Added 1.4 timeout query param
+7fcdc73 Brian Roach Merge branch 'gh239-counters-1.4' into gh238-streaming-list-buckets-1.4
+0ec1a1f Brian Roach Adds 1.4 counters via HTTP and PB
+ae923db David James fix #260
+0ce5296 Brian Roach Merge branch 'gh236-2i-enhancements-1.4' into gh238-streaming-list-buckets-1.4
+dc2c660 Brian Roach PB and HTTP support new 2i features via streaming
+3caddda Brian Roach WIP commit. PB streaming 2i + pagination
+ea2c867 Brian Roach Merge branch 'gh251-reset-bucket-properties-1.4' into gh238-streaming-list-buckets-1.4
+3e97168 Brian Roach Adds 1.4 reset bucket properties feature
+1e5a048 Brian Roach Merge branch 'gh240-pb-bucket-props-1.4' into gh238-streaming-list-buckets-1.4
+33e261c Brian Roach All bucket properties now supported in PB
+76f1610 Brian Roach Merge branch 'gh241-asis-option-1.4' into gh238-streaming-list-buckets-1.4
+bb83272 Brian Roach Added 1.4 feature asis
+3967888 Brian Roach Javadoc fixes
+3829485 Brian Roach Modified tests to exercise streaming
+f560bd9 Brian Roach version and javadoc fixes
+568d972 Brian Roach 1.4 feature adds streaming list buckets
+  
+
+
 1.1.2
 -----
 This is a bugfix/maintenance release
