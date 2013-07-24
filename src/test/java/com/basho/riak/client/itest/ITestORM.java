@@ -34,7 +34,7 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.RiakTestProperties;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.DefaultRetrier;
-import com.basho.riak.client.convert.NoKeySpecifedException;
+import com.basho.riak.client.convert.NoKeySpecifiedException;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -105,7 +105,7 @@ public abstract class ITestORM extends ITestBucket {
         try {
             carts.fetch(cart).execute();
             fail("Expected NoKeySpecifiedException");
-        } catch (NoKeySpecifedException e) {
+        } catch (NoKeySpecifiedException e) {
             // NO-OP
         }
 
@@ -118,7 +118,7 @@ public abstract class ITestORM extends ITestBucket {
         try {
             carts.delete(cart).execute();
             fail("Expected NoKeySpecifiedException");
-        } catch (NoKeySpecifedException e) {
+        } catch (NoKeySpecifiedException e) {
             // NO-OP
         }
 
