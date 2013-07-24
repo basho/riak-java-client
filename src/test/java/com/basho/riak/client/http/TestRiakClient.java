@@ -102,8 +102,8 @@ public class TestRiakClient {
         impl.mapReduce(mrJob, meta);
         verify(mockHelper).mapReduce(mrJob, meta);
 
-        impl.listBuckets();
-        verify(mockHelper).listBuckets();
+        impl.listBuckets(false);
+        verify(mockHelper).listBuckets(false);
         
         when(mockHelper.stats()).thenReturn(mockHttpResponse);
         when(mockHttpResponse.isSuccess()).thenReturn(true);

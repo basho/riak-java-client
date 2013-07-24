@@ -33,9 +33,12 @@ import com.basho.riak.client.IRiakClient;
 import com.basho.riak.client.IRiakObject;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.bucket.Bucket;
+import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.operations.FetchObject;
+import com.basho.riak.client.query.StreamingOperation;
 import com.basho.riak.client.util.CharsetUtils;
+import java.util.HashSet;
 
 /**
  * @author russell
@@ -78,15 +81,19 @@ public abstract class ITestClientBasic {
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
         assertFalse(b.getAllowSiblings());
+        assertEquals(b.getR().getSymbolicValue(), Quora.QUORUM);
+        assertEquals(b.getW().getSymbolicValue(), Quora.QUORUM);
 
-        b = client.updateBucket(b).nVal(4).allowSiblings(true).execute();
+        b = client.updateBucket(b).nVal(4).r(2).w(2).allowSiblings(true).execute();
 
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(4), b.getNVal());
         assertTrue(b.getAllowSiblings());
+        assertEquals(2, b.getR().getIntValue());
+        assertEquals(2, b.getW().getIntValue());
 
-        client.updateBucket(b).allowSiblings(false).nVal(3).execute();
+        client.updateBucket(b).allowSiblings(false).nVal(3).r(Quora.QUORUM).w(Quora.QUORUM).execute();
     }
 
     @Test public void createBucket() throws RiakException {
@@ -99,6 +106,26 @@ public abstract class ITestClientBasic {
         client.updateBucket(b).allowSiblings(false).nVal(3).execute();
     }
 
+    @Test public void resetBucketProps() throws RiakException, InterruptedException {
+        Bucket b = client.createBucket(bucketName).nVal(4).r(2).w(2).allowSiblings(true).execute();
+        assertNotNull(b);
+        assertEquals(bucketName, b.getName());
+        assertEquals(new Integer(4), b.getNVal());
+        assertTrue(b.getAllowSiblings());
+        assertEquals(2, b.getR().getIntValue());
+        assertEquals(2, b.getW().getIntValue());
+        
+        client.resetBucket(bucketName);
+        b = client.fetchBucket(bucketName).execute();
+
+        assertNotNull(b);
+        assertEquals(bucketName, b.getName());
+        assertEquals(new Integer(3), b.getNVal());
+        assertFalse(b.getAllowSiblings());
+        assertEquals(b.getR().getSymbolicValue(), Quora.QUORUM);
+        assertEquals(b.getW().getSymbolicValue(), Quora.QUORUM);
+    }
+    
     @Test public void clientIds() throws Exception {
         final byte[] clientId = CharsetUtils.utf8StringToBytes("abcd");
 
@@ -120,11 +147,22 @@ public abstract class ITestClientBasic {
         b1.store("key", "value").execute();
         b2.store("key", "value").execute();
 
+        // Non-streaming
         Set<String> buckets = client.listBuckets();
 
         assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
         assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
 
+        // Streaming
+        StreamingOperation<String> sOperation = client.listBucketsStreaming();
+        buckets = new HashSet<String>();
+        while (sOperation.hasNext()) {
+            buckets.add(sOperation.next());
+        }
+        
+        assertTrue("Expected bucket 1 to be present", buckets.contains(bucket1));
+        assertTrue("Expected bucket 2 to be present", buckets.contains(bucket2));
+        
         emptyBucket(bucket2, client);
         emptyBucket(bucket1, client);
     }

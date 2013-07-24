@@ -254,13 +254,22 @@ public class ITestBasic {
         storeresp = c.store(o2, WRITE_3_REPLICAS());
         assertSuccess(storeresp);
 
-        ListBucketsResponse resp = c.listBuckets();
+        // Non-streaming
+        ListBucketsResponse resp = c.listBuckets(false);
 
         Set<String> buckets = resp.getBuckets();
 
         assertTrue(buckets.contains(bucket1));
         assertTrue(buckets.contains(bucket2));
 
+        // Streaming
+        resp = c.listBuckets(true);
+
+        buckets = resp.getBuckets();
+
+        assertTrue(buckets.contains(bucket1));
+        assertTrue(buckets.contains(bucket2));
+        
         AllTests.emptyBucket(bucket1, new HTTPClientAdapter(c));
         AllTests.emptyBucket(bucket2, new HTTPClientAdapter(c));
     }
