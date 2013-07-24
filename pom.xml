@@ -119,7 +119,7 @@
         <dependency>
             <groupId>com.basho.riak.protobuf</groupId>
             <artifactId>riak-pb</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>1.4.0</version>
         </dependency>
     </dependencies>
     <build>
