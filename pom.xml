@@ -38,6 +38,10 @@
             <name>Brian Roach</name>
             <email>roach@basho.com</email>
         </developer>
+        <developer>
+            <name>Dave Rusek</name>
+            <email>drusek@basho.com</email>
+        </developer>
     </developers>
 
     <scm>
