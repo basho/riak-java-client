@@ -18,6 +18,8 @@ package com.basho.riak.client;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
@@ -43,16 +45,37 @@ public interface RiakObject
     /**
      * The name of this objects bucket
      * 
-     * @return the bucket name.
+     * @return the bucket name as raw bytes.
      */
-    String getBucket();
+    ByteBuffer getBucket();
 
+    /**
+     * The name of this Objects bucket. 
+     * 
+     * Riak stores bucket names as bytes. If the bytes do not represent a
+     * UTF-8 String your mileage may vary.
+     * 
+     * @return The bucket name as a UTF-8 String. 
+     */
+    String getBucketAsString();
+    
+    /**
+     * The name of this Objects bucket. 
+     * 
+     * Riak stores bucket names as bytes. This returns those bytes encoded as a
+     * String using the supplied Charset.
+     * 
+     * @param charset the encoding to use
+     * @return The bucket name as a String
+     */
+    String getBucketAsString(Charset charset) throws UnsupportedEncodingException;
+    
     /**
      * The value.
      * 
      * @return byte[] of this object value or {@code null} if no value has been set.
      */
-    byte[] getValue();
+    ByteBuffer getValue();
 
     /**
      * Convenience method. The value will be coerced to a {@code String} using the 
@@ -80,11 +103,32 @@ public interface RiakObject
     String getVClockAsString();
 
     /**
-     * The object's key 
+     * The object's key.
      * 
-     * @return The objects key.
+     * @return The objects key as raw bytes. 
      */
-    String getKey();
+    ByteBuffer getKey();
+    
+    /**
+     * The Object's key. 
+     * 
+     * Riak stores keys as bytes. If the bytes do not represent a
+     * UTF-8 String your mileage may vary.
+     * 
+     * @return The key as a UTF-8 String. 
+     */
+    String getKeyAsString();
+    
+    /**
+     * The Object's key. 
+     * 
+     * Riak stores keys as bytes. This returns those bytes encoded as a
+     * String using the supplied Charset.
+     * 
+     * @param charset the encoding to use
+     * @return The key as a String
+     */
+    String getKeyAsString(Charset charset) throws UnsupportedEncodingException;
     
     /**
      * If this object has a version tag (if it is one of a set of siblings)
@@ -283,7 +327,7 @@ public interface RiakObject
      * @param value the String value
      * @param charset the charset encoding for this value
      */
-    void setValue(String value, Charset charset);
+    void setValue(String value, Charset charset) throws UnsupportedEncodingException;
     
     /**
      * Set the content-type of this object's payload.

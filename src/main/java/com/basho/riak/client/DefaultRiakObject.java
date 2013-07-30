@@ -21,9 +21,11 @@ import com.basho.riak.client.query.indexes.BinIndex;
 import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.util.CharsetUtils;
+import com.google.protobuf.ByteString;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -53,13 +55,13 @@ public class DefaultRiakObject implements RiakObject
 {
 
     /**
-     * The default content type assigned when persisted in Riak if non is
-     * provided.
+     * The default content type assigned when storing in Riak if one is not
+     * provided. {@value DefaultRiakObject#DEFAULT_CONTENT_TYPE}
      */
     public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
-    private volatile String key;
-    private volatile String bucket;
-    private volatile byte[] value;
+    private volatile ByteString key;
+    private volatile ByteString bucket;
+    private volatile ByteString value;
     private volatile VClock vclock;
     private volatile String vtag;
     private volatile long lastModified;
@@ -77,16 +79,12 @@ public class DefaultRiakObject implements RiakObject
     {
         if (null == builder.bucket)
         {
-            throw new IllegalArgumentException("Bucket can not be null");
+            throw new IllegalArgumentException("Bucket can not be null or empty");
         }
         
         this.key = builder.key;
         this.bucket = builder.bucket;
-        
-        if (builder.value != null)
-        {
-            this.value = Arrays.copyOf(builder.value, builder.value.length);
-        }
+        this.value = builder.value;
         
         this.vclock = builder.vclock;
         this.vtag = builder.vtag;
@@ -101,29 +99,81 @@ public class DefaultRiakObject implements RiakObject
     }
 
     @Override
-    public String getKey()
+    public ByteBuffer getKey()
     {
-        return key;
+        if (key != null)
+        {
+            return key.asReadOnlyByteBuffer();
+        }
+        else
+        {
+            return null;
+        }
     }
-
+    
     @Override
-    public String getBucket()
+    public String getKeyAsString()
     {
-        return bucket;
+        if (key != null)
+        {
+            return key.toStringUtf8();
+        }
+        else
+        {
+            return null;
+        }
     }
 
+    @Override 
+    public String getKeyAsString(Charset charset) throws UnsupportedEncodingException
+    {
+        if (key != null) 
+        {
+            return key.toString(charset.name());
+        }
+        else 
+        {
+            return null;
+        }
+    }
+    
+    @Override
+    public ByteBuffer getBucket()
+    {
+        return bucket.asReadOnlyByteBuffer();
+    }
+
+    @Override 
+    public String getBucketAsString()
+    {
+        return bucket.toStringUtf8();
+    }
+    
+    @Override 
+    public String getBucketAsString(Charset charset) throws UnsupportedEncodingException
+    {
+        return bucket.toString(charset.name());
+    }
+    
     @Override
     public String getValueAsString()
     {
-        return CharsetUtils.asString(value, CharsetUtils.getCharset(contentType));
+        if (value != null) 
+        {
+            return value.toStringUtf8();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     @Override
-    public byte[] getValue()
+    public ByteBuffer getValue()
     {
-        if (value != null && value.length > 0)
+        if (value != null)
         {
-            return Arrays.copyOf(value, value.length);
+            return value.asReadOnlyByteBuffer();
         }
         else
         {
@@ -171,20 +221,20 @@ public class DefaultRiakObject implements RiakObject
     @Override
     public void setValue(byte[] value)
     {
-        this.value = Arrays.copyOf(value, value.length);
+        this.value = ByteString.copyFrom(value);
     }
 
     @Override
     public void setValue(String value)
     {
-        this.value = CharsetUtils.utf8StringToBytes(value);
+        this.value = ByteString.copyFromUtf8(value);
         this.contentType = CharsetUtils.addUtf8Charset(contentType);
     }
 
     @Override
-    public void setValue(String value, Charset charset)
+    public void setValue(String value, Charset charset) throws UnsupportedEncodingException
     {
-        this.value = CharsetUtils.asBytes(value, charset);
+        this.value = ByteString.copyFrom(value, charset.name());
         this.contentType = CharsetUtils.addCharset(charset, contentType);
     }
 
@@ -517,9 +567,9 @@ public class DefaultRiakObject implements RiakObject
     public static class Builder
     {
 
-        private String key;
-        private String bucket;
-        private byte[] value;
+        private ByteString key;
+        private ByteString bucket;
+        private ByteString value;
         private VClock vclock;
         private String vtag;
         private Date lastModified;
@@ -547,12 +597,12 @@ public class DefaultRiakObject implements RiakObject
         public static Builder from(RiakObject o)
         {
             Builder rob = new Builder();
-            rob.key = o.getKey();
-            rob.bucket = o.getBucket();
+            rob.key = ByteString.copyFrom(o.getKey());
+            rob.bucket = ByteString.copyFrom(o.getBucket());
             rob.vclock = o.getVClock();
             rob.contentType = o.getContentType();
             rob.lastModified = o.getLastModified();
-            rob.value = o.getValue();
+            rob.value = ByteString.copyFrom(o.getValue());
             rob.links = o.getLinks();
             rob.indexes = new RiakIndexes(o.allBinIndexes(), o.allIntIndexes());
             rob.userMeta = o.getMeta();
@@ -569,29 +619,109 @@ public class DefaultRiakObject implements RiakObject
         }
         
         /**
-         * Set the key.
+         * Set the key via a UTF-8 String.
+         * 
+         * The key is stored internally as a byte[] array. This method 
+         * will convert it using the UTF-8 charset. If the string isn't really a 
+         * UTF-8 ... your mileage may vary. 
          *
-         * @param key 
+         * @param key a UTF-8 String
          * @return this
          */
-        public Builder withKey(String key)
+        public Builder withKey(String key) 
         {
-            this.key = key;
+            this.key = ByteString.copyFromUtf8(key);
             return this;
         }
 
         /**
-         * Set the bucket name.
+         * Set the key via a String.
+         * 
+         * The key is stored internally as a byte[] array. This method 
+         * will convert it using the provided charset.
+         *
+         * @param key the key as a String
+         * @param charset the Charset to use with {@link String#getBytes(java.nio.charset.Charset) 
+         * @return this
+         */
+        public Builder withKey(String key, Charset charset) throws UnsupportedEncodingException 
+        {
+            this.key = ByteString.copyFrom(key, charset.name());
+            return this;
+        }
+        
+        /**
+         * Set the key.
+         * 
+         * Riak is character set agnostic. The key is sent as 
+         * bytes and stored as bytes. This allows for raw bytes to be used directly.
+         * 
+         * @param key an array of bytes to be used as the key
+         * @return this
+         */
+        public Builder withKey(byte[] key)
+        {
+            this.key = ByteString.copyFrom(key);
+            return this;
+        }
+        
+        public Builder withKey(ByteString key)
+        {
+            this.key = key;
+            return this;
+        }
+        /**
+         * Set the bucket name via a UTF-8 String.
+         * 
+         * * The bucket name is stored internally as a byte[] array. This method 
+         * will convert it using the UTF-8 charset. If the string isn't really a 
+         * UTF-8 ... your mileage may vary. 
          *
          * @param bucket the name of the bucket
          * @return this
          */
         public Builder withBucket(String bucket)
         {
-            this.bucket = bucket;
+            this.bucket = ByteString.copyFromUtf8(bucket);
             return this;
         }
 
+        /**
+         * Set the bucket name via a String.
+         * 
+         * The bucket name is stored internally as a byte[] array. This method 
+         * will convert it using the provided charset.
+         * 
+         * @param bucket
+         * @param charset
+         * @return this
+         */
+        public Builder withBucket(String bucket, Charset charset) throws UnsupportedEncodingException
+        {
+            this.bucket = ByteString.copyFrom(bucket, charset.name());
+            return this;
+        }
+        
+        /**
+         * Set the bucket name. 
+         * 
+         * Riak is character set agnostic. The bucket name is sent as 
+         * bytes and stored as bytes. This allows for raw bytes to be used directly.
+         * 
+         * @param bucket the byte array to be used as the buclet name
+         * @return this
+         */
+        public Builder withBucket(byte[] bucket)
+        {
+            this.bucket = ByteString.copyFrom(bucket);
+            return this;
+        }
+        
+        public Builder withBucket(ByteString bucket)
+        {
+            this.bucket = bucket;
+            return this;
+        }
         /**
          * The value to give the constructed riak object
          *
@@ -600,7 +730,7 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder withValue(byte[] value)
         {
-            this.value = value;
+            this.value = ByteString.copyFrom(value);
             return this;
         }
 
@@ -613,7 +743,7 @@ public class DefaultRiakObject implements RiakObject
          */
         public Builder withValue(String value)
         {
-            this.value = CharsetUtils.utf8StringToBytes(value);
+            this.value = ByteString.copyFromUtf8(value);
             this.contentType = CharsetUtils.addUtf8Charset(contentType);
             return this;
         }
@@ -629,13 +759,18 @@ public class DefaultRiakObject implements RiakObject
          * @param charset - {@code Charset} used to convert value
          * @return this
          */
-        public Builder withValue(String value, Charset charset)
+        public Builder withValue(String value, Charset charset) throws UnsupportedEncodingException
         {
-            this.value = CharsetUtils.asBytes(value, charset);
+            this.value = ByteString.copyFrom(value, charset.name());
             this.contentType = CharsetUtils.addCharset(charset, contentType);
             return this;
         }
 
+        public Builder withValue(ByteString value)
+        {
+            this.value = value;
+            return this;
+        }
         /**
          * Set the character set for this object's content. This is added to
          * the content type. If a charset is already present it is replaced.

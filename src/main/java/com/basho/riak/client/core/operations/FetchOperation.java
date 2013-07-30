@@ -54,13 +54,13 @@ import java.util.concurrent.ExecutionException;
  */
 public class FetchOperation<T> extends FutureOperation<T>
 {
-    private final String bucket;
-    private final String key;
+    private final ByteString bucket;
+    private final ByteString key;
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     private FetchMeta fetchMeta;
     
-    public FetchOperation(String bucket, String key)
+    public FetchOperation(ByteString bucket, ByteString key)
     {
         if (null == bucket)
         {
@@ -175,9 +175,9 @@ public class FetchOperation<T> extends FutureOperation<T>
         StringBuilder uriBuilder = new StringBuilder("/buckets/");
         try
         {
-            uriBuilder.append(URLEncoder.encode(bucket, "UTF-8"));
+            uriBuilder.append(URLEncoder.encode(bucket.toStringUtf8(), "UTF-8"));
             uriBuilder.append("/keys/");
-            uriBuilder.append(URLEncoder.encode(key, "UTF-8"));
+            uriBuilder.append(URLEncoder.encode(key.toStringUtf8(), "UTF-8"));
         }
         catch (UnsupportedEncodingException ex)
         {
@@ -259,8 +259,8 @@ public class FetchOperation<T> extends FutureOperation<T>
     private Object pbChannelMessage(FetchMeta fetchMeta)
     {
         RiakKvPB.RpbGetReq.Builder builder = RiakKvPB.RpbGetReq.newBuilder();
-        builder.setBucket(ByteString.copyFromUtf8(bucket));
-        builder.setKey(ByteString.copyFromUtf8(key));
+        builder.setBucket(bucket);
+        builder.setKey(key);
         
         if (fetchMeta.hasHeadOnly())
         {

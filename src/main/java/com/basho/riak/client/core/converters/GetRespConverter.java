@@ -53,11 +53,11 @@ import java.util.concurrent.ExecutionException;
 public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
 {
 
-    private final String key;
-    private final String bucket;
+    private final ByteString key;
+    private final ByteString bucket;
     private final boolean isHeadRequest;
 
-    public GetRespConverter(String bucket, String key, boolean isHeadRequest)
+    public GetRespConverter(ByteString bucket, ByteString key, boolean isHeadRequest)
     {
         this.bucket = bucket;
         this.key = key;

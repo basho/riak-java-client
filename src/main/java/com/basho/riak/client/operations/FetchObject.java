@@ -24,6 +24,7 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.google.protobuf.ByteString;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
@@ -36,13 +37,13 @@ import java.util.concurrent.ExecutionException;
 public class FetchObject<T> implements ClientOperation<T>
 {
     private final RiakCluster riakCluster;
-    private final String bucket;
-    private final String key;
+    private final ByteString bucket;
+    private final ByteString key;
     private final FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder();
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     
-    public FetchObject(RiakCluster cluster, String bucket, String key)
+    public FetchObject(RiakCluster cluster, ByteString bucket, ByteString key)
     {
         this.bucket = bucket;
         this.key = key;

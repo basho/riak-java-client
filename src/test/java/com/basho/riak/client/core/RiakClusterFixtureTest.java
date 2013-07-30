@@ -18,6 +18,7 @@ package com.basho.riak.client.core;
 import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.core.converters.GetRespConverter;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
+import com.google.protobuf.ByteString;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -133,7 +134,7 @@ public class RiakClusterFixtureTest
         @Override
         protected RiakObject convert(RiakResponse rawResponse) throws ExecutionException
         {
-            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter("bucket", "key", false));
+            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter(ByteString.copyFromUtf8("bucket"), ByteString.copyFromUtf8("key"), false));
             return rol.get(0);
         }
 
