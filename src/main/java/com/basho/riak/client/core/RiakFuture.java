@@ -19,12 +19,13 @@ import java.util.concurrent.Future;
 
 /**
  * Currently a placeholder so that we can add/remove functionality from {@code Future<T>}
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public interface RiakFuture<T> extends Future<T>
 {
-  void addListener(RiakFutureListner<T> listener);
-  void removeListener(RiakFutureListner<T> listener);
+    void addListener(RiakFutureListner<T> listener);
+
+    void removeListener(RiakFutureListner<T> listener);
 }

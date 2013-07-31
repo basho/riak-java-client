@@ -69,11 +69,13 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
             if (listenersFired)
             {
                 fireNow = true;
-            } else
+            }
+            else
             {
                 listeners.add(listener);
             }
-        } finally
+        }
+        finally
         {
             listenersLock.unlock();
         }
@@ -96,7 +98,8 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
             {
                 listeners.remove(listener);
             } // else, we don't care, they've already been fired
-        } finally
+        }
+        finally
         {
             listenersLock.unlock();
         }
@@ -114,7 +117,8 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
                 fireNow = true;
                 listenersFired = true;
             }
-        } finally
+        }
+        finally
         {
             listenersLock.unlock();
         }
@@ -184,6 +188,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
     synchronized final void setResponse(RiakResponse rawResponse)
     {
+        stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         remainingTries--;
         this.rawResponse = rawResponse;
         exception = null;
@@ -198,6 +203,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
     synchronized final void setException(Throwable t)
     {
+        stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         this.exception = t;
 
         remainingTries--;
@@ -206,7 +212,8 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
             state = State.COMPLETE;
             latch.countDown();
             fireListeners();
-        } else
+        }
+        else
         {
             state = State.RETRY;
         }

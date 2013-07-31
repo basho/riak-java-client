@@ -237,6 +237,38 @@ public class FutureOperationTest
 
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void canOnlySetSuccessOnce()
+    {
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakResponse response = mock(RiakResponse.class);
+
+        operation.setResponse(response);
+        operation.setResponse(response);
+
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void canOnlySetFailureOnce()
+    {
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+
+        operation.setException(new Exception());
+        operation.setException(new Exception());
+
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void canOnlySetSuccessOrFailure()
+    {
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakResponse response = mock(RiakResponse.class);
+
+        operation.setResponse(response);
+        operation.setException(new Exception());
+
+    }
+
     private class FutureOperationImpl extends FutureOperation<String>
     {
         public FutureOperationImpl()

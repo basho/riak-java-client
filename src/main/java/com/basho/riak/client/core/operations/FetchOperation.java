@@ -62,14 +62,14 @@ public class FetchOperation<T> extends FutureOperation<T>
     
     public FetchOperation(ByteString bucket, ByteString key)
     {
-        if (null == bucket)
+        if ((null == bucket) || bucket.isEmpty())
         {
-            throw new IllegalArgumentException("Bucket can not be null");
+            throw new IllegalArgumentException("Bucket can not be null or empty");
         }
         
-        if (null == key)
+        if ((null == key) || key.isEmpty())
         {
-            throw new IllegalArgumentException("key can not be null");
+            throw new IllegalArgumentException("key can not be null or empty");
         }
 
         this.bucket = bucket;
