@@ -341,11 +341,11 @@ public class ConnectionPool implements ChannelFutureListener
             case RUNNING:
             case HEALTH_CHECKING:
             default:
-                permits.release();
                 if (c.isOpen())
                 {
                     available.offerFirst(new ChannelWithIdleTime(c));
                 }
+                permits.release();
                 break;
         }
     }
