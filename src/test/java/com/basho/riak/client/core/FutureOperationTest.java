@@ -15,25 +15,24 @@
  */
 package com.basho.riak.client.core;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.*;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 
 /**
- *
  * @author Brian Roach <roach at basho dot com>
  */
 @RunWith(PowerMockRunner.class)
@@ -45,109 +44,206 @@ public class FutureOperationTest
     {
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        
+
         operation.setRetrier(retrier, 1);
         OperationRetrier r = Whitebox.getInternalState(operation, "retrier");
         assertEquals(r, retrier);
     }
-    
+
     @Test
     public void notifiesRetrier()
     {
         final int NUM_TRIES = 2;
-        
+
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         RiakResponse response = mock(RiakResponse.class);
-        
+
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
-        verify(retrier).operationFailed(operation, NUM_TRIES - 1 );
-        
+        verify(retrier).operationFailed(operation, NUM_TRIES - 1);
+
         operation.setResponse(response);
         verify(retrier).operationComplete(operation, NUM_TRIES - 2);
     }
-    
+
     @Test
     public void exceptionWithNoRemainingRetriesIsDone()
     {
         final int NUM_TRIES = 1;
-        
+
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        
+
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
         verify(retrier).operationFailed(operation, 0);
         assertTrue(operation.isDone());
-        
+
     }
-    
+
     @Test
     public void exceptionWithRemainingRetriesIsNotDone()
     {
         final int NUM_TRIES = 2;
-        
+
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
         assertFalse(operation.isDone());
     }
-    
+
     @Test
     public void resultWithRemainingRetriesIsDone()
     {
         final int NUM_TRIES = 3;
-        
+
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         RiakResponse response = mock(RiakResponse.class);
-        
+
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setResponse(response);
         verify(retrier).operationComplete(operation, NUM_TRIES - 1);
         assertTrue(operation.isDone());
     }
-    
+
     @Test
     public void isDoneAllowsGet() throws InterruptedException, ExecutionException
     {
         final int NUM_TRIES = 3;
-        
+
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
         RiakResponse response = mock(RiakResponse.class);
-        
+
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setResponse(response);
         verify(retrier).operationComplete(operation, NUM_TRIES - 1);
         assertTrue(operation.isDone());
         assertNotNull(operation.get());
     }
-    
+
     @Test(expected = TimeoutException.class)
     public void notDoneBlocksGet() throws InterruptedException, ExecutionException, TimeoutException
     {
         final int NUM_TRIES = 3;
-        
+
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        
+
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
         assertFalse(operation.isDone());
         operation.get(10, TimeUnit.MILLISECONDS);
-        
+
     }
-    
+
+    @Test
+    public void notifiesListenersAfterSuccess()
+    {
+
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakResponse response = mock(RiakResponse.class);
+
+        final AtomicBoolean called = new AtomicBoolean(false);
+        operation.addListener(new RiakFutureListner()
+        {
+            @Override
+            public void handle(RiakFuture f)
+            {
+                called.set(true);
+            }
+        });
+
+        operation.setResponse(response);
+
+        assertTrue(operation.isDone());
+        assertTrue(called.get());
+
+    }
+
+    @Test
+    public void notifiesLisetnersAfterFailure()
+    {
+
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+
+        final AtomicBoolean called = new AtomicBoolean(false);
+        operation.addListener(new RiakFutureListner()
+        {
+            @Override
+            public void handle(RiakFuture f)
+            {
+                called.set(true);
+            }
+        });
+
+        operation.setException(new Exception());
+
+        assertTrue(operation.isDone());
+        assertTrue(called.get());
+
+    }
+
+    @Test
+    public void notifiesOnAddAfterComplete()
+    {
+
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakResponse response = mock(RiakResponse.class);
+
+        operation.setResponse(response);
+
+        final AtomicBoolean called = new AtomicBoolean(false);
+        operation.addListener(new RiakFutureListner()
+        {
+            @Override
+            public void handle(RiakFuture f)
+            {
+                called.set(true);
+            }
+        });
+
+        assertTrue(operation.isDone());
+        assertTrue(called.get());
+
+    }
+
+    @Test
+    public void removedListenersDoNotGetCalled()
+    {
+
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        RiakResponse response = mock(RiakResponse.class);
+
+        final AtomicBoolean called = new AtomicBoolean(false);
+        RiakFutureListner listener = new RiakFutureListner()
+        {
+            @Override
+            public void handle(RiakFuture f)
+            {
+                called.set(true);
+            }
+        };
+
+        operation.addListener(listener);
+        operation.removeListener(listener);
+        operation.setResponse(response);
+
+        assertTrue(operation.isDone());
+        assertFalse(called.get());
+
+    }
+
     private class FutureOperationImpl extends FutureOperation<String>
     {
         public FutureOperationImpl()
         {
             supportedProtocols(Protocol.HTTP);
         }
-        
+
         @Override
         protected String convert(RiakResponse rawResponse)
         {
@@ -160,4 +256,6 @@ public class FutureOperationTest
             return "Fake!";
         }
     }
+
+
 }
