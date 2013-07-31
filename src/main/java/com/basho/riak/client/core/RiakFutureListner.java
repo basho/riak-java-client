@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Brian Roach <roach at basho dot com>.
+ * Copyright 2013 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,8 @@
  */
 package com.basho.riak.client.core;
 
-import java.util.concurrent.Future;
+public interface RiakFutureListner<T> {
 
-/**
- * Currently a placeholder so that we can add/remove functionality from {@code Future<T>}
- * 
- * @author Brian Roach <roach at basho dot com>
- * @since 2.0
- */
-public interface RiakFuture<T> extends Future<T>
-{
-  void addListener(RiakFutureListner<T> listener);
-  void removeListener(RiakFutureListner<T> listener);
+  void handle(RiakFuture<T> f);
+
 }

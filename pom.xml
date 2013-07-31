@@ -136,5 +136,12 @@
             <artifactId>riak-pb</artifactId>
             <version>1.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>findbugs</artifactId>
+            <version>2.0.1</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
