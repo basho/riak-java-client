@@ -70,7 +70,7 @@ public class StoreObjectTest {
         MockitoAnnotations.initMocks(this);
         retrier = new DefaultRetrier(1);
         conflictResolver = new DefaultResolver<String>();
-        store = new StoreObject<String>(rawClient, BUCKET, KEY, retrier);
+        store = new StoreObject<String>(rawClient, BUCKET, null, KEY, retrier);
     }
 
     /**

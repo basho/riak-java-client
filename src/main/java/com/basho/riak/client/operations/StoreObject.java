@@ -57,28 +57,32 @@ public class StoreObject<T> implements RiakOperation<T> {
     private boolean returnBody = false;
     private boolean doNotFetch = false;
     private boolean deletedVClockWithReturnbody = false;
-    
+
+    private final T object;
     private Mutation<T> mutation;
     private ConflictResolver<T> resolver;
     private Converter<T> converter;
-    
+
     /**
      * Create a new StoreObject operation for the object in <code>bucket</code>
      * at <code>key</code>.
      * <p>
      * Use {@link Bucket} to create a store operation.
      * </p>
-     * 
+     *
      * @param client
      *            the RawClient to use
      * @param bucket
      *            location of data to store
+     * @param object
+     *            domain object to store or mutate
      * @param key
      *            location of data to store
      * @param retrier
      *            the Retrier to use for this operation
      */
-    public StoreObject(final RawClient client, String bucket, String key, final Retrier retrier) {
+    public StoreObject(final RawClient client, final String bucket, final T object, final String key, final Retrier retrier) {
+        this.object = object;
         this.client = client;
         this.retrier = retrier;
         fetchObject = new FetchObject<T>(client, bucket, key, retrier);
@@ -102,8 +106,6 @@ public class StoreObject<T> implements RiakOperation<T> {
      *         <code>true</code>, <code>null</code> if <code>returnBody</code>
      *         is <code>false</code>
      * @throws RiakException
-     * @throws {@link MatchFoundException} if a 'ifNoneMatch' conditional store
-     *         fails because a match exists
      */
     public T execute() throws RiakRetryFailedException, UnresolvedConflictException, ConversionException {
         
@@ -111,12 +113,14 @@ public class StoreObject<T> implements RiakOperation<T> {
             throw new IllegalArgumentException("Can not store object will null key without calling withoutFetch()");
         }
         
-        T resolved = null;
+        final T resolved;
         VClock vclock = null;
         
         if (!doNotFetch) {
             resolved = fetchObject.execute();
             vclock = fetchObject.getVClock();
+        } else {
+            resolved = object;
         }
         
         final T mutated = mutation.apply(resolved);
@@ -139,11 +143,7 @@ public class StoreObject<T> implements RiakOperation<T> {
             storeMeta.lastModified(o.getLastModified());
         }
 
-        final boolean hasMutated = 
-            mutation instanceof ConditionalStoreMutation<?> 
-            ? ((ConditionalStoreMutation<T>)mutation).hasMutated() 
-            : true;
-        
+        final boolean hasMutated = !(mutation instanceof ConditionalStoreMutation<?>) || ((ConditionalStoreMutation<T>) mutation).hasMutated();
         if (hasMutated) {
             final RiakResponse stored = retrier.attempt(new Callable<RiakResponse>() {
                 public RiakResponse call() throws Exception {

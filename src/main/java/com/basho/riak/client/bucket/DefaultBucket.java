@@ -370,7 +370,7 @@ public class DefaultBucket implements Bucket {
      */
     public StoreObject<IRiakObject> store(final String key, final byte[] value) {
 
-        return new StoreObject<IRiakObject>(client, name, key, retrier).withMutator(new Mutation<IRiakObject>() {
+        return new StoreObject<IRiakObject>(client, name, null, key, retrier).withMutator(new Mutation<IRiakObject>() {
             public IRiakObject apply(IRiakObject original) {
                 if (original == null) {
                     return RiakObjectBuilder.newBuilder(name, key).withValue(value).withContentType(Constants.CTYPE_OCTET_STREAM).build();
@@ -466,7 +466,7 @@ public class DefaultBucket implements Bucket {
         
         Converter<T> converter = getDefaultConverter(clazz);
 
-        return new StoreObject<T>(client, name, key, retrier)
+        return new StoreObject<T>(client, name, o, key, retrier)
             .withConverter(converter)
                 .withMutator(new ClobberMutation<T>(o))
                   .withResolver(new DefaultResolver<T>());
@@ -514,7 +514,7 @@ public class DefaultBucket implements Bucket {
     public <T> StoreObject<T> store(final String key, final T o) {
         @SuppressWarnings("unchecked") final Class<T> clazz = (Class<T>) o.getClass();
         Converter<T> converter = getDefaultConverter(clazz, key);
-        return new StoreObject<T>(client, name, key, retrier).
+        return new StoreObject<T>(client, name, o, key, retrier).
         withConverter(converter)
             .withMutator(new ClobberMutation<T>(o)).withResolver(new DefaultResolver<T>());
     }
