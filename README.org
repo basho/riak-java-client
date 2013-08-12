@@ -5,4 +5,5 @@ It is currently a very large WIP. This is not a usable branch.
 The current release branches are:
 
 [[https://github.com/basho/riak-java-client/tree/1.4.1][riak-client-1.4.1]] - For use with Riak 1.4+
+
 [[https://github.com/basho/riak-java-client/tree/1.1.2][riak-client-1.1.2]] - For use with < Riak 1.4.0
