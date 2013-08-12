@@ -40,6 +40,6 @@ public interface RiakFuture<V> extends Future<V>
     boolean isDone();
     RiakResponse getRiakResponse() throws InterruptedException, ExecutionException;
     RiakResponse getRiakResponse(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException;
-    void addListener(RiakFutureListner<V> listener);
-    void removeListener(RiakFutureListner<V> listener);
+    void addListener(RiakFutureListener<V> listener);
+    void removeListener(RiakFutureListener<V> listener);
 }

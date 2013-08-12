@@ -148,7 +148,7 @@ public class FutureOperationTest
         RiakResponse response = mock(RiakResponse.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        operation.addListener(new RiakFutureListner()
+        operation.addListener(new RiakFutureListener()
         {
             @Override
             public void handle(RiakFuture f)
@@ -171,7 +171,7 @@ public class FutureOperationTest
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        operation.addListener(new RiakFutureListner()
+        operation.addListener(new RiakFutureListener()
         {
             @Override
             public void handle(RiakFuture f)
@@ -197,7 +197,7 @@ public class FutureOperationTest
         operation.setResponse(response);
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        operation.addListener(new RiakFutureListner()
+        operation.addListener(new RiakFutureListener()
         {
             @Override
             public void handle(RiakFuture f)
@@ -219,7 +219,7 @@ public class FutureOperationTest
         RiakResponse response = mock(RiakResponse.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        RiakFutureListner listener = new RiakFutureListner()
+        RiakFutureListener listener = new RiakFutureListener()
         {
             @Override
             public void handle(RiakFuture f)

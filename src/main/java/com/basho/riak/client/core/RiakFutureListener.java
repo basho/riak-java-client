@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core;
 
-public interface RiakFutureListner<T> {
+public interface RiakFutureListener<T> {
 
   void handle(RiakFuture<T> f);
 

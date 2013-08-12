@@ -50,12 +50,12 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private volatile boolean noConversion = false;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
-    private final HashSet<RiakFutureListner<T>> listeners =
-        new HashSet<RiakFutureListner<T>>();
+    private final HashSet<RiakFutureListener<T>> listeners =
+        new HashSet<RiakFutureListener<T>>();
     private volatile boolean listenersFired = false;
 
     @Override
-    public void addListener(RiakFutureListner<T> listener)
+    public void addListener(RiakFutureListener<T> listener)
     {
 
         listenersLock.lock();
@@ -78,7 +78,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     }
 
     @Override
-    public void removeListener(RiakFutureListner<T> listener)
+    public void removeListener(RiakFutureListener<T> listener)
     {
         listenersLock.lock();
         try
@@ -103,7 +103,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
             if (!listenersFired)
             {
                 listenersFired = true;
-                for (RiakFutureListner<T> listener : listeners)
+                for (RiakFutureListener<T> listener : listeners)
                 {
                     listener.handle(this);
                 }
