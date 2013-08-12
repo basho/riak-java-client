@@ -206,7 +206,6 @@ public class CharsetUtils
      * Turns a byte[] array into a UTF8 string
      * 
      * @param bytes
-     * @param charset
      * @return a String
      */
     public static String asUTF8String(byte[] bytes) {
@@ -247,7 +246,7 @@ public class CharsetUtils
      * Turn a UTF-8 encoded string into an array of bytes
      * 
      * @param string
-     * @return
+     * @return the bytes for the supplied String
      */
     public static byte[] utf8StringToBytes(String string) {
         return asBytes(string, UTF_8);

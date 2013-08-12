@@ -15,7 +15,10 @@
  */
 package com.basho.riak.client.core;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Currently a placeholder so that we can add/remove functionality from {@code Future<T>}
@@ -23,7 +26,19 @@ import java.util.concurrent.Future;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public interface RiakFuture<T> extends Future<T>
+public interface RiakFuture<V> extends Future<V>
 {
+    @Override
+    boolean cancel(boolean mayInterruptIfRunning);
+    @Override
+    V get() throws InterruptedException, ExecutionException;
+    @Override
+    V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
+    @Override
+    boolean isCancelled();
+    @Override
+    boolean isDone();
+    RiakResponse getRiakResponse() throws InterruptedException, ExecutionException;
+    RiakResponse getRiakResponse(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException;
     
 }

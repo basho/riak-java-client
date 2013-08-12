@@ -49,6 +49,7 @@ public class AcceptReadWriteStayOpen extends Acceptor
         bb.putInt(pbMessage.getSerializedSize() + 1);
         bb.put(pbCode);
         bb.put(pbMessage.toByteArray());
+        bb.flip();
         ((WritableByteChannel)key.channel()).write(bb);
         return false;
     }

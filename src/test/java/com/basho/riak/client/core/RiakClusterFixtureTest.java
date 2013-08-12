@@ -15,15 +15,12 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.core.converters.GetRespConverter;
+import com.basho.riak.client.cap.DefaultResolver;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
+import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.RiakObject;
 import com.google.protobuf.ByteString;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpVersion;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -72,23 +69,26 @@ public class RiakClusterFixtureTest
         
         for (int i = 5000; i < 8000; i += 1000)
         {
-            RiakNode.Builder builder = new RiakNode.Builder(Protocol.HTTP)
-                                        .withMinConnections(Protocol.HTTP, 10)
-                                        .withPort(Protocol.HTTP, i + NetworkTestFixture.HTTP_FULL_WRITE_STAY_OPEN);
+            RiakNode.Builder builder = new RiakNode.Builder(Protocol.PB)
+                                        .withMinConnections(Protocol.PB, 10)
+                                        .withPort(Protocol.PB, i + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN);
             list.add(builder.build());
         }
         
         RiakCluster cluster = new RiakCluster.Builder(list).build();
         cluster.start();
         
-        GetOperation operation = new GetOperation();
+        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+                    .withConverter(new PassThroughConverter())
+                    .withResolver(new DefaultResolver<RiakObject>());
+
         cluster.execute(operation);
         
         try
         {
             RiakObject response = operation.get();
-            assertEquals(response.getValueAsString(), null);
-            assertTrue(response.notFound());
+            assertEquals(response.getValueAsString(), "This is a value!");
+            assertTrue(!response.isNotFound());
         }
         catch(InterruptedException e)
         {
@@ -106,9 +106,9 @@ public class RiakClusterFixtureTest
         
         for (int i = 5000; i < 8000; i += 1000)
         {
-            RiakNode.Builder builder = new RiakNode.Builder(Protocol.HTTP)
-                                        .withMinConnections(Protocol.HTTP, 10)
-                                        .withPort(Protocol.HTTP, i + NetworkTestFixture.ACCEPT_THEN_CLOSE);
+            RiakNode.Builder builder = new RiakNode.Builder(Protocol.PB)
+                                        .withMinConnections(Protocol.PB, 10)
+                                        .withPort(Protocol.PB, i + NetworkTestFixture.ACCEPT_THEN_CLOSE);
             list.add(builder.build());
         }
         
@@ -116,7 +116,10 @@ public class RiakClusterFixtureTest
         
         cluster.start();
         
-        GetOperation operation = new GetOperation();
+        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+                    .withConverter(new PassThroughConverter())
+                    .withResolver(new DefaultResolver<RiakObject>());
+
         cluster.execute(operation);
         
         try
@@ -129,28 +132,5 @@ public class RiakClusterFixtureTest
         }
     }
     
-    static class GetOperation extends FutureOperation<RiakObject>
-    {
-        @Override
-        protected RiakObject convert(RiakResponse rawResponse) throws ExecutionException
-        {
-            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter(ByteString.copyFromUtf8("bucket"), ByteString.copyFromUtf8("key"), false));
-            return rol.get(0);
-        }
-
-        @Override
-        protected Object createChannelMessage(Protocol p)
-        {
-            switch(p)
-            {
-                case HTTP:
-                    HttpRequest message = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-                    message.headers().set(HttpHeaders.Names.HOST, "localhost");
-                    return message;
-                default:
-                    throw new IllegalArgumentException("Protocol not supported: " + p);
-            }
-        }
-    }
+    
 }

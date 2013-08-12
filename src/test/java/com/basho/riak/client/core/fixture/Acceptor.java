@@ -55,9 +55,10 @@ abstract class Acceptor
         
         RiakKvPB.RpbContent content = RiakKvPB.RpbContent.newBuilder()
                                       .setValue(ByteString.copyFromUtf8("This is a value!"))
+                                      .setVtag(ByteString.copyFromUtf8("garbage"))
                                       .build();
         
-        pbMessage = RiakKvPB.RpbGetResp.newBuilder().addContent(content).build();
+        pbMessage = RiakKvPB.RpbGetResp.newBuilder().addContent(content).setVclock(ByteString.copyFromUtf8("garbage")).build();
         pbCode = (byte)10; 
     }
     

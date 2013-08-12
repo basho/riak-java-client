@@ -42,8 +42,8 @@ public class BasicVClock implements VClock
     
     /**
      * Create BasicVclock from utf8 String.
-     * @param value the vector clock bytes. NOTE: copies the value
-     * @throws IllegalArgumentException if <code>value</code> is null
+     * @param vclock the vector clock.
+     * @throws IllegalArgumentException if {@code vclock} is null
      */
     public BasicVClock(String vclock)
     {

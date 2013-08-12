@@ -15,18 +15,14 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.RiakObject;
-import com.basho.riak.client.core.converters.GetRespConverter;
+import com.basho.riak.client.cap.DefaultResolver;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
+import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.RiakObject;
 import com.google.protobuf.ByteString;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpVersion;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,30 +42,36 @@ public class RiakNodeFixtureTest extends FixtureTest
     public void operationSuccess() throws UnknownHostException, InterruptedException, ExecutionException
     {
         RiakNode node = 
-            new RiakNode.Builder(Protocol.HTTP)
+            new RiakNode.Builder(Protocol.PB)
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.HTTP, startingPort + NetworkTestFixture.HTTP_FULL_WRITE_STAY_OPEN)
+                        .withPort(Protocol.PB, startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                         .build();
         
         node.start();
-        GetOperation operation = new GetOperation();
+        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+                    .withConverter(new PassThroughConverter())
+                    .withResolver(new DefaultResolver<RiakObject>());
+        
         boolean accepted = node.execute(operation);
         assertTrue(accepted);
         RiakObject response = operation.get();
-        assertEquals(response.getValueAsString(), null);
-        assertTrue(response.notFound());
+        assertEquals(response.getValueAsString(), "This is a value!");
+        assertTrue(!response.isNotFound());
     }
     
     @Test(expected=ExecutionException.class)
     public void operationFail() throws UnknownHostException, InterruptedException, ExecutionException
     {
         RiakNode node = 
-            new RiakNode.Builder(Protocol.HTTP)
+            new RiakNode.Builder(Protocol.PB)
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.HTTP, startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
+                        .withPort(Protocol.PB, startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                         .build();
         node.start();
-        GetOperation operation = new GetOperation();
+        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+                    .withConverter(new PassThroughConverter())
+                    .withResolver(new DefaultResolver<RiakObject>());
+        
         boolean accepted = node.execute(operation);
         RiakObject response = operation.get();
     }
@@ -79,13 +81,17 @@ public class RiakNodeFixtureTest extends FixtureTest
     {
         NetworkTestFixture nonRunningFixture = new NetworkTestFixture(8000);
         RiakNode node = 
-            new RiakNode.Builder(Protocol.HTTP)
+            new RiakNode.Builder(Protocol.PB)
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.HTTP, 8000 + NetworkTestFixture.ACCEPT_THEN_CLOSE)
+                        .withPort(Protocol.PB, 8000 + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                         .withReadTimeout(5000)
                         .build();
         node.start();
-        GetOperation operation = new GetOperation();
+        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+                    .withConverter(new PassThroughConverter())
+                    .withResolver(new DefaultResolver<RiakObject>());
+
+        
         boolean accepted = node.execute(operation);
         RiakObject response = operation.get();
     }
@@ -119,29 +125,4 @@ public class RiakNodeFixtureTest extends FixtureTest
         
     }
     
-    
-    static class GetOperation extends FutureOperation<RiakObject>
-    {
-        @Override
-        protected RiakObject convert(RiakResponse rawResponse) throws ExecutionException
-        {
-            List<RiakObject> rol = rawResponse.convertResponse(new GetRespConverter(ByteString.copyFromUtf8("bucket"), ByteString.copyFromUtf8("key"), false));
-            return rol.get(0);
-        }
-
-        @Override
-        protected Object createChannelMessage(Protocol p)
-        {
-            switch(p)
-            {
-                case HTTP:
-                    HttpRequest message = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-                    message.headers().set(HttpHeaders.Names.HOST, "localhost");
-                    return message;
-                default:
-                    throw new IllegalArgumentException("Protocol not supported: " + p);
-            }
-        }
-    }
 }

@@ -346,7 +346,7 @@ public class RiakCluster implements OperationRetrier, NodeStateListener
          * 
          * If none is provided the {@link DefaultNodeManager} will be used
          * @param nodeManager
-         * @return
+         * @return this
          */
         public Builder withNodeManager(NodeManager nodeManager)
         {

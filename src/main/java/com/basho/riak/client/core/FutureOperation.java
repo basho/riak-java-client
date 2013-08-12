@@ -66,8 +66,8 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
      * will not be called and both {@link #get() } and {@link #get(long, java.util.concurrent.TimeUnit) }
      * will throw an {@code IllegalStateException}. 
      * </p>
-     * The {@link RiakResponse} can be retrieved via {@link #getRiakRepsonse()} or 
-     * {@link #getRiakResponse(long, java.util.concurrent.TimeUnit).
+     * The {@link RiakResponse} can be retrieved via {@link #getRiakResponse()} or 
+     * {@link #getRiakResponse(long, java.util.concurrent.TimeUnit)}.
      * 
      * @param noConversion 
      */

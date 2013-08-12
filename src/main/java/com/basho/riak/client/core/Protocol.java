@@ -71,13 +71,13 @@ public enum Protocol
         {
             return DEFAULT_HTTP_PORT;
         }
-        
+    
         @Override
         ChannelInitializer<SocketChannel> channelInitializer()
         {
             return new HttpChannelInitializer();
         }
-        
+    
         @Override
         ChannelHandler responseHandler(RiakResponseListener listener)
         {

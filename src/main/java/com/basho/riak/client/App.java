@@ -8,6 +8,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.RiakObject;
 import com.google.protobuf.ByteString;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +39,7 @@ public class App
         
         System.out.println("value: " + ro.getValue());
         System.out.println(ro.isDeleted());
-        System.out.println(ro.notFound());
+        System.out.println(ro.isNotFound());
         
         cluster.stop();
         

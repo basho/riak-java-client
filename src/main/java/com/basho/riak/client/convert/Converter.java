@@ -15,11 +15,12 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.query.RiakObject;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public interface Converter<T>
 {
