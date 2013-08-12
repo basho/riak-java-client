@@ -86,7 +86,7 @@ public class FetchObject<T> implements ClientOperation<T>
     /**
      * A {@link Converter} to use to convert the data fetched to some other type
      *
-     * @param converter
+     * @param domainObjectConverter The converter to use
      * @return this
      */
     public FetchObject<T> withConverter(Converter<T> domainObjectConverter)
@@ -197,28 +197,29 @@ public class FetchObject<T> implements ClientOperation<T>
         return this;
     }
 
-    /**
-     * Causes this fetch operation to be conditional on the supplied date.
-     * <p>
-     * <B>IMPORTANT NOTE:</B> This is an HTTP API specific conditional. If the client
-     * has not been configured to support the HTTP protocol the result of this 
-     * operation will be an exception. 
-     * </p>
-     * <p>
-     * If the object in Riak has not been modified since the supplied date the 
-     * value will not be returned.
-     * </p>
-     * @see com.basho.riak.client.RiakObject#isModified() 
-     * @param modifiedSince a last modified date.
-     *
-     * @return this
-     */
-    public FetchObject<T> ifModifiedSince(Date modifiedSince)
-    {
-        fetchMetaBuilder.modifiedSince(modifiedSince);
-        fetchMetaBuilder.vclock(null);
-        return this;
-    }
+    // TODO: Make this work in PB?
+//    /**
+//     * Causes this fetch operation to be conditional on the supplied date.
+//     * <p>
+//     * <B>IMPORTANT NOTE:</B> This is an HTTP API specific conditional. If the client
+//     * has not been configured to support the HTTP protocol the result of this 
+//     * operation will be an exception. 
+//     * </p>
+//     * <p>
+//     * If the object in Riak has not been modified since the supplied date the 
+//     * value will not be returned.
+//     * </p>
+//     * @see com.basho.riak.client.RiakObject#isModified() 
+//     * @param modifiedSince a last modified date.
+//     *
+//     * @return this
+//     */
+//    public FetchObject<T> ifModifiedSince(Date modifiedSince)
+//    {
+//        fetchMetaBuilder.modifiedSince(modifiedSince);
+//        fetchMetaBuilder.vclock(null);
+//        return this;
+//    }
 
     /**
      * Causes this fetch operation to be conditional on the supplied vector clock.
@@ -231,15 +232,14 @@ public class FetchObject<T> implements ClientOperation<T>
      * If the object in Riak has not been modified since the supplied VClock the
      * value will not be returned.
      * </p>
-     * @see com.basho.riak.client.RiakObject#isModified() 
+     * @see com.basho.riak.client.query.RiakObject#isModified
      * @param vclock a vclock
-     *
      * @return this
      */
     public FetchObject<T> ifModifiedSince(VClock vclock)
     {
         fetchMetaBuilder.vclock(vclock);
-        fetchMetaBuilder.modifiedSince(null);
+        //fetchMetaBuilder.modifiedSince(null);
         return this;
     }
 

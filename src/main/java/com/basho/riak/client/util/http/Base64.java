@@ -44,14 +44,12 @@ import java.util.Arrays;
  * and it hasn't bee tampered with.<br><br>
  *
  * If you find the code useful or you find a bug, please send me a note at
- * base64
- *
- * @ miginfocom . com.
+ * base64 at miginfocom . com.
  *
  * Licence (BSD): ==============
  *
  * Copyright (c) 2004, Mikael Grev, MiG InfoCom AB. (base64
- * @ miginfocom . com) All rights reserved.
+ * at miginfocom . com) All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:

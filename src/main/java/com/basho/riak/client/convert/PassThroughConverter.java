@@ -15,7 +15,8 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.RiakObject;
+import com.basho.riak.client.query.RiakObject;
+
 
 /**
  * For working with {@link RiakObject} rather than domain types.

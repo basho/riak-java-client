@@ -16,32 +16,18 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.FetchMeta;
-import com.basho.riak.client.RiakObject;
 import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.Protocol;
 import com.basho.riak.client.core.RiakPbMessage;
 import com.basho.riak.client.core.RiakResponse;
 import com.basho.riak.client.core.converters.GetRespConverter;
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.pb.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringEncoder;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -90,7 +76,7 @@ public class FetchOperation<T> extends FutureOperation<T>
     /**
      * A {@link Converter} to use to convert the data fetched to some other type
      *
-     * @param converter
+     * @param domainObjectConverter the converter to use.
      * @return this
      */
     public FetchOperation<T> withConverter(Converter<T> domainObjectConverter)
@@ -107,17 +93,6 @@ public class FetchOperation<T> extends FutureOperation<T>
     public FetchOperation<T> withFetchMeta(FetchMeta fetchMeta)
     {
         this.fetchMeta = fetchMeta;
-        if (fetchMeta.hasIfModifiedSince())
-        {
-            if (fetchMeta.getIfModifiedSince() != null)
-            {
-                supportedProtocols(Protocol.HTTP);
-            }
-            else
-            {
-                supportedProtocols(Protocol.PB);
-            }
-        }
         return this;
     }
     
@@ -158,10 +133,10 @@ public class FetchOperation<T> extends FutureOperation<T>
             fetchMeta = new FetchMeta.Builder().build();
         }
         
+        // TODO: If we care about multi-ptotocol support, this is kinda ugly
+        // Should be tied to the protocol enum or a factory or something
         switch(p)
         {
-            case HTTP:
-                return httpChannelMessage(fetchMeta);
             case PB:
                 return pbChannelMessage(fetchMeta);
             default:
@@ -169,92 +144,7 @@ public class FetchOperation<T> extends FutureOperation<T>
         }
     }
     
-    private Object httpChannelMessage(FetchMeta fetchMeta)
-    {
-        
-        StringBuilder uriBuilder = new StringBuilder("/buckets/");
-        try
-        {
-            uriBuilder.append(URLEncoder.encode(bucket.toStringUtf8(), "UTF-8"));
-            uriBuilder.append("/keys/");
-            uriBuilder.append(URLEncoder.encode(key.toStringUtf8(), "UTF-8"));
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            throw new IllegalStateException("UTF-8 must be supported",ex);
-        }
-        
-        QueryStringEncoder encoder = new QueryStringEncoder(uriBuilder.toString());
-        
-        if (fetchMeta.hasR())
-        {
-            Quorum quorum = fetchMeta.getR();
-            if (quorum.isSymbolic())
-            {
-                encoder.addParam(Constants.QP_R, quorum.getName());
-            }
-            else
-            {
-                encoder.addParam(Constants.QP_R, String.valueOf(quorum.getIntValue()));
-            }
-        }
-        
-        if (fetchMeta.hasPr())
-        {
-            Quorum quorum = fetchMeta.getPr();
-            if (quorum.isSymbolic())
-            {
-                encoder.addParam(Constants.QP_PR, quorum.getName());
-            }
-            else
-            {
-                encoder.addParam(Constants.QP_PR, String.valueOf(quorum.getIntValue()));
-            }
-        }
-        
-        if (fetchMeta.hasNotFoundOk())
-        {
-            encoder.addParam(Constants.QP_NOT_FOUND_OK, fetchMeta.getNotFoundOK().toString());
-        }
-        
-        if (fetchMeta.hasBasicQuorum())
-        {
-           encoder.addParam(Constants.QP_BASIC_QUORUM, fetchMeta.getBasicQuorum().toString());
-        }
-        
-        HttpMethod method = HttpMethod.GET;
-        if (fetchMeta.hasHeadOnly())
-        {
-            if (fetchMeta.getHeadOnly())
-            {
-                method = HttpMethod.HEAD;
-            }
-        }
-        
-        HttpRequest message = 
-            new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, encoder.toString());
-        
-        String hostname = "localhost";
-        try
-        {
-            hostname = InetAddress.getLocalHost().getHostName();
-        }
-        catch (UnknownHostException e)
-        {}
-        
-        message.headers().set(HttpHeaders.Names.HOST, hostname);
-        message.headers().set(HttpHeaders.Names.ACCEPT, Constants.CTYPE_ANY + ", " + Constants.CTYPE_MULTIPART_MIXED);
-        message.headers().set(Constants.HDR_CLIENT_ID, Protocol.HTTP.getClientId());
-        
-        Date modifiedSince = fetchMeta.getIfModifiedSince();
-        if (modifiedSince != null)
-        {
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-            message.headers().set(HttpHeaders.Names.IF_MODIFIED_SINCE, sdf.format(modifiedSince));
-        }
-        
-        return message;
-    }
+    
     
     private Object pbChannelMessage(FetchMeta fetchMeta)
     {
@@ -277,7 +167,7 @@ public class FetchOperation<T> extends FutureOperation<T>
             builder.setBasicQuorum(fetchMeta.getBasicQuorum());
         }
         
-        if (fetchMeta.hasIfModifiedSince())
+        if (fetchMeta.hasIfModifiedVClock())
         {
             builder.setIfModified(ByteString.copyFrom(fetchMeta.getIfModifiedVClock().getBytes()));
         }

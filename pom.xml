@@ -75,6 +75,23 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <configuration>
+                    <taglets>
+                        <taglet>
+                            <tagletClass>com.basho.riak.client.javadoc.RiakThreadSafetyTaglet</tagletClass>
+                            <tagletArtifact>
+                                <groupId>com.basho.riak</groupId>
+                                <artifactId>riak-client</artifactId>
+                                <version>2.0.0-ALPHA1-SNAPSHOT</version>
+                            </tagletArtifact>
+                        </taglet>
+                    </taglets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -91,6 +108,13 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+          <version>1.4.2</version>
+          <scope>system</scope>
+          <systemPath>${java.home}/../lib/tools.jar</systemPath>
+        </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
@@ -135,13 +159,6 @@
             <groupId>com.basho.riak.protobuf</groupId>
             <artifactId>riak-pb</artifactId>
             <version>1.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>findbugs</artifactId>
-            <version>2.0.1</version>
-            <scope>compile</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

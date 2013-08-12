@@ -16,16 +16,14 @@
 package com.basho.riak.client.core;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.concurrent.GuardedBy;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -52,14 +50,12 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private volatile boolean noConversion = false;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
-    @GuardedBy("listenersLock")
-    private final HashSet<RiakFutureListner<T>> listeners =
-        new HashSet<RiakFutureListner<T>>();
-    @GuardedBy("listenersLock")
+    private final HashSet<RiakFutureListener<T>> listeners =
+        new HashSet<RiakFutureListener<T>>();
     private volatile boolean listenersFired = false;
 
     @Override
-    public void addListener(RiakFutureListner<T> listener)
+    public void addListener(RiakFutureListener<T> listener)
     {
 
         boolean fireNow = false;
@@ -89,7 +85,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     }
 
     @Override
-    public void removeListener(RiakFutureListner<T> listener)
+    public void removeListener(RiakFutureListener<T> listener)
     {
         listenersLock.lock();
         try
@@ -125,7 +121,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
         if (fireNow)
         {
-            for (RiakFutureListner<T> listener : listeners)
+            for (RiakFutureListener<T> listener : listeners)
             {
                 listener.handle(this);
             }
@@ -151,10 +147,10 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
      * will not be called and both {@link #get() } and {@link #get(long, java.util.concurrent.TimeUnit) }
      * will throw an {@code IllegalStateException}.
      * </p>
-     * The {@link RiakResponse} can be retrieved via {@link #getRiakResponse()} or
+     * The {@link RiakResponse} can be retrieved via {@link #getRiakResponse()} or 
      * {@link #getRiakResponse(long, java.util.concurrent.TimeUnit)}.
-     *
-     * @param noConversion
+     * 
+     * @param noConversion 
      */
     public final void setNoConversion(boolean noConversion)
     {
@@ -233,6 +229,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         return message;
     }
 
+    @Override
     public final RiakResponse getRiakResponse() throws InterruptedException, ExecutionException
     {
         latch.await();
@@ -245,6 +242,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         return rawResponse;
     }
 
+    @Override
     public final RiakResponse getRiakResponse(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException
     {
         boolean succeed = latch.await(timeout, unit);

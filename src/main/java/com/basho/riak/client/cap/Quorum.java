@@ -71,7 +71,7 @@ public final class Quorum {
      * A value of {@link Quora#INTEGER} means that the quorum has a meaningful
      * int value
      * 
-     * @return
+     * @return the {@code Quora} 
      */
     public Quora getSymbolicValue() {
         return quorum;
