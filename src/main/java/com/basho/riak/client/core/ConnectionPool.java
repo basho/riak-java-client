@@ -51,7 +51,7 @@ public class ConnectionPool implements ChannelFutureListener
     private final ConcurrentLinkedQueue<Channel> inUse;
     private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed;
     private final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
-    private final AdjustableSemaphore permits;
+    private final Sync permits;
     private final String remoteAddress;
     private final Protocol protocol;
     private final int port;
@@ -86,11 +86,11 @@ public class ConnectionPool implements ChannelFutureListener
 
         if (builder.maxConnections < 1)
         {
-            permits = new UnlimitedSemaphore();
+            permits = new Sync(Integer.MAX_VALUE);
         }
         else
         {
-            permits = new AdjustableSemaphore(builder.maxConnections);
+            permits = new Sync(builder.maxConnections);
         }
 
         this.available = new LinkedBlockingDeque<ChannelWithIdleTime>();
@@ -720,6 +720,56 @@ public class ConnectionPool implements ChannelFutureListener
                 checkHealth();
             }
         }
+    }
+
+    /**
+     *
+     * @author Brian Roach <roach at basho dot com>
+     * @since 2.0
+     */
+    static class Sync extends Semaphore
+    {
+        private static final long serialVersionUID = -5118488872281021072L;
+        private volatile int maxPermits;
+
+        public Sync(int numPermits)
+        {
+            super(numPermits);
+            this.maxPermits = numPermits;
+        }
+
+        public Sync(int numPermits, boolean fair)
+        {
+            super(numPermits, fair);
+            this.maxPermits = numPermits;
+        }
+
+        public int getMaxPermits()
+        {
+            return maxPermits;
+        }
+
+        // Synchronized because we're (potentially) changing this.maxPermits
+        synchronized void setMaxPermits(int maxPermits)
+        {
+            int diff = maxPermits - this.maxPermits;
+
+            if (diff == 0)
+            {
+                return;
+            }
+            else if (diff > 0)
+            {
+                release(diff);
+            }
+            else if (diff < 0)
+            {
+                reducePermits(diff);
+            }
+
+            this.maxPermits = maxPermits;
+        }
+
     }
 
     public static class Builder
