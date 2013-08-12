@@ -2,4 +2,7 @@ This is the development branch for the new 2.x client.
 
 It is currently a very large WIP. This is not a usable branch. 
 
-There was sufficient code where I decided having it all on my own machine was becoming a bad idea. 
+The current release branches are:
+
+[[https://github.com/basho/riak-java-client/tree/1.4.1][riak-client-1.4.1]] - For use with Riak 1.4+
+[[https://github.com/basho/riak-java-client/tree/1.1.2][riak-client-1.1.2]] - For use with < Riak 1.4.0
