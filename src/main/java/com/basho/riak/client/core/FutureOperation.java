@@ -16,25 +16,27 @@
 package com.basho.riak.client.core;
 
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public abstract class FutureOperation<T> implements RiakFuture<T>
 {
-    private enum State { CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED }
+
+    private enum State
+    {
+        CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED
+    }
+
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
     private final List<Protocol> protocolPreflist = new LinkedList<Protocol>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
@@ -46,8 +48,73 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private volatile State state = State.CREATED;
     private volatile RiakNode lastNode;
     private volatile boolean noConversion = false;
-    
-    
+
+    private final ReentrantLock listenersLock = new ReentrantLock();
+    private final HashSet<RiakFutureListner<T>> listeners =
+        new HashSet<RiakFutureListner<T>>();
+    private volatile boolean listenersFired = false;
+
+    @Override
+    public void addListener(RiakFutureListner<T> listener)
+    {
+
+        listenersLock.lock();
+        try
+        {
+            if (listenersFired)
+            {
+                // the future has already been completed, fire on caller's thread
+                listener.handle(this);
+            } 
+            else
+            {
+                listeners.add(listener);
+            }
+        } 
+        finally
+        {
+            listenersLock.unlock();
+        }
+    }
+
+    @Override
+    public void removeListener(RiakFutureListner<T> listener)
+    {
+        listenersLock.lock();
+        try
+        {
+            if (!listenersFired)
+            {
+                listeners.remove(listener);
+            } // else, we don't care, they've already been fired
+        } 
+        finally
+        {
+            listenersLock.unlock();
+        }
+    }
+
+    private void fireListeners()
+    {
+
+        listenersLock.lock();
+        try
+        {
+            if (!listenersFired)
+            {
+                listenersFired = true;
+                for (RiakFutureListner<T> listener : listeners)
+                {
+                    listener.handle(this);
+                }
+            }
+        } 
+        finally
+        {
+            listenersLock.unlock();
+        }
+    }
+
     final synchronized void setRetrier(OperationRetrier retrier, int numTries)
     {
         stateCheck(State.CREATED);
@@ -64,7 +131,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
      * <p>
      * If set to {@code true} then {@link #convert(com.basho.riak.client.core.RiakResponse) }
      * will not be called and both {@link #get() } and {@link #get(long, java.util.concurrent.TimeUnit) }
-     * will throw an {@code IllegalStateException}. 
+     * will throw an {@code IllegalStateException}.
      * </p>
      * The {@link RiakResponse} can be retrieved via {@link #getRiakResponse()} or 
      * {@link #getRiakResponse(long, java.util.concurrent.TimeUnit)}.
@@ -73,22 +140,22 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
      */
     public final void setNoConversion(boolean noConversion)
     {
-        // This is really a future-proofing. Right now the conversion is actually 
+        // This is really a future-proofing. Right now the conversion is actually
         // done by the caller's thread in the get() methods, but if that is moved
         // to a netty thread then this will be useful.
         this.noConversion = noConversion;
     }
-    
+
     final RiakNode getLastNode()
     {
         return lastNode;
     }
-    
+
     final void setLastNode(RiakNode node)
     {
         this.lastNode = node;
     }
-    
+
     final List<Protocol> getProtocolPreflist()
     {
         return Collections.unmodifiableList(protocolPreflist);
@@ -100,7 +167,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         protocolPreflist.clear();
         protocolPreflist.addAll(Arrays.asList(protocols));
     }
-    
+
     synchronized final void setResponse(RiakResponse rawResponse)
     {
         remainingTries--;
@@ -112,28 +179,30 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         {
             retrier.operationComplete(this, remainingTries);
         }
+        fireListeners();
     }
 
     synchronized final void setException(Throwable t)
     {
         this.exception = t;
-        
+
         remainingTries--;
         if (remainingTries == 0)
         {
             state = State.COMPLETE;
             latch.countDown();
-        }
+            fireListeners();
+        } 
         else
         {
             state = State.RETRY;
         }
-        
+
         if (retrier != null)
         {
             retrier.operationFailed(this, remainingTries);
         }
-        
+
     }
 
     public synchronized final Object channelMessage(Protocol p)
@@ -143,36 +212,38 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         state = State.WRITTEN;
         return message;
     }
-    
+
+    @Override
     public final RiakResponse getRiakResponse() throws InterruptedException, ExecutionException
     {
         latch.await();
-        
+
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        
+
         return rawResponse;
     }
-    
+
+    @Override
     public final RiakResponse getRiakResponse(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException
     {
         boolean succeed = latch.await(timeout, unit);
-        
+
         if (!succeed)
         {
             throw new TimeoutException();
         }
-        
+
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        
+
         return rawResponse;
     }
-    
+
     @Override
     public final boolean cancel(boolean mayInterruptIfRunning)
     {
@@ -198,19 +269,19 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         {
             throw new IllegalStateException("noConversion set to true");
         }
-        
+
         latch.await();
-        
+
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        
+
         if (null == converted)
         {
             converted = convert(rawResponse);
         }
-        
+
         return converted;
     }
 
@@ -221,42 +292,43 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         {
             throw new IllegalStateException("noConversion set to true");
         }
-        
+
         boolean succeed = latch.await(timeout, unit);
-        
+
         if (!succeed)
         {
             throw new TimeoutException();
         }
-        
+
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        
+
         if (null == converted)
         {
             converted = convert(rawResponse);
         }
-        
+
         return converted;
     }
-    
-    
+
+
     private void stateCheck(State... allowedStates)
     {
         if (Arrays.binarySearch(allowedStates, state) < 0)
         {
             logger.debug("IllegalStateException; required: {} current: {} ",
-                         Arrays.toString(allowedStates), state);
-            throw new IllegalStateException("required: " 
-                + Arrays.toString(allowedStates) 
-                + " current: " + state );
+                Arrays.toString(allowedStates), state);
+            throw new IllegalStateException("required: "
+                + Arrays.toString(allowedStates)
+                + " current: " + state);
         }
     }
-    
+
     abstract protected T convert(RiakResponse rawResponse) throws ExecutionException;
+
     abstract protected Object createChannelMessage(Protocol p);
-    
-    
+
+
 }
