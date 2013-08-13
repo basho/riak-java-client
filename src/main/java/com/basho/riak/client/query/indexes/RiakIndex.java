@@ -32,9 +32,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * what attribute to index on and what its index value should be, via key/value
  * metadata. This is different from Search, which parses the data and builds
  * indexes based on a schema. Riak 2i currently requires the LevelDB or Memory
- * backend. </p> <p> A {@code RiakIndex} is made up of the index name, a type,
- * then one or more queryable index values. <p>
- *
+ * backend. 
+ * </p> 
+ * <p> A {@code RiakIndex} is made up of the index name, a type,
+ * then one or more queryable index values. 
+ * </p>
+ * 
  * @riak.threadsafety This class is designed to be thread safe.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -45,14 +48,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class RiakIndex<T> implements Iterable<T>
 {
 
-    private final RiakIndex.Name<T> indexName;
+    private final RiakIndex.Name indexName;
     private Set<ByteArrayWrapper> values;
 
+    @SuppressWarnings("unchecked")
     protected RiakIndex(Name name)
     {
         this.indexName = name;
         if (name.values != null)
         {
+            // Java says this is unchecked even though ... it isn't
             this.values = name.values;
         }
         else
@@ -303,7 +308,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      * This class serves two purposes; encapsulating the name and type of an
      * index as well as being a builder.
      *
-     * @param <T> the type of index this Name represents
+     * @param <T> the subclass of RiakIndex this Name represents
      */
     public static abstract class Name<T>
     {
