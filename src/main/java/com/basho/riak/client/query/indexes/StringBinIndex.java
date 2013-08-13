@@ -93,7 +93,7 @@ public class StringBinIndex extends RiakIndex<String>
         return value.toString(charset);
     }
     
-    public static class Name extends RiakIndex.Name<String>
+    public static class Name extends RiakIndex.Name<StringBinIndex>
     {
         private final Charset charset;
         
@@ -107,12 +107,14 @@ public class StringBinIndex extends RiakIndex<String>
             super(name, IndexType.BIN);
             this.charset = charset;
         }
-        
+
         @Override
         public StringBinIndex createIndex()
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new StringBinIndex(this);
         }
+        
+        
 
     }
     

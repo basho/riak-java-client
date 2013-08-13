@@ -78,7 +78,7 @@ public class LongIntIndex extends RiakIndex<Long>
         return Long.valueOf(value.toString(Charset.forName("UTF-8")));
     }
     
-    public static class Name extends RiakIndex.Name<Long>
+    public static class Name extends RiakIndex.Name<LongIntIndex>
     {
         public Name(String name)
         {

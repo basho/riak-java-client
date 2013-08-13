@@ -65,12 +65,13 @@ public class RiakIndexes
      * @param index The {@link RiakIndex.Name} to retrieve
      * @return The index, or {@code null} if it is not present
      */
-    public <T> RiakIndex<T> getIndex(RiakIndex.Name<T> name)
+    public  <V extends RiakIndex, T extends RiakIndex.Name<V>> V getIndex(T name)
     {
         RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)
         {
-            return name.createIndex().wrap(existing);
+            V index = name.wrap(existing).createIndex();
+            return index;
         }
         else
         {
@@ -84,12 +85,13 @@ public class RiakIndexes
      * @return the removed {@code RiakIndex} if the index was present, 
      *  {@code null} otherwise
      */
-    public <T> RiakIndex<T> removeIndex(RiakIndex.Name<T> name)
+    public <V,T extends RiakIndex<V>> T removeIndex(RiakIndex.Name<T> name)
     {
         RiakIndex<?> removed = indexes.remove(name.getFullname());
         if (removed != null)
         {
-            return name.createIndex().wrap(removed);
+            T index = name.wrap(removed).createIndex();
+            return index;
         }
         else
         {
@@ -114,8 +116,9 @@ public class RiakIndexes
      */
     public RiakIndexes addIndex(RiakIndex<?> index)
     {
-        RawIndex copy = RawIndex.named(index.getName(), index.getType());
-        copy.copyFrom(index);
+        RawIndex copy = new RawIndex.Name(index.getName(), index.getType())
+                            .copyFrom(index)
+                            .createIndex();
         indexes.put(copy.getFullname(), copy);
         return this;
     }
@@ -129,16 +132,18 @@ public class RiakIndexes
      * @param value the new index value
      * @return a reference to this object
      */
-    public <T> RiakIndexes addToIndex(RiakIndex.Name<T> name, T value)
+    //<V extends RiakIndex, T extends RiakIndex.Name<V>> V
+    public <V, T extends RiakIndex<V>> RiakIndexes addToIndex(RiakIndex.Name<T> name, V value)
     {
         RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)
         {
-            name.createIndex().wrap(existing).add(value);
+            T index = name.wrap(existing).createIndex();
+            index.add(value);
         }
         else
         {
-            RiakIndex<T> index = name.createIndex();
+            T index = name.createIndex();
             index.add(value);
             indexes.put(index.getFullname(), index);
         }

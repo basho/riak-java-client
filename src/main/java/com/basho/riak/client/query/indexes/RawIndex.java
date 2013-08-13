@@ -57,7 +57,7 @@ public class RawIndex extends RiakIndex<ByteArrayWrapper>
         return new Name(name, type).createIndex();
     }
     
-    public static class Name extends RiakIndex.Name<ByteArrayWrapper>
+    public static class Name extends RiakIndex.Name<RawIndex>
     {
         public Name(String name, IndexType type)
         {

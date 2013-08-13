@@ -25,47 +25,54 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Models a Riak Secondary Index (2i).
- * 
- * <p>
- * Secondary Indexing (2i) in Riak gives developers the ability, at write time, 
- * to tag an object stored in Riak with one or more queryable values.
- * Since the KV data is completely opaque to 2i, the user must tell 2i exactly 
- * what attribute to index on and what its index value should be, via key/value metadata. 
- * This is different from Search, which parses the data and builds indexes based 
- * on a schema. Riak 2i currently requires the LevelDB or Memory backend.
- * </p>
- * <p>
- * A {@code RiakIndex} is made up of the index name, a type, then one or more queryable index values. 
- * <p>
- * @riak.threadsafety This class is designed to be thread safe. 
+ *
+ * <p> Secondary Indexing (2i) in Riak gives developers the ability, at write
+ * time, to tag an object stored in Riak with one or more queryable values.
+ * Since the KV data is completely opaque to 2i, the user must tell 2i exactly
+ * what attribute to index on and what its index value should be, via key/value
+ * metadata. This is different from Search, which parses the data and builds
+ * indexes based on a schema. Riak 2i currently requires the LevelDB or Memory
+ * backend. </p> <p> A {@code RiakIndex} is made up of the index name, a type,
+ * then one or more queryable index values. <p>
+ *
+ * @riak.threadsafety This class is designed to be thread safe.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
- * @see <a href="http://docs.basho.com/riak/1.3.0/tutorials/querying/Secondary-Indexes/">Secondary Indexes in Riak</a>
+ * @see <a
+ * href="http://docs.basho.com/riak/1.3.0/tutorials/querying/Secondary-Indexes/">Secondary
+ * Indexes in Riak</a>
  */
 public abstract class RiakIndex<T> implements Iterable<T>
 {
+
     private final RiakIndex.Name<T> indexName;
     private Set<ByteArrayWrapper> values;
-    
-    protected RiakIndex(Name<T> name)
+
+    protected RiakIndex(Name name)
     {
         this.indexName = name;
-        // Downside here is wrappers instantiate the Set then discard it. 
-        // Lazy instantiation would save this at the expence of a null check for all accessors
-        this.values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
+        if (name.values != null)
+        {
+            this.values = name.values;
+        }
+        else
+        {
+            this.values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
+        }
     }
 
     /**
-     * Returns the index type from its fully qualified name
-     * <p>
-     * There are two types of Seconrady Indexes (2i) in Riak; "Integer" and 
-     * "Binary". The current server API distinguishes between them via a 
-     * suffix ({@code _int} and {@code _bin} respectively). This method 
-     * takes a "fully qualified" 2i name (e.g. "my_index_int") and returns an
-     * enum that represents the type. 
-     * @param fullname a "fully qualified" 2i name ending with the suffix "_int" or "_bin"
+     * Returns the index type from its fully qualified name <p> There are two
+     * types of Seconrady Indexes (2i) in Riak; "Integer" and "Binary". The
+     * current server API distinguishes between them via a suffix ({@code _int}
+     * and {@code _bin} respectively). This method takes a "fully qualified" 2i
+     * name (e.g. "my_index_int") and returns an enum that represents the type.
+     *
+     * @param fullname a "fully qualified" 2i name ending with the suffix "_int"
+     * or "_bin"
      * @return the {@link IndexType}
-     * @throws IllegalArgumentException if the supplied index name does not have a valid suffix.
+     * @throws IllegalArgumentException if the supplied index name does not have
+     * a valid suffix.
      */
     public static IndexType typeFromFullname(String fullname)
     {
@@ -81,12 +88,13 @@ public abstract class RiakIndex<T> implements Iterable<T>
                 }
             }
         }
-    
+
         throw new IllegalArgumentException("Indexname does not end with valid suffix");
     }
-    
+
     /**
      * Add a value to this secondary index.
+     *
      * @param value the value to add
      * @return a reference to this object
      */
@@ -95,9 +103,10 @@ public abstract class RiakIndex<T> implements Iterable<T>
         values.add(convert(value));
         return this;
     }
-    
+
     /**
      * Add a set of values to this secondary index.
+     *
      * @param values a collection of values to add
      * @return a reference to this object
      */
@@ -107,32 +116,37 @@ public abstract class RiakIndex<T> implements Iterable<T>
         {
             add(value);
         }
-        
+
         return this;
     }
-    
+
     /**
      * Determine if this index contains a value
+     *
      * @param value the value to check for
-     * @return {@code true} if this index contains the value, {@code false} otherwise.
+     * @return {@code true} if this index contains the value, {@code false}
+     * otherwise.
      */
     public final boolean hasValue(T value)
     {
         return values.contains(convert(value));
     }
-    
+
     /**
      * Remove a value from this index
+     *
      * @param value the value to remvoe
-     * @return {@code true} if the value was present and was removed, {@code false} otherwise.
+     * @return {@code true} if the value was present and was removed,
+     * {@code false} otherwise.
      */
     public final boolean remove(T value)
     {
         return values.remove(convert(value));
     }
-    
+
     /**
      * Remove a set of values from this index
+     *
      * @param values a collection of values to remove
      */
     public final void remove(Collection<T> values)
@@ -142,14 +156,14 @@ public abstract class RiakIndex<T> implements Iterable<T>
             remove(value);
         }
     }
-    
+
     @Override
-    public final Iterator<T> iterator() 
+    public final Iterator<T> iterator()
     {
-        return new Iterator<T>() 
+        return new Iterator<T>()
         {
             private Iterator<ByteArrayWrapper> i = values.iterator();
-            
+
             @Override
             public boolean hasNext()
             {
@@ -167,21 +181,22 @@ public abstract class RiakIndex<T> implements Iterable<T>
             {
                 i.remove();
             }
-            
         };
     }
-    
+
     /**
      * Return the values in this index as raw bytes
+     *
      * @return an unmodifiable view of the raw values in this index.
      */
     public final Set<ByteArrayWrapper> rawValues()
     {
         return Collections.unmodifiableSet(values);
     }
-    
+
     /**
      * Return the values in this index
+     *
      * @return an unmodifiable view of the values in this index.
      */
     public final Set<T> values()
@@ -193,78 +208,52 @@ public abstract class RiakIndex<T> implements Iterable<T>
         }
         return Collections.unmodifiableSet(convertedValues);
     }
-    
-    /**
-     * Wrap an existing index
-     * @param otherIndex 
-     * @return a reference to this object
-     */
-    final public RiakIndex<T> wrap(RiakIndex<?> otherIndex)
-    {
-        values = otherIndex.values;
-        return this;
-    }
-    
-    /**
-     * Copy the values from the supplied index into this one.
-     * @param otherIndex
-     * @return a reference to this object
-     */
-    final public RiakIndex<T> copyFrom(RiakIndex<?> otherIndex)
-    {
-        values.clear();
-        for (ByteArrayWrapper baw : otherIndex.values)
-        {
-            values.add(baw);
-        }
-        return this;
-    }
-    
+
     /**
      * Get the type of this index
+     *
      * @return the enum representing the type of this index
      */
     public final IndexType getType()
     {
         return indexName.getType();
     }
-    
-    /**
-        * Get the short name of this index
-        * @return the name of this index without the type suffix
-        */
-       public final String getName()
-       {
-           return indexName.getName();
-       }
 
-       /**
-        * Get the fully qualified name of this index
-        * @return the name of this index including the type suffix
-        */
-       public final String getFullname()
-       {
-           return indexName.getFullname();
-       }
-    
-    
     /**
-     * Convert a value to a ByteArrayWrapper
-     * <p>
-     * Index values are stored internally as bytes. Concrete classes implement 
-     * this method to convert values to bytes. 
-     * </p>
+     * Get the short name of this index
+     *
+     * @return the name of this index without the type suffix
+     */
+    public final String getName()
+    {
+        return indexName.getName();
+    }
+
+    /**
+     * Get the fully qualified name of this index
+     *
+     * @return the name of this index including the type suffix
+     */
+    public final String getFullname()
+    {
+        return indexName.getFullname();
+    }
+
+    /**
+     * Convert a value to a ByteArrayWrapper <p> Index values are stored
+     * internally as bytes. Concrete classes implement this method to convert
+     * values to bytes. </p>
+     *
      * @param value the value to convert
      * @return a ByteArrayWrapper containing the converted bytes
      */
     protected abstract ByteArrayWrapper convert(T value);
-    
+
     /**
-     * Convert bytes to a value type
-     * <p>
-     * Index values are stored internally as bytes. Concrete classes implement 
-     * this method to convert bytes to values. 
+     * Convert bytes to a value type <p> Index values are stored internally as
+     * bytes. Concrete classes implement this method to convert bytes to values.
      * </p>
+     *
      * @param value the value to convert
      * @return a value of type T
      */
@@ -295,9 +284,9 @@ public abstract class RiakIndex<T> implements Iterable<T>
         {
             return false;
         }
-        
+
         RiakIndex other = (RiakIndex) obj;
-        
+
         if (indexName.getType() != other.getType())
         {
             return false;
@@ -306,72 +295,104 @@ public abstract class RiakIndex<T> implements Iterable<T>
         {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
-     * This class serves two purposes; encapsulating the name and type of an index
-     * as well as being a builder. 
-     * 
+     * This class serves two purposes; encapsulating the name and type of an
+     * index as well as being a builder.
+     *
      * @param <T> the type of index this Name represents
      */
     public static abstract class Name<T>
     {
         protected String name;
         protected IndexType type;
+        private Set<ByteArrayWrapper> values;
         
         protected Name(String name, IndexType type)
         {
             this.name = stripSuffix(name, type);
             this.type = type;
         }
-        
-        /**
-        * If the index name has the suffix, strip it
-        *
-        * @param name
-        * @return the name, stripped
-        */
-       private String stripSuffix(String name, IndexType type)
-       {
-           if (name.endsWith(type.suffix()))
-           {
-               return name.substring(0, name.indexOf(type.suffix()));
-           }
-           else
-           {
-               return name;
-           }
-       }
-       
-       /**
-        * Get the short name of this index
-        * @return the name of this index without the type suffix
-        */
-       public final String getName()
-       {
-           return name;
-       }
 
-       /**
-        * Get the fully qualified name of this index
-        * @return the name of this index including the type suffix
-        */
-       public final String getFullname()
-       {
-           return name + type.suffix();
-       }
-       
-       /**
-     * Get the type of this index
-     * @return the enum representing the type of this index
-     */
-       public final IndexType getType()
-       {
-           return type;
-       }
-        
-        public abstract RiakIndex<T> createIndex();
+        /**
+         * If the index name has the suffix, strip it
+         *
+         * @param name
+         * @return the name, stripped
+         */
+        private String stripSuffix(String name, IndexType type)
+        {
+            if (name.endsWith(type.suffix()))
+            {
+                return name.substring(0, name.indexOf(type.suffix()));
+            }
+            else
+            {
+                return name;
+            }
+        }
+
+        /**
+         * Get the short name of this index
+         *
+         * @return the name of this index without the type suffix
+         */
+        public final String getName()
+        {
+            return name;
+        }
+
+        /**
+         * Get the fully qualified name of this index
+         *
+         * @return the name of this index including the type suffix
+         */
+        public final String getFullname()
+        {
+            return name + type.suffix();
+        }
+
+        /**
+         * Get the type of this index
+         *
+         * @return the enum representing the type of this index
+         */
+        public final IndexType getType()
+        {
+            return type;
+        }
+
+        /**
+         * Wrap an existing index
+         *
+         * @param otherIndex
+         * @return a reference to this object
+         */
+        final public Name<T> wrap(RiakIndex<?> otherIndex)
+        {
+            values = otherIndex.values;
+            return this;
+        }
+
+        /**
+         * Copy the values from the supplied index into this one.
+         *
+         * @param otherIndex
+         * @return a reference to this object
+         */
+        final public Name<T> copyFrom(RiakIndex<?> otherIndex)
+        {
+            values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
+            for (ByteArrayWrapper baw : otherIndex.values)
+            {
+                values.add(baw);
+            }
+            return this;
+        }
+
+        public abstract T createIndex();
     }
 }

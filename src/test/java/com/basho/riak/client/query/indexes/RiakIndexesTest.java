@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.query.indexes;
 
+import com.basho.riak.client.util.ByteArrayWrapper;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -33,7 +34,10 @@ public class RiakIndexesTest
         
         assertTrue(indexes.hasIndex(new LongIntIndex.Name("my_index")));
         
-        RiakIndex<Long> lii = indexes.getIndex(new LongIntIndex.Name("my_index"));
+        LongIntIndex lii = indexes.getIndex(new LongIntIndex.Name("my_index"));
         assertTrue(lii.hasValue(4L));
+        
+        RawIndex rri = indexes.getIndex(new RawIndex.Name("my_index", IndexType.INT));
+        assertTrue(rri.hasValue(ByteArrayWrapper.unsafeCreate(String.valueOf(4L).getBytes())));
     }
 }
