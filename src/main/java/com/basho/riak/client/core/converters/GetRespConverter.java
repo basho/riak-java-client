@@ -141,8 +141,8 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
                             try 
                             {
                                 IndexType type = RiakIndex.typeFromFullname(name);
-                                indexes.addToIndex(new RawIndex.Name(name, type), 
-                                                   ByteArrayWrapper.unsafeCreate(p.getValue().toByteArray()));
+                                indexes.getIndex(new RawIndex.Name(name, type))
+                                                .add(ByteArrayWrapper.unsafeCreate(p.getValue().toByteArray()));
                             }
                             catch (IllegalArgumentException e)
                             {

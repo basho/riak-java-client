@@ -26,20 +26,7 @@ import java.nio.charset.Charset;
  * of {@code RiakIndex} provides access to those bytes by converting to 
  * and from {@code String} values.  
  * </p>
- * <p>
- * Static factory methods {@link StringBinIndex#named(java.lang.String) } and 
- * {@link StringBinIndex#StringBinIndex(java.lang.String, java.nio.charset.Charset) }
- * are provided to create instances of this index and provide the appropriate {@link IndexType#BIN} type.
- * A fluent interface is then provided for adding values:
- * <pre>
- * {@code
- * StringBinIndex index = StringBinIndex.named("my_colors")
- *                                  .add("red")
- *                                  .add("blue");
- * riakObject.getIndexes().add(index);
- * }
- * </pre>
- * </p>
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes
@@ -53,32 +40,6 @@ public class StringBinIndex extends RiakIndex<String>
     {
         super(name);
         this.charset = name.charset;
-    }
-    
-    /**
-     * Static factory method returning a StringBinIndex builder.
-     * <p>
-     * Values will be converted to/from bytes using the default {@code Charset}
-     * <p>
-     * @param name the name for this index
-     * @return a {@code StringBinIndex#Named } with the provided name and {@link IndexType#BIN} type.
-     */
-    public static StringBinIndex named(String name)
-    {
-        return new Name(name).createIndex();
-    }
-    
-    /**
-     * Static factory method that returns a StringBinIndex Name.
-     * <p>
-     * Values will be converted to/from bytes using the provided {@code Charset}
-     * <p>
-     * @param name the name for this index
-     * @return a {@link Builder} with the provided name and {@link IndexType#BIN} type.
-     */
-    public static StringBinIndex named(String name, Charset charset)
-    {
-        return new Name(name, charset).createIndex();
     }
     
     @Override
@@ -97,11 +58,21 @@ public class StringBinIndex extends RiakIndex<String>
     {
         private final Charset charset;
         
+        /**
+         * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
+         * The default character set is used for encoding the values.
+         * @param name The name of this index.
+         */
         public Name(String name)
         {
             this(name, Charset.defaultCharset());
         }
-        
+        /**
+         * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
+         * The supplied character set is used for encoding the values.
+         * @param name The name of this index.
+         * @param charset The character set to use for encoding values
+         */
         public Name(String name, Charset charset)
         {
             super(name, IndexType.BIN);
@@ -109,7 +80,7 @@ public class StringBinIndex extends RiakIndex<String>
         }
 
         @Override
-        public StringBinIndex createIndex()
+        StringBinIndex createIndex()
         {
             return new StringBinIndex(this);
         }

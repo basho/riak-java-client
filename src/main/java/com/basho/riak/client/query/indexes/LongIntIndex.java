@@ -27,19 +27,6 @@ import java.nio.charset.Charset;
  * of {@code RiakIndex} provides access to those bytes by converting to 
  * and from {@code Long} values.  
  * </p>
- * <p>
- * A static factory method {@link LongIntIndex#named(java.lang.String) } is provided to
- * create instances of this index and provide the appropriate {@link IndexType#INT} type.
- * A fluent interface is then provided for adding values:
- * <pre>
- * {@code
- * LongIntIndex index = LongIntIndex.named("my_index")
- *                                  .add(123456L)
- *                                  .add(234567L);
- * riakObject.getIndexes().add(index);
- * }
- * </pre>
- * </p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes
@@ -52,16 +39,6 @@ public class LongIntIndex extends RiakIndex<Long>
         super(name);
     }
 
-    /**
-     * Static factory method that returns a LongIntIndex
-     * @param name the name for this index
-     * @return a {@code LongIntIndex} with the provided name and {@link IndexType#INT} type.
-     */
-    public static LongIntIndex named(String name)
-    {
-        return new Name(name).createIndex();
-    }
-    
     @Override
     protected ByteArrayWrapper convert(Long value)
     {
@@ -78,15 +55,22 @@ public class LongIntIndex extends RiakIndex<Long>
         return Long.valueOf(value.toString(Charset.forName("UTF-8")));
     }
     
+    /**
+     * Encapsulates the name for a LongIntIndex
+     */
     public static class Name extends RiakIndex.Name<LongIntIndex>
     {
+        /**
+         * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
+         * @param name The name of this index.
+         */
         public Name(String name)
         {
             super(name, IndexType.INT);
         }
         
         @Override
-        public LongIntIndex createIndex()
+        LongIntIndex createIndex()
         {
             return new LongIntIndex(this);
         }

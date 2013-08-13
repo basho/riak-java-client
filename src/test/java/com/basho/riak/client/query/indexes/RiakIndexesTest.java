@@ -30,7 +30,7 @@ public class RiakIndexesTest
     public void addToIndex()
     {
         RiakIndexes indexes = new RiakIndexes();
-        indexes.addToIndex(new LongIntIndex.Name("my_index"), 4L);
+        indexes.getIndex(new LongIntIndex.Name("my_index")).add(4L);
         
         assertTrue(indexes.hasIndex(new LongIntIndex.Name("my_index")));
         
@@ -39,5 +39,6 @@ public class RiakIndexesTest
         
         RawIndex rri = indexes.getIndex(new RawIndex.Name("my_index", IndexType.INT));
         assertTrue(rri.hasValue(ByteArrayWrapper.unsafeCreate(String.valueOf(4L).getBytes())));
+        
     }
 }

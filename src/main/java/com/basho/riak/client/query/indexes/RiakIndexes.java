@@ -16,12 +16,39 @@
 package com.basho.riak.client.query.indexes;
 
 import com.basho.riak.client.query.RiakObject;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A thread safe container for {@link RiakIndex} objects.
- * 
+ * <p>
+ * This container allows for an arbitrary number and types of {@link RiakIndex}s to
+ * be used with a {@link RiakObject}. 
+ * </p>
+ * <h4>Working with RiakIndexes</h4>
+ * <p>Data in Riak, including secondary indexes, is stored as raw bytes. The conversion
+ * to and from bytes is handled by the concrete {@code RiakIndex} implementations 
+ * and this container. </p>
+ * <p>
+ * Each concrete {@code RiakIndex} includes a hybrid builder named {@code Named}. 
+ * The methods of this class take an instance of that builder as an 
+ * argument to allow for proper type inference and construction of {@code RiakIndex}
+ * objects should it be required. 
+ * </p>
+ * <p>{@code getIndex()} will either return a reference to 
+ * the existing RiakIndex or atomically add and return a new one. The
+ * returned reference is the mutable index; changes are made directly to it.
+ * </p>
+ * <blockquote><pre>
+ * LongIntIndex myIndex = riakIndexes.getIndex(new LongIntIndex.Name("number_on_hand"));
+ * myIndex.removeAll();
+ * myIndex.add(6L);
+ * </pre></blockquote>
+ * <p>Calls can be chained, allowing for easy addition or removal of values from 
+ * an index.
+ * </p>
+ * <blockquote><pre>
+ * riakIndexes.getIndex(new StringBinIndex.Name("colors")).remove("blue").add("red");
+ * </pre></blockquote>
  * @riak.threadsafety This is a thread safe container. 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -30,7 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RiakIndexes 
 {
-    private final Map<String, RiakIndex<?>> indexes = 
+    private final ConcurrentHashMap<String, RiakIndex<?>> indexes = 
         new ConcurrentHashMap<String, RiakIndex<? extends Object>>(); 
     
     /**
@@ -52,7 +79,7 @@ public class RiakIndexes
     
     /**
      * Returns whether a specific index is present
-     * @param index the {@link RiakIndex.Name} representing the index to check for
+     * @param name the {@link RiakIndex.Name} representing the index to check for
      * @return {@code true} if the index is present, {@code false} otherwise
      */
     public boolean hasIndex(RiakIndex.Name<?> name)
@@ -61,27 +88,39 @@ public class RiakIndexes
     }
     
     /**
-     * Get an index 
-     * @param index The {@link RiakIndex.Name} to retrieve
-     * @return The index, or {@code null} if it is not present
+     * Get the named RiakIndex
+     * <p>
+     * If the named index does not exist it is created and added to the container
+     * before being returned. 
+     * </p>
+     * @param name The {@link RiakIndex.Name} of the index to retrieve
+     * @return The requested index.
      */
     public  <V extends RiakIndex, T extends RiakIndex.Name<V>> V getIndex(T name)
     {
         RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)
         {
-            V index = name.wrap(existing).createIndex();
-            return index;
+            return name.wrap(existing).createIndex();
         }
         else
         {
-            return null;
+            V newIndex = name.createIndex();
+            existing = indexes.putIfAbsent(newIndex.getFullname(), newIndex);
+            if (existing != null)
+            {
+                return getIndex(name);
+            }
+            else
+            {
+                return newIndex;
+            }
         }
     }
     
     /**
      * Remove an index
-     * @param index the {@code RiakIndex.Name} representing the index to remove
+     * @param name the {@code RiakIndex.Name} representing the index to remove
      * @return the removed {@code RiakIndex} if the index was present, 
      *  {@code null} otherwise
      */
@@ -100,54 +139,11 @@ public class RiakIndexes
     }
     
     /**
-     * Remove all indexes
+     * Remove all indexes.
      */
     public void removeAllIndexes()
     {
         indexes.clear();
-    }
-    
-    /**
-     * Add a {@link RiakIndex} 
-     *
-     * If this index already exists, it is replaced.
-     * @param index The {@code RiakIndex} to be added. 
-     * @return a reference to this object
-     */
-    public RiakIndexes addIndex(RiakIndex<?> index)
-    {
-        RawIndex copy = new RawIndex.Name(index.getName(), index.getType())
-                            .copyFrom(index)
-                            .createIndex();
-        indexes.put(copy.getFullname(), copy);
-        return this;
-    }
-    
-    /**
-     * Add a value to an index
-     * <p>
-     * If the index does not exist, it is created and added
-     * </p>
-     * @param index the {@code RiakIndex.Name} representing the index to which to add the supplied value.
-     * @param value the new index value
-     * @return a reference to this object
-     */
-    //<V extends RiakIndex, T extends RiakIndex.Name<V>> V
-    public <V, T extends RiakIndex<V>> RiakIndexes addToIndex(RiakIndex.Name<T> name, V value)
-    {
-        RiakIndex<?> existing = indexes.get(name.getFullname());
-        if (existing != null)
-        {
-            T index = name.wrap(existing).createIndex();
-            index.add(value);
-        }
-        else
-        {
-            T index = name.createIndex();
-            index.add(value);
-            indexes.put(index.getFullname(), index);
-        }
-        return this;
     }
     
 }

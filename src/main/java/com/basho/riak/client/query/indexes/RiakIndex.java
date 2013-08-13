@@ -48,16 +48,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class RiakIndex<T> implements Iterable<T>
 {
 
-    private final RiakIndex.Name indexName;
-    private Set<ByteArrayWrapper> values;
+    //private final RiakIndex.Name<?> indexName;
+    private final Set<ByteArrayWrapper> values;
+    private final IndexType type;
+    private final String name;
 
-    @SuppressWarnings("unchecked")
-    protected RiakIndex(Name name)
+    /**
+     * Constructs a RiakIndex from its Name
+     * @param name A {@link Name} to build this RiakIndex from.
+     */
+    protected RiakIndex(Name<?> name)
     {
-        this.indexName = name;
+        this.name = name.name;
+        this.type = name.type;
+        
         if (name.values != null)
         {
-            // Java says this is unchecked even though ... it isn't
             this.values = name.values;
         }
         else
@@ -138,30 +144,42 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Remove a value from this index
+     * Remove a value from this index.
      *
-     * @param value the value to remvoe
-     * @return {@code true} if the value was present and was removed,
-     * {@code false} otherwise.
+     * @param value the value to remove 
+     * @return a reference to this object
      */
-    public final boolean remove(T value)
+    public final RiakIndex<T> remove(T value)
     {
-        return values.remove(convert(value));
+        values.remove(convert(value));
+        return this;
     }
 
     /**
      * Remove a set of values from this index
      *
      * @param values a collection of values to remove
+     * @return a reference to this object
      */
-    public final void remove(Collection<T> values)
+    public final RiakIndex<T> remove(Collection<T> values)
     {
         for (T value : values)
         {
             remove(value);
         }
+        return this;
     }
 
+    /**
+     * Remove all values from this index
+     * @return a reference to this object
+     */
+    public final RiakIndex<T> removeAll()
+    {
+        values.clear();
+        return this;
+    }
+    
     @Override
     public final Iterator<T> iterator()
     {
@@ -221,7 +239,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      */
     public final IndexType getType()
     {
-        return indexName.getType();
+        return type;
     }
 
     /**
@@ -231,7 +249,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      */
     public final String getName()
     {
-        return indexName.getName();
+        return name;
     }
 
     /**
@@ -241,7 +259,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      */
     public final String getFullname()
     {
-        return indexName.getFullname();
+        return name + type.suffix();
     }
 
     /**
@@ -269,8 +287,8 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((indexName.getFullname() == null) ? 0 : indexName.getFullname().hashCode());
-        result = prime * result + ((indexName.getName() == null) ? 0 : indexName.getName().hashCode());
+        result = prime * result + ((getFullname() == null) ? 0 : getFullname().hashCode());
+        result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
         return result;
     }
 
@@ -292,11 +310,11 @@ public abstract class RiakIndex<T> implements Iterable<T>
 
         RiakIndex other = (RiakIndex) obj;
 
-        if (indexName.getType() != other.getType())
+        if (getType() != other.getType())
         {
             return false;
         }
-        else if (!indexName.getName().equals(other.indexName.getName()))
+        else if (!getName().equals(other.getName()))
         {
             return false;
         }
@@ -308,13 +326,13 @@ public abstract class RiakIndex<T> implements Iterable<T>
      * This class serves two purposes; encapsulating the name and type of an
      * index as well as being a builder.
      *
-     * @param <T> the subclass of RiakIndex this Name represents
+     * @param <T> the RiakIndex this Name encapsulates
      */
-    public static abstract class Name<T>
+    public static abstract class Name<T extends RiakIndex>
     {
-        protected String name;
-        protected IndexType type;
-        private Set<ByteArrayWrapper> values;
+        protected final String name;
+        protected final IndexType type;
+        private volatile Set<ByteArrayWrapper> values;
         
         protected Name(String name, IndexType type)
         {
@@ -376,7 +394,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
          * @param otherIndex
          * @return a reference to this object
          */
-        final public Name<T> wrap(RiakIndex<?> otherIndex)
+        final Name<T> wrap(RiakIndex<?> otherIndex)
         {
             values = otherIndex.values;
             return this;
@@ -388,7 +406,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
          * @param otherIndex
          * @return a reference to this object
          */
-        final public Name<T> copyFrom(RiakIndex<?> otherIndex)
+        final Name<T> copyFrom(RiakIndex<?> otherIndex)
         {
             values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
             for (ByteArrayWrapper baw : otherIndex.values)
@@ -398,6 +416,6 @@ public abstract class RiakIndex<T> implements Iterable<T>
             return this;
         }
 
-        public abstract T createIndex();
+        abstract T createIndex();
     }
 }
