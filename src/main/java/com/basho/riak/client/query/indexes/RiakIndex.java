@@ -44,15 +44,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class RiakIndex<T> implements Iterable<T>
 {
-
-    private final String name;
-    private final IndexType type;
+    private final RiakIndex.Name<T> indexName;
     private Set<ByteArrayWrapper> values;
     
-    protected RiakIndex(String name, IndexType type)
+    protected RiakIndex(Name<T> name)
     {
-        this.type = type;
-        this.name = stripSuffix(name, type);
+        this.indexName = name;
         // Downside here is wrappers instantiate the Set then discard it. 
         // Lazy instantiation would save this at the expence of a null check for all accessors
         this.values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
@@ -224,49 +221,32 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
     
     /**
-     * If the index name has the suffix, strip it
-     *
-     * @param name
-     * @return the name, stripped
-     */
-    private String stripSuffix(String name, IndexType type)
-    {
-        if (name.endsWith(type.suffix()))
-        {
-            return name.substring(0, name.indexOf(type.suffix()));
-        }
-        else
-        {
-            return name;
-        }
-    }
-
-    /**
-     * Get the short name of this index
-     * @return the name of this index without the type suffix
-     */
-    public final String getName()
-    {
-        return name;
-    }
-
-    /**
-     * Get the fully qualified name of this index
-     * @return the name of this index including the type suffix
-     */
-    public final String getFullname()
-    {
-        return name + type.suffix();
-    }
-
-    /**
      * Get the type of this index
      * @return the enum representing the type of this index
      */
     public final IndexType getType()
     {
-        return type;
+        return indexName.getType();
     }
+    
+    /**
+        * Get the short name of this index
+        * @return the name of this index without the type suffix
+        */
+       public final String getName()
+       {
+           return indexName.getName();
+       }
+
+       /**
+        * Get the fully qualified name of this index
+        * @return the name of this index including the type suffix
+        */
+       public final String getFullname()
+       {
+           return indexName.getFullname();
+       }
+    
     
     /**
      * Convert a value to a ByteArrayWrapper
@@ -295,8 +275,8 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((getFullname() == null) ? 0 : getFullname().hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((indexName.getFullname() == null) ? 0 : indexName.getFullname().hashCode());
+        result = prime * result + ((indexName.getName() == null) ? 0 : indexName.getName().hashCode());
         return result;
     }
 
@@ -318,15 +298,80 @@ public abstract class RiakIndex<T> implements Iterable<T>
         
         RiakIndex other = (RiakIndex) obj;
         
-        if (type != other.getType())
+        if (indexName.getType() != other.getType())
         {
             return false;
         }
-        else if (!name.equals(other.name))
+        else if (!indexName.getName().equals(other.indexName.getName()))
         {
             return false;
         }
         
         return true;
+    }
+    
+    /**
+     * This class serves two purposes; encapsulating the name and type of an index
+     * as well as being a builder. 
+     * 
+     * @param <T> the type of index this Name represents
+     */
+    public static abstract class Name<T>
+    {
+        protected String name;
+        protected IndexType type;
+        
+        protected Name(String name, IndexType type)
+        {
+            this.name = stripSuffix(name, type);
+            this.type = type;
+        }
+        
+        /**
+        * If the index name has the suffix, strip it
+        *
+        * @param name
+        * @return the name, stripped
+        */
+       private String stripSuffix(String name, IndexType type)
+       {
+           if (name.endsWith(type.suffix()))
+           {
+               return name.substring(0, name.indexOf(type.suffix()));
+           }
+           else
+           {
+               return name;
+           }
+       }
+       
+       /**
+        * Get the short name of this index
+        * @return the name of this index without the type suffix
+        */
+       public final String getName()
+       {
+           return name;
+       }
+
+       /**
+        * Get the fully qualified name of this index
+        * @return the name of this index including the type suffix
+        */
+       public final String getFullname()
+       {
+           return name + type.suffix();
+       }
+       
+       /**
+     * Get the type of this index
+     * @return the enum representing the type of this index
+     */
+       public final IndexType getType()
+       {
+           return type;
+       }
+        
+        public abstract RiakIndex<T> createIndex();
     }
 }

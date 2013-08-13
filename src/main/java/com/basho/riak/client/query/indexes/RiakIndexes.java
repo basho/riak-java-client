@@ -52,25 +52,25 @@ public class RiakIndexes
     
     /**
      * Returns whether a specific index is present
-     * @param index the {@link RiakIndex} to check for
+     * @param index the {@link RiakIndex.Name} representing the index to check for
      * @return {@code true} if the index is present, {@code false} otherwise
      */
-    public boolean hasIndex(RiakIndex<?> index)
+    public boolean hasIndex(RiakIndex.Name<?> name)
     {
-        return indexes.containsKey(index.getFullname());
+        return indexes.containsKey(name.getFullname());
     }
     
     /**
      * Get an index 
-     * @param index The {@link RiakIndex} to retrieve
+     * @param index The {@link RiakIndex.Name} to retrieve
      * @return The index, or {@code null} if it is not present
      */
-    public <T> RiakIndex<T> getIndex(RiakIndex<T> index)
+    public <T> RiakIndex<T> getIndex(RiakIndex.Name<T> name)
     {
-        RiakIndex<?> existing = indexes.get(index.getFullname());
+        RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)
         {
-            return index.wrap(existing);
+            return name.createIndex().wrap(existing);
         }
         else
         {
@@ -80,16 +80,16 @@ public class RiakIndexes
     
     /**
      * Remove an index
-     * @param index the {@code RiakIndex} to remove
+     * @param index the {@code RiakIndex.Name} representing the index to remove
      * @return the removed {@code RiakIndex} if the index was present, 
      *  {@code null} otherwise
      */
-    public <T> RiakIndex<T> removeIndex(RiakIndex<T> index)
+    public <T> RiakIndex<T> removeIndex(RiakIndex.Name<T> name)
     {
-        RiakIndex<?> removed = indexes.remove(index.getFullname());
+        RiakIndex<?> removed = indexes.remove(name.getFullname());
         if (removed != null)
         {
-            return index.wrap(removed);
+            return name.createIndex().wrap(removed);
         }
         else
         {
@@ -125,19 +125,20 @@ public class RiakIndexes
      * <p>
      * If the index does not exist, it is created and added
      * </p>
-     * @param index the {@code RiakIndex} to which to add the supplied value.
+     * @param index the {@code RiakIndex.Name} representing the index to which to add the supplied value.
      * @param value the new index value
      * @return a reference to this object
      */
-    public <T> RiakIndexes addToIndex(RiakIndex<T> index, T value)
+    public <T> RiakIndexes addToIndex(RiakIndex.Name<T> name, T value)
     {
-        RiakIndex<?> existing = indexes.get(index.getFullname());
+        RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)
         {
-            index.wrap(existing).add(value);
+            name.createIndex().wrap(existing).add(value);
         }
         else
         {
+            RiakIndex<T> index = name.createIndex();
             index.add(value);
             indexes.put(index.getFullname(), index);
         }

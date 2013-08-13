@@ -49,36 +49,36 @@ public class StringBinIndex extends RiakIndex<String>
 {
     private final Charset charset;
     
-    private StringBinIndex(String name, Charset charset)
+    private StringBinIndex(Name name)
     {
-        super(name, IndexType.BIN);
-        this.charset = charset;
+        super(name);
+        this.charset = name.charset;
     }
     
     /**
-     * Static factory method for creating a StringBinIndex.
+     * Static factory method returning a StringBinIndex builder.
      * <p>
      * Values will be converted to/from bytes using the default {@code Charset}
      * <p>
      * @param name the name for this index
-     * @return a {@code StringBinIndex} with the provided name and {@link IndexType#BIN} type.
+     * @return a {@code StringBinIndex#Named } with the provided name and {@link IndexType#BIN} type.
      */
     public static StringBinIndex named(String name)
     {
-        return named(name, Charset.defaultCharset());
+        return new Name(name).createIndex();
     }
     
     /**
-     * Static factory method for creating a StringBinIndex.
+     * Static factory method that returns a StringBinIndex Name.
      * <p>
      * Values will be converted to/from bytes using the provided {@code Charset}
      * <p>
      * @param name the name for this index
-     * @return a {@code StringBinIndex} with the provided name and {@link IndexType#BIN} type.
+     * @return a {@link Builder} with the provided name and {@link IndexType#BIN} type.
      */
     public static StringBinIndex named(String name, Charset charset)
     {
-        return new StringBinIndex(name, charset);
+        return new Name(name, charset).createIndex();
     }
     
     @Override
@@ -91,6 +91,29 @@ public class StringBinIndex extends RiakIndex<String>
     protected String convert(ByteArrayWrapper value)
     {
         return value.toString(charset);
+    }
+    
+    public static class Name extends RiakIndex.Name<String>
+    {
+        private final Charset charset;
+        
+        public Name(String name)
+        {
+            this(name, Charset.defaultCharset());
+        }
+        
+        public Name(String name, Charset charset)
+        {
+            super(name, IndexType.BIN);
+            this.charset = charset;
+        }
+        
+        @Override
+        public StringBinIndex createIndex()
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
     
 }

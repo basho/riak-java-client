@@ -32,9 +32,9 @@ import com.basho.riak.client.util.ByteArrayWrapper;
  */
 public class RawIndex extends RiakIndex<ByteArrayWrapper>
 {
-    private RawIndex(String name, IndexType type)
+    private RawIndex(Name name)
     {
-        super(name, type);
+        super(name);
     }
     
     @Override
@@ -44,7 +44,7 @@ public class RawIndex extends RiakIndex<ByteArrayWrapper>
     }
 
     /**
-     * Static factory method for creating a RawIndex
+     * Static factory method that returns a RawIndex 
      * <p>
      * The appropriate {@link IndexType} must be provided.
      * <p>
@@ -54,6 +54,22 @@ public class RawIndex extends RiakIndex<ByteArrayWrapper>
      */
     public static RawIndex named(String name, IndexType type)
     {
-        return new RawIndex(name, type);
+        return new Name(name, type).createIndex();
     }
+    
+    public static class Name extends RiakIndex.Name<ByteArrayWrapper>
+    {
+        public Name(String name, IndexType type)
+        {
+            super(name, type);
+        }
+        
+        @Override
+        public RawIndex createIndex()
+        {
+            return new RawIndex(this);
+        }
+        
+    }
+    
 }

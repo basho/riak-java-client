@@ -47,19 +47,19 @@ import java.nio.charset.Charset;
  */
 public class LongIntIndex extends RiakIndex<Long>
 {
-    private LongIntIndex(String name)
+    private LongIntIndex(Name name)
     {
-        super(name, IndexType.INT);
+        super(name);
     }
 
     /**
-     * Static factory method for creating a LongIntIndex
+     * Static factory method that returns a LongIntIndex
      * @param name the name for this index
-     * @return a LongIntIndex with the provided name and {@link IndexType#INT} type.
+     * @return a {@code LongIntIndex} with the provided name and {@link IndexType#INT} type.
      */
     public static LongIntIndex named(String name)
     {
-        return new LongIntIndex(name);
+        return new Name(name).createIndex();
     }
     
     @Override
@@ -76,5 +76,20 @@ public class LongIntIndex extends RiakIndex<Long>
         // The Protocol Buffers API returns the bytes for the textual representation
         // of the number rather than an actual bytes for the number :/ 
         return Long.valueOf(value.toString(Charset.forName("UTF-8")));
+    }
+    
+    public static class Name extends RiakIndex.Name<Long>
+    {
+        public Name(String name)
+        {
+            super(name, IndexType.INT);
+        }
+        
+        @Override
+        public LongIntIndex createIndex()
+        {
+            return new LongIntIndex(this);
+        }
+        
     }
 }
