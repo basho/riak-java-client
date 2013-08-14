@@ -74,7 +74,7 @@ public class CharsetUtils
      */
     public static Charset getCharset(String contentType) {
         if (contentType == null) {
-            return ISO_8859_1;
+            return UTF_8;
         }
 
         if (Constants.CTYPE_JSON_UTF8.equals(contentType)) {
