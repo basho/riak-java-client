@@ -18,14 +18,14 @@ package com.basho.riak.client.query.indexes;
 import junit.framework.Assert;
 import org.junit.Test;
 
-public class RiakIndexTest
+public class IndexTypeTest
 {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidIndexName()
     {
 
-        RiakIndex.typeFromFullname("notavaildname");
+        IndexType.typeFromFullname("notavaildname");
 
     }
 
@@ -33,17 +33,24 @@ public class RiakIndexTest
     public void testInvalidIndexTypeExtension()
     {
 
-        RiakIndex.typeFromFullname("notavalidname_notavalidextension");
+        IndexType.typeFromFullname("notavalidname_notavalidextension");
 
     }
 
     @Test
+    public void correctSuffixes()
+    {
+        Assert.assertEquals(IndexType.BIN.suffix(), "_bin");
+        Assert.assertEquals(IndexType.INT.suffix(), "_int");
+    }
+    
+    @Test
     public void testValidIndexTypeExtensions() {
 
-        IndexType indexType = RiakIndex.typeFromFullname("indexname_int");
+        IndexType indexType = IndexType.typeFromFullname("indexname_int");
         Assert.assertTrue(indexType.equals(IndexType.INT));
 
-        IndexType indexType1 = RiakIndex.typeFromFullname("indexname_bin");
+        IndexType indexType1 = IndexType.typeFromFullname("indexname_bin");
         Assert.assertTrue(indexType1.equals(IndexType.BIN));
 
     }

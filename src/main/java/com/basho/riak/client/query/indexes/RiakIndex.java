@@ -76,37 +76,6 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Returns the index type from its fully qualified name <p> There are two
-     * types of Seconrady Indexes (2i) in Riak; "Integer" and "Binary". The
-     * current server API distinguishes between them via a suffix ({@code _int}
-     * and {@code _bin} respectively). This method takes a "fully qualified" 2i
-     * name (e.g. "my_index_int") and returns an enum that represents the type.
-     *
-     * @param fullname a "fully qualified" 2i name ending with the suffix "_int"
-     * or "_bin"
-     * @return the {@link IndexType}
-     * @throws IllegalArgumentException if the supplied index name does not have
-     * a valid suffix.
-     */
-    public static IndexType typeFromFullname(String fullname)
-    {
-        int i = fullname.lastIndexOf('_');
-        if (i != -1)
-        {
-            String suffix = fullname.substring(i);
-            for (IndexType t : IndexType.values())
-            {
-                if (t.suffix().equalsIgnoreCase(suffix))
-                {
-                    return t;
-                }
-            }
-        }
-
-        throw new IllegalArgumentException("Indexname does not end with valid suffix");
-    }
-
-    /**
      * Add a value to this secondary index.
      *
      * @param value the value to add

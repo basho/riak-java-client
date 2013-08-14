@@ -140,7 +140,7 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
                             String name = p.getKey().toStringUtf8();
                             try 
                             {
-                                IndexType type = RiakIndex.typeFromFullname(name);
+                                IndexType type = IndexType.typeFromFullname(name);
                                 indexes.getIndex(new RawIndex.Name(name, type))
                                                 .add(ByteArrayWrapper.unsafeCreate(p.getValue().toByteArray()));
                             }
