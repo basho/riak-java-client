@@ -54,6 +54,9 @@ public class StringBinIndex extends RiakIndex<String>
         return value.toString(charset);
     }
     
+    /**
+     * Encapsulates the name and character set for a StringBinIndex
+     */
     public static class Name extends RiakIndex.Name<StringBinIndex>
     {
         private final Charset charset;

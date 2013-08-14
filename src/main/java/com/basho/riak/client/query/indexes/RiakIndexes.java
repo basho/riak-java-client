@@ -19,24 +19,25 @@ import com.basho.riak.client.query.RiakObject;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A thread safe container for {@link RiakIndex} objects.
+ * Manages {@link RiakIndex} objects to be used with a {@link RiakObject}.
  * <p>
- * This container allows for an arbitrary number and types of {@link RiakIndex}s to
+ * This container manages and allows for an arbitrary number and types of {@link RiakIndex}s to
  * be used with a {@link RiakObject}. 
  * </p>
  * <h4>Working with RiakIndexes</h4>
  * <p>Data in Riak, including secondary indexes, is stored as raw bytes. The conversion
  * to and from bytes is handled by the concrete {@code RiakIndex} implementations 
- * and this container. </p>
+ * and all indexes are managed by this container. </p>
  * <p>
- * Each concrete {@code RiakIndex} includes a hybrid builder named {@code Named}. 
+ * Each concrete {@code RiakIndex} includes a hybrid builder class named {@code Name}. 
  * The methods of this class take an instance of that builder as an 
  * argument to allow for proper type inference and construction of {@code RiakIndex}
- * objects should it be required. 
+ * objects to expose. 
  * </p>
  * <p>{@code getIndex()} will either return a reference to 
- * the existing RiakIndex or atomically add and return a new one. The
- * returned reference is the mutable index; changes are made directly to it.
+ * the existing {@code RiakIndex} or atomically add and return a new one. The
+ * returned reference is of the type provided by the {@code Name} and is the 
+ * mutable index; changes are made directly to it.
  * </p>
  * <blockquote><pre>
  * LongIntIndex myIndex = riakIndexes.getIndex(new LongIntIndex.Name("number_on_hand"));
@@ -69,6 +70,15 @@ public class RiakIndexes
     }
     
     /**
+     * Return the number of indexes present
+     * @return the number of indexes
+     */
+    public int size()
+    {
+        return indexes.size();
+    }
+    
+    /**
      * Returns whether any {@code RiakIndex} objects are present
      * @return {@code true} if there are indexes, {@code false} otherwise
      */
@@ -78,11 +88,11 @@ public class RiakIndexes
     }
     
     /**
-     * Returns whether a specific index is present
+     * Returns whether a specific RiakIndex is present
      * @param name the {@link RiakIndex.Name} representing the index to check for
      * @return {@code true} if the index is present, {@code false} otherwise
      */
-    public boolean hasIndex(RiakIndex.Name<?> name)
+    public <T extends RiakIndex> boolean hasIndex(RiakIndex.Name<T> name)
     {
         return indexes.containsKey(name.getFullname());
     }
@@ -94,7 +104,7 @@ public class RiakIndexes
      * before being returned. 
      * </p>
      * @param name The {@link RiakIndex.Name} of the index to retrieve
-     * @return The requested index.
+     * @return The requested index typed accordingly.
      */
     public  <V extends RiakIndex, T extends RiakIndex.Name<V>> V getIndex(T name)
     {
@@ -119,9 +129,9 @@ public class RiakIndexes
     }
     
     /**
-     * Remove an index
+     * Remove the named RiakIndex 
      * @param name the {@code RiakIndex.Name} representing the index to remove
-     * @return the removed {@code RiakIndex} if the index was present, 
+     * @return the removed {@code RiakIndex} (typed accordingly) if the index was present, 
      *  {@code null} otherwise
      */
     public <V,T extends RiakIndex<V>> T removeIndex(RiakIndex.Name<T> name)

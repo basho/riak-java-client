@@ -18,6 +18,7 @@ package com.basho.riak.client.query.indexes;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -41,20 +42,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * @riak.threadsafety This class is designed to be thread safe.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
+ * @see RiakIndexes
  * @see <a
  * href="http://docs.basho.com/riak/1.3.0/tutorials/querying/Secondary-Indexes/">Secondary
  * Indexes in Riak</a>
  */
 public abstract class RiakIndex<T> implements Iterable<T>
 {
-
-    //private final RiakIndex.Name<?> indexName;
     private final Set<ByteArrayWrapper> values;
     private final IndexType type;
     private final String name;
 
     /**
-     * Constructs a RiakIndex from its Name
+     * Constructs a RiakIndex from the supplied RiakIndex.Name
      * @param name A {@link Name} to build this RiakIndex from.
      */
     protected RiakIndex(Name<?> name)
@@ -180,6 +180,14 @@ public abstract class RiakIndex<T> implements Iterable<T>
         return this;
     }
     
+    /**
+     * Returns an iterator over the set of values in this index.
+     * This iterator is a "weakly consistent" iterator that will never throw 
+     * {@link ConcurrentModificationException}, and guarantees to traverse elements 
+     * as they existed upon construction of the iterator, and may (but is not guaranteed to) 
+     * reflect any modifications subsequent to construction.
+     * @return an Iterator.
+     */
     @Override
     public final Iterator<T> iterator()
     {
@@ -208,8 +216,17 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Return the values in this index as raw bytes
-     *
+     * Return the number of values in this index.
+     * @return the number of values
+     */
+    public final int size()
+    {
+        return values.size();
+    }
+    
+    /**
+     * Return the values in this index as raw bytes.
+     * 
      * @return an unmodifiable view of the raw values in this index.
      */
     public final Set<ByteArrayWrapper> rawValues()
@@ -218,8 +235,8 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Return the values in this index
-     *
+     * Return the values in this index.
+     * The returned {@code Set} is unmodifiable. 
      * @return an unmodifiable view of the values in this index.
      */
     public final Set<T> values()
@@ -233,7 +250,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Get the type of this index
+     * Get the type of this index.
      *
      * @return the enum representing the type of this index
      */
@@ -243,7 +260,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Get the short name of this index
+     * Get the index's name. 
      *
      * @return the name of this index without the type suffix
      */
@@ -263,7 +280,8 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Convert a value to a ByteArrayWrapper <p> Index values are stored
+     * Convert a value to a ByteArrayWrapper. 
+     * <p> Index values are stored
      * internally as bytes. Concrete classes implement this method to convert
      * values to bytes. </p>
      *
@@ -273,7 +291,8 @@ public abstract class RiakIndex<T> implements Iterable<T>
     protected abstract ByteArrayWrapper convert(T value);
 
     /**
-     * Convert bytes to a value type <p> Index values are stored internally as
+     * Convert bytes to a value type. 
+     * <p> Index values are stored internally as
      * bytes. Concrete classes implement this method to convert bytes to values.
      * </p>
      *
