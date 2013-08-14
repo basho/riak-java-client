@@ -1,12 +1,15 @@
 /**
- * <p> Secondary Indexing (2i) in Riak gives developers the ability, at write
- * time, to tag an object stored in Riak with one or more queryable values.
+ * Low-level API for managing Riak Secondary Indexes (2i)
  * 
  * <h4>Introduction</h4>
+ * Secondary Indexing (2i) in Riak gives developers the ability, at write
+ * time, to tag an object stored in Riak with one or more queryable values.
+ * <p>
  * Since the KV data in Riak is completely opaque to 2i, the user must tell 2i exactly
  * what attribute to index on and what its index value should be via key/value
  * metadata. This is different from Search, which parses the data and builds
  * indexes based on a schema. 
+ * </p>
  * <p>
  * The classes in this package provide an API for managing secondary indexes. 
  * </p>
