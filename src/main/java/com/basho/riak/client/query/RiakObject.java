@@ -37,13 +37,18 @@ import java.util.Arrays;
  * Static factory methods are provided to create a new {@code RiakObject}. A 
  * fluent interface/API is provided to allow filling out the newly constructed object; 
  * all methods which mutate the object return a reference to the object:
- * <pre>
- * {@code
+ * </p>
+ * <blockquote><pre>
+ * 
  * RiakObject myObject = RiakObject.create("my_bucket")
  *                                  .setKey("my_key")
  *                                  .setValue("my_value");
- * }
- * </pre>
+ * </pre></blockquote>
+ * <p>
+ * <h5>Working with Metadata</h5>
+ * An object in Riak has a few types of metadata that can be attached; Secondary
+ * Indexes, Links, and User Metadata. Each of these has its own container in
+ * {@code RiakObject} and methods are provided to access them. 
  * </p>
  * <p>
  * @riak.threadsafety RiakObject is designed to be thread safe. All methods 
@@ -528,8 +533,8 @@ public final class RiakObject
      * Returns the value of this RiakObject as a String
      * <p>
      * The value will be coerced to a {@code String} using the 
-     * object's {@code Charset} determined from the content type. If no content type
-     * is present, {@value #DEFAULT_CONTENT_TYPE} is used.
+     * object's {@code Charset} determined from the content type. If no 
+     * character set is present in the content type, UTF-8 is used.
      * </p>
      * @return the internal {@code byte[]} coerced to a {@code String} using the object's {@code Charset} 
      * or {@code null} if the value has not been set.
@@ -882,7 +887,7 @@ public final class RiakObject
      * @return the {@link RiakIndexes} that encapsulates any/all indexes for this RiakObject
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
-    public RiakIndexes getIndexes()
+    public synchronized RiakIndexes getIndexes()
     {
         // Lazy initialization of the internal container.
         if (null == riakIndexes)
@@ -907,7 +912,7 @@ public final class RiakObject
      * @return a reference to this object
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
-    public RiakObject setIndexes(RiakIndexes indexes)
+    public synchronized RiakObject setIndexes(RiakIndexes indexes)
     {
         riakIndexes = indexes;
         return this;
@@ -930,7 +935,7 @@ public final class RiakObject
      * are directly applied to this <code>RaikObject</code>.
      * @return the {@link RiakIndexes} that encapsulates all/any links for this {@code RiakObject}
      */
-    public RiakLinks getLinks()
+    public synchronized RiakLinks getLinks()
     {
         // Lazy initialization of comtainer
         if (null == links)
@@ -952,7 +957,7 @@ public final class RiakObject
      * @param links the {@link RiakLinks} that encapsulates any/all links for this {@code RiakObject}
      * @return a reference to this object
      */
-    public RiakObject setLinks(RiakLinks links)
+    public synchronized RiakObject setLinks(RiakLinks links)
     {
         this.links = links;
         return this;
@@ -976,7 +981,7 @@ public final class RiakObject
      * are directly applied to this <code>RaikObject</code>.
      * @return the {@code RiakUserMetadata} that contains any/all User Meta entries for this {@code RiakObject}
      */
-    public RiakUserMetadata getUserMeta()
+    public synchronized RiakUserMetadata getUserMeta()
     {
         // Lazy initialization of container. 
         if (null == userMeta)
@@ -998,7 +1003,7 @@ public final class RiakObject
      * @param userMeta a RiakUserMetadata object containing User metadata entries.
      * @return a reference to this object
      */
-    public RiakObject setUserMeta(RiakUserMetadata userMeta)
+    public synchronized RiakObject setUserMeta(RiakUserMetadata userMeta)
     {
         this.userMeta = userMeta;
         return this;
