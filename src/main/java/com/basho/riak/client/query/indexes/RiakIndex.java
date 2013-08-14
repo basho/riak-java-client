@@ -225,6 +225,15 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
     
     /**
+     * Determine if this index has any values.
+     * @return {@code true} if this index has no values, {@code false} otherwise.
+     */
+    public final boolean isEmpty()
+    {
+        return values.isEmpty();
+    }
+    
+    /**
      * Return the values in this index as raw bytes.
      * 
      * @return an unmodifiable view of the raw values in this index.
@@ -301,6 +310,12 @@ public abstract class RiakIndex<T> implements Iterable<T>
      */
     protected abstract T convert(ByteArrayWrapper value);
 
+    /**
+     * Returns a hash code value for the object. 
+     * This method is supported for the benefit of hash tables such as those provided by HashMap.
+     * @return a hash code value for this object.
+     * @see RiakIndex#equals(java.lang.Object) 
+     */
     @Override
     public final int hashCode()
     {
@@ -311,6 +326,15 @@ public abstract class RiakIndex<T> implements Iterable<T>
         return result;
     }
 
+    /**
+     * Indicates whether this RiakIndex is "equal to" another RiakIndex.
+     * <p>
+     * Only the name and index type of the RiakIndex are used to determine equality. 
+     * <p>
+     * 
+     * @param obj a RiakIndex
+     * @return true if this RiakIndex has the same name and type
+     */
     @Override
     public final boolean equals(Object obj)
     {

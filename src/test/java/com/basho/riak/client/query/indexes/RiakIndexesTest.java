@@ -18,8 +18,8 @@ package com.basho.riak.client.query.indexes;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -137,6 +137,24 @@ public class RiakIndexesTest
         LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name("foo"));
         assertEquals(stringIndex.size(), 1);
         assertTrue(longIndex.hasValue(Long.MIN_VALUE));
+    }
+    
+    @Test
+    public void wrapping()
+    {
+        RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
+        ByteArrayWrapper baw = ByteArrayWrapper.unsafeCreate("value".getBytes());
+        index.add(baw);
+        
+        StringBinIndex wrapper = indexes.getIndex(new StringBinIndex.Name("foo"));
+        assertNotSame(index, wrapper);
+        assertEquals(index, wrapper);
+        assertTrue(wrapper.hasValue("value"));
+        
+        wrapper.remove("value");
+        
+        index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
+        assertFalse(index.hasValue(baw));
     }
     
 }
