@@ -18,10 +18,11 @@ package com.basho.riak.client.query.indexes;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 /**
- * An index with values as raw bytes.
+ * {@code RiakIndex} implementation used to access a Riak {@code _int} or {@code _bin} 
+ * Secondary Index using {@code ByteArrayWrapper} ({@code byte[]}) values.
  * <p>
  * Data in Riak including secondary indexes is stored as bytes. This implementation 
- * of {@code RiakIndex} provides direct access to those bytes.
+ * of {@code RiakIndex} provides direct access to those bytes. 
  * </p>
  *
  * @author Brian Roach <roach at basho dot com>
@@ -41,7 +42,7 @@ public class RawIndex extends RiakIndex<ByteArrayWrapper>
     }
 
     /**
-     * Encapsulates the name for a RawIndex
+     * Encapsulates the name and {@code IndexType} for a {@code RawIndex}
      */
     public static class Name extends RiakIndex.Name<RawIndex>
     {

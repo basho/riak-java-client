@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Models a Riak Secondary Index (2i).
+ * Abstract base class for modeling a Riak Secondary Index (2i).
  *
  * <p> Secondary Indexing (2i) in Riak gives developers the ability, at write
  * time, to tag an object stored in Riak with one or more queryable values.
@@ -38,13 +38,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p> A {@code RiakIndex} is made up of the index name, a type,
  * then one or more queryable index values. 
  * </p>
- * 
+ * <p>
+ * {@code RiakIndex} instances are created and managed via the {@link RiakIndexes}
+ * container.
+ * </p>
  * @riak.threadsafety This class is designed to be thread safe.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes
  * @see <a
- * href="http://docs.basho.com/riak/1.3.0/tutorials/querying/Secondary-Indexes/">Secondary
+ * href="http://docs.basho.com/riak/latest/dev/using/2i/">Using Secondary
  * Indexes in Riak</a>
  */
 public abstract class RiakIndex<T> implements Iterable<T>
@@ -366,10 +369,13 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
+     * Abstract base class used to encapsulate a {@code RiakIndex} name and type.
+     * 
      * This class serves two purposes; encapsulating the name and type of an
-     * index as well as being a builder.
+     * index as well as being a builder used with {@link RiakIndexes}.
      *
      * @param <T> the RiakIndex this Name encapsulates
+     * @see RiakIndexes
      */
     public static abstract class Name<T extends RiakIndex>
     {

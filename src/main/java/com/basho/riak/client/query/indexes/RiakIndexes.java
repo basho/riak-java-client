@@ -19,7 +19,7 @@ import com.basho.riak.client.query.RiakObject;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages {@link RiakIndex} objects to be used with a {@link RiakObject}.
+ * Container used to instantiate and Manage {@code RiakIndex} objects to be used with a {@code RiakObject}.
  * <p>
  * This container manages and allows for an arbitrary number and types of {@link RiakIndex}s to
  * be used with a {@link RiakObject}. 
@@ -49,6 +49,40 @@ import java.util.concurrent.ConcurrentHashMap;
  * </p>
  * <blockquote><pre>
  * riakIndexes.getIndex(new StringBinIndex.Name("colors")).remove("blue").add("red");
+ * </pre></blockquote>
+ * <h6>Special note when using RawIndex</h6>
+ * A {@code RiakIndex} is uniquely identified by its textual name and {@code IndexType} 
+ * regardless of the concrete {@code RiakIndex} implementation being used to view
+ * or mutate it. This container enforces this uniqueness by being the source of 
+ * all {@code RiakIndex} instances and managing them in a thread-safe way with 
+ * atomic operations. 
+ * <p>
+ * What this means is that any {@code RiakIndex} having the same name and {@code Indextype}
+ * will refer to the same index. This is only important to note if you are mixing 
+ * access to the indexes using {@link RawIndex}. The test case copied below demonstrates
+ * the relation.</p>
+ * <blockquote><pre>
+ * public void wrapping()
+ * {
+ *     // creates or fetches the BIN (_bin) index named "foo", adds a value to it  
+ *     RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
+ *     ByteArrayWrapper baw = ByteArrayWrapper.unsafeCreate("value".getBytes());
+ *     index.add(baw);
+ *       
+ *     // fetches the previously created index as a StringBinIndex
+ *     StringBinIndex wrapper = indexes.getIndex(new StringBinIndex.Name("foo"));
+ *
+ *     // The references are to different objects
+ *     assertNotSame(index, wrapper);
+ *     // The two objects are equal ( index.equals(wrapper) == true )
+ *     assertEquals(index, wrapper);
+ *     // The value exists
+ *     assertTrue(wrapper.hasValue("value"));
+ *     
+ *     // Removing the value via the StringBinIndex is reflected in the RawIndex
+ *     wrapper.remove("value");
+ *     assertFalse(index.hasValue(baw));
+ * }
  * </pre></blockquote>
  * @riak.threadsafety This is a thread safe container. 
  * @author Brian Roach <roach at basho dot com>

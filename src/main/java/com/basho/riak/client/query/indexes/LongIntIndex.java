@@ -20,12 +20,12 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.nio.charset.Charset;
 
 /**
- * An index with long values
+ * {@code RiakIndex} implementation used to access a Riak {@code _int} Secondary Index using {@code Long} values.
  * 
  * <p>
  * Data in Riak including secondary indexes is stored as bytes. This implementation 
  * of {@code RiakIndex} provides access to those bytes by converting to 
- * and from {@code Long} values.  
+ * and from {@code Long} values. Its type is {@link IndexType#INT} 
  * </p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -56,7 +56,7 @@ public class LongIntIndex extends RiakIndex<Long>
     }
     
     /**
-     * Encapsulates the name for a LongIntIndex
+     * Encapsulates the name and {@code IndexType} for a {@code LongIntIndex} 
      */
     public static class Name extends RiakIndex.Name<LongIntIndex>
     {

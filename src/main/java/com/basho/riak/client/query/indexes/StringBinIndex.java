@@ -20,13 +20,23 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.nio.charset.Charset;
 
 /**
- * An index using Strings
+ * {@code RiakIndex} implementation used to access a Riak {@code _bin} Secondary Index using {@code String} values.
  * <p>
  * Data in Riak including secondary indexes is stored as bytes. This implementation 
  * of {@code RiakIndex} provides access to those bytes by converting to 
- * and from {@code String} values.  
+ * and from {@code String} values.  Its type is {@link IndexType#BIN} 
  * </p>
- *
+ * <h6>Riak 2i _bin indexes and sorting</h6>
+ * <p>
+ * One of the key features of 2i is the ability to do range queries. As previously 
+ * noted the values are stored in Riak as bytes. Comparison is done byte-by-byte. UTF-8
+ * lends itself well to this as its byte ordering is the same as its lexical ordering.
+ * </p> 
+ * <p>
+ * If you are using a character set whose byte ordering differs from its lexical ordering,
+ * range queries will be affected.
+ * </p>
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes
@@ -55,7 +65,7 @@ public class StringBinIndex extends RiakIndex<String>
     }
     
     /**
-     * Encapsulates the name and character set for a StringBinIndex
+     * Encapsulates the name, character set, and {@code IndexType} for a {@code StringBinIndex}
      */
     public static class Name extends RiakIndex.Name<StringBinIndex>
     {
