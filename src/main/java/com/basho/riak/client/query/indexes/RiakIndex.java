@@ -90,7 +90,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
         int i = fullname.lastIndexOf('_');
         if (i != -1)
         {
-            String suffix = fullname.substring(i + 1);
+            String suffix = fullname.substring(i);
             for (IndexType t : IndexType.values())
             {
                 if (t.suffix().equalsIgnoreCase(suffix))
