@@ -20,25 +20,12 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.nio.charset.Charset;
 
 /**
- * An index with long values
+ * {@code RiakIndex} implementation used to access a Riak {@code _int} Secondary Index using {@code Long} values.
  * 
  * <p>
  * Data in Riak including secondary indexes is stored as bytes. This implementation 
  * of {@code RiakIndex} provides access to those bytes by converting to 
- * and from {@code Long} values.  
- * </p>
- * <p>
- * A static factory method {@link LongIntIndex#named(java.lang.String) } is provided to
- * create instances of this index and provide the appropriate {@link IndexType#INT} type.
- * A fluent interface is then provided for adding values:
- * <pre>
- * {@code
- * LongIntIndex index = LongIntIndex.named("my_index")
- *                                  .add(123456L)
- *                                  .add(234567L);
- * riakObject.getIndexes().add(index);
- * }
- * </pre>
+ * and from {@code Long} values. Its type is {@link IndexType#INT} 
  * </p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -47,21 +34,11 @@ import java.nio.charset.Charset;
  */
 public class LongIntIndex extends RiakIndex<Long>
 {
-    private LongIntIndex(String name)
+    private LongIntIndex(Name name)
     {
-        super(name, IndexType.INT);
+        super(name);
     }
 
-    /**
-     * Static factory method for creating a LongIntIndex
-     * @param name the name for this index
-     * @return a LongIntIndex with the provided name and {@link IndexType#INT} type.
-     */
-    public static LongIntIndex named(String name)
-    {
-        return new LongIntIndex(name);
-    }
-    
     @Override
     protected ByteArrayWrapper convert(Long value)
     {
@@ -76,5 +53,27 @@ public class LongIntIndex extends RiakIndex<Long>
         // The Protocol Buffers API returns the bytes for the textual representation
         // of the number rather than an actual bytes for the number :/ 
         return Long.valueOf(value.toString(Charset.forName("UTF-8")));
+    }
+    
+    /**
+     * Encapsulates the name and {@code IndexType} for a {@code LongIntIndex} 
+     */
+    public static class Name extends RiakIndex.Name<LongIntIndex>
+    {
+        /**
+         * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
+         * @param name The name of this index.
+         */
+        public Name(String name)
+        {
+            super(name, IndexType.INT);
+        }
+        
+        @Override
+        LongIntIndex createIndex()
+        {
+            return new LongIntIndex(this);
+        }
+        
     }
 }

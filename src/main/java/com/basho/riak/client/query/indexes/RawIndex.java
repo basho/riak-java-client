@@ -18,23 +18,21 @@ package com.basho.riak.client.query.indexes;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 /**
- * An index with values as raw bytes.
+ * {@code RiakIndex} implementation used to access a Riak {@code _int} or {@code _bin} 
+ * Secondary Index using {@code ByteArrayWrapper} ({@code byte[]}) values.
  * <p>
  * Data in Riak including secondary indexes is stored as bytes. This implementation 
- * of {@code RiakIndex} provides direct access to those bytes.
+ * of {@code RiakIndex} provides direct access to those bytes. 
  * </p>
- *  <p>
- * A static factory method {@link RawIndex#named(java.lang.String, com.basho.riak.client.query.indexes.IndexType) } 
- * is provided to create instances of this index. 
- * </p>
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public class RawIndex extends RiakIndex<ByteArrayWrapper>
 {
-    private RawIndex(String name, IndexType type)
+    private RawIndex(Name name)
     {
-        super(name, type);
+        super(name);
     }
     
     @Override
@@ -44,16 +42,26 @@ public class RawIndex extends RiakIndex<ByteArrayWrapper>
     }
 
     /**
-     * Static factory method for creating a RawIndex
-     * <p>
-     * The appropriate {@link IndexType} must be provided.
-     * <p>
-     * @param name the name for this index
-     * @param type the type for this index
-     * @return a {@code RawIndex} with the provided name and index type. 
+     * Encapsulates the name and {@code IndexType} for a {@code RawIndex}
      */
-    public static RawIndex named(String name, IndexType type)
+    public static class Name extends RiakIndex.Name<RawIndex>
     {
-        return new RawIndex(name, type);
+        /**
+         * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
+         * @param name The name of this index.
+         * @param type The IndexType of this index
+         */
+        public Name(String name, IndexType type)
+        {
+            super(name, type);
+        }
+        
+        @Override
+        RawIndex createIndex()
+        {
+            return new RawIndex(this);
+        }
+        
     }
+    
 }

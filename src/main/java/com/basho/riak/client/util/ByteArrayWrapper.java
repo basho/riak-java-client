@@ -114,7 +114,6 @@ public final class ByteArrayWrapper
         return data;
     }
         
-    
     @Override
     public boolean equals(Object other)
     {
