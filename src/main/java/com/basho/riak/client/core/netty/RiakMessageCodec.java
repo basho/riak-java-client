@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.RiakPbMessage;
+import com.basho.riak.client.core.RiakMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.MessageBuf;
 import io.netty.buffer.Unpooled;
@@ -25,20 +25,21 @@ import io.netty.channel.ChannelOutboundMessageHandler;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
-import io.netty.handler.codec.PrematureChannelClosureException;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakPbMessageCodec extends CombinedChannelDuplexHandler 
-    implements ChannelInboundByteHandler, ChannelOutboundMessageHandler<RiakPbMessage>
+public class RiakMessageCodec extends CombinedChannelDuplexHandler 
+    implements ChannelInboundByteHandler, ChannelOutboundMessageHandler<RiakMessage>
 {
     private final AtomicInteger inFlight = new AtomicInteger();
     
-    public RiakPbMessageCodec()
+    public RiakMessageCodec()
     {
         init(new Decoder(), new Encoder());
     }
@@ -70,7 +71,7 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
     }
 
     @Override
-    public MessageBuf<RiakPbMessage> newOutboundBuffer(ChannelHandlerContext chc) throws Exception
+    public MessageBuf<RiakMessage> newOutboundBuffer(ChannelHandlerContext chc) throws Exception
     {
         return encoder().newOutboundBuffer(chc);
     }
@@ -81,10 +82,10 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
         encoder().freeOutboundBuffer(chc);
     }
 
-    private final class Encoder extends MessageToMessageEncoder<RiakPbMessage>
+    private final class Encoder extends MessageToMessageEncoder<RiakMessage>
     {
         @Override
-        protected Object encode(ChannelHandlerContext chc, RiakPbMessage msg) throws Exception
+        protected Object encode(ChannelHandlerContext chc, RiakMessage msg) throws Exception
         {
             int length = msg.getData().length + 1;
             ByteBuf header = Unpooled.buffer(5);
@@ -97,6 +98,8 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
     
     private final class Decoder extends ByteToMessageDecoder
     {
+        private final Logger logger = LoggerFactory.getLogger(RiakMessageCodec.class);
+        
         @Override
         protected Object decode(ChannelHandlerContext chc, ByteBuf inbndn) throws Exception
         {
@@ -120,7 +123,7 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
             byte[] array = new byte[length - 1];
             inbndn.readBytes(array);
             inFlight.decrementAndGet();
-            return new RiakPbMessage(code,array);
+            return new RiakMessage(code,array);
         }
         
         @Override
@@ -130,9 +133,8 @@ public class RiakPbMessageCodec extends CombinedChannelDuplexHandler
             int missingResponses = inFlight.get();
             if (missingResponses > 0)
             {
-                ctx.fireExceptionCaught(new PrematureChannelClosureException(
-                    "channel gone inactive with " + missingResponses + 
-                    " missing response(s)"));
+                logger.debug("channel id:{} gone inactive with {} missing response(s)", 
+                             ctx.channel().id(), missingResponses);
             }
         }
     }

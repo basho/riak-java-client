@@ -15,9 +15,9 @@
  */
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.RiakPbMessage;
+import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.RiakResponseListener;
-import com.basho.riak.client.util.pb.RiakMessageCodes;
+import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,19 +29,24 @@ import io.netty.handler.timeout.ReadTimeoutException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<RiakPbMessage>
+public class RiakResponseHandler extends ChannelInboundMessageHandlerAdapter<RiakMessage>
 {
 
-    private final RiakResponseListener listener;
+    private RiakResponseListener listener;
     private boolean timedOut = false;
     
-    public RiakPbMessageHandler(RiakResponseListener listener)
+    public RiakResponseHandler()
+    {
+        super();
+    }
+    
+    public void setListener(RiakResponseListener listener)
     {
         this.listener = listener;
     }
     
     @Override
-    public void messageReceived(ChannelHandlerContext chc, RiakPbMessage msg) throws Exception
+    public void messageReceived(ChannelHandlerContext chc, RiakMessage msg) throws Exception
     {
         if (msg.getCode() == RiakMessageCodes.MSG_ErrorResp)
         {
@@ -55,26 +60,16 @@ public class RiakPbMessageHandler extends ChannelInboundMessageHandlerAdapter<Ri
         {
             listener.onSuccess(chc.channel(), msg);
         }
-        chc.channel().pipeline().remove(this);
     }
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception 
     {
-        if (cause instanceof ReadTimeoutException)
-        {
-            timedOut = true;
-            listener.onException(ctx.channel(), cause);
-        }
-        else
-        {
-            if (!timedOut)
-            {
-                listener.onException(ctx.channel(), cause);
-            }
-            ctx.channel().pipeline().remove(this);
-        }
+        // On any exception in the pipeline we explitly close the context here 
+        // so the channel doesn't get reused by the ConnectionPool. 
+        ctx.close();
+        listener.onException(ctx.channel(), cause);
     }
     
 }

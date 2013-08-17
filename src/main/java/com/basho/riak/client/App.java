@@ -3,9 +3,7 @@ package com.basho.riak.client;
 import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.Protocol;
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
@@ -22,8 +20,8 @@ public class App
 {
     public static void main( String[] args ) throws UnknownHostException, InterruptedException, ExecutionException
     {
-        RiakNode.Builder builder = new RiakNode.Builder(Protocol.PB)
-                                        .withMinConnections(Protocol.PB, 10);
+        RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withMinConnections(10);
         
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();

@@ -15,18 +15,20 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,9 +53,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     }
     
     private final Logger logger = LoggerFactory.getLogger(RiakNode.class);
-    private final EnumMap<Protocol, ConnectionPool> connectionPoolMap =
-        new EnumMap<Protocol, ConnectionPool>(Protocol.class);
-    private final String remoteAddress;
+    private final ConnectionPool connectionPool;
     private final List<NodeStateListener> stateListeners = 
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
     
@@ -62,15 +62,14 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
     private volatile State state;
-    private Map<Integer, InProgressOperation> inProgressMap = 
-        new ConcurrentHashMap<Integer, InProgressOperation>();
+    private Map<Integer, FutureOperation> inProgressMap = 
+        new ConcurrentHashMap<Integer, FutureOperation>();
     private volatile int readTimeoutInMillis;
     
     // TODO: Harden to prevent operation from being executed > 1 times?
     // TODO: how many channels on one event loop? 
     private RiakNode(Builder builder) throws UnknownHostException
     {
-        this.remoteAddress = builder.remoteAddress;
         this.readTimeoutInMillis = builder.readTimeout;
         this.executor = builder.executor;
         
@@ -79,13 +78,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             this.bootstrap = builder.bootstrap.clone();
         }
         
-        for (Map.Entry<Protocol, ConnectionPool.Builder> e : builder.protocolMap.entrySet())
-        {
-            ConnectionPool cp = e.getValue()
-                                .withRemoteAddress(remoteAddress)
-                                .build();
-            connectionPoolMap.put(e.getKey(), cp);
-        }
+        this.connectionPool = builder.poolBuilder.build();
         this.state = State.CREATED;
     }
         
@@ -94,7 +87,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         if (Arrays.binarySearch(allowedStates, state) < 0)
         {
             logger.debug("IllegalStateException; remote: {} required: {} current: {} ",
-                         remoteAddress, Arrays.toString(allowedStates), state);
+                         connectionPool.getRemoteAddress(), Arrays.toString(allowedStates), state);
             throw new IllegalStateException("required: " 
                 + Arrays.toString(allowedStates) 
                 + " current: " + state );
@@ -119,13 +112,11 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             ownsBootstrap = true;
         }
         
-        for (Map.Entry<Protocol, ConnectionPool> e : connectionPoolMap.entrySet())
-        {
-            e.getValue().addStateListener(this);
-            e.getValue().setBootstrap(bootstrap);
-            e.getValue().setExecutor(executor);
-            e.getValue().start();
-        }
+        connectionPool.addStateListener(this)
+                      .setBootstrap(bootstrap)
+                      .setExecutor(executor)
+                      .start();
+        
         state = State.RUNNING;
         notifyStateListeners();
         return this;
@@ -134,12 +125,9 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public synchronized void shutdown()
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
-        logger.info("Riak node shutting down; {}", remoteAddress);
-        for (Map.Entry<Protocol, ConnectionPool> e : connectionPoolMap.entrySet())
-        {
-            e.getValue().shutdown();
-        }
-        // Notifications from the pools change our state. 
+        logger.info("Riak node shutting down; {}", connectionPool.getRemoteAddress());
+        connectionPool.shutdown();
+        // Notifications from the pool change our state. 
     }
     
     /**
@@ -216,54 +204,30 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         
-        Protocol protoToUse = chooseProtocol(operation);
-        
-        if (null == protoToUse)
-        {
-            throw new IllegalArgumentException("Node does not support required protocol");
-        }
-        
         operation.setLastNode(this);
-        Channel channel = connectionPoolMap.get(protoToUse).getConnection();
+        Channel channel = connectionPool.getConnection();
         if (channel != null)
         {
-            // add callback handler to end of pipeline which will callback to here
-            // These remove themselves once they notify the listener
+            // Add a timeout handler to the pipeline if the readTIeout is set
             if (readTimeoutInMillis > 0)
             {
                 channel.pipeline()
-                    .addLast("readTimeoutHandler", 
+                    .addAfter(Constants.OPERATION_ENCODER, Constants.TIMEOUT_HANDLER, 
                              new ReadTimeoutHandler(readTimeoutInMillis, TimeUnit.MILLISECONDS));
             }
-            channel.pipeline().addLast("riakResponseHandler", protoToUse.responseHandler(this));
-            inProgressMap.put(channel.id(), new InProgressOperation(protoToUse, operation));
+            
+            //TODO: figure out a cleaner way to do this? 
+            channel.pipeline().get(Constants.RESPONSE_HANDLER_CLASS).setListener(this);
+            inProgressMap.put(channel.id(), operation);
             ChannelFuture writeFuture = channel.write(operation); 
             writeFuture.addListener(this);
-            logger.debug("Operation executed on node {} {}", remoteAddress, channel.remoteAddress());
+            logger.debug("Operation executed on node {} {}", connectionPool.getRemoteAddress(), channel.remoteAddress());
             return true;
         }
         else
         {
             return false;
         }
-    }
-    
-    private Protocol chooseProtocol(FutureOperation operation)
-    {
-        // I seriously have no idea why this is unchecked
-        @SuppressWarnings("unchecked") 
-        List<Protocol> prefList = operation.getProtocolPreflist();
-        Protocol protoToUse = null;
-        for (Protocol p : prefList)
-        {
-            if (connectionPoolMap.keySet().contains(p))
-            {
-                protoToUse = p;
-                break;
-            }
-        }
-        
-        return protoToUse;
     }
     
     @Override
@@ -274,37 +238,33 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             case HEALTH_CHECKING:
                 this.state = State.HEALTH_CHECKING;
                 notifyStateListeners();
-                logger.info("RiakNode offline, health checking; {}", remoteAddress);
+                logger.info("RiakNode offline, health checking; {}", connectionPool.getRemoteAddress());
                 break;
             case RUNNING:
                 this.state = State.RUNNING;
                 notifyStateListeners();
-                logger.info("RiakNode running; {}", remoteAddress);
+                logger.info("RiakNode running; {}", connectionPool.getRemoteAddress());
                 break;
             case SHUTTING_DOWN:
                 if (this.state == State.RUNNING ||  this.state == State.HEALTH_CHECKING)
                 {
                     this.state = State.SHUTTING_DOWN;
                     notifyStateListeners();
-                    logger.info("RiakNode shutting down due to pool shutdown; {}", remoteAddress);
+                    logger.info("RiakNode shutting down due to pool shutdown; {}", connectionPool.getRemoteAddress());
                 }
                 break;
             case SHUTDOWN:
-                connectionPoolMap.remove(pool.getProtocol());
-                if (connectionPoolMap.isEmpty())
+                this.state = State.SHUTDOWN;
+                notifyStateListeners();
+                if (ownsExecutor)
                 {
-                    this.state = State.SHUTDOWN;
-                    notifyStateListeners();
-                    if (ownsExecutor)
-                    {
-                        executor.shutdown();
-                    }
-                    if (ownsBootstrap)
-                    {
-                        bootstrap.shutdown();
-                    }
-                    logger.info("RiakNode shut down due to pool shutdown; {}", remoteAddress);
+                    executor.shutdown();
                 }
+                if (ownsBootstrap)
+                {
+                    bootstrap.shutdown();
+                }
+                logger.info("RiakNode shut down due to pool shutdown; {}", connectionPool.getRemoteAddress());
                 break;
             default:
                 break;
@@ -312,35 +272,36 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     }
 
     @Override
-    public void onSuccess(Channel channel, RiakResponse response)
+    public void onSuccess(Channel channel, RiakMessage response)
     {
-        logger.debug("Operation onSuccess() channel: {}", channel.remoteAddress());
+        logger.debug("Operation onSuccess() channel: id:{} {}", channel.id(), channel.remoteAddress());
         if (readTimeoutInMillis > 0)
         {
-            channel.pipeline().remove("readTimeoutHandler");
+            channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
         }
-        InProgressOperation inProgress = inProgressMap.remove(channel.id());
-        connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
-        inProgress.getOperation().setResponse(response);
+        FutureOperation inProgress = inProgressMap.remove(channel.id());
+        connectionPool.returnConnection(channel);
+        inProgress.setResponse(response);
     }
 
     @Override
     public void onException(Channel channel, Throwable t)
     {
-        logger.debug("Operation onException() channel: {} {}", channel.remoteAddress(), t);
+        logger.debug("Operation onException() channel: id:{} {} {}", 
+                     channel.id(), channel.remoteAddress(), t);
         if (readTimeoutInMillis > 0)
         {
-            channel.pipeline().remove("readTimeoutHandler");
+            channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
         }
-        InProgressOperation inProgress = inProgressMap.remove(channel.id());
-        // There is an edge case where a write could fail after the message encoding
-        // occured in the pipeline. In that case we'll get an exception from the 
-        // handler due to it thinking there was a request in flight 
-        // but will not have an entry in inProgress
+        FutureOperation inProgress = inProgressMap.remove(channel.id());
+        // There are fail cases where multiple exceptions are thrown from 
+        // the pipeline. In that case we'll get an exception from the 
+        // handler but will not have an entry in inProgress because it's
+        // already been handled.
         if (inProgress != null)
         {
-            connectionPoolMap.get(inProgress.getProtocol()).returnConnection(channel);
-            inProgress.getOperation().setException(t);
+            connectionPool.returnConnection(channel);
+            inProgress.setException(t);
         }
     }
     
@@ -351,34 +312,14 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         // See how the write worked out ...
         if (!future.isSuccess())
         {
-            InProgressOperation inProgress = inProgressMap.remove(future.channel().id());
-            logger.info("Write failed on node {} {}", remoteAddress, inProgress.getProtocol());
-            connectionPoolMap.get(inProgress.getProtocol()).returnConnection(future.channel());
-            inProgress.getOperation().setException(future.cause());
+            FutureOperation inProgress = inProgressMap.remove(future.channel().id());
+            logger.info("Write failed on node {}", connectionPool.getRemoteAddress());
+            connectionPool.returnConnection(future.channel());
+            inProgress.setException(future.cause());
         }
     }
     
-    private class InProgressOperation
-    {
-        private final Protocol p;
-        private final FutureOperation operation;
-        
-        public InProgressOperation(Protocol p, FutureOperation operation)
-        {
-            this.p = p;
-            this.operation = operation;
-        }
-        
-        public Protocol getProtocol()
-        {
-            return p;
-        }
-        
-        public FutureOperation getOperation()
-        {
-            return operation;
-        }
-    }
+    
     
     /**
      * Returns the {@code remoteAddress} for this RiakNode
@@ -386,7 +327,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
      */
     public String getRemoteAddress()
     {
-        return this.remoteAddress;
+        return connectionPool.getRemoteAddress();
     }
     
     /**
@@ -422,48 +363,33 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     
     /**
      * Builder used to construct a RiakNode.
-     * 
-     * <p>If a protocol is not specified protocol buffers will be used on the default 
-     * port.
-     * </p>
-     * <p>
-     * Note that many of these options revolve around constructing the underlying
-     * {@link ConnectionPool}s used by this node. 
-     * </p>
-     * 
+     * Most of these options are passed directly to a {@link ConnectionPool.Builder}. 
+     * The default values are documented in that class. 
      * 
      */
     public static class Builder
     {
         /**
-         * The default remote address to be used if not specified: {@value #DEFAULT_REMOTE_ADDRESS}
-         * @see #withRemoteAddress(java.lang.String) 
-         */
-        public final static String DEFAULT_REMOTE_ADDRESS = "127.0.0.1";
-        /**
-         * The default read timeout in milliseconds if not specified: {@value #DEFAULT_READ_TIMEOUT}
+         * The default TCP read timeout in milliseconds if not specified: {@value #DEFAULT_TCP_READ_TIMEOUT}
          * A value of {@code 0} means to wait indefinitely 
          * @see #withReadTimeout(int) 
          */
-        public final static int DEFAULT_READ_TIMEOUT = 0;
+        public final static int DEFAULT_TCP_READ_TIMEOUT = 0;
         
-        private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
+        private final ConnectionPool.Builder poolBuilder = new ConnectionPool.Builder();
+        
         private ScheduledExecutorService executor;
-        private boolean ownsExecutor;
         private Bootstrap bootstrap;
-        private boolean ownsBootstrap;
-        private int readTimeout = DEFAULT_READ_TIMEOUT;
-        private final EnumMap<Protocol, ConnectionPool.Builder> protocolMap = 
-            new EnumMap<Protocol, ConnectionPool.Builder>(Protocol.class);
+        private int readTimeout = DEFAULT_TCP_READ_TIMEOUT;
         
-        
-        public Builder(Protocol p)
+        /**
+         * Default constructor. Returns a new builder for a RiakNode with 
+         * default values set.
+         */
+        public Builder()
         {
-            getPoolBuilder(p);
+            
         }
-        
-        // Used by the from() method
-        private Builder() {}
         
         /**
          * Sets the remote address for this RiakNode. 
@@ -472,95 +398,77 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
          */
         public Builder withRemoteAddress(String remoteAddress)
         {
-            this.remoteAddress = remoteAddress;
+            poolBuilder.withRemoteAddress(remoteAddress);
             return this;
         }
         
-        /**
-         * Specifies a protocol this node will support using the default port
-         * 
-         * @param p - the protocol
-         * @return this
-         * @see Protocol
-         */
-        public Builder addProtocol(Protocol p)
-        {
-            getPoolBuilder(p);
-            return this;
-        }
-        
-        /**
-         * Specifies a protocol this node will support using the supplied port
+       /**
+         * Specifies the remote port for this RiakNode.
          * @param p - the protocol
          * @param port - the port
          * @return this
-         * @see Protocol
          */
-        public Builder withPort(Protocol p, int port)
+        public Builder withRemotePort(int port)
         {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withPort(port);
+            poolBuilder.withRemotePort(port);
             return this;
         }
         
         /**
-         * Specifies the minimum number for connections to be maintained for the specific protocol
+         * Specifies the minimum number for connections to be maintained
          * @param p 
          * @param minConnections
          * @return this
          * @see ConnectionPool.Builder#withMinConnections(int) 
          */
-        public Builder withMinConnections(Protocol p, int minConnections)
+        public Builder withMinConnections(int minConnections)
         {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withMinConnections(minConnections);
+            poolBuilder.withMinConnections(minConnections);
             return this;
         }
         
         /**
-         * Specifies the maximum number of connections allowed for the specific protocol
+         * Specifies the maximum number of connections allowed.
          * @param p
          * @param maxConnections
          * @return this
          * @see ConnectionPool.Builder#withMaxConnections(int) 
          */
-        public Builder withMaxConnections(Protocol p, int maxConnections)
+        public Builder withMaxConnections(int maxConnections)
         {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withMaxConnections(maxConnections);
+            poolBuilder.withMaxConnections(maxConnections);
             return this;
         }
         
         /**
-         * Specifies the idle timeout for the specific protocol
+         * Specifies the idle timeout for connections.
          * @param p
          * @param idleTimeoutInMillis
          * @return this
          * @see ConnectionPool.Builder#withIdleTimeout(int) 
          */
-        public Builder withIdleTimeout(Protocol p, int idleTimeoutInMillis)
+        public Builder withIdleTimeout(int idleTimeoutInMillis)
         {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withIdleTimeout(idleTimeoutInMillis);
+            poolBuilder.withIdleTimeout(idleTimeoutInMillis);
             return this;
         }
         
         /**
-         * Specifies the connection timeout for the specific protocol
+         * Specifies the connection timeout when creating new connections.
          * @param p
          * @param connectionTimeoutInMillis
          * @return this
          * @see ConnectionPool.Builder#withConnectionTimeout(int) 
          */
-        public Builder withConnectionTimeout(Protocol p, int connectionTimeoutInMillis)
+        public Builder withConnectionTimeout(int connectionTimeoutInMillis)
         {
-            ConnectionPool.Builder builder = getPoolBuilder(p);
-            builder.withConnectionTimeout(connectionTimeoutInMillis);
+            poolBuilder.withConnectionTimeout(connectionTimeoutInMillis);
             return this;
         }
         
+        //TODO: Now that we have operation timeouts, do we really want to expose the TCP read timeout?
         /**
-         * Specifies the read timeout when waiting for a reply from Riak
+         * Specifies the TCP read timeout when waiting for a reply from Riak.
          * @param readTimeoutInMillis
          * @return this
          * @see #DEFAULT_READ_TIMEOUT
@@ -573,7 +481,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         
         /**
          * Provides an executor for this node to use for internal maintenance tasks.
-         * This same executor will be used for this node's connection pool(s)
+         * This same executor will be used for this node's connection pool
          * @param executor
          * @return this
          * @see ConnectionPool.Builder#withExecutor(java.util.concurrent.ScheduledExecutorService) 
@@ -597,28 +505,19 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             return this;
         }
         
-        private ConnectionPool.Builder getPoolBuilder(Protocol p)
+        /**
+         * The Netty {@code ChannelInitializer} to use with the connection pool.
+         * @param initializer the initializer
+         * @return this
+         * @see ConnectionPool.Builder#withChannelInitializer(io.netty.channel.ChannelInitializer) 
+         */
+        public Builder withChannelInitializer(ChannelInitializer<SocketChannel> initializer)
         {
-            ConnectionPool.Builder builder = protocolMap.get(p);
-            if (builder == null)
-            {
-                builder = new ConnectionPool.Builder(p);
-                protocolMap.put(p, builder);
-            }
-            return builder;
+            poolBuilder.withChannelInitializer(initializer);
+            return this;
         }
         
-        public static Builder from(Builder b)
-        {
-            Builder builder = new Builder();
-            builder.bootstrap = b.bootstrap;
-            builder.executor = b.executor;
-            builder.ownsBootstrap = b.ownsBootstrap;
-            builder.ownsExecutor = b.ownsExecutor;
-            builder.protocolMap.putAll(b.protocolMap);
-            builder.remoteAddress = b.remoteAddress;
-            return builder;
-        }
+        
         
         /**
          * Builds a RiakNode.
@@ -633,6 +532,15 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         }
         
         
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes 
+         * using the supplied addresses. 
+         * @param builder a configured builder
+         * @param remoteAddresses a list of IP addresses or FQDN
+         * @return a list of constructed RiakNodes
+         * @throws UnknownHostException if a supplied FQDN can not be resolved. 
+         */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses) 
             throws UnknownHostException
         {
@@ -644,19 +552,5 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             }
             return nodes;
         }
-        
-        public static List<RiakNode.Builder> createBuilderList(Builder builder, List<String> remoteAddresses)
-        {
-            List<RiakNode.Builder> builders = new ArrayList<RiakNode.Builder>(remoteAddresses.size());
-            for (String remoteAddress : remoteAddresses)
-            {
-                Builder b = Builder.from(builder);
-                b.withRemoteAddress(remoteAddress);
-                builders.add(b);
-            }
-            return builders;
-        }
-        
     }
-    
 }

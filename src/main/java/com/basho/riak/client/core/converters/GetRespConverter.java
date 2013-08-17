@@ -15,21 +15,20 @@
  */
 package com.basho.riak.client.core.converters;
 
+import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.IndexType;
 import com.basho.riak.client.query.indexes.RawIndex;
-import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.query.links.RiakLinks;
 import com.basho.riak.client.util.ByteArrayWrapper;
-import com.basho.riak.client.util.pb.RiakMessageCodes;
+import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.netty.handler.codec.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,8 +53,11 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
     }
 
     @Override
-    public List<RiakObject> convert(byte pbMessageCode, byte[] data) throws ExecutionException
+    public List<RiakObject> convert(RiakMessage message) throws ExecutionException
     {
+        byte pbMessageCode = message.getCode();
+        byte[] data = message.getData();
+        
         if (RiakMessageCodes.MSG_GetResp != pbMessageCode)
         {
             throw new ExecutionException("Wrong response; expected "
@@ -193,9 +195,4 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
         }
     }
 
-    @Override
-    public List<RiakObject> convert(HttpResponse response, byte[] content) throws ExecutionException
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

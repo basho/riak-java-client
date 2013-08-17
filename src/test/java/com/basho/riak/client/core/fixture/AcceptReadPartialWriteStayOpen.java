@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.fixture;
 
-import com.basho.riak.client.core.Protocol;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -30,23 +29,15 @@ import java.util.Arrays;
  */
 public class AcceptReadPartialWriteStayOpen extends Acceptor
 {
-    public AcceptReadPartialWriteStayOpen(ServerSocketChannel server, Protocol protocol)
+    public AcceptReadPartialWriteStayOpen(ServerSocketChannel server)
     {
-        super(server, protocol);
+        super(server);
     }
     
     @Override
     Acceptor duplicate()
     {
-        return new AcceptReadPartialWriteStayOpen(server, protocol);
-    }
-
-    @Override
-    boolean writeHttp(SelectionKey key) throws IOException
-    {
-        Charset charSet = Charset.defaultCharset();
-        ((WritableByteChannel)key.channel()).write(charSet.encode(httpMessage.substring(0, httpMessage.length() / 2)));
-        return false;
+        return new AcceptReadPartialWriteStayOpen(server);
     }
 
     @Override

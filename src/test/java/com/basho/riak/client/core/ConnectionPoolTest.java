@@ -46,10 +46,9 @@ public class ConnectionPoolTest
     @Test
     public void builderProducesDefaultPool() throws UnknownHostException
     {
-        ConnectionPool.Builder builder = new ConnectionPool.Builder(Protocol.PB);
+        ConnectionPool.Builder builder = new ConnectionPool.Builder();
         ConnectionPool pool = builder.build();
         
-        assertEquals(pool.getProtocol(), Protocol.PB);
         assertEquals(pool.getPoolState(), State.CREATED);
         assertEquals(pool.getMaxConnections(), Integer.MAX_VALUE);
         assertEquals(pool.getConnectionTimeout(), ConnectionPool.Builder.DEFAULT_CONNECTION_TIMEOUT);
@@ -72,18 +71,17 @@ public class ConnectionPoolTest
         
         doReturn(BOOTSTRAP).when(BOOTSTRAP).clone();
         
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+        ConnectionPool pool = new ConnectionPool.Builder()
                                     .withIdleTimeout(IDLE_TIMEOUT)
                                     .withConnectionTimeout(CONNECTION_TIMEOUT)
                                     .withMinConnections(MIN_CONNECTIONS)
                                     .withMaxConnections(MAX_CONNECTIONS)
-                                    .withPort(PORT)
+                                    .withRemotePort(PORT)
                                     .withRemoteAddress(REMOTE_ADDRESS)
                                     .withExecutor(EXECUTOR)
                                     .withBootstrap(BOOTSTRAP)
                                     .build();
         
-        assertEquals(pool.getProtocol(), Protocol.PB);
         assertEquals(pool.getPoolState(), State.CREATED);
         assertEquals(pool.getMaxConnections(), MAX_CONNECTIONS);
         assertEquals(pool.getConnectionTimeout(), CONNECTION_TIMEOUT);
@@ -98,7 +96,7 @@ public class ConnectionPoolTest
     @Test
     public void poolRegistersListener() throws UnknownHostException
     {
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB).build();
+        ConnectionPool pool = new ConnectionPool.Builder().build();
         PoolStateListener listener = mock(PoolStateListener.class);
         pool.addStateListener(listener);
         boolean removed = pool.removeStateListener(listener);
@@ -108,7 +106,7 @@ public class ConnectionPoolTest
     @Test
     public void poolNotifiesListeners() throws UnknownHostException, Exception
     {
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB).build();
+        ConnectionPool pool = new ConnectionPool.Builder().build();
         PoolStateListener listener = mock(PoolStateListener.class);
         pool.addStateListener(listener);
         Whitebox.invokeMethod(pool, "notifyStateListeners", new Object[0] );
@@ -132,7 +130,7 @@ public class ConnectionPoolTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
         
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+        ConnectionPool pool = new ConnectionPool.Builder()
                                     .withBootstrap(bootstrap)
                                     .withMinConnections(MIN_CONNECTIONS)
                                     .build();
@@ -159,7 +157,7 @@ public class ConnectionPoolTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
         
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+        ConnectionPool pool = new ConnectionPool.Builder()
                                     .withBootstrap(bootstrap)
                                     .withMaxConnections(MAX_CONNECTIONS)
                                     .build();
@@ -195,7 +193,7 @@ public class ConnectionPoolTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
         
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+        ConnectionPool pool = new ConnectionPool.Builder()
                                     .withBootstrap(bootstrap)
                                     .withMaxConnections(MAX_CONNECTIONS)
                                     .build();
@@ -226,7 +224,7 @@ public class ConnectionPoolTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
         
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+        ConnectionPool pool = new ConnectionPool.Builder()
                                     .withBootstrap(bootstrap)
                                     .build();
         
@@ -263,7 +261,7 @@ public class ConnectionPoolTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
         
-        ConnectionPool pool = new ConnectionPool.Builder(Protocol.PB)
+        ConnectionPool pool = new ConnectionPool.Builder()
                                     .withBootstrap(bootstrap)
                                     .withMinConnections(1)
                                     .withIdleTimeout(1)

@@ -15,28 +15,26 @@
  */
 package com.basho.riak.client.core;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 
 
 /**
  * @author Brian Roach <roach at basho dot com>
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(FutureOperation.class)
+@PrepareForTest({FutureOperation.class, RiakMessage.class})
 public class FutureOperationTest
 {
     @Test
@@ -57,7 +55,7 @@ public class FutureOperationTest
 
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = mock(RiakMessage.class);
 
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setException(new Exception());
@@ -101,7 +99,7 @@ public class FutureOperationTest
 
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setResponse(response);
@@ -116,7 +114,7 @@ public class FutureOperationTest
 
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         OperationRetrier retrier = mock(OperationRetrier.class);
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setRetrier(retrier, NUM_TRIES);
         operation.setResponse(response);
@@ -145,7 +143,7 @@ public class FutureOperationTest
     {
 
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
         operation.addListener(new RiakFutureListener()
@@ -192,7 +190,7 @@ public class FutureOperationTest
     {
 
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
 
@@ -216,7 +214,7 @@ public class FutureOperationTest
     {
 
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
         RiakFutureListener listener = new RiakFutureListener()
@@ -241,7 +239,7 @@ public class FutureOperationTest
     public void canOnlySetSuccessOnce()
     {
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
         operation.setResponse(response);
@@ -262,7 +260,7 @@ public class FutureOperationTest
     public void canOnlySetSuccessOrFailure()
     {
         FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
-        RiakResponse response = mock(RiakResponse.class);
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
         operation.setException(new Exception());
@@ -273,17 +271,16 @@ public class FutureOperationTest
     {
         public FutureOperationImpl()
         {
-            supportedProtocols(Protocol.HTTP);
         }
 
         @Override
-        protected String convert(RiakResponse rawResponse)
+        protected String convert(RiakMessage rawResponse)
         {
             return "Fake!";
         }
 
         @Override
-        protected Object createChannelMessage(Protocol p)
+        protected Object createChannelMessage()
         {
             return "Fake!";
         }

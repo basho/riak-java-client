@@ -15,13 +15,11 @@
  */
 package com.basho.riak.client.core.fixture;
 
-import com.basho.riak.client.core.Protocol;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
 
 /**
  *
@@ -29,19 +27,11 @@ import java.nio.charset.Charset;
  */
 public class AcceptReadWriteStayOpen extends Acceptor
 {
-    public AcceptReadWriteStayOpen(ServerSocketChannel server, Protocol protocol)
+    public AcceptReadWriteStayOpen(ServerSocketChannel server)
     {
-        super(server, protocol);
+        super(server);
     }
     
-    @Override
-    boolean writeHttp(SelectionKey key) throws IOException
-    {
-        Charset charSet = Charset.defaultCharset();
-        ((WritableByteChannel)key.channel()).write(charSet.encode(httpMessage));
-        return false;
-    }
-
     @Override
     boolean writePb(SelectionKey key) throws IOException
     {
@@ -57,6 +47,6 @@ public class AcceptReadWriteStayOpen extends Acceptor
     @Override
     Acceptor duplicate()
     {
-        return new AcceptReadWriteStayOpen(server, protocol);
+        return new AcceptReadWriteStayOpen(server);
     }
 }

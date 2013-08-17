@@ -15,15 +15,14 @@
  */
 package com.basho.riak.client.util;
 
+import com.basho.riak.client.core.netty.RiakResponseHandler;
+
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
 public interface Constants {
-
-    // Default URL path prefixes Riak HTTP interface
-    public static String RIAK_URL_PREFIX = "/riak";
 
     // JSON fields used by Riak
     public static String FL_NAME = "name";
@@ -62,31 +61,6 @@ public interface Constants {
     // Header directives used by Riak
     public static String LINK_TAG = "riaktag";
 
-    // HTTP headers used in Riak
-    public static String HDR_ACCEPT = "accept";
-    public static String HDR_CLIENT_ID = "x-riak-clientid";
-    public static String HDR_CONNECTION = "connection";
-    public static String HDR_CONTENT_LENGTH = "content-length";
-    public static String HDR_CONTENT_TYPE = "content-type";
-    public static String HDR_ETAG = "etag";
-    public static String HDR_IF_MATCH = "if-match";
-    public static String HDR_IF_MODIFIED_SINCE = "if-modified-since";
-    public static String HDR_IF_UNMODIFIED_SINCE = "if-unmodified-since";
-    public static String HDR_IF_NONE_MATCH = "if-none-match";
-    public static String HDR_LAST_MODIFIED = "last-modified";
-    public static String HDR_LINK = "link";
-    public static String HDR_LOCATION = "location";
-    public static String HDR_VCLOCK = "x-riak-vclock";
-    public static String HDR_DELETED = "x-riak-deleted";
-    // Declared twice because of Erlang has bizarre HTTP header case handling.
-    // If a header name is 21 chars or shorteer, it is auto-capitalized between
-    // dashes. Otherwise, it is passed as is. Therefore, we just make sure this
-    // headers prefix is correctly capitalized in requests.
-    public static String HDR_USERMETA_PREFIX = "x-riak-meta-";
-    public static String HDR_USERMETA_REQ_PREFIX = "X-Riak-Meta-";
-    public static String HDR_SEC_INDEX_REQ_PREFIX = "X-Riak-Index-";
-    public static String HDR_SEC_INDEX_PREFIX = "x-riak-index-";
-
     // Content types used in Riak
     public static String CTYPE_ANY = "*/*";
     public static String CTYPE_JSON = "application/json";
@@ -114,15 +88,14 @@ public interface Constants {
     public static String QP_NOT_FOUND_OK = "notfound_ok";
     public static String QP_BASIC_QUORUM = "basic_quorum";
 
-    // HTTP method names
-    public static String HTTP_HEAD_METHOD = "HEAD";
-    public static String HTTP_GET_METHOD = "GET";
-    public static String HTTP_PUT_METHOD = "PUT";
-    public static String HTTP_DELETE_METHOD = "DELETE";
-
-    // Riak magic numbers
-    public static int RIAK_CLIENT_ID_LENGTH = 4;
-
     // List bucket operation parameters
     public static String LIST_BUCKETS = "true";
+    
+    // Netty Channel handler constants
+    public static final String MESSAGE_CODEC = "codec";
+    public static final String OPERATION_ENCODER = "operationEncoder";
+    public static final String TIMEOUT_HANDLER = "timeoutHandler";
+    public static final String RESPONSE_HANDLER = "responseHandler";
+    public static final Class<RiakResponseHandler> RESPONSE_HANDLER_CLASS = RiakResponseHandler.class;
+    
 }

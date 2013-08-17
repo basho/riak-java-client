@@ -19,12 +19,10 @@ import com.basho.riak.client.FetchMeta;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.Protocol;
-import com.basho.riak.client.core.RiakPbMessage;
-import com.basho.riak.client.core.RiakResponse;
+import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.GetRespConverter;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.pb.RiakMessageCodes;
+import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 import java.util.ArrayList;
@@ -97,12 +95,11 @@ public class FetchOperation<T> extends FutureOperation<T>
     }
     
     @Override
-    protected T convert(RiakResponse rawResponse) throws ExecutionException
+    protected T convert(RiakMessage rawResponse) throws ExecutionException
     {
         List<RiakObject> riakObjectList = 
-            rawResponse.convertResponse(
-                new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)
-            );
+            new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)
+                .convert(rawResponse);
         
         List<T> convertedObjects = new ArrayList<T>(riakObjectList.size());
         
@@ -126,28 +123,13 @@ public class FetchOperation<T> extends FutureOperation<T>
     }
 
     @Override
-    protected Object createChannelMessage(Protocol p)
+    protected Object createChannelMessage()
     {
         if (null == fetchMeta)
         {
             fetchMeta = new FetchMeta.Builder().build();
         }
         
-        // TODO: If we care about multi-ptotocol support, this is kinda ugly
-        // Should be tied to the protocol enum or a factory or something
-        switch(p)
-        {
-            case PB:
-                return pbChannelMessage(fetchMeta);
-            default:
-                throw new IllegalArgumentException("Protocol not supported: " + p);
-        }
-    }
-    
-    
-    
-    private Object pbChannelMessage(FetchMeta fetchMeta)
-    {
         RiakKvPB.RpbGetReq.Builder builder = RiakKvPB.RpbGetReq.newBuilder();
         builder.setBucket(bucket);
         builder.setKey(key);
@@ -188,7 +170,7 @@ public class FetchOperation<T> extends FutureOperation<T>
         }
         
         RiakKvPB.RpbGetReq req = builder.build();
-        return new RiakPbMessage(RiakMessageCodes.MSG_GetReq ,req.toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_GetReq ,req.toByteArray());
         
     }    
 }

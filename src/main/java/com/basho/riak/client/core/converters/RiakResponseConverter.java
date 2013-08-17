@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.converters;
 
-import io.netty.handler.codec.http.HttpResponse;
+import com.basho.riak.client.core.RiakMessage;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -25,6 +25,5 @@ import java.util.concurrent.ExecutionException;
  */
 public interface RiakResponseConverter<T>
 {
-    T convert(HttpResponse response, byte[] content) throws ExecutionException;
-    T convert(byte pbMessageCode, byte[] data) throws ExecutionException;
+    T convert(RiakMessage message) throws ExecutionException;
 }
