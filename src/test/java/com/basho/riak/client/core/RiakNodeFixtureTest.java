@@ -42,9 +42,9 @@ public class RiakNodeFixtureTest extends FixtureTest
     public void operationSuccess() throws UnknownHostException, InterruptedException, ExecutionException
     {
         RiakNode node = 
-            new RiakNode.Builder(Protocol.PB)
+            new RiakNode.Builder()
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.PB, startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                        .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                         .build();
         
         node.start();
@@ -63,9 +63,9 @@ public class RiakNodeFixtureTest extends FixtureTest
     public void operationFail() throws UnknownHostException, InterruptedException, ExecutionException
     {
         RiakNode node = 
-            new RiakNode.Builder(Protocol.PB)
+            new RiakNode.Builder()
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.PB, startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
+                        .withRemotePort(startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                         .build();
         node.start();
         FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
@@ -81,9 +81,9 @@ public class RiakNodeFixtureTest extends FixtureTest
     {
         NetworkTestFixture nonRunningFixture = new NetworkTestFixture(8000);
         RiakNode node = 
-            new RiakNode.Builder(Protocol.PB)
+            new RiakNode.Builder()
                         .withRemoteAddress("127.0.0.1")
-                        .withPort(Protocol.PB, 8000 + NetworkTestFixture.ACCEPT_THEN_CLOSE)
+                        .withRemotePort(8000 + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                         .withReadTimeout(5000)
                         .build();
         node.start();
@@ -100,10 +100,10 @@ public class RiakNodeFixtureTest extends FixtureTest
     public void nodeChangesStateOnPoolState() throws UnknownHostException, IOException, InterruptedException
     {
         RiakNode node = 
-            new RiakNode.Builder(Protocol.HTTP)
+            new RiakNode.Builder()
                         .withRemoteAddress("127.0.0.1")
-                        .withMinConnections(Protocol.HTTP, 10)
-                        .withPort(Protocol.HTTP, startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
+                        .withMinConnections(10)
+                        .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
                         .build();
 
         node.start();

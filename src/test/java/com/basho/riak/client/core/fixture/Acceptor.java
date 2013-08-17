@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.fixture;
 
-import com.basho.riak.client.core.Protocol;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
@@ -38,17 +37,15 @@ abstract class Acceptor
     
     protected AcceptorType type = AcceptorType.ACCEPT_THEN_READ;
     protected final ServerSocketChannel server;
-    protected final Protocol protocol;
-    protected final ByteBuffer readBuffer;
+   protected final ByteBuffer readBuffer;
     
     protected final byte pbCode;
     protected final RiakKvPB.RpbGetResp pbMessage;
     protected final String httpMessage;
     
-    public Acceptor(ServerSocketChannel server, Protocol protocol)
+    public Acceptor(ServerSocketChannel server)
     {
         this.server = server;
-        this.protocol = protocol;
         this.readBuffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
         
         httpMessage = "HTTP/1.1 404 Object Not Found\r\nServer: MochiWeb/1.1 WebMachine/1.9.2 (someone had painted it blue)\r\nDate: Tue, 02 Apr 2013 17:36:39 GMT\r\nContent-Type: text/plain\r\nContent-Length: 10\r\n\r\nnot found\n";
@@ -80,66 +77,38 @@ abstract class Acceptor
         }
         
         boolean closeAfterWrite;
-        switch(protocol)
-        {
-            case HTTP:
-                readBuffer.flip();
-                CharsetDecoder decoder = Charset.defaultCharset().newDecoder();
-                CharBuffer charBuffer = decoder.decode(readBuffer);
-
-                if (charBuffer.toString().endsWith("\r\n\r\n"))
-                {
-                    readBuffer.clear();
-                    closeAfterWrite = writeHttp(key);
-                    if (closeAfterWrite)
-                    {
-                        key.channel().close();
-                        key.cancel();
-                    }
-                }
-                else
-                {
-                    readBuffer.position(readBuffer.limit());
-                    readBuffer.limit(readBuffer.capacity());
-                }
-                break;
-            case PB:
-                readBuffer.flip();
+        readBuffer.flip();
         
-                if (readBuffer.remaining() > 4)
+        if (readBuffer.remaining() > 4)
+        {
+            int length = readBuffer.getInt();
+            if (readBuffer.remaining() == length)
+            {
+                readBuffer.clear();
+                closeAfterWrite = writePb(key);
+                if (closeAfterWrite)
                 {
-                    int length = readBuffer.getInt();
-                    if (readBuffer.remaining() == length)
-                    {
-                        readBuffer.clear();
-                        closeAfterWrite = writePb(key);
-                        if (closeAfterWrite)
-                        {
-                            key.channel().close();
-                            key.cancel();
-                        }
-                    }
-                    else
-                    {
-                        readBuffer.position(readBuffer.limit());
-                        readBuffer.limit(readBuffer.capacity());
-                    }
+                    key.channel().close();
+                    key.cancel();
                 }
-                else
-                {
-                    readBuffer.position(readBuffer.limit());
-                    readBuffer.limit(readBuffer.capacity());
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid Protocol");
+            }
+            else
+            {
+                readBuffer.position(readBuffer.limit());
+                readBuffer.limit(readBuffer.capacity());
+            }
         }
+        else
+        {
+            readBuffer.position(readBuffer.limit());
+            readBuffer.limit(readBuffer.capacity());
+        }
+                
         
         
     }
     
     abstract Acceptor duplicate();
-    abstract boolean writeHttp(SelectionKey key) throws IOException;
     abstract boolean writePb(SelectionKey key) throws IOException;
     
 }

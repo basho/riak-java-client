@@ -13,10 +13,8 @@
  */
 package com.basho.riak.client.util;
 
-import com.basho.riak.client.util.Constants;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,27 +37,6 @@ public class CharsetUtils
      * RegEx pattern to get the charset from a content-type value.
      */
     private static final Pattern CHARSET_PATT = Pattern.compile("\\bcharset *= *\"?([^ ;\"]+)\"?", Pattern.CASE_INSENSITIVE);
-
-
-    /**
-     * Attempt to extract a charset from a <code>Map</code> of <code>HTTP</code>
-     * headers. Really just pulls a the entry
-     * {@link Constants#HDR_CONTENT_LENGTH} from the map and passes it to
-     * {@link #getCharset(String)}
-     * 
-     * @param headers
-     *            a {@link Map} of HTTP headers (or anything, really).
-     * @return {@link #ISO_8859_1} if {@code headers} is null,
-     *         or result of calling {@link #getCharset(String)} with
-     *         the {@code content-type} header from {@code headers}
-     * @see #getCharset(String)
-     */
-    public static Charset getCharset(Map<String, String> headers) {
-        if(headers == null) {
-            return ISO_8859_1;
-        }
-        return getCharset(headers.get(Constants.HDR_CONTENT_TYPE));
-    }
 
     /**
      * Attempts to parse the {@link Charset} from a contentType string.

@@ -15,20 +15,22 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.netty.RiakChannelInitializer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A connection pool that manages Netty channels.
@@ -53,7 +55,6 @@ public class ConnectionPool implements ChannelFutureListener
     private final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
     private final Sync permits;
     private final String remoteAddress;
-    private final Protocol protocol;
     private final int port;
     private final List<PoolStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<PoolStateListener>());
@@ -69,12 +70,16 @@ public class ConnectionPool implements ChannelFutureListener
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
 
+    /**
+     * Constructs a ConnectionPool from the supplied Builder.
+     * @param builder a configured ConnectionPool.Builder
+     * @throws UnknownHostException if the remote address can not be resolved
+     */
     private ConnectionPool(Builder builder) throws UnknownHostException
     {
         this.connectionTimeout = builder.connectionTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
         this.minConnections = builder.minConnections;
-        this.protocol = builder.protocol;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
         this.executor = builder.executor;
@@ -111,9 +116,10 @@ public class ConnectionPool implements ChannelFutureListener
         }
     }
 
-    public void addStateListener(PoolStateListener listener)
+    public ConnectionPool addStateListener(PoolStateListener listener)
     {
         stateListeners.add(listener);
+        return this;
     }
 
     public boolean removeStateListener(PoolStateListener listener)
@@ -142,7 +148,7 @@ public class ConnectionPool implements ChannelFutureListener
         // to the healthcheck task to purge the available queue of dead
         // connections and make decisions on what to do 
         recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-        logger.debug("Channel closed; {}:{} {}", remoteAddress, port, protocol);
+        logger.debug("Channel closed; id:{} {}:{}", future.channel().id(), remoteAddress, port);
     }
 
     /**
@@ -166,8 +172,8 @@ public class ConnectionPool implements ChannelFutureListener
             ownsBootstrap = true;
         }
 
-        bootstrap.handler(protocol.channelInitializer())
-            .remoteAddress(new InetSocketAddress(remoteAddress, port));
+        bootstrap.handler(new RiakChannelInitializer())
+                 .remoteAddress(new InetSocketAddress(remoteAddress, port));
 
         if (connectionTimeout > 0)
         {
@@ -206,7 +212,7 @@ public class ConnectionPool implements ChannelFutureListener
         idleReaperFuture = executor.scheduleWithFixedDelay(new IdleReaper(), 1, 5, TimeUnit.SECONDS);
         healthMonitorFuture = executor.scheduleWithFixedDelay(new HealthMonitorTask(), 1000, 500, TimeUnit.MILLISECONDS);
         state = State.RUNNING;
-        logger.info("ConnectionPool started; {}:{} {}", remoteAddress, port, protocol);
+        logger.info("ConnectionPool started; {}:{}", remoteAddress, port);
         notifyStateListeners();
         return this;
     }
@@ -222,7 +228,7 @@ public class ConnectionPool implements ChannelFutureListener
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         state = State.SHUTTING_DOWN;
-        logger.info("Connection pool shutting down {}:{} {}", remoteAddress, port, protocol);
+        logger.info("Connection pool shutting down {}:{}", remoteAddress, port);
         notifyStateListeners();
         idleReaperFuture.cancel(true);
         healthMonitorFuture.cancel(true);
@@ -333,7 +339,12 @@ public class ConnectionPool implements ChannelFutureListener
             default:
                 if (c.isOpen())
                 {
+                    logger.debug("Channel id:{} returned to pool", c.id());
                     available.offerFirst(new ChannelWithIdleTime(c));
+                }
+                else
+                {
+                    logger.debug("Closed channel id:{} returned to pool; discarding", c.id());
                 }
                 permits.release();
                 break;
@@ -351,12 +362,13 @@ public class ConnectionPool implements ChannelFutureListener
     /**
      * Sets the {@link ScheduledExecutorService} for this pool.
      *
-     * @param executor
+     * @param executor a ScheduledExecutorService for this pool.
+     * @return a reference to this ConnectionPool
      * @throws IllegalArgumentException if it was already set via the builder.
      * @throws IllegalStateException    if the pool has already been started.
      * @see Builder#withExecutor(java.util.concurrent.ScheduledExecutorService)
      */
-    public void setExecutor(ScheduledExecutorService executor)
+    public ConnectionPool setExecutor(ScheduledExecutorService executor)
     {
         stateCheck(State.CREATED);
         if (this.executor != null)
@@ -364,18 +376,20 @@ public class ConnectionPool implements ChannelFutureListener
             throw new IllegalArgumentException("Executor already set");
         }
         this.executor = executor;
+        return this;
     }
 
     /**
      * Sets the Netty {@link Bootstrap} for this pool.
      * {@link Bootstrap#clone()} is called to clone the bootstrap.
      *
-     * @param bootstrap
+     * @param bootstrap a netty Bootstrap
+     * @return a reference to this ConnectionPool
      * @throws IllegalArgumentException if it was already set via the builder.
      * @throws IllegalStateException    if the pool has already been started.
      * @see Builder#withBootstrap(io.netty.bootstrap.Bootstrap)
      */
-    public void setBootstrap(Bootstrap bootstrap)
+    public ConnectionPool setBootstrap(Bootstrap bootstrap)
     {
         stateCheck(State.CREATED);
         if (this.bootstrap != null)
@@ -383,6 +397,7 @@ public class ConnectionPool implements ChannelFutureListener
             throw new IllegalArgumentException("Bootstrap already set");
         }
         this.bootstrap = bootstrap.clone();
+        return this;
     }
 
     /**
@@ -415,9 +430,10 @@ public class ConnectionPool implements ChannelFutureListener
      * Sets the minimum number of active connections to be maintained by this pool.
      *
      * @param minConnections the minConnections to set
+     * @return a reference to this ConnectionPool
      * @see Builder#withMinConnections(int)
      */
-    public void setMinConnections(int minConnections)
+    public ConnectionPool setMinConnections(int minConnections)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
         if (minConnections <= getMaxConnections())
@@ -429,6 +445,7 @@ public class ConnectionPool implements ChannelFutureListener
             throw new IllegalArgumentException("Min connections greater than max connections");
         }
         // TODO: Start / reap delta?
+        return this;
     }
 
     /**
@@ -446,9 +463,10 @@ public class ConnectionPool implements ChannelFutureListener
     /**
      * Sets the maximum number of connections allowed in this pool.
      *
-     * @param maxConnections the maxConnections to set
+     * @param maxConnections the maxConnections to set.
+     * @return a reference to this ConnectionPool.
      */
-    public void setMaxConnections(int maxConnections)
+    public ConnectionPool setMaxConnections(int maxConnections)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
         if (maxConnections >= getMinConnections())
@@ -460,6 +478,7 @@ public class ConnectionPool implements ChannelFutureListener
             throw new IllegalArgumentException("Max connections less than min connections");
         }
         // TODO: reap delta? 
+        return this;
     }
 
     /**
@@ -478,12 +497,14 @@ public class ConnectionPool implements ChannelFutureListener
      * Sets the connection idle timeout for this pool
      *
      * @param idleTimeoutInMillis the idleTimeout to set
+     * @return a reference to this ConnectionPool
      * @see Builder#withIdleTimeout(int)
      */
-    public void setIdleTimeout(int idleTimeoutInMillis)
+    public ConnectionPool setIdleTimeout(int idleTimeoutInMillis)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(idleTimeoutInMillis, TimeUnit.MILLISECONDS);
+        return this;
     }
 
     /**
@@ -502,13 +523,15 @@ public class ConnectionPool implements ChannelFutureListener
      * Sets the connection timeout for this pool
      *
      * @param connectionTimeoutInMillis the connectionTimeout to set
+     * @return a reference to this ConnectionPool
      * @see Builder#withConnectionTimeout(int)
      */
-    public void setConnectionTimeout(int connectionTimeoutInMillis)
+    public ConnectionPool setConnectionTimeout(int connectionTimeoutInMillis)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
         this.connectionTimeout = connectionTimeoutInMillis;
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
+        return this;
     }
 
     /**
@@ -519,16 +542,6 @@ public class ConnectionPool implements ChannelFutureListener
     public State getPoolState()
     {
         return state;
-    }
-
-    /**
-     * Returns the protocol for this pool
-     *
-     * @return The protocol
-     */
-    public Protocol getProtocol()
-    {
-        return protocol;
     }
 
     /**
@@ -604,7 +617,7 @@ public class ConnectionPool implements ChannelFutureListener
                     if (removed)
                     {
                         Channel c = cwi.getChannel();
-                        logger.debug("Idle channel closed; {}:{} {}", remoteAddress, port, protocol);
+                        logger.debug("Idle channel closed; {}:{}", remoteAddress, port);
                         closeConnection(c);
                         currentNum--;
                     }
@@ -646,7 +659,7 @@ public class ConnectionPool implements ChannelFutureListener
 
             if (state == State.HEALTH_CHECKING)
             {
-                logger.info("ConnectionPool recovered; {}:{} {}", remoteAddress, port, protocol);
+                logger.info("ConnectionPool recovered; {}:{} {}", remoteAddress, port);
                 state = State.RUNNING;
                 notifyStateListeners();
             }
@@ -656,15 +669,15 @@ public class ConnectionPool implements ChannelFutureListener
         {
             if (state == State.RUNNING)
             {
-                logger.error("ConnectionPool health checking; {}:{} {} {}",
-                    remoteAddress, port, protocol, ex);
+                logger.error("ConnectionPool health checking; {}:{} {}",
+                    remoteAddress, port, ex);
                 state = State.HEALTH_CHECKING;
                 notifyStateListeners();
             }
             else
             {
-                logger.error("ConnectionPool failed health check; {}:{} {} {}",
-                    remoteAddress, port, protocol, ex);
+                logger.error("ConnectionPool failed health check; {}:{} {}",
+                    remoteAddress, port, ex);
             }
         }
         catch (IllegalStateException e)
@@ -703,7 +716,7 @@ public class ConnectionPool implements ChannelFutureListener
                 {
                     bootstrap.shutdown();
                 }
-                logger.debug("ConnectionPool shut down {}:{} {}", remoteAddress, port, protocol);
+                logger.debug("ConnectionPool shut down {}:{}", remoteAddress, port);
             }
         }
     }
@@ -781,6 +794,12 @@ public class ConnectionPool implements ChannelFutureListener
          */
         public final static String DEFAULT_REMOTE_ADDRESS = "127.0.0.1";
         /**
+         * The default port number to be used if not specified: {@value #DEFAULT_REMOTE_PORT}
+         * 
+         * @see AbstractCollection#withRemotePort(int)
+         */
+        public final static int DEFAULT_REMOTE_PORT = 8087;
+        /**
          * The default minimum number of connections to maintain if not specified: {@value #DEFAULT_MIN_CONNECTIONS}
          *
          * @see #withMinConnections(int)
@@ -805,8 +824,6 @@ public class ConnectionPool implements ChannelFutureListener
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
 
-
-        private final Protocol protocol;
         private int port;
         private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
         private int minConnections = DEFAULT_MIN_CONNECTIONS;
@@ -814,35 +831,31 @@ public class ConnectionPool implements ChannelFutureListener
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
         private Bootstrap bootstrap;
-        private boolean ownsBootstrap;
         private ScheduledExecutorService executor;
-        private boolean ownsExecutor;
-
+        private ChannelInitializer<SocketChannel> channelInitializer;
+        
         /**
-         * Constructs a Builder
-         *
-         * @param protocol - the protocol for this pool
+         * Constructs a Builder with all default values
          */
-        public Builder(Protocol protocol)
+        protected Builder()
         {
-            this.protocol = protocol;
-            this.port = protocol.defaultPort();
         }
 
         /**
-         * Set the port to be used
+         * Set the port this pool will connect to.
          *
-         * @param port
+         * @param port the remote port number
          * @return this
+         * @see #DEFAULT_REMOTE_PORT
          */
-        public Builder withPort(int port)
+        public Builder withRemotePort(int port)
         {
             this.port = port;
             return this;
         }
 
         /**
-         * Set the remote address this pool will connect to
+         * Set the remote address this pool will connect to.
          *
          * @param remoteAddress Can either be a FQDN or IP address
          * @return this
@@ -876,8 +889,8 @@ public class ConnectionPool implements ChannelFutureListener
         }
 
         /**
-         * Set the maximum number of connections allowed by the pool. A value
-         * of 0 sets this to unlimited.
+         * Set the maximum number of connections allowed by the pool. 
+         * A value of 0 sets this to unlimited.
          *
          * @param maxConnections
          * @return this
@@ -952,6 +965,22 @@ public class ConnectionPool implements ChannelFutureListener
             return this;
         }
 
+        /**
+         * The Netty {@code ChannelInitializer} to use with this pool.
+         * @param initializer the initializer. 
+         * @return this
+         */
+        public Builder withChannelInitializer(ChannelInitializer<SocketChannel> initializer)
+        {
+            this.channelInitializer = initializer;
+            return this;
+        }
+        
+        /**
+         * Constructs and returns a ConnectionPool.
+         * @return a new instance of ConnectionPool.
+         * @throws UnknownHostException if the supplied remote address can not be resolved.
+         */
         public ConnectionPool build() throws UnknownHostException
         {
             return new ConnectionPool(this);

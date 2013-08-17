@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.util.http;
+package com.basho.riak.client.core.netty;
 
-import java.util.Random;
-import javax.xml.bind.DatatypeConverter;
+import com.basho.riak.client.core.FutureOperation;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToMessageEncoder;
 
 /**
- * If using HTTP without vnode_vclocks enabled in Riak the client must
- * uniquely identify itself.
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
-public final class ClientIdGenerator
+public class RiakOperationEncoder extends MessageToMessageEncoder<FutureOperation>
 {
-    public static String generateClientId()
+
+    @Override
+    protected Object encode(ChannelHandlerContext chc, FutureOperation in) throws Exception
     {
-        byte[] rnd = new byte[4];
-        new Random().nextBytes(rnd);
-        return Base64.encodeToString(rnd, true);
+        return in.channelMessage();
     }
+    
 }

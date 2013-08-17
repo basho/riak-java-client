@@ -15,23 +15,30 @@
  */
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.Protocol;
-import com.basho.riak.client.core.FutureOperation;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageEncoder;
+import com.basho.riak.client.util.Constants;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakPbOperationEncoder extends MessageToMessageEncoder<FutureOperation>
+public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
 {
+    
+    public RiakChannelInitializer()
+    {
+    }
 
     @Override
-    protected Object encode(ChannelHandlerContext chc, FutureOperation in) throws Exception
+    public void initChannel(SocketChannel ch) throws Exception
     {
-        return in.channelMessage(Protocol.PB);
+        ChannelPipeline p = ch.pipeline();
+        p.addLast(Constants.MESSAGE_CODEC, new RiakMessageCodec());
+        p.addLast(Constants.OPERATION_ENCODER, new RiakOperationEncoder());
+        p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler());
     }
     
 }

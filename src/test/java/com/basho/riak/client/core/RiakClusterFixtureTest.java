@@ -69,9 +69,9 @@ public class RiakClusterFixtureTest
         
         for (int i = 5000; i < 8000; i += 1000)
         {
-            RiakNode.Builder builder = new RiakNode.Builder(Protocol.PB)
-                                        .withMinConnections(Protocol.PB, 10)
-                                        .withPort(Protocol.PB, i + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN);
+            RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withMinConnections(10)
+                                        .withRemotePort(i + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN);
             list.add(builder.build());
         }
         
@@ -106,9 +106,9 @@ public class RiakClusterFixtureTest
         
         for (int i = 5000; i < 8000; i += 1000)
         {
-            RiakNode.Builder builder = new RiakNode.Builder(Protocol.PB)
-                                        .withMinConnections(Protocol.PB, 10)
-                                        .withPort(Protocol.PB, i + NetworkTestFixture.ACCEPT_THEN_CLOSE);
+            RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withMinConnections(10)
+                                        .withRemotePort(i + NetworkTestFixture.ACCEPT_THEN_CLOSE);
             list.add(builder.build());
         }
         

@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.fixture;
 
-import com.basho.riak.client.core.Protocol;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -27,20 +26,14 @@ import java.nio.channels.ServerSocketChannel;
 public class AcceptThenClose extends Acceptor
 {
 
-    public AcceptThenClose(ServerSocketChannel server, Protocol protocol)
+    public AcceptThenClose(ServerSocketChannel server)
     {
-        super(server, protocol);
+        super(server);
         this.type = AcceptorType.ACCEPT_THEN_CLOSE;
     }
     
     @Override
     Acceptor duplicate()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    boolean writeHttp(SelectionKey key) throws IOException
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }

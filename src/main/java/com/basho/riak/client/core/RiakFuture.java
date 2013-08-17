@@ -38,8 +38,6 @@ public interface RiakFuture<V> extends Future<V>
     boolean isCancelled();
     @Override
     boolean isDone();
-    RiakResponse getRiakResponse() throws InterruptedException, ExecutionException;
-    RiakResponse getRiakResponse(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException;
     void addListener(RiakFutureListener<V> listener);
     void removeListener(RiakFutureListener<V> listener);
 }
