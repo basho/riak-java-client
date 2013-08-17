@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.fixture;
 
-import com.basho.riak.client.core.Protocol;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -26,21 +25,15 @@ import java.nio.channels.ServerSocketChannel;
  */
 public class AcceptReadThenClose extends Acceptor
 {
-    public AcceptReadThenClose(ServerSocketChannel server, Protocol p)
+    public AcceptReadThenClose(ServerSocketChannel server)
     {
-        super(server, p);
+        super(server);
     }
     
     @Override
     Acceptor duplicate()
     {
-        return new AcceptReadThenClose(server, protocol);
-    }
-
-    @Override
-    boolean writeHttp(SelectionKey key) throws IOException
-    {
-        return true;
+        return new AcceptReadThenClose(server);
     }
 
     @Override

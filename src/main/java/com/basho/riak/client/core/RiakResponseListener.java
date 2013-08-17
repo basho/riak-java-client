@@ -24,6 +24,6 @@ import io.netty.channel.Channel;
  */
 public interface RiakResponseListener
 {
-    public void onSuccess(Channel channel, RiakResponse response);
+    public void onSuccess(Channel channel, RiakMessage response);
     public void onException(Channel channel, Throwable t);
 }

@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.RiakPbMessage;
+import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.RiakResponseListener;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -38,10 +38,10 @@ import org.powermock.reflect.Whitebox;
  * @since 2.0
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(RiakPbMessage.class)
-public class RiakPbMessageHandlerTest
+@PrepareForTest(RiakMessage.class)
+public class RiakResponseHandlerTest
 {
-    private RiakPbMessageHandler handler;
+    private RiakResponseHandler handler;
     private ChannelHandlerContext mockContext;
     private Channel mockChannel;
     private ChannelPipeline mockPipeline;
@@ -56,7 +56,8 @@ public class RiakPbMessageHandlerTest
         mockPipeline = mock(ChannelPipeline.class);
         doReturn(mockPipeline).when(mockChannel).pipeline();
         mockListener = mock(RiakResponseListener.class);
-        handler = new RiakPbMessageHandler(mockListener);
+        handler = new RiakResponseHandler();
+        handler.setListener(mockListener);
     }
     
     @Test
@@ -76,30 +77,11 @@ public class RiakPbMessageHandlerTest
     @Test
     public void notifiesListenerOnComplete() throws Exception
     {
-        RiakPbMessage message = PowerMockito.mock(RiakPbMessage.class);
+        RiakMessage message = PowerMockito.mock(RiakMessage.class);
         doReturn((byte)10).when(message).getCode();
         handler.messageReceived(mockContext, message);
         
         verify(mockListener).onSuccess(mockChannel, message);
     }
-    
-    @Test
-    public void removesSelfFromPipelineOnException() throws Exception
-    {
-        handler.exceptionCaught(mockContext, null);
-        verify(mockPipeline).remove(handler);
-    }
-    
-    @Test
-    public void removesSelfFromPipelineOnCompletion() throws Exception
-    {
-        RiakPbMessage message = PowerMockito.mock(RiakPbMessage.class);
-        doReturn((byte)10).when(message).getCode();
-        handler.messageReceived(mockContext, message);
-        
-        verify(mockPipeline).remove(handler);
-    }
-    
-    
     
 }

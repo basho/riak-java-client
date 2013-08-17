@@ -40,7 +40,7 @@ public class RiakClusterTest
     @Test
     public void builderCreatesCluster() throws UnknownHostException
     {
-        RiakNode.Builder nodeBuilder = new RiakNode.Builder(Protocol.PB);
+        RiakNode.Builder nodeBuilder = new RiakNode.Builder();
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
         assertTrue(!cluster.getNodes().isEmpty());
     }
@@ -50,7 +50,7 @@ public class RiakClusterTest
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
-        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder(Protocol.PB));
+        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
@@ -64,7 +64,7 @@ public class RiakClusterTest
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
-        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder(Protocol.PB));
+        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(nodeManager).removeNode(node);
         
@@ -79,7 +79,7 @@ public class RiakClusterTest
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
-        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder(Protocol.PB));
+        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(nodeManager).removeNode(node);
         
@@ -95,7 +95,7 @@ public class RiakClusterTest
         NodeManager nodeManager = mock(NodeManager.class);
         FutureOperation operation = PowerMockito.mock(FutureOperation.class);
         RiakNode node = mock(RiakNode.class);
-        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder(Protocol.PB));
+        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(node).execute(operation);
         

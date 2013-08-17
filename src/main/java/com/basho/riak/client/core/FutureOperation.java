@@ -38,16 +38,14 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     }
 
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
-    private final List<Protocol> protocolPreflist = new LinkedList<Protocol>(Arrays.asList(Protocol.values()));
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int remainingTries = 1;
-    private volatile RiakResponse rawResponse;
+    private volatile RiakMessage rawResponse;
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;
     private volatile RiakNode lastNode;
-    private volatile boolean noConversion = false;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
     private final HashSet<RiakFutureListener<T>> listeners =
@@ -136,30 +134,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         this.remainingTries = numTries;
     }
 
-    /**
-     * No conversion will be done to the raw response from Riak.
-     * <p>
-     * This option is included with people interested in building their own
-     * clients on top of the core in mind.
-     * </p>
-     * <p>
-     * If set to {@code true} then {@link #convert(com.basho.riak.client.core.RiakResponse) }
-     * will not be called and both {@link #get() } and {@link #get(long, java.util.concurrent.TimeUnit) }
-     * will throw an {@code IllegalStateException}.
-     * </p>
-     * The {@link RiakResponse} can be retrieved via {@link #getRiakResponse()} or 
-     * {@link #getRiakResponse(long, java.util.concurrent.TimeUnit)}.
-     * 
-     * @param noConversion 
-     */
-    public final void setNoConversion(boolean noConversion)
-    {
-        // This is really a future-proofing. Right now the conversion is actually
-        // done by the caller's thread in the get() methods, but if that is moved
-        // to a netty thread then this will be useful.
-        this.noConversion = noConversion;
-    }
-
     final RiakNode getLastNode()
     {
         return lastNode;
@@ -170,19 +144,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         this.lastNode = node;
     }
 
-    final List<Protocol> getProtocolPreflist()
-    {
-        return Collections.unmodifiableList(protocolPreflist);
-    }
-
-    protected final synchronized void supportedProtocols(Protocol... protocols)
-    {
-        stateCheck(State.CREATED);
-        protocolPreflist.clear();
-        protocolPreflist.addAll(Arrays.asList(protocols));
-    }
-
-    synchronized final void setResponse(RiakResponse rawResponse)
+    synchronized final void setResponse(RiakMessage rawResponse)
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         remainingTries--;
@@ -221,43 +183,12 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
     }
 
-    public synchronized final Object channelMessage(Protocol p)
+    public synchronized final Object channelMessage()
     {
         stateCheck(State.CREATED, State.RETRY);
-        Object message = createChannelMessage(p);
+        Object message = createChannelMessage();
         state = State.WRITTEN;
         return message;
-    }
-
-    @Override
-    public final RiakResponse getRiakResponse() throws InterruptedException, ExecutionException
-    {
-        latch.await();
-
-        if (exception != null)
-        {
-            throw new ExecutionException(exception);
-        }
-
-        return rawResponse;
-    }
-
-    @Override
-    public final RiakResponse getRiakResponse(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException
-    {
-        boolean succeed = latch.await(timeout, unit);
-
-        if (!succeed)
-        {
-            throw new TimeoutException();
-        }
-
-        if (exception != null)
-        {
-            throw new ExecutionException(exception);
-        }
-
-        return rawResponse;
     }
 
     @Override
@@ -281,11 +212,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     @Override
     public final T get() throws InterruptedException, ExecutionException
     {
-        if (noConversion)
-        {
-            throw new IllegalStateException("noConversion set to true");
-        }
-
         latch.await();
 
         if (exception != null)
@@ -304,11 +230,6 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     @Override
     public final T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
-        if (noConversion)
-        {
-            throw new IllegalStateException("noConversion set to true");
-        }
-
         boolean succeed = latch.await(timeout, unit);
 
         if (!succeed)
@@ -342,9 +263,9 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         }
     }
 
-    abstract protected T convert(RiakResponse rawResponse) throws ExecutionException;
+    abstract protected T convert(RiakMessage rawResponse) throws ExecutionException;
 
-    abstract protected Object createChannelMessage(Protocol p);
+    abstract protected Object createChannelMessage();
 
 
 }

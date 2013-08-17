@@ -15,43 +15,29 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.converters.RiakResponseConverter;
-import io.netty.handler.codec.http.HttpResponse;
-import java.util.concurrent.ExecutionException;
-
 /**
- *
+ * Encapsulates the raw bytes sent to or received from Riak.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class RiakHttpMessage implements RiakResponse
+public final class RiakMessage
 {
-    private final HttpResponse response;
-    private byte[] content;
+    private final byte code;
+    private final byte[] data;
     
-    public RiakHttpMessage(HttpResponse response)
+    public RiakMessage(byte code, byte[] data)
     {
-        this.response = response;
+        this.code = code;
+        this.data = data;
     }
     
-    public HttpResponse getResponse()
+    public byte getCode()
     {
-        return response;
+        return code;
     }
     
-    public byte[] getContent()
+    public byte[] getData()
     {
-        return content;
-    }
-    
-    public void setContent(byte[] content)
-    {
-        this.content = content;
-    }
-
-    @Override
-    public <T> T convertResponse(RiakResponseConverter<T> converter) throws ExecutionException
-    {
-        return converter.convert(response, content);
+        return data;
     }
 }
