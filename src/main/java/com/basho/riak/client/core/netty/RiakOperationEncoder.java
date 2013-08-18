@@ -18,6 +18,7 @@ package com.basho.riak.client.core.netty;
 import com.basho.riak.client.core.FutureOperation;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
+import java.util.List;
 
 /**
  *
@@ -28,9 +29,9 @@ public class RiakOperationEncoder extends MessageToMessageEncoder<FutureOperatio
 {
 
     @Override
-    protected Object encode(ChannelHandlerContext chc, FutureOperation in) throws Exception
+    protected void encode(ChannelHandlerContext ctx, FutureOperation operation, List<Object> out) throws Exception
     {
-        return in.channelMessage();
+        out.add(operation.channelMessage());
     }
     
 }

@@ -33,7 +33,6 @@ import java.util.concurrent.ExecutionException;
  * An operation used to fetch an object from Riak.
  * 
  * @author Brian Roach <roach at basho dot com>
- * @author Russel Brown <russelldb at basho dot com>
  * @since 2.0
  */
 public class FetchOperation<T> extends FutureOperation<T>
@@ -123,7 +122,7 @@ public class FetchOperation<T> extends FutureOperation<T>
     }
 
     @Override
-    protected Object createChannelMessage()
+    protected RiakMessage createChannelMessage()
     {
         if (null == fetchMeta)
         {

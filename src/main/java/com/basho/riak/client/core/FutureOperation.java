@@ -265,7 +265,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 
     abstract protected T convert(RiakMessage rawResponse) throws ExecutionException;
 
-    abstract protected Object createChannelMessage();
+    abstract protected RiakMessage createChannelMessage();
 
 
 }
