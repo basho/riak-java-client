@@ -280,9 +280,9 @@ public class FutureOperationTest
         }
 
         @Override
-        protected Object createChannelMessage()
+        protected RiakMessage createChannelMessage()
         {
-            return "Fake!";
+            return new RiakMessage((byte)0, new byte[0]);
         }
     }
 

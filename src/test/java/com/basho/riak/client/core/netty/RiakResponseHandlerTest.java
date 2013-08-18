@@ -79,7 +79,7 @@ public class RiakResponseHandlerTest
     {
         RiakMessage message = PowerMockito.mock(RiakMessage.class);
         doReturn((byte)10).when(message).getCode();
-        handler.messageReceived(mockContext, message);
+        handler.channelRead(mockContext, message);
         
         verify(mockListener).onSuccess(mockChannel, message);
     }

@@ -19,12 +19,9 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
 /**
  *
@@ -37,18 +34,15 @@ abstract class Acceptor
     
     protected AcceptorType type = AcceptorType.ACCEPT_THEN_READ;
     protected final ServerSocketChannel server;
-   protected final ByteBuffer readBuffer;
+    protected final ByteBuffer readBuffer;
     
     protected final byte pbCode;
     protected final RiakKvPB.RpbGetResp pbMessage;
-    protected final String httpMessage;
     
     public Acceptor(ServerSocketChannel server)
     {
         this.server = server;
         this.readBuffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-        
-        httpMessage = "HTTP/1.1 404 Object Not Found\r\nServer: MochiWeb/1.1 WebMachine/1.9.2 (someone had painted it blue)\r\nDate: Tue, 02 Apr 2013 17:36:39 GMT\r\nContent-Type: text/plain\r\nContent-Length: 10\r\n\r\nnot found\n";
         
         RiakKvPB.RpbContent content = RiakKvPB.RpbContent.newBuilder()
                                       .setValue(ByteString.copyFromUtf8("This is a value!"))
@@ -78,7 +72,6 @@ abstract class Acceptor
         
         boolean closeAfterWrite;
         readBuffer.flip();
-        
         if (readBuffer.remaining() > 4)
         {
             int length = readBuffer.getInt();

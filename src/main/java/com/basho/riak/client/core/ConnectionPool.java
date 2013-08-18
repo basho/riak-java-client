@@ -148,7 +148,7 @@ public class ConnectionPool implements ChannelFutureListener
         // to the healthcheck task to purge the available queue of dead
         // connections and make decisions on what to do 
         recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-        logger.debug("Channel closed; id:{} {}:{}", future.channel().id(), remoteAddress, port);
+        logger.debug("Channel closed; id:{} {}:{}", future.channel().hashCode(), remoteAddress, port);
     }
 
     /**
@@ -339,12 +339,12 @@ public class ConnectionPool implements ChannelFutureListener
             default:
                 if (c.isOpen())
                 {
-                    logger.debug("Channel id:{} returned to pool", c.id());
+                    logger.debug("Channel id:{} returned to pool", c.hashCode());
                     available.offerFirst(new ChannelWithIdleTime(c));
                 }
                 else
                 {
-                    logger.debug("Closed channel id:{} returned to pool; discarding", c.id());
+                    logger.debug("Closed channel id:{} returned to pool; discarding", c.hashCode());
                 }
                 permits.release();
                 break;
@@ -714,7 +714,7 @@ public class ConnectionPool implements ChannelFutureListener
                 }
                 if (ownsBootstrap)
                 {
-                    bootstrap.shutdown();
+                    bootstrap.group().shutdownGracefully();
                 }
                 logger.debug("ConnectionPool shut down {}:{}", remoteAddress, port);
             }
@@ -824,7 +824,7 @@ public class ConnectionPool implements ChannelFutureListener
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
 
-        private int port;
+        private int port = DEFAULT_REMOTE_PORT;
         private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
         private int minConnections = DEFAULT_MIN_CONNECTIONS;
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;

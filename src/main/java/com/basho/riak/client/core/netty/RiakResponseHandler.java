@@ -21,19 +21,17 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
-import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakResponseHandler extends ChannelInboundMessageHandlerAdapter<RiakMessage>
+public class RiakResponseHandler extends ChannelInboundHandlerAdapter
 {
 
     private RiakResponseListener listener;
-    private boolean timedOut = false;
     
     public RiakResponseHandler()
     {
@@ -46,19 +44,20 @@ public class RiakResponseHandler extends ChannelInboundMessageHandlerAdapter<Ria
     }
     
     @Override
-    public void messageReceived(ChannelHandlerContext chc, RiakMessage msg) throws Exception
+    public void channelRead(ChannelHandlerContext chc, Object message) throws Exception
     {
-        if (msg.getCode() == RiakMessageCodes.MSG_ErrorResp)
+        RiakMessage riakMessage = (RiakMessage) message;
+        if (riakMessage.getCode() == RiakMessageCodes.MSG_ErrorResp)
         {
             RiakPB.RpbErrorResp error = RiakPB.RpbErrorResp.newBuilder()
-                                                .setErrcode(msg.getCode())
-                                                .setErrmsg(ByteString.copyFrom(msg.getData()))
+                                                .setErrcode(riakMessage.getCode())
+                                                .setErrmsg(ByteString.copyFrom(riakMessage.getData()))
                                                 .build(); 
             listener.onException(chc.channel(), new RiakResponseException(RiakMessageCodes.MSG_ErrorResp, error.getErrmsg().toStringUtf8()));
         }
         else
         {
-            listener.onSuccess(chc.channel(), msg);
+            listener.onSuccess(chc.channel(), riakMessage);
         }
     }
     

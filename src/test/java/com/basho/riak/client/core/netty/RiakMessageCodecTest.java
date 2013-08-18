@@ -17,10 +17,11 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakMessage;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToMessageEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,11 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
 import org.powermock.reflect.Whitebox;
-
-
-
-
-
 
 /**
  *
@@ -60,12 +56,9 @@ public class RiakMessageCodecTest
         RiakMessageCodec codec = new RiakMessageCodec();
         
         mockContext = mock(ChannelHandlerContext.class);
-        
-        MessageToMessageEncoder<RiakMessage> encoder = Whitebox.invokeMethod(codec, "encoder", new Object[0]);
-        
-        buffer = Whitebox.invokeMethod(encoder, "encode", mockContext, pbMessage);
+        buffer = Unpooled.buffer();
+        Whitebox.invokeMethod(codec, "encode", mockContext, pbMessage, buffer);
     }
-    
     
     @Test
     public void encode() throws Exception
@@ -88,10 +81,9 @@ public class RiakMessageCodecTest
     public void decode() throws Exception
     {
         RiakMessageCodec codec = new RiakMessageCodec();
-        ByteToMessageDecoder decoder = Whitebox.invokeMethod(codec, "decoder", new Object[0]);
-        
-        RiakMessage message = Whitebox.invokeMethod(decoder, "decode", mockContext, buffer);
-        
+        List<Object> outList = new ArrayList<Object>();
+        Whitebox.invokeMethod(codec, "decode", mockContext, buffer, outList);
+        RiakMessage message = (RiakMessage) outList.get(0);
         assertEquals(code, message.getCode());
         assertArrayEquals(data, message.getData());
         
