@@ -290,10 +290,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     {
         logger.debug("Operation onException() channel: id:{} {} {}", 
                      channel.hashCode(), channel.remoteAddress(), t);
-        if (readTimeoutInMillis > 0)
-        {
-            channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
-        }
+        
         FutureOperation inProgress = inProgressMap.remove(channel);
         // There are fail cases where multiple exceptions are thrown from 
         // the pipeline. In that case we'll get an exception from the 
@@ -301,6 +298,10 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         // already been handled.
         if (inProgress != null)
         {
+            if (readTimeoutInMillis > 0)
+            {
+                channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
+            }
             connectionPool.returnConnection(channel);
             inProgress.setException(t);
         }
