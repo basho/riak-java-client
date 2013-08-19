@@ -20,6 +20,7 @@ import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.ByteArrayWrapper;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -78,7 +79,9 @@ public class RiakClusterFixtureTest
         RiakCluster cluster = new RiakCluster.Builder(list).build();
         cluster.start();
         
-        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+        FetchOperation<RiakObject> operation = 
+            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
+                                            ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
                     .withConverter(new PassThroughConverter())
                     .withResolver(new DefaultResolver<RiakObject>());
 
@@ -116,7 +119,9 @@ public class RiakClusterFixtureTest
         
         cluster.start();
         
-        FetchOperation<RiakObject> operation = new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+        FetchOperation<RiakObject> operation = 
+            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
+                                            ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
                     .withConverter(new PassThroughConverter())
                     .withResolver(new DefaultResolver<RiakObject>());
 
