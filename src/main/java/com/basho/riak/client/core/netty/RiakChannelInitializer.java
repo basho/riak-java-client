@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.netty;
 
+import com.basho.riak.client.core.RiakResponseListener;
 import com.basho.riak.client.util.Constants;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -27,9 +28,11 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
 {
-    
-    public RiakChannelInitializer()
+    private final RiakResponseListener listener;
+    public RiakChannelInitializer(RiakResponseListener listener)
     {
+        super();
+        this.listener = listener;
     }
 
     @Override
@@ -38,7 +41,7 @@ public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
         ChannelPipeline p = ch.pipeline();
         p.addLast(Constants.MESSAGE_CODEC, new RiakMessageCodec());
         p.addLast(Constants.OPERATION_ENCODER, new RiakOperationEncoder());
-        p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler());
+        p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler(listener));
     }
     
 }
