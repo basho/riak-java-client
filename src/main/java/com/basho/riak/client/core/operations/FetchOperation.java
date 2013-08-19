@@ -22,6 +22,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.GetRespConverter;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -37,20 +38,20 @@ import java.util.concurrent.ExecutionException;
  */
 public class FetchOperation<T> extends FutureOperation<T>
 {
-    private final ByteString bucket;
-    private final ByteString key;
+    private final ByteArrayWrapper bucket;
+    private final ByteArrayWrapper key;
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     private FetchMeta fetchMeta;
     
-    public FetchOperation(ByteString bucket, ByteString key)
+    public FetchOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
     {
-        if ((null == bucket) || bucket.isEmpty())
+        if ((null == bucket) || bucket.length() == 0)
         {
             throw new IllegalArgumentException("Bucket can not be null or empty");
         }
         
-        if ((null == key) || key.isEmpty())
+        if ((null == key) || key.length() == 0)
         {
             throw new IllegalArgumentException("key can not be null or empty");
         }
@@ -130,8 +131,8 @@ public class FetchOperation<T> extends FutureOperation<T>
         }
         
         RiakKvPB.RpbGetReq.Builder builder = RiakKvPB.RpbGetReq.newBuilder();
-        builder.setBucket(bucket);
-        builder.setKey(key);
+        builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
+        builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
         
         if (fetchMeta.hasHeadOnly())
         {

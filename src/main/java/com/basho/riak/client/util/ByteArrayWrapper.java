@@ -170,4 +170,13 @@ public final class ByteArrayWrapper
             return null;
         }
     }
+    
+    /**
+     * Return the length of the wrapped {@code byte[]}
+     * @return the length.
+     */
+    public int length()
+    {
+        return data.length;
+    }
 }
