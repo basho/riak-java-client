@@ -142,14 +142,14 @@ public class FutureOperationTest
     public void notifiesListenersAfterSuccess()
     {
 
-        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        operation.addListener(new RiakFutureListener()
+        operation.addListener(new RiakFutureListener<String>()
         {
             @Override
-            public void handle(RiakFuture f)
+            public void handle(RiakFuture<String> f)
             {
                 called.set(true);
             }
@@ -166,13 +166,13 @@ public class FutureOperationTest
     public void notifiesLisetnersAfterFailure()
     {
 
-        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        operation.addListener(new RiakFutureListener()
+        operation.addListener(new RiakFutureListener<String>()
         {
             @Override
-            public void handle(RiakFuture f)
+            public void handle(RiakFuture<String> f)
             {
                 called.set(true);
             }
@@ -189,16 +189,16 @@ public class FutureOperationTest
     public void notifiesOnAddAfterComplete()
     {
 
-        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        operation.addListener(new RiakFutureListener()
+        operation.addListener(new RiakFutureListener<String>()
         {
             @Override
-            public void handle(RiakFuture f)
+            public void handle(RiakFuture<String> f)
             {
                 called.set(true);
             }
@@ -213,14 +213,14 @@ public class FutureOperationTest
     public void removedListenersDoNotGetCalled()
     {
 
-        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
-        RiakFutureListener listener = new RiakFutureListener()
+        RiakFutureListener<String> listener = new RiakFutureListener<String>()
         {
             @Override
-            public void handle(RiakFuture f)
+            public void handle(RiakFuture<String> f)
             {
                 called.set(true);
             }
@@ -238,7 +238,7 @@ public class FutureOperationTest
     @Test(expected = IllegalStateException.class)
     public void canOnlySetSuccessOnce()
     {
-        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
