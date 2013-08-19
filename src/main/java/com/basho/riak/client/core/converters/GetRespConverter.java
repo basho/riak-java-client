@@ -41,11 +41,11 @@ import java.util.concurrent.ExecutionException;
 public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
 {
 
-    private final ByteString key;
-    private final ByteString bucket;
+    private final ByteArrayWrapper key;
+    private final ByteArrayWrapper bucket;
     private final boolean isHeadRequest;
 
-    public GetRespConverter(ByteString bucket, ByteString key, boolean isHeadRequest)
+    public GetRespConverter(ByteArrayWrapper bucket, ByteArrayWrapper key, boolean isHeadRequest)
     {
         this.bucket = bucket;
         this.key = key;
@@ -67,8 +67,8 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
         else if (data.length == 0) // not found
         {
             List<RiakObject> objectList = new ArrayList<RiakObject>(1);
-            objectList.add(RiakObject.unsafeCreate(bucket.toByteArray())
-                                     .unsafeSetKey(key.toByteArray())
+            objectList.add(RiakObject.create(bucket.unsafeGetValue())
+                                     .setKey(key.unsafeGetValue())
                                      .setNotFound(true)
                                      .setModified(false));
             return objectList;
@@ -100,8 +100,8 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
                     RiakKvPB.RpbContent content = resp.getContent(i);
                     
                     RiakObject riakObject = 
-                        RiakObject.unsafeCreate(bucket.toByteArray())
-                                  .unsafeSetKey(key.toByteArray())
+                        RiakObject.create(bucket.unsafeGetValue())
+                                  .setKey(key.unsafeGetValue())
                                   .unsafeSetValue(content.getValue().toByteArray())
                                   .setVClock(vclock.toByteArray())
                                   .setContentType(nullSafeByteStringToUtf8(content.getContentType()))

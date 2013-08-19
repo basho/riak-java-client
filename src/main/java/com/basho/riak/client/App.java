@@ -7,6 +7,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.ByteArrayWrapper;
 import com.google.protobuf.ByteString;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
@@ -27,7 +28,7 @@ public class App
         cluster.start();
         
         FutureOperation<RiakObject> fetchOp = 
-            new FetchOperation<RiakObject>(ByteString.copyFromUtf8("test_bucket"), ByteString.copyFromUtf8("test_key2"))
+            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
                     .withConverter(new PassThroughConverter())
                     .withResolver(new DefaultResolver<RiakObject>());
         
