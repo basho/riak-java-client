@@ -62,8 +62,9 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
     private volatile State state;
-    private Map<Integer, FutureOperation> inProgressMap = 
-        new ConcurrentHashMap<Integer, FutureOperation>();
+    
+    private Map<Channel, FutureOperation> inProgressMap = 
+        new ConcurrentHashMap<Channel, FutureOperation>();
     private volatile int readTimeoutInMillis;
     
     // TODO: Harden to prevent operation from being executed > 1 times?
@@ -218,8 +219,8 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
             
             //TODO: figure out a cleaner way to do this? 
             channel.pipeline().get(Constants.RESPONSE_HANDLER_CLASS).setListener(this);
-            inProgressMap.put(channel.id(), operation);
-            ChannelFuture writeFuture = channel.write(operation); 
+            inProgressMap.put(channel, operation);
+            ChannelFuture writeFuture = channel.writeAndFlush(operation); 
             writeFuture.addListener(this);
             logger.debug("Operation executed on node {} {}", connectionPool.getRemoteAddress(), channel.remoteAddress());
             return true;
@@ -262,7 +263,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
                 }
                 if (ownsBootstrap)
                 {
-                    bootstrap.shutdown();
+                    bootstrap.group().shutdownGracefully();
                 }
                 logger.info("RiakNode shut down due to pool shutdown; {}", connectionPool.getRemoteAddress());
                 break;
@@ -274,12 +275,12 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     @Override
     public void onSuccess(Channel channel, RiakMessage response)
     {
-        logger.debug("Operation onSuccess() channel: id:{} {}", channel.id(), channel.remoteAddress());
+        logger.debug("Operation onSuccess() channel: id:{} {}", channel.hashCode(), channel.remoteAddress());
         if (readTimeoutInMillis > 0)
         {
             channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
         }
-        FutureOperation inProgress = inProgressMap.remove(channel.id());
+        FutureOperation inProgress = inProgressMap.remove(channel);
         connectionPool.returnConnection(channel);
         inProgress.setResponse(response);
     }
@@ -288,18 +289,19 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
     public void onException(Channel channel, Throwable t)
     {
         logger.debug("Operation onException() channel: id:{} {} {}", 
-                     channel.id(), channel.remoteAddress(), t);
-        if (readTimeoutInMillis > 0)
-        {
-            channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
-        }
-        FutureOperation inProgress = inProgressMap.remove(channel.id());
+                     channel.hashCode(), channel.remoteAddress(), t);
+        
+        FutureOperation inProgress = inProgressMap.remove(channel);
         // There are fail cases where multiple exceptions are thrown from 
         // the pipeline. In that case we'll get an exception from the 
         // handler but will not have an entry in inProgress because it's
         // already been handled.
         if (inProgress != null)
         {
+            if (readTimeoutInMillis > 0)
+            {
+                channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
+            }
             connectionPool.returnConnection(channel);
             inProgress.setException(t);
         }
@@ -312,7 +314,7 @@ public class RiakNode implements ChannelFutureListener, RiakResponseListener, Po
         // See how the write worked out ...
         if (!future.isSuccess())
         {
-            FutureOperation inProgress = inProgressMap.remove(future.channel().id());
+            FutureOperation inProgress = inProgressMap.remove(future.channel());
             logger.info("Write failed on node {}", connectionPool.getRemoteAddress());
             connectionPool.returnConnection(future.channel());
             inProgress.setException(future.cause());

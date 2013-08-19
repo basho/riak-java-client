@@ -17,125 +17,49 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakMessage;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.MessageBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundByteHandler;
-import io.netty.channel.ChannelOutboundMessageHandler;
-import io.netty.channel.CombinedChannelDuplexHandler;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToMessageEncoder;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.netty.handler.codec.ByteToMessageCodec;
+import java.util.List;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
- * @since 2.0
  */
-public class RiakMessageCodec extends CombinedChannelDuplexHandler 
-    implements ChannelInboundByteHandler, ChannelOutboundMessageHandler<RiakMessage>
+public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
 {
-    private final AtomicInteger inFlight = new AtomicInteger();
-    
-    public RiakMessageCodec()
-    {
-        init(new Decoder(), new Encoder());
-    }
-    
-    private Decoder decoder() {
-        return (Decoder) stateHandler();
-    }
-
-    private Encoder encoder() {
-        return (Encoder) operationHandler();
-    }
-    
     @Override
-    public ByteBuf newInboundBuffer(ChannelHandlerContext chc) throws Exception
+    protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception
     {
-        return decoder().newInboundBuffer(chc);
+        int length = msg.getData().length + 1;
+        out.writeInt(length);
+        out.writeByte(msg.getCode());
+        out.writeBytes(msg.getData());        
     }
 
     @Override
-    public void discardInboundReadBytes(ChannelHandlerContext chc) throws Exception
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception
     {
-        decoder().discardInboundReadBytes(chc);
-    }
-
-    @Override
-    public void freeInboundBuffer(ChannelHandlerContext chc) throws Exception
-    {
-        decoder().freeInboundBuffer(chc);
-    }
-
-    @Override
-    public MessageBuf<RiakMessage> newOutboundBuffer(ChannelHandlerContext chc) throws Exception
-    {
-        return encoder().newOutboundBuffer(chc);
-    }
-
-    @Override
-    public void freeOutboundBuffer(ChannelHandlerContext chc) throws Exception
-    {
-        encoder().freeOutboundBuffer(chc);
-    }
-
-    private final class Encoder extends MessageToMessageEncoder<RiakMessage>
-    {
-        @Override
-        protected Object encode(ChannelHandlerContext chc, RiakMessage msg) throws Exception
+        // Make sure we have 4 bytes
+        if (in.readableBytes() >= 4)
         {
-            int length = msg.getData().length + 1;
-            ByteBuf header = Unpooled.buffer(5);
-            header.writeInt(length);
-            header.writeByte(msg.getCode());
-            inFlight.incrementAndGet();
-            return Unpooled.wrappedBuffer(header.array(), msg.getData());
-        }
-    }
-    
-    private final class Decoder extends ByteToMessageDecoder
-    {
-        private final Logger logger = LoggerFactory.getLogger(RiakMessageCodec.class);
-        
-        @Override
-        protected Object decode(ChannelHandlerContext chc, ByteBuf inbndn) throws Exception
-        {
-            // Make sure we have 4 bytes
-            if (inbndn.readableBytes() < 4)
-            {
-                return null;
-            }
-
-            inbndn.markReaderIndex();
-            int length = inbndn.readInt();
-
+            in.markReaderIndex();
+            int length = in.readInt();
+            
             // See if we have the full frame.
-            if (inbndn.readableBytes() < length)
+            if (in.readableBytes() < length)
             {
-                inbndn.resetReaderIndex();
-                return null;
+                in.resetReaderIndex();
+                return;
+            }
+            else
+            {
+                byte code = in.readByte();
+                byte[] array = new byte[length - 1];
+                in.readBytes(array);
+                out.add(new RiakMessage(code,array));
             }
             
-            byte code = inbndn.readByte();
-            byte[] array = new byte[length - 1];
-            inbndn.readBytes(array);
-            inFlight.decrementAndGet();
-            return new RiakMessage(code,array);
-        }
-        
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
-            super.channelInactive(ctx);
-            int missingResponses = inFlight.get();
-            if (missingResponses > 0)
-            {
-                logger.debug("channel id:{} gone inactive with {} missing response(s)", 
-                             ctx.channel().id(), missingResponses);
-            }
         }
     }
+    
 }

@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.RiakResponseHandler;
+import com.basho.riak.client.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -135,8 +136,8 @@ public class RiakNodeTest
         doReturn(future).when(channel).closeFuture();
         doReturn(true).when(channel).isOpen();
         doReturn(channelPipeline).when(channel).pipeline();
-        doReturn(responseHandler).when(channelPipeline).get(RiakResponseHandler.class);
-        doReturn(future).when(channel).write(operation);
+        doReturn(responseHandler).when(channelPipeline).get(Constants.RESPONSE_HANDLER_CLASS);
+        doReturn(future).when(channel).writeAndFlush(operation);
         doReturn(future).when(future).await();
         doReturn(true).when(future).isSuccess();
         doReturn(channel).when(future).channel();
@@ -147,7 +148,7 @@ public class RiakNodeTest
         node.start();
         boolean accepted = node.execute(operation);
         assertTrue(accepted);
-        verify(channel).write(operation);
+        verify(channel).writeAndFlush(operation);
         verify(operation).setLastNode(node);
         Map<?,?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
         assertEquals(1, inProgressMap.size());
