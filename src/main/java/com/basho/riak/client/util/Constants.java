@@ -96,6 +96,5 @@ public interface Constants {
     public static final String OPERATION_ENCODER = "operationEncoder";
     public static final String TIMEOUT_HANDLER = "timeoutHandler";
     public static final String RESPONSE_HANDLER = "responseHandler";
-    public static final Class<RiakResponseHandler> RESPONSE_HANDLER_CLASS = RiakResponseHandler.class;
     
 }

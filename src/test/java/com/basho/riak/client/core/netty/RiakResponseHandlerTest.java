@@ -56,8 +56,7 @@ public class RiakResponseHandlerTest
         mockPipeline = mock(ChannelPipeline.class);
         doReturn(mockPipeline).when(mockChannel).pipeline();
         mockListener = mock(RiakResponseListener.class);
-        handler = new RiakResponseHandler();
-        handler.setListener(mockListener);
+        handler = new RiakResponseHandler(mockListener);
     }
     
     @Test

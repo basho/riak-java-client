@@ -33,13 +33,9 @@ public class RiakResponseHandler extends ChannelInboundHandlerAdapter
 
     private RiakResponseListener listener;
     
-    public RiakResponseHandler()
+    public RiakResponseHandler(RiakResponseListener listener)
     {
         super();
-    }
-    
-    public void setListener(RiakResponseListener listener)
-    {
         this.listener = listener;
     }
     
