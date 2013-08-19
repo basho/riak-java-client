@@ -26,8 +26,8 @@ import io.netty.channel.ChannelPipeline;
 import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -309,7 +309,17 @@ public class RiakNodeTest
         Channel channel = mock(Channel.class);
         ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
         ChannelFuture future = mock(ChannelFuture.class);
-        FutureOperation operation = PowerMockito.mock(FutureOperation.class);
+        FutureOperation operation = PowerMockito.spy(new FutureOperation() {
+          @Override
+          protected Object convert(RiakMessage rawResponse) throws ExecutionException {
+            return null;
+          }
+
+          @Override
+          protected RiakMessage createChannelMessage() {
+            return null;
+          }
+        });
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
         RiakResponseHandler responseHandler = mock(RiakResponseHandler.class);
         
@@ -336,12 +346,36 @@ public class RiakNodeTest
         
         node.onSuccess(channel, response);
         assertEquals(0, inProgressMap.size());
-        verify(operation).setResponse(response);
-        
+
+        final Semaphore called = new Semaphore(0);
+        operation.addListener(
+          new RiakFutureListener()
+          {
+            @Override
+            public void handle(RiakFuture f)
+            {
+                called.release();
+            }
+          }
+        );
+        assertTrue(called.tryAcquire(10, TimeUnit.SECONDS));
+
         accepted = node.execute(operation);
         assertTrue(accepted);
         node.onException(channel, null);
-        verify(operation).setException(null);
+
+        called.release();
+        operation.addListener(
+          new RiakFutureListener()
+          {
+            @Override
+            public void handle(RiakFuture f)
+            {
+              called.release();
+            }
+          }
+        );
+        assertTrue(called.tryAcquire(10, TimeUnit.SECONDS));
         
     }
     

@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RiakCluster implements OperationRetrier, NodeStateListener
+public class  RiakCluster implements OperationRetrier, NodeStateListener
 {
     enum State { CREATED, RUNNING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
