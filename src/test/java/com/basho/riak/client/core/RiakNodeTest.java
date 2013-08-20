@@ -26,8 +26,9 @@ import io.netty.channel.ChannelPipeline;
 import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.Map;
-import java.util.concurrent.*;
-
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -39,6 +40,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+import static com.jayway.awaitility.Awaitility.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import static org.hamcrest.Matchers.*;
+
 
 
 
@@ -309,20 +316,8 @@ public class RiakNodeTest
         Channel channel = mock(Channel.class);
         ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
         ChannelFuture future = mock(ChannelFuture.class);
-        FutureOperation operation = PowerMockito.spy(new FutureOperation() {
-          @Override
-          protected Object convert(RiakMessage rawResponse) throws ExecutionException {
-            return null;
-          }
-
-          @Override
-          protected RiakMessage createChannelMessage() {
-            return null;
-          }
-        });
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
-        RiakResponseHandler responseHandler = mock(RiakResponseHandler.class);
-        
         Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
         
         doReturn(future).when(channel).closeFuture();
@@ -346,36 +341,55 @@ public class RiakNodeTest
         
         node.onSuccess(channel, response);
         assertEquals(0, inProgressMap.size());
-
-        final Semaphore called = new Semaphore(0);
-        operation.addListener(
-          new RiakFutureListener()
-          {
-            @Override
-            public void handle(RiakFuture f)
-            {
-                called.release();
-            }
-          }
-        );
-        assertTrue(called.tryAcquire(10, TimeUnit.SECONDS));
-
-        accepted = node.execute(operation);
+        await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(RiakMessage.class).andWithName("rawResponse"), equalTo(response));
+    }
+    
+    @Test
+    public void nodeFailsOperation() throws InterruptedException, UnknownHostException
+    {
+        Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        ChannelFuture future = mock(ChannelFuture.class);
+        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
+        Throwable t = mock(Throwable.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+        
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+        
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).build();
+        node.start();
+        boolean accepted = node.execute(operation);
         assertTrue(accepted);
-        node.onException(channel, null);
+        verify(channel).writeAndFlush(operation);
+        verify(operation).setLastNode(node);
+        Map<?,?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
+        assertEquals(1, inProgressMap.size());
+        node.onException(channel, t);
+        await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
+    }
+    
+    private class FutureOperationImpl extends FutureOperation<String>
+    {
 
-        called.release();
-        operation.addListener(
-          new RiakFutureListener()
-          {
-            @Override
-            public void handle(RiakFuture f)
-            {
-              called.release();
-            }
-          }
-        );
-        assertTrue(called.tryAcquire(10, TimeUnit.SECONDS));
+        @Override
+        protected String convert(RiakMessage rawResponse) throws ExecutionException
+        {
+            return "value";
+        }
+
+        @Override
+        protected RiakMessage createChannelMessage()
+        {
+            return new RiakMessage((byte)0, new byte[0]);
+        }
         
     }
     
