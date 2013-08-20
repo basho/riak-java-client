@@ -623,7 +623,7 @@ public class RiakNode implements RiakResponseListener
     // End ConnectionPool stuff
     
     @Override
-    public void onSuccess(Channel channel, RiakMessage response)
+    public void onSuccess(Channel channel, final RiakMessage response)
     {
         logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(), 
                                                                    remoteAddress, port);
@@ -631,18 +631,23 @@ public class RiakNode implements RiakResponseListener
         {
             channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
         }
-        FutureOperation inProgress = inProgressMap.remove(channel);
+        final FutureOperation inProgress = inProgressMap.remove(channel);
         returnConnection(channel);
-        inProgress.setResponse(response);
+        executor.submit(new Runnable() {
+          @Override
+          public void run() {
+            inProgress.setResponse(response);
+          }
+        });
     }
 
     @Override
-    public void onException(Channel channel, Throwable t)
+    public void onException(Channel channel, final Throwable t)
     {
         logger.debug("Operation onException() channel: id:{} {}:{} {}", 
                      channel.hashCode(), remoteAddress, port, t);
         
-        FutureOperation inProgress = inProgressMap.remove(channel);
+        final FutureOperation inProgress = inProgressMap.remove(channel);
         // There are fail cases where multiple exceptions are thrown from 
         // the pipeline. In that case we'll get an exception from the 
         // handler but will not have an entry in inProgress because it's
@@ -654,7 +659,12 @@ public class RiakNode implements RiakResponseListener
                 channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
             }
             returnConnection(channel);
-            inProgress.setException(t);
+            executor.submit(new Runnable() {
+              @Override
+              public void run() {
+                inProgress.setException(t);
+              }
+            });
         }
     }
     
