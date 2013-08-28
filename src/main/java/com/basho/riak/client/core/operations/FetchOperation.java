@@ -29,6 +29,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -130,15 +131,17 @@ public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
     }
 
     @Override
-    protected T convert(List<RiakKvPB.RpbGetResp> rawResponse) throws ExecutionException
+    protected T convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
     {
-        List<RiakObject> riakObjectList =
-            new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)
-                .convert(rawResponse.get(0));
+        GetRespConverter respConverter = new GetRespConverter(bucket, key);
+        List<RiakObject> riakObjects = new LinkedList<RiakObject>();
+        for (RiakKvPB.RpbGetResp response : responses)
+        {
+            riakObjects.addAll(respConverter.convert(response));
+        }
 
-        List<T> convertedObjects = new ArrayList<T>(riakObjectList.size());
-
-        for (RiakObject ro : riakObjectList)
+        List<T> convertedObjects = new ArrayList<T>(riakObjects.size());
+        for (RiakObject ro : riakObjects)
         {
             convertedObjects.add(domainObjectConverter.toDomain(ro));
         }

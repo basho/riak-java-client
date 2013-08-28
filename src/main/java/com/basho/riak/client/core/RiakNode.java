@@ -152,6 +152,16 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
+    /**
+     * exposed for testing only
+     *
+     * @return number of inprogress tasks
+     */
+    int getNumInProgress()
+    {
+        return inProgressMap.size();
+    }
+
     public synchronized RiakNode start()
     {
         stateCheck(State.CREATED);
@@ -891,6 +901,11 @@ public class RiakNode implements RiakResponseListener
                 logger.debug("RiakNode shut down {}:{}", remoteAddress, port);
             }
         }
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
     }
 
     /**

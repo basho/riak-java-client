@@ -16,6 +16,9 @@
 package com.basho.riak.client.query.indexes;
 
 import com.basho.riak.client.query.RiakObject;
+
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -90,7 +93,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see RiakObject#getIndexes() 
  * @see RiakObject#setIndexes(com.basho.riak.client.query.indexes.RiakIndexes) 
  */
-public class RiakIndexes 
+public class RiakIndexes implements Iterable<RiakIndex<?>>
 {
     private final ConcurrentHashMap<String, RiakIndex<?>> indexes = 
         new ConcurrentHashMap<String, RiakIndex<? extends Object>>(); 
@@ -189,5 +192,10 @@ public class RiakIndexes
     {
         indexes.clear();
     }
-    
+
+		@Override
+		public Iterator<RiakIndex<?>> iterator()
+		{
+				return indexes.values().iterator();
+		}
 }

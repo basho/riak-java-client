@@ -440,7 +440,7 @@ public final class RiakObject
      * </p>
      * @param bucketName the bucket name as a {@code String}
      * @return a reference to this object
-     * @throws IllegalArgumentExeption if {@code bucketName} is {@code null} or zero length
+     * @throws IllegalArgumentException if {@code bucketName} is {@code null} or zero length
      */
     public RiakObject setBucket(String bucketName) 
     {
@@ -461,7 +461,7 @@ public final class RiakObject
      * @param bucketName the bucket name as a {@code String}
      * @param charset the {@link Charset} to use 
      * @return a reference to this object
-     * @throws IllegalArgumentExeption if {@code bucketName} is {@code null} or zero length
+     * @throws IllegalArgumentException if {@code bucketName} is {@code null} or zero length
      */
     public RiakObject setBucket(String bucketName, Charset charset) 
     {
@@ -1071,4 +1071,5 @@ public final class RiakObject
     {
         return isNotFound;
     }
+
 }
