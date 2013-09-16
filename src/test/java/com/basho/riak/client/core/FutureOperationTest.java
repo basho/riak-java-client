@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -209,6 +210,21 @@ public class FutureOperationTest
 
     }
 
+		@Test
+		public void notifiesOnAddAfterStreamingComplete()
+		{
+
+			FutureOperation<String> operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
+			RiakMessage response = PowerMockito.mock(RiakMessage.class);
+
+			operation.setResponse(response);
+			assertFalse(operation.isDone());
+
+			operation.setResponse(response);
+			assertTrue(operation.isDone());
+
+		}
+
     @Test
     public void removedListenersDoNotGetCalled()
     {
@@ -274,7 +290,7 @@ public class FutureOperationTest
         }
 
         @Override
-        protected String convert(RiakMessage rawResponse)
+        protected String convert(List<RiakMessage> rawResponse)
         {
             return "Fake!";
         }
@@ -285,6 +301,34 @@ public class FutureOperationTest
             return new RiakMessage((byte)0, new byte[0]);
         }
     }
+
+		private class StreamingFutureOperationImpl extends FutureOperation<String>
+		{
+			private int tries;
+
+			public StreamingFutureOperationImpl(int tries)
+			{
+					this.tries = tries;
+			}
+
+			@Override
+			protected String convert(List<RiakMessage> rawResponse)
+			{
+				return "Fake!";
+			}
+
+			@Override
+			protected RiakMessage createChannelMessage()
+			{
+				return new RiakMessage((byte)0, new byte[0]);
+			}
+
+			@Override
+			protected boolean done()
+			{
+				return --tries <= 0;
+			}
+		}
 
 
 }

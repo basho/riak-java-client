@@ -25,10 +25,13 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
 import java.net.UnknownHostException;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static org.hamcrest.Matchers.any;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -341,7 +344,7 @@ public class RiakNodeTest
         
         node.onSuccess(channel, response);
         assertEquals(0, inProgressMap.size());
-        await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(RiakMessage.class).andWithName("rawResponse"), equalTo(response));
+        verify(operation).isDone();
     }
     
     @Test
@@ -380,7 +383,7 @@ public class RiakNodeTest
     {
 
         @Override
-        protected String convert(RiakMessage rawResponse) throws ExecutionException
+        protected String convert(List<RiakMessage> rawResponse) throws ExecutionException
         {
             return "value";
         }

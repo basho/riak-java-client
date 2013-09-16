@@ -41,7 +41,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int remainingTries = 1;
-    private volatile RiakMessage rawResponse;
+    private volatile List<RiakMessage> rawResponse = new LinkedList<RiakMessage>();
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;
@@ -148,16 +148,24 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         remainingTries--;
-        this.rawResponse = rawResponse;
+        this.rawResponse.add(rawResponse);
         exception = null;
-        state = State.COMPLETE;
-        latch.countDown();
-        if (retrier != null)
-        {
-            retrier.operationComplete(this, remainingTries);
-        }
-        fireListeners();
+				if (done())
+				{
+						if (retrier != null)
+						{
+							retrier.operationComplete(this, remainingTries);
+						}
+						fireListeners();
+						state = State.COMPLETE;
+						latch.countDown();
+				}
     }
+
+		protected boolean done()
+		{
+				return true;
+		}
 
     synchronized final void setException(Throwable t)
     {
@@ -263,7 +271,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         }
     }
 
-    abstract protected T convert(RiakMessage rawResponse) throws ExecutionException;
+    abstract protected T convert(List<RiakMessage> rawResponse) throws ExecutionException;
 
     abstract protected RiakMessage createChannelMessage();
 

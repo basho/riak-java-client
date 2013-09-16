@@ -95,11 +95,11 @@ public class FetchOperation<T> extends FutureOperation<T>
     }
     
     @Override
-    protected T convert(RiakMessage rawResponse) throws ExecutionException
+    protected T convert(List<RiakMessage> rawResponse) throws ExecutionException
     {
         List<RiakObject> riakObjectList = 
             new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)
-                .convert(rawResponse);
+                .convert(rawResponse.get(0));
         
         List<T> convertedObjects = new ArrayList<T>(riakObjectList.size());
         

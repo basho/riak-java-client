@@ -630,10 +630,16 @@ public class RiakNode implements RiakResponseListener
         if (readTimeoutInMillis > 0)
         {
             channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
-        }
-        final FutureOperation inProgress = inProgressMap.remove(channel);
-        returnConnection(channel);
+				}
+
+				final FutureOperation inProgress = inProgressMap.get(channel);
 				inProgress.setResponse(response);
+
+				if (inProgress.isDone())
+				{
+					inProgressMap.remove(channel);
+					returnConnection(channel);
+				}
 
     }
 
