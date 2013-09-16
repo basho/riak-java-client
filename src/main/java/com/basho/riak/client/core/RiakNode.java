@@ -633,12 +633,8 @@ public class RiakNode implements RiakResponseListener
         }
         final FutureOperation inProgress = inProgressMap.remove(channel);
         returnConnection(channel);
-        executor.submit(new Runnable() {
-          @Override
-          public void run() {
-            inProgress.setResponse(response);
-          }
-        });
+				inProgress.setResponse(response);
+
     }
 
     @Override
@@ -659,12 +655,8 @@ public class RiakNode implements RiakResponseListener
                 channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
             }
             returnConnection(channel);
-            executor.submit(new Runnable() {
-              @Override
-              public void run() {
-                inProgress.setException(t);
-              }
-            });
+						inProgress.setException(t);
+
         }
     }
     
