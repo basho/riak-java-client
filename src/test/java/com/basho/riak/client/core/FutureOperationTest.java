@@ -15,19 +15,23 @@
  */
 package com.basho.riak.client.core;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import static org.junit.Assert.*;
+import com.google.protobuf.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 
 /**
@@ -142,7 +146,7 @@ public class FutureOperationTest
     public void notifiesListenersAfterSuccess()
     {
 
-        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String, ?> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
@@ -166,7 +170,7 @@ public class FutureOperationTest
     public void notifiesLisetnersAfterFailure()
     {
 
-        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String, ?> operation = PowerMockito.spy(new FutureOperationImpl());
 
         final AtomicBoolean called = new AtomicBoolean(false);
         operation.addListener(new RiakFutureListener<String>()
@@ -189,7 +193,7 @@ public class FutureOperationTest
     public void notifiesOnAddAfterComplete()
     {
 
-        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String, ?> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
@@ -210,10 +214,25 @@ public class FutureOperationTest
     }
 
     @Test
+    public void notifiesOnAddAfterStreamingComplete()
+    {
+
+        StreamingFutureOperationImpl operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
+
+        operation.setResponse(response);
+        assertFalse(operation.isDone());
+
+        operation.setResponse(response);
+        assertTrue(operation.isDone());
+
+    }
+
+    @Test
     public void removedListenersDoNotGetCalled()
     {
 
-        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String, ?> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         final AtomicBoolean called = new AtomicBoolean(false);
@@ -238,7 +257,7 @@ public class FutureOperationTest
     @Test(expected = IllegalStateException.class)
     public void canOnlySetSuccessOnce()
     {
-        FutureOperation<String> operation = PowerMockito.spy(new FutureOperationImpl());
+        FutureOperation<String, ?> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
@@ -267,14 +286,14 @@ public class FutureOperationTest
 
     }
 
-    private class FutureOperationImpl extends FutureOperation<String>
+    private class FutureOperationImpl extends FutureOperation<String, Message>
     {
         public FutureOperationImpl()
         {
         }
 
         @Override
-        protected String convert(RiakMessage rawResponse)
+        protected String convert(List<Message> rawResponse) throws ExecutionException
         {
             return "Fake!";
         }
@@ -282,7 +301,47 @@ public class FutureOperationTest
         @Override
         protected RiakMessage createChannelMessage()
         {
-            return new RiakMessage((byte)0, new byte[0]);
+            return new RiakMessage((byte) 0, new byte[0]);
+        }
+
+        @Override
+        protected Message decode(RiakMessage rawMessage)
+        {
+            return null;
+        }
+    }
+
+    private class StreamingFutureOperationImpl extends FutureOperation<String, Message>
+    {
+        private int tries;
+
+        public StreamingFutureOperationImpl(int tries)
+        {
+            this.tries = tries;
+        }
+
+        @Override
+        protected String convert(List<Message> rawResponse)
+        {
+            return "Fake!";
+        }
+
+        @Override
+        protected RiakMessage createChannelMessage()
+        {
+            return new RiakMessage((byte) 0, new byte[0]);
+        }
+
+        @Override
+        protected boolean done(RiakMessage rawMessage)
+        {
+            return --tries <= 0;
+        }
+
+        @Override
+        protected Message decode(RiakMessage rawMessage)
+        {
+            return null;
         }
     }
 

@@ -10,6 +10,8 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +38,7 @@ public class App implements RiakFutureListener<RiakObject>
     
     public void doIt() throws InterruptedException, ExecutionException
     {
-        FutureOperation<RiakObject> fetchOp = 
+        FutureOperation<RiakObject, RiakKvPB.RpbGetResp> fetchOp =
             new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
                     .withConverter(new PassThroughConverter())
                     .withResolver(new DefaultResolver<RiakObject>());
