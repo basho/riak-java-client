@@ -34,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class FutureOperation<T, U extends Message> implements RiakFuture<T>
+public abstract class FutureOperation<T, U> implements RiakFuture<T>
 {
 
     private enum State
