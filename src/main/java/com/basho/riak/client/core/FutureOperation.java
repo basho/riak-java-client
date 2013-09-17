@@ -150,7 +150,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         remainingTries--;
         this.rawResponse.add(rawResponse);
         exception = null;
-				if (done())
+				if (done(rawResponse))
 				{
 						if (retrier != null)
 						{
@@ -162,7 +162,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
 				}
     }
 
-		protected boolean done()
+		protected boolean done(RiakMessage message)
 		{
 				return true;
 		}
