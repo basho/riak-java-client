@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 
+import com.google.protobuf.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class FutureOperation<T> implements RiakFuture<T>
+public abstract class FutureOperation<T, U extends Message> implements RiakFuture<T>
 {
 
     private enum State
@@ -45,7 +46,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int remainingTries = 1;
-    private volatile List<RiakMessage> rawResponse = new LinkedList<RiakMessage>();
+    private volatile List<U> rawResponse = new LinkedList<U>();
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;
@@ -152,7 +153,8 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         remainingTries--;
-        this.rawResponse.add(rawResponse);
+        U decodedMessage = decode(rawResponse);
+        this.rawResponse.add(decodedMessage);
         exception = null;
         if (done(rawResponse))
         {
@@ -275,9 +277,11 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         }
     }
 
-    abstract protected T convert(List<RiakMessage> rawResponse) throws ExecutionException;
+    abstract protected T convert(List<U> rawResponse) throws ExecutionException;
 
     abstract protected RiakMessage createChannelMessage();
+
+    abstract protected U decode(RiakMessage rawMessage);
 
 
 }

@@ -26,6 +26,7 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchOperation<T> extends FutureOperation<T>
+public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
 {
     private final ByteArrayWrapper bucket;
     private final ByteArrayWrapper key;
@@ -98,7 +99,38 @@ public class FetchOperation<T> extends FutureOperation<T>
     }
 
     @Override
-    protected T convert(List<RiakMessage> rawResponse) throws ExecutionException
+    protected RiakKvPB.RpbGetResp decode(RiakMessage message)
+    {
+        try
+        {
+
+            byte pbMessageCode = message.getCode();
+            byte[] data = message.getData();
+
+            if (RiakMessageCodes.MSG_GetResp != pbMessageCode)
+            {
+                throw new IllegalArgumentException("Wrong response; expected "
+                    + RiakMessageCodes.MSG_GetResp
+                    + " received " + pbMessageCode, null);
+            }
+            else if (data.length == 0) // not found
+            {
+                return null;
+            }
+
+            return RiakKvPB.RpbGetResp.parseFrom(data);
+
+        }
+        catch (InvalidProtocolBufferException e)
+        {
+            throw new IllegalArgumentException("Invalid message received", e);
+        }
+
+
+    }
+
+    @Override
+    protected T convert(List<RiakKvPB.RpbGetResp> rawResponse) throws ExecutionException
     {
         List<RiakObject> riakObjectList =
             new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)

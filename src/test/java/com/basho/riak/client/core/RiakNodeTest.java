@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.RiakNode.State;
+import com.google.protobuf.Message;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -370,13 +371,19 @@ public class RiakNodeTest
         await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
     }
 
-    private class FutureOperationImpl extends FutureOperation<String>
+    private class FutureOperationImpl extends FutureOperation<String, Message>
     {
 
         @Override
-        protected String convert(List<RiakMessage> rawResponse) throws ExecutionException
+        protected String convert(List<Message> rawResponse) throws ExecutionException
         {
             return "value";
+        }
+
+        @Override
+        protected Message decode(RiakMessage rawMessage)
+        {
+            return null;
         }
 
         @Override
@@ -384,6 +391,7 @@ public class RiakNodeTest
         {
             return new RiakMessage((byte) 0, new byte[0]);
         }
+
 
     }
 
