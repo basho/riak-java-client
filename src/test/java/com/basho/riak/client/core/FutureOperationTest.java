@@ -15,20 +15,22 @@
  */
 package com.basho.riak.client.core;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
+
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.Assert.*;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
 
 /**
@@ -210,20 +212,20 @@ public class FutureOperationTest
 
     }
 
-		@Test
-		public void notifiesOnAddAfterStreamingComplete()
-		{
+    @Test
+    public void notifiesOnAddAfterStreamingComplete()
+    {
 
-			FutureOperation<String> operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
-			RiakMessage response = PowerMockito.mock(RiakMessage.class);
+        FutureOperation<String> operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
-			operation.setResponse(response);
-			assertFalse(operation.isDone());
+        operation.setResponse(response);
+        assertFalse(operation.isDone());
 
-			operation.setResponse(response);
-			assertTrue(operation.isDone());
+        operation.setResponse(response);
+        assertTrue(operation.isDone());
 
-		}
+    }
 
     @Test
     public void removedListenersDoNotGetCalled()
@@ -298,37 +300,37 @@ public class FutureOperationTest
         @Override
         protected RiakMessage createChannelMessage()
         {
-            return new RiakMessage((byte)0, new byte[0]);
+            return new RiakMessage((byte) 0, new byte[0]);
         }
     }
 
-		private class StreamingFutureOperationImpl extends FutureOperation<String>
-		{
-			private int tries;
+    private class StreamingFutureOperationImpl extends FutureOperation<String>
+    {
+        private int tries;
 
-			public StreamingFutureOperationImpl(int tries)
-			{
-					this.tries = tries;
-			}
+        public StreamingFutureOperationImpl(int tries)
+        {
+            this.tries = tries;
+        }
 
-			@Override
-			protected String convert(List<RiakMessage> rawResponse)
-			{
-				return "Fake!";
-			}
+        @Override
+        protected String convert(List<RiakMessage> rawResponse)
+        {
+            return "Fake!";
+        }
 
-			@Override
-			protected RiakMessage createChannelMessage()
-			{
-				return new RiakMessage((byte)0, new byte[0]);
-			}
+        @Override
+        protected RiakMessage createChannelMessage()
+        {
+            return new RiakMessage((byte) 0, new byte[0]);
+        }
 
-			@Override
-			protected boolean done(RiakMessage rawMessage)
-			{
-				return --tries <= 0;
-			}
-		}
+        @Override
+        protected boolean done(RiakMessage rawMessage)
+        {
+            return --tries <= 0;
+        }
+    }
 
 
 }

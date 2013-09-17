@@ -16,14 +16,18 @@
 package com.basho.riak.client.core;
 
 
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -150,22 +154,22 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         remainingTries--;
         this.rawResponse.add(rawResponse);
         exception = null;
-				if (done(rawResponse))
-				{
-						if (retrier != null)
-						{
-							retrier.operationComplete(this, remainingTries);
-						}
-						fireListeners();
-						state = State.COMPLETE;
-						latch.countDown();
-				}
+        if (done(rawResponse))
+        {
+            if (retrier != null)
+            {
+                retrier.operationComplete(this, remainingTries);
+            }
+            fireListeners();
+            state = State.COMPLETE;
+            latch.countDown();
+        }
     }
 
-		protected boolean done(RiakMessage message)
-		{
-				return true;
-		}
+    protected boolean done(RiakMessage message)
+    {
+        return true;
+    }
 
     synchronized final void setException(Throwable t)
     {
