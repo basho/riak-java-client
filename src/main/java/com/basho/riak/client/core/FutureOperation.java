@@ -185,7 +185,7 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         this.exception = t;
 
         remainingTries--;
-        if (remainingTries == 0)
+        if (remainingTries <= 0)
         {
             state = State.COMPLETE;
             latch.countDown();

@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -167,6 +168,31 @@ public class FutureOperationTest
     }
 
     @Test
+    public void notifiesListenersAfterStreamingSuccess()
+    {
+
+        FutureOperation<String, ?> operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
+
+        final AtomicInteger called = new AtomicInteger(0);
+        operation.addListener(new RiakFutureListener<String>()
+        {
+            @Override
+            public void handle(RiakFuture<String> f)
+            {
+                called.incrementAndGet();
+            }
+        });
+
+        operation.setResponse(response);
+        operation.setResponse(response);
+
+        assertTrue(operation.isDone());
+        assertEquals(1, called.get());
+
+    }
+
+    @Test
     public void notifiesLisetnersAfterFailure()
     {
 
@@ -186,6 +212,31 @@ public class FutureOperationTest
 
         assertTrue(operation.isDone());
         assertTrue(called.get());
+
+    }
+
+    @Test
+    public void notifiesLisetnersAfterStreamingFailure()
+    {
+
+        FutureOperation<String, ?> operation = PowerMockito.spy(new StreamingFutureOperationImpl(3));
+        RiakMessage response = PowerMockito.mock(RiakMessage.class);
+
+        final AtomicInteger called = new AtomicInteger(0);
+        operation.addListener(new RiakFutureListener<String>()
+        {
+            @Override
+            public void handle(RiakFuture<String> f)
+            {
+                called.incrementAndGet();
+            }
+        });
+
+        operation.setResponse(response);
+        operation.setException(new Exception());
+
+        assertEquals(1, called.get());
+        assertTrue(operation.isDone());
 
     }
 
