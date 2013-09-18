@@ -156,7 +156,7 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         U decodedMessage = decode(rawResponse);
         this.rawResponse.add(decodedMessage);
         exception = null;
-        if (done(rawResponse))
+        if (done(decodedMessage))
         {
             if (retrier != null)
             {
@@ -168,7 +168,13 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         }
     }
 
-    protected boolean done(RiakMessage message)
+    /**
+     * Detect when the streaming operation is finished
+     *
+     * @param message raw message
+     * @return returns true if this is the last message in the streaming operation
+     */
+    protected boolean done(U message)
     {
         return true;
     }

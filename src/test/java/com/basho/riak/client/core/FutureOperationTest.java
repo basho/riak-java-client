@@ -333,7 +333,7 @@ public class FutureOperationTest
         }
 
         @Override
-        protected boolean done(RiakMessage rawMessage)
+        protected boolean done(Message rawMessage)
         {
             return --tries <= 0;
         }
