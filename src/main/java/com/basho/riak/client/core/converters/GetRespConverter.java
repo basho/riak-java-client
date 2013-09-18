@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.IndexType;
@@ -24,17 +23,15 @@ import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.query.links.RiakLinks;
 import com.basho.riak.client.util.ByteArrayWrapper;
-import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -53,117 +50,102 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
     }
 
     @Override
-    public List<RiakObject> convert(RiakMessage message) throws ExecutionException
+    public List<RiakObject> convert(RiakKvPB.RpbGetResp resp) throws ExecutionException
     {
-        byte pbMessageCode = message.getCode();
-        byte[] data = message.getData();
-        
-        if (RiakMessageCodes.MSG_GetResp != pbMessageCode)
-        {
-            throw new ExecutionException("Wrong response; expected "
-                + RiakMessageCodes.MSG_GetResp
-                + " received " + pbMessageCode, null);
-        }
-        else if (data.length == 0) // not found
+
+
+        if (null == resp)
         {
             List<RiakObject> objectList = new ArrayList<RiakObject>(1);
             objectList.add(RiakObject.create(bucket.unsafeGetValue())
-                                     .setKey(key.unsafeGetValue())
-                                     .setNotFound(true)
-                                     .setModified(false));
+                .setKey(key.unsafeGetValue())
+                .setNotFound(true)
+                .setModified(false));
             return objectList;
         }
-        else // We have a reply and it isn't not-found
+
+
+        int count = resp.getContentCount();
+
+        // To unify the behavior of having just a tombstone vs. siblings
+        // that include a tombstone, we create an empty object and mark
+        // it deleted
+        if (count == 0)
         {
-            try
-            {
-                RiakKvPB.RpbGetResp resp = RiakKvPB.RpbGetResp.parseFrom(data);
-                int count = resp.getContentCount();
-
-                // To unify the behavior of having just a tombstone vs. siblings
-                // that include a tombstone, we create an empty object and mark
-                // it deleted
-                if (count == 0)
-                {
-                    RiakKvPB.RpbGetResp.Builder responseBuilder = resp.toBuilder();
-                    RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.getDefaultInstance().toBuilder();
-                    contentBuilder.setDeleted(true).setValue(ByteString.EMPTY);
-                    resp = responseBuilder.addContent(contentBuilder.build()).build();
-                    count = 1;
-                }
-
-                List<RiakObject> objectList = new ArrayList<RiakObject>(count);
-                ByteString vclock = resp.getVclock();
-
-                for (int i = 0; i < count; i++)
-                {
-                    RiakKvPB.RpbContent content = resp.getContent(i);
-                    
-                    RiakObject riakObject = 
-                        RiakObject.create(bucket.unsafeGetValue())
-                                  .setKey(key.unsafeGetValue())
-                                  .unsafeSetValue(content.getValue().toByteArray())
-                                  .setVClock(vclock.toByteArray())
-                                  .setContentType(nullSafeByteStringToUtf8(content.getContentType()))
-                                  .setCharset(nullSafeByteStringToUtf8(content.getCharset()))
-                                  .setVTag(nullSafeByteStringToUtf8(content.getVtag()))
-                                  .setDeleted(content.getDeleted())
-                                  .setModified(!resp.getUnchanged());
-                                                        
-                    if (content.getLinksCount() > 0)
-                    {
-                        riakObject.setLinks(decodeLinks(content));
-                    }
-
-                    if (content.hasLastMod())
-                    {
-                        int lastMod = content.getLastMod();
-                        int lastModUsec = content.getLastModUsecs();
-                        riakObject.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
-                    }
-
-                    if (content.getUsermetaCount() > 0)
-                    {
-                        RiakUserMetadata userMeta = new RiakUserMetadata();
-                        for (int j = 0; j < content.getUsermetaCount(); j++)
-                        {
-                            RpbPair pair = content.getUsermeta(j);
-                            userMeta.put(ByteArrayWrapper.unsafeCreate(pair.getKey().toByteArray()), 
-                                         ByteArrayWrapper.unsafeCreate(pair.getValue().toByteArray()));
-                        }
-                        riakObject.setUserMeta(userMeta);
-                    }
-
-                    if (content.getIndexesCount() > 0)
-                    {
-                        RiakIndexes indexes = new RiakIndexes();
-                        for (RpbPair p : content.getIndexesList())
-                        {
-                            String name = p.getKey().toStringUtf8();
-                            try 
-                            {
-                                IndexType type = IndexType.typeFromFullname(name);
-                                indexes.getIndex(new RawIndex.Name(name, type))
-                                                .add(ByteArrayWrapper.unsafeCreate(p.getValue().toByteArray()));
-                            }
-                            catch (IllegalArgumentException e)
-                            {
-                                throw new ExecutionException("Unknown index type" + name, e);
-                            }
-                        }
-                        riakObject.setIndexes(indexes);
-                    }
-
-                    objectList.add(riakObject);
-                }
-
-                return objectList;
-            }
-            catch (InvalidProtocolBufferException ex)
-            {
-                throw new ExecutionException(ex);
-            }
+            RiakKvPB.RpbGetResp.Builder responseBuilder = resp.toBuilder();
+            RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.getDefaultInstance().toBuilder();
+            contentBuilder.setDeleted(true).setValue(ByteString.EMPTY);
+            resp = responseBuilder.addContent(contentBuilder.build()).build();
+            count = 1;
         }
+
+        List<RiakObject> objectList = new ArrayList<RiakObject>(count);
+        ByteString vclock = resp.getVclock();
+
+        for (int i = 0; i < count; i++)
+        {
+            RiakKvPB.RpbContent content = resp.getContent(i);
+
+            RiakObject riakObject =
+                RiakObject.create(bucket.unsafeGetValue())
+                    .setKey(key.unsafeGetValue())
+                    .unsafeSetValue(content.getValue().toByteArray())
+                    .setVClock(vclock.toByteArray())
+                    .setContentType(nullSafeByteStringToUtf8(content.getContentType()))
+                    .setCharset(nullSafeByteStringToUtf8(content.getCharset()))
+                    .setVTag(nullSafeByteStringToUtf8(content.getVtag()))
+                    .setDeleted(content.getDeleted())
+                    .setModified(!resp.getUnchanged());
+
+            if (content.getLinksCount() > 0)
+            {
+                riakObject.setLinks(decodeLinks(content));
+            }
+
+            if (content.hasLastMod())
+            {
+                int lastMod = content.getLastMod();
+                int lastModUsec = content.getLastModUsecs();
+                riakObject.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
+            }
+
+            if (content.getUsermetaCount() > 0)
+            {
+                RiakUserMetadata userMeta = new RiakUserMetadata();
+                for (int j = 0; j < content.getUsermetaCount(); j++)
+                {
+                    RpbPair pair = content.getUsermeta(j);
+                    userMeta.put(ByteArrayWrapper.unsafeCreate(pair.getKey().toByteArray()),
+                        ByteArrayWrapper.unsafeCreate(pair.getValue().toByteArray()));
+                }
+                riakObject.setUserMeta(userMeta);
+            }
+
+            if (content.getIndexesCount() > 0)
+            {
+                RiakIndexes indexes = new RiakIndexes();
+                for (RpbPair p : content.getIndexesList())
+                {
+                    String name = p.getKey().toStringUtf8();
+                    try
+                    {
+                        IndexType type = IndexType.typeFromFullname(name);
+                        indexes.getIndex(new RawIndex.Name(name, type))
+                            .add(ByteArrayWrapper.unsafeCreate(p.getValue().toByteArray()));
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        throw new ExecutionException("Unknown index type" + name, e);
+                    }
+                }
+                riakObject.setIndexes(indexes);
+            }
+
+            objectList.add(riakObject);
+        }
+
+        return objectList;
+
     }
 
     private RiakLinks decodeLinks(RiakKvPB.RpbContent content)
@@ -174,8 +156,8 @@ public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
         for (RiakKvPB.RpbLink pbLink : pbLinkList)
         {
             RiakLink link = new RiakLink(pbLink.getBucket().toStringUtf8(),
-                                         pbLink.getKey().toStringUtf8(),
-                                         pbLink.getTag().toStringUtf8());
+                pbLink.getKey().toStringUtf8(),
+                pbLink.getTag().toStringUtf8());
             decodedLinkList.add(link);
         }
 

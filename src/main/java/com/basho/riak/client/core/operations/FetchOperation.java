@@ -26,31 +26,33 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
  * An operation used to fetch an object from Riak.
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchOperation<T> extends FutureOperation<T>
+public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
 {
     private final ByteArrayWrapper bucket;
     private final ByteArrayWrapper key;
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     private FetchMeta fetchMeta;
-    
+
     public FetchOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
     {
         if ((null == bucket) || bucket.length() == 0)
         {
             throw new IllegalArgumentException("Bucket can not be null or empty");
         }
-        
+
         if ((null == key) || key.length() == 0)
         {
             throw new IllegalArgumentException("key can not be null or empty");
@@ -62,6 +64,7 @@ public class FetchOperation<T> extends FutureOperation<T>
 
     /**
      * Sets the {@link ConflictResolver} to be used if Riak returns siblings
+     *
      * @param conflictResolver
      * @return this
      */
@@ -82,9 +85,10 @@ public class FetchOperation<T> extends FutureOperation<T>
         this.domainObjectConverter = domainObjectConverter;
         return this;
     }
-    
+
     /**
      * The {@link FetchMeta} to use for this fetch operation
+     *
      * @param fetchMeta
      * @return this
      */
@@ -93,21 +97,52 @@ public class FetchOperation<T> extends FutureOperation<T>
         this.fetchMeta = fetchMeta;
         return this;
     }
-    
+
     @Override
-    protected T convert(RiakMessage rawResponse) throws ExecutionException
+    protected RiakKvPB.RpbGetResp decode(RiakMessage message)
     {
-        List<RiakObject> riakObjectList = 
+        try
+        {
+
+            byte pbMessageCode = message.getCode();
+            byte[] data = message.getData();
+
+            if (RiakMessageCodes.MSG_GetResp != pbMessageCode)
+            {
+                throw new IllegalArgumentException("Wrong response; expected "
+                    + RiakMessageCodes.MSG_GetResp
+                    + " received " + pbMessageCode, null);
+            }
+            else if (data.length == 0) // not found
+            {
+                return null;
+            }
+
+            return RiakKvPB.RpbGetResp.parseFrom(data);
+
+        }
+        catch (InvalidProtocolBufferException e)
+        {
+            throw new IllegalArgumentException("Invalid message received", e);
+        }
+
+
+    }
+
+    @Override
+    protected T convert(List<RiakKvPB.RpbGetResp> rawResponse) throws ExecutionException
+    {
+        List<RiakObject> riakObjectList =
             new GetRespConverter(bucket, key, fetchMeta.hasHeadOnly() ? fetchMeta.getHeadOnly() : false)
-                .convert(rawResponse);
-        
+                .convert(rawResponse.get(0));
+
         List<T> convertedObjects = new ArrayList<T>(riakObjectList.size());
-        
+
         for (RiakObject ro : riakObjectList)
         {
             convertedObjects.add(domainObjectConverter.toDomain(ro));
         }
-        
+
         if (convertedObjects.isEmpty())
         {
             return null;
@@ -129,48 +164,48 @@ public class FetchOperation<T> extends FutureOperation<T>
         {
             fetchMeta = new FetchMeta.Builder().build();
         }
-        
+
         RiakKvPB.RpbGetReq.Builder builder = RiakKvPB.RpbGetReq.newBuilder();
         builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
         builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-        
+
         if (fetchMeta.hasHeadOnly())
         {
             builder.setHead(fetchMeta.getHeadOnly());
         }
-        
+
         if (fetchMeta.hasReturnDeletedVClock())
         {
             builder.setDeletedvclock(fetchMeta.getReturnDeletedVClock());
         }
-        
+
         if (fetchMeta.hasBasicQuorum())
         {
             builder.setBasicQuorum(fetchMeta.getBasicQuorum());
         }
-        
+
         if (fetchMeta.hasIfModifiedVClock())
         {
             builder.setIfModified(ByteString.copyFrom(fetchMeta.getIfModifiedVClock().getBytes()));
         }
-        
+
         if (fetchMeta.hasNotFoundOk())
         {
             builder.setNotfoundOk(fetchMeta.getNotFoundOK());
         }
-        
+
         if (fetchMeta.hasPr())
         {
             builder.setPr(fetchMeta.getPr().getIntValue());
         }
-        
+
         if (fetchMeta.hasR())
         {
             builder.setR(fetchMeta.getR().getIntValue());
         }
-        
+
         RiakKvPB.RpbGetReq req = builder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_GetReq ,req.toByteArray());
-        
-    }    
+        return new RiakMessage(RiakMessageCodes.MSG_GetReq, req.toByteArray());
+
+    }
 }

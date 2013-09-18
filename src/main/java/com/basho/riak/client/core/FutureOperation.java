@@ -16,20 +16,25 @@
 package com.basho.riak.client.core;
 
 
-import java.util.*;
+import com.google.protobuf.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class FutureOperation<T> implements RiakFuture<T>
+public abstract class FutureOperation<T, U> implements RiakFuture<T>
 {
 
     private enum State
@@ -41,7 +46,7 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int remainingTries = 1;
-    private volatile RiakMessage rawResponse;
+    private volatile List<U> rawResponse = new LinkedList<U>();
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;
@@ -148,15 +153,24 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         remainingTries--;
-        this.rawResponse = rawResponse;
+        U decodedMessage = decode(rawResponse);
+        this.rawResponse.add(decodedMessage);
         exception = null;
-        state = State.COMPLETE;
-        latch.countDown();
-        if (retrier != null)
+        if (done(rawResponse))
         {
-            retrier.operationComplete(this, remainingTries);
+            if (retrier != null)
+            {
+                retrier.operationComplete(this, remainingTries);
+            }
+            fireListeners();
+            state = State.COMPLETE;
+            latch.countDown();
         }
-        fireListeners();
+    }
+
+    protected boolean done(RiakMessage message)
+    {
+        return true;
     }
 
     synchronized final void setException(Throwable t)
@@ -263,9 +277,11 @@ public abstract class FutureOperation<T> implements RiakFuture<T>
         }
     }
 
-    abstract protected T convert(RiakMessage rawResponse) throws ExecutionException;
+    abstract protected T convert(List<U> rawResponse) throws ExecutionException;
 
     abstract protected RiakMessage createChannelMessage();
+
+    abstract protected U decode(RiakMessage rawMessage);
 
 
 }

@@ -16,6 +16,8 @@
 package com.basho.riak.client.core.converters;
 
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.protobuf.RiakKvPB;
+
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -25,5 +27,5 @@ import java.util.concurrent.ExecutionException;
  */
 public interface RiakResponseConverter<T>
 {
-    T convert(RiakMessage message) throws ExecutionException;
+    T convert(RiakKvPB.RpbGetResp message) throws ExecutionException;
 }
