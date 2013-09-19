@@ -48,4 +48,22 @@ public interface RiakMessageCodes
 	public static final byte MSG_MapRedResp = 24;
 	public static final byte MSG_IndexReq = 25;
 	public static final byte MSG_IndexResp = 26;
+    public static final byte MSG_SearchQueryReq = 27;
+    public static final byte MSG_SearchQueryResp = 28;
+    public static final byte MSG_ResetBucketReq = 29;
+    public static final byte MSG_ResetBucketResp = 30;
+    public static final byte MSG_GetBucketTypeReq = 31;
+    public static final byte MSG_SetBucketTypeReq = 32;
+    public static final byte MSG_ResetBucketTypeReq = 33;
+    public static final byte MSG_UpdateCounterReq = 50;
+    public static final byte MSG_UpdateCounterResp = 51;
+    public static final byte MSG_GetCounterReq = 52;
+    public static final byte MSG_GetCounterResp = 53;
+    public static final byte MSG_GetYzIndexReq = 54;
+    public static final byte MSG_GetYzIndexResp = 55;
+    public static final byte MSG_PutYzIndexReq = 56;
+    public static final byte MSG_DelYzIndexReq = 57;
+    public static final byte MSG_GetYzSchemaReq = 58;
+    public static final byte MSG_GetYzSchemaResp = 59;
+    public static final byte MSG_PutYzSchemaReq = 60;
 }
