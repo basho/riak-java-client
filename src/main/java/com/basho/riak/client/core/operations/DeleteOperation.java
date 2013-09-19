@@ -43,6 +43,17 @@ public class DeleteOperation extends FutureOperation<Void, Void>
 
 	public DeleteOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
 	{
+
+        if ((null == bucket) || bucket.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket can not be null or empty");
+        }
+
+        if ((null == key) || key.length() == 0)
+        {
+            throw new IllegalArgumentException("key can not be null or empty");
+        }
+
 		this.bucket = bucket;
 		this.key = key;
 	}

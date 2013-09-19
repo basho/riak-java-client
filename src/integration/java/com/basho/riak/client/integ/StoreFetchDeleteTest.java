@@ -44,7 +44,7 @@ public class StoreFetchDeleteTest
 	@BeforeClass
 	public static void setup() throws UnknownHostException
 	{
-		RiakNode node = RiakNode.builder()
+		RiakNode node = new RiakNode.Builder()
 			.withRemoteAddress("localhost")
 			.withRemotePort(8087)
 			.build();

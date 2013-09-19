@@ -55,6 +55,22 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
 
     public StoreOperation(ByteArrayWrapper bucket, ByteArrayWrapper key, T content)
     {
+
+        if ((null == bucket) || bucket.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket can not be null or empty");
+        }
+
+        if ((null == key) || key.length() == 0)
+        {
+            throw new IllegalArgumentException("key can not be null or empty");
+        }
+
+        if (null == content)
+        {
+            throw new IllegalArgumentException("content can not be null");
+        }
+
         this.bucket = bucket;
         this.key = key;
         this.content = content;

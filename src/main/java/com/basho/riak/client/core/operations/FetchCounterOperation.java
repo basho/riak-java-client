@@ -44,7 +44,18 @@ public class FetchCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCou
 
 	public FetchCounterOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
 	{
-		this.bucket = bucket;
+
+        if ((null == bucket) || bucket.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket can not be null or empty");
+        }
+
+        if ((null == key) || key.length() == 0)
+        {
+            throw new IllegalArgumentException("key can not be null or empty");
+        }
+
+  		this.bucket = bucket;
 		this.key = key;
 	}
 

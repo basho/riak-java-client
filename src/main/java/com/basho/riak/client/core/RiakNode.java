@@ -903,11 +903,6 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    public static Builder builder()
-    {
-        return new Builder();
-    }
-
     /**
      * Builder used to construct a RiakNode.
      */

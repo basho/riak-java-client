@@ -42,6 +42,17 @@ public class UpdateCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCo
 
     public UpdateCounterOperation(ByteArrayWrapper bucket, ByteArrayWrapper key, long amount)
     {
+
+        if ((null == bucket) || bucket.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket can not be null or empty");
+        }
+
+        if ((null == key) || key.length() == 0)
+        {
+            throw new IllegalArgumentException("key can not be null or empty");
+        }
+
         this.bucket = bucket;
         this.key = key;
         this.amount = amount;
