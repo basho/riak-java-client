@@ -152,12 +152,12 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
     synchronized final void setResponse(RiakMessage rawResponse)
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
-        remainingTries--;
         U decodedMessage = decode(rawResponse);
         this.rawResponse.add(decodedMessage);
         exception = null;
         if (done(decodedMessage))
         {
+            remainingTries--;
             if (retrier != null)
             {
                 retrier.operationComplete(this, remainingTries);
@@ -185,7 +185,7 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         this.exception = t;
 
         remainingTries--;
-        if (remainingTries <= 0)
+        if (remainingTries == 0)
         {
             state = State.COMPLETE;
             latch.countDown();
