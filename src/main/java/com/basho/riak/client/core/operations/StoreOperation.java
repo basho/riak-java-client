@@ -47,20 +47,18 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
 {
 
     private final ByteArrayWrapper bucket;
-    private final T content;
+    private T content;
     private ByteArrayWrapper key;
     private ConflictResolver<T> conflictResolver = new DefaultResolver<T>();
     private Converter<T> domainObjectConverter;
     private StoreMeta storeMeta = StoreMeta.newBuilder().build();
 
     /**
-     * Store an object with the given key to the given bucket.
+     * Store an object to the given bucket.
      *
-     * @param bucket  the bucket
-     * @param key     the object key
-     * @param content the object itself
+     * @param bucket the bucket
      */
-    public StoreOperation(ByteArrayWrapper bucket, ByteArrayWrapper key, T content)
+    public StoreOperation(ByteArrayWrapper bucket)
     {
 
         if ((null == bucket) || bucket.length() == 0)
@@ -68,31 +66,38 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
             throw new IllegalArgumentException("Bucket can not be null or empty");
         }
 
+        this.bucket = bucket;
+    }
+
+    /**
+     * (optional) key under which to store the content, if no key is given one will
+     * be chosen by Riak and returned
+     *
+     * @param key
+     * @return
+     */
+    public StoreOperation<T> withKey(ByteArrayWrapper key)
+    {
         if ((null == key) || key.length() == 0)
         {
             throw new IllegalArgumentException("key can not be null or empty");
         }
 
-        if (null == content)
-        {
-            throw new IllegalArgumentException("content can not be null");
-        }
-
-        this.bucket = bucket;
         this.key = key;
-        this.content = content;
+
+        return this;
     }
 
     /**
-     * Store an object to Riak. Riak will generate an unique key.
+     * The content to store to Riak. May be null.
      *
-     * @param bucket  the bucket to which the object will be stored
-     * @param content the data to be stored
+     * @param content
+     * @return
      */
-    public StoreOperation(ByteArrayWrapper bucket, T content)
+    public StoreOperation<T> withContent(T content)
     {
-        this.bucket = bucket;
         this.content = content;
+        return this;
     }
 
     /**
@@ -183,36 +188,40 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
             builder.setKey(ByteString.copyFrom(bucket.unsafeGetValue()));
         }
 
-        RiakObject o = domainObjectConverter.fromDomain(content);
-        RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.newBuilder();
-        contentBuilder.setValue(ByteString.copyFrom(o.getValueAsBytes()));
-        contentBuilder.setContentType(ByteString.copyFromUtf8(notNull(o.getContentType())));
-        contentBuilder.setCharset(ByteString.copyFromUtf8(notNull(o.getCharset())));
-        contentBuilder.setContentEncoding(ByteString.copyFromUtf8(notNull(o.getContentType())));
-        contentBuilder.setVtag(ByteString.copyFrom(notNull(o.getVtag()).getBytes()));
-        contentBuilder.setLastMod((int) o.getLastModified());
-        contentBuilder.setDeleted(o.isDeleted());
-
-        for (RiakLink link : o.getLinks())
+        if (content != null)
         {
-            contentBuilder.addLinks(
-                RiakKvPB.RpbLink.newBuilder()
-                    .setBucket(pbBucket)
-                    .setTag(ByteString.copyFrom(link.getTagAsBytes().unsafeGetValue()))
-                    .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));
-        }
 
-        for (RiakIndex<?> index : o.getIndexes())
-        {
-            for (ByteArrayWrapper value : index.rawValues())
+            RiakObject o = domainObjectConverter.fromDomain(content);
+            RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.newBuilder();
+            contentBuilder.setValue(ByteString.copyFrom(o.getValueAsBytes()));
+            contentBuilder.setContentType(ByteString.copyFromUtf8(notNull(o.getContentType())));
+            contentBuilder.setCharset(ByteString.copyFromUtf8(notNull(o.getCharset())));
+            contentBuilder.setContentEncoding(ByteString.copyFromUtf8(notNull(o.getContentType())));
+            contentBuilder.setVtag(ByteString.copyFrom(notNull(o.getVtag()).getBytes()));
+            contentBuilder.setLastMod((int) o.getLastModified());
+            contentBuilder.setDeleted(o.isDeleted());
+
+            for (RiakLink link : o.getLinks())
             {
-                RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();
-                pair.setKey(ByteString.copyFrom(index.getFullname().getBytes()));
-                pair.setValue(ByteString.copyFrom(value.unsafeGetValue()));
+                contentBuilder.addLinks(
+                    RiakKvPB.RpbLink.newBuilder()
+                        .setBucket(pbBucket)
+                        .setTag(ByteString.copyFrom(link.getTagAsBytes().unsafeGetValue()))
+                        .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));
             }
-        }
 
-        builder.setContent(contentBuilder);
+            for (RiakIndex<?> index : o.getIndexes())
+            {
+                for (ByteArrayWrapper value : index.rawValues())
+                {
+                    RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();
+                    pair.setKey(ByteString.copyFrom(index.getFullname().getBytes()));
+                    pair.setValue(ByteString.copyFrom(value.unsafeGetValue()));
+                }
+            }
+
+            builder.setContent(contentBuilder);
+        }
 
         if (storeMeta.hasAsis())
         {

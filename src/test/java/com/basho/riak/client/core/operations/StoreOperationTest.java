@@ -36,37 +36,39 @@ import static junit.framework.Assert.assertTrue;
 public class StoreOperationTest
 {
 
-	@Test
-	public void testStoreOperationCreateChannelMessage() throws InvalidProtocolBufferException
-	{
+    @Test
+    public void testStoreOperationCreateChannelMessage() throws InvalidProtocolBufferException
+    {
 
-		byte[] expectedValue = new byte[] {'O', '_', 'o'};
+        byte[] expectedValue = new byte[]{'O', '_', 'o'};
 
-		ByteArrayWrapper bucket = ByteArrayWrapper.create("bucket".getBytes());
-		ByteArrayWrapper key = ByteArrayWrapper.create("key".getBytes());
+        ByteArrayWrapper bucket = ByteArrayWrapper.create("bucket".getBytes());
+        ByteArrayWrapper key = ByteArrayWrapper.create("key".getBytes());
 
-		RiakObject ro = RiakObject.create(bucket.unsafeGetValue());
+        RiakObject ro = RiakObject.create(bucket.unsafeGetValue());
 
-		List<RiakLink> links = new ArrayList<RiakLink>();
-		links.add(new RiakLink("bucket", "key", "tag"));
-		ro.getLinks().addLinks(links);
+        List<RiakLink> links = new ArrayList<RiakLink>();
+        links.add(new RiakLink("bucket", "key", "tag"));
+        ro.getLinks().addLinks(links);
 
-		RiakIndexes indexes = ro.getIndexes();
-		LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name("dave"));
-		longIndex.add(42L);
+        RiakIndexes indexes = ro.getIndexes();
+        LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name("dave"));
+        longIndex.add(42L);
 
-		ro.setValue(expectedValue);
+        ro.setValue(expectedValue);
 
-		StoreOperation<RiakObject> operation =
-			new StoreOperation<RiakObject>(bucket, key, ro)
-				.withConverter(new PassThroughConverter());
+        StoreOperation<RiakObject> operation =
+            new StoreOperation<RiakObject>(bucket)
+                .withKey(key)
+                .withContent(ro)
+                .withConverter(new PassThroughConverter());
 
-		RiakMessage rm = operation.createChannelMessage();
+        RiakMessage rm = operation.createChannelMessage();
 
-		assertTrue(rm.getCode() == RiakMessageCodes.MSG_PutReq);
-		RiakKvPB.RpbPutReq req = RiakKvPB.RpbPutReq.parseFrom(rm.getData());
-		assertTrue(Arrays.equals(req.getContent().getValue().toByteArray(), expectedValue));
+        assertTrue(rm.getCode() == RiakMessageCodes.MSG_PutReq);
+        RiakKvPB.RpbPutReq req = RiakKvPB.RpbPutReq.parseFrom(rm.getData());
+        assertTrue(Arrays.equals(req.getContent().getValue().toByteArray(), expectedValue));
 
-	}
+    }
 
 }
