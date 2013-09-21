@@ -53,6 +53,13 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
     private Converter<T> domainObjectConverter;
     private StoreMeta storeMeta = StoreMeta.newBuilder().build();
 
+    /**
+     * Store an object with the given key to the given bucket.
+     *
+     * @param bucket  the bucket
+     * @param key     the object key
+     * @param content the object itself
+     */
     public StoreOperation(ByteArrayWrapper bucket, ByteArrayWrapper key, T content)
     {
 
@@ -76,6 +83,12 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
         this.content = content;
     }
 
+    /**
+     * Store an object to Riak. Riak will generate an unique key.
+     *
+     * @param bucket  the bucket to which the object will be stored
+     * @param content the data to be stored
+     */
     public StoreOperation(ByteArrayWrapper bucket, T content)
     {
         this.bucket = bucket;
