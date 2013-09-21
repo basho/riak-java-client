@@ -262,4 +262,22 @@ public class FetchObject<T> implements ClientOperation<T>
         fetchMetaBuilder.headOnly(true);
         return this;
     }
+
+    public FetchObject<T> timeout(int timeout)
+    {
+        fetchMetaBuilder.timeout(timeout);
+        return this;
+    }
+
+    public FetchObject<T> nval(int nval)
+    {
+        fetchMetaBuilder.nval(nval);
+        return this;
+    }
+
+    public FetchObject<T> sloppyQuorum(boolean sloppyQuorum)
+    {
+        fetchMetaBuilder.sloppyQuorum(sloppyQuorum);
+        return this;
+    }
 }
