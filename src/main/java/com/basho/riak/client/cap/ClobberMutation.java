@@ -38,4 +38,8 @@ public class ClobberMutation<T> implements Mutation<T> {
   public T apply(T original) {
     return newValue;
   }
+
+  public boolean hasMutated() {
+    return true;
+  }
 }

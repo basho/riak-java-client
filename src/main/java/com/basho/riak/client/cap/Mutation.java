@@ -25,9 +25,34 @@ package com.basho.riak.client.cap;
  * Rather than creating a riak object with a value of (say 25) you create a
  * Mutation that adds 1 to whatever value comes from Riak
  * </p>
+ * Allows for a store operation not to occur
+ * if the object it is being applied to is not modified.
+ *
+ * <p>
+ * By implementing this interface you can avoid a store operation from occurring
+ * if the object it is be applied to is not modified.
+ * </p>
+ * <p>For example:
+ * <code><pre>
+ * Mutation&lt;IRiakObject&gt m = new Mutation&lt;IRiakObject&gt;() {
+ *     private boolean modified;
+ *
+ *     {@literal @}Override
+ *     IRiakObject apply(IRiakObject original) {
+ *          // I didn't do anything!
+ *          modifed = false;
+ *     }
+ *
+ *     {@literal @}Overrive
+ *     boolean hasMutated() {
+ *         return modified;
+ *     }
+ * };
+ * </code></pre></p>
+ *
  *
  * @author russell
- *
+ * @author gmedina
  */
 public interface Mutation<T> {
   /**
@@ -38,4 +63,13 @@ public interface Mutation<T> {
    * @return the mutated value.
    */
   T apply(T original);
+
+  /**
+   * Returns true if the mutation has actually created a change that must
+   * be stored back to Riak.
+   *
+   * @return true if mutated, false otherwise
+   */
+  public boolean hasMutated();
+
 }
