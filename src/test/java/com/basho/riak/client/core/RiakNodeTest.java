@@ -331,11 +331,10 @@ public class RiakNodeTest
         assertTrue(accepted);
         verify(channel).writeAndFlush(operation);
         verify(operation).setLastNode(node);
-        Map<?, ?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
-        assertEquals(1, inProgressMap.size());
+        assertEquals(1, node.getNumInProgress());
 
         node.onSuccess(channel, response);
-        assertEquals(0, inProgressMap.size());
+        assertEquals(0, node.getNumInProgress());
         verify(operation).isDone();
     }
 

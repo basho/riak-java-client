@@ -16,15 +16,16 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakFuture;
+
 import java.util.concurrent.ExecutionException;
 
 /**
- *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public interface ClientOperation<T>
 {
-    T execute() throws InterruptedException, ExecutionException;
-    RiakFuture<T> executeAsync();
+	T execute() throws InterruptedException, ExecutionException;
+
+	RiakFuture<T> executeAsync();
 }

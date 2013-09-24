@@ -20,16 +20,10 @@ package com.basho.riak.client.query.functions;
  * 
  * Instances are created via the provided static factory methods or by using the Builder.
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class Function
 {
-    /**
-     * The riak_search precommit hook.
-     */
-    public static final Function SEARCH_PRECOMMIT_HOOK = 
-        Function.newErlangFunction("riak_search_kv_hook", "precommit");
-    
-    
     private final boolean isJavascript;
     
     private final String name;
@@ -166,7 +160,7 @@ public class Function
     
     /**
      * Static factory method for Stored Javascript Functions.
-     * @param bucketThe bucket where the JS function is stored
+     * @param bucket The bucket where the JS function is stored
      * @param key the key for the object containing the JS function
      * @return a Function representing a stored JS function.
      */

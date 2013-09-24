@@ -1,0 +1,455 @@
+/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.basho.riak.client;
+
+import com.basho.riak.client.cap.Quorum;
+
+/**
+ * Encapsulates the optional parameters for a store operation on Riak
+ *
+ * @author russell
+ * @see RawClient#store(com.basho.riak.client.IRiakObject, StoreMeta)
+ */
+public class StoreMeta
+{
+
+	private static final StoreMeta EMPTY = new StoreMeta(null, null, null, false, null, null, null, null, null, null);
+
+	private final Quorum w;
+	private final Quorum dw;
+	private final Quorum pw;
+	private final Boolean returnBody;
+	private final Boolean returnHead;
+	private final Boolean ifNoneMatch;
+	private final Boolean ifNotModified;
+	private final Boolean asis;
+	private final Integer timeout;
+	private final Integer nval;
+	private final Boolean sloppyQuorum;
+
+
+	/**
+	 * Create a StoreMeta, accepts <code>null</code>s for any parameter
+	 *
+	 * @param w             the write quorum for a store operation
+	 * @param dw            the durable write quorum for a store operation
+	 * @param pw            the primary write quorum
+	 * @param returnBody    should the store operation return the new data item and its
+	 *                      meta data
+	 * @param ifNoneMatch   only store if bucket/key does not exist
+	 * @param ifNotModified only store is the vclock supplied on store matches the vclock
+	 *                      in Riak
+	 */
+	public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean ifNoneMatch, Boolean ifNotModified,
+									 Boolean asis, Integer timeout, Integer nval, Boolean sloppyQuorum)
+	{
+		this(null == w ? null : new Quorum(w),
+			null == dw ? null : new Quorum(dw),
+			null == pw ? null : new Quorum(pw),
+			returnBody,
+			null,
+			ifNoneMatch,
+			ifNotModified,
+			asis,
+			timeout,
+			nval,
+			sloppyQuorum
+		);
+	}
+
+	/**
+	 * Create a StoreMeta, accepts <code>null</code>s for any parameter
+	 *
+	 * @param w             the write quorum for a store operation
+	 * @param dw            the durable write quorum for a store operation
+	 * @param pw            the primary write quorum
+	 * @param returnBody    should the store operation return the new data item and its
+	 *                      meta data
+	 * @param returnHead    should the store operation return only the meta data
+	 * @param ifNoneMatch   only store if bucket/key does not exist
+	 * @param ifNotModified only store is the vclock supplied on store matches the vclock
+	 *                      in Riak
+	 */
+	public StoreMeta(Integer w, Integer dw, Integer pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
+									 Boolean ifNotModified, Boolean asis, Integer timeout, Integer nval, Boolean sloppyQuorum)
+	{
+		this(null == w ? null : new Quorum(w),
+			null == dw ? null : new Quorum(dw),
+			null == pw ? null : new Quorum(pw),
+			returnBody,
+			returnHead,
+			ifNoneMatch,
+			ifNotModified,
+			asis,
+			timeout,
+			nval,
+			sloppyQuorum
+		);
+	}
+
+	public static Builder newBuilder()
+	{
+		return new Builder();
+	}
+
+	/**
+	 * Create a StoreMeta, accepts <code>null</code>s for any parameter
+	 *
+	 * @param w             the write quorum for a store operation
+	 * @param dw            the durable write quorum for a store operation
+	 * @param pw            the primary write quorum
+	 * @param returnBody    should the store operation return the new data item and its
+	 *                      meta data
+	 * @param returnHead    should the store operation return only the meta data
+	 * @param ifNoneMatch   only store if bucket/key does not exist
+	 * @param ifNotModified only store is the vclock supplied on store matches the vclock
+	 *                      in Riak
+	 */
+	public StoreMeta(Quorum w, Quorum dw, Quorum pw, Boolean returnBody, Boolean returnHead, Boolean ifNoneMatch,
+									 Boolean ifNotModified, Boolean asis, Integer timeout, Integer nval, Boolean sloppyQuorum)
+	{
+		this.w = w;
+		this.dw = dw;
+		this.pw = pw;
+		this.returnBody = returnBody;
+		this.returnHead = returnHead;
+		this.ifNoneMatch = ifNoneMatch;
+		this.ifNotModified = ifNotModified;
+		this.asis = asis;
+		this.timeout = timeout;
+		this.nval = nval;
+		this.sloppyQuorum = sloppyQuorum;
+	}
+
+	/**
+	 * The write quorum
+	 *
+	 * @return an Integer or null if no write quorum set
+	 */
+	public Quorum getW()
+	{
+		return w;
+	}
+
+	/**
+	 * Is the write quorum set?
+	 *
+	 * @return <code>true</code> if the write quorum is set, <code>false</code> otherwise
+	 */
+	public boolean hasW()
+	{
+		return w != null;
+	}
+
+	/**
+	 * The durable write quorum
+	 *
+	 * @return an Integer or <code>null</code> if the durable write quorum is not set
+	 */
+	public Quorum getDw()
+	{
+		return dw;
+	}
+
+	/**
+	 * Has the durable write quorum been set?
+	 *
+	 * @return <code>true</code> if durable write quorum is set, <code>false</code> otherwise
+	 */
+	public boolean hasDw()
+	{
+		return dw != null;
+	}
+
+	/**
+	 * Has the return body parameter been set?
+	 *
+	 * @return <code>true</code> of return body parameter is set, <code>false</code> otherwise
+	 */
+	public boolean hasReturnBody()
+	{
+		return returnBody != null;
+	}
+
+	/**
+	 * Get the value for the return body parameter
+	 *
+	 * @return the returnBody parameter or <code>null</code> if it is not set
+	 */
+	public Boolean getReturnBody()
+	{
+		return returnBody;
+	}
+
+	/**
+	 * Has the pw parameter been set?
+	 *
+	 * @return <code>true</code> if pw parameter is set, <code>false</code>
+	 *         otherwise
+	 */
+	public boolean hasPw()
+	{
+		return pw != null;
+	}
+
+	/**
+	 * Get the value for the pw parameter
+	 *
+	 * @return the pw or <code>null</code> if it is not set.
+	 */
+	public Quorum getPw()
+	{
+		return pw;
+	}
+
+	/**
+	 * Has the ifNoneMatch parameter been set?
+	 *
+	 * @return <code>true</code> if ifNoneMatch parameter is set,
+	 *         <code>false</code> otherwise
+	 */
+	public boolean hasIfNoneMatch()
+	{
+		return ifNoneMatch != null;
+	}
+
+	/**
+	 * Get the value of the ifNoneMatch parameter
+	 *
+	 * @return the ifNoneMatch or <code>null</code> if not set.
+	 */
+	public Boolean getIfNoneMatch()
+	{
+		return ifNoneMatch;
+	}
+
+	/**
+	 * @return true if hasIfNoneMatch && getIfNoneMatch
+	 */
+	public boolean isIfNoneMatch()
+	{
+		return hasIfNoneMatch() && ifNoneMatch;
+	}
+
+	/**
+	 * Has the ifNotModified parameter been set?
+	 *
+	 * @return <code>true</code> if ifNotModified parameter is set,
+	 *         <code>false</code> otherwise
+	 */
+	public boolean hasIfNotModified()
+	{
+		return ifNotModified != null;
+	}
+
+	/**
+	 * Get the value of the ifNoneMatch parameter
+	 *
+	 * @return the ifNotModified or <code>null</code> if not set.
+	 */
+	public Boolean getIfNotModified()
+	{
+		return ifNotModified;
+	}
+
+	/**
+	 * @return true if hasIfNotModified && getIfNotModified, false otherwise
+	 */
+	public boolean isIfNotModified()
+	{
+		return hasIfNotModified() && ifNotModified;
+	}
+
+	/**
+	 * @return an empty StoreMeta
+	 */
+	public static StoreMeta empty()
+	{
+		return EMPTY;
+	}
+
+	/**
+	 * @return true if returnHead is set, false otherwise
+	 */
+	public boolean hasReturnHead()
+	{
+		return returnHead != null;
+	}
+
+	/**
+	 * @return the returnHead value or null (if not set)
+	 */
+	public Boolean getReturnHead()
+	{
+		return returnHead;
+	}
+
+	public boolean hasAsis()
+	{
+		return asis != null;
+	}
+
+	public boolean getAsis()
+	{
+		return asis;
+	}
+
+	/**
+	 * @return true if a timeout has been set, false otherwise
+	 */
+	public boolean hasTimeout()
+	{
+		return timeout != null;
+	}
+
+	/**
+	 * @return the timeout value, null if it has not been set
+	 */
+	public Integer getTimeout()
+	{
+		return timeout;
+	}
+
+	public boolean hasNval()
+	{
+		return nval != null;
+	}
+
+	public int getNval()
+	{
+		return nval;
+	}
+
+	public boolean hasSloppyQuorum()
+	{
+		return sloppyQuorum != null;
+	}
+
+	public boolean getSloppyQuorum()
+	{
+		return sloppyQuorum;
+	}
+
+	/**
+	 * @return a StoreMeta with only the headOnly set to true
+	 */
+	public static StoreMeta headOnly()
+	{
+		return new StoreMeta((Quorum) null, null, null, null, true, null, null, null, null, null, null);
+	}
+
+	public static class Builder
+	{
+		private Quorum w;
+		private Quorum dw;
+		private Quorum pw;
+		private Boolean returnBody;
+		private Boolean returnHead;
+		private Boolean ifNotModified;
+		private Boolean ifNoneMatch;
+		private Boolean asis;
+		private Integer timeout;
+		private Integer nval;
+		private Boolean sloppyQuorum;
+
+		public StoreMeta build()
+		{
+			return new StoreMeta(w, dw, pw, returnBody, returnHead, ifNoneMatch, ifNotModified, asis, timeout, nval, sloppyQuorum);
+		}
+
+		public Builder w(int w)
+		{
+			this.w = new Quorum(w);
+			return this;
+		}
+
+		public Builder w(Quorum w)
+		{
+			this.w = w;
+			return this;
+		}
+
+		public Builder dw(int dw)
+		{
+			this.dw = new Quorum(dw);
+			return this;
+		}
+
+		public Builder dw(Quorum dw)
+		{
+			this.dw = dw;
+			return this;
+		}
+
+		public Builder pw(int pw)
+		{
+			this.pw = new Quorum(pw);
+			return this;
+		}
+
+		public Builder pw(Quorum pw)
+		{
+			this.pw = pw;
+			return this;
+		}
+
+		public Builder returnBody(boolean returnBody)
+		{
+			this.returnBody = returnBody;
+			return this;
+		}
+
+		public Builder returnHead(boolean returnHead)
+		{
+			this.returnHead = returnHead;
+			return this;
+		}
+
+		public Builder ifNotModified(boolean ifNotModified)
+		{
+			this.ifNotModified = ifNotModified;
+			return this;
+		}
+
+		public Builder ifNoneMatch(boolean ifNoneMatch)
+		{
+			this.ifNoneMatch = ifNoneMatch;
+			return this;
+		}
+
+		public Builder asis(boolean asis)
+		{
+			this.asis = asis;
+			return this;
+		}
+
+		public Builder timeout(int timeout)
+		{
+			this.timeout = timeout;
+			return this;
+		}
+
+		public Builder nval(int nval)
+		{
+			this.nval = nval;
+			return this;
+		}
+
+		public Builder sloppyQuorum(boolean sloppyQuorum)
+		{
+			this.sloppyQuorum = sloppyQuorum;
+			return this;
+		}
+	}
+}
