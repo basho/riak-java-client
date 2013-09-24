@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright 2013 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.core.converters;
+package com.basho.riak.client.core.operations;
 
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.client.core.RiakMessage;
 
 import java.util.concurrent.ExecutionException;
 
-/**
- *
- * @author Brian Roach <roach at basho dot com>
- * @since 2.0
- */
-public interface RiakResponseConverter<U, T>
+public class Operations
 {
-    T convert(U message) throws ExecutionException;
+
+	public static void checkMessageType(RiakMessage msg, byte expected)
+	{
+		byte pbMessageCode = msg.getCode();
+		if (pbMessageCode != expected)
+		{
+			throw new IllegalStateException("Wrong response; expected "
+				+ expected
+				+ " received " + pbMessageCode);
+		}
+
+	}
+
 }

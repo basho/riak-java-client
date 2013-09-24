@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright 2013 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.core.converters;
+package com.basho.riak.client.convert;
 
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.client.query.RiakObject;
 
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- *
- * @author Brian Roach <roach at basho dot com>
- * @since 2.0
- */
-public interface RiakResponseConverter<U, T>
-{
-    T convert(U message) throws ExecutionException;
+public class Converters {
+
+  public static <T> List<T> convert(Converter<T> converter, List<? extends RiakObject> objects) {
+    List<T> converted = new ArrayList<T>(objects.size());
+    for (RiakObject o : objects) {
+      converted.add(converter.toDomain(o));
+    }
+    return converted;
+  }
+
 }

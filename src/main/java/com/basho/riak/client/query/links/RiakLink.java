@@ -275,6 +275,6 @@ public class RiakLink
     @Override
     public String toString()
     {
-        return String.format("DefaultRiakLink [tag=%s, bucket=%s, key=%s]", tag, bucket, key);
+        return String.format("RiakLink [tag=%s, bucket=%s, key=%s]", tag, bucket, key);
     }
 }
