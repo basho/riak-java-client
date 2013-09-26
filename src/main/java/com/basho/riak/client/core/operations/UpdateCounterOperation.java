@@ -84,7 +84,7 @@ public class UpdateCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCo
     @Override
     protected RiakKvPB.RpbCounterUpdateResp decode(RiakMessage rawResponse)
     {
-        checkMessageType(rawResponse, RiakMessageCodes.MSG_CounterGetResp);
+        checkMessageType(rawResponse, RiakMessageCodes.MSG_GetCounterResp);
         try
         {
             return RiakKvPB.RpbCounterUpdateResp.parseFrom(rawResponse.getData());
@@ -121,7 +121,7 @@ public class UpdateCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCo
         builder.setAmount(amount);
 
         RiakKvPB.RpbCounterUpdateReq req = builder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_CounterUpdateReq, req.toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_GetCounterResp, req.toByteArray());
 
     }
 }
