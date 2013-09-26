@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client;
 
-import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 
@@ -243,12 +242,6 @@ public class DeleteMeta
 			return this;
 		}
 
-		public Builder r(Quora r)
-		{
-			this.r = new Quorum(r);
-			return this;
-		}
-
 		public Builder r(Quorum r)
 		{
 			this.r = r;
@@ -256,12 +249,6 @@ public class DeleteMeta
 		}
 
 		public Builder pr(int pr)
-		{
-			this.pr = new Quorum(pr);
-			return this;
-		}
-
-		public Builder pr(Quora pr)
 		{
 			this.pr = new Quorum(pr);
 			return this;
@@ -279,12 +266,6 @@ public class DeleteMeta
 			return this;
 		}
 
-		public Builder w(Quora w)
-		{
-			this.w = new Quorum(w);
-			return this;
-		}
-
 		public Builder w(Quorum w)
 		{
 			this.w = w;
@@ -292,12 +273,6 @@ public class DeleteMeta
 		}
 
 		public Builder dw(int dw)
-		{
-			this.dw = new Quorum(dw);
-			return this;
-		}
-
-		public Builder dw(Quora dw)
 		{
 			this.dw = new Quorum(dw);
 			return this;
@@ -315,12 +290,6 @@ public class DeleteMeta
 			return this;
 		}
 
-		public Builder pw(Quora pw)
-		{
-			this.pw = new Quorum(pw);
-			return this;
-		}
-
 		public Builder pw(Quorum pw)
 		{
 			this.pw = pw;
@@ -328,12 +297,6 @@ public class DeleteMeta
 		}
 
 		public Builder rw(int rw)
-		{
-			this.rw = new Quorum(rw);
-			return this;
-		}
-
-		public Builder rw(Quora rw)
 		{
 			this.rw = new Quorum(rw);
 			return this;

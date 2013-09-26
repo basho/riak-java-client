@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client;
 
-import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 
 /**
@@ -375,12 +374,6 @@ public class StoreMeta
 			return this;
 		}
 
-		public Builder w(Quora w)
-		{
-			this.w = new Quorum(w);
-			return this;
-		}
-
 		public Builder w(Quorum w)
 		{
 			this.w = w;
@@ -393,12 +386,6 @@ public class StoreMeta
 			return this;
 		}
 
-		public Builder dw(Quora dw)
-		{
-			this.dw = new Quorum(dw);
-			return this;
-		}
-
 		public Builder dw(Quorum dw)
 		{
 			this.dw = dw;
@@ -406,12 +393,6 @@ public class StoreMeta
 		}
 
 		public Builder pw(int pw)
-		{
-			this.pw = new Quorum(pw);
-			return this;
-		}
-
-		public Builder pw(Quora pw)
 		{
 			this.pw = new Quorum(pw);
 			return this;
