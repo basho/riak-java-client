@@ -65,6 +65,22 @@ public final class ByteArrayWrapper
         }
         return new ByteArrayWrapper(data);
     }
+
+	  /**
+	   * Create a ByteArrayWrapper containing a copy of the supplied string
+	   *
+	   * @param data the data to copy
+	   * @return a new {@code ByteArrayWrapper}
+	   */
+	  public static ByteArrayWrapper create(String data)
+		{
+				byte[] bytes = null;
+				if (data != null)
+				{
+						bytes = data.getBytes();
+				}
+			return new ByteArrayWrapper(bytes);
+		}
     
     /**
      * Create a ByteArrayWrapper containing the supplied {@code byte[]}

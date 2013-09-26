@@ -17,7 +17,6 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.FetchMeta;
 import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
@@ -109,18 +108,6 @@ public class FetchObject<T> implements ClientOperation<T>
     /**
      * The read quorum for this fetch operation
      *
-     * @param r an Quora for the read quorum
-     * @return this
-     */
-    public FetchObject<T> r(Quora r)
-    {
-        fetchMetaBuilder.r(r);
-        return this;
-    }
-
-    /**
-     * The read quorum for this fetch operation
-     *
      * @param r an Quorum for the read quorum
      * @return this
      */
@@ -136,17 +123,6 @@ public class FetchObject<T> implements ClientOperation<T>
      * @see com.basho.riak.client.FetchMeta.Builder#pr(int)
      */
     public FetchObject<T> pr(int pr)
-    {
-        fetchMetaBuilder.pr(pr);
-        return this;
-    }
-
-    /**
-     * @param pr
-     * @return this
-     * @see com.basho.riak.client.FetchMeta.Builder#pr(Quora)
-     */
-    public FetchObject<T> pr(Quora pr)
     {
         fetchMetaBuilder.pr(pr);
         return this;
@@ -260,6 +236,24 @@ public class FetchObject<T> implements ClientOperation<T>
     public FetchObject<T> headOnly()
     {
         fetchMetaBuilder.headOnly(true);
+        return this;
+    }
+
+    public FetchObject<T> timeout(int timeout)
+    {
+        fetchMetaBuilder.timeout(timeout);
+        return this;
+    }
+
+    public FetchObject<T> nval(int nval)
+    {
+        fetchMetaBuilder.nval(nval);
+        return this;
+    }
+
+    public FetchObject<T> sloppyQuorum(boolean sloppyQuorum)
+    {
+        fetchMetaBuilder.sloppyQuorum(sloppyQuorum);
         return this;
     }
 }

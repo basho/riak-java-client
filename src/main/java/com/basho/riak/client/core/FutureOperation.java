@@ -152,12 +152,12 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
     synchronized final void setResponse(RiakMessage rawResponse)
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
-        remainingTries--;
         U decodedMessage = decode(rawResponse);
         this.rawResponse.add(decodedMessage);
         exception = null;
-        if (done(rawResponse))
+        if (done(decodedMessage))
         {
+            remainingTries--;
             if (retrier != null)
             {
                 retrier.operationComplete(this, remainingTries);
@@ -168,7 +168,13 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         }
     }
 
-    protected boolean done(RiakMessage message)
+    /**
+     * Detect when the streaming operation is finished
+     *
+     * @param message raw message
+     * @return returns true if this is the last message in the streaming operation
+     */
+    protected boolean done(U message)
     {
         return true;
     }

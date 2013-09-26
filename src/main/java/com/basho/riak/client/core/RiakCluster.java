@@ -295,7 +295,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         
     }
     
-    
+
+		public static Builder builder(List<RiakNode> nodes)
+		{
+			return new Builder(nodes);
+		}
+
+		public static Builder builder(RiakNode node)
+		{
+			return new Builder(node);
+		}
+
     /**
      * Builder used to create {@link RiakCluster} instances.
      */

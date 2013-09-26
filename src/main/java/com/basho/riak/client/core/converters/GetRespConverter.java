@@ -35,24 +35,21 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class GetRespConverter implements RiakResponseConverter<List<RiakObject>>
+public class GetRespConverter implements RiakResponseConverter<RiakKvPB.RpbGetResp, List<RiakObject>>
 {
 
     private final ByteArrayWrapper key;
     private final ByteArrayWrapper bucket;
-    private final boolean isHeadRequest;
 
-    public GetRespConverter(ByteArrayWrapper bucket, ByteArrayWrapper key, boolean isHeadRequest)
+    public GetRespConverter(ByteArrayWrapper bucket, ByteArrayWrapper key)
     {
         this.bucket = bucket;
         this.key = key;
-        this.isHeadRequest = isHeadRequest;
     }
 
     @Override
     public List<RiakObject> convert(RiakKvPB.RpbGetResp resp) throws ExecutionException
     {
-
 
         if (null == resp)
         {
