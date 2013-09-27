@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.indexes.RawIndex;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -28,12 +27,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * A Map/Reduce Operation on Riak. No error checking is done on the content type of the content itself
+ * with the exception to making sure they are provided.
+ */
 public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbMapRedResp>
 {
 
     private final ByteArrayWrapper mrFunction;
     private final String contentType;
 
+    /**
+     * Create a MapReduce operation with the given function
+     *
+     * @param function    a binary blob of type {@code contentType}
+     * @param contentType a http-style content encoding type (tupically application/json)
+     */
     public MapReduceOperation(ByteArrayWrapper function, String contentType)
     {
 
@@ -55,7 +64,8 @@ public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, 
     protected List<ByteArrayWrapper> convert(List<RiakKvPB.RpbMapRedResp> rawResponse) throws ExecutionException
     {
         List<ByteArrayWrapper> results = new ArrayList<ByteArrayWrapper>(rawResponse.size());
-        for (RiakKvPB.RpbMapRedResp response : rawResponse) {
+        for (RiakKvPB.RpbMapRedResp response : rawResponse)
+        {
             results.add(ByteArrayWrapper.create(response.getResponse().toByteArray()));
         }
         return results;
