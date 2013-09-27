@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.RiakMessage;
 
-import java.util.concurrent.ExecutionException;
 
 public class Operations
 {
@@ -34,4 +33,13 @@ public class Operations
 
 	}
 
+    /**
+     * Convert a Java signed int to unsigned.
+     * Returns the unsigned value as a (signed) long. 
+     * @param i a java signed int
+     * @return a long containing the converted value.
+     */
+    public static long getUnsignedIntValue(int i) {
+        return i & 0x00000000ffffffffL;
+    }
 }

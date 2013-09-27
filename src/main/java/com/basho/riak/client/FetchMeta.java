@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client;
 
-import com.basho.riak.client.cap.Quora;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 
@@ -305,12 +304,6 @@ public class FetchMeta
 			return this;
 		}
 
-		public Builder r(Quora r)
-		{
-			this.r = new Quorum(r);
-			return this;
-		}
-
 		public Builder r(Quorum r)
 		{
 			this.r = r;
@@ -318,12 +311,6 @@ public class FetchMeta
 		}
 
 		public Builder pr(int pr)
-		{
-			this.pr = new Quorum(pr);
-			return this;
-		}
-
-		public Builder pr(Quora pr)
 		{
 			this.pr = new Quorum(pr);
 			return this;
