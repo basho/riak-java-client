@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.YokozunaIndex;
+import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
