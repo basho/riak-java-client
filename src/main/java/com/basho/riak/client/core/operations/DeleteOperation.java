@@ -41,6 +41,11 @@ public class DeleteOperation extends FutureOperation<Void, Void>
 	private final ByteArrayWrapper key;
 	private DeleteMeta deleteMeta;
 
+    /**
+     *
+     * @param bucket
+     * @param key
+     */
 	public DeleteOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
 	{
 
