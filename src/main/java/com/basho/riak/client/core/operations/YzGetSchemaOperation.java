@@ -69,17 +69,10 @@ public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYo
     @Override
     protected RiakYokozunaPB.RpbYokozunaSchemaGetResp decode(RiakMessage rawMessage)
     {
-        byte pbMessageCode = rawMessage.getCode();
-        byte[] data = rawMessage.getData();
-        if (RiakMessageCodes.MSG_GetYzSchemaResp != pbMessageCode)
-        {
-            throw new IllegalArgumentException("Wrong response; expected "
-                + RiakMessageCodes.MSG_GetYzSchemaResp
-                + " received " + pbMessageCode, null);
-        }
+        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_GetYzSchemaResp);
         try
         {
-            return RiakYokozunaPB.RpbYokozunaSchemaGetResp.parseFrom(data);
+            return RiakYokozunaPB.RpbYokozunaSchemaGetResp.parseFrom(rawMessage.getData());
         }
         catch (InvalidProtocolBufferException ex)
         {

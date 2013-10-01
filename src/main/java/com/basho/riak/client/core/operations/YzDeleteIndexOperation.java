@@ -62,15 +62,7 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void>
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        byte pbMessageCode = rawMessage.getCode();
-        
-        if (RiakMessageCodes.MSG_DelResp != pbMessageCode)
-        {
-            throw new IllegalArgumentException("Wrong response; expected "
-                + RiakMessageCodes.MSG_DelResp
-                + " received " + pbMessageCode, null);
-        }
-        
+        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DelResp);
         return null;
     }
     

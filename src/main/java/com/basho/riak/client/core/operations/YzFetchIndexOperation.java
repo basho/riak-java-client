@@ -85,17 +85,10 @@ public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, 
     @Override
     protected RiakYokozunaPB.RpbYokozunaIndexGetResp decode(RiakMessage rawMessage)
     {
-        byte pbMessageCode = rawMessage.getCode();
-        byte[] data = rawMessage.getData();
-        if (RiakMessageCodes.MSG_GetYzIndexResp != pbMessageCode)
-        {
-            throw new IllegalArgumentException("Wrong response; expected "
-                + RiakMessageCodes.MSG_GetYzIndexResp
-                + " received " + pbMessageCode, null);
-        }
+        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_GetYzIndexResp);
         try
         {
-            return RiakYokozunaPB.RpbYokozunaIndexGetResp.parseFrom(data);
+            return RiakYokozunaPB.RpbYokozunaIndexGetResp.parseFrom(rawMessage.getData());
         }
         catch (InvalidProtocolBufferException ex)
         {

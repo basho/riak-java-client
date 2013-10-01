@@ -72,15 +72,7 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void>
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        byte pbMessageCode = rawMessage.getCode();
-        
-        if (RiakMessageCodes.MSG_PutResp != pbMessageCode)
-        {
-            throw new IllegalArgumentException("Wrong response; expected "
-                + RiakMessageCodes.MSG_PutResp
-                + " received " + pbMessageCode, null);
-        }
-        
+        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
     }
 }

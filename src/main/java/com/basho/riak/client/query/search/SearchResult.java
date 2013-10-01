@@ -15,15 +15,69 @@
  */
 package com.basho.riak.client.query.search;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
- *
+ * Encapsulates the result set of a Riak Search or Yokuzuna query.
+ * <p>
+ * Each result is returned as a Map with the field names as the keys. 
+ * </p>
+ * <p>
+ * Due to the nature of both Riak Search and Yokozuna, all Strings are 
+ * UTF-8 encoded.
+ * </p>
+ * @riak.threadsafety The List and the Maps in the list are immutable making this
+ * container threadsafe.
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class SearchResult extends HashMap<String, String>
+public class SearchResult implements Iterable
 {
+    private final List<Map<String, String>> results;
+    private final float maxScore;
+    private final int numResults; 
     
+    public SearchResult(List<Map<String,String>> results, float maxScore, int numResults)
+    {
+        this.results = results;
+        this.maxScore = maxScore;
+        this.numResults = numResults;
+    }
+
+    @Override
+    public Iterator<Map<String,String>> iterator()
+    {
+        return results.iterator();
+    }
+    
+    /**
+     * Returns the max score from the search query.
+     * @return the max score.
+     */
+    public float getMaxScore()
+    {
+        return maxScore;
+    }
+    
+    /**
+     * Returns the number of results from the search query.
+     * @return the number of results.
+     */
+    public int numResults()
+    {
+        return numResults;
+    }
+    
+    /**
+     * Returns the entire list of results from the search query.
+     * @return a list containing all the result sets. 
+     */
+    public List<Map<String,String>> getAllResults()
+    {
+        return results;
+    }
     
 }
