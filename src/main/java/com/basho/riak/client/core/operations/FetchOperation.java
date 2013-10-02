@@ -102,32 +102,23 @@ public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
     @Override
     protected RiakKvPB.RpbGetResp decode(RiakMessage message)
     {
+        Operations.checkMessageType(message, RiakMessageCodes.MSG_GetResp);
+        
         try
         {
-
-            byte pbMessageCode = message.getCode();
             byte[] data = message.getData();
 
-            if (RiakMessageCodes.MSG_GetResp != pbMessageCode)
-            {
-                throw new IllegalArgumentException("Wrong response; expected "
-                    + RiakMessageCodes.MSG_GetResp
-                    + " received " + pbMessageCode, null);
-            }
-            else if (data.length == 0) // not found
+            if (data.length == 0) // not found
             {
                 return null;
             }
 
             return RiakKvPB.RpbGetResp.parseFrom(data);
-
         }
         catch (InvalidProtocolBufferException e)
         {
             throw new IllegalArgumentException("Invalid message received", e);
         }
-
-
     }
 
     @Override

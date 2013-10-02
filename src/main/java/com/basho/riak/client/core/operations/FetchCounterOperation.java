@@ -74,7 +74,7 @@ public class FetchCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCou
     @Override
     protected RiakKvPB.RpbCounterGetResp decode(RiakMessage rawResponse)
     {
-        checkMessageType(rawResponse, RiakMessageCodes.MSG_CounterGetResp);
+        checkMessageType(rawResponse, RiakMessageCodes.MSG_GetCounterResp);
 
         try
         {
@@ -121,7 +121,7 @@ public class FetchCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCou
 		}
 
 		RiakKvPB.RpbCounterGetReq req = builder.build();
-		return new RiakMessage(RiakMessageCodes.MSG_CounterGetReq, req.toByteArray());
+		return new RiakMessage(RiakMessageCodes.MSG_GetCounterResp, req.toByteArray());
 
 	}
 
