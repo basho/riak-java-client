@@ -75,6 +75,7 @@ public final class RiakObject
     private volatile byte[] key;
     private volatile byte[] bucket;
     private volatile byte[] value;
+    private volatile byte[] bucketType;
     
     // Mutable collections 
     private volatile RiakIndexes riakIndexes;
@@ -515,6 +516,183 @@ public final class RiakObject
             throw new IllegalArgumentException("bucket can not be zero length or null");
         }
         this.bucket = bucket;
+        return this;
+    }
+    
+    // Bucket type
+    
+    /**
+     * Returns the bucket type for this RiakObject as a {@link ByteArrayInputStream}
+     * @return a {@code ByteArrayInputStream} backed by the internal {@code byte[]} 
+     * or {@code null} if the bucket type has not been set.
+     */
+    public ByteArrayInputStream getBucketType()
+    {
+        if (bucketType != null)
+        {
+            return new ByteArrayInputStream(bucketType);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the bucket type for this RiakObject as raw bytes.
+     * @riak.threadsafety A copy of the internal <code>byte[]</code> is returned.
+     * @return a copy of the internal {@code byte[]} or {@code null} if the bucket type has not been set.
+     */
+    public byte[] getBucketTypeAsBytes()
+    {
+        if (bucketType != null)
+        {
+            return Arrays.copyOf(bucketType, bucketType.length);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
+     * Returns the bucket type for this RiakObject as raw bytes.
+     * @riak.threadsafety This method exposes the internal {<code>byte[]</code> directly.
+     * Modifying the contents of this array will lead to undefined behavior in 
+     * regard to thread safety and visibility.
+     * @return the internal {@code byte[]} or {@code null} if the bucket type has not been set.
+     */
+    public byte[] unsafeGetBucketTypeAsBytes()
+    {
+        return bucketType;
+    }
+    
+    /**
+     * Returns the bucket type for this RiakObject as a String. 
+     * <p>
+     * The bucket type is stored internally as a {@code byte[]}. This method converts those bytes to
+     * a {@code String} using your default {@code Charset}
+     * </p>
+     * @return The bucket type as a {@code String} or {@code null} if the bucket type has not been set.. 
+     */
+    public String getBucketTypeAsString()
+    {
+        if (bucketType != null) 
+        {
+            return new String(bucketType, Charset.defaultCharset());
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
+     * Returns the bucket type for this RiakObject as a String. 
+     * <p>
+     * The bucket type is stored internally as a {@code byte[]}. 
+     * This method returns those bytes encoded as a
+     * {@code String} using the supplied {@code Charset}.
+     * </p>
+     * @param charset the {@link Charset} to use
+     * @return The bucket type converted to a {@code String} using the supplied {@code Charset}
+     * or {@code null} if the bucket type has not been set.
+     */
+    public String getBucketTypeAsString(Charset charset) 
+    {
+        if (bucketType != null)
+        {
+            return new String(bucketType, charset);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
+     * Set the bucket type for this RiakObject.
+     * <p>
+     * Riak is character set agnostic. The bucket type is stored as bytes. This method 
+     * will convert the supplied {@code String} using the default {@code Charset}.
+     * </p>
+     * @param bucketType the bucket type as a {@code String}
+     * @return a reference to this object
+     * @throws IllegalArgumentException if {@code bucketType} is {@code null} or zero length
+     */
+    public RiakObject setBucketType(String bucketType) 
+    {
+        if (null == bucketType || bucketType.isEmpty())
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType.getBytes(Charset.defaultCharset());
+        return this;
+    }
+
+    /**
+     * Set the bucket type for this RiakObject
+     * <p>
+     * Riak is character set agnostic. The bucket type is stored as bytes. This method 
+     * will convert the provided {@code String} using the provided {@code Charset}.
+     * </p>
+     * @param bucketType the bucket type as a {@code String}
+     * @param charset the {@link Charset} to use 
+     * @return a reference to this object
+     * @throws IllegalArgumentException if {@code bucketType} is {@code null} or zero length
+     */
+    public RiakObject setBucketType(String bucketType, Charset charset) 
+    {
+        if (null == bucketType || bucketType.isEmpty())
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType.getBytes(charset);
+        return this;
+    }
+        
+    /**
+     * Set the bucket type for this RiakObject.
+     * <p>
+     * Riak is character set agnostic. The bucket type is stored as bytes. 
+     * This method allows for raw bytes to be used directly.
+     * </p>
+     * @riak.threadsafety The supplied <code>byte[]</code> is copied.
+     * @param bucketType a {@code byte[]} to be copied and used as the bucket type
+     * @return a reference to this object
+     * @throws IllegalArgumentException if {@code bucketType} is {@code null} or zero length
+     */
+    public RiakObject setBucketType(byte[] bucketType)
+    {
+        if (null == bucketType || bucketType.length == 0)
+        {
+            throw new IllegalArgumentException("bucket type can not be zero length or null");
+        }
+        this.bucketType = Arrays.copyOf(bucketType, bucketType.length);
+        return this;
+    }
+    
+    /**
+     * Set the bucket type for this RiakObject.
+     * <p>
+     * Riak is character set agnostic. The bucket type is stored as bytes. 
+     * This method allows for raw bytes to be used directly.
+     * </p>
+     * @riak.threadsafety The supplied <code>byte[]</code> is not copied and the reference is used
+     * directly. Retaining a reference to this array and making subsequent
+     * changes will lead to undefined behavior in regard to thread safety and
+     * visibility. 
+     * @param bucketType a {@code byte[]} to be used as the bucket type
+     * @return a reference to this object
+     * @throws IllegalArgumentException if {@code bucketType} is {@code null} or zero length
+     */
+    public RiakObject unsafeSetBucketType(byte[] bucketType)
+    {
+        if (null == bucketType || bucketType.length == 0)
+        {
+            throw new IllegalArgumentException("bucket type can not be zero length or null");
+        }
+        this.bucketType = bucketType;
         return this;
     }
     

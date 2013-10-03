@@ -43,6 +43,7 @@ public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
 {
     private final ByteArrayWrapper bucket;
     private final ByteArrayWrapper key;
+    private ByteArrayWrapper bucketType;
     private ConflictResolver<T> conflictResolver;
     private Converter<T> domainObjectConverter;
     private FetchMeta fetchMeta;
@@ -63,6 +64,22 @@ public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
         this.key = key;
     }
 
+     /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public FetchOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
     /**
      * Sets the {@link ConflictResolver} to be used if Riak returns siblings
      *
@@ -124,7 +141,7 @@ public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
     @Override
     protected T convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
     {
-        GetRespConverter respConverter = new GetRespConverter(bucket, key);
+        GetRespConverter respConverter = new GetRespConverter(bucketType, bucket, key);
         List<RiakObject> riakObjects = new LinkedList<RiakObject>();
         for (RiakKvPB.RpbGetResp response : responses)
         {
@@ -162,6 +179,10 @@ public class FetchOperation<T> extends FutureOperation<T, RiakKvPB.RpbGetResp>
         RiakKvPB.RpbGetReq.Builder builder = RiakKvPB.RpbGetReq.newBuilder();
         builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
         builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
 
         if (fetchMeta.hasHeadOnly())
         {

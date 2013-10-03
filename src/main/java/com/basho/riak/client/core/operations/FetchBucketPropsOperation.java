@@ -36,21 +36,33 @@ import java.util.concurrent.ExecutionException;
 public class FetchBucketPropsOperation extends FutureOperation<BucketProperties, RiakPB.RpbGetBucketResp>
 {
 
-    private final ByteArrayWrapper bucketType;
+    private ByteArrayWrapper bucketType;
     private final ByteArrayWrapper bucketName;
     
-    public FetchBucketPropsOperation(ByteArrayWrapper bucketType, ByteArrayWrapper bucketName)
+    public FetchBucketPropsOperation(ByteArrayWrapper bucketName)
+    {
+        
+        if (null == bucketName || bucketName.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket name can not be null or zero length");
+        }
+        this.bucketName = bucketName;
+    }
+    
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public FetchBucketPropsOperation withBucketType(ByteArrayWrapper bucketType)
     {
         if (null == bucketType || bucketType.length() == 0)
         {
             throw new IllegalArgumentException("Bucket type can not be null or zero length");
         }
-        if (null == bucketName || bucketName.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket name can not be null or zero length");
-        }
         this.bucketType = bucketType;
-        this.bucketName = bucketName;
+        return this;
     }
     
     @Override
@@ -122,7 +134,10 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
         RiakPB.RpbGetBucketReq.Builder builder = 
             RiakPB.RpbGetBucketReq.newBuilder();
         
-        builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        if (bucketType !=null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
         builder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
         RiakPB.RpbGetBucketReq req = builder.build();
         return new RiakMessage(RiakMessageCodes.MSG_GetBucketReq, req.toByteArray());
