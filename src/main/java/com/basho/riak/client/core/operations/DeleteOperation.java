@@ -39,6 +39,7 @@ public class DeleteOperation extends FutureOperation<Void, Void>
 
 	private final ByteArrayWrapper bucket;
 	private final ByteArrayWrapper key;
+    private ByteArrayWrapper bucketType;
 	private DeleteMeta deleteMeta;
 
     /**
@@ -67,7 +68,7 @@ public class DeleteOperation extends FutureOperation<Void, Void>
 	 * Sets the {@link DeleteMeta} to be used. If not set, the default options will be used
 	 *
 	 * @param deleteMeta
-	 * @return this
+	 * @return A reference to this object.
 	 */
 	public DeleteOperation withDeleteMeta(DeleteMeta deleteMeta)
 	{
@@ -75,6 +76,22 @@ public class DeleteOperation extends FutureOperation<Void, Void>
 		return this;
 	}
 
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public DeleteOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
     @Override
     protected Void convert(List<Void> rawResponse) throws ExecutionException
     {
@@ -100,6 +117,11 @@ public class DeleteOperation extends FutureOperation<Void, Void>
 		RiakKvPB.RpbDelReq.Builder builder = RiakKvPB.RpbDelReq.newBuilder();
 		builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
 		builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+        
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
 
 		if (deleteMeta.hasTimeout())
 		{

@@ -38,6 +38,7 @@ public class UpdateCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCo
     private final ByteArrayWrapper bucket;
     private final ByteArrayWrapper key;
     private final long amount;
+    private ByteArrayWrapper bucketType;
     private StoreMeta storeMeta;
 
     public UpdateCounterOperation(ByteArrayWrapper bucket, ByteArrayWrapper key, long amount)
@@ -58,6 +59,22 @@ public class UpdateCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCo
         this.amount = amount;
     }
 
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public UpdateCounterOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
     /**
      * The {@link StoreMeta} to use for this fetch operation
      *
@@ -103,6 +120,11 @@ public class UpdateCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCo
         builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
         builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
 
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
         if (storeMeta.hasW())
         {
             builder.setW(storeMeta.getW().getIntValue());

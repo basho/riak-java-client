@@ -32,6 +32,7 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
 
     private final Integer timeout;
     private final ByteArrayWrapper bucket;
+    private ByteArrayWrapper bucketType;
 
     public ListKeysOperation(ByteArrayWrapper bucket, Integer timeout)
     {
@@ -61,6 +62,22 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
         this.bucket = bucket;
     }
 
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public ListKeysOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
     @Override
     protected List<ByteArrayWrapper> convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
     {
@@ -84,6 +101,10 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
         if (timeout != null)
         {
             request.setTimeout(timeout);
+        }
+        if (bucketType != null)
+        {
+            request.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
         }
 
         return new RiakMessage(RiakMessageCodes.MSG_ListKeysReq, request.build().toByteArray());

@@ -40,6 +40,7 @@ public class FetchCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCou
 
 	private final ByteArrayWrapper bucket;
 	private final ByteArrayWrapper key;
+    private ByteArrayWrapper bucketType;
 	private FetchMeta fetchMeta = new FetchMeta.Builder().build();
 
 	public FetchCounterOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
@@ -59,6 +60,22 @@ public class FetchCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCou
 		this.key = key;
 	}
 
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public FetchCounterOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
 	@Override
 	protected Long convert(List<RiakKvPB.RpbCounterGetResp> responses) throws ExecutionException
 	{
@@ -100,6 +117,11 @@ public class FetchCounterOperation extends FutureOperation<Long, RiakKvPB.RpbCou
 		builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
 		builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
 
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
 		if (fetchMeta.hasR())
 		{
 			builder.setR(fetchMeta.getR().getIntValue());

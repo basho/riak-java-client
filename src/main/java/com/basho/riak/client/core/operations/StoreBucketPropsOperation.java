@@ -36,15 +36,11 @@ import java.util.concurrent.ExecutionException;
 public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
 {
     private final ByteArrayWrapper bucketName;
-    private final ByteArrayWrapper bucketType;
+    private ByteArrayWrapper bucketType;
     private final BucketProperties bucketProperties;
     
-    public StoreBucketPropsOperation(ByteArrayWrapper bucketType, ByteArrayWrapper bucketName, BucketProperties properties)
+    public StoreBucketPropsOperation(ByteArrayWrapper bucketName, BucketProperties properties)
     {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type cannot be null or zero length.");
-        }
         if (null == bucketName || bucketName.length() == 0)
         {
             throw new IllegalArgumentException("Bucket name cannot be null or zero length.");
@@ -54,9 +50,24 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
             throw new IllegalArgumentException("Bucket properties cannot be null.");
         }
         
-        this.bucketType = bucketType;
         this.bucketName = bucketName;
         this.bucketProperties = properties;
+    }
+    
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public StoreBucketPropsOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
     }
     
     @Override
@@ -160,11 +171,17 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
             propsBuilder.setYzIndex(ByteString.copyFromUtf8(bucketProperties.getYokozunaIndex()));
         }
         
+        RiakPB.RpbSetBucketReq.Builder builder = 
+            RiakPB.RpbSetBucketReq.newBuilder();
+        
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
         RiakPB.RpbSetBucketReq req = 
-            RiakPB.RpbSetBucketReq.newBuilder()
-                .setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()))
-                .setType(ByteString.copyFrom(bucketType.unsafeGetValue()))
-                .setProps(propsBuilder).build();
+            builder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()))
+                   .setProps(propsBuilder).build();
         
         return new RiakMessage(RiakMessageCodes.MSG_SetBucketReq, req.toByteArray());
         
