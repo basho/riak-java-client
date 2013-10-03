@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An operation to store a riak object
@@ -45,8 +47,10 @@ import static com.basho.riak.client.core.operations.Operations.checkMessageType;
  */
 public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
 {
-
+    private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
+    
     private final ByteArrayWrapper bucket;
+    private ByteArrayWrapper bucketType;
     private T content;
     private ByteArrayWrapper key;
     private ConflictResolver<T> conflictResolver = new DefaultResolver<T>();
@@ -69,6 +73,22 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
         this.bucket = bucket;
     }
 
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public StoreOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
     /**
      * (optional) key under which to store the content, if no key is given one will
      * be chosen by Riak and returned
@@ -183,6 +203,11 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
         ByteString pbBucket = ByteString.copyFrom(bucket.unsafeGetValue());
         builder.setBucket(pbBucket);
 
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
         if (key != null)
         {
             builder.setKey(ByteString.copyFrom(bucket.unsafeGetValue()));
@@ -201,15 +226,23 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
             contentBuilder.setLastMod((int) o.getLastModified());
             contentBuilder.setDeleted(o.isDeleted());
 
-            for (RiakLink link : o.getLinks())
+            // Links are only supported in the default bucket type
+            if (o.hasLinks() && (bucketType != null && !bucketType.toString().equals("default")))
             {
-                contentBuilder.addLinks(
-                    RiakKvPB.RpbLink.newBuilder()
-                        .setBucket(pbBucket)
-                        .setTag(ByteString.copyFrom(link.getTagAsBytes().unsafeGetValue()))
-                        .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));
+                logger.error("Discarding links due to bucket type not being default. Object key: {}", key);
             }
-
+            else
+            {
+                for (RiakLink link : o.getLinks())
+                {
+                    contentBuilder.addLinks(
+                        RiakKvPB.RpbLink.newBuilder()
+                            .setBucket(pbBucket)
+                            .setTag(ByteString.copyFrom(link.getTagAsBytes().unsafeGetValue()))
+                            .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));
+                }
+            }
+            
             for (RiakIndex<?> index : o.getIndexes())
             {
                 for (ByteArrayWrapper value : index.rawValues())

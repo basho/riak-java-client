@@ -40,11 +40,13 @@ public class GetRespConverter implements RiakResponseConverter<RiakKvPB.RpbGetRe
 
     private final ByteArrayWrapper key;
     private final ByteArrayWrapper bucket;
+    private final ByteArrayWrapper bucketType;
 
-    public GetRespConverter(ByteArrayWrapper bucket, ByteArrayWrapper key)
+    public GetRespConverter(ByteArrayWrapper bucketType, ByteArrayWrapper bucket, ByteArrayWrapper key)
     {
         this.bucket = bucket;
         this.key = key;
+        this.bucketType = bucketType;
     }
 
     @Override
@@ -56,6 +58,7 @@ public class GetRespConverter implements RiakResponseConverter<RiakKvPB.RpbGetRe
             List<RiakObject> objectList = new ArrayList<RiakObject>(1);
             objectList.add(RiakObject.create(bucket.unsafeGetValue())
                 .setKey(key.unsafeGetValue())
+                .setBucketType(bucketType != null ? bucketType.unsafeGetValue() : null)
                 .setNotFound(true)
                 .setModified(false));
             return objectList;
@@ -86,6 +89,7 @@ public class GetRespConverter implements RiakResponseConverter<RiakKvPB.RpbGetRe
             RiakObject riakObject =
                 RiakObject.create(bucket.unsafeGetValue())
                     .setKey(key.unsafeGetValue())
+                    .setBucketType(bucketType != null ? bucketType.unsafeGetValue() : null)
                     .unsafeSetValue(content.getValue().toByteArray())
                     .setVClock(vclock.toByteArray())
                     .setContentType(nullSafeByteStringToUtf8(content.getContentType()))

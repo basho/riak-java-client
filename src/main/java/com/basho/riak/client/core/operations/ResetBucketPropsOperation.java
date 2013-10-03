@@ -31,21 +31,32 @@ import java.util.concurrent.ExecutionException;
  */
 public class ResetBucketPropsOperation extends FutureOperation<Void, Void>
 {
-    private final ByteArrayWrapper bucketType;
+    private ByteArrayWrapper bucketType;
     private final ByteArrayWrapper bucketName;
     
-    public ResetBucketPropsOperation(ByteArrayWrapper bucketType, ByteArrayWrapper bucketName)
+    public ResetBucketPropsOperation(ByteArrayWrapper bucketName)
     {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type cannot be null or zero length");
-        }
         if (null == bucketName || bucketName.length() == 0)
         {
             throw new IllegalArgumentException("Bucket name cannot be null or zero length");
         }
-        this.bucketType = bucketType;
         this.bucketName = bucketName;
+    }
+    
+    /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public ResetBucketPropsOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
     }
     
     @Override
@@ -57,11 +68,18 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void>
     @Override
     protected RiakMessage createChannelMessage()
     {
+        RiakPB.RpbResetBucketReq.Builder builder = 
+            RiakPB.RpbResetBucketReq.newBuilder();
+        
+        if (bucketType != null)
+        {
+            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
         RiakPB.RpbResetBucketReq req = 
-            RiakPB.RpbResetBucketReq.newBuilder()
-                .setType(ByteString.copyFrom(bucketType.unsafeGetValue()))
-                .setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()))
-                .build();
+            builder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()))
+                   .build();
+        
         return new RiakMessage(RiakMessageCodes.MSG_ResetBucketReq, req.toByteArray());
     }
 

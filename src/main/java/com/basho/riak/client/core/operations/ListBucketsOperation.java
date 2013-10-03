@@ -32,6 +32,7 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
 
     private final Integer timeout;
     private final boolean stream;
+    private ByteArrayWrapper bucketType;
 
     public ListBucketsOperation(int timeout, boolean stream)
     {
@@ -51,6 +52,22 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
         this.stream = true;
     }
 
+     /**
+     * Set the bucket type.
+     * If unset "default" is used. 
+     * @param bucketType the bucket type to use
+     * @return A reference to this object.
+     */
+    public ListBucketsOperation withBucketType(ByteArrayWrapper bucketType)
+    {
+        if (null == bucketType || bucketType.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+        }
+        this.bucketType = bucketType;
+        return this;
+    }
+    
     @Override
     protected boolean done(RiakKvPB.RpbListBucketsResp message)
     {
@@ -80,6 +97,11 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
         if (timeout != null)
         {
             request.setTimeout(timeout);
+        }
+        
+        if (bucketType != null)
+        {
+            request.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
         }
 
         return new RiakMessage(RiakMessageCodes.MSG_ListBucketsReq, request.build().toByteArray());
