@@ -19,9 +19,11 @@ import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.cap.MutationProducer;
 import com.basho.riak.client.cap.Retrier;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.KeyUtil;
 import com.basho.riak.client.convert.RiakKey;
+import com.basho.riak.client.convert.VClockUtil;
 import com.basho.riak.client.operations.DeleteObject;
 import com.basho.riak.client.operations.FetchObject;
 import com.basho.riak.client.operations.MultiFetchObject;
@@ -253,6 +255,11 @@ public class DomainBucket<T> {
         if (fetchMeta.hasNotFoundOk()) {
             fo.notFoundOK(fetchMeta.getNotFoundOK());
         }
+        
+        if (fetchMeta.hasReturnDeletedVClock()) {
+            fo.returnDeletedVClock(fetchMeta.getReturnDeletedVClock());
+        }
+        
         return fo.execute();
     }
 
@@ -292,6 +299,10 @@ public class DomainBucket<T> {
         if (fetchMeta.hasNotFoundOk()) {
             fo.notFoundOK(fetchMeta.getNotFoundOK());
         }
+        
+        if (fetchMeta.hasReturnDeletedVClock()) {
+            fo.returnDeletedVClock(fetchMeta.getReturnDeletedVClock());
+        }
         return fo.execute();
     }
 
@@ -330,6 +341,10 @@ public class DomainBucket<T> {
 
         if (fetchMeta.hasNotFoundOk()) {
             fo.notFoundOK(fetchMeta.getNotFoundOK());
+        }
+        
+        if (fetchMeta.hasReturnDeletedVClock()) {
+            fo.returnDeletedVClock(fetchMeta.getReturnDeletedVClock());
         }
         return fo.execute();
             
@@ -372,6 +387,10 @@ public class DomainBucket<T> {
         if (fetchMeta.hasNotFoundOk()) {
             fo.notFoundOK(fetchMeta.getNotFoundOK());
         }
+        
+        if (fetchMeta.hasReturnDeletedVClock()) {
+            fo.returnDeletedVClock(fetchMeta.getReturnDeletedVClock());
+        }
         return fo.execute();
         
     }
@@ -385,6 +404,9 @@ public class DomainBucket<T> {
      * configured with the {@link Retrier} and r value specified in the
      * constructor.
      * </p>
+     * <p>
+     * If a field is annotated with {@code @RiakVClock} and not null
+     * the value is used. Otherwise a fetch is performed to retrieve it.
      * 
      * @param key
      * @return
@@ -392,7 +414,8 @@ public class DomainBucket<T> {
      */
     public void delete(T o) throws RiakException {
         final String key = KeyUtil.getKey(o);
-        delete(key);
+        final VClock vclock = VClockUtil.getVClock(o);
+        delete(key, vclock);
     }
 
     /**
@@ -401,14 +424,33 @@ public class DomainBucket<T> {
      * <p>
      * This is equivalent to creating and executing a {@link DeleteObject}
      * configured with the {@link Retrier} and r value specified in the
-     * constructor.
+     * constructor. A fetch is performed to get the vclock. 
      * </p>
      * 
-     * @param key
-     * @return
+     * @param key the key for the object
+     * @throws RiakException
+     * @deprecated - use {@link #delete(java.lang.String, com.basho.riak.client.cap.VClock)}
+     */
+    @Deprecated
+    public void delete(String key) throws RiakException {
+        delete(key, null);
+    }
+        
+    /**
+     * Delete the key/value stored at the <code>key</code>
+     * 
+     * <p>
+     * This is equivalent to creating and executing a {@link DeleteObject}
+     * configured with the {@link Retrier} and r value specified in the
+     * constructor. If vclock is null a fetch is performed to get it.
+     * </p>
+     * 
+     * @param key the key for the object
+     * @param vclock the vclock for the existing object
      * @throws RiakException
      */
-    public void delete(String key) throws RiakException {
+    public void delete(String key, VClock vclock) throws RiakException
+    {
         final DeleteObject delete = bucket.delete(key).withRetrier(retrier);
 
         if (deleteMeta.hasR()) {
@@ -430,7 +472,15 @@ public class DomainBucket<T> {
         if (deleteMeta.hasPw()) {
             delete.pw(deleteMeta.getPw());
         }
-        delete.fetchBeforeDelete(deleteMeta.hasVclock());
+        
+        if (null == vclock)
+        {
+            delete.fetchBeforeDelete(true);
+        }
+        else
+        {
+            delete.vclock(vclock);
+        }
         delete.execute();
     }
 
