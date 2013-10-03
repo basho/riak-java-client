@@ -49,7 +49,7 @@ public class DeleteObject implements RiakOperation<Void> {
     private boolean fetchBeforeDelete = false;
 
     private final DeleteMeta.Builder deleteMetaBuilder = new DeleteMeta.Builder();
-    private final FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder();
+    private final FetchMeta.Builder fetchMetaBuilder = new FetchMeta.Builder().returnDeletedVClock(true);
 
     /**
      * Create a <code>DeleteOperation</code> that delegates to
@@ -83,14 +83,22 @@ public class DeleteObject implements RiakOperation<Void> {
      */
     public Void execute() throws RiakException {
         if(fetchBeforeDelete) {
-            Callable<VClock> fetch = new Callable<VClock>() {
-                public VClock call() throws Exception {
+            Callable<RiakResponse> fetch = new Callable<RiakResponse>() {
+                public RiakResponse call() throws Exception {
                     RiakResponse response = client.head(bucket, key, fetchMetaBuilder.build());
-                    return response.getVclock();
+                    return response;
                 }
             };
-
-             deleteMetaBuilder.vclock(retrier.attempt(fetch));
+                
+            RiakResponse response = retrier.attempt(fetch);
+            // If there's only one object, and it's a tombstone ... just bail.
+            // It's like, how much more deleted could this be? 
+            // And the answer is none. None more deleted. 
+            if (response.numberOfValues() == 1 && response.getRiakObjects()[0].isDeleted())
+            {
+                return null;
+            }
+            deleteMetaBuilder.vclock(response.getVclock());
         }
 
         Callable<Void> command = new Callable<Void>() {
