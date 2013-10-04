@@ -50,6 +50,8 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
      */
     public AnnotationInfo call() throws Exception {
         Field riakKeyField = null;
+        Method riakKeyGetterMethod = null;
+        Method riakKeySetterMethod = null;
         Field riakVClockField = null;
         Field riakTombstoneField = null;
         Field usermetaMapField = null;
@@ -120,9 +122,20 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
             if (method.isAnnotationPresent(RiakIndex.class)) {
                 indexMethods.add(new RiakIndexMethod(ClassUtil.checkAndFixAccess(method)));
             }
+            else if (method.isAnnotationPresent(RiakKey.class))
+            {
+                if (method.getReturnType().equals(String.class)) {
+                    riakKeyGetterMethod = ClassUtil.checkAndFixAccess(method);
+                } else if (method.getReturnType().equals(Void.TYPE) && 
+                            (method.getParameterTypes().length == 1 && 
+                             method.getParameterTypes()[0].equals(String.class))) {
+                    riakKeySetterMethod = ClassUtil.checkAndFixAccess(method);
+                }
+            }
         }
         
-        return new AnnotationInfo(riakKeyField, usermetaItemFields, usermetaMapField, 
+        return new AnnotationInfo(riakKeyField, riakKeyGetterMethod, riakKeySetterMethod, 
+                                  usermetaItemFields, usermetaMapField, 
                                   indexFields, indexMethods, linksField, riakVClockField,
                                   riakTombstoneField);
     }

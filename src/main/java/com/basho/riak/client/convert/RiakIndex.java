@@ -26,7 +26,7 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * You do not need to specify the index type prefix (_bin/_int). It will be
  * inferred from the type of the annotated field. 
  * 
- * Only String/Long/long or Set<String>/Set<Long> fields
+ * Only String/Long/long or {@code Set<String>} / {@code Set<Long>}  fields
  * may be annotated with RiakIndex. 
  * 
  * Prior to v1.1.0 the _int index support was implemented using int / Integer.
@@ -40,19 +40,23 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * it's way into the domain object</b>
  * </p>
  * <p>
- * For example: <code><pre>
+ * For example: 
+ * </p>
+ * <pre>
+ * 
  * public class MyClass {
- *     \@RiakKey
+ *     &#064;RiakKey
  *     private String myKeyString;
  *     
- *     \@RiakIndex("email")
+ *     &#064;RiakIndex(name="email")
  *     private String emailAddress; // will be indexed in email_bin index
  *     
- *     \@RiakIndex("age")
+ *     &#064;RiakIndex(name="age")
  *     private long age; // will be index in age_int index
  * }
- * </pre></code>
- * </p>
+ *  
+ * </pre>
+ * 
  * 
  * 
  * @author russell
