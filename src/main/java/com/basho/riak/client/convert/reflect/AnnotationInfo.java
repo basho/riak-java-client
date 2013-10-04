@@ -16,6 +16,7 @@ package com.basho.riak.client.convert.reflect;
 import static com.basho.riak.client.convert.reflect.ClassUtil.getFieldValue;
 import static com.basho.riak.client.convert.reflect.ClassUtil.setFieldValue;
 import static com.basho.riak.client.convert.reflect.ClassUtil.getMethodValue;
+import static com.basho.riak.client.convert.reflect.ClassUtil.setMethodValue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -33,6 +34,7 @@ import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.UsermetaField;
 import com.basho.riak.client.query.indexes.RiakIndexes;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 
 /**
@@ -47,6 +49,8 @@ public class AnnotationInfo {
     private static final String NO_RIAK_VCLOCK_FIELD_PRESENT = "no riak vclock field present";
     private static final String NO_RIAK_TOMBSTONE_FIELD_PRESENT = "no riak tombstone field present";
     private final Field riakKeyField;
+    private final Method riakKeySetterMethod;
+    private final Method riakKeyGetterMethod;
     private final List<UsermetaField> usermetaItemFields;
     private final Field usermetaMapField;
     private final List<RiakIndexField> indexFields;
@@ -64,12 +68,15 @@ public class AnnotationInfo {
      * 
      */
 
-    public AnnotationInfo(Field riakKeyField, List<UsermetaField> usermetaItemFields, 
+    public AnnotationInfo(Field riakKeyField, Method riakKeyGetterMethod,
+                          Method riakKeySetterMethod, List<UsermetaField> usermetaItemFields, 
                           Field usermetaMapField, List<RiakIndexField> indexFields, 
                           List<RiakIndexMethod> indexMethods, Field riakLinksField, 
                           Field riakVClockField, Field riakTombstoneField) {
 
         this.riakKeyField = riakKeyField;
+        this.riakKeyGetterMethod = riakKeyGetterMethod;
+        this.riakKeySetterMethod = riakKeySetterMethod;
         this.usermetaItemFields = usermetaItemFields;
         validateUsermetaMapField(usermetaMapField);
         this.usermetaMapField = usermetaMapField;
@@ -121,32 +128,30 @@ public class AnnotationInfo {
     }
 
     /**
-     * @return
-     */
-    public boolean hasRiakKey() {
-        return riakKeyField != null;
-    }
-
-    /**
      * @param <T>
      * @param obj
      * @return
      */
     public <T> String getRiakKey(T obj) {
-        if (!hasRiakKey()) {
-            throw new IllegalStateException(NO_RIAK_KEY_FIELD_PRESENT);
+        
+        Object key = null;
+        if (riakKeyField != null)
+        {
+            key = getFieldValue(riakKeyField, obj);
         }
-
-        Object key = getFieldValue(riakKeyField, obj);
+        else if (riakKeyGetterMethod != null)
+        {
+            key = getMethodValue(riakKeyGetterMethod, obj);
+        }
         return key == null ? null : key.toString();
     }
 
     public <T> void setRiakKey(T obj, String key) {
-        if (!hasRiakKey()) {
-            throw new IllegalStateException(NO_RIAK_KEY_FIELD_PRESENT);
+        if (riakKeyField != null) {
+            setFieldValue(riakKeyField, obj, key);
+        } else if (riakKeySetterMethod != null) {
+            setMethodValue(riakKeySetterMethod, obj, key);
         }
-
-        setFieldValue(riakKeyField, obj, key);
     }
 
     public boolean hasRiakVClock() {
