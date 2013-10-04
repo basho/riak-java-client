@@ -1,3 +1,12 @@
+1.4.2
+-----
+This is a minor bugfix/maint release.
+
+32cf05a Brian Roach Merge branch 'method-support-for-riakkey' into 1.4.2
+16c2255 Brian Roach Merge branch 'domain-bucket-tombstones' into 1.4.2
+
+
+
 1.4.1
 -----
 This is only a patch for a protocol buffers library issue. There are no
