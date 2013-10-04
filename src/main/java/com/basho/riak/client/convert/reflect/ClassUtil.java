@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
  * {@link org.codehaus.jackson.map.util.ClassUtil}.
  * 
  * @author russell
- * 
+ * @author Brian Roach <roach at basho dot com>
  */
 public final class ClassUtil {
 
@@ -72,6 +72,18 @@ public final class ClassUtil {
         }
 
         return value;
+    }
+    
+    public static <T> void setMethodValue(Method m, T obj, Object value) {
+        try {
+            m.invoke(obj, value);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Unable to set Riak annotated method value", e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unable to set Riak annotated method value", e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalStateException("Unable to set Riak annotated method value", e);
+        }
     }
     
 }

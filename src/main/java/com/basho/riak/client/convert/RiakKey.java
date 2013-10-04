@@ -21,12 +21,32 @@ import java.lang.annotation.Target;
 import com.basho.riak.client.bucket.DefaultBucket;
 
 /**
- * Annotation to declare a field as the key to a data item in Riak.
+ * Annotation to declare a field or method as the key to a data item in Riak.
+ * <p>
+ * This annotation can be used either on a String field, or getter/setter pair of methods. 
+ * <p>
+ * <pre>
+ * public class MyPojo {
+ *     &#064;RiakKey public String key;
+ * }
  * 
+ * public class AnotherPojo {
+ *     private String key;
+ *     
+ *     &#064;RiakKey public String getKey() {
+ *         return key;
+ *     }
+ * 
+ *     &#064;RiakKey public void setKey(String key) {
+ *         this.key = key;
+ *     }
+ * }
+ * </pre>
  * @author russell
+ * @author Brian Roach <roach at basho dot com>
  * @see JSONConverter
  * @see DefaultBucket
  */
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakKey {
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakKey {
 
 }

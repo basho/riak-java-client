@@ -42,21 +42,15 @@ public class AnnotationHelper {
     public <T> String getRiakKey(T obj) {
         String key = null;
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-
-        if (annotationInfo.hasRiakKey()) {
-            key = annotationInfo.getRiakKey(obj);
-        }
-
+        key = annotationInfo.getRiakKey(obj);
+        
         return key;
     }
 
     public <T> T setRiakKey(T obj, String key) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-
-        if (annotationInfo.hasRiakKey()) {
-            annotationInfo.setRiakKey(obj, key);
-        }
-
+        annotationInfo.setRiakKey(obj, key);
+        
         return obj;
     }
 
