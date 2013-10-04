@@ -22,8 +22,23 @@ public class AnnotationScannerTest {
         assertEquals(1, info.getIndexes(instance).getBinIndex("myBinIndex").size());
         assertEquals(1, info.getIndexes(instance).getIntIndex("myIntIndex").size());
         assertEquals(1, info.getLinks(instance).size());
+        
+        scanner = new AnnotationScanner(MethodClass.class);
+        info = scanner.call();
+        MethodClass mInstance = new MethodClass();
+        info.setRiakKey(mInstance, "keyValue");
+        assertEquals("keyValue", info.getRiakKey(mInstance));
     }
 
+    @Test
+    public void testMethodClass() throws Exception {
+        AnnotationScanner scanner = new AnnotationScanner(MethodClass.class);
+        AnnotationInfo info = scanner.call();
+        MethodClass mInstance = new MethodClass();
+        info.setRiakKey(mInstance, "keyValue");
+        assertEquals("keyValue", info.getRiakKey(mInstance));
+    }
+    
     public class BasicClass {
 
         @RiakKey
@@ -46,6 +61,21 @@ public class AnnotationScannerTest {
 
     }
 
+    public class MethodClass {
+        
+        private String key;
+        
+        @RiakKey
+        public void setKey(String key) {
+            this.key = key;
+        }
+        
+        @RiakKey
+        public String getKey() {
+            return key;
+        }
+    }
+    
     @Test
     public void testSimpleInheritance() throws Exception {
         AnnotationScanner scanner = new AnnotationScanner(ChildClass.class);

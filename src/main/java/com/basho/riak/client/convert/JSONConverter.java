@@ -129,9 +129,7 @@ public class JSONConverter<T> implements Converter<T> {
     /**
      * Converts the <code>value</code> of <code>riakObject</code> to an instance
      * of <code>T</code>.
-     * <p>
-     * Beware: at present links and user meta are not converted at present: this is on the way.
-     * </p>
+     * 
      * @param riakObject
      *            the {@link IRiakObject} to convert to instance of
      *            <code>T</code>. NOTE: <code>riakObject.getValue()</code> must be a
@@ -145,6 +143,8 @@ public class JSONConverter<T> implements Converter<T> {
             try {
                 final T domainObject = clazz.newInstance();
                 TombstoneUtil.setTombstone(domainObject, true);
+                VClockUtil.setVClock(domainObject, riakObject.getVClock());
+                KeyUtil.setKey(domainObject, riakObject.getKey());
                 return domainObject;
             } catch (InstantiationException ex) {
                 throw new ConversionException("POJO does not provide no-arg constructor",ex);
