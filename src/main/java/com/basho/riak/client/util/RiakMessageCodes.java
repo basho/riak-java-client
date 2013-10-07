@@ -66,4 +66,8 @@ public interface RiakMessageCodes
     public static final byte MSG_GetYzSchemaReq = 58;
     public static final byte MSG_GetYzSchemaResp = 59;
     public static final byte MSG_PutYzSchemaReq = 60;
+    public static final byte MSG_DtFetchReq = 80;
+    public static final byte MSG_DtFetchResp = 81;
+    public static final byte MSG_DtUpdateReq = 82;
+    public static final byte MSG_DtUpdateResp = 83;
 }
