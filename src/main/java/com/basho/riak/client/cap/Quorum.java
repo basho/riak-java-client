@@ -60,9 +60,9 @@ public final class Quorum {
      * @param i the quorum value
      */
     public Quorum(int i) {
-        if (i < -5 || i == -1 || i == 0)
+        if (i < -5 || i == -1)
         {
-            throw new IllegalArgumentException("Illegal value for quorum");
+            throw new IllegalArgumentException("Illegal value for quorum: " + i);
         }
         this.i = i;
     }
