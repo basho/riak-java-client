@@ -86,6 +86,7 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
             .withRw(pbProps.getRw())
             .withBasicQuorum(pbProps.getBasicQuorum())
             .withNotFoundOk(pbProps.getNotfoundOk())
+            .withRiakSearchEnabled(pbProps.getSearch())
             .withLinkwalkFunction(
                 new Function.Builder()
                     .withModule(pbProps.getLinkfun().getModule().toStringUtf8())

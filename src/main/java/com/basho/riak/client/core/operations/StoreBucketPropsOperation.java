@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
+//TODO: return some sort of "success" instead of Void
 public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
 {
     private final ByteArrayWrapper bucketName;
