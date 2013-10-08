@@ -68,7 +68,7 @@ public abstract class ITestBase
         cluster.stop();
     }
     
-    private void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException
+    protected void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException
     {
         ListKeysOperation keysOp = new ListKeysOperation(name);
         cluster.execute(keysOp);
@@ -80,6 +80,8 @@ public abstract class ITestBase
             delOp.get();
         }
         ResetBucketPropsOperation resetOp = new ResetBucketPropsOperation(name);
+        cluster.execute(resetOp);
+        resetOp.get();
         
     }
     
