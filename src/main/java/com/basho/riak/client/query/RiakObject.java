@@ -622,11 +622,14 @@ public final class RiakObject
      */
     public RiakObject setBucketType(String bucketType) 
     {
-        if (null == bucketType || bucketType.isEmpty())
+        if (bucketType != null)
         {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            if (bucketType.isEmpty())
+            {
+                throw new IllegalArgumentException("Bucket type can not be zero length");
+            }
+            this.bucketType = bucketType.getBytes(Charset.defaultCharset());
         }
-        this.bucketType = bucketType.getBytes(Charset.defaultCharset());
         return this;
     }
 
@@ -643,11 +646,14 @@ public final class RiakObject
      */
     public RiakObject setBucketType(String bucketType, Charset charset) 
     {
-        if (null == bucketType || bucketType.isEmpty())
+        if (bucketType != null) 
         {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            if (bucketType.isEmpty())
+            {
+                throw new IllegalArgumentException("Bucket type can not be zero length");
+            }
+            this.bucketType = bucketType.getBytes(charset);
         }
-        this.bucketType = bucketType.getBytes(charset);
         return this;
     }
         
@@ -664,11 +670,14 @@ public final class RiakObject
      */
     public RiakObject setBucketType(byte[] bucketType)
     {
-        if (null == bucketType || bucketType.length == 0)
+        if (bucketType != null)
         {
-            throw new IllegalArgumentException("bucket type can not be zero length or null");
+            if (bucketType.length == 0)
+            {
+                throw new IllegalArgumentException("bucket type can not be zero length");
+            }
+            this.bucketType = Arrays.copyOf(bucketType, bucketType.length);
         }
-        this.bucketType = Arrays.copyOf(bucketType, bucketType.length);
         return this;
     }
     
@@ -688,9 +697,9 @@ public final class RiakObject
      */
     public RiakObject unsafeSetBucketType(byte[] bucketType)
     {
-        if (null == bucketType || bucketType.length == 0)
+        if (bucketType != null && bucketType.length == 0)
         {
-            throw new IllegalArgumentException("bucket type can not be zero length or null");
+            throw new IllegalArgumentException("bucket type can not be zero length");
         }
         this.bucketType = bucketType;
         return this;

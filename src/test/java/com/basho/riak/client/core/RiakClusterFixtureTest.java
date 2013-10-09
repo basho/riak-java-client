@@ -21,7 +21,6 @@ import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
-import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
