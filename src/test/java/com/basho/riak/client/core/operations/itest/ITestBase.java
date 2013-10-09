@@ -63,12 +63,13 @@ public abstract class ITestBase
     }
     
     @AfterClass
-    public static void tearDown()
+    public static void tearDown() throws InterruptedException, ExecutionException
     {
+        resetAndEmptyBucket(bucketName);
         cluster.stop();
     }
     
-    protected void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException
+    protected static void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException
     {
         ListKeysOperation keysOp = new ListKeysOperation(name);
         cluster.execute(keysOp);
