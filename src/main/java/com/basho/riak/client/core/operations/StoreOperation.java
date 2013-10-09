@@ -210,7 +210,7 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
         
         if (key != null)
         {
-            builder.setKey(ByteString.copyFrom(bucket.unsafeGetValue()));
+            builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
         }
 
         if (content != null)
