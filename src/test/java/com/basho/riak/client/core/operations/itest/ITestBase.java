@@ -40,13 +40,16 @@ public abstract class ITestBase
     protected static boolean test2i;
     protected static boolean testBucketType;
     protected static ByteArrayWrapper bucketName;
+    protected static ByteArrayWrapper bucketType;
     
     @BeforeClass
     public static void setUp() throws UnknownHostException
     {
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
         test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
+        // You must create a bucket type 'test_type' if you enable this.
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
+        bucketType = ByteArrayWrapper.unsafeCreate("test_type".getBytes());
         
         bucketName = ByteArrayWrapper.unsafeCreate("ITestBase".getBytes());
         RiakNode.Builder builder = new RiakNode.Builder()
