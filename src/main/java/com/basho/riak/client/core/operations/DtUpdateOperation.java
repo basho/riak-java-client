@@ -142,14 +142,14 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
         return this;
     }
 
-    private RiakDtPB.CounterOp getCounterOp(CounterOp op)
+    RiakDtPB.CounterOp getCounterOp(CounterOp op)
     {
         return RiakDtPB.CounterOp.newBuilder()
             .setIncrement(op.getIncrement())
             .build();
     }
 
-    private RiakDtPB.SetOp getSetOp(SetOp op)
+    RiakDtPB.SetOp getSetOp(SetOp op)
     {
         RiakDtPB.SetOp.Builder setOpBuilder = RiakDtPB.SetOp.newBuilder();
 
@@ -166,24 +166,46 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
         return setOpBuilder.build();
     }
 
-    private RiakDtPB.MapUpdate.FlagOp getFlagOp(FlagOp op)
+    RiakDtPB.MapUpdate.FlagOp getFlagOp(FlagOp op)
     {
         return op.getEnabled()
             ? RiakDtPB.MapUpdate.FlagOp.ENABLE
             : RiakDtPB.MapUpdate.FlagOp.DISABLE;
     }
 
-    private ByteString getRegisterOp(RegisterOp op)
+    ByteString getRegisterOp(RegisterOp op)
     {
         return ByteString.copyFrom(op.getValue().unsafeGetValue());
     }
 
-    private RiakDtPB.MapField getMapField(MapOp.MapField field)
+    RiakDtPB.MapField getMapField(MapOp.MapField field)
     {
-        return null;
+        RiakDtPB.MapField.Builder mapFieldBuilder = RiakDtPB.MapField.newBuilder();
+
+        switch (field.type)
+        {
+            case SET:
+                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.SET);
+                break;
+            case REGISTER:
+                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.REGISTER);
+                break;
+            case MAP:
+                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.MAP);
+                break;
+            case FLAG:
+                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.FLAG);
+                break;
+            case COUNTER:
+                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.COUNTER);
+                break;
+            default:
+        }
+        mapFieldBuilder.setName(ByteString.copyFrom(field.key.unsafeGetValue()));
+        return mapFieldBuilder.build();
     }
 
-    private RiakDtPB.MapOp getMapOp(MapOp op)
+    RiakDtPB.MapOp getMapOp(MapOp op)
     {
         RiakDtPB.MapOp.Builder mapOpBuilder = RiakDtPB.MapOp.newBuilder();
 
@@ -223,6 +245,7 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
                     throw new IllegalStateException("Unknow datatype encountered");
             }
 
+            mapUpdateBuilder.setField(getMapField(update.field));
             mapOpBuilder.addUpdates(mapUpdateBuilder);
         }
 
