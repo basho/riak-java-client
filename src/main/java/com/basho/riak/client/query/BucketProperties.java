@@ -840,8 +840,8 @@ public class BucketProperties
     {
         return String.format("DefaultBucketProperties [allowSiblings=%s, "
             + "lastWriteWins=%s, nVal=%s, backend=%s,  "
-            + "capProps=[rw=%s,dw=%s,w=%s,r=%s,pr=%s,pw=%s]"
-            + "vclockProps=[oldVClock=%s, youngVClock=%s, bigVClock=%s, smallVClock=%s]"
+            + "capProps=[rw=%s,dw=%s,w=%s,r=%s,pr=%s,pw=%s],"
+            + "vclockProps=[oldVClock=%s, youngVClock=%s, bigVClock=%s, smallVClock=%s],"
             + "precommitHooks=%s, postcommitHooks=%s, "
             + ", chashKeyFunction=%s, linkWalkFunction=%s, search=%s,"
             + "yokozunaIndex=%s]",
