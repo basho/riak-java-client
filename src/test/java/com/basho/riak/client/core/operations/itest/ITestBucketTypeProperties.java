@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.operations.FetchBucketTypePropsOperation;
 import com.basho.riak.client.core.operations.ResetBucketTypePropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketTypePropsOperation;
@@ -27,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -91,14 +89,14 @@ public class ITestBucketTypeProperties extends ITestBase
         Assume.assumeTrue(testBucketType);
         BucketProperties props = 
             new BucketProperties()
-                .withR(1)
+                .withAllowMulti(true)
                 .withNVal(4);
         
         storeBucketTypeProps(bucketType, props);
         props = fetchBucketTypeProps(bucketType);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
-        assertEquals(props.getR().getIntValue(), 1);
+        assertTrue(props.getAllowMulti());
         
         ResetBucketTypePropsOperation resetOp = new ResetBucketTypePropsOperation(bucketType);
         cluster.execute(resetOp);
@@ -106,8 +104,7 @@ public class ITestBucketTypeProperties extends ITestBase
         
         props = fetchBucketTypeProps(bucketType);
         assertEquals(Integer.valueOf(3), props.getNVal());
-        assertEquals(Quorum.quorumQuorum(), props.getR());
-        
+        assertFalse(props.getAllowMulti());
     }
     
     private BucketProperties fetchBucketTypeProps(ByteArrayWrapper bucketType) throws InterruptedException, ExecutionException
