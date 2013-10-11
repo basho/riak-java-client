@@ -839,13 +839,15 @@ public class BucketProperties
     public String toString() 
     {
         return String.format("DefaultBucketProperties [allowSiblings=%s, "
-            + "lastWriteWins=%s, nVal=%s, backend=%s, vclockProps=%s, "
-            + "precommitHooks=%s, postcommitHooks=%s, "
+            + "lastWriteWins=%s, nVal=%s, backend=%s,  "
             + "capProps=[rw=%s,dw=%s,w=%s,r=%s,pr=%s,pw=%s]"
+            + "vclockProps=[oldVClock=%s, youngVClock=%s, bigVClock=%s, smallVClock=%s]"
+            + "precommitHooks=%s, postcommitHooks=%s, "
             + ", chashKeyFunction=%s, linkWalkFunction=%s, search=%s,"
             + "yokozunaIndex=%s]",
             allowSiblings, lastWriteWins, nVal, backend, rw, dw, 
-            w, r, pr, pw, precommitHooks, postcommitHooks,
+            w, r, pr, pw, oldVClock, youngVClock, bigVClock, smallVClock, 
+            precommitHooks, postcommitHooks,
             chashKeyFunction, linkwalkFunction, search,
             yokozunaIndex);
     }
