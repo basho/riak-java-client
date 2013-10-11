@@ -56,7 +56,7 @@ public class CrdtResponseConverter
                     element = parseMap(entry.getMapValueList());
                     break;
                 case REGISTER:
-                    element = new CrdtRegister(ByteArrayWrapper.unsafeCreate(entry.toByteArray()));
+                    element = new CrdtRegister(ByteArrayWrapper.unsafeCreate(entry.getRegisterValue().toByteArray()));
                     break;
                 case SET:
                     element = parseSet(entry.getSetValueList());
@@ -65,7 +65,7 @@ public class CrdtResponseConverter
                     throw new IllegalStateException("Expecting a datatype in map entry but none found");
             }
 
-            ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate(entry.getField().toByteArray());
+            ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate(entry.getField().getName().toByteArray());
             entries.add(new CrdtMap.MapEntry(key, element));
         }
 
