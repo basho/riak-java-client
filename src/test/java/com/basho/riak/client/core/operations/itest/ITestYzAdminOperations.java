@@ -25,6 +25,7 @@ import com.basho.riak.client.query.search.YokozunaSchema;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -44,6 +45,7 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testStoreandFetchSchema() throws InterruptedException, ExecutionException
     {
+        Assume.assumeTrue(testYokozuna);
         YokozunaSchema yzSchema = new YokozunaSchema("test_schema", 
             "<schema name=\"test_schema\" version=\"1.0\">"
             + "<fields>"
@@ -83,6 +85,7 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void fetchAndStoreDefaultSchema() throws InterruptedException, ExecutionException
     {
+        Assume.assumeTrue(testYokozuna);
         YzGetSchemaOperation getOp =
             new YzGetSchemaOperation("_yz_default");
         
@@ -101,6 +104,7 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testStoreAndFetchIndex() throws InterruptedException, ExecutionException
     {
+        Assume.assumeTrue(testYokozuna);
         YokozunaIndex index = new YokozunaIndex("test_index");
         YzPutIndexOperation putOp = new YzPutIndexOperation(index);
         
@@ -124,6 +128,7 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testDeleteIndex() throws InterruptedException, ExecutionException
     {
+        Assume.assumeTrue(testYokozuna);
         YokozunaIndex index = new YokozunaIndex("test_index5");
         YzPutIndexOperation putOp = new YzPutIndexOperation(index);
         
