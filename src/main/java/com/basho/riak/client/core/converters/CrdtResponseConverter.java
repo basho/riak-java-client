@@ -72,24 +72,6 @@ public class CrdtResponseConverter
         return new CrdtMap(entries);
     }
 
-    private CrdtElement convert(RiakDtPB.DtValue value)
-    {
-        if (value.hasCounterValue())
-        {
-            return new CrdtCounter(value.getCounterValue());
-        }
-        else if (value.getSetValueCount() > 0)
-        {
-            return parseSet(value.getSetValueList());
-        }
-        else if (value.getMapValueCount() > 0)
-        {
-            return parseMap(value.getMapValueList());
-        }
-
-        throw new IllegalStateException("No recognized datatype in response");
-    }
-
     public CrdtElement convert(RiakDtPB.DtUpdateResp response)
     {
 
@@ -122,11 +104,27 @@ public class CrdtResponseConverter
 
     public CrdtElement convert(RiakDtPB.DtFetchResp response)
     {
-        CrdtElement element = convert(response.getValue());
+        CrdtElement element;
+        switch (response.getType())
+        {
+            case COUNTER:
+                element = new CrdtCounter(response.getValue().getCounterValue());
+                break;
+            case MAP:
+                element = parseMap(response.getValue().getMapValueList());
+                break;
+            case SET:
+                element = parseSet(response.getValue().getSetValueList());
+                break;
+            default:
+                throw new IllegalStateException("No known datatype returned");
+        }
+
         if (response.hasContext())
         {
             element.setContext(ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray()));
         }
+
         return element;
     }
 }
