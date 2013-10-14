@@ -142,6 +142,12 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
         return this;
     }
 
+    public DtUpdateOperation returnBody(boolean returnBody)
+    {
+        builder.setReturnBody(returnBody);
+        return this;
+    }
+
     RiakDtPB.CounterOp getCounterOp(CounterOp op)
     {
         return RiakDtPB.CounterOp.newBuilder()
@@ -295,6 +301,11 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
     @Override
     protected RiakMessage createChannelMessage()
     {
+        if (!builder.hasType())
+        {
+            builder.setType(ByteString.copyFromUtf8("default"));
+        }
+
         return new RiakMessage(RiakMessageCodes.MSG_DtUpdateReq, builder.build().toByteArray());
     }
 
@@ -304,7 +315,8 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DtUpdateResp);
         try
         {
-            return RiakDtPB.DtUpdateResp.parseFrom(rawMessage.getData());
+            RiakDtPB.DtUpdateResp resp = RiakDtPB.DtUpdateResp.parseFrom(rawMessage.getData());
+            return resp;
         }
         catch (InvalidProtocolBufferException ex)
         {

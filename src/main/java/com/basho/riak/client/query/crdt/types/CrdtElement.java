@@ -27,6 +27,11 @@ public abstract class CrdtElement
         this.context = context;
     }
 
+    public boolean hasContext()
+    {
+        return context != null;
+    }
+
     public ByteArrayWrapper getContext()
     {
         return context;
