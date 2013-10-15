@@ -66,7 +66,10 @@ public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, 
         List<ByteArrayWrapper> results = new ArrayList<ByteArrayWrapper>(rawResponse.size());
         for (RiakKvPB.RpbMapRedResp response : rawResponse)
         {
-            results.add(ByteArrayWrapper.create(response.getResponse().toByteArray()));
+            if (response.hasResponse())
+            {
+                results.add(ByteArrayWrapper.create(response.getResponse().toByteArray()));
+            }
         }
         return results;
     }
