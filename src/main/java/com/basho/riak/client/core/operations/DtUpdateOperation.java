@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
+import com.basho.riak.client.query.RiakDatatype;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -30,7 +31,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtUpdateResp>
+public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.DtUpdateResp>
 {
 
     private final RiakDtPB.DtUpdateReq.Builder builder =
@@ -284,7 +285,7 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
     }
 
     @Override
-    protected CrdtElement convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
+    protected RiakDatatype convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
     {
         if (rawResponse.size() != 1)
         {
@@ -294,7 +295,22 @@ public class DtUpdateOperation extends FutureOperation<CrdtElement, RiakDtPB.DtU
         RiakDtPB.DtUpdateResp response = rawResponse.iterator().next();
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
-        return converter.convert(response);
+        CrdtElement element = converter.convert(response);
+        ByteArrayWrapper bucket = ByteArrayWrapper.unsafeCreate(builder.getBucket().toByteArray());
+
+        ByteArrayWrapper bucketType = null;
+        if (builder.hasType())
+        {
+            bucketType = ByteArrayWrapper.unsafeCreate(builder.getType().toByteArray());
+        }
+
+        ByteArrayWrapper key = null;
+        if (response.hasKey())
+        {
+            key = ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray());
+        }
+
+        return new RiakDatatype(bucketType, bucket, key, element);
 
     }
 
