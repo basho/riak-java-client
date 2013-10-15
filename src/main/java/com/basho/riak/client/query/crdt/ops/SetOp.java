@@ -37,13 +37,11 @@ public class SetOp implements CrdtOp
     public SetOp add(ByteArrayWrapper element)
     {
         this.adds.add(element);
-        this.removes.remove(element);
         return this;
     }
 
     public SetOp remove(ByteArrayWrapper element)
     {
-        this.adds.remove(element);
         this.removes.add(element);
         return this;
     }
