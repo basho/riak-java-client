@@ -18,7 +18,7 @@ package com.basho.riak.client.query.crdt.types;
 public class CrdtFlag extends CrdtElement
 {
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     public CrdtFlag(boolean enabled)
     {
