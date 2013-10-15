@@ -39,9 +39,4 @@ public class CrdtSet extends CrdtElement
         return elements.contains(element);
     }
 
-    public void add(ByteArrayWrapper element)
-    {
-        elements.add(element);
-    }
-
 }
