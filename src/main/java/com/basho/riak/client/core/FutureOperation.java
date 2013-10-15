@@ -16,7 +16,6 @@
 package com.basho.riak.client.core;
 
 
-import com.google.protobuf.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,9 +161,9 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
             {
                 retrier.operationComplete(this, remainingTries);
             }
-            fireListeners();
             state = State.COMPLETE;
             latch.countDown();
+            fireListeners();
         }
     }
 
