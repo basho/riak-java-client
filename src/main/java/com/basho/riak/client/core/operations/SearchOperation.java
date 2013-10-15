@@ -196,10 +196,10 @@ public class SearchOperation extends FutureOperation<SearchResult, RiakSearchPB.
     {
         // This isn't a streaming op, there will only be one protobuf
         RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);
-        List<Map<String,String>> docList = Collections.unmodifiableList(new LinkedList<Map<String,String>>());
+        List<Map<String,String>> docList = new LinkedList<Map<String,String>>();
         for (RiakSearchPB.RpbSearchDoc pbDoc : resp.getDocsList())
         {
-            Map<String,String> map = Collections.unmodifiableMap(new HashMap<String,String>());
+            Map<String,String> map = new HashMap<String,String>();
             for (RpbPair pair : pbDoc.getFieldsList())
             {
                 map.put(pair.getKey().toStringUtf8(), pair.getValue().toStringUtf8());

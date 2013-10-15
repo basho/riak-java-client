@@ -39,6 +39,7 @@ public abstract class ITestBase
     protected static boolean testYokozuna;
     protected static boolean test2i;
     protected static boolean testBucketType;
+    protected static boolean riakSearch;
     protected static ByteArrayWrapper bucketName;
     
     @BeforeClass
@@ -47,6 +48,8 @@ public abstract class ITestBase
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
         test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
+        riakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
+        
         
         bucketName = ByteArrayWrapper.unsafeCreate("ITestBase".getBytes());
         RiakNode.Builder builder = new RiakNode.Builder()
