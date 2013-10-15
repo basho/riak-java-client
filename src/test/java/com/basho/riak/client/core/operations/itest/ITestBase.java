@@ -39,7 +39,11 @@ public abstract class ITestBase
     protected static boolean testYokozuna;
     protected static boolean test2i;
     protected static boolean testBucketType;
+    protected static boolean testCrdt;
     protected static ByteArrayWrapper bucketName;
+    protected static ByteArrayWrapper counterBucketType;
+    protected static ByteArrayWrapper setBucketType;
+    protected static ByteArrayWrapper mapBucketType;
     
     @BeforeClass
     public static void setUp() throws UnknownHostException
@@ -47,11 +51,25 @@ public abstract class ITestBase
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
         test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
+        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
         
         bucketName = ByteArrayWrapper.unsafeCreate("ITestBase".getBytes());
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withMinConnections(10);
-        
+
+        /**
+         * In order to run the CRDT itests you must first manually
+         * create the following bucket types in your riak instance
+         * with the corresponding bucket properties.
+         *
+         * maps: allow_mult = true, datatype = map
+         * sets: allow_mult = true, datatype = set
+         * counters: allow_mult = true, datatype = counter
+         */
+        counterBucketType = ByteArrayWrapper.create("counters");
+        setBucketType = ByteArrayWrapper.create("sets");
+        mapBucketType = ByteArrayWrapper.create("maps");
+
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
     }
@@ -71,19 +89,40 @@ public abstract class ITestBase
     
     protected static void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException
     {
+        resetAndEmptyBucket(name, null);
+
+    }
+
+    protected static void resetAndEmptyBucket(ByteArrayWrapper name, ByteArrayWrapper type) throws InterruptedException, ExecutionException
+    {
         ListKeysOperation keysOp = new ListKeysOperation(name);
+        if (type != null)
+        {
+            keysOp.withBucketType(type);
+        }
+
         cluster.execute(keysOp);
         List<ByteArrayWrapper> keyList = keysOp.get();
         for (ByteArrayWrapper k : keyList)
         {
             DeleteOperation delOp = new DeleteOperation(name, k);
+            if (type != null)
+            {
+                delOp.withBucketType(type);
+            }
             cluster.execute(delOp);
             delOp.get();
         }
+
         ResetBucketPropsOperation resetOp = new ResetBucketPropsOperation(name);
+        if (type != null)
+        {
+            resetOp.withBucketType(type);
+        }
+
         cluster.execute(resetOp);
         resetOp.get();
-        
+
     }
     
 }
