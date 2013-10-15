@@ -40,9 +40,10 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
     /**
      * Store an object to the given bucket.
      *
-     * @param bucket the bucket
+     * @param bucket     the bucket
+     * @param bucketType the bucket type
      */
-    public DtUpdateOperation(ByteArrayWrapper bucket)
+    public DtUpdateOperation(ByteArrayWrapper bucket, ByteArrayWrapper bucketType)
     {
 
         if ((null == bucket) || bucket.length() == 0)
@@ -50,24 +51,14 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
             throw new IllegalArgumentException("Bucket can not be null or empty");
         }
 
-        builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-    }
-
-    /**
-     * Set the bucket type.
-     * If unset "default" is used.
-     *
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public DtUpdateOperation withBucketType(ByteArrayWrapper bucketType)
-    {
         if (null == bucketType || bucketType.length() == 0)
         {
             throw new IllegalArgumentException("Bucket type can not be null or zero length");
         }
+
+        builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
+
         builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-        return this;
     }
 
     /**
@@ -317,11 +308,6 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
     @Override
     protected RiakMessage createChannelMessage()
     {
-        if (!builder.hasType())
-        {
-            builder.setType(ByteString.copyFromUtf8("default"));
-        }
-
         return new RiakMessage(RiakMessageCodes.MSG_DtUpdateReq, builder.build().toByteArray());
     }
 
