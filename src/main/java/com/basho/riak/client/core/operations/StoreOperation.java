@@ -261,6 +261,7 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
                     RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();
                     pair.setKey(ByteString.copyFrom(index.getFullname().getBytes()));
                     pair.setValue(ByteString.copyFrom(value.unsafeGetValue()));
+                    contentBuilder.addIndexes(pair);
                 }
             }
 
