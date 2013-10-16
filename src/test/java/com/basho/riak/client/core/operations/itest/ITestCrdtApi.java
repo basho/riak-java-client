@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.crdt.MapMutation;
+import com.basho.riak.client.operations.crdt.SetMutation;
 import com.basho.riak.client.query.crdt.ops.MapOp;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -28,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.operations.crdt.CounterMutation.increment;
 import static com.basho.riak.client.operations.crdt.CrdtMutation.forMap;
+import static com.basho.riak.client.operations.crdt.CrdtMutation.forSet;
 import static com.basho.riak.client.operations.crdt.FlagMutation.enabled;
 import static com.basho.riak.client.operations.crdt.RegisterMutation.registerValue;
 import static junit.framework.Assert.*;
@@ -52,12 +54,38 @@ public class ITestCrdtApi extends ITestBase
         ByteArrayWrapper now = ByteArrayWrapper.create(nowBinary.array());
         ByteArrayWrapper username = ByteArrayWrapper.create("username");
         ByteArrayWrapper loggedIn = ByteArrayWrapper.create("logged-in");
+        ByteArrayWrapper favoriteThings = ByteArrayWrapper.create("favs");
 
-        // Create a builder for the user and update the values
+
+        /*
+
+            Data structure:
+
+            bucket-type == map
+            -> "username" : map
+              -> "logins"     : counter
+              -> "last-login" : register
+              -> "logged-in"  : flag
+              -> "favs"       : set
+
+         */
+
+        // Build a set of things
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        SetMutation favorites = forSet();
+        for (int i = 0; i < 10; ++i)
+        {
+            buffer.putInt(i);
+            favorites.add(ByteArrayWrapper.create(buffer.array()));
+            buffer.rewind();
+        }
+
+        // Create an update for the user their values
         MapMutation userMapUpdate = forMap()
-            .update(numLogins, increment())
-            .update(lastLoginTime, registerValue(now))
-            .update(loggedIn, enabled());
+            .update(numLogins, increment())                // counter
+            .update(lastLoginTime, registerValue(now))     // register
+            .update(loggedIn, enabled())                   // flag
+            .update(favoriteThings, favorites);            // set
 
         // Now create an update for the user's entry
         MapMutation userEntryUpdate = forMap()
@@ -76,7 +104,7 @@ public class ITestCrdtApi extends ITestBase
         DtFetchOperation fetch = new DtFetchOperation(bucketName, key).withBucketType(mapBucketType);
         cluster.execute(fetch);
 
-        // enclosing map
+        // users
         CrdtElement element = fetch.get();
         assertNotNull(element);
         assertTrue(element.isMap());
@@ -88,21 +116,21 @@ public class ITestCrdtApi extends ITestBase
         assertTrue(usernameElement.isMap());
         CrdtMap usernameMap = usernameElement.getAsMap();
 
-        // logins
+        // logins - counter
         CrdtElement numLoginsElement = usernameMap.get(numLogins);
         assertNotNull(numLoginsElement);
         assertTrue(numLoginsElement.isCounter());
         CrdtCounter numLoginsCounter = numLoginsElement.getAsCounter();
         assertEquals(1, numLoginsCounter.getValue());
 
-        // last-login
+        // last-login - register
         CrdtElement lastLoginTimeElement = usernameMap.get(lastLoginTime);
         assertNotNull(lastLoginTimeElement);
         assertTrue(lastLoginTimeElement.isRegister());
         CrdtRegister lastLoginTimeRegister = lastLoginTimeElement.getAsRegister();
         assertEquals(now, lastLoginTimeRegister.getValue());
 
-        // logged-in
+        // logged-in - flag
         CrdtElement loggedInElement = usernameMap.get(loggedIn);
         assertNotNull(loggedInElement);
         assertTrue(loggedInElement.isFlag());
