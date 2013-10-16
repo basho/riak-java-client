@@ -61,7 +61,7 @@ public class RegisterMutation extends CrdtMutation
     }
 
     @Override
-    public CrdtOp getOp()
+    public RegisterOp getOp()
     {
         return new RegisterOp(value);
     }

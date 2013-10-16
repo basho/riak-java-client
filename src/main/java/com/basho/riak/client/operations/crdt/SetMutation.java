@@ -55,7 +55,7 @@ public class SetMutation extends CrdtMutation
     }
 
     @Override
-    public CrdtOp getOp()
+    public SetOp getOp()
     {
         return new SetOp(adds, removes);
     }

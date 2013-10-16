@@ -59,7 +59,7 @@ public class CounterMutation extends CrdtMutation
     }
 
     @Override
-    public CrdtOp getOp()
+    public CounterOp getOp()
     {
         return new CounterOp(delta);
     }

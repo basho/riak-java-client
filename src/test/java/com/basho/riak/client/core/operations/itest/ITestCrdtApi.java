@@ -30,9 +30,7 @@ import static com.basho.riak.client.operations.crdt.CounterMutation.increment;
 import static com.basho.riak.client.operations.crdt.CrdtMutation.forMap;
 import static com.basho.riak.client.operations.crdt.FlagMutation.enabled;
 import static com.basho.riak.client.operations.crdt.RegisterMutation.registerValue;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 public class ITestCrdtApi extends ITestBase
 {
@@ -52,7 +50,6 @@ public class ITestCrdtApi extends ITestBase
         ByteArrayWrapper lastLoginTime = ByteArrayWrapper.create("last-login");
         ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
         ByteArrayWrapper now = ByteArrayWrapper.create(nowBinary.array());
-        ByteArrayWrapper users = ByteArrayWrapper.create("users");
         ByteArrayWrapper username = ByteArrayWrapper.create("username");
         ByteArrayWrapper loggedIn = ByteArrayWrapper.create("logged-in");
 
@@ -63,14 +60,14 @@ public class ITestCrdtApi extends ITestBase
             .update(loggedIn, enabled());
 
         // Now create an update for the user's entry
-        MapMutation userEntryUpdate = forMap().update(username, userMapUpdate);
-        MapMutation userInfoUpdate = forMap().update(users, userEntryUpdate);
+        MapMutation userEntryUpdate = forMap()
+            .update(username, userMapUpdate);
 
         ByteArrayWrapper key = ByteArrayWrapper.create("user-info");
 
         DtUpdateOperation update =
             new DtUpdateOperation(bucketName, mapBucketType)
-                .withOp((MapOp) userInfoUpdate.getOp())
+                .withOp(userEntryUpdate.getOp())
                 .withKey(key);
 
         cluster.execute(update);
@@ -83,13 +80,7 @@ public class ITestCrdtApi extends ITestBase
         CrdtElement element = fetch.get();
         assertNotNull(element);
         assertTrue(element.isMap());
-        CrdtMap outerMap = element.getAsMap();
-
-        // users
-        CrdtElement usersElement = outerMap.get(users);
-        assertNotNull(usersElement);
-        assertTrue(usersElement.isMap());
-        CrdtMap usersMap = usersElement.getAsMap();
+        CrdtMap usersMap = element.getAsMap();
 
         // username
         CrdtElement usernameElement = usersMap.get(username);

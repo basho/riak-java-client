@@ -59,7 +59,7 @@ public class FlagMutation extends CrdtMutation
     }
 
     @Override
-    public CrdtOp getOp()
+    public FlagOp getOp()
     {
         return new FlagOp(flag);
     }

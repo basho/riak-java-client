@@ -149,7 +149,7 @@ public class MapMutation extends CrdtMutation
     }
 
     @Override
-    public CrdtOp getOp()
+    public MapOp getOp()
     {
         return new MapOp(adds, removes, updates);
     }
