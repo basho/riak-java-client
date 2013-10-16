@@ -93,9 +93,8 @@ public class ITestDtUpdateOperation extends ITestBase
         for (int i = 0; i < iterations; ++i)
         {
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName)
+                new DtUpdateOperation(bucketName, counterBucketType)
                     .withKey(key)
-                    .withBucketType(counterBucketType)
                     .withOp(new CounterOp(1));
 
             cluster.execute(update);
@@ -108,9 +107,8 @@ public class ITestDtUpdateOperation extends ITestBase
         for (int i = 0; i < iterations; ++i)
         {
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName)
+                new DtUpdateOperation(bucketName, counterBucketType)
                     .withKey(key)
-                    .withBucketType(counterBucketType)
                     .withOp(new CounterOp(-1));
 
             cluster.execute(update);
@@ -147,8 +145,7 @@ public class ITestDtUpdateOperation extends ITestBase
             testValues.add(wrapped);
 
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName)
-                    .withBucketType(setBucketType)
+                new DtUpdateOperation(bucketName, setBucketType)
                     .withOp(new SetOp().add(wrapped))
                     .withKey(key);
 
@@ -164,8 +161,7 @@ public class ITestDtUpdateOperation extends ITestBase
         {
 
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName)
-                    .withBucketType(setBucketType)
+                new DtUpdateOperation(bucketName, setBucketType)
                     .withOp(new SetOp().remove(setElement))
                     .withKey(key);
 
@@ -204,8 +200,7 @@ public class ITestDtUpdateOperation extends ITestBase
             testValues.add(wrapped);
 
             DtUpdateOperation add =
-                new DtUpdateOperation(bucketName)
-                    .withBucketType(setBucketType)
+                new DtUpdateOperation(bucketName, setBucketType)
                     .withOp(new SetOp().add(wrapped))
                     .withKey(key);
 
@@ -213,8 +208,7 @@ public class ITestDtUpdateOperation extends ITestBase
             add.get();
 
             DtUpdateOperation delete =
-                new DtUpdateOperation(bucketName)
-                    .withBucketType(setBucketType)
+                new DtUpdateOperation(bucketName, setBucketType)
                     .withOp(new SetOp().remove(wrapped))
                     .withKey(key);
 
@@ -246,8 +240,7 @@ public class ITestDtUpdateOperation extends ITestBase
         ByteArrayWrapper setValue = ByteArrayWrapper.create("value");
         ByteArrayWrapper mapKey = ByteArrayWrapper.create("set");
         DtUpdateOperation add =
-            new DtUpdateOperation(bucketName)
-                .withBucketType(mapBucketType)
+            new DtUpdateOperation(bucketName, mapBucketType)
                 .withOp(new MapOp().add(mapKey, MapOp.FieldType.SET))
                 .withKey(key);
 
@@ -255,8 +248,7 @@ public class ITestDtUpdateOperation extends ITestBase
         add.get();
 
         DtUpdateOperation update =
-            new DtUpdateOperation(bucketName)
-                .withBucketType(mapBucketType)
+            new DtUpdateOperation(bucketName, mapBucketType)
                 .withOp(new MapOp().update(mapKey, new SetOp().add(setValue)))
                 .withKey(key);
 
@@ -273,16 +265,14 @@ public class ITestDtUpdateOperation extends ITestBase
 
 
         mapKey = ByteArrayWrapper.create("counter");
-        add = new DtUpdateOperation(bucketName)
-            .withBucketType(mapBucketType)
+        add = new DtUpdateOperation(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.COUNTER))
             .withKey(key);
 
         cluster.execute(add);
         add.get();
 
-        update = new DtUpdateOperation(bucketName)
-            .withBucketType(mapBucketType)
+        update = new DtUpdateOperation(bucketName, mapBucketType)
             .withOp(new MapOp().update(mapKey, new CounterOp(1)))
             .withKey(key);
 
@@ -301,8 +291,7 @@ public class ITestDtUpdateOperation extends ITestBase
         mapKey = ByteArrayWrapper.create("flag");
 
         DtUpdateOperation addSet =
-            new DtUpdateOperation(bucketName)
-                .withBucketType(mapBucketType)
+            new DtUpdateOperation(bucketName, mapBucketType)
                 .withOp(new MapOp().add(mapKey, MapOp.FieldType.FLAG))
                 .withKey(key);
 
@@ -310,8 +299,7 @@ public class ITestDtUpdateOperation extends ITestBase
         addSet.get();
 
         add =
-            new DtUpdateOperation(bucketName)
-                .withBucketType(mapBucketType)
+            new DtUpdateOperation(bucketName, mapBucketType)
                 .withOp(new MapOp().update(mapKey, new FlagOp(true)))
                 .withKey(key);
 
@@ -328,16 +316,14 @@ public class ITestDtUpdateOperation extends ITestBase
 
 
         mapKey = ByteArrayWrapper.create("register");
-        addSet = new DtUpdateOperation(bucketName)
-            .withBucketType(mapBucketType)
+        addSet = new DtUpdateOperation(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.REGISTER))
             .withKey(key);
 
         cluster.execute(addSet);
         addSet.get();
 
-        add = new DtUpdateOperation(bucketName)
-            .withBucketType(mapBucketType)
+        add = new DtUpdateOperation(bucketName, mapBucketType)
             .withOp(new MapOp().update(mapKey, new RegisterOp(mapKey)))
             .withKey(key);
 
@@ -354,16 +340,14 @@ public class ITestDtUpdateOperation extends ITestBase
 
         mapKey = ByteArrayWrapper.create("map");
 
-        addSet = new DtUpdateOperation(bucketName)
-            .withBucketType(mapBucketType)
+        addSet = new DtUpdateOperation(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.MAP))
             .withKey(key);
 
         cluster.execute(addSet);
         addSet.get();
 
-        add = new DtUpdateOperation(bucketName)
-            .withBucketType(mapBucketType)
+        add = new DtUpdateOperation(bucketName, mapBucketType)
             .withOp(new MapOp().update(mapKey, new MapOp().add(mapKey, MapOp.FieldType.FLAG)))
             .withKey(key);
 
