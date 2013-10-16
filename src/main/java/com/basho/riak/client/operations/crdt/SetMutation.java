@@ -28,7 +28,7 @@ public class SetMutation extends CrdtMutation
     private final Set<ByteArrayWrapper> adds = new HashSet<ByteArrayWrapper>();
     private final Set<ByteArrayWrapper> removes = new HashSet<ByteArrayWrapper>();
 
-    public SetMutation()
+    SetMutation()
     {
     }
 

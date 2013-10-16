@@ -19,7 +19,7 @@ import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.crdt.MapMutation;
 import com.basho.riak.client.query.crdt.ops.MapOp;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import org.junit.Test;
 
@@ -30,6 +30,9 @@ import static com.basho.riak.client.operations.crdt.CounterMutation.increment;
 import static com.basho.riak.client.operations.crdt.CrdtMutation.forMap;
 import static com.basho.riak.client.operations.crdt.FlagMutation.enabled;
 import static com.basho.riak.client.operations.crdt.RegisterMutation.registerValue;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 public class ITestCrdtApi extends ITestBase
 {
@@ -41,6 +44,8 @@ public class ITestCrdtApi extends ITestBase
         /**
          * Update some info about a user in a table of users
          */
+
+        resetAndEmptyBucket(bucketName, mapBucketType);
 
         // ByteArrayWrappers make it look messy, so define them all here.
         ByteArrayWrapper numLogins = ByteArrayWrapper.create("logins");
@@ -73,11 +78,45 @@ public class ITestCrdtApi extends ITestBase
 
         DtFetchOperation fetch = new DtFetchOperation(bucketName, key).withBucketType(mapBucketType);
         cluster.execute(fetch);
+
+        // enclosing map
         CrdtElement element = fetch.get();
+        assertNotNull(element);
+        assertTrue(element.isMap());
+        CrdtMap outerMap = element.getAsMap();
 
-        System.out.println();
+        // users
+        CrdtElement usersElement = outerMap.get(users);
+        assertNotNull(usersElement);
+        assertTrue(usersElement.isMap());
+        CrdtMap usersMap = usersElement.getAsMap();
 
-        // TBD, pass userInfoUpdate to the operation to be updated
+        // username
+        CrdtElement usernameElement = usersMap.get(username);
+        assertNotNull(usernameElement);
+        assertTrue(usernameElement.isMap());
+        CrdtMap usernameMap = usernameElement.getAsMap();
+
+        // logins
+        CrdtElement numLoginsElement = usernameMap.get(numLogins);
+        assertNotNull(numLoginsElement);
+        assertTrue(numLoginsElement.isCounter());
+        CrdtCounter numLoginsCounter = numLoginsElement.getAsCounter();
+        assertEquals(1, numLoginsCounter.getValue());
+
+        // last-login
+        CrdtElement lastLoginTimeElement = usernameMap.get(lastLoginTime);
+        assertNotNull(lastLoginTimeElement);
+        assertTrue(lastLoginTimeElement.isRegister());
+        CrdtRegister lastLoginTimeRegister = lastLoginTimeElement.getAsRegister();
+        assertEquals(now, lastLoginTimeRegister.getValue());
+
+        // logged-in
+        CrdtElement loggedInElement = usernameMap.get(loggedIn);
+        assertNotNull(loggedInElement);
+        assertTrue(loggedInElement.isFlag());
+        CrdtFlag loggedInFlag = loggedInElement.getAsFlag();
+        assertEquals(true, loggedInFlag.getEnabled());
 
     }
 

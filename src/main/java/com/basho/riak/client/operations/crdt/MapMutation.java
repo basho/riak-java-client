@@ -29,6 +29,10 @@ public class MapMutation extends CrdtMutation
     private final Set<MapOp.MapField> removes = new HashSet<MapOp.MapField>();
     private final Set<MapOp.MapUpdate> updates = new HashSet<MapOp.MapUpdate>();
 
+    MapMutation()
+    {
+    }
+
     public MapMutation addCounter(ByteArrayWrapper key)
     {
         adds.add(new MapOp.MapField(MapOp.FieldType.COUNTER, key));
