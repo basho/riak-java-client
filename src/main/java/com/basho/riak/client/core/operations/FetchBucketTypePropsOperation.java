@@ -31,38 +31,18 @@ import java.util.concurrent.ExecutionException;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
- * @since 2.0
  */
-public class FetchBucketPropsOperation extends FutureOperation<BucketProperties, RiakPB.RpbGetBucketResp>
+public class FetchBucketTypePropsOperation extends FutureOperation<BucketProperties, RiakPB.RpbGetBucketResp>
 {
-
-    private ByteArrayWrapper bucketType;
-    private final ByteArrayWrapper bucketName;
+    private final ByteArrayWrapper bucketType;
     
-    public FetchBucketPropsOperation(ByteArrayWrapper bucketName)
-    {
-        
-        if (null == bucketName || bucketName.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket name can not be null or zero length");
-        }
-        this.bucketName = bucketName;
-    }
-    
-    /**
-     * Set the bucket type.
-     * If unset "default" is used. 
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public FetchBucketPropsOperation withBucketType(ByteArrayWrapper bucketType)
+    public FetchBucketTypePropsOperation(ByteArrayWrapper bucketType)
     {
         if (null == bucketType || bucketType.length() == 0)
         {
             throw new IllegalArgumentException("Bucket type can not be null or zero length");
         }
         this.bucketType = bucketType;
-        return this;
     }
     
     @Override
@@ -93,14 +73,7 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
                     .withFunction(pbProps.getChashKeyfun().getFunction().toStringUtf8())
                     .build());
             
-            if (pbProps.hasLinkfun())
-            {
-                props.withLinkwalkFunction(
-                new Function.Builder()
-                    .withModule(pbProps.getLinkfun().getModule().toStringUtf8())
-                    .withFunction(pbProps.getLinkfun().getFunction().toStringUtf8())
-                    .build());
-            }
+            
         
             if (pbProps.hasHasPrecommit())
             {
@@ -134,16 +107,11 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakPB.RpbGetBucketReq.Builder builder = 
-            RiakPB.RpbGetBucketReq.newBuilder();
-        
-        if (bucketType !=null)
-        {
-            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-        }
-        builder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        RiakPB.RpbGetBucketReq req = builder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_GetBucketReq, req.toByteArray());
+        RiakPB.RpbGetBucketTypeReq req =
+            RiakPB.RpbGetBucketTypeReq.newBuilder()
+                .setType(ByteString.copyFrom(bucketType.unsafeGetValue()))
+                .build();
+        return new RiakMessage(RiakMessageCodes.MSG_GetBucketTypeReq, req.toByteArray());
     }
 
     @Override
