@@ -881,6 +881,14 @@ public final class RiakObject
         return this;
     }
     
+    /**
+     * Determine if a vclock is present.
+     * @return true if a vclock is present, false otherwise.
+     */
+    public boolean hasVClock()
+    {
+        return vclock != null;
+    }
     
     /**
      * Return the VClock for this RiakObject
