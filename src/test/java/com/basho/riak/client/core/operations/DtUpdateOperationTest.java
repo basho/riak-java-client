@@ -28,6 +28,7 @@ public class DtUpdateOperationTest
 {
 
     private final ByteArrayWrapper bucket = ByteArrayWrapper.create("buket");
+    private final ByteArrayWrapper type = ByteArrayWrapper.create("type");
 
     @Test
     public void testGetCounterOp()
@@ -35,7 +36,7 @@ public class DtUpdateOperationTest
 
         final long counterValue = 1;
         CounterOp op = new CounterOp(counterValue);
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         RiakDtPB.CounterOp counterOp = operation.getCounterOp(op);
 
         assertEquals(counterValue, counterOp.getIncrement());
@@ -53,7 +54,7 @@ public class DtUpdateOperationTest
             .add(addition)
             .remove(removal);
 
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         RiakDtPB.SetOp setOp = operation.getSetOp(op);
 
         ByteArrayWrapper serializedAddition = ByteArrayWrapper.unsafeCreate(setOp.getAdds(0).toByteArray());
@@ -72,7 +73,7 @@ public class DtUpdateOperationTest
 
         FlagOp op = new FlagOp(enabled);
 
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         RiakDtPB.MapUpdate.FlagOp flagOp = operation.getFlagOp(op);
 
         assertEquals(RiakDtPB.MapUpdate.FlagOp.ENABLE, flagOp);
@@ -87,7 +88,7 @@ public class DtUpdateOperationTest
 
         RegisterOp op = new RegisterOp(registerValue);
 
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         ByteString registerOp = operation.getRegisterOp(op);
 
         ByteString serializedValue = ByteString.copyFrom(registerValue.unsafeGetValue());
@@ -105,7 +106,7 @@ public class DtUpdateOperationTest
             .add(addKey, MapOp.FieldType.COUNTER)
             .remove(removeKey, MapOp.FieldType.COUNTER);
 
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op);
 
         assertTrue(mapOp.getAddsCount() == 1);
@@ -142,7 +143,7 @@ public class DtUpdateOperationTest
             .update(mapKey, new MapOp()
                 .add(mapAddValue, MapOp.FieldType.COUNTER));
 
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op);
 
         assertTrue(mapOp.getUpdatesCount() == 5);
@@ -162,7 +163,7 @@ public class DtUpdateOperationTest
         ByteArrayWrapper key3 = ByteArrayWrapper.create("key3");
         MapOp op3 = new MapOp().update(key3, op2);
 
-        DtUpdateOperation operation = new DtUpdateOperation(bucket);
+        DtUpdateOperation operation = new DtUpdateOperation(bucket, type);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op3);
 
         assertTrue(mapOp.getUpdatesCount() == 1);
