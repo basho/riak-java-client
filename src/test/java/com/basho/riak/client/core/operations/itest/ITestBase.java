@@ -44,6 +44,7 @@ public abstract class ITestBase
     protected static boolean testYokozuna;
     protected static boolean test2i;
     protected static boolean testBucketType;
+    protected static boolean riakSearch;
     protected static ByteArrayWrapper bucketName;
     protected static ByteArrayWrapper bucketType;
 
@@ -55,7 +56,7 @@ public abstract class ITestBase
         // You must create a bucket type 'test_type' if you enable this.
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
         bucketType = ByteArrayWrapper.unsafeCreate("test_type".getBytes());
-        
+        riakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
         bucketName = ByteArrayWrapper.unsafeCreate("ITestBase".getBytes());
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withMinConnections(10);

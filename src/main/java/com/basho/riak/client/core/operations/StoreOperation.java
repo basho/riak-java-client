@@ -227,15 +227,12 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
             contentBuilder.setValue(ByteString.copyFrom(o.getValueAsBytes()));
             contentBuilder.setContentType(ByteString.copyFromUtf8(notNull(o.getContentType())));
             contentBuilder.setCharset(ByteString.copyFromUtf8(notNull(o.getCharset())));
-            contentBuilder.setContentEncoding(ByteString.copyFromUtf8(notNull(o.getContentType())));
-            contentBuilder.setVtag(ByteString.copyFrom(notNull(o.getVtag()).getBytes()));
-            contentBuilder.setLastMod((int) o.getLastModified());
-            contentBuilder.setDeleted(o.isDeleted());
             
             if (o.hasVClock())
             {
                 builder.setVclock(ByteString.copyFrom(o.getVClock().getBytes()));
             }
+            contentBuilder.setContentEncoding(ByteString.copyFromUtf8(notNull(o.getContentType())));            
 
             // Links are only supported in the default bucket type
             if (o.hasLinks() && (bucketType != null && !bucketType.toString().equals("default")))
