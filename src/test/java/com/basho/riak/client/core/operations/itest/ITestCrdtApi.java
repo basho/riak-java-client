@@ -19,7 +19,6 @@ import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.crdt.MapMutation;
 import com.basho.riak.client.operations.crdt.SetMutation;
-import com.basho.riak.client.query.crdt.ops.MapOp;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import org.junit.Test;
@@ -54,8 +53,9 @@ public class ITestCrdtApi extends ITestBase
         ByteArrayWrapper now = ByteArrayWrapper.create(nowBinary.array());
         ByteArrayWrapper username = ByteArrayWrapper.create("username");
         ByteArrayWrapper loggedIn = ByteArrayWrapper.create("logged-in");
-        ByteArrayWrapper favoriteThings = ByteArrayWrapper.create("favs");
+        ByteArrayWrapper shoppingCart = ByteArrayWrapper.create("cart");
 
+        ByteArrayWrapper key = ByteArrayWrapper.create("user-info");
 
         /*
 
@@ -66,11 +66,11 @@ public class ITestCrdtApi extends ITestBase
               -> "logins"     : counter
               -> "last-login" : register
               -> "logged-in"  : flag
-              -> "favs"       : set
+              -> "cart"       : set
 
          */
 
-        // Build a set of things
+        // Build a shopping cart. We're buying the digits!!!!
         ByteBuffer buffer = ByteBuffer.allocate(4);
         SetMutation favorites = forSet();
         for (int i = 0; i < 10; ++i)
@@ -80,18 +80,16 @@ public class ITestCrdtApi extends ITestBase
             buffer.rewind();
         }
 
-        // Create an update for the user their values
+        // Create an update for the user's values
         MapMutation userMapUpdate = forMap()
             .update(numLogins, increment())                // counter
             .update(lastLoginTime, registerValue(now))     // register
             .update(loggedIn, enabled())                   // flag
-            .update(favoriteThings, favorites);            // set
+            .update(shoppingCart, favorites);              // set
 
         // Now create an update for the user's entry
         MapMutation userEntryUpdate = forMap()
             .update(username, userMapUpdate);
-
-        ByteArrayWrapper key = ByteArrayWrapper.create("user-info");
 
         DtUpdateOperation update =
             new DtUpdateOperation(bucketName, mapBucketType)
@@ -136,6 +134,11 @@ public class ITestCrdtApi extends ITestBase
         assertTrue(loggedInElement.isFlag());
         CrdtFlag loggedInFlag = loggedInElement.getAsFlag();
         assertEquals(true, loggedInFlag.getEnabled());
+
+        // cart - set
+        CrdtElement shoppingCartElement = usernameMap.get(shoppingCart);
+        assertNotNull(shoppingCartElement);
+        assertTrue(shoppingCartElement.isSet());
 
     }
 
