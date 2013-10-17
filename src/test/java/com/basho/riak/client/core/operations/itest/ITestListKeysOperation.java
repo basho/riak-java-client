@@ -18,7 +18,7 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
-import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -27,8 +27,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -36,20 +34,34 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestListBucketsOperation extends ITestBase
+public class ITestListKeysOperation extends ITestBase
 {
+    
+    
     @Test
-    public void testListBuckets() throws InterruptedException, ExecutionException
+    public void testListNoKeys() throws InterruptedException, ExecutionException
     {
-        // Empty buckets do not show up
+        final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_1").getBytes());
+        ListKeysOperation klistOp = new ListKeysOperation(bName);
+        cluster.execute(klistOp);
+        List<ByteArrayWrapper> kList = klistOp.get();
+        assertTrue(kList.isEmpty());
+        resetAndEmptyBucket(bName);
+
+    }
+    
+    @Test
+    public void testListKey() throws InterruptedException, ExecutionException
+    {
+        final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_2").getBytes());
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = RiakObject.unsafeCreate(bucketName.getValue());
+        RiakObject rObj = RiakObject.unsafeCreate(bName.getValue());
         rObj.setKey(key.unsafeGetValue()).setValue(value);
         
         StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+            new StoreOperation<RiakObject>(bName)
                 .withKey(key)
                 .withContent(rObj)
                 .withConverter(new PassThroughConverter()); 
@@ -57,88 +69,78 @@ public class ITestListBucketsOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        ListBucketsOperation listOp = new ListBucketsOperation();
-        cluster.execute(listOp);
-        List<ByteArrayWrapper> bucketList = listOp.get();
-        assertTrue(bucketList.size() > 0);
+        ListKeysOperation klistOp = new ListKeysOperation(bName);
+        cluster.execute(klistOp);
+        List<ByteArrayWrapper> kList = klistOp.get();
         
-        boolean found = false;
-        for (ByteArrayWrapper baw : bucketList)
-        {
-            if (baw.toString().equals(bucketName.toString()))
-            {
-                found = true;
-            }
-        }
-        
-        assertTrue(found);
+        assertEquals(kList.size(), 1);
+        assertEquals(kList.get(0), key);
+        resetAndEmptyBucket(bName);
+
     }
     
     @Test
-    public void testLargeBucketList() throws InterruptedException, ExecutionException
+    public void testLargeKeyList() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
+        final String baseKey = "my_key";
         final String value = "{\"value\":\"value\"}";
+        final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_3").getBytes());
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<RiakObject> listener = 
-            new RiakFutureListener<RiakObject>() {
-                
-                private AtomicInteger received = new AtomicInteger();
-                
-                @Override
-                public void handle(RiakFuture<RiakObject> f)
+        RiakFutureListener<RiakObject> listener = new RiakFutureListener<RiakObject>() {
+            
+            private int expected = 1000;
+            private AtomicInteger received = new AtomicInteger();
+            
+            @Override
+            public void handle(RiakFuture<RiakObject> f)
+            {
+                try 
                 {
-                    try
-                    {
-                        f.get();
-                    }
-                    catch (InterruptedException ex)
-                    {
-                        throw new RuntimeException(ex);
-                    }
-                    catch (ExecutionException ex)
-                    {
-                        throw new RuntimeException(ex);
-                    }
-                    
+                    f.get();
                     semaphore.release();
                     received.incrementAndGet();
-                    if (received.intValue() == 1000)
+
+                    if (expected == received.intValue())
                     {
+                        ListKeysOperation klistOp = new ListKeysOperation(bName);
+                        cluster.execute(klistOp);
+                        List<ByteArrayWrapper> kList;
+                        kList = klistOp.get();
+                        assertEquals(kList.size(), 1000);
                         latch.countDown();
                     }
                 }
-            };
+                catch (InterruptedException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+                catch (ExecutionException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
         
         for (int i = 0; i < 1000; i++)
         {
-            ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + i).getBytes());
+            semaphore.acquire();
+            ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate((baseKey + i).getBytes());
             RiakObject rObj = RiakObject.unsafeCreate(bName.getValue());
             rObj.setKey(key.unsafeGetValue()).setValue(value);
             StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bName)
+                new StoreOperation<RiakObject>(bName)
                 .withKey(key)
                 .withContent(rObj)
                 .withConverter(new PassThroughConverter()); 
+        
             storeOp.addListener(listener);
-            semaphore.acquire();
             cluster.execute(storeOp);
         }
         
         latch.await();
-        
-        ListBucketsOperation listOp = new ListBucketsOperation();
-        cluster.execute(listOp);
-        List<ByteArrayWrapper> bucketList = listOp.get();
-        assertTrue(bucketList.size() >= 1000);
-        
-        for (int i = 0; i < 1000; i++)
-        {
-            ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + i).getBytes());
-            resetAndEmptyBucket(bName);
-        }
+        ITestBase.resetAndEmptyBucket(bName);
         
     }
 }

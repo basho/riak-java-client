@@ -199,6 +199,12 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
     protected RiakMessage createChannelMessage()
     {
 
+        // TODO: This needs to be looked at. Riak treats null differently than
+        // "doesn't exist" and content type and content encoding are not the same thing
+        // IIRC. We don't want to set deleted or last mod either. I'm holding off
+        // doing now because I want to change how we're using RiakObject
+            
+        
         RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder();
         ByteString pbBucket = ByteString.copyFrom(bucket.unsafeGetValue());
         builder.setBucket(pbBucket);
@@ -225,6 +231,11 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
             contentBuilder.setVtag(ByteString.copyFrom(notNull(o.getVtag()).getBytes()));
             contentBuilder.setLastMod((int) o.getLastModified());
             contentBuilder.setDeleted(o.isDeleted());
+            
+            if (o.hasVClock())
+            {
+                builder.setVclock(ByteString.copyFrom(o.getVClock().getBytes()));
+            }
 
             // Links are only supported in the default bucket type
             if (o.hasLinks() && (bucketType != null && !bucketType.toString().equals("default")))

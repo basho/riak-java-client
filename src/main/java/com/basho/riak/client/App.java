@@ -7,7 +7,10 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
+import com.basho.riak.client.core.operations.FetchBucketTypePropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -34,17 +37,41 @@ public class App implements RiakFutureListener<RiakObject>
         
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
+        Thread.sleep(3000);
     }
     
     public void doIt() throws InterruptedException, ExecutionException
     {
+        FetchBucketTypePropsOperation btpOp = 
+            new FetchBucketTypePropsOperation(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()));
+        
+        cluster.execute(btpOp);
+        BucketProperties props = btpOp.get();
+        System.out.println(props);
+        
+        FetchBucketPropsOperation bpOp = 
+            new FetchBucketPropsOperation(ByteArrayWrapper.unsafeCreate("test_bucket3)".getBytes()))
+                .withBucketType(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()));
+                               
+        cluster.execute(bpOp);
+        props = bpOp.get();
+        System.out.println(props);
+        
+        
+        
+        
         FutureOperation<RiakObject, RiakKvPB.RpbGetResp> fetchOp =
-            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket2".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
                     .withConverter(new PassThroughConverter())
                     .withResolver(new DefaultResolver<RiakObject>());
         
-        fetchOp.addListener(this);
+        //fetchOp.addListener(this);
         cluster.execute(fetchOp);
+        RiakObject ro =  fetchOp.get();
+        System.out.println("value: " + ro.getValue());
+            System.out.println(ro.isDeleted());
+            System.out.println(ro.isNotFound());
+        cluster.stop();
     }
     
     public static void main( String[] args ) throws Exception

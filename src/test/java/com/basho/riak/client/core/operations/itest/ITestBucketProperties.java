@@ -18,10 +18,12 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+import static com.basho.riak.client.core.operations.itest.ITestBase.testBucketType;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
@@ -34,7 +36,7 @@ public class ITestBucketProperties extends ITestBase
     @Test
     public void testFetchDefaultBucketProps() throws InterruptedException, ExecutionException
     {
-        BucketProperties props = fetchBucketProps(bucketName);
+        BucketProperties props = fetchBucketProps(bucketName, null);
         assertTrue(props.hasNVal());
         assertTrue(props.hasAllowMulti());
         assertTrue(props.hasBasicQuorum());
@@ -69,9 +71,9 @@ public class ITestBucketProperties extends ITestBase
                 .withAllowMulti(true)
                 .withNVal(4);
         
-        storeBucketProps(bucketName, props);
+        storeBucketProps(bucketName, null, props);
         
-        props = fetchBucketProps(bucketName);
+        props = fetchBucketProps(bucketName, null);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
@@ -86,30 +88,89 @@ public class ITestBucketProperties extends ITestBase
                 .withAllowMulti(true)
                 .withNVal(4);
         
-        storeBucketProps(bucketName, props);
-        props = fetchBucketProps(bucketName);
+        storeBucketProps(bucketName, null, props);
+        props = fetchBucketProps(bucketName, null);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
         
         resetAndEmptyBucket(bucketName);
         
-        props = fetchBucketProps(bucketName);
+        props = fetchBucketProps(bucketName, null);
         assertEquals(props.getNVal(), Integer.valueOf(3));
         assertFalse(props.getAllowMulti());
         
     }
     
-    private BucketProperties fetchBucketProps(ByteArrayWrapper bucketName) throws InterruptedException, ExecutionException
+    @Test
+    public void testFetchBucketPropsFromType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testBucketType);
+        BucketProperties props = fetchBucketProps(bucketName, bucketType);
+        assertTrue(props.hasNVal());
+        assertTrue(props.hasAllowMulti());
+        assertTrue(props.hasBasicQuorum());
+        assertTrue(props.hasBigVClock());
+        assertTrue(props.hasChashKeyFunction());
+        assertTrue(props.hasDw());
+        assertTrue(props.hasLastWriteWins());
+        assertTrue(props.hasNotFoundOk());
+        assertTrue(props.hasOldVClock());
+        assertTrue(props.hasPr());
+        assertTrue(props.hasPw());
+        assertTrue(props.hasR());
+        assertTrue(props.hasRiakSearchEnabled());
+        assertTrue(props.hasRw());
+        assertTrue(props.hasSmallVClock());
+        assertTrue(props.hasW());
+        assertTrue(props.hasYoungVClock());
+        
+        assertFalse(props.hasBackend());
+        assertFalse(props.hasPostcommitHooks());
+        assertFalse(props.hasPrecommitHooks());
+        assertFalse(props.hasYokozunaIndex());
+    }
+    
+    @Test
+    public void testSetBucketPropsInType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testBucketType);
+        BucketProperties props = 
+            new BucketProperties()
+                .withAllowMulti(true)
+                .withR(1)
+                .withNVal(4);
+        
+        storeBucketProps(bucketName, bucketType, props);
+        props = fetchBucketProps(bucketName, bucketType);
+        
+        assertEquals(props.getNVal(), Integer.valueOf(4));
+        assertEquals(props.getR().getIntValue(), 1);
+        assertTrue(props.getAllowMulti());
+        
+        props = fetchBucketProps(bucketName, null);
+        assertEquals(props.getNVal(), Integer.valueOf(3));
+        assertFalse(props.getAllowMulti());
+    }
+    
+    private BucketProperties fetchBucketProps(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType) throws InterruptedException, ExecutionException
     {
         FetchBucketPropsOperation op = new FetchBucketPropsOperation(bucketName);
+        if (bucketType != null)
+        {
+            op.withBucketType(bucketType);
+        }
         cluster.execute(op);
         return op.get();
     }
     
-    private void storeBucketProps(ByteArrayWrapper bucketName, BucketProperties props) throws InterruptedException, ExecutionException
+    private void storeBucketProps(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType, BucketProperties props) throws InterruptedException, ExecutionException
     {
         StoreBucketPropsOperation op = new StoreBucketPropsOperation(bucketName, props);
+        if (bucketType != null)
+        {
+            op.withBucketType(bucketType);
+        }
         cluster.execute(op);
         
         op.get();
