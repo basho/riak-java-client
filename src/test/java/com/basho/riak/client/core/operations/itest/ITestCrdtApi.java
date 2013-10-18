@@ -27,8 +27,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.operations.crdt.CounterMutation.increment;
-import static com.basho.riak.client.operations.crdt.CrdtMutation.forMap;
-import static com.basho.riak.client.operations.crdt.CrdtMutation.forSet;
+import static com.basho.riak.client.operations.crdt.DatatypeMutation.forMap;
+import static com.basho.riak.client.operations.crdt.DatatypeMutation.forSet;
 import static com.basho.riak.client.operations.crdt.FlagMutation.enabled;
 import static com.basho.riak.client.operations.crdt.RegisterMutation.registerValue;
 import static junit.framework.Assert.*;

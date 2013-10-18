@@ -15,14 +15,13 @@
  */
 package com.basho.riak.client.operations.crdt;
 
-import com.basho.riak.client.query.crdt.ops.CrdtOp;
 import com.basho.riak.client.query.crdt.ops.MapOp;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class MapMutation extends CrdtMutation
+public class MapMutation extends DatatypeMutation
 {
 
     private final Set<MapOp.MapField> adds = new HashSet<MapOp.MapField>();

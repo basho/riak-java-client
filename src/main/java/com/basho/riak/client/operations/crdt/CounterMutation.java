@@ -16,9 +16,8 @@
 package com.basho.riak.client.operations.crdt;
 
 import com.basho.riak.client.query.crdt.ops.CounterOp;
-import com.basho.riak.client.query.crdt.ops.CrdtOp;
 
-public class CounterMutation extends CrdtMutation
+public class CounterMutation extends DatatypeMutation
 {
 
     private long delta = 0;

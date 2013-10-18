@@ -15,14 +15,13 @@
  */
 package com.basho.riak.client.operations.crdt;
 
-import com.basho.riak.client.query.crdt.ops.CrdtOp;
 import com.basho.riak.client.query.crdt.ops.SetOp;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetMutation extends CrdtMutation
+public class SetMutation extends DatatypeMutation
 {
 
     private final Set<ByteArrayWrapper> adds = new HashSet<ByteArrayWrapper>();

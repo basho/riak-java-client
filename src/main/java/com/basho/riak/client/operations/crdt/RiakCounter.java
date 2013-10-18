@@ -15,51 +15,50 @@
  */
 package com.basho.riak.client.operations.crdt;
 
-import com.basho.riak.client.query.crdt.ops.FlagOp;
+import com.basho.riak.client.query.crdt.types.CrdtCounter;
 
-public class FlagMutation extends DatatypeMutation
+public class RiakCounter extends RiakDatatype<Long>
 {
 
-    private boolean flag = false;
+    private final long initialValue;
+    private final CounterMutation mutation;
 
-    FlagMutation(boolean flag)
+    public RiakCounter()
     {
-        this.flag = flag;
+        this(new CrdtCounter(0), new CounterMutation());
     }
 
-    FlagMutation()
+    RiakCounter(CrdtCounter counter, CounterMutation mutation)
     {
+        this.initialValue = counter.getValue();
+        this.mutation = mutation;
     }
 
-    public static FlagMutation newBuilder()
+    public void increment(long amount)
     {
-        return new FlagMutation();
+        mutation.increment(amount);
     }
 
-    public static FlagMutation enabled()
+    public void increment()
     {
-        return new FlagMutation(true);
+        mutation.increment(1);
     }
 
-    public static FlagMutation disabled()
+    public void decrement()
     {
-        return new FlagMutation(false);
-    }
-
-    public FlagMutation setFlag(boolean flag)
-    {
-        this.flag = flag;
-        return this;
-    }
-
-    public boolean getEnabled()
-    {
-        return flag;
+        mutation.increment(-1);
     }
 
     @Override
-    public FlagOp getOp()
+    public Long view()
     {
-        return new FlagOp(flag);
+        return initialValue + mutation.getDelta();
     }
+
+    @Override
+    CounterMutation getMutation()
+    {
+        return mutation;
+    }
+
 }

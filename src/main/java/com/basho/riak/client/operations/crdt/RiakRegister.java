@@ -15,55 +15,49 @@
  */
 package com.basho.riak.client.operations.crdt;
 
-import com.basho.riak.client.query.crdt.ops.RegisterOp;
+import com.basho.riak.client.query.crdt.types.CrdtRegister;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
-public class RegisterMutation extends DatatypeMutation
+public class RiakRegister extends RiakDatatype<ByteArrayWrapper>
 {
 
-    private ByteArrayWrapper value = null;
+    private final RegisterMutation mutation;
 
-    RegisterMutation(ByteArrayWrapper value)
+    public RiakRegister()
     {
-        this.value = value;
+        this(new CrdtRegister(null), new RegisterMutation());
     }
 
-    RegisterMutation()
+    public RiakRegister(ByteArrayWrapper value)
     {
+        this(new CrdtRegister(value), new RegisterMutation());
     }
 
-    public static RegisterMutation registerValue(ByteArrayWrapper value)
+    RiakRegister(CrdtRegister register, RegisterMutation mutation)
     {
-        return new RegisterMutation(value);
+        this.mutation = mutation.set(register.getValue());
     }
 
-    public static RegisterMutation emptyRegister()
+    public void set(ByteArrayWrapper value)
     {
-        return new RegisterMutation();
+        mutation.set(value);
     }
 
-    public RegisterMutation set(ByteArrayWrapper value)
+    public void unset()
     {
-        this.value = value;
-        return this;
-    }
-
-    public RegisterMutation clear()
-    {
-        this.value = null;
-        return this;
-    }
-
-    public ByteArrayWrapper get()
-    {
-        return value;
+        mutation.clear();
     }
 
     @Override
-    public RegisterOp getOp()
+    public ByteArrayWrapper view()
     {
-        return new RegisterOp(value);
+        return mutation.get();
     }
 
+    @Override
+    RegisterMutation getMutation()
+    {
+        return mutation;
+    }
 
 }

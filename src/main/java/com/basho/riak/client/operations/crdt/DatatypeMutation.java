@@ -17,7 +17,7 @@ package com.basho.riak.client.operations.crdt;
 
 import com.basho.riak.client.query.crdt.ops.CrdtOp;
 
-public abstract class CrdtMutation
+public abstract class DatatypeMutation
 {
 
     public abstract CrdtOp getOp();
