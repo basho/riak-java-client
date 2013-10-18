@@ -66,21 +66,46 @@ public final class ByteArrayWrapper
         return new ByteArrayWrapper(data);
     }
 
-	  /**
-	   * Create a ByteArrayWrapper containing a copy of the supplied string
-	   *
-	   * @param data the data to copy
-	   * @return a new {@code ByteArrayWrapper}
-	   */
-	  public static ByteArrayWrapper create(String data)
-		{
-				byte[] bytes = null;
-				if (data != null)
-				{
-						bytes = data.getBytes();
-				}
-			return new ByteArrayWrapper(bytes);
-		}
+    /**
+     * Create a ByteArrayWrapper containing a copy of the supplied String
+     * encoded using the default character set.
+     *
+     * @param data the data to copy
+     * @return a new {@code ByteArrayWrapper}
+     */
+    public static ByteArrayWrapper create(String data)
+    {
+        return create(data, Charset.defaultCharset());
+    }
+    
+    /**
+     * Create a ByteArrayWrapper containing a copy of the supplied String
+     * encoded using UTF-8.
+     *
+     * @param data the data to copy
+     * @return a new {@code ByteArrayWrapper}
+     */
+    public static ByteArrayWrapper createFromUtf8(String data)
+    {
+        return create(data, Charset.forName("UTF-8"));
+    }
+    
+    /**
+     * Create a ByteArrayWrapper containing a copy of the supplied string
+     * encoded using the supplied Charset.
+     *
+     * @param data the data to copy
+     * @return a new {@code ByteArrayWrapper}
+     */
+    public static ByteArrayWrapper create(String data, Charset charset)
+    {
+        byte[] bytes = null;
+        if (data != null)
+        {
+                bytes = data.getBytes(charset);
+        }
+        return new ByteArrayWrapper(bytes);
+    }
     
     /**
      * Create a ByteArrayWrapper containing the supplied {@code byte[]}
@@ -158,15 +183,28 @@ public final class ByteArrayWrapper
     }
     
     /**
-     * Return the wrapped {@code byte[]} as a String
+     * Return the wrapped {@code byte[]} as a String.
      * <p>
-     * The default {@code Charset} is used to convert the bytes.
+     * The default character set is used for encoding.
+     * </p>
      * @return a {@code String} created using the default {@code Charset}
      */
     @Override
     public String toString()
     {
         return toString(Charset.defaultCharset());
+    }
+    
+    /**
+     * Return the wrapped {@code byte[]} as a String.
+     * <p>
+     * UTF-8 is used for encoding.
+     * </p>
+     * @return a {@code String} created using the UTF-8 {@code Charset}
+     */
+    public String toStringUtf8()
+    {
+        return toString(Charset.forName("UTF-8"));
     }
     
     /**

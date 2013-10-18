@@ -16,12 +16,13 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.DeleteMeta;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -38,40 +39,40 @@ public class ITestDeleteOperation extends ITestBase
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = RiakObject.unsafeCreate(bucketName.getValue());
-        rObj.setKey(key.unsafeGetValue()).setValue(value);
+        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.unsafeCreate(value.getBytes()));
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bucketName)
                 .withKey(key)
                 .withContent(rObj)
-                .withConverter(new PassThroughConverter()); 
+                .build(); 
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        FetchOperation<RiakObject> fetchOp = 
-            new FetchOperation<RiakObject>(bucketName, key)
-                .withConverter(new PassThroughConverter());
+        FetchOperation fetchOp = 
+            new FetchOperation.Builder(bucketName, key).build();
+                
         
         cluster.execute(fetchOp);
-        RiakObject rObj2 = fetchOp.get();
+        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        RiakObject rObj2 = response.getContent().get(0);
         
-        assertEquals(rObj.getValueAsString(), rObj2.getValueAsString());
+        assertEquals(rObj.getValue(), rObj2.getValue());
         
         DeleteOperation delOp = 
             new DeleteOperation(bucketName, key)
-            .withDeleteMeta(new DeleteMeta.Builder().vclock(rObj2.getVClock()).build());
+            .withDeleteMeta(new DeleteMeta.Builder().vclock(response.getVClock()).build());
         cluster.execute(delOp);
         delOp.get();
         
         fetchOp = 
-            new FetchOperation<RiakObject>(bucketName, key).withConverter(new PassThroughConverter());
+            new FetchOperation.Builder(bucketName, key).build();
         
         cluster.execute(fetchOp);
-        rObj2 = fetchOp.get();
-        assertTrue(rObj2.isNotFound());
-        assertNull(rObj2.getValueAsBytes());
+        response = fetchOp.get();
+        assertTrue(response.notFound());
+        assertNull(response.getContent());
         
         
     }

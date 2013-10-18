@@ -15,14 +15,13 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.DefaultResolver;
-import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -41,14 +40,13 @@ public class ITestFetchOperation extends ITestBase
     {
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_1".getBytes());
         final String value = "{\"value\":\"value\"}";
-        FetchOperation<RiakObject> fetchOp = 
-            new FetchOperation<RiakObject>(bucketName, key)
-                .withConverter(new PassThroughConverter())
-                .withResolver(new DefaultResolver<RiakObject>());
-        
+        FetchOperation fetchOp = 
+            new FetchOperation.Builder(bucketName, key).build();
+                
         cluster.execute(fetchOp);
-        RiakObject ro = fetchOp.get();
-        assertTrue(ro.isNotFound());
+        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        assertTrue(response.notFound());
+        assertFalse(response.hasContent());
         
     }
     
@@ -58,27 +56,28 @@ public class ITestFetchOperation extends ITestBase
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_2".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = RiakObject.unsafeCreate(bucketName.getValue());
-        rObj.setKey(key.unsafeGetValue()).setValue(value);
+        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bucketName)
                 .withKey(key)
                 .withContent(rObj)
-                .withConverter(new PassThroughConverter()); 
+                .build(); 
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        FetchOperation<RiakObject> fetchOp = 
-            new FetchOperation<RiakObject>(bucketName, key)
-                .withConverter(new PassThroughConverter())
-                .withResolver(new DefaultResolver<RiakObject>());
+        FetchOperation fetchOp = 
+            new FetchOperation.Builder(bucketName, key).build();
         
         cluster.execute(fetchOp);
-        RiakObject ro = fetchOp.get();
-        assertFalse(ro.isNotFound());
-        assertEquals(ro.getValueAsString(), value);
+        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        assertFalse(response.notFound());
+        assertTrue(response.hasContent());
+        List<RiakObject> objectList = response.getContent();
+        assertEquals(1, objectList.size());
+        RiakObject ro = objectList.get(0);
+        assertEquals(ro.getValue().toString(), value);
         
     }
     
@@ -88,47 +87,43 @@ public class ITestFetchOperation extends ITestBase
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_3".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = RiakObject.unsafeCreate(bucketName.getValue());
-        rObj.setKey(key.unsafeGetValue()).setValue(value);
+        BucketProperties props = 
+            new BucketProperties()
+                .withAllowMulti(true);
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+        StoreBucketPropsOperation op = new StoreBucketPropsOperation(bucketName, props);
+        cluster.execute(op);
+        op.get();
+        
+        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+        
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bucketName)
                 .withKey(key)
                 .withContent(rObj)
-                .withConverter(new PassThroughConverter()); 
+                .build();
         
         cluster.execute(storeOp);
         storeOp.get();
         
         storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+            new StoreOperation.Builder(bucketName)
                 .withKey(key)
                 .withContent(rObj)
-                .withConverter(new PassThroughConverter()); 
+                .build(); 
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        ConflictResolver<RiakObject> resolver = new ConflictResolver() {
-
-            @Override
-            public Object resolve(List objectList) throws UnresolvedConflictException
-            {
-                assertTrue(objectList.size() > 1);
-                return objectList.get(0);
-            }
-            
-        };
-        
-        FetchOperation<RiakObject> fetchOp = 
-            new FetchOperation<RiakObject>(bucketName, key)
-                .withConverter(new PassThroughConverter())
-                .withResolver(resolver);
-        
+        FetchOperation fetchOp = 
+            new FetchOperation.Builder(bucketName, key).build();
+                
         cluster.execute(fetchOp);
-        RiakObject ro = fetchOp.get();
-        assertFalse(ro.isNotFound());
-        assertEquals(ro.getValueAsString(), value);
+        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        assertTrue(response.getContent().size() > 1);
+        
+        RiakObject ro = response.getContent().get(0);
+        assertEquals(ro.getValue().toString(), value);
         
     }
     
