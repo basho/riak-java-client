@@ -15,11 +15,10 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.cap.DefaultResolver;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -78,19 +77,18 @@ public class RiakClusterFixtureTest
         RiakCluster cluster = new RiakCluster.Builder(list).build();
         cluster.start();
         
-        FetchOperation<RiakObject> operation = 
-            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
+        FetchOperation operation = 
+            new FetchOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
                                             ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
-                    .withConverter(new PassThroughConverter())
-                    .withResolver(new DefaultResolver<RiakObject>());
+                    .build();
 
         cluster.execute(operation);
         
         try
         {
-            RiakObject response = operation.get();
-            assertEquals(response.getValueAsString(), "This is a value!");
-            assertTrue(!response.isNotFound());
+            RiakResponse<List<RiakObject>> response = operation.get();
+            assertEquals(response.getContent().get(0).getValue().toString(), "This is a value!");
+            assertTrue(!response.notFound());
         }
         catch(InterruptedException e)
         {
@@ -118,17 +116,16 @@ public class RiakClusterFixtureTest
         
         cluster.start();
         
-        FetchOperation<RiakObject> operation = 
-            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
+        FetchOperation operation = 
+            new FetchOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
                                             ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
-                    .withConverter(new PassThroughConverter())
-                    .withResolver(new DefaultResolver<RiakObject>());
+                    .build();
 
         cluster.execute(operation);
         
         try
         {
-            RiakObject response = operation.get();
+            RiakResponse<List<RiakObject>> response = operation.get();
         }
         finally
         {

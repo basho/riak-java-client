@@ -15,16 +15,15 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.StoreMeta;
-import com.basho.riak.client.cap.DefaultResolver;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -43,28 +42,24 @@ public class ITestStoreOperation extends ITestBase
     public void testSimpleStore() throws InterruptedException, ExecutionException
     {
         
-        RiakObject obj = RiakObject.create(bucketName.unsafeGetValue())
-                            .setKey(key.unsafeGetValue())
-                            .setValue(value);
+        RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bucketName)
                 .withKey(key)
                 .withContent(obj)
-                .withConverter(new PassThroughConverter());
+                .build();
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        FetchOperation<RiakObject> fetchOp = 
-                new FetchOperation<RiakObject>(bucketName, key)
-                    .withConverter(new PassThroughConverter())
-                    .withResolver(new DefaultResolver<RiakObject>());
+        FetchOperation fetchOp = 
+                new FetchOperation.Builder(bucketName, key).build();
                 
         cluster.execute(fetchOp);
-        RiakObject obj2 = fetchOp.get();
+        RiakObject obj2 = fetchOp.get().getContent().get(0);
         
-        assertEquals(obj.getValueAsString(), obj.getValueAsString());
+        assertEquals(obj.getValue(), obj2.getValue());
                
     }
     
@@ -84,34 +79,34 @@ public class ITestStoreOperation extends ITestBase
         cluster.execute(op);
         op.get();
         
-        RiakObject obj = RiakObject.create(bName.unsafeGetValue())
-                            .setKey(key.unsafeGetValue())
-                            .setValue(value);
+        RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bName)
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bName)
                 .withKey(key)
                 .withContent(obj)
-                .withConverter(new PassThroughConverter())
-                .withStoreMeta(new StoreMeta.Builder().returnBody(true).build());
+                .withReturnBody(true)
+                .build();
         
         cluster.execute(storeOp);
-        obj = storeOp.get();
+        RiakResponse<List<RiakObject>> response = storeOp.get();
+        obj = response.getContent().get(0);
         
-        assertNotNull(obj.getVClock());
-        System.out.println("Vclock: " + obj.getVClock());
+        assertTrue(response.hasVClock());
         
-        obj.setValue("changed");
-        storeOp = new StoreOperation<RiakObject>(bName)
+        obj.setValue(ByteArrayWrapper.create("changed"));
+        storeOp = new StoreOperation.Builder(bName)
                 .withKey(key)
                 .withContent(obj)
-                .withConverter(new PassThroughConverter())
-                .withStoreMeta(new StoreMeta.Builder().returnBody(true).build());
+                .withVClock(response.getVClock())
+                .withReturnBody(true)
+                .build();
         
         cluster.execute(storeOp);
-        obj = storeOp.get();
+        response = storeOp.get();
+        obj = response.getContent().get(0);
         
-        assertEquals(obj.getValueAsString(), "changed");
+        assertEquals(obj.getValue().toString(), "changed");
         
         resetAndEmptyBucket(bName);
     }

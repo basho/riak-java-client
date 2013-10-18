@@ -15,21 +15,15 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.StoreMeta;
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.DefaultResolver;
-import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.Converters;
+import com.basho.riak.client.cap.BasicVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.converters.PutRespConverter;
+import com.basho.riak.client.core.converters.RiakObjectConverter;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.indexes.RiakIndex;
-import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
-import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -37,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import com.basho.riak.client.query.RiakResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,131 +40,53 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> the user type of the operation to store
  */
-public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
+public class StoreOperation extends FutureOperation<RiakResponse<List<RiakObject>>, RiakKvPB.RpbPutResp>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
     
-    private final ByteArrayWrapper bucket;
-    private ByteArrayWrapper bucketType;
-    private T content;
-    private ByteArrayWrapper key;
-    private ConflictResolver<T> conflictResolver = new DefaultResolver<T>();
-    private Converter<T> domainObjectConverter;
-    private StoreMeta storeMeta = StoreMeta.newBuilder().build();
+    private final RiakKvPB.RpbPutReq.Builder reqBuilder;
+    private final ByteArrayWrapper bucketName;
+    private final ByteArrayWrapper bucketType;
+    private volatile ByteArrayWrapper key;
 
-    /**
-     * Store an object to the given bucket.
-     *
-     * @param bucket the bucket
-     */
-    public StoreOperation(ByteArrayWrapper bucket)
+    private StoreOperation(Builder builder)
     {
-
-        if ((null == bucket) || bucket.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket can not be null or empty");
-        }
-
-        this.bucket = bucket;
-    }
-
-    /**
-     * Set the bucket type.
-     * If unset "default" is used. 
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public StoreOperation withBucketType(ByteArrayWrapper bucketType)
-    {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-        this.bucketType = bucketType;
-        return this;
-    }
-    
-    /**
-     * (optional) key under which to store the content, if no key is given one will
-     * be chosen by Riak and returned
-     *
-     * @param key
-     * @return
-     */
-    public StoreOperation<T> withKey(ByteArrayWrapper key)
-    {
-        if ((null == key) || key.length() == 0)
-        {
-            throw new IllegalArgumentException("key can not be null or empty");
-        }
-
-        this.key = key;
-
-        return this;
-    }
-
-    /**
-     * The content to store to Riak. May be null.
-     *
-     * @param content
-     * @return
-     */
-    public StoreOperation<T> withContent(T content)
-    {
-        this.content = content;
-        return this;
-    }
-
-    /**
-     * A {@link Converter} to use to convert the data fetched to some other type
-     *
-     * @param domainObjectConverter the converter to use.
-     * @return this
-     */
-    public StoreOperation<T> withConverter(Converter<T> domainObjectConverter)
-    {
-        this.domainObjectConverter = domainObjectConverter;
-        return this;
-    }
-
-    /**
-     * The {@link StoreMeta} to use for this fetch operation
-     *
-     * @param fetchMeta
-     * @return this
-     */
-    public StoreOperation<T> withStoreMeta(StoreMeta fetchMeta)
-    {
-        this.storeMeta = fetchMeta;
-        return this;
-    }
-
-    /**
-     * The {@link ConflictResolver} to use resole conflicts on fetch, if they exist
-     *
-     * @param resolver
-     * @return
-     */
-    public StoreOperation<T> withResolver(ConflictResolver<T> resolver)
-    {
-        this.conflictResolver = resolver;
-        return this;
+        this.reqBuilder = builder.reqBuilder;
+        this.bucketName = builder.bucketName;
+        this.key = builder.key;
+        this.bucketType = builder.bucketName;
     }
 
     @Override
-    protected T convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
+    protected RiakResponse<List<RiakObject>> convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
     {
-
+        // There should only be one response message from Riak.
         if (responses.size() != 1)
         {
             throw new IllegalStateException("RpbPutReq expects one response, " + responses.size() + " were received");
         }
 
-        PutRespConverter responseConverter = new PutRespConverter(bucket, key);
-        List<RiakObject> riakObjects = responseConverter.convert(responses.get(0));
-        List<T> domainObjects = Converters.convert(domainObjectConverter, riakObjects);
-        return conflictResolver.resolve(domainObjects);
-
+        RiakKvPB.RpbPutResp response = responses.get(0);
+        
+        // This only exists if no key was specified in the put request
+        if (response.hasKey())
+        {
+            key = ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray());
+        }
+        
+        List<RiakObject> riakObjects = RiakObjectConverter.convert(response.getContentList());
+        
+        VClock vclock = null;
+        if (response.hasVclock())
+        {
+            vclock = new BasicVClock(response.getVclock().toByteArray());
+        }
+        
+        return new RiakResponse.Builder<List<RiakObject>>(bucketName, key)
+                            .withBucketType(bucketType)
+                            .withContent(riakObjects)
+                            .withVClock(vclock)
+                            .build();
     }
 
     @Override
@@ -182,148 +99,264 @@ public class StoreOperation<T> extends FutureOperation<T, RiakKvPB.RpbPutResp>
         }
         catch (InvalidProtocolBufferException e)
         {
+            logger.error("Invalid message received; {}", e);
             throw new IllegalArgumentException(e);
         }
-    }
-
-    private String notNull(String s)
-    {
-        if (null == s)
-        {
-            return "";
-        }
-        return s;
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-
-        // TODO: This needs to be looked at. Riak treats null differently than
-        // "doesn't exist" and content type and content encoding are not the same thing
-        // IIRC. We don't want to set deleted or last mod either. I'm holding off
-        // doing now because I want to change how we're using RiakObject
-            
-        
-        RiakKvPB.RpbPutReq.Builder builder = RiakKvPB.RpbPutReq.newBuilder();
-        ByteString pbBucket = ByteString.copyFrom(bucket.unsafeGetValue());
-        builder.setBucket(pbBucket);
-
-        if (bucketType != null)
-        {
-            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-        }
-        
-        if (key != null)
-        {
-            builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-        }
-
-        if (content != null)
-        {
-
-            RiakObject o = domainObjectConverter.fromDomain(content);
-            RiakKvPB.RpbContent.Builder contentBuilder = RiakKvPB.RpbContent.newBuilder();
-            contentBuilder.setValue(ByteString.copyFrom(o.getValueAsBytes()));
-            contentBuilder.setContentType(ByteString.copyFromUtf8(notNull(o.getContentType())));
-            contentBuilder.setCharset(ByteString.copyFromUtf8(notNull(o.getCharset())));
-            
-            if (o.hasVClock())
-            {
-                builder.setVclock(ByteString.copyFrom(o.getVClock().getBytes()));
-            }
-            contentBuilder.setContentEncoding(ByteString.copyFromUtf8(notNull(o.getContentType())));            
-
-            // Links are only supported in the default bucket type
-            if (o.hasLinks() && (bucketType != null && !bucketType.toString().equals("default")))
-            {
-                logger.error("Discarding links due to bucket type not being default. Object key: {}", key);
-            }
-            else
-            {
-                for (RiakLink link : o.getLinks())
-                {
-                    contentBuilder.addLinks(
-                        RiakKvPB.RpbLink.newBuilder()
-                            .setBucket(pbBucket)
-                            .setTag(ByteString.copyFrom(link.getTagAsBytes().unsafeGetValue()))
-                            .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));
-                }
-            }
-            
-            for (RiakIndex<?> index : o.getIndexes())
-            {
-                for (ByteArrayWrapper value : index.rawValues())
-                {
-                    RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();
-                    pair.setKey(ByteString.copyFrom(index.getFullname().getBytes()));
-                    pair.setValue(ByteString.copyFrom(value.unsafeGetValue()));
-                    contentBuilder.addIndexes(pair);
-                }
-            }
-
-            builder.setContent(contentBuilder);
-        }
-
-        if (storeMeta.hasAsis())
-        {
-            builder.setAsis(storeMeta.getAsis());
-        }
-
-        if (storeMeta.hasDw())
-        {
-            builder.setDw(storeMeta.getDw().getIntValue());
-        }
-
-        if (storeMeta.hasIfNoneMatch())
-        {
-            builder.setIfNoneMatch(storeMeta.getIfNoneMatch());
-        }
-
-        if (storeMeta.hasPw())
-        {
-            builder.setPw(storeMeta.getPw().getIntValue());
-        }
-
-        if (storeMeta.hasIfNotModified())
-        {
-            builder.setIfNotModified(storeMeta.getIfNotModified());
-        }
-
-        if (storeMeta.hasReturnBody())
-        {
-            builder.setReturnBody(storeMeta.getReturnBody());
-        }
-
-        if (storeMeta.hasTimeout())
-        {
-            builder.setTimeout(storeMeta.getTimeout());
-        }
-
-        if (storeMeta.hasReturnHead())
-        {
-            builder.setReturnHead(storeMeta.getReturnHead());
-        }
-
-        if (storeMeta.hasW())
-        {
-            builder.setW(storeMeta.getW().getIntValue());
-        }
-
-        if (storeMeta.hasNval())
-        {
-            builder.setNVal(storeMeta.getNval());
-        }
-
-        if (storeMeta.hasSloppyQuorum())
-        {
-            builder.setSloppyQuorum(storeMeta.getSloppyQuorum());
-        }
-
-        RiakKvPB.RpbPutReq req = builder.build();
+        RiakKvPB.RpbPutReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_PutReq, req.toByteArray());
-
     }
 
+    public static class Builder
+    {
+        private final RiakKvPB.RpbPutReq.Builder reqBuilder = RiakKvPB.RpbPutReq.newBuilder();
+        private ByteArrayWrapper key;
+        private final ByteArrayWrapper bucketName;
+        private ByteArrayWrapper bucketType;
+        
+        /**
+         * Constructs a builder for a StoreOperation
+         */
+        public Builder(ByteArrayWrapper bucketName)
+        {
+            if (null == bucketName || bucketName.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+            }
+            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
+            this.bucketName = bucketName;
+        }
+        
+        /**
+         * Set the key for this StoreOperation.
+         * <p>
+         * If not set or null, a key is generated by Riak and returned in the 
+         * response.
+         * </p>
+         * @param key the key.
+         * @return a reference to this object.
+         */
+        public Builder withKey(ByteArrayWrapper key)
+        {
+            if (key != null)
+            {
+                if (key.length() == 0)
+                {
+                    throw new IllegalArgumentException("Key cannot be zero length");
+                }
+                else
+                {
+                    reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+                }
+            }
+            this.key = key;
+            return this;
+        }
+        
+        /**
+         * Set the bucket type for the StoreOperation.
+         * If not set, "default" is used.
+         * @param bucketType the bucket type
+         * @return a reference to this object.
+         */
+        public Builder withBucketType(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            this.bucketType = bucketType;
+            return this;
+        }
+        
+        public Builder withContent(RiakObject content)
+        {
+            if (null == content)
+            {
+                throw new IllegalArgumentException("Object cannot be null.");
+            }
+            
+            reqBuilder.setContent(RiakObjectConverter.convert(content));
+            return this;
+        }
+        
+        /**
+         * Set the vclock for this operation.
+         * @param vclock a vclock from a previous fetch operation.
+         * @return a reference to this object.
+         */
+        public Builder withVClock(VClock vclock)
+        {
+            if (null == vclock)
+            {
+                throw new IllegalArgumentException("VClock cannot be null.");
+            }
+            reqBuilder.setVclock(ByteString.copyFrom(vclock.getBytes()));
+            return this;
+        }
+        
+        /**
+         * Set the W value for this StoreOperation.
+         * If not set the bucket default is used.
+         * @param w the W value.
+         * @return a reference to this object.
+         */
+        public Builder withW(int w)
+		{
+			reqBuilder.setW(w);
+			return this;
+		}
+
+        /**
+         * Set the DW value for this StoreOperation.
+         * If not set the bucket default is used.
+         * @param dw the DW value.
+         * @return a reference to this object.
+         */
+		public Builder withDw(int dw)
+		{
+			reqBuilder.setDw(dw);
+			return this;
+		}
+
+        /**
+         * Set the PW value for this StoreOperation.
+         * If not set the bucket default is used.
+         * @param pw the PW value.
+         * @return a reference to this object.
+         */
+		public Builder withPw(int pw)
+		{
+			reqBuilder.setPw(pw);
+			return this;
+		}
+
+        /**
+         * Return the object after storing (including any siblings).
+         * @param returnBody true to return the object. 
+         * @return a reference to this object.
+         */
+		public Builder withReturnBody(boolean returnBody)
+		{
+			reqBuilder.setReturnBody(returnBody);
+			return this;
+		}
+
+        /**
+         * Return the metadata after storing the value.
+         * <p>
+         * Causes Riak to only return the metadata for the object. The value
+         * will be set to null.
+         * @param returnHead true to return only metadata. 
+         * @return a reference to this object.
+         */
+		public Builder withReturnHead(boolean returnHead)
+		{
+			reqBuilder.setReturnHead(returnHead);
+			return this;
+		}
+
+        /**
+         * Set the if_not_modified flag for this StoreOperation.
+         * <p>
+         * Setting this to true means to update the value only if the 
+         * vclock in the supplied object matches the one in the database.
+         * </p>
+         * <p>
+         * Be aware there are several cases where this may not actually happen.
+         * Use of this feature is discouraged.
+         * </p>
+         * @param ifNotModified
+         * @return 
+         */
+		public Builder withIfNotModified(boolean ifNotModified)
+		{
+			reqBuilder.setIfNotModified(ifNotModified);
+			return this;
+		}
+
+        /**
+         * Set the if_none_match flag value for this StoreOperation.
+         * <p>
+         * Setting this to true means store the value only if this 
+         * bucket/key combination are not already defined. 
+         * </p>
+         * Be aware that there are several cases where 
+         * this may not actually happen. Use of this option is discouraged.
+         * </p>
+         * 
+         * @param ifNoneMatch the if_non-match value.
+         * @return a reference to this object.
+         */
+		public Builder withIfNoneMatch(boolean ifNoneMatch)
+		{
+			reqBuilder.setIfNoneMatch(ifNoneMatch);
+			return this;
+		}
+
+        /**
+         * Set the asis value for this operation.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         * @param asis the asis value
+         * @return a reference to this object.
+         */
+		public Builder withAsis(boolean asis)
+		{
+			reqBuilder.setAsis(asis);
+			return this;
+		}
+
+        /**
+         * Set a timeout for this operation.
+         * @param timeout a timeout in milliseconds.
+         * @return a reference to this object.
+         */
+		public Builder withTimeout(int timeout)
+		{
+			reqBuilder.setTimeout(timeout);
+			return this;
+		}
+
+        /**
+         * Set the n_val value for this operation.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         * @param nval the n_val value
+         * @return a reference to this object.
+         */
+		public Builder withNVal(int nval)
+		{
+            reqBuilder.setNVal(nval);
+            return this;
+		}
+
+        /**
+         * Set whether to use sloppy_quorum.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         * @param sloppyQuorum true to use sloppy_quorum
+         * @return a reference to this object.
+         */
+		public Builder withSloppyQuorum(boolean sloppyQuorum)
+		{
+			reqBuilder.setSloppyQuorum(sloppyQuorum);
+			return this;
+		}
+        
+        public StoreOperation build()
+        {
+            return new StoreOperation(this);
+        }
+        
+    }
 
 }
