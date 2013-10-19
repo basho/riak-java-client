@@ -70,7 +70,7 @@ public class ITestSearchOperation extends ITestBase
     @Test
     public void testYokozunaSearch() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(testYokozuna);
+        Assume.assumeTrue(testYokozuna);
         // First we have to create an index and attach it to a bucket
         YokozunaIndex index = new YokozunaIndex("test_index");
         YzPutIndexOperation putOp = new YzPutIndexOperation(index);
