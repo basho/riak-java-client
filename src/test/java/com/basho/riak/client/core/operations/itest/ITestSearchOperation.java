@@ -19,9 +19,14 @@ import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.core.operations.YzPutIndexOperation;
+import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
+import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.search.SearchResult;
+import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -47,6 +52,62 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(op);
         op.get();
         
+        prepSearch();
+        
+        SearchOperation searchOp = new SearchOperation(bucketName, "Alice*");
+        
+        cluster.execute(searchOp);
+        SearchResult result = searchOp.get();
+        
+        assertEquals(result.numResults(), 2);
+        for (Map<String, String> map : result.getAllResults())
+        {
+            assertFalse(map.isEmpty());
+            assertEquals(map.size(), 2); // id and value fields
+        }
+    }
+    
+    @Test
+    public void testYokozunaSearch() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testYokozuna);
+        // First we have to create an index and attach it to a bucket
+        YokozunaIndex index = new YokozunaIndex("test_index");
+        YzPutIndexOperation putOp = new YzPutIndexOperation(index);
+        
+        cluster.execute(putOp);
+        putOp.get();
+        
+        BucketProperties props = 
+            new BucketProperties()
+                .withYokozunaIndex("test_index");
+                
+        StoreBucketPropsOperation propsOp = new StoreBucketPropsOperation(bucketName, props);
+        cluster.execute(propsOp);
+        propsOp.get();
+        
+        prepSearch();
+        
+        // Without pausing, the index does not propogate in time for the searchop
+        // to complete.
+        Thread.sleep(3000);
+        
+        SearchOperation searchOp = new SearchOperation(ByteArrayWrapper.create("test_index"), "Alice*");
+        
+        cluster.execute(searchOp);
+        SearchResult result = searchOp.get();        
+        assertEquals(result.numResults(), 2);
+        for (Map<String, String> map : result.getAllResults())
+        {
+            assertFalse(map.isEmpty());
+            assertEquals(map.size(), 4); // _yz_rk, _yz_rb, score, pX_X
+        }
+        
+        
+    }
+    
+    private void prepSearch() throws InterruptedException, ExecutionException
+    {
         RiakObject obj = RiakObject.create(bucketName.unsafeGetValue());
                             
         obj.setValue("Alice was beginning to get very tired of sitting by her sister on the " +
@@ -54,6 +115,8 @@ public class ITestSearchOperation extends ITestBase
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'");
+        
+        obj.setContentType("text/plain");
         
         StoreOperation<RiakObject> storeOp = 
             new StoreOperation<RiakObject>(bucketName)
@@ -70,6 +133,8 @@ public class ITestSearchOperation extends ITestBase
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
                     "close by her.");
         
+        obj.setContentType("text/plain");
+        
         storeOp = 
             new StoreOperation<RiakObject>(bucketName)
                 .withKey(ByteArrayWrapper.unsafeCreate("p2".getBytes()))
@@ -84,6 +149,8 @@ public class ITestSearchOperation extends ITestBase
                     "about stopping herself before she found herself falling down a very deep " +
                     "well.");
         
+        obj.setContentType("text/plain");
+        
         storeOp = 
             new StoreOperation<RiakObject>(bucketName)
                 .withKey(ByteArrayWrapper.unsafeCreate("p3".getBytes()))
@@ -92,17 +159,5 @@ public class ITestSearchOperation extends ITestBase
         
         cluster.execute(storeOp);
         storeOp.get();
-        
-        SearchOperation searchOp = new SearchOperation(bucketName, "Alice*");
-        
-        cluster.execute(searchOp);
-        SearchResult result = searchOp.get();
-        
-        assertEquals(result.numResults(), 2);
-        for (Map<String, String> map : result.getAllResults())
-        {
-            assertFalse(map.isEmpty());
-            assertEquals(map.size(), 2); // id and value fields
-        }
     }
 }
