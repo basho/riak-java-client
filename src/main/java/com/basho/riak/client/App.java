@@ -1,8 +1,5 @@
 package com.basho.riak.client;
 
-import com.basho.riak.client.cap.DefaultResolver;
-import com.basho.riak.client.convert.PassThroughConverter;
-import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
@@ -12,11 +9,9 @@ import com.basho.riak.client.core.operations.FetchBucketTypePropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
-import com.basho.riak.protobuf.RiakKvPB;
-import com.basho.riak.protobuf.RiakPB;
-import com.google.protobuf.ByteString;
-import java.net.UnknownHostException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,17 +55,20 @@ public class App implements RiakFutureListener<RiakObject>
         
         
         
-        FutureOperation<RiakObject, RiakKvPB.RpbGetResp> fetchOp =
-            new FetchOperation<RiakObject>(ByteArrayWrapper.unsafeCreate("test_bucket2".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
-                    .withConverter(new PassThroughConverter())
-                    .withResolver(new DefaultResolver<RiakObject>());
+        FetchOperation fetchOp =
+            new FetchOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket2".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
+                .build();
+                    
         
         //fetchOp.addListener(this);
         cluster.execute(fetchOp);
-        RiakObject ro =  fetchOp.get();
-        System.out.println("value: " + ro.getValue());
+        RiakResponse<List<RiakObject>> roList = fetchOp.get();
+        System.out.println(roList.notFound());
+        for (RiakObject ro : roList.getContent())
+        {
+            System.out.println("value: " + ro.getValue());
             System.out.println(ro.isDeleted());
-            System.out.println(ro.isNotFound());
+        }
         cluster.stop();
     }
     
@@ -88,8 +86,7 @@ public class App implements RiakFutureListener<RiakObject>
             RiakObject ro = f.get();
             System.out.println("value: " + ro.getValue());
             System.out.println(ro.isDeleted());
-            System.out.println(ro.isNotFound());
-        
+            
             cluster.stop();
         }
         catch (InterruptedException ex)

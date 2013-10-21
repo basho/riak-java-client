@@ -15,12 +15,12 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -57,14 +57,13 @@ public class ITestListKeysOperation extends ITestBase
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = RiakObject.unsafeCreate(bName.getValue());
-        rObj.setKey(key.unsafeGetValue()).setValue(value);
+        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bName)
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bName)
                 .withKey(key)
                 .withContent(rObj)
-                .withConverter(new PassThroughConverter()); 
+                .build();
         
         cluster.execute(storeOp);
         storeOp.get();
@@ -88,13 +87,14 @@ public class ITestListKeysOperation extends ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<RiakObject> listener = new RiakFutureListener<RiakObject>() {
+        RiakFutureListener<RiakResponse<List<RiakObject>>> listener = 
+            new RiakFutureListener<RiakResponse<List<RiakObject>>>() {
             
             private int expected = 1000;
             private AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<RiakObject> f)
+            public void handle(RiakFuture<RiakResponse<List<RiakObject>>> f)
             {
                 try 
                 {
@@ -127,13 +127,12 @@ public class ITestListKeysOperation extends ITestBase
         {
             semaphore.acquire();
             ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate((baseKey + i).getBytes());
-            RiakObject rObj = RiakObject.unsafeCreate(bName.getValue());
-            rObj.setKey(key.unsafeGetValue()).setValue(value);
-            StoreOperation<RiakObject> storeOp = 
-                new StoreOperation<RiakObject>(bName)
+            RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+            StoreOperation storeOp = 
+                new StoreOperation.Builder(bName)
                 .withKey(key)
                 .withContent(rObj)
-                .withConverter(new PassThroughConverter()); 
+                .build();
         
             storeOp.addListener(listener);
             cluster.execute(storeOp);

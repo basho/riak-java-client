@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
@@ -38,48 +37,48 @@ public class ITestMapReduceOperation extends ITestBase
     @Test
     public void testBasicMR() throws InterruptedException, ExecutionException, IOException
     {
-        RiakObject obj = RiakObject.create(bucketName.unsafeGetValue());
+        RiakObject obj = new RiakObject();
                             
-        obj.setValue("Alice was beginning to get very tired of sitting by her sister on the " +
+        obj.setValue(ByteArrayWrapper.create("Alice was beginning to get very tired of sitting by her sister on the " +
                     "bank, and of having nothing to do: once or twice she had peeped into the " +
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
-                    "conversation?'");
+                    "conversation?'"));
         
-        StoreOperation<RiakObject> storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+        StoreOperation storeOp = 
+            new StoreOperation.Builder(bucketName)
                 .withKey(ByteArrayWrapper.unsafeCreate("p1".getBytes()))
                 .withContent(obj)
-                .withConverter(new PassThroughConverter());
+                .build();
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        obj.setValue("So she was considering in her own mind (as well as she could, for the " +
+        obj.setValue(ByteArrayWrapper.create("So she was considering in her own mind (as well as she could, for the " +
                     "hot day made her feel very sleepy and stupid), whether the pleasure " +
                     "of making a daisy-chain would be worth the trouble of getting up and " +
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
-                    "close by her.");
+                    "close by her."));
         
         storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+            new StoreOperation.Builder(bucketName)
                 .withKey(ByteArrayWrapper.unsafeCreate("p2".getBytes()))
                 .withContent(obj)
-                .withConverter(new PassThroughConverter());
+                .build();
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        obj.setValue("The rabbit-hole went straight on like a tunnel for some way, and then " +
+        obj.setValue(ByteArrayWrapper.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
-                    "well.");
+                    "well."));
         
         storeOp = 
-            new StoreOperation<RiakObject>(bucketName)
+            new StoreOperation.Builder(bucketName)
                 .withKey(ByteArrayWrapper.unsafeCreate("p3".getBytes()))
                 .withContent(obj)
-                .withConverter(new PassThroughConverter());
+                .build();
         
         cluster.execute(storeOp);
         storeOp.get();
@@ -105,6 +104,7 @@ public class ITestMapReduceOperation extends ITestBase
         
         String json = resultList.get(0).toString();
         ObjectMapper oMapper = new ObjectMapper(); 
+        @SuppressWarnings("unchecked")
         List<Map<String, Integer>> jsonList = oMapper.readValue(json, List.class);
         Map<String, Integer> resultMap = jsonList.get(0);
         

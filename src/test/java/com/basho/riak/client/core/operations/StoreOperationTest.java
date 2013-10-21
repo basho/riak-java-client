@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
@@ -45,7 +44,7 @@ public class StoreOperationTest
         ByteArrayWrapper bucket = ByteArrayWrapper.create("bucket".getBytes());
         ByteArrayWrapper key = ByteArrayWrapper.create("key".getBytes());
 
-        RiakObject ro = RiakObject.create(bucket.unsafeGetValue());
+        RiakObject ro = new RiakObject();
 
         List<RiakLink> links = new ArrayList<RiakLink>();
         links.add(new RiakLink("bucket", "key", "tag"));
@@ -55,13 +54,13 @@ public class StoreOperationTest
         LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name("dave"));
         longIndex.add(42L);
 
-        ro.setValue(expectedValue);
+        ro.setValue(ByteArrayWrapper.unsafeCreate(expectedValue));
 
-        StoreOperation<RiakObject> operation =
-            new StoreOperation<RiakObject>(bucket)
+        StoreOperation operation =
+            new StoreOperation.Builder(bucket)
                 .withKey(key)
                 .withContent(ro)
-                .withConverter(new PassThroughConverter());
+                .build();
 
         RiakMessage rm = operation.createChannelMessage();
 

@@ -15,8 +15,6 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.StoreMeta;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
@@ -27,7 +25,6 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.concurrent.ExecutionException;
 import org.junit.Assume;
 import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -47,17 +44,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         
         for (long i = 0; i < 100; i++)
         {
-            RiakObject obj = 
-                RiakObject.create(bucketName.unsafeGetValue())
-                          .setValue(value);
+            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
             
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
             
-            StoreOperation<RiakObject> storeOp = 
-                new StoreOperation<RiakObject>(bucketName)
+            StoreOperation storeOp = 
+                new StoreOperation.Builder(bucketName)
                     .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
                     .withContent(obj)
-                    .withConverter(new PassThroughConverter());
+                    .build();
+            
             cluster.execute(storeOp);
             storeOp.get();
         }
@@ -100,17 +96,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         
         for (long i = 0; i < 100; i++)
         {
-            RiakObject obj = 
-                RiakObject.create(bucketName.unsafeGetValue())
-                          .setValue(value);
+            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
             
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(5L);
             
-            StoreOperation<RiakObject> storeOp = 
-                new StoreOperation<RiakObject>(bucketName)
+            StoreOperation storeOp = 
+                new StoreOperation.Builder(bucketName)
                     .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
                     .withContent(obj)
-                    .withConverter(new PassThroughConverter());
+                    .build();
+            
             cluster.execute(storeOp);
             storeOp.get();
         }
@@ -154,17 +149,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         
         for (long i = 0; i < 100; i++)
         {
-            RiakObject obj = 
-                RiakObject.create(bucketName.unsafeGetValue())
-                          .setValue(value);
+            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
             
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
             
-            StoreOperation<RiakObject> storeOp = 
-                new StoreOperation<RiakObject>(bucketName)
+            StoreOperation storeOp = 
+                new StoreOperation.Builder(bucketName)
                     .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
                     .withContent(obj)
-                    .withConverter(new PassThroughConverter());
+                    .build();
+            
             cluster.execute(storeOp);
             storeOp.get();
         }
