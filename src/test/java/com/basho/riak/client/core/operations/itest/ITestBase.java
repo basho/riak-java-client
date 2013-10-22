@@ -148,11 +148,12 @@ public abstract class ITestBase
         
         for (ByteArrayWrapper k : keyList)
         {
-            DeleteOperation delOp = new DeleteOperation(name, k);
+            DeleteOperation.Builder delOpBuilder = new DeleteOperation.Builder(name, k);
             if (type != null)
             {
-                delOp.withBucketType(type);
+                delOpBuilder.withBucketType(type);
             }
+            DeleteOperation delOp = delOpBuilder.build();
             delOp.addListener(listener);
             semaphore.acquire();
             cluster.execute(delOp);

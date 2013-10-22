@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.DeleteMeta;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
@@ -60,9 +59,9 @@ public class ITestDeleteOperation extends ITestBase
         
         assertEquals(rObj.getValue(), rObj2.getValue());
         
-        DeleteOperation delOp = 
-            new DeleteOperation(bucketName, key)
-            .withDeleteMeta(new DeleteMeta.Builder().vclock(response.getVClock()).build());
+        DeleteOperation delOp =
+            new DeleteOperation.Builder(bucketName, key)
+                .withVclock(response.getVClock()).build();
         cluster.execute(delOp);
         delOp.get();
         
