@@ -71,7 +71,7 @@ public abstract class ITestClientBasic {
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
-        assertFalse(b.getAllowSiblings());
+        
     }
 
     @Test public void updateBucket() throws RiakException {
@@ -80,7 +80,6 @@ public abstract class ITestClientBasic {
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
-        assertFalse(b.getAllowSiblings());
         assertEquals(b.getR().getSymbolicValue(), Quora.QUORUM);
         assertEquals(b.getW().getSymbolicValue(), Quora.QUORUM);
 
@@ -111,7 +110,6 @@ public abstract class ITestClientBasic {
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(4), b.getNVal());
-        assertTrue(b.getAllowSiblings());
         assertEquals(2, b.getR().getIntValue());
         assertEquals(2, b.getW().getIntValue());
         
@@ -121,7 +119,6 @@ public abstract class ITestClientBasic {
         assertNotNull(b);
         assertEquals(bucketName, b.getName());
         assertEquals(new Integer(3), b.getNVal());
-        assertFalse(b.getAllowSiblings());
         assertEquals(b.getR().getSymbolicValue(), Quora.QUORUM);
         assertEquals(b.getW().getSymbolicValue(), Quora.QUORUM);
     }

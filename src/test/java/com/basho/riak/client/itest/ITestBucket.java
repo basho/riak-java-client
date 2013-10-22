@@ -397,7 +397,7 @@ public abstract class ITestBucket {
     @Test public void deletedVclock() throws Exception {
         final String key = "k";
 
-        final Bucket b = client.fetchBucket(bucketName).execute();
+        final Bucket b = client.createBucket(bucketName).allowSiblings(false).execute();
 
         final CountDownLatch endLatch = new CountDownLatch(1);
 
@@ -481,7 +481,7 @@ public abstract class ITestBucket {
         final String v2 = "v2";
 
         final IRiakClient client = getClient();
-        final Bucket b = client.fetchBucket(bucketName).execute();
+        final Bucket b = client.createBucket(bucketName).allowSiblings(false).execute();
 
         b.store(k, v1).execute();
         IRiakObject o = b.fetch(k).execute();
@@ -506,7 +506,7 @@ public abstract class ITestBucket {
         final String v2 = "v2";
 
         final IRiakClient client = getClient();
-        final Bucket b = client.fetchBucket(bucketName).execute();
+        final Bucket b = client.createBucket(bucketName).allowSiblings(false).execute();
 
         b.store(k, v1).execute();
         IRiakObject o = b.fetch(k).execute();
