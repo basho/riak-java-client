@@ -110,6 +110,8 @@ public class RiakNode implements RiakResponseListener
         };
 
 
+    private final CountDownLatch shutdownLatch = new CountDownLatch(1);
+    
     // TODO: Harden to prevent operation from being executed > 1 times?
     // TODO: how many channels on one event loop? 
     private RiakNode(Builder builder) throws UnknownHostException
@@ -220,7 +222,7 @@ public class RiakNode implements RiakResponseListener
         return this;
     }
 
-    public synchronized void shutdown()
+    public synchronized Future<Void> shutdown()
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         state = State.SHUTTING_DOWN;
@@ -237,6 +239,38 @@ public class RiakNode implements RiakResponseListener
         }
 
         executor.schedule(new ShutdownTask(), 0, TimeUnit.SECONDS);
+        
+        return new Future<Void>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning)
+            {
+                return false;
+            }
+            @Override
+            public Void get() throws InterruptedException
+            {
+                shutdownLatch.await();
+                return null;
+            }
+            @Override
+            public Void get(long timeout, TimeUnit unit) throws InterruptedException
+            {
+                shutdownLatch.await(timeout, unit);
+                return null;
+            }
+            @Override
+            public boolean isCancelled()
+            {
+                return false;
+            }
+            @Override
+            public boolean isDone()
+            {
+                return shutdownLatch.getCount() <= 0;
+            }
+                
+        };
+        
     }
 
     /**
@@ -899,6 +933,7 @@ public class RiakNode implements RiakResponseListener
                     bootstrap.group().shutdownGracefully();
                 }
                 logger.debug("RiakNode shut down {}:{}", remoteAddress, port);
+                shutdownLatch.countDown();
             }
         }
     }
