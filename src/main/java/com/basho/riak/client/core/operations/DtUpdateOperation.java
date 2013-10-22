@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
@@ -34,245 +33,17 @@ import java.util.concurrent.ExecutionException;
 public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.DtUpdateResp>
 {
 
-    private final RiakDtPB.DtUpdateReq.Builder builder =
-        RiakDtPB.DtUpdateReq.newBuilder();
+    private final ByteArrayWrapper bucket;
+    private final ByteArrayWrapper key;
+    private ByteArrayWrapper bucketType;
+    private final RiakDtPB.DtUpdateReq.Builder reqBuilder;
 
-    /**
-     * Store an object to the given bucket.
-     *
-     * @param bucket     the bucket
-     * @param bucketType the bucket type
-     */
-    public DtUpdateOperation(ByteArrayWrapper bucket, ByteArrayWrapper bucketType)
+    private DtUpdateOperation(Builder builder)
     {
-
-        if ((null == bucket) || bucket.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket can not be null or empty");
-        }
-
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-
-        builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-
-        builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-    }
-
-    /**
-     * (optional) key under which to store the content, if no key is given one will
-     * be chosen by Riak and returned
-     *
-     * @param key
-     * @return
-     */
-    public DtUpdateOperation withKey(ByteArrayWrapper key)
-    {
-        if ((null == key) || key.length() == 0)
-        {
-            throw new IllegalArgumentException("key can not be null or empty");
-        }
-
-        builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-
-        return this;
-    }
-
-    /**
-     * (optional for some operations) context for CRDT operations
-     *
-     * @param context
-     * @return
-     */
-    public DtUpdateOperation withContext(ByteArrayWrapper context)
-    {
-        if ((null == context) || context.length() == 0)
-        {
-            throw new IllegalArgumentException("key can not be null or empty");
-        }
-
-        builder.setContext(ByteString.copyFrom(context.unsafeGetValue()));
-
-        return this;
-    }
-
-    public DtUpdateOperation w(Quorum w)
-    {
-        builder.setW(w.getIntValue());
-        return this;
-    }
-
-    public DtUpdateOperation dw(Quorum dw)
-    {
-        builder.setDw(dw.getIntValue());
-        return this;
-    }
-
-    public DtUpdateOperation pw(Quorum pw)
-    {
-        builder.setPw(pw.getIntValue());
-        return this;
-    }
-
-    public DtUpdateOperation timeout(int timeout)
-    {
-        builder.setTimeout(timeout);
-        return this;
-    }
-
-    public DtUpdateOperation sloppyQuorum(boolean sloppyQuorum)
-    {
-        builder.setSloppyQuorum(sloppyQuorum);
-        return this;
-    }
-
-    public DtUpdateOperation nval(int nval)
-    {
-        builder.setNVal(nval);
-        return this;
-    }
-
-    public DtUpdateOperation returnBody(boolean returnBody)
-    {
-        builder.setReturnBody(returnBody);
-        return this;
-    }
-
-    RiakDtPB.CounterOp getCounterOp(CounterOp op)
-    {
-        return RiakDtPB.CounterOp.newBuilder()
-            .setIncrement(op.getIncrement())
-            .build();
-    }
-
-    RiakDtPB.SetOp getSetOp(SetOp op)
-    {
-        RiakDtPB.SetOp.Builder setOpBuilder = RiakDtPB.SetOp.newBuilder();
-
-        for (ByteArrayWrapper element : op.getAdds())
-        {
-            setOpBuilder.addAdds(ByteString.copyFrom(element.unsafeGetValue()));
-        }
-
-        for (ByteArrayWrapper element : op.getRemoves())
-        {
-            setOpBuilder.addRemoves(ByteString.copyFrom(element.unsafeGetValue()));
-        }
-
-        return setOpBuilder.build();
-    }
-
-    RiakDtPB.MapUpdate.FlagOp getFlagOp(FlagOp op)
-    {
-        return op.getEnabled()
-            ? RiakDtPB.MapUpdate.FlagOp.ENABLE
-            : RiakDtPB.MapUpdate.FlagOp.DISABLE;
-    }
-
-    ByteString getRegisterOp(RegisterOp op)
-    {
-        return ByteString.copyFrom(op.getValue().unsafeGetValue());
-    }
-
-    RiakDtPB.MapField getMapField(MapOp.MapField field)
-    {
-        RiakDtPB.MapField.Builder mapFieldBuilder = RiakDtPB.MapField.newBuilder();
-
-        switch (field.type)
-        {
-            case SET:
-                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.SET);
-                break;
-            case REGISTER:
-                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.REGISTER);
-                break;
-            case MAP:
-                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.MAP);
-                break;
-            case FLAG:
-                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.FLAG);
-                break;
-            case COUNTER:
-                mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.COUNTER);
-                break;
-            default:
-        }
-        mapFieldBuilder.setName(ByteString.copyFrom(field.key.unsafeGetValue()));
-        return mapFieldBuilder.build();
-    }
-
-    RiakDtPB.MapOp getMapOp(MapOp op)
-    {
-        RiakDtPB.MapOp.Builder mapOpBuilder = RiakDtPB.MapOp.newBuilder();
-
-        for (MapOp.MapField field : op.getAdds())
-        {
-            mapOpBuilder.addAdds(getMapField(field));
-        }
-
-        for (MapOp.MapField field : op.getRemoves())
-        {
-            mapOpBuilder.addRemoves(getMapField(field));
-        }
-
-        for (MapOp.MapUpdate update : op.getUpdates())
-        {
-            RiakDtPB.MapUpdate.Builder mapUpdateBuilder =
-                RiakDtPB.MapUpdate.newBuilder();
-
-            switch (update.field.type)
-            {
-                case COUNTER:
-                    mapUpdateBuilder.setCounterOp(getCounterOp((CounterOp) update.op));
-                    break;
-                case FLAG:
-                    mapUpdateBuilder.setFlagOp(getFlagOp((FlagOp) update.op));
-                    break;
-                case MAP:
-                    mapUpdateBuilder.setMapOp(getMapOp((MapOp) update.op));
-                    break;
-                case REGISTER:
-                    mapUpdateBuilder.setRegisterOp(getRegisterOp((RegisterOp) update.op));
-                    break;
-                case SET:
-                    mapUpdateBuilder.setSetOp(getSetOp((SetOp) update.op));
-                    break;
-                default:
-                    throw new IllegalStateException("Unknow datatype encountered");
-            }
-
-            mapUpdateBuilder.setField(getMapField(update.field));
-            mapOpBuilder.addUpdates(mapUpdateBuilder);
-        }
-
-        return mapOpBuilder.build();
-
-    }
-
-    public DtUpdateOperation withOp(CounterOp op)
-    {
-        builder.setOp(RiakDtPB.DtOp.newBuilder()
-            .setCounterOp(getCounterOp(op)));
-
-        return this;
-    }
-
-    public DtUpdateOperation withOp(MapOp op)
-    {
-        builder.setOp(RiakDtPB.DtOp.newBuilder()
-            .setMapOp(getMapOp(op)));
-        return this;
-    }
-
-    public DtUpdateOperation withOp(SetOp op)
-    {
-
-        builder.setOp(RiakDtPB.DtOp.newBuilder()
-            .setSetOp(getSetOp(op)));
-
-        return this;
+        this.bucket = builder.bucketName;
+        this.key = builder.key;
+        this.bucketType = builder.bucketType;
+        this.reqBuilder = builder.reqBuilder;
     }
 
     @Override
@@ -287,12 +58,12 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
         CrdtElement element = converter.convert(response);
-        ByteArrayWrapper bucket = ByteArrayWrapper.unsafeCreate(builder.getBucket().toByteArray());
+        ByteArrayWrapper bucket = ByteArrayWrapper.unsafeCreate(reqBuilder.getBucket().toByteArray());
 
         ByteArrayWrapper bucketType = null;
-        if (builder.hasType())
+        if (reqBuilder.hasType())
         {
-            bucketType = ByteArrayWrapper.unsafeCreate(builder.getType().toByteArray());
+            bucketType = ByteArrayWrapper.unsafeCreate(reqBuilder.getType().toByteArray());
         }
 
         ByteArrayWrapper key = null;
@@ -308,7 +79,7 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
     @Override
     protected RiakMessage createChannelMessage()
     {
-        return new RiakMessage(RiakMessageCodes.MSG_DtUpdateReq, builder.build().toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_DtUpdateReq, reqBuilder.build().toByteArray());
     }
 
     @Override
@@ -324,5 +95,323 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
+    }
+
+    public static class Builder
+    {
+        private final RiakDtPB.DtUpdateReq.Builder reqBuilder = RiakDtPB.DtUpdateReq.newBuilder();
+        private ByteArrayWrapper key;
+        private final ByteArrayWrapper bucketName;
+        private ByteArrayWrapper bucketType;
+
+        public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType)
+        {
+            if (null == bucketName || bucketName.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+            }
+            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
+            this.bucketName = bucketName;
+
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            this.bucketType = bucketType;
+        }
+
+        /**
+         * Set the key for this DtUpdateOperation.
+         * <p>
+         * If not set or null, a key is generated by Riak and returned in the
+         * response.
+         * </p>
+         *
+         * @param key the key.
+         * @return a reference to this object.
+         */
+        public Builder withKey(ByteArrayWrapper key)
+        {
+            if (key != null)
+            {
+                if (key.length() == 0)
+                {
+                    throw new IllegalArgumentException("Key cannot be zero length");
+                }
+                else
+                {
+                    reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+                }
+            }
+            this.key = key;
+            return this;
+        }
+
+        /**
+         * Set the context for this operation.
+         *
+         * @param ctx a context from a previous fetch operation.
+         * @return a reference to this object.
+         */
+        public Builder withContext(ByteArrayWrapper ctx)
+        {
+            if (null == ctx)
+            {
+                throw new IllegalArgumentException("Context cannot be null.");
+            }
+            reqBuilder.setContext(ByteString.copyFrom(ctx.unsafeGetValue()));
+            return this;
+        }
+
+        /**
+         * Set the W value for this DtUpdateOperation.
+         * If not set the bucket default is used.
+         *
+         * @param w the W value.
+         * @return a reference to this object.
+         */
+        public Builder withW(int w)
+        {
+            reqBuilder.setW(w);
+            return this;
+        }
+
+        /**
+         * Set the DW value for this DtUpdateOperation.
+         * If not set the bucket default is used.
+         *
+         * @param dw the DW value.
+         * @return a reference to this object.
+         */
+        public Builder withDw(int dw)
+        {
+            reqBuilder.setDw(dw);
+            return this;
+        }
+
+        /**
+         * Set the PW value for this DtUpdateOperation.
+         * If not set the bucket default is used.
+         *
+         * @param pw the PW value.
+         * @return a reference to this object.
+         */
+        public Builder withPw(int pw)
+        {
+            reqBuilder.setPw(pw);
+            return this;
+        }
+
+        /**
+         * Return the object after storing (including any siblings).
+         *
+         * @param returnBody true to return the object.
+         * @return a reference to this object.
+         */
+        public Builder withReturnBody(boolean returnBody)
+        {
+            reqBuilder.setReturnBody(returnBody);
+            return this;
+        }
+
+
+        /**
+         * Set a timeout for this operation.
+         *
+         * @param timeout a timeout in milliseconds.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+            reqBuilder.setTimeout(timeout);
+            return this;
+        }
+
+        /**
+         * Set the n_val value for this operation.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         *
+         * @param nval the n_val value
+         * @return a reference to this object.
+         */
+        public Builder withNVal(int nval)
+        {
+            reqBuilder.setNVal(nval);
+            return this;
+        }
+
+        /**
+         * Set whether to use sloppy_quorum.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         *
+         * @param sloppyQuorum true to use sloppy_quorum
+         * @return a reference to this object.
+         */
+        public Builder withSloppyQuorum(boolean sloppyQuorum)
+        {
+            reqBuilder.setSloppyQuorum(sloppyQuorum);
+            return this;
+        }
+
+        public DtUpdateOperation build()
+        {
+            return new DtUpdateOperation(this);
+        }
+
+        RiakDtPB.CounterOp getCounterOp(CounterOp op)
+        {
+            return RiakDtPB.CounterOp.newBuilder()
+                .setIncrement(op.getIncrement())
+                .build();
+        }
+
+        RiakDtPB.SetOp getSetOp(SetOp op)
+        {
+            RiakDtPB.SetOp.Builder setOpBuilder = RiakDtPB.SetOp.newBuilder();
+
+            for (ByteArrayWrapper element : op.getAdds())
+            {
+                setOpBuilder.addAdds(ByteString.copyFrom(element.unsafeGetValue()));
+            }
+
+            for (ByteArrayWrapper element : op.getRemoves())
+            {
+                setOpBuilder.addRemoves(ByteString.copyFrom(element.unsafeGetValue()));
+            }
+
+            return setOpBuilder.build();
+        }
+
+        RiakDtPB.MapUpdate.FlagOp getFlagOp(FlagOp op)
+        {
+            return op.getEnabled()
+                ? RiakDtPB.MapUpdate.FlagOp.ENABLE
+                : RiakDtPB.MapUpdate.FlagOp.DISABLE;
+        }
+
+        ByteString getRegisterOp(RegisterOp op)
+        {
+            return ByteString.copyFrom(op.getValue().unsafeGetValue());
+        }
+
+        RiakDtPB.MapField getMapField(MapOp.MapField field)
+        {
+            RiakDtPB.MapField.Builder mapFieldBuilder = RiakDtPB.MapField.newBuilder();
+
+            switch (field.type)
+            {
+                case SET:
+                    mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.SET);
+                    break;
+                case REGISTER:
+                    mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.REGISTER);
+                    break;
+                case MAP:
+                    mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.MAP);
+                    break;
+                case FLAG:
+                    mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.FLAG);
+                    break;
+                case COUNTER:
+                    mapFieldBuilder.setType(RiakDtPB.MapField.MapFieldType.COUNTER);
+                    break;
+                default:
+            }
+            mapFieldBuilder.setName(ByteString.copyFrom(field.key.unsafeGetValue()));
+            return mapFieldBuilder.build();
+        }
+
+        RiakDtPB.MapOp getMapOp(MapOp op)
+        {
+            RiakDtPB.MapOp.Builder mapOpBuilder = RiakDtPB.MapOp.newBuilder();
+
+            for (MapOp.MapField field : op.getAdds())
+            {
+                mapOpBuilder.addAdds(getMapField(field));
+            }
+
+            for (MapOp.MapField field : op.getRemoves())
+            {
+                mapOpBuilder.addRemoves(getMapField(field));
+            }
+
+            for (MapOp.MapUpdate update : op.getUpdates())
+            {
+                RiakDtPB.MapUpdate.Builder mapUpdateBuilder =
+                    RiakDtPB.MapUpdate.newBuilder();
+
+                switch (update.field.type)
+                {
+                    case COUNTER:
+                        mapUpdateBuilder.setCounterOp(getCounterOp((CounterOp) update.op));
+                        break;
+                    case FLAG:
+                        mapUpdateBuilder.setFlagOp(getFlagOp((FlagOp) update.op));
+                        break;
+                    case MAP:
+                        mapUpdateBuilder.setMapOp(getMapOp((MapOp) update.op));
+                        break;
+                    case REGISTER:
+                        mapUpdateBuilder.setRegisterOp(getRegisterOp((RegisterOp) update.op));
+                        break;
+                    case SET:
+                        mapUpdateBuilder.setSetOp(getSetOp((SetOp) update.op));
+                        break;
+                    default:
+                        throw new IllegalStateException("Unknow datatype encountered");
+                }
+
+                mapUpdateBuilder.setField(getMapField(update.field));
+                mapOpBuilder.addUpdates(mapUpdateBuilder);
+            }
+
+            return mapOpBuilder.build();
+
+        }
+
+        /**
+         * Add a counter update operation to this operation.
+         * @param op the update
+         * @return
+         */
+        public Builder withOp(CounterOp op)
+        {
+            reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
+                .setCounterOp(getCounterOp(op)));
+
+            return this;
+        }
+
+        /**
+         * Add a map update operation to this operation.
+         * @param op the update
+         * @return
+         */
+        public Builder withOp(MapOp op)
+        {
+            reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
+                .setMapOp(getMapOp(op)));
+            return this;
+        }
+
+        /**
+         * Add a set update operation to this operation.
+         * @param op the update
+         * @return
+         */
+        public Builder withOp(SetOp op)
+        {
+
+            reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
+                .setSetOp(getSetOp(op)));
+
+            return this;
+        }
+
     }
 }
