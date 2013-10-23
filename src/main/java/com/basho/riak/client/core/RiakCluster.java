@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -61,6 +63,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private ScheduledFuture<?> retrierFuture;
     
     private volatile State state;
+    private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     
     private RiakCluster(Builder builder) throws UnknownHostException
     {
@@ -134,7 +137,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         state = State.RUNNING;
     }
 
-    public synchronized void stop()
+    public synchronized Future<Void> shutdown()
     {
         stateCheck(State.RUNNING);
         logger.info("RiakCluster is shutting down.");
@@ -145,6 +148,38 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         shutdownFuture = executor.scheduleWithFixedDelay(new ShutdownTask(), 
                                                          500, 500, 
                                                          TimeUnit.MILLISECONDS);
+        
+        return new Future<Void>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning)
+            {
+                return false;
+            }
+            @Override
+            public Void get() throws InterruptedException
+            {
+                shutdownLatch.await();
+                return null;
+            }
+            @Override
+            public Void get(long timeout, TimeUnit unit) throws InterruptedException
+            {
+                shutdownLatch.await(timeout, unit);
+                return null;
+            }
+            @Override
+            public boolean isCancelled()
+            {
+                return false;
+            }
+            @Override
+            public boolean isDone()
+            {
+                return shutdownLatch.getCount() <= 0;
+            }
+                
+        };
+        
     }
     
     // TODO: Harden to keep operations from being execute multiple times?
@@ -222,6 +257,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 bootstrap.group().shutdownGracefully();
                 logger.debug("RiakCluster shut down bootstrap");
                 logger.info("RiakCluster has shut down");
+                shutdownLatch.countDown();
             }
         }
     }

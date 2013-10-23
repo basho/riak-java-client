@@ -69,7 +69,7 @@ public class App implements RiakFutureListener<RiakObject>
             System.out.println("value: " + ro.getValue());
             System.out.println(ro.isDeleted());
         }
-        cluster.stop();
+        cluster.shutdown();
     }
     
     public static void main( String[] args ) throws Exception
@@ -87,7 +87,7 @@ public class App implements RiakFutureListener<RiakObject>
             System.out.println("value: " + ro.getValue());
             System.out.println(ro.isDeleted());
             
-            cluster.stop();
+            cluster.shutdown();
         }
         catch (InterruptedException ex)
         {

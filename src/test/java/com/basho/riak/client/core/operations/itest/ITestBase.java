@@ -94,7 +94,7 @@ public abstract class ITestBase
     public static void tearDown() throws InterruptedException, ExecutionException
     {
         resetAndEmptyBucket(bucketName);
-        cluster.stop();
+        cluster.shutdown().get();
     }
     
     public static void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException

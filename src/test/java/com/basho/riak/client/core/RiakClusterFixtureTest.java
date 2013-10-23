@@ -95,7 +95,7 @@ public class RiakClusterFixtureTest
             
         }
         
-        cluster.stop();
+        cluster.shutdown().get();
         
     }
     
@@ -129,7 +129,7 @@ public class RiakClusterFixtureTest
         }
         finally
         {
-            cluster.stop();
+            cluster.shutdown().get();
         }
     }
     
