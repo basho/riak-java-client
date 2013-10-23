@@ -70,6 +70,7 @@ public class RiakNode implements RiakResponseListener
     private volatile int minConnections;
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
+    private volatile boolean blockOnMaxConnections;
 
 
     private volatile int readTimeoutInMillis;
@@ -121,6 +122,7 @@ public class RiakNode implements RiakResponseListener
         this.minConnections = builder.minConnections;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
+        this.blockOnMaxConnections = builder.blockOnMaxConnections;
 
         if (builder.bootstrap != null)
         {
@@ -376,6 +378,26 @@ public class RiakNode implements RiakResponseListener
     }
 
     /**
+     * Set whether to block when all connections are in use.
+     * @param block true to block.
+     * @see Builder#withBlockOnMaxConnections(boolean) 
+     */
+    public void setBlockOnMaxConnections(boolean block)
+    {
+        this.blockOnMaxConnections = block;
+    }
+    
+    /**
+     * Returns if this node is set to block when all connections are in use.
+     * @return true if set to block, false otherwise.
+     * @see Builder#withBlockOnMaxConnections(boolean) 
+     */
+    public boolean getBlockOnMaxConnections()
+    {
+        return blockOnMaxConnections;
+    }
+    
+    /**
      * Sets the connection idle timeout for connections.
      *
      * @param idleTimeoutInMillis the idleTimeout to set
@@ -507,14 +529,46 @@ public class RiakNode implements RiakResponseListener
 
     /**
      * Get a Netty channel from the pool.
-     *
-     * @return a connected channel or {@code null} if all connections are in use or
-     *         a new connection can not be made.
+     * <p>
+     * The first thing this method does is attempt to acquire a permit from the 
+     * Semaphore that controls the pool's behavior. Depending on whether 
+     * {@code blockOnMaxConnections} is set, this will either block until one
+     * becomes available or return null.
+     * </p>
+     * <p>
+     * Once a permit has been acquired, a channel from the pool or a newly 
+     * created one will be returned. If an attempt to create a new connection
+     * fails, null will then be returned. 
+     * </p>
+     * @return a connected channel or {@code null} 
+     * @see Builder#withBlockOnMaxConnections(boolean) 
      */
     private Channel getConnection()
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
-        boolean acquired = permits.tryAcquire();
+        boolean acquired = false;
+        if (blockOnMaxConnections)
+        {
+            try
+            {
+                if (!permits.tryAcquire())
+                {
+                    logger.info("All connections in use for {}; had to wait for one.", 
+                                remoteAddress);
+                    permits.acquire();
+                }
+                acquired = true;
+            }
+            catch (InterruptedException ex)
+            {
+                // no-op, don't care
+            }
+        }
+        else
+        {
+            acquired = permits.tryAcquire();
+        }
+        
         Channel channel = null;
         if (acquired)
         {
@@ -961,6 +1015,7 @@ public class RiakNode implements RiakResponseListener
         private int readTimeout = DEFAULT_TCP_READ_TIMEOUT;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
+        private boolean blockOnMaxConnections;
 
 
         /**
@@ -1112,7 +1167,26 @@ public class RiakNode implements RiakResponseListener
             return this;
         }
 
-
+        /**
+         * Set whether to block if all connections are in use.
+         * <p>
+         * If a maximum number of connections is specified and all those 
+         * connections are in use, the default 
+         * behavior when an operation is submitted to a node is to 
+         * fail-fast and return. Setting this to true will cause the 
+         * call to block (fair-scheduled, FIFO) until a connection becomes
+         * available. 
+         * </p>
+         * @param block whether to block when an operation is submitted and 
+         * all connections are in use.
+         * @return this
+         */
+        public Builder withBlockOnMaxConnections(boolean block)
+        {
+            this.blockOnMaxConnections = block;
+            return this;
+        }
+        
         /**
          * Builds a RiakNode.
          * If a Netty {@code Bootstrap} and/or a {@code ScheduledExecutorService} has not been provided they
