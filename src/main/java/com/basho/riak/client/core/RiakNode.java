@@ -113,8 +113,6 @@ public class RiakNode implements RiakResponseListener
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     
-    // TODO: Harden to prevent operation from being executed > 1 times?
-    // TODO: how many channels on one event loop? 
     private RiakNode(Builder builder) throws UnknownHostException
     {
         this.readTimeoutInMillis = builder.readTimeout;
@@ -520,8 +518,6 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    // TODO: Streaming also - idea: BlockingDeque extension with listener
-
     /**
      * Submits the operation to be executed on this node.
      *
@@ -898,27 +894,22 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    // TODO: Magic numbers; probably should be configurable and less magic
+    // TODO: Revisit if we ever support multiple protocols or change protocols.
+    // As-is the parameters work well for protocol buffers.
+    /**
+     * Task to see if a number of connections recently closed unexpectedly.
+     * <p>
+     * We keep a list of connections that triggered the closeListener. If 
+     * 5 or more of these occur in a 3 second sliding window we check the 
+     * health of the node. 
+     * </p>
+     */
     private class HealthMonitorTask implements Runnable
     {
         @Override
         public void run()
         {
-            if ((state == State.RUNNING || state == State.HEALTH_CHECKING) &&
-                (recentlyClosed.size() > 4 || state == State.HEALTH_CHECKING))
-            {
-                checkHealth();
-            }
-        }
-    }
-
-    // TODO: Magic numbers; probably should be configurable and less magic
-    // TODO: Maybe ping the node or something more conclusive than if it just accepts a connection
-    private void checkHealth()
-    {
-        try
-        {
-            // purge recentlyClosed past a certain age
+            // Purge recentlyClosed past a certain age
             // sliding window should be larger than the
             // frequency of this task
             long current = System.nanoTime();
@@ -929,7 +920,20 @@ public class RiakNode implements RiakResponseListener
             {
                 recentlyClosed.poll();
             }
+            
+            // If we have 5 or more recently closed or we failed a healthcheck
+            if ((state == State.RUNNING && recentlyClosed.size() > 4) ||
+                state == State.HEALTH_CHECKING)
+            {
+                checkHealth();
+            }
+        }
+    }
 
+    private void checkHealth()
+    {
+        try
+        {
             // See: doGetConnection() - this will purge closed
             // connections from the available queue and either 
             // return/create a new one (meaning the node is up) or throw

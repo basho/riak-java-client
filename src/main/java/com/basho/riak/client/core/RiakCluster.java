@@ -182,7 +182,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         
     }
     
-    // TODO: Harden to keep operations from being execute multiple times?
     public void execute(FutureOperation operation)
     {
         stateCheck(State.RUNNING);
@@ -191,7 +190,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         this.execute(operation, null);
     }
     
-    // TODO: Streaming also
     private void execute(FutureOperation operation, RiakNode previousNode) 
     {
         nodeManager.executeOnNode(operation, previousNode);
