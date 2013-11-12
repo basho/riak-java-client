@@ -47,14 +47,10 @@ import java.util.concurrent.ExecutionException;
 public class SearchOperation extends FutureOperation<SearchResult, RiakSearchPB.RpbSearchQueryResp>
 {
 
-    private final ByteArrayWrapper indexName;
-    private final String queryString;
     private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder;
 
     private SearchOperation(Builder builder)
     {
-        this.queryString = builder.queryString;
-        this.indexName = builder.indexName;
         this.reqBuilder = builder.reqBuilder;
     }
 
