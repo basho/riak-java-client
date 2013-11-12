@@ -109,10 +109,7 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
     public static class Builder
     {
         private final RiakDtPB.DtUpdateReq.Builder reqBuilder = RiakDtPB.DtUpdateReq.newBuilder();
-        private ByteArrayWrapper key;
-        private final ByteArrayWrapper bucketName;
-        private ByteArrayWrapper bucketType;
-
+        
         public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType)
         {
             if (null == bucketName || bucketName.length() == 0)
@@ -120,14 +117,12 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
                 throw new IllegalArgumentException("Bucket name cannot be null or zero length");
             }
             reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-            this.bucketName = bucketName;
 
             if (null == bucketType || bucketType.length() == 0)
             {
                 throw new IllegalArgumentException("Bucket type can not be null or zero length");
             }
             reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            this.bucketType = bucketType;
         }
 
         /**
@@ -153,7 +148,6 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
                     reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
                 }
             }
-            this.key = key;
             return this;
         }
 
