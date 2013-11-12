@@ -22,6 +22,7 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -117,12 +118,12 @@ public abstract class ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<Void> listener = new RiakFutureListener<Void>() {
+        RiakFutureListener<KvResponse<Boolean>> listener = new RiakFutureListener<KvResponse<Boolean>>() {
 
             private AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<Void> f)
+            public void handle(RiakFuture<KvResponse<Boolean>> f)
             {
                 try
                 {

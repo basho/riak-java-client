@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
+import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -28,24 +29,18 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFetchResp>
+public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtFetchResp>
 {
 
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper key;
-    private ByteArrayWrapper bucketType;
     private final RiakDtPB.DtFetchReq.Builder reqBuilder;
 
     private DtFetchOperation(Builder builder)
     {
-        this.key = builder.key;
-        this.bucket = builder.bucket;
-        this.bucketType = builder.bucketType;
         this.reqBuilder = builder.reqBuilder;
     }
 
     @Override
-    protected CrdtElement convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
+    protected CrdtResponse convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
     {
         if (rawResponse.size() != 1)
         {
@@ -56,13 +51,27 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
         CrdtElement element = converter.convert(response);
+
+
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray());
+        ByteArrayWrapper key = ByteArrayWrapper.create(reqBuilder.getKey().toByteArray());
+        CrdtResponse.Builder responseBuilder = new CrdtResponse.Builder(bucket, key)
+            .withCrdtElement(element);
+
         if (response.hasContext())
         {
             ByteArrayWrapper ctxWrapper = ByteArrayWrapper.create(response.getContext().toByteArray());
-            element.setContext(ctxWrapper);
+            responseBuilder.withContext(ctxWrapper);
         }
 
-        return element;
+        if (reqBuilder.hasType())
+        {
+            ByteArrayWrapper bucketType = ByteArrayWrapper.create(reqBuilder.getType().toByteArray());
+            responseBuilder.withBucketType(bucketType);
+        }
+
+        return responseBuilder.build();
+
     }
 
     @Override
@@ -115,6 +124,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
         /**
          * Set the bucket type for the FetchOperation.
          * If not set, "default" is used.
+         *
          * @param bucketType the bucket type
          * @return a reference to this object.
          */
@@ -132,6 +142,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
         /**
          * Set whether a context should be returned
          * Default to false
+         *
          * @param context return context
          * @return
          */
@@ -144,6 +155,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
         /**
          * Set the R value for this FetchOperation.
          * If not set the bucket default is used.
+         *
          * @param r the R value.
          * @return a reference to this object.
          */
@@ -156,6 +168,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
         /**
          * Set the PR value for this query.
          * If not set the bucket default is used.
+         *
          * @param pr the PR value.
          * @return
          */
@@ -174,6 +187,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
          * <p>
          * If not set the bucket default is used.
          * </p>
+         *
          * @param notFoundOK the not_found_ok value.
          * @return a reference to this object.
          */
@@ -191,6 +205,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
          * E.g. If a quorum of nodes has already
          * returned notfound/error, don't wait around for the rest.
          * </p>
+         *
          * @param useBasicQuorum the basic_quorum value.
          * @return a reference to this object.
          */
@@ -202,6 +217,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
 
         /**
          * Set a timeout for this operation.
+         *
          * @param timeout a timeout in milliseconds.
          * @return a reference to this object.
          */
@@ -216,6 +232,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
          * <p>
          * <b>Do not use this unless you understand the ramifications</b>
          * </p>
+         *
          * @param nval the n_val value
          * @return a reference to this object.
          */
@@ -230,6 +247,7 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
          * <p>
          * <b>Do not use this unless you understand the ramifications</b>
          * </p>
+         *
          * @param sloppyQuorum true to use sloppy_quorum
          * @return a reference to this object.
          */

@@ -20,23 +20,6 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 public abstract class CrdtElement
 {
 
-    private ByteArrayWrapper context = null;
-
-    public void setContext(ByteArrayWrapper context)
-    {
-        this.context = context;
-    }
-
-    public boolean hasContext()
-    {
-        return context != null;
-    }
-
-    public ByteArrayWrapper getContext()
-    {
-        return context;
-    }
-
     public boolean isMap()
     {
         return this instanceof CrdtMap;

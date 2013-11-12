@@ -18,7 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
-import com.basho.riak.client.query.RiakDatatype;
+import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -30,24 +30,18 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.DtUpdateResp>
+public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtUpdateResp>
 {
 
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper key;
-    private ByteArrayWrapper bucketType;
     private final RiakDtPB.DtUpdateReq.Builder reqBuilder;
 
     private DtUpdateOperation(Builder builder)
     {
-        this.bucket = builder.bucketName;
-        this.key = builder.key;
-        this.bucketType = builder.bucketType;
         this.reqBuilder = builder.reqBuilder;
     }
 
     @Override
-    protected RiakDatatype convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
+    protected CrdtResponse convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
     {
         if (rawResponse.size() != 1)
         {
@@ -56,23 +50,38 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
 
         RiakDtPB.DtUpdateResp response = rawResponse.iterator().next();
 
-        CrdtResponseConverter converter = new CrdtResponseConverter();
-        CrdtElement element = converter.convert(response);
         ByteArrayWrapper bucket = ByteArrayWrapper.unsafeCreate(reqBuilder.getBucket().toByteArray());
 
-        ByteArrayWrapper bucketType = null;
-        if (reqBuilder.hasType())
+        ByteArrayWrapper key;
+        if (reqBuilder.hasKey())
         {
-            bucketType = ByteArrayWrapper.unsafeCreate(reqBuilder.getType().toByteArray());
+            key = ByteArrayWrapper.unsafeCreate(reqBuilder.getKey().toByteArray());
         }
-
-        ByteArrayWrapper key = null;
-        if (response.hasKey())
+        else
         {
             key = ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray());
         }
 
-        return new RiakDatatype(bucketType, bucket, key, element);
+        CrdtResponse.Builder responseBuilder = new CrdtResponse.Builder(bucket, key);
+
+
+        CrdtResponseConverter converter = new CrdtResponseConverter();
+        CrdtElement element = converter.convert(response);
+        responseBuilder.withCrdtElement(element);
+
+        if (reqBuilder.hasType())
+        {
+            ByteArrayWrapper bucketType = ByteArrayWrapper.unsafeCreate(reqBuilder.getType().toByteArray());
+            responseBuilder.withBucketType(bucketType);
+        }
+
+        if (response.hasContext())
+        {
+            ByteArrayWrapper context = ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray());
+            responseBuilder.withContext(context);
+        }
+
+        return responseBuilder.build();
 
     }
 
@@ -376,6 +385,7 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
 
         /**
          * Add a counter update operation to this operation.
+         *
          * @param op the update
          * @return
          */
@@ -389,6 +399,7 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
 
         /**
          * Add a map update operation to this operation.
+         *
          * @param op the update
          * @return
          */
@@ -401,6 +412,7 @@ public class DtUpdateOperation extends FutureOperation<RiakDatatype, RiakDtPB.Dt
 
         /**
          * Add a set update operation to this operation.
+         *
          * @param op the update
          * @return
          */

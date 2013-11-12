@@ -18,10 +18,9 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -89,7 +88,7 @@ public class ITestStoreOperation extends ITestBase
                 .build();
         
         cluster.execute(storeOp);
-        RiakResponse<List<RiakObject>> response = storeOp.get();
+        KvResponse<List<RiakObject>> response = storeOp.get();
         obj = response.getContent().get(0);
         
         assertTrue(response.hasVClock());

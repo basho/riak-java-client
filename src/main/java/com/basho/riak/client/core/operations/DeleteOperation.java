@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -34,26 +35,23 @@ import static com.basho.riak.client.core.operations.Operations.checkMessageType;
  * @author David Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class DeleteOperation extends FutureOperation<Void, Void>
+public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 {
 
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper key;
     private final RiakKvPB.RpbDelReq.Builder reqBuilder;
-    private ByteArrayWrapper bucketType;
 
     private DeleteOperation(Builder builder)
     {
-        this.bucket = builder.bucket;
-        this.key = builder.key;
         this.reqBuilder = builder.reqBuilder;
-        this.bucketType = builder.bucketType;
     }
 
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected KvResponse<Boolean> convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        ByteArrayWrapper key = ByteArrayWrapper.create(reqBuilder.getKey().toByteArray());
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray());
+        ByteArrayWrapper bucketType = ByteArrayWrapper.create(reqBuilder.getType().toByteArray());
+        return new KvResponse.Builder(bucket, key).withBucketType(bucketType).withContent(true).build();
     }
 
     @Override
@@ -72,9 +70,6 @@ public class DeleteOperation extends FutureOperation<Void, Void>
     public static class Builder
     {
 
-        private final ByteArrayWrapper bucket;
-        private final ByteArrayWrapper key;
-        private ByteArrayWrapper bucketType;
         private final RiakKvPB.RpbDelReq.Builder reqBuilder = RiakKvPB.RpbDelReq.newBuilder();
 
         public Builder(ByteArrayWrapper bucket, ByteArrayWrapper key)
@@ -89,9 +84,7 @@ public class DeleteOperation extends FutureOperation<Void, Void>
                 throw new IllegalArgumentException("key can not be null or empty");
             }
 
-            this.bucket = bucket;
             reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-            this.key = key;
             reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
         }
 
@@ -102,7 +95,6 @@ public class DeleteOperation extends FutureOperation<Void, Void>
                 throw new IllegalArgumentException("Bucket type can not be null or zero length");
             }
             this.reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            this.bucketType = bucketType;
             return this;
         }
 

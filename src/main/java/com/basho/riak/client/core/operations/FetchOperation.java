@@ -19,8 +19,8 @@ import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchOperation extends FutureOperation<RiakResponse<List<RiakObject>>, RiakKvPB.RpbGetResp>
+public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>, RiakKvPB.RpbGetResp>
 {
     private final ByteArrayWrapper bucket;
     private final ByteArrayWrapper key;
@@ -79,7 +79,7 @@ public class FetchOperation extends FutureOperation<RiakResponse<List<RiakObject
     }
 
     @Override
-    protected RiakResponse<List<RiakObject>> convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
+    protected KvResponse<List<RiakObject>> convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
     {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
@@ -96,7 +96,7 @@ public class FetchOperation extends FutureOperation<RiakResponse<List<RiakObject
         // Because that makes sense!
         if (null == response)
         {
-            return new RiakResponse.Builder<List<RiakObject>>(bucket, key)
+            return new KvResponse.Builder<List<RiakObject>>(bucket, key)
                             .withBucketType(bucketType)
                             .withNotFound(true)
                             .build();
@@ -118,7 +118,7 @@ public class FetchOperation extends FutureOperation<RiakResponse<List<RiakObject
             }
         }
         
-        return new RiakResponse.Builder<List<RiakObject>>(bucket, key)
+        return new KvResponse.Builder<List<RiakObject>>(bucket, key)
                             .withBucketType(bucketType)
                             .withContent(riakObjects)
                             .withVClock(new BasicVClock(response.getVclock().toByteArray()))

@@ -20,6 +20,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
-import com.basho.riak.client.query.RiakResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> the user type of the operation to store
  */
-public class StoreOperation extends FutureOperation<RiakResponse<List<RiakObject>>, RiakKvPB.RpbPutResp>
+public class StoreOperation extends FutureOperation<KvResponse<List<RiakObject>>, RiakKvPB.RpbPutResp>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
     
@@ -58,7 +59,7 @@ public class StoreOperation extends FutureOperation<RiakResponse<List<RiakObject
     }
 
     @Override
-    protected RiakResponse<List<RiakObject>> convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
+    protected KvResponse<List<RiakObject>> convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
     {
         // There should only be one response message from Riak.
         if (responses.size() != 1)
@@ -82,7 +83,7 @@ public class StoreOperation extends FutureOperation<RiakResponse<List<RiakObject
             vclock = new BasicVClock(response.getVclock().toByteArray());
         }
         
-        return new RiakResponse.Builder<List<RiakObject>>(bucketName, key)
+        return new KvResponse.Builder<List<RiakObject>>(bucketName, key)
                             .withBucketType(bucketType)
                             .withContent(riakObjects)
                             .withVClock(vclock)

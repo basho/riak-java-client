@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -87,14 +87,14 @@ public class ITestListKeysOperation extends ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<RiakResponse<List<RiakObject>>> listener = 
-            new RiakFutureListener<RiakResponse<List<RiakObject>>>() {
+        RiakFutureListener<KvResponse<List<RiakObject>>> listener =
+            new RiakFutureListener<KvResponse<List<RiakObject>>>() {
             
             private int expected = 1000;
             private AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<RiakResponse<List<RiakObject>>> f)
+            public void handle(RiakFuture<KvResponse<List<RiakObject>>> f)
             {
                 try 
                 {

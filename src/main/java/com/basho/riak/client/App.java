@@ -9,7 +9,7 @@ import com.basho.riak.client.core.operations.FetchBucketTypePropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -62,7 +62,7 @@ public class App implements RiakFutureListener<RiakObject>
         
         //fetchOp.addListener(this);
         cluster.execute(fetchOp);
-        RiakResponse<List<RiakObject>> roList = fetchOp.get();
+        KvResponse<List<RiakObject>> roList = fetchOp.get();
         System.out.println(roList.notFound());
         for (RiakObject ro : roList.getContent())
         {

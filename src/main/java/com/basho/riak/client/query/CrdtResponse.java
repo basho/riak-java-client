@@ -15,43 +15,51 @@
  */
 package com.basho.riak.client.query;
 
+import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
-public abstract class RiakResponse
+public class CrdtResponse extends RiakResponse
 {
 
-    private final ByteArrayWrapper key;
-    private final ByteArrayWrapper bucketType;
-    private final ByteArrayWrapper bucketName;
+    private final ByteArrayWrapper context;
+    private final CrdtElement crdtElement;
 
-    protected RiakResponse(ByteArrayWrapper bucketName, ByteArrayWrapper key, ByteArrayWrapper bucketType)
+    private CrdtResponse(Builder builder)
     {
-        this.key = key;
-        this.bucketType = bucketType;
-        this.bucketName = bucketName;
+        super(builder.bucketName, builder.key, builder.bucketType);
+        this.context = builder.context;
+        this.crdtElement = builder.crdtElement;
     }
 
-    public ByteArrayWrapper getKey()
+    public boolean hasContext()
     {
-        return key;
+        return context != null;
     }
 
-    public ByteArrayWrapper getBucketType()
+    public ByteArrayWrapper getContext()
     {
-        return bucketType;
+        return context;
     }
 
-    public ByteArrayWrapper getBucketName()
+    public boolean hasCrdtElement()
     {
-        return bucketName;
+        return crdtElement != null;
+    }
+
+    public CrdtElement getCrdtElement()
+    {
+        return crdtElement;
     }
 
     public static class Builder
     {
-        private ByteArrayWrapper key;
-        private ByteArrayWrapper bucketName;
+
+        private final ByteArrayWrapper bucketName;
+        private final ByteArrayWrapper key;
         private ByteArrayWrapper bucketType =
-            ByteArrayWrapper.unsafeCreate("default".getBytes());
+            ByteArrayWrapper.create("default");
+        private ByteArrayWrapper context;
+        private CrdtElement crdtElement;
 
         public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper key)
         {
@@ -78,6 +86,34 @@ public abstract class RiakResponse
             }
             return this;
         }
+
+        public Builder withContext(ByteArrayWrapper context)
+        {
+            if (context != null)
+            {
+                if (context.length() == 0)
+                {
+                    throw new IllegalArgumentException("Bucket type cannot be null or zero length");
+                }
+                else
+                {
+                    this.context = context;
+                }
+            }
+            return this;
+        }
+
+        public Builder withCrdtElement(CrdtElement crdtElement)
+        {
+            this.crdtElement = crdtElement;
+            return this;
+        }
+
+        public CrdtResponse build()
+        {
+            return new CrdtResponse(this);
+        }
+
     }
 
 }

@@ -90,14 +90,6 @@ public class CrdtResponseConverter
             element = parseMap(response.getMapValueList());
         }
 
-        if (null != element)
-        {
-            if (response.hasContext())
-            {
-                element.setContext(ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray()));
-            }
-        }
-
         return element;
 
     }
@@ -118,11 +110,6 @@ public class CrdtResponseConverter
                 break;
             default:
                 throw new IllegalStateException("No known datatype returned");
-        }
-
-        if (response.hasContext())
-        {
-            element.setContext(ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray()));
         }
 
         return element;

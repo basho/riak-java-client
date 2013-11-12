@@ -18,10 +18,9 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -44,7 +43,7 @@ public class ITestFetchOperation extends ITestBase
             new FetchOperation.Builder(bucketName, key).build();
                 
         cluster.execute(fetchOp);
-        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        KvResponse<List<RiakObject>> response = fetchOp.get();
         assertTrue(response.notFound());
         assertFalse(response.hasContent());
         
@@ -71,7 +70,7 @@ public class ITestFetchOperation extends ITestBase
             new FetchOperation.Builder(bucketName, key).build();
         
         cluster.execute(fetchOp);
-        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        KvResponse<List<RiakObject>> response = fetchOp.get();
         assertFalse(response.notFound());
         assertTrue(response.hasContent());
         List<RiakObject> objectList = response.getContent();
@@ -119,7 +118,7 @@ public class ITestFetchOperation extends ITestBase
             new FetchOperation.Builder(bucketName, key).build();
                 
         cluster.execute(fetchOp);
-        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        KvResponse<List<RiakObject>> response = fetchOp.get();
         assertTrue(response.getContent().size() > 1);
         
         RiakObject ro = response.getContent().get(0);
