@@ -15,10 +15,10 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
+import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -29,98 +29,18 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFetchResp>
+public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtFetchResp>
 {
 
-    private final RiakDtPB.DtFetchReq.Builder builder =
-        RiakDtPB.DtFetchReq.newBuilder();
+    private final RiakDtPB.DtFetchReq.Builder reqBuilder;
 
-    public DtFetchOperation(ByteArrayWrapper bucket, ByteArrayWrapper key)
+    private DtFetchOperation(Builder builder)
     {
-
-        if ((null == bucket) || bucket.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket can not be null or empty");
-        }
-
-        if ((null == key) || key.length() == 0)
-        {
-            throw new IllegalArgumentException("key can not be null or empty");
-        }
-
-        builder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-        builder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-    }
-
-    /**
-     * Set the bucket type.
-     * If unset "default" is used.
-     *
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public DtFetchOperation withBucketType(ByteArrayWrapper bucketType)
-    {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-
-        builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-
-        return this;
-    }
-
-    public DtFetchOperation includeContext(boolean includeContext)
-    {
-        builder.setIncludeContext(includeContext);
-        return this;
-    }
-
-    public DtFetchOperation r(Quorum r)
-    {
-        builder.setR(r.getIntValue());
-        return this;
-    }
-
-    public DtFetchOperation pr(Quorum pr)
-    {
-        builder.setPr(pr.getIntValue());
-        return this;
-    }
-
-    public DtFetchOperation basicQuorum(boolean basicQuorum)
-    {
-        builder.setBasicQuorum(basicQuorum);
-        return this;
-    }
-
-    public DtFetchOperation notFoundOK(boolean notFoundOK)
-    {
-        builder.setNotfoundOk(notFoundOK);
-        return this;
-    }
-
-    public DtFetchOperation timeout(int timeout)
-    {
-        builder.setTimeout(timeout);
-        return this;
-    }
-
-    public DtFetchOperation sloppyQuorum(boolean sloppyQuorum)
-    {
-        builder.setSloppyQuorum(sloppyQuorum);
-        return this;
-    }
-
-    public DtFetchOperation nval(int nval)
-    {
-        builder.setNVal(nval);
-        return this;
+        this.reqBuilder = builder.reqBuilder;
     }
 
     @Override
-    protected CrdtElement convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
+    protected CrdtResponse convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
     {
         if (rawResponse.size() != 1)
         {
@@ -131,24 +51,33 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
         CrdtElement element = converter.convert(response);
+
+
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray());
+        ByteArrayWrapper key = ByteArrayWrapper.create(reqBuilder.getKey().toByteArray());
+        CrdtResponse.Builder responseBuilder = new CrdtResponse.Builder(bucket, key)
+            .withCrdtElement(element);
+
         if (response.hasContext())
         {
             ByteArrayWrapper ctxWrapper = ByteArrayWrapper.create(response.getContext().toByteArray());
-            element.setContext(ctxWrapper);
+            responseBuilder.withContext(ctxWrapper);
         }
 
-        return element;
+        if (reqBuilder.hasType())
+        {
+            ByteArrayWrapper bucketType = ByteArrayWrapper.create(reqBuilder.getType().toByteArray());
+            responseBuilder.withBucketType(bucketType);
+        }
+
+        return responseBuilder.build();
+
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        if (!builder.hasType())
-        {
-            builder.setType(ByteString.copyFromUtf8("default"));
-        }
-
-        return new RiakMessage(RiakMessageCodes.MSG_DtFetchReq, builder.build().toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_DtFetchReq, reqBuilder.build().toByteArray());
     }
 
     @Override
@@ -163,5 +92,175 @@ public class DtFetchOperation extends FutureOperation<CrdtElement, RiakDtPB.DtFe
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
+    }
+
+    public static class Builder
+    {
+
+        private final ByteArrayWrapper bucket;
+        private final ByteArrayWrapper key;
+        private ByteArrayWrapper bucketType;
+        private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();
+
+        public Builder(ByteArrayWrapper bucket, ByteArrayWrapper key)
+        {
+
+            if ((null == bucket) || bucket.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket can not be null or empty");
+            }
+
+            if ((null == key) || key.length() == 0)
+            {
+                throw new IllegalArgumentException("key can not be null or empty");
+            }
+
+            this.bucket = bucket;
+            reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
+            this.key = key;
+            reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+        }
+
+        /**
+         * Set the bucket type for the FetchOperation.
+         * If not set, "default" is used.
+         *
+         * @param bucketType the bucket type
+         * @return a reference to this object.
+         */
+        public Builder withBucketType(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            this.bucketType = bucketType;
+            return this;
+        }
+
+        /**
+         * Set whether a context should be returned
+         * Default to false
+         *
+         * @param context return context
+         * @return
+         */
+        public Builder includeContext(boolean context)
+        {
+            reqBuilder.setIncludeContext(context);
+            return this;
+        }
+
+        /**
+         * Set the R value for this FetchOperation.
+         * If not set the bucket default is used.
+         *
+         * @param r the R value.
+         * @return a reference to this object.
+         */
+        public Builder withR(int r)
+        {
+            reqBuilder.setR(r);
+            return this;
+        }
+
+        /**
+         * Set the PR value for this query.
+         * If not set the bucket default is used.
+         *
+         * @param pr the PR value.
+         * @return
+         */
+        public Builder withPr(int pr)
+        {
+            reqBuilder.setPr(pr);
+            return this;
+        }
+
+        /**
+         * Set the not_found_ok value.
+         * <p>
+         * If true a vnode returning notfound for a key increments the r tally.
+         * False is higher consistency, true is higher availability.
+         * </p>
+         * <p>
+         * If not set the bucket default is used.
+         * </p>
+         *
+         * @param notFoundOK the not_found_ok value.
+         * @return a reference to this object.
+         */
+        public Builder withNotFoundOK(boolean notFoundOK)
+        {
+            reqBuilder.setNotfoundOk(notFoundOK);
+            return this;
+        }
+
+        /**
+         * Set the basic_quorum value.
+         * <p>
+         * The parameter controls whether a read request should return early in
+         * some fail cases.
+         * E.g. If a quorum of nodes has already
+         * returned notfound/error, don't wait around for the rest.
+         * </p>
+         *
+         * @param useBasicQuorum the basic_quorum value.
+         * @return a reference to this object.
+         */
+        public Builder withBasicQuorum(boolean useBasicQuorum)
+        {
+            reqBuilder.setBasicQuorum(useBasicQuorum);
+            return this;
+        }
+
+        /**
+         * Set a timeout for this operation.
+         *
+         * @param timeout a timeout in milliseconds.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+            reqBuilder.setTimeout(timeout);
+            return this;
+        }
+
+        /**
+         * Set the n_val for this operation.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         *
+         * @param nval the n_val value
+         * @return a reference to this object.
+         */
+        public Builder withNVal(int nval)
+        {
+            reqBuilder.setNVal(nval);
+            return this;
+        }
+
+        /**
+         * Set whether to use sloppy_quorum.
+         * <p>
+         * <b>Do not use this unless you understand the ramifications</b>
+         * </p>
+         *
+         * @param sloppyQuorum true to use sloppy_quorum
+         * @return a reference to this object.
+         */
+        public Builder withSloppyQuorum(boolean sloppyQuorum)
+        {
+            reqBuilder.setSloppyQuorum(sloppyQuorum);
+            return this;
+        }
+
+        public DtFetchOperation build()
+        {
+            return new DtFetchOperation(this);
+        }
+
     }
 }

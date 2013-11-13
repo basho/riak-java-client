@@ -19,7 +19,7 @@ import com.basho.riak.client.core.RiakNode.State;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import io.netty.channel.Channel;
 import java.io.IOException;
@@ -178,7 +178,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         
         boolean accepted = node.execute(operation);
         assertTrue(accepted);
-        RiakResponse<List<RiakObject>> response = operation.get();
+        KvResponse<List<RiakObject>> response = operation.get();
         assertEquals(response.getContent().get(0).getValue().toString(), "This is a value!");
         assertTrue(!response.notFound());
     }
@@ -198,7 +198,7 @@ public class RiakNodeFixtureTest extends FixtureTest
                     .build();
         
         boolean accepted = node.execute(operation);
-        RiakResponse<List<RiakObject>> response = operation.get();
+        KvResponse<List<RiakObject>> response = operation.get();
     }
     
     @Test(expected=ExecutionException.class)
@@ -219,7 +219,7 @@ public class RiakNodeFixtureTest extends FixtureTest
 
         
         boolean accepted = node.execute(operation);
-        RiakResponse<List<RiakObject>> response = operation.get();
+        KvResponse<List<RiakObject>> response = operation.get();
     }
     
     @Test

@@ -15,12 +15,11 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.DeleteMeta;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.RiakResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -55,14 +54,14 @@ public class ITestDeleteOperation extends ITestBase
                 
         
         cluster.execute(fetchOp);
-        RiakResponse<List<RiakObject>> response = fetchOp.get();
+        KvResponse<List<RiakObject>> response = fetchOp.get();
         RiakObject rObj2 = response.getContent().get(0);
         
         assertEquals(rObj.getValue(), rObj2.getValue());
         
-        DeleteOperation delOp = 
-            new DeleteOperation(bucketName, key)
-            .withDeleteMeta(new DeleteMeta.Builder().vclock(response.getVClock()).build());
+        DeleteOperation delOp =
+            new DeleteOperation.Builder(bucketName, key)
+                .withVclock(response.getVClock()).build();
         cluster.execute(delOp);
         delOp.get();
         

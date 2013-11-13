@@ -53,7 +53,7 @@ public class ITestSearchOperation extends ITestBase
         
         prepSearch();
         
-        SearchOperation searchOp = new SearchOperation(bucketName, "Alice*");
+        SearchOperation searchOp = new SearchOperation.Builder(bucketName, "Alice*").build();
         
         cluster.execute(searchOp);
         SearchResult result = searchOp.get();
@@ -91,7 +91,7 @@ public class ITestSearchOperation extends ITestBase
         // to complete.
         Thread.sleep(3000);
         
-        SearchOperation searchOp = new SearchOperation(ByteArrayWrapper.create("test_index"), "Alice*");
+        SearchOperation searchOp = new SearchOperation.Builder(ByteArrayWrapper.create("test_index"), "Alice*").build();
         
         cluster.execute(searchOp);
         SearchResult result = searchOp.get();        

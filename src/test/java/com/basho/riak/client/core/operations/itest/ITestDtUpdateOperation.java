@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
+import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -37,9 +38,10 @@ public class ITestDtUpdateOperation extends ITestBase
     private CrdtCounter fetchCounter(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
         throws ExecutionException, InterruptedException
     {
-        DtFetchOperation fetch = new DtFetchOperation(bucket, key).withBucketType(type);
+        DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
         cluster.execute(fetch);
-        CrdtElement element = fetch.get();
+        CrdtResponse response = fetch.get();
+        CrdtElement element = response.getCrdtElement();
 
         assertNotNull(element);
         assertTrue(element.isCounter());
@@ -50,10 +52,11 @@ public class ITestDtUpdateOperation extends ITestBase
     private CrdtSet fetchSet(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
         throws ExecutionException, InterruptedException
     {
-        DtFetchOperation fetch = new DtFetchOperation(bucket, key).withBucketType(type);
+        DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
 
         cluster.execute(fetch);
-        CrdtElement element = fetch.get();
+        CrdtResponse response = fetch.get();
+        CrdtElement element = response.getCrdtElement();
 
         assertNotNull(element);
         assertTrue(element.isSet());
@@ -64,10 +67,11 @@ public class ITestDtUpdateOperation extends ITestBase
     private CrdtMap fetchMap(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
         throws ExecutionException, InterruptedException
     {
-        DtFetchOperation fetch = new DtFetchOperation(bucket, key).withBucketType(type);
+        DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
 
         cluster.execute(fetch);
-        CrdtElement element = fetch.get();
+        CrdtResponse response = fetch.get();
+        CrdtElement element = response.getCrdtElement();
 
         assertNotNull(element);
         assertTrue(element.isMap());
@@ -93,9 +97,10 @@ public class ITestDtUpdateOperation extends ITestBase
         for (int i = 0; i < iterations; ++i)
         {
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName, counterBucketType)
+                new DtUpdateOperation.Builder(bucketName, counterBucketType)
                     .withKey(key)
-                    .withOp(new CounterOp(1));
+                    .withOp(new CounterOp(1))
+                    .build();
 
             cluster.execute(update);
             update.get();
@@ -107,9 +112,10 @@ public class ITestDtUpdateOperation extends ITestBase
         for (int i = 0; i < iterations; ++i)
         {
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName, counterBucketType)
+                new DtUpdateOperation.Builder(bucketName, counterBucketType)
                     .withKey(key)
-                    .withOp(new CounterOp(-1));
+                    .withOp(new CounterOp(-1))
+                    .build();
 
             cluster.execute(update);
             update.get();
@@ -145,9 +151,10 @@ public class ITestDtUpdateOperation extends ITestBase
             testValues.add(wrapped);
 
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName, setBucketType)
+                new DtUpdateOperation.Builder(bucketName, setBucketType)
                     .withOp(new SetOp().add(wrapped))
-                    .withKey(key);
+                    .withKey(key)
+                    .build();
 
             cluster.execute(update);
             update.get();
@@ -161,9 +168,10 @@ public class ITestDtUpdateOperation extends ITestBase
         {
 
             DtUpdateOperation update =
-                new DtUpdateOperation(bucketName, setBucketType)
+                new DtUpdateOperation.Builder(bucketName, setBucketType)
                     .withOp(new SetOp().remove(setElement))
-                    .withKey(key);
+                    .withKey(key)
+                    .build();
 
             cluster.execute(update);
             update.get();
@@ -200,17 +208,19 @@ public class ITestDtUpdateOperation extends ITestBase
             testValues.add(wrapped);
 
             DtUpdateOperation add =
-                new DtUpdateOperation(bucketName, setBucketType)
+                new DtUpdateOperation.Builder(bucketName, setBucketType)
                     .withOp(new SetOp().add(wrapped))
-                    .withKey(key);
+                    .withKey(key)
+                    .build();
 
             cluster.execute(add);
             add.get();
 
             DtUpdateOperation delete =
-                new DtUpdateOperation(bucketName, setBucketType)
+                new DtUpdateOperation.Builder(bucketName, setBucketType)
                     .withOp(new SetOp().remove(wrapped))
-                    .withKey(key);
+                    .withKey(key)
+                    .build();
 
             cluster.execute(delete);
             delete.get();
@@ -240,17 +250,19 @@ public class ITestDtUpdateOperation extends ITestBase
         ByteArrayWrapper setValue = ByteArrayWrapper.create("value");
         ByteArrayWrapper mapKey = ByteArrayWrapper.create("set");
         DtUpdateOperation add =
-            new DtUpdateOperation(bucketName, mapBucketType)
+            new DtUpdateOperation.Builder(bucketName, mapBucketType)
                 .withOp(new MapOp().add(mapKey, MapOp.FieldType.SET))
-                .withKey(key);
+                .withKey(key)
+                .build();
 
         cluster.execute(add);
         add.get();
 
         DtUpdateOperation update =
-            new DtUpdateOperation(bucketName, mapBucketType)
+            new DtUpdateOperation.Builder(bucketName, mapBucketType)
                 .withOp(new MapOp().update(mapKey, new SetOp().add(setValue)))
-                .withKey(key);
+                .withKey(key)
+                .build();
 
         cluster.execute(update);
         update.get();
@@ -262,19 +274,19 @@ public class ITestDtUpdateOperation extends ITestBase
         assertTrue(set.viewAsSet().contains(setValue));
 
 
-
-
         mapKey = ByteArrayWrapper.create("counter");
-        add = new DtUpdateOperation(bucketName, mapBucketType)
+        add = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.COUNTER))
-            .withKey(key);
+            .withKey(key)
+            .build();
 
         cluster.execute(add);
         add.get();
 
-        update = new DtUpdateOperation(bucketName, mapBucketType)
+        update = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().update(mapKey, new CounterOp(1)))
-            .withKey(key);
+            .withKey(key)
+            .build();
 
         cluster.execute(update);
         update.get();
@@ -286,22 +298,22 @@ public class ITestDtUpdateOperation extends ITestBase
         assertEquals(1, counter.getValue());
 
 
-
-
         mapKey = ByteArrayWrapper.create("flag");
 
         DtUpdateOperation addSet =
-            new DtUpdateOperation(bucketName, mapBucketType)
+            new DtUpdateOperation.Builder(bucketName, mapBucketType)
                 .withOp(new MapOp().add(mapKey, MapOp.FieldType.FLAG))
-                .withKey(key);
+                .withKey(key)
+                .build();
 
         cluster.execute(addSet);
         addSet.get();
 
         add =
-            new DtUpdateOperation(bucketName, mapBucketType)
+            new DtUpdateOperation.Builder(bucketName, mapBucketType)
                 .withOp(new MapOp().update(mapKey, new FlagOp(true)))
-                .withKey(key);
+                .withKey(key)
+                .build();
 
         cluster.execute(add);
         add.get();
@@ -313,19 +325,19 @@ public class ITestDtUpdateOperation extends ITestBase
         assertTrue(flag.getEnabled());
 
 
-
-
         mapKey = ByteArrayWrapper.create("register");
-        addSet = new DtUpdateOperation(bucketName, mapBucketType)
+        addSet = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.REGISTER))
-            .withKey(key);
+            .withKey(key)
+            .build();
 
         cluster.execute(addSet);
         addSet.get();
 
-        add = new DtUpdateOperation(bucketName, mapBucketType)
+        add = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().update(mapKey, new RegisterOp(mapKey)))
-            .withKey(key);
+            .withKey(key)
+            .build();
 
         cluster.execute(add);
         add.get();
@@ -336,20 +348,20 @@ public class ITestDtUpdateOperation extends ITestBase
         assertEquals(mapKey, register.getValue());
 
 
-
-
         mapKey = ByteArrayWrapper.create("map");
 
-        addSet = new DtUpdateOperation(bucketName, mapBucketType)
+        addSet = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.MAP))
-            .withKey(key);
+            .withKey(key)
+            .build();
 
         cluster.execute(addSet);
         addSet.get();
 
-        add = new DtUpdateOperation(bucketName, mapBucketType)
+        add = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().update(mapKey, new MapOp().add(mapKey, MapOp.FieldType.FLAG)))
-            .withKey(key);
+            .withKey(key)
+            .build();
 
         cluster.execute(add);
         add.get();
