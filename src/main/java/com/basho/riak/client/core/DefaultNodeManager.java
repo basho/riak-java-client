@@ -113,8 +113,8 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                     if (unhealthy.remove(node))
                     {
                         healthy.add(node);
-                        logger.info("NodeManager moved node to healthy list; {}", 
-                                    node.getRemoteAddress());
+                        logger.info("NodeManager moved node to healthy list; {}:{}", 
+                                    node.getRemoteAddress(), node.getPort());
                     }
                 }
                 finally
@@ -129,8 +129,8 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                     if (healthy.remove(node))
                     {
                         unhealthy.add(node);
-                        logger.info("NodeManager moved node to unhealthy list; {}", 
-                                    node.getRemoteAddress());
+                        logger.info("NodeManager moved node to unhealthy list; {}:{}", 
+                                    node.getRemoteAddress(), node.getPort());
                     }
                 }
                 finally
@@ -140,18 +140,25 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                 break;
             case SHUTTING_DOWN:
             case SHUTDOWN:
+                boolean removed = false;
                 try
                 {
                     lock.writeLock().lock();
-                    healthy.remove(node);
-                    unhealthy.remove(node);
+                    removed = healthy.remove(node);
+                    if (!removed)
+                    {
+                        unhealthy.remove(node);
+                    }
                 }
                 finally
                 {
                     lock.writeLock().unlock();
                 }
-                logger.info("NodeManager removed node due to it shutting down; {}",
-                                node.getRemoteAddress());
+                if (removed)
+                {
+                    logger.info("NodeManager removed node due to it shutting down; {}:{}",
+                                node.getRemoteAddress(), node.getPort());
+                }
                 break;
             default:
                 break;
@@ -195,8 +202,8 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
         {
             node.removeStateListener(this);
             node.shutdown();
-            logger.info("NodeManager removed and shutdown node; {}", 
-                        node.getRemoteAddress());
+            logger.info("NodeManager removed and shutdown node; {}:{}", 
+                        node.getRemoteAddress(), node.getPort());
         }
         return removed;
     }

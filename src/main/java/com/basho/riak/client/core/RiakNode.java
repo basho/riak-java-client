@@ -222,7 +222,7 @@ public class RiakNode implements RiakResponseListener
         return this;
     }
 
-    public synchronized Future<Void> shutdown()
+    public synchronized Future<Boolean> shutdown()
     {
         stateCheck(State.RUNNING, State.HEALTH_CHECKING);
         state = State.SHUTTING_DOWN;
@@ -240,23 +240,22 @@ public class RiakNode implements RiakResponseListener
 
         executor.schedule(new ShutdownTask(), 0, TimeUnit.SECONDS);
         
-        return new Future<Void>() {
+        return new Future<Boolean>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
             {
                 return false;
             }
             @Override
-            public Void get() throws InterruptedException
+            public Boolean get() throws InterruptedException
             {
                 shutdownLatch.await();
-                return null;
+                return true;
             }
             @Override
-            public Void get(long timeout, TimeUnit unit) throws InterruptedException
+            public Boolean get(long timeout, TimeUnit unit) throws InterruptedException
             {
-                shutdownLatch.await(timeout, unit);
-                return null;
+                return shutdownLatch.await(timeout, unit);
             }
             @Override
             public boolean isCancelled()
