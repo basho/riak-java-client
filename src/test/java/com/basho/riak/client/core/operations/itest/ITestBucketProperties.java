@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
@@ -85,20 +86,20 @@ public class ITestBucketProperties extends ITestBase
     {
         BucketProperties props = 
             new BucketProperties()
-                .withAllowMulti(true)
-                .withNVal(4);
+                .withNVal(4)
+                .withR(1);
         
         storeBucketProps(bucketName, null, props);
         props = fetchBucketProps(bucketName, null);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
-        assertTrue(props.getAllowMulti());
+        assertEquals(props.getR().getIntValue(), 1);
         
         resetAndEmptyBucket(bucketName);
         
         props = fetchBucketProps(bucketName, null);
         assertEquals(props.getNVal(), Integer.valueOf(3));
-        assertFalse(props.getAllowMulti());
+        assertEquals(props.getR(), Quorum.quorumQuorum());
         
     }
     
@@ -137,7 +138,6 @@ public class ITestBucketProperties extends ITestBase
         Assume.assumeTrue(testBucketType);
         BucketProperties props = 
             new BucketProperties()
-                .withAllowMulti(true)
                 .withR(1)
                 .withNVal(4);
         
@@ -146,11 +146,9 @@ public class ITestBucketProperties extends ITestBase
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertEquals(props.getR().getIntValue(), 1);
-        assertTrue(props.getAllowMulti());
         
         props = fetchBucketProps(bucketName, null);
         assertEquals(props.getNVal(), Integer.valueOf(3));
-        assertFalse(props.getAllowMulti());
     }
     
     private BucketProperties fetchBucketProps(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType) throws InterruptedException, ExecutionException
