@@ -112,7 +112,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         }
         
         // Pass a *copy* of the list to the NodeManager
-        nodeManager.init(new ArrayList(nodeList));
+        nodeManager.init(new ArrayList<RiakNode>(nodeList));
         state = State.CREATED;
     }
     
@@ -261,7 +261,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         try
         {
             nodeListLock.readLock().lock();
-            return new ArrayList(nodeList);
+            return new ArrayList<RiakNode>(nodeList);
         }
         finally
         {

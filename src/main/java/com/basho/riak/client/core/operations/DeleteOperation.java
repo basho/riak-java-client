@@ -48,8 +48,8 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
     @Override
     protected KvResponse<Boolean> convert(List<Void> rawResponse) throws ExecutionException
     {
-        KvResponse.Builder builder = 
-            new KvResponse.Builder(ByteArrayWrapper.create(reqBuilder.getKey().toByteArray()),
+        KvResponse.Builder<Boolean> builder = 
+            new KvResponse.Builder<Boolean>(ByteArrayWrapper.create(reqBuilder.getKey().toByteArray()),
                                     ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray()));
                 
         if (reqBuilder.hasType())
