@@ -51,9 +51,9 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     @Override
     public void init(List<RiakNode> nodes)
     {
+        lock.writeLock().lock();
         try
         {
-            lock.writeLock().lock();
             healthy.addAll(nodes);
         }
         finally
@@ -65,9 +65,9 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     @Override
     public void executeOnNode(FutureOperation operation, RiakNode previousNode)
     {
+        lock.readLock().lock();
         try
         {
-            lock.readLock().lock();
             boolean executed = false;
             if (healthy.size() > 1)
             {
@@ -107,9 +107,9 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
         switch (state)
         {
             case RUNNING:
+                lock.writeLock().lock();
                 try
                 {
-                    lock.writeLock().lock();
                     if (unhealthy.remove(node))
                     {
                         healthy.add(node);
@@ -123,9 +123,9 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                 }
                 break;
             case HEALTH_CHECKING:
+                lock.writeLock().lock();
                 try
                 {
-                    lock.writeLock().lock();
                     if (healthy.remove(node))
                     {
                         unhealthy.add(node);
@@ -141,24 +141,25 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
             case SHUTTING_DOWN:
             case SHUTDOWN:
                 boolean removed = false;
+                lock.writeLock().lock();
                 try
                 {
-                    lock.writeLock().lock();
                     removed = healthy.remove(node);
                     if (!removed)
                     {
                         unhealthy.remove(node);
+                    }
+                    if (removed)
+                    {
+                        logger.info("NodeManager removed node due to it shutting down; {}:{}",
+                                    node.getRemoteAddress(), node.getPort());
                     }
                 }
                 finally
                 {
                     lock.writeLock().unlock();
                 }
-                if (removed)
-                {
-                    logger.info("NodeManager removed node due to it shutting down; {}:{}",
-                                node.getRemoteAddress(), node.getPort());
-                }
+                
                 break;
             default:
                 break;
@@ -168,9 +169,9 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     @Override
     public void addNode(RiakNode newNode)
     {
+        lock.writeLock().lock();
         try
         {
-            lock.writeLock().lock();
             healthy.add(newNode);
         }
         finally
@@ -183,28 +184,27 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     @Override
     public boolean removeNode(RiakNode node)
     {
-        boolean removed;
+        lock.writeLock().lock();
         try
         {
-            lock.writeLock().lock();
+            boolean removed;
             removed = healthy.remove(node);
             if (!removed)
             {
                 removed = unhealthy.remove(node);
             }
+            if (removed)
+            {
+                node.removeStateListener(this);
+                node.shutdown();
+                logger.info("NodeManager removed and shutdown node; {}:{}", 
+                            node.getRemoteAddress(), node.getPort());
+            }
+            return removed;
         }
         finally
         {
             lock.writeLock().unlock();
         }
-        
-        if (removed)
-        {
-            node.removeStateListener(this);
-            node.shutdown();
-            logger.info("NodeManager removed and shutdown node; {}:{}", 
-                        node.getRemoteAddress(), node.getPort());
-        }
-        return removed;
     }
 }

@@ -22,7 +22,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -216,9 +215,9 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         node.setExecutor(executor);
         node.setBootstrap(bootstrap);
         
+        nodeListLock.writeLock().lock();
         try
         {
-            nodeListLock.writeLock().lock();
             nodeList.add(node);
         }
         finally
@@ -238,9 +237,9 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     {
         stateCheck(State.CREATED, State.RUNNING);
         boolean removed = false;
+        nodeListLock.writeLock().lock();
         try
         {
-            nodeListLock.writeLock().lock();
             removed = nodeList.remove(node);
         }
         finally
@@ -258,9 +257,9 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     public List<RiakNode> getNodes()
     {
         stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        nodeListLock.readLock().lock();
         try
         {
-            nodeListLock.readLock().lock();
             return new ArrayList<RiakNode>(nodeList);
         }
         finally
@@ -283,9 +282,9 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         if (state == RiakNode.State.SHUTDOWN)
         {
             logger.debug("Node state changed to shutdown; {}:{}", node.getRemoteAddress(), node.getPort());
+            nodeListLock.writeLock().lock();
             try
             {
-                nodeListLock.writeLock().lock();
                 nodeList.remove(node);
                 logger.debug("Active nodes remaining: {}", nodeList.size());
             
