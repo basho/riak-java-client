@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +56,14 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final AtomicInteger inFlightCount = new AtomicInteger();
     private final ScheduledExecutorService executor;
     private final Bootstrap bootstrap;
-    private final List<RiakNode> nodes;
+    private final List<RiakNode> nodeList;
+    private final ReentrantReadWriteLock nodeListLock = new ReentrantReadWriteLock();
     private final LinkedBlockingQueue<FutureOperation> retryQueue =
         new LinkedBlockingQueue<FutureOperation>();
     
-    private ScheduledFuture<?> shutdownFuture;
-    private ScheduledFuture<?> retrierFuture;
+    
+    private volatile ScheduledFuture<?> shutdownFuture;
+    private volatile ScheduledFuture<?> retrierFuture;
     
     private volatile State state;
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
@@ -99,16 +102,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             executor = new ScheduledThreadPoolExecutor(2);
         }
         
-        nodes = Collections.synchronizedList(new ArrayList<RiakNode>(builder.riakNodes.size()));
+        nodeList = new ArrayList<RiakNode>(builder.riakNodes.size());
         for (RiakNode node : builder.riakNodes)
         {
             node.setExecutor(executor);
             node.setBootstrap(bootstrap);
             node.addStateListener(nodeManager);
-            nodes.add(node);
+            nodeList.add(node);
         }
         
-        nodeManager.init(nodes);
+        // Pass a *copy* of the list to the NodeManager
+        nodeManager.init(new ArrayList<RiakNode>(nodeList));
         state = State.CREATED;
     }
     
@@ -128,16 +132,20 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     {
         stateCheck(State.CREATED);
         
-        for (RiakNode node : nodes)
+        // Completely unneeded *right now* but operating on a copy
+        // of the nodeList defensively prevents a deadlock occuring 
+        // if a callback were to try and modify the list.
+        for (RiakNode node : getNodes())
         {
             node.start();
         }
+        
         retrierFuture = executor.schedule(new RetryTask(), 0, TimeUnit.SECONDS);
         logger.info("RiakCluster is starting.");
         state = State.RUNNING;
     }
 
-    public synchronized Future<Void> shutdown()
+    public synchronized Future<Boolean> shutdown()
     {
         stateCheck(State.RUNNING);
         logger.info("RiakCluster is shutting down.");
@@ -149,23 +157,22 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                                                          500, 500, 
                                                          TimeUnit.MILLISECONDS);
         
-        return new Future<Void>() {
+        return new Future<Boolean>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
             {
                 return false;
             }
             @Override
-            public Void get() throws InterruptedException
+            public Boolean get() throws InterruptedException
             {
                 shutdownLatch.await();
-                return null;
+                return true;
             }
             @Override
-            public Void get(long timeout, TimeUnit unit) throws InterruptedException
+            public Boolean get(long timeout, TimeUnit unit) throws InterruptedException
             {
-                shutdownLatch.await(timeout, unit);
-                return null;
+                return shutdownLatch.await(timeout, unit);
             }
             @Override
             public boolean isCancelled()
@@ -200,14 +207,25 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      * The node can not have been started nor have its Bootstrap or Executor
      * set.
      * @param node the RiakNode to add
+     * @throws java.net.UnknownHostException if the RiakNode's hostname cannot be resolved
      * @throws IllegalArgumentException if the node's Bootstrap or Executor are already set.
      */
-    public synchronized void addNode(RiakNode node) throws UnknownHostException
+    public void addNode(RiakNode node) throws UnknownHostException
     {
         stateCheck(State.CREATED, State.RUNNING);
         node.setExecutor(executor);
         node.setBootstrap(bootstrap);
-        nodes.add(node);
+        
+        try
+        {
+            nodeListLock.writeLock().lock();
+            nodeList.add(node);
+        }
+        finally
+        {
+            nodeListLock.writeLock().unlock();
+        }
+        
         nodeManager.addNode(node);
     }
     
@@ -216,21 +234,40 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      * @param node
      * @return true if the node was in the cluster, false otherwise.
      */
-    public synchronized boolean removeNode(RiakNode node)
+    public boolean removeNode(RiakNode node)
     {
         stateCheck(State.CREATED, State.RUNNING);
-        nodes.remove(node);
-        return nodeManager.removeNode(node);
+        boolean removed = false;
+        try
+        {
+            nodeListLock.writeLock().lock();
+            removed = nodeList.remove(node);
+        }
+        finally
+        {
+            nodeListLock.writeLock().unlock();
+        }
+        nodeManager.removeNode(node);
+        return removed;
     }
     
     /**
-     * Returns the list of nodes in this cluster.
-     * @return An unmodifiable list of RiakNodes
+     * Returns a copy of the list of nodes in this cluster.
+     * @return A copy of the list of RiakNodes
      */
     public List<RiakNode> getNodes()
     {
-        stateCheck(State.CREATED, State.RUNNING);
-        return Collections.unmodifiableList(nodes);
+        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        try
+        {
+            nodeListLock.readLock().lock();
+            return new ArrayList<RiakNode>(nodeList);
+        }
+        finally
+        {
+            nodeListLock.readLock().unlock();
+        }
+        
     }
     
     int inFlightCount()
@@ -245,17 +282,26 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         // to shutdown.
         if (state == RiakNode.State.SHUTDOWN)
         {
-            nodes.remove(node);
-            nodeManager.removeNode(node);
-            
-            if (nodes.isEmpty())
+            logger.debug("Node state changed to shutdown; {}:{}", node.getRemoteAddress(), node.getPort());
+            try
             {
-                this.state = State.SHUTDOWN;
-                executor.shutdown();
-                bootstrap.group().shutdownGracefully();
-                logger.debug("RiakCluster shut down bootstrap");
-                logger.info("RiakCluster has shut down");
-                shutdownLatch.countDown();
+                nodeListLock.writeLock().lock();
+                nodeList.remove(node);
+                logger.debug("Active nodes remaining: {}", nodeList.size());
+            
+                if (nodeList.isEmpty())
+                {
+                    this.state = State.SHUTDOWN;
+                    executor.shutdown();
+                    bootstrap.group().shutdownGracefully();
+                    logger.debug("RiakCluster shut down bootstrap");
+                    logger.info("RiakCluster has shut down");
+                    shutdownLatch.countDown();
+                }
+            }
+            finally
+            {
+                nodeListLock.writeLock().unlock();
             }
         }
     }
@@ -317,12 +363,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             if (inFlightCount.get() == 0)
             {
                 logger.info("All operations have completed");
+
                 retrierFuture.cancel(true);
-                for (RiakNode node : nodes)
+                
+                // Copying the list avoids any potential deadlocks on the callbacks.
+                for (RiakNode node : getNodes())
                 {
                     node.addStateListener(RiakCluster.this);
+                    logger.debug("calling shutdown on node {}:{}", node.getRemoteAddress(), node.getPort());
                     node.shutdown();
                 }
+                
                 shutdownFuture.cancel(false);
             }
         }

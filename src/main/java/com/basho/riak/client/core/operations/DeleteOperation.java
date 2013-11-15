@@ -48,10 +48,15 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
     @Override
     protected KvResponse<Boolean> convert(List<Void> rawResponse) throws ExecutionException
     {
-        ByteArrayWrapper key = ByteArrayWrapper.create(reqBuilder.getKey().toByteArray());
-        ByteArrayWrapper bucket = ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray());
-        ByteArrayWrapper bucketType = ByteArrayWrapper.create(reqBuilder.getType().toByteArray());
-        return new KvResponse.Builder(bucket, key).withBucketType(bucketType).withContent(true).build();
+        KvResponse.Builder<Boolean> builder = 
+            new KvResponse.Builder<Boolean>(ByteArrayWrapper.create(reqBuilder.getKey().toByteArray()),
+                                    ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray()));
+                
+        if (reqBuilder.hasType())
+        {
+            builder.withBucketType(ByteArrayWrapper.create(reqBuilder.getType().toByteArray()));
+        }
+        return builder.withContent(true).build();
     }
 
     @Override

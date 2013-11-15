@@ -93,7 +93,7 @@ public class CrdtResponse extends RiakResponse
             {
                 if (context.length() == 0)
                 {
-                    throw new IllegalArgumentException("Bucket type cannot be null or zero length");
+                    throw new IllegalArgumentException("Context cannot be null or zero length");
                 }
                 else
                 {

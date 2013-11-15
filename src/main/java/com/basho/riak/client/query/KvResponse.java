@@ -128,7 +128,7 @@ public class KvResponse<T> extends RiakResponse
             this.key = key;
         }
 
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder<T> withBucketType(ByteArrayWrapper bucketType)
         {
             if (bucketType != null)
             {
