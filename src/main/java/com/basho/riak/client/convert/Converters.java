@@ -16,18 +16,43 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.ByteArrayWrapper;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Converters {
+public class Converters
+{
 
-  public static <T> List<T> convert(Converter<T> converter, List<? extends RiakObject> objects) {
-    List<T> converted = new ArrayList<T>(objects.size());
-    for (RiakObject o : objects) {
-      converted.add(converter.toDomain(o));
+    public static <T> List<T> convert(Converter<T> converter, List<? extends RiakObject> objects)
+    {
+        List<T> converted = new ArrayList<T>(objects.size());
+        for (RiakObject o : objects)
+        {
+            converted.add(converter.toDomain(o));
+        }
+        return converted;
     }
-    return converted;
-  }
+
+    public static Converter<String> stringConverter()
+    {
+        return new Converter<String>()
+        {
+            @Override
+            public String toDomain(RiakObject riakObject)
+            {
+                return new String(riakObject.getValue().unsafeGetValue());
+            }
+
+            @Override
+            public RiakObject fromDomain(String domainObject)
+            {
+                RiakObject ro = new RiakObject();
+                ro.setValue(ByteArrayWrapper.create(domainObject));
+                return ro;
+            }
+        };
+    }
 
 }
