@@ -20,7 +20,6 @@ import com.basho.riak.client.cap.Mutation;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -31,7 +31,7 @@ public class StoreOption<T> extends RiakOption<T>
     public static final StoreOption<Boolean> SLOPPY_QUORUM = new StoreOption<Boolean>("SLOPPY_QUORUM");
     public static final StoreOption<Integer> N_VAL = new StoreOption<Integer>("N_VAL");
 
-    public StoreOption(String name)
+    private StoreOption(String name)
     {
         super(name);
     }

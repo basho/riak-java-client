@@ -55,4 +55,9 @@ public class Converters
         };
     }
 
+
+    public static <T> Converter<T> jsonConverter()
+    {
+        return null;
+    }
 }

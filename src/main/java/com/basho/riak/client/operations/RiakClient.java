@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.Converters;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
@@ -32,6 +33,8 @@ import static com.basho.riak.client.operations.RiakClient.Resolvers.MyResolver;
 public class RiakClient
 {
 
+    private static final Converter<RiakObject> DEFAULT_CONVERTER = new PassThroughConverter();
+
     private final RiakCluster cluster;
 
     public RiakClient(RiakCluster cluster)
@@ -46,7 +49,7 @@ public class RiakClient
 
     public FetchValue<RiakObject> fetch(Key location)
     {
-        return new FetchValue<RiakObject>(cluster, location, new PassThroughConverter());
+        return new FetchValue<RiakObject>(cluster, location, DEFAULT_CONVERTER);
     }
 
     public <T> StoreValue<T> store(Location location, T value, Converter<T> converter)
@@ -61,36 +64,63 @@ public class RiakClient
         return sv;
     }
 
-    public StoreValue<RiakObject> store(Location location, RiakObject value)
+    public <T> StoreValue<T> store(Location location, T value, VClock vClock)
     {
-        return new StoreValue<RiakObject>(cluster, location, value, new PassThroughConverter());
-    }
-
-    public StoreValue<RiakObject> store(Location location, RiakObject value, VClock vClock)
-    {
-        StoreValue<RiakObject> sv = new StoreValue<RiakObject>(cluster, location, value, new PassThroughConverter());
+        StoreValue<T> sv = new StoreValue<T>(cluster, location, value, Converters.<T>jsonConverter());
         sv.withVectorClock(vClock);
         return sv;
     }
 
-    public <T> MutateValue<T> mutate(Key location, Converter<T> converter, ConflictResolver<T> resolver, Mutation<T> mutation)
+    public StoreValue<RiakObject> store(Location location, RiakObject value)
+    {
+        return new StoreValue<RiakObject>(cluster, location, value, DEFAULT_CONVERTER);
+    }
+
+    public <T> StoreValue<T> store(Location location, T value)
+    {
+        return new StoreValue<T>(cluster, location, value, Converters.<T>jsonConverter());
+    }
+
+    public StoreValue<RiakObject> store(Location location, RiakObject value, VClock vClock)
+    {
+        StoreValue<RiakObject> sv = new StoreValue<RiakObject>(cluster, location, value, DEFAULT_CONVERTER);
+        sv.withVectorClock(vClock);
+        return sv;
+    }
+
+    public <T> MutateValue<T> update(Key location, Converter<T> converter, ConflictResolver<T> resolver, Mutation<T> mutation)
     {
         return new MutateValue<T>(cluster, location, converter, resolver, mutation);
     }
 
-    public MutateValue<RiakObject> mutate(Key location, ConflictResolver<RiakObject> resolver, Mutation<RiakObject> mutation)
+    public <T> MutateValue<T> update(Key location, Converter<T> converter, Mutation<T> mutation)
     {
-        return new MutateValue<RiakObject>(cluster, location, new PassThroughConverter(), resolver, mutation);
+        return new MutateValue<T>(cluster, location, converter, new DefaultResolver<T>(), mutation);
+    }
+
+    public MutateValue<RiakObject> update(Key location, ConflictResolver<RiakObject> resolver, Mutation<RiakObject> mutation)
+    {
+        return new MutateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, mutation);
+    }
+
+    public MutateValue<RiakObject> update(Key location, Mutation<RiakObject> mutation)
+    {
+        return new MutateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, new DefaultResolver<RiakObject>(), mutation);
     }
 
     public <T> MutateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
     {
-        return new MutateValue<T>(cluster, location, converter, resolver, new IdentityMutation());
+        return new MutateValue<T>(cluster, location, converter, resolver, Mutations.<T>identity());
     }
 
     public MutateValue<RiakObject> resolve(Key location, ConflictResolver<RiakObject> resolver)
     {
-        return new MutateValue<RiakObject>(cluster, location, new PassThroughConverter(), resolver, new IdentityMutation());
+        return new MutateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, Mutations.<RiakObject>identity());
+    }
+
+    public DeleteValue delete(Key location)
+    {
+        return new DeleteValue(cluster, location);
     }
 
     public static RiakObject resolve(List<RiakObject> siblings)
@@ -145,15 +175,15 @@ public class RiakClient
         }
 
         // Represent anything that has to fetch, then resolve, then store back
-        // as a mutation
+        // as an update
         Key key2 = Location.key("bucket", "key");
-        client.mutate(key2, MyResolver, new BaseMutation<RiakObject>()
+        client.update(key2, new BaseMutation<RiakObject>()
         {
             @Override
             public RiakObject apply(RiakObject original)
             {
                 RiakObject mutated = mutate(original);
-                setHasMutated(true);
+                setHasMutated(mutated != null);
                 return mutated;
             }
 
@@ -161,6 +191,10 @@ public class RiakClient
 
         // Resolve conflicts for a given key
         client.resolve(key, MyResolver);
+
+        // Delete a value
+        DeleteValue.Response delete = client.delete(key).execute();
+
 
     }
 
@@ -173,24 +207,6 @@ public class RiakClient
         {
             return null;
         }
-
-    }
-
-    static final class IdentityMutation<T> implements Mutation<T>
-    {
-
-        @Override
-        public T apply(T original)
-        {
-            return original;
-        }
-
-        @Override
-        public boolean hasMutated()
-        {
-            return false;
-        }
-
 
     }
 

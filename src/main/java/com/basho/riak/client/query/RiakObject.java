@@ -37,7 +37,7 @@ import java.nio.charset.Charset;
  * </p>
  * <p>
  * @riak.threadsafety RiakObject is designed to be thread safe. All methods 
- * which mutate the object do so via a thread safe mechanism. The only caveat is
+ * which update the object do so via a thread safe mechanism. The only caveat is
  * that if you use any of the methods prefixed with "unsafe" you need to
  * understand the ramifications as noted in their Javadoc.
  * </p>

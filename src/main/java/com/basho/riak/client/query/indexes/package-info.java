@@ -65,7 +65,7 @@
  * <h6>Special note when using RawIndex</h6>
  * A {@code RiakIndex} is uniquely identified by its textual name and {@code IndexType} 
  * regardless of the concrete {@code RiakIndex} implementation being used to view
- * or mutate it. This container enforces this uniqueness by being the source of 
+ * or update it. This container enforces this uniqueness by being the source of
  * all {@code RiakIndex} instances and managing them in a thread-safe way with 
  * atomic operations. 
  * <p>
