@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -32,6 +32,11 @@ public class RiakMap extends RiakDatatype<Map<ByteArrayWrapper, RiakDatatype<?>>
     public RiakMap()
     {
         this(new CrdtMap((List<CrdtMap.MapEntry>) Collections.EMPTY_MAP), new MapMutation());
+    }
+
+    public RiakMap(CrdtMap map)
+    {
+        this(map, new MapMutation());
     }
 
     RiakMap(CrdtMap map, MapMutation mutation)

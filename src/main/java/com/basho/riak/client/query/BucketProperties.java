@@ -25,7 +25,7 @@ import java.util.List;
  * 
  * Note that when instantiating a new instance there are no default values. Calling
  * a getter for a specific property will return null if it has not been explicitly 
- * set. Unset properties are ignored when writing to a bucket or bucket type in Riak.
+ * asSet. Unset properties are ignored when writing to a bucket or bucket type in Riak.
  * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -74,8 +74,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a linkfun value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a linkfun value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasLinkwalkFunction()
     {
@@ -105,8 +105,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a chash_keyfun value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a chash_keyfun value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasChashKeyFunction()
     {
@@ -148,8 +148,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an rw value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an rw value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasRw()
     {
@@ -159,7 +159,7 @@ public class BucketProperties
     /**
      * Get the rw value.
      * 
-     * @return the rw value as a Quorum, or null if not set.
+     * @return the rw value as a Quorum, or null if not asSet.
      */
     public Quorum getRw()
     {
@@ -191,8 +191,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a dw value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a dw value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasDw()
     {
@@ -202,7 +202,7 @@ public class BucketProperties
     /**
      * Get the dw value.
      * 
-     * @return the dw value as a Quorum, or null if not set.
+     * @return the dw value as a Quorum, or null if not asSet.
      */
     public Quorum getDw()
     {
@@ -234,8 +234,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a w value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a w value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasW()
     {
@@ -243,7 +243,7 @@ public class BucketProperties
     }
     /**
      * Get the w value.
-     * @return the w value as a Quorum, or null if not set.
+     * @return the w value as a Quorum, or null if not asSet.
      */
     public Quorum getW()
     {
@@ -275,8 +275,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an r value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an r value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasR()
     {
@@ -285,7 +285,7 @@ public class BucketProperties
     
     /**
      * Get the r value.
-     * @return the r value as a Quorum, or null if not set.
+     * @return the r value as a Quorum, or null if not asSet.
      */
     public Quorum getR()
     {
@@ -317,8 +317,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a pr value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a pr value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasPr()
     {
@@ -359,8 +359,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a pw value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a pw value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasPw()
     {
@@ -390,8 +390,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a not_found_ok value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a not_found_ok value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasNotFoundOk()
     {
@@ -400,7 +400,7 @@ public class BucketProperties
     
     /**
      * Get the not_found_ok value.
-     * @return the not_found_ok value or null if not set.
+     * @return the not_found_ok value or null if not asSet.
      * @see BucketProperties#withNotFoundOk(boolean)
      */
     public Boolean getNotFoundOk()
@@ -426,8 +426,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a basic_quorum value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a basic_quorum value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasBasicQuorum()
     {
@@ -436,7 +436,7 @@ public class BucketProperties
     
     /**
      * Get the basic_quorum value.
-     * @return the basic_quorum value, or null if not set.
+     * @return the basic_quorum value, or null if not asSet.
      * @see BucketProperties#withBasicQuorum(boolean) 
      */
     public Boolean getBasicQuorum()
@@ -464,7 +464,7 @@ public class BucketProperties
     
     /**
      * Determine if any pre-commit hooks have been added.
-     * @return true if set, false otherwise.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasPrecommitHooks()
     {
@@ -497,7 +497,7 @@ public class BucketProperties
     
     /**
      * Determine if any post-commit hooks have been added.
-     * @return true if set, false otherwise.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasPostcommitHooks()
     {
@@ -528,8 +528,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an old_vclock value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an old_vclock value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasOldVClock()
     {
@@ -538,7 +538,7 @@ public class BucketProperties
     
     /**
      * Get the old_vclock value.
-     * @return the old_vclock value as a long or null if not set.
+     * @return the old_vclock value as a long or null if not asSet.
      * @see BucketProperties#withOldVClock(long) 
      */
     public Long getOldVClock()
@@ -560,8 +560,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an young_vclock value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an young_vclock value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasYoungVClock()
     {
@@ -570,7 +570,7 @@ public class BucketProperties
     
     /**
      * Get the young_vclock value.
-     * @return the young_vclock value as an long or null if not set.
+     * @return the young_vclock value as an long or null if not asSet.
      * @see BucketProperties#withYoungVClock(long) 
      */
     public Long getYoungVClock()
@@ -592,8 +592,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an big_vclock value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an big_vclock value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasBigVClock()
     {
@@ -602,7 +602,7 @@ public class BucketProperties
     
     /**
      * Get the big_vclock value.
-     * @return the big_vclock value as a long or null if not set.
+     * @return the big_vclock value as a long or null if not asSet.
      * @see BucketProperties#withBigVClock(long) 
      */
     public Long getBigVClock()
@@ -624,8 +624,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an small_vclock value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an small_vclock value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasSmallVClock()
     {
@@ -634,7 +634,7 @@ public class BucketProperties
     
     /**
      * Get the small_vclock value.
-     * @return the small_vclock value as a long or null if not set.
+     * @return the small_vclock value as a long or null if not asSet.
      * @see BucketProperties#withSmallVClock(long) 
      */
     public Long getSmallVClock()
@@ -659,8 +659,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an backend value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an backend value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasBackend()
     {
@@ -670,7 +670,7 @@ public class BucketProperties
     /**
      * Get the backend.
      * Only applies when using {@code riak_kv_multi_backend} in Riak.
-     * @return the name of the backend or null if not set.
+     * @return the name of the backend or null if not asSet.
      */
     public String getBackend()
     {
@@ -693,8 +693,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an nVal value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an nVal value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasNVal()
     {
@@ -703,7 +703,7 @@ public class BucketProperties
     
     /**
      * Get the nVal.
-     * @return the nVal value or null if not set.
+     * @return the nVal value or null if not asSet.
      */
     public Integer getNVal()
     {
@@ -712,7 +712,7 @@ public class BucketProperties
     
     /**
      * Set the last_write_wins value.
-     * Unless you really know what you're doing, you probably do not want to set 
+     * Unless you really know what you're doing, you probably do not want to asSet
      * this to true.
      * @param wins whether to ignore vector clocks when writing.
      * @return a reference to this object.
@@ -724,8 +724,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a last_write_wins value has been set.
-     * @return true if set, false otherwise.
+     * Determine if a last_write_wins value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasLastWriteWins()
     {
@@ -734,7 +734,7 @@ public class BucketProperties
     
     /**
      * Get the last_write_wins value.
-     * @return the last_write_wins value or null if not set.
+     * @return the last_write_wins value or null if not asSet.
      */
     public Boolean getLastWriteWins()
     {
@@ -754,8 +754,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if an allow_multi value has been set.
-     * @return true if set, false otherwise.
+     * Determine if an allow_multi value has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasAllowMulti()
     {
@@ -764,7 +764,7 @@ public class BucketProperties
     
     /**
      * Get the allow_multi value.
-     * @return the allow_multi value or null if not set.
+     * @return the allow_multi value or null if not asSet.
      */
     public Boolean getAllowMulti()
     {
@@ -785,7 +785,7 @@ public class BucketProperties
     
     /**
      * Determine if Riak Search has been enabled.
-     * @return true if set, false otherwise.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasRiakSearchEnabled()
     {
@@ -818,8 +818,8 @@ public class BucketProperties
     }
     
     /**
-     * Determine if a Yokozuna Index has been set.
-     * @return true if set, false otherwise.
+     * Determine if a Yokozuna Index has been asSet.
+     * @return true if asSet, false otherwise.
      */
     public boolean hasYokozunaIndex()
     {
@@ -828,7 +828,7 @@ public class BucketProperties
     
     /**
      * Get the associated Yokozuna Index.
-     * @return the Yokozuna index name or null if not set.
+     * @return the Yokozuna index name or null if not asSet.
      */
     public String getYokozunaIndex()
     {

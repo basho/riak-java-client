@@ -123,7 +123,7 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
 
         /**
          * Set the bucket type for the FetchOperation.
-         * If not set, "default" is used.
+         * If not asSet, "default" is used.
          *
          * @param bucketType the bucket type
          * @return a reference to this object.
@@ -154,7 +154,7 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
 
         /**
          * Set the R value for this FetchOperation.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param r the R value.
          * @return a reference to this object.
@@ -167,7 +167,7 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
 
         /**
          * Set the PR value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param pr the PR value.
          * @return
@@ -185,7 +185,7 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
          * False is higher consistency, true is higher availability.
          * </p>
          * <p>
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          * </p>
          *
          * @param notFoundOK the not_found_ok value.

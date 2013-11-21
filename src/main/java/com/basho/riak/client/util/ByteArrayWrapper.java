@@ -21,13 +21,13 @@ import java.util.Arrays;
 /**
  * Lightweight utility class for byte arrays.
  * <p>
- * In almost all cases Riak is character set agnostic when it comes to data; buckets,
+ * In almost all cases Riak is character asSet agnostic when it comes to data; buckets,
  * keys, values and metadata are all stored in Riak simply as bytes. 
  * <p>
  * <p>
  * This utility class is used throughout the client in order to encapsulate 
  * and allow access to those bytes by the user when the data is generally
- * representative of a {@code String} so that any character set may be used.
+ * representative of a {@code String} so that any character asSet may be used.
  * </p>
  * @riak.threadsafety If you are using this class directly keep in mind that any modification to the 
  * wrapped <code>byte[]</code> post creation via either a retained reference to the 
@@ -68,7 +68,7 @@ public final class ByteArrayWrapper
 
     /**
      * Create a ByteArrayWrapper containing a copy of the supplied String
-     * encoded using the default character set.
+     * encoded using the default character asSet.
      *
      * @param data the data to copy
      * @return a new {@code ByteArrayWrapper}
@@ -185,7 +185,7 @@ public final class ByteArrayWrapper
     /**
      * Return the wrapped {@code byte[]} as a String.
      * <p>
-     * The default character set is used for encoding.
+     * The default character asSet is used for encoding.
      * </p>
      * @return a {@code String} created using the default {@code Charset}
      */

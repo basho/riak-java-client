@@ -163,7 +163,7 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
         
         /**
          * Set the bucket type for the FetchOperation.
-         * If not set, "default" is used.
+         * If not asSet, "default" is used.
          * @param bucketType the bucket type
          * @return a reference to this object.
          */
@@ -180,7 +180,7 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
         
         /**
          * Set the R value for this FetchOperation.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          * @param r the R value.
          * @return a reference to this object.
          */
@@ -192,7 +192,7 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
 
         /**
          * Set the PR value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          * @param pr the PR value.
          * @return 
          */
@@ -209,7 +209,7 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
         * False is higher consistency, true is higher availability.
         * </p>
         * <p>
-        * If not set the bucket default is used.
+        * If not asSet the bucket default is used.
         * </p>
         * @param notFoundOk the not_found_ok value.
         * @return a reference to this object.
@@ -252,7 +252,7 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
          * Return only the metadata.
          * <p>
          * Causes Riak to only return the metadata for the object. The value
-         * will be set to null.
+         * will be asSet to null.
          * @param headOnly true to return only metadata. 
          * @return a reference to this object.
          */

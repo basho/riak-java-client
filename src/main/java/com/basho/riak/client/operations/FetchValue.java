@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
@@ -70,7 +71,7 @@ public class FetchValue<T> implements RiakCommand<FetchValue.Response<T>>
 
             if (option == FetchOption.R)
             {
-                builder.withR((Integer) opPair.getValue());
+                builder.withR(((Quorum) opPair.getValue()).getIntValue());
             }
             else if (option == FetchOption.DELETED_VCLOCK)
             {

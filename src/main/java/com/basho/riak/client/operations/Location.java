@@ -111,4 +111,10 @@ public class Location
     {
         return key;
     }
+
+    @Override
+    public String toString()
+    {
+        return "{type: " + type + ", bucket: " + bucket + ", key: " + key + "}";
+    }
 }

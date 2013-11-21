@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -74,58 +74,5 @@ public abstract class RiakDatatype<T>
         return (RiakFlag) this;
     }
 
-    public static RiakMap fetchMap(ByteArrayWrapper key)
-    {
-        return null;
-    }
-
-    public static RiakSet fetchSet(ByteArrayWrapper key)
-    {
-        return null;
-    }
-
-    public static RiakCounter fetchCounter(ByteArrayWrapper key)
-    {
-        return null;
-    }
-
-    public static RiakMap store(ByteArrayWrapper key, RiakMap map)
-    {
-        return null;
-    }
-
-    public static RiakCounter store(ByteArrayWrapper key, RiakCounter counter)
-    {
-        return null;
-    }
-
-    public static RiakSet store(ByteArrayWrapper key, RiakSet set)
-    {
-        return null;
-    }
-
-    public static void main(String... args)
-    {
-        ByteArrayWrapper key = ByteArrayWrapper.create("key");
-
-        RiakMap datatype = fetchMap(key);
-
-        RiakFlag flag = datatype.getFlag("a");
-        flag.disable();
-        flag.enable();
-
-        RiakSet set = datatype.getSet("b");
-        set.add(ByteArrayWrapper.create("stuff"));
-
-        RiakMap daveMap = new RiakMap();
-        daveMap.put("count-things", new RiakCounter());
-        daveMap.put("secret", new RiakRegister(ByteArrayWrapper.create("secret")));
-        datatype.put("dave", daveMap);
-
-        daveMap.getCounter("count-things").increment(10);
-
-        datatype = store(key, datatype); // store changes and receive converged datatype
-
-    }
 
 }

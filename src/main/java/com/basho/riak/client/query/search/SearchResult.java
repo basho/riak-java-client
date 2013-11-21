@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Encapsulates the result set of a Riak Search or Yokuzuna query.
+ * Encapsulates the result asSet of a Riak Search or Yokuzuna query.
  * <p>
  * Each result is returned as a Map with the field names as the keys. 
  * </p>

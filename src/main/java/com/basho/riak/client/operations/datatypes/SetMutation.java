@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.SetOp;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -21,7 +21,7 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetMutation extends DatatypeMutation
+public class SetMutation extends DatatypeMutation<RiakSet>
 {
 
     private final Set<ByteArrayWrapper> adds = new HashSet<ByteArrayWrapper>();
@@ -29,6 +29,16 @@ public class SetMutation extends DatatypeMutation
 
     SetMutation()
     {
+    }
+
+    public static SetMutation addElement(ByteArrayWrapper value)
+    {
+        return new SetMutation().add(value);
+    }
+
+    public static SetMutation removeElement(ByteArrayWrapper value)
+    {
+        return new SetMutation().remove(value);
     }
 
     public SetMutation add(ByteArrayWrapper value)

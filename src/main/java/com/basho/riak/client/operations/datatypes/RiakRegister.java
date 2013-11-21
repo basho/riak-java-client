@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.CrdtRegister;
 import com.basho.riak.client.util.ByteArrayWrapper;

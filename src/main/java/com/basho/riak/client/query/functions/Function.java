@@ -16,7 +16,7 @@
 package com.basho.riak.client.query.functions;
 
 /**
- * A Function for use with bucket properties or map reduce.
+ * A Function for use with bucket properties or asMap reduce.
  * 
  * Instances are created via the provided static factory methods or by using the Builder.
  * @author Brian Roach <roach at basho dot com>

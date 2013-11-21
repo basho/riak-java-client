@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.CrdtCounter;
 
@@ -26,6 +26,11 @@ public class RiakCounter extends RiakDatatype<Long>
     public RiakCounter()
     {
         this(new CrdtCounter(0), new CounterMutation());
+    }
+
+    public RiakCounter(CrdtCounter counter)
+    {
+        this(counter, new CounterMutation());
     }
 
     RiakCounter(CrdtCounter counter, CounterMutation mutation)

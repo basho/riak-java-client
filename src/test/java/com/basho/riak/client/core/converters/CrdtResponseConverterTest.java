@@ -147,7 +147,7 @@ public class CrdtResponseConverterTest
         CrdtSet crdtSet = crdtMap.get(setKey).getAsSet();
         assertEquals(wrappedSetValues, crdtSet.viewAsSet());
 
-        // the map doesn't have any values
+        // the asMap doesn't have any values
 
         CrdtRegister crdtRegister = crdtMap.get(registerKey).getAsRegister();
         assertEquals(registerValue, crdtRegister.getValue());

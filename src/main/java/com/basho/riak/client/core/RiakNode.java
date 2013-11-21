@@ -278,7 +278,7 @@ public class RiakNode implements RiakResponseListener
      *
      * @param bootstrap - the Netty Bootstrap to use
      * @return a reference to this RiakNode
-     * @throws IllegalArgumentException if it was already set via the builder.
+     * @throws IllegalArgumentException if it was already asSet via the builder.
      * @throws IllegalStateException    if the node has already been started.
      * @see Builder#withBootstrap(io.netty.bootstrap.Bootstrap)
      */
@@ -299,7 +299,7 @@ public class RiakNode implements RiakResponseListener
      *
      * @param executor - the ScheduledExecutorService to use.
      * @return a reference to this RiakNode
-     * @throws IllegalArgumentException if it was already set via the builder.
+     * @throws IllegalArgumentException if it was already asSet via the builder.
      * @throws IllegalStateException    if the node has already been started.
      * @see Builder#withExecutor(java.util.concurrent.ScheduledExecutorService)
      */
@@ -308,7 +308,7 @@ public class RiakNode implements RiakResponseListener
         stateCheck(State.CREATED);
         if (this.executor != null)
         {
-            throw new IllegalArgumentException("Executor already set");
+            throw new IllegalArgumentException("Executor already asSet");
         }
         this.executor = executor;
         return this;
@@ -317,7 +317,7 @@ public class RiakNode implements RiakResponseListener
     /**
      * Sets the read timeout for connections.
      *
-     * @param readTimeoutInMillis the readTimeout to set
+     * @param readTimeoutInMillis the readTimeout to asSet
      * @return a reference to this RiakNode
      * @see Builder#withReadTimeout(int)
      */
@@ -343,7 +343,7 @@ public class RiakNode implements RiakResponseListener
     /**
      * Sets the maximum number of connections allowed.
      *
-     * @param maxConnections the maxConnections to set.
+     * @param maxConnections the maxConnections to asSet.
      * @return a reference to this RiakNode.
      * @see Builder#withMaxConnections(int)
      */
@@ -377,7 +377,7 @@ public class RiakNode implements RiakResponseListener
     /**
      * Sets the minimum number of active connections to be maintained.
      *
-     * @param minConnections the minConnections to set
+     * @param minConnections the minConnections to asSet
      * @return a reference to this RiakNode
      * @see Builder#withMinConnections(int)
      */
@@ -419,8 +419,8 @@ public class RiakNode implements RiakResponseListener
     }
     
     /**
-     * Returns if this node is set to block when all connections are in use.
-     * @return true if set to block, false otherwise.
+     * Returns if this node is asSet to block when all connections are in use.
+     * @return true if asSet to block, false otherwise.
      * @see Builder#withBlockOnMaxConnections(boolean) 
      */
     public boolean getBlockOnMaxConnections()
@@ -431,7 +431,7 @@ public class RiakNode implements RiakResponseListener
     /**
      * Sets the connection idle timeout for connections.
      *
-     * @param idleTimeoutInMillis the idleTimeout to set
+     * @param idleTimeoutInMillis the idleTimeout to asSet
      * @return a reference to this RiakNode
      * @see Builder#withIdleTimeout(int)
      */
@@ -457,7 +457,7 @@ public class RiakNode implements RiakResponseListener
     /**
      * Sets the connection timeout for new connections.
      *
-     * @param connectionTimeoutInMillis the connectionTimeout to set
+     * @param connectionTimeoutInMillis the connectionTimeout to asSet
      * @return a reference to this RiakNode
      * @see Builder#withConnectionTimeout(int)
      */
@@ -534,7 +534,7 @@ public class RiakNode implements RiakResponseListener
         Channel channel = getConnection();
         if (channel != null)
         {
-            // Add a timeout handler to the pipeline if the readTIeout is set
+            // Add a timeout handler to the pipeline if the readTIeout is asSet
             if (readTimeoutInMillis > 0)
             {
                 channel.pipeline()
@@ -561,7 +561,7 @@ public class RiakNode implements RiakResponseListener
      * <p>
      * The first thing this method does is attempt to acquire a permit from the 
      * Semaphore that controls the pool's behavior. Depending on whether 
-     * {@code blockOnMaxConnections} is set, this will either block until one
+     * {@code blockOnMaxConnections} is asSet, this will either block until one
      * becomes available or return null.
      * </p>
      * <p>
@@ -1058,7 +1058,7 @@ public class RiakNode implements RiakResponseListener
 
         /**
          * Default constructor. Returns a new builder for a RiakNode with
-         * default values set.
+         * default values asSet.
          */
         public Builder()
         {
@@ -1137,7 +1137,7 @@ public class RiakNode implements RiakResponseListener
          * Set the idle timeout used to reap inactive connections.
          * Any connection that has been idle for this amount of time
          * becomes eligible to be closed and discarded unless {@code minConnections}
-         * has been set via {@link #withMinConnections(int) }
+         * has been asSet via {@link #withMinConnections(int) }
          *
          * @param idleTimeoutInMillis - idle timeout in milliseconds
          * @return this
@@ -1240,8 +1240,8 @@ public class RiakNode implements RiakResponseListener
 
 
         /**
-         * Build a set of RiakNodes.
-         * The provided builder will be used to construct a set of RiakNodes
+         * Build a asSet of RiakNodes.
+         * The provided builder will be used to construct a asSet of RiakNodes
          * using the supplied addresses.
          *
          * @param builder         a configured builder

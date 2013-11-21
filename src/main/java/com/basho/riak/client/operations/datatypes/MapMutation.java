@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.MapOp;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -21,7 +21,7 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MapMutation extends DatatypeMutation
+public class MapMutation extends DatatypeMutation<RiakMap>
 {
 
     private final Set<MapOp.MapField> adds = new HashSet<MapOp.MapField>();

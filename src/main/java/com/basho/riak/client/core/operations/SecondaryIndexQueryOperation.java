@@ -155,7 +155,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         
         /**
          * Set the Bucket Type for the query.
-         * If not set the default type is used. 
+         * If not asSet the default type is used.
          * @param bucketType the bucket type.
          * @return a reference to this object.
          */
@@ -257,7 +257,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             else if ( (pbReqBuilder.hasRangeMin() && !pbReqBuilder.hasRangeMax()) ||
                  (pbReqBuilder.hasRangeMax() && !pbReqBuilder.hasRangeMin()) )
             {
-                throw new IllegalArgumentException("When specifying ranges both start and end must be set");
+                throw new IllegalArgumentException("When specifying ranges both start and end must be asSet");
             }
             else if (pbReqBuilder.hasRangeMin() && pbReqBuilder.hasKey())
             {

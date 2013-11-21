@@ -13,53 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.ops.FlagOp;
+import com.basho.riak.client.query.crdt.types.CrdtFlag;
 
-public class FlagMutation extends DatatypeMutation
+public class RiakFlag extends RiakDatatype<Boolean>
 {
 
-    private boolean flag = false;
+    private final FlagMutation mutation;
 
-    FlagMutation(boolean flag)
+    public RiakFlag()
     {
-        this.flag = flag;
+        this(new CrdtFlag(false), new FlagMutation());
     }
 
-    FlagMutation()
+    RiakFlag(CrdtFlag flag, FlagMutation mutation)
     {
+        this.mutation = mutation.setFlag(flag.getEnabled());
     }
 
-    public static FlagMutation newBuilder()
+    public void setFlag(boolean state)
     {
-        return new FlagMutation();
+        mutation.setFlag(state);
     }
 
-    public static FlagMutation enabled()
+    public void enable()
     {
-        return new FlagMutation(true);
+        mutation.setFlag(true);
     }
 
-    public static FlagMutation disabled()
+    public void disable()
     {
-        return new FlagMutation(false);
-    }
-
-    public FlagMutation setFlag(boolean flag)
-    {
-        this.flag = flag;
-        return this;
-    }
-
-    public boolean getEnabled()
-    {
-        return flag;
+        mutation.setFlag(false);
     }
 
     @Override
-    public FlagOp getOp()
+    public Boolean view()
     {
-        return new FlagOp(flag);
+        return mutation.getEnabled();
     }
+
+    @Override
+    FlagMutation getMutation()
+    {
+        return mutation;
+    }
+
 }

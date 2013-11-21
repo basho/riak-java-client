@@ -248,7 +248,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertTrue(map.viewAsMap().isEmpty());
 
         ByteArrayWrapper setValue = ByteArrayWrapper.create("value");
-        ByteArrayWrapper mapKey = ByteArrayWrapper.create("set");
+        ByteArrayWrapper mapKey = ByteArrayWrapper.create("asSet");
         DtUpdateOperation add =
             new DtUpdateOperation.Builder(bucketName, mapBucketType)
                 .withOp(new MapOp().add(mapKey, MapOp.FieldType.SET))
@@ -348,7 +348,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertEquals(mapKey, register.getValue());
 
 
-        mapKey = ByteArrayWrapper.create("map");
+        mapKey = ByteArrayWrapper.create("asMap");
 
         addSet = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.MAP))

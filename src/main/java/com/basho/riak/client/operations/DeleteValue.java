@@ -15,8 +15,12 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.operations.DeleteOperation;
+import com.basho.riak.client.query.KvResponse;
+import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +44,68 @@ public class DeleteValue implements RiakCommand<DeleteValue.Response>
     @Override
     public Response execute() throws ExecutionException, InterruptedException
     {
-        return null;
+
+        ByteArrayWrapper type = location.getType();
+        ByteArrayWrapper bucket = location.getBucket();
+        ByteArrayWrapper key = location.getKey();
+
+        DeleteOperation.Builder builder = new DeleteOperation.Builder(bucket, key);
+
+        if (type != null)
+        {
+            builder.withBucketType(type);
+        }
+
+        for (Map.Entry<DeleteOption<?>, Object> optPair : options.entrySet())
+        {
+
+            DeleteOption<?> option = optPair.getKey();
+
+            if (option == DeleteOption.DW)
+            {
+                builder.withDw(((Quorum) optPair.getValue()).getIntValue());
+            }
+            else if (option == DeleteOption.N_VAL)
+            {
+                builder.withNVal(((Quorum) optPair.getValue()).getIntValue());
+            }
+            else if (option == DeleteOption.PR)
+            {
+                builder.withPr(((Quorum) optPair.getValue()).getIntValue());
+            }
+            else if (option == DeleteOption.R)
+            {
+                builder.withR(((Quorum) optPair.getValue()).getIntValue());
+            }
+            else if (option == DeleteOption.PW)
+            {
+                builder.withPw(((Quorum) optPair.getValue()).getIntValue());
+            }
+            else if (option == DeleteOption.RW)
+            {
+                builder.withRw(((Quorum) optPair.getValue()).getIntValue());
+            }
+            else if (option == DeleteOption.SLOPPY_QUORUM)
+            {
+                builder.withSloppyQuorum((Boolean) optPair.getValue());
+            }
+            else if (option == DeleteOption.TIMEOUT)
+            {
+                builder.withTimeout((Integer) optPair.getValue());
+            }
+            else if (option == DeleteOption.W)
+            {
+                builder.withW(((Quorum) optPair.getValue()).getIntValue());
+            }
+        }
+
+        DeleteOperation operation = builder.build();
+        cluster.execute(operation);
+
+        KvResponse<Boolean> response = operation.get();
+
+        return new Response(true);
+
     }
 
     public DeleteValue withVClock(VClock vClock)
@@ -57,18 +122,11 @@ public class DeleteValue implements RiakCommand<DeleteValue.Response>
 
     public static class Response
     {
-        private final boolean notFound;
         private final boolean deleted;
 
-        public Response(boolean notFound, boolean deleted)
+        public Response(boolean deleted)
         {
-            this.notFound = notFound;
             this.deleted = deleted;
-        }
-
-        public boolean isNotFound()
-        {
-            return notFound;
         }
 
         public boolean isDeleted()

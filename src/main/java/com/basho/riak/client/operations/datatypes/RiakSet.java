@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.CrdtSet;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -32,6 +32,12 @@ public class RiakSet extends RiakDatatype<Set<ByteArrayWrapper>>
     {
         this(new CrdtSet(Collections.EMPTY_LIST), new SetMutation());
     }
+
+    public RiakSet(CrdtSet set)
+    {
+        this(set, new SetMutation());
+    }
+
 
     RiakSet(CrdtSet set, SetMutation mutation)
     {

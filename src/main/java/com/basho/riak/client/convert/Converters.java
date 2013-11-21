@@ -20,6 +20,7 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Converters
@@ -27,6 +28,11 @@ public class Converters
 
     public static <T> List<T> convert(Converter<T> converter, List<? extends RiakObject> objects)
     {
+        if (objects == null)
+        {
+            return Collections.emptyList();
+        }
+
         List<T> converted = new ArrayList<T>(objects.size());
         for (RiakObject o : objects)
         {

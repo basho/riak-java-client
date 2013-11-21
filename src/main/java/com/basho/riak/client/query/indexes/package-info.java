@@ -104,7 +104,7 @@
  * lends itself well to this as its byte ordering is the same as its lexical ordering.
  * </p> 
  * <p>
- * If you are using a {@code _bin} index with a character set whose byte ordering 
+ * If you are using a {@code _bin} index with a character asSet whose byte ordering
  * differs from its lexical ordering, range queries will be affected.
  * </p>
  * @see <a

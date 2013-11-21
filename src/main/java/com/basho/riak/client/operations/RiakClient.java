@@ -17,18 +17,20 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.*;
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.Converters;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.operations.datatypes.DatatypeConverter;
+import com.basho.riak.client.operations.datatypes.DatatypeMutation;
+import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.cap.Quorum.allQuorum;
-import static com.basho.riak.client.operations.RiakClient.Resolvers.MyResolver;
+import static com.basho.riak.client.operations.Location.bucket;
 
 public class RiakClient
 {
@@ -52,6 +54,11 @@ public class RiakClient
         return new FetchValue<RiakObject>(cluster, location, DEFAULT_CONVERTER);
     }
 
+    public <T extends RiakDatatype> FetchDatatype<T> fetch(Key location, DatatypeConverter<T> converter)
+    {
+        return new FetchDatatype<T>();
+    }
+
     public <T> StoreValue<T> store(Location location, T value, Converter<T> converter)
     {
         return new StoreValue<T>(cluster, location, value, converter);
@@ -64,21 +71,9 @@ public class RiakClient
         return sv;
     }
 
-    public <T> StoreValue<T> store(Location location, T value, VClock vClock)
-    {
-        StoreValue<T> sv = new StoreValue<T>(cluster, location, value, Converters.<T>jsonConverter());
-        sv.withVectorClock(vClock);
-        return sv;
-    }
-
     public StoreValue<RiakObject> store(Location location, RiakObject value)
     {
         return new StoreValue<RiakObject>(cluster, location, value, DEFAULT_CONVERTER);
-    }
-
-    public <T> StoreValue<T> store(Location location, T value)
-    {
-        return new StoreValue<T>(cluster, location, value, Converters.<T>jsonConverter());
     }
 
     public StoreValue<RiakObject> store(Location location, RiakObject value, VClock vClock)
@@ -88,34 +83,44 @@ public class RiakClient
         return sv;
     }
 
-    public <T> MutateValue<T> update(Key location, Converter<T> converter, ConflictResolver<T> resolver, Mutation<T> mutation)
+    public <T> UpdateValue<T> update(Key location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
     {
-        return new MutateValue<T>(cluster, location, converter, resolver, mutation);
+        return new UpdateValue<T>(cluster, location, converter, resolver, update);
     }
 
-    public <T> MutateValue<T> update(Key location, Converter<T> converter, Mutation<T> mutation)
+    public <T> UpdateValue<T> update(Key location, Converter<T> converter, Update<T> update)
     {
-        return new MutateValue<T>(cluster, location, converter, new DefaultResolver<T>(), mutation);
+        return new UpdateValue<T>(cluster, location, converter, new DefaultResolver<T>(), update);
     }
 
-    public MutateValue<RiakObject> update(Key location, ConflictResolver<RiakObject> resolver, Mutation<RiakObject> mutation)
+    public UpdateValue<RiakObject> update(Key location, ConflictResolver<RiakObject> resolver, Update<RiakObject> update)
     {
-        return new MutateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, mutation);
+        return new UpdateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, update);
     }
 
-    public MutateValue<RiakObject> update(Key location, Mutation<RiakObject> mutation)
+    public UpdateValue<RiakObject> update(Key location, Update<RiakObject> update)
     {
-        return new MutateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, new DefaultResolver<RiakObject>(), mutation);
+        return new UpdateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, new DefaultResolver<RiakObject>(), update);
     }
 
-    public <T> MutateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
+    public <T extends RiakDatatype> UpdateDatatype<T> update(Key location, T datatype)
     {
-        return new MutateValue<T>(cluster, location, converter, resolver, Mutations.<T>identity());
+        return new UpdateDatatype<T>();
     }
 
-    public MutateValue<RiakObject> resolve(Key location, ConflictResolver<RiakObject> resolver)
+    public <T extends RiakDatatype> UpdateDatatype<T> update(Key location, DatatypeMutation<T> mutation)
     {
-        return new MutateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, Mutations.<RiakObject>identity());
+        return new UpdateDatatype<T>();
+    }
+
+    public <T> UpdateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
+    {
+        return new UpdateValue<T>(cluster, location, converter, resolver, Update.<T>identity());
+    }
+
+    public UpdateValue<RiakObject> resolve(Key location, ConflictResolver<RiakObject> resolver)
+    {
+        return new UpdateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, Update.<RiakObject>identity());
     }
 
     public DeleteValue delete(Key location)
@@ -125,49 +130,64 @@ public class RiakClient
 
     public static RiakObject resolve(List<RiakObject> siblings)
     {
-        return null;
+        return siblings.get(0);
     }
 
     public static RiakObject mutate(RiakObject o)
     {
-        return null;
+        String original = o.getValue().toString();
+        System.out.println(original);
+        String updated = original +  "hi";
+        o.setValue(ByteArrayWrapper.create(updated));
+        return o;
     }
 
     public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException
     {
 
         // Create a Cluster
-        RiakNode node = new RiakNode.Builder().build();
+        RiakNode node = new RiakNode.Builder().withRemoteAddress("localhost").build();
         RiakCluster cluster = new RiakCluster.Builder(node).build();
+
+        cluster.start();
+
         RiakClient client = new RiakClient(cluster);
 
+        Bucket bucket = bucket("bucket-o-stuff");
+
+        // Store something
+        RiakObject obj = new RiakObject();
+        obj.setValue(ByteArrayWrapper.create("stuff"));
+
+        StoreValue.Response<RiakObject> initialStore = client.store(bucket, obj)
+            .withOption(StoreOption.RETURN_BODY, true)
+            .execute();
+        System.out.println(initialStore.getValue().get(0).getValue());
+
         // (type, bucket, key) are represented as Locations
-        Key key = Location.key("bucket", "key");
+        Key key = initialStore.getKey();
 
         // A simple fetch
         FetchValue.Response<RiakObject> simple = client.fetch(key).execute();
-        System.out.println(simple.getValue());
+        System.out.println(simple.getValue().get(0).getValue());
 
-        // A more complex fetch using FetchOptions
+        // A fetch using FetchOptions
         FetchValue.Response<RiakObject> fetch = client.fetch(key)
-            .withOption(FetchOption.BASIC_QUORUM, true)
-            .withOption(FetchOption.DELETED_VCLOCK, true)
             .withOption(FetchOption.TIMEOUT, 1000)
-            .withOption(FetchOption.R, allQuorum())
             .execute();
+        System.out.println(fetch.getValue().get(0).getValue());
 
         // Manual resolution
-        RiakObject obj = resolve(fetch.getValue());
+        obj = resolve(fetch.getValue());
 
         // Store the resolved object back
         client.store(key, obj, fetch.getvClock())
-            .withOption(StoreOption.RETURN_HEAD, true)
+//            .withOption(StoreOption.RETURN_HEAD, true) // TODO RETURN_HEAD is broken
             .withOption(StoreOption.TIMEOUT, 1000)
             .execute();
 
         // Store a bunch of things in a bucket with riak assigning keys
-        Bucket bucket = Location.bucket("dave");
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < 1000; ++i)
         {
             StoreValue.Response<RiakObject> response =
                 client.store(bucket, obj).execute();
@@ -176,25 +196,49 @@ public class RiakClient
 
         // Represent anything that has to fetch, then resolve, then store back
         // as an update
-        Key key2 = Location.key("bucket", "key");
-        client.update(key2, new BaseMutation<RiakObject>()
-        {
-            @Override
-            public RiakObject apply(RiakObject original)
+        UpdateValue.Response<RiakObject> update =
+            client.update(key, new Update<RiakObject>()
             {
-                RiakObject mutated = mutate(original);
-                setHasMutated(mutated != null);
-                return mutated;
-            }
+                @Override
+                public RiakObject apply(RiakObject original)
+                {
+                    return mutate(original);
+                }
 
-        }).execute();
+            }).withStoreOption(StoreOption.RETURN_BODY, true).execute();
+
+        System.out.println(update.getValue().get(0).getValue());
 
         // Resolve conflicts for a given key
-        client.resolve(key, MyResolver);
+        client.resolve(key, Resolvers.MyResolver);
 
         // Delete a value
-        DeleteValue.Response delete = client.delete(key).execute();
+        client.delete(key).execute();
+//
+//        // Fetch a Counter CRDT
+//        Key counterKey = key("counters", "counter");
+//        FetchDatatype.Response<RiakCounter> counterResponse =
+//            client.fetch(counterKey, asCounter()).execute();
+//
+//        RiakCounter counter = counterResponse.getDatatype();
+//        counter.increment(10000);
+//        System.out.println(counter.view());
+//
+//        UpdateDatatype.Response<RiakCounter> updateResponse =
+//            client.update(counterKey, counter).execute();
+//
+//        // OR, just fling an update at a CRDT...
+//        client.update(counterKey, incrementBy(10000)).execute();
+//
+//        ByteArrayWrapper name = ByteArrayWrapper.create("element");
+//        client.update(key("sets", "set"), addElement(name)).execute();
+//
+//        // Create a new datatype and store it
+//        RiakMap myMap = new RiakMap();
+//        myMap.put("counter", new RiakCounter());
+//        client.update(key("maps", "my_map"), myMap);
 
+        cluster.shutdown();
 
     }
 

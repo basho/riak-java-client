@@ -17,8 +17,8 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.operations.crdt.MapMutation;
-import com.basho.riak.client.operations.crdt.SetMutation;
+import com.basho.riak.client.operations.datatypes.MapMutation;
+import com.basho.riak.client.operations.datatypes.SetMutation;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import org.junit.Test;
@@ -26,11 +26,11 @@ import org.junit.Test;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.operations.crdt.CounterMutation.increment;
-import static com.basho.riak.client.operations.crdt.DatatypeMutation.forMap;
-import static com.basho.riak.client.operations.crdt.DatatypeMutation.forSet;
-import static com.basho.riak.client.operations.crdt.FlagMutation.enabled;
-import static com.basho.riak.client.operations.crdt.RegisterMutation.registerValue;
+import static com.basho.riak.client.operations.datatypes.CounterMutation.increment;
+import static com.basho.riak.client.operations.datatypes.DatatypeMutation.forMap;
+import static com.basho.riak.client.operations.datatypes.DatatypeMutation.forSet;
+import static com.basho.riak.client.operations.datatypes.FlagMutation.enabled;
+import static com.basho.riak.client.operations.datatypes.RegisterMutation.registerValue;
 import static junit.framework.Assert.*;
 
 public class ITestCrdtApi extends ITestBase
@@ -61,12 +61,12 @@ public class ITestCrdtApi extends ITestBase
 
             Data structure:
 
-            bucket-type == map
-            -> "username" : map
+            bucket-type == asMap
+            -> "username" : asMap
               -> "logins"     : counter
               -> "last-login" : register
               -> "logged-in"  : flag
-              -> "cart"       : set
+              -> "cart"       : asSet
 
          */
 
@@ -85,7 +85,7 @@ public class ITestCrdtApi extends ITestBase
             .update(numLogins, increment())                // counter
             .update(lastLoginTime, registerValue(now))     // register
             .update(loggedIn, enabled())                   // flag
-            .update(shoppingCart, favorites);              // set
+            .update(shoppingCart, favorites);              // asSet
 
         // Now create an update for the user's entry
         MapMutation userEntryUpdate = forMap()
@@ -138,7 +138,7 @@ public class ITestCrdtApi extends ITestBase
         CrdtFlag loggedInFlag = loggedInElement.getAsFlag();
         assertEquals(true, loggedInFlag.getEnabled());
 
-        // cart - set
+        // cart - asSet
         CrdtElement shoppingCartElement = usernameMap.get(shoppingCart);
         assertNotNull(shoppingCartElement);
         assertTrue(shoppingCartElement.isSet());

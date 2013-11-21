@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.CounterOp;
 
-public class CounterMutation extends DatatypeMutation
+public class CounterMutation extends DatatypeMutation<RiakCounter>
 {
 
     private long delta = 0;
@@ -39,6 +39,11 @@ public class CounterMutation extends DatatypeMutation
     public static CounterMutation increment()
     {
         return new CounterMutation(1);
+    }
+
+    public static CounterMutation incrementBy(long delta)
+    {
+        return new CounterMutation(delta);
     }
 
     public static CounterMutation decrement()

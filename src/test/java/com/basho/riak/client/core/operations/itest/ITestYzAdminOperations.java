@@ -37,7 +37,7 @@ import org.junit.Test;
 public class ITestYzAdminOperations extends ITestBase
 {
     
-    // This is set to ignore as I've found a problem with this schema being accepted as 
+    // This is asSet to ignore as I've found a problem with this schema being accepted as
     // valid but then causing problems later if you try to create an index. Need to talk to Z.
     // After that I can expand the unit tests. As is though, they show the networky 
     // bits work. 

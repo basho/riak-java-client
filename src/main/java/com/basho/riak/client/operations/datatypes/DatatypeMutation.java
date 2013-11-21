@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.crdt;
+package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.CrdtOp;
 
-public abstract class DatatypeMutation
+public abstract class DatatypeMutation<T extends RiakDatatype>
 {
 
     public abstract CrdtOp getOp();

@@ -106,7 +106,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the R value for this FetchOperation.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param r the R value.
          * @return a reference to this object.
@@ -119,7 +119,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the PR value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param pr the PR value.
          * @return
@@ -132,7 +132,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the W value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param w the W value.
          * @return
@@ -145,7 +145,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the DW value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param dw the DW value.
          * @return
@@ -158,7 +158,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the PW value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param pw the PW value.
          * @return
@@ -171,7 +171,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the RW value for this query.
-         * If not set the bucket default is used.
+         * If not asSet the bucket default is used.
          *
          * @param rw the RW value.
          * @return
@@ -184,7 +184,7 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
 
         /**
          * Set the Vclock to be used for this query.
-         * If not set siblings may be created depending on bucket properties.
+         * If not asSet siblings may be created depending on bucket properties.
          *
          * @param vclock the last fetched vclock.
          * @return
