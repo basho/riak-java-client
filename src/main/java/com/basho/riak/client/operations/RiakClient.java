@@ -15,11 +15,16 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.cap.*;
+import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.DefaultResolver;
+import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.operations.datatypes.DatatypeConverter;
 import com.basho.riak.client.operations.datatypes.DatatypeMutation;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
@@ -27,6 +32,7 @@ import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -128,6 +134,51 @@ public class RiakClient
         return new DeleteValue(cluster, location);
     }
 
+    public RiakCommand<Iterable<Key>> listKeys(final Bucket bucket, final int timeout)
+    {
+        return new RiakCommand<Iterable<Key>>()
+        {
+            @Override
+            public Iterable<Key> execute() throws ExecutionException, InterruptedException
+            {
+                ByteArrayWrapper b = bucket.getBucket();
+                ListKeysOperation operation = timeout > 0
+                    ? new ListKeysOperation(b, timeout)
+                    : new ListKeysOperation(b);
+                operation.withBucketType(bucket.getType());
+                cluster.execute(operation);
+                return new KeyIterable(operation.get(), bucket);
+            }
+        };
+    }
+
+    public RiakCommand<Iterable<Key>> listKeys(Bucket bucket)
+    {
+        return listKeys(bucket, -1);
+    }
+
+    public RiakCommand<Iterable<Bucket>> listBuckets(final BucketType type, final int timeout, final boolean stream)
+    {
+        return new RiakCommand<Iterable<Bucket>>()
+        {
+            @Override
+            public Iterable<Bucket> execute() throws ExecutionException, InterruptedException
+            {
+                ListBucketsOperation operation = timeout > 0
+                    ? new ListBucketsOperation(timeout, stream)
+                    : new ListBucketsOperation();
+                operation.withBucketType(type.getType());
+                cluster.execute(operation);
+                return new BucketIterable(operation.get(), type);
+            }
+        };
+    }
+
+    public RiakCommand<Iterable<Bucket>> listBuckets(BucketType type)
+    {
+        return listBuckets(type, -1, false);
+    }
+
     public static RiakObject resolve(List<RiakObject> siblings)
     {
         return siblings.get(0);
@@ -137,7 +188,7 @@ public class RiakClient
     {
         String original = o.getValue().toString();
         System.out.println(original);
-        String updated = original +  "hi";
+        String updated = original + "hi";
         o.setValue(ByteArrayWrapper.create(updated));
         return o;
     }
@@ -214,6 +265,13 @@ public class RiakClient
 
         // Delete a value
         client.delete(key).execute();
+
+        Iterable<Key> keys = client.listKeys(bucket).execute();
+        for (Key k : keys)
+        {
+            System.out.println(k);
+        }
+
 //
 //        // Fetch a Counter CRDT
 //        Key counterKey = key("counters", "counter");
@@ -252,6 +310,106 @@ public class RiakClient
             return null;
         }
 
+    }
+
+    private static class KeyIterable implements Iterable<Key>
+    {
+
+        private final Iterable<ByteArrayWrapper> iterable;
+        private final Bucket bucket;
+
+        private KeyIterable(Iterable<ByteArrayWrapper> iterable, Bucket bucket)
+        {
+            this.iterable = iterable;
+            this.bucket = bucket;
+        }
+
+        @Override
+        public Iterator<Key> iterator()
+        {
+            return new Itr(iterable.iterator(), bucket);
+        }
+
+        private static class Itr implements Iterator<Key>
+        {
+            private final Iterator<ByteArrayWrapper> iterator;
+            private final Bucket bucket;
+
+            private Itr(Iterator<ByteArrayWrapper> iterator, Bucket bucket)
+            {
+                this.iterator = iterator;
+                this.bucket = bucket;
+            }
+
+            @Override
+            public boolean hasNext()
+            {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Key next()
+            {
+                ByteArrayWrapper key = iterator.next();
+                return Location.key(bucket, key);
+            }
+
+            @Override
+            public void remove()
+            {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static class BucketIterable implements Iterable<Bucket>
+    {
+
+        private final Iterable<ByteArrayWrapper> iterable;
+        private final BucketType type;
+
+        private BucketIterable(Iterable<ByteArrayWrapper> iterable, BucketType type)
+        {
+            this.iterable = iterable;
+            this.type = type;
+        }
+
+        @Override
+        public Iterator<Bucket> iterator()
+        {
+            return new Itr(iterable.iterator(), type);
+        }
+
+        private static class Itr implements Iterator<Bucket>
+        {
+            private final Iterator<ByteArrayWrapper> iterator;
+            private final BucketType type;
+
+            private Itr(Iterator<ByteArrayWrapper> iterator, BucketType type)
+            {
+                this.iterator = iterator;
+                this.type = type;
+            }
+
+            @Override
+            public boolean hasNext()
+            {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Bucket next()
+            {
+                ByteArrayWrapper bucket = iterator.next();
+                return Location.bucket(type, bucket);
+            }
+
+            @Override
+            public void remove()
+            {
+                iterator.remove();
+            }
+        }
     }
 
 }

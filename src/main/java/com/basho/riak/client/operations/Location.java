@@ -21,6 +21,7 @@ public class Location
 {
 
     private static final String DEFAULT_TYPE = "default";
+    private static final BucketType DEFAULT_BUCKET_TYPE = new BucketType(DEFAULT_TYPE);
 
     private final ByteArrayWrapper type;
     private final ByteArrayWrapper bucket;
@@ -40,14 +41,39 @@ public class Location
         this.key = key == null ? null : ByteArrayWrapper.create(key);
     }
 
+    public static BucketType defaultBucketType()
+    {
+        return DEFAULT_BUCKET_TYPE;
+    }
+
+    public static BucketType bucketType(ByteArrayWrapper type)
+    {
+        return new BucketType(type);
+    }
+
+    public static BucketType bucketType(String type)
+    {
+        return new BucketType(type);
+    }
+
     public static Bucket bucket(ByteArrayWrapper type, ByteArrayWrapper bucket)
     {
         return new Bucket(type, bucket);
     }
 
+    public static Bucket bucket(BucketType type, ByteArrayWrapper bucket)
+    {
+        return new Bucket(type.getType(), bucket);
+    }
+
     public static Bucket bucket(String type, String bucket)
     {
         return new Bucket(type, bucket);
+    }
+
+    public static Bucket bucket(BucketType type, String bucket)
+    {
+        return new Bucket(type.getType(), ByteArrayWrapper.create(bucket));
     }
 
     public static Bucket bucket(ByteArrayWrapper bucket)
@@ -110,6 +136,18 @@ public class Location
     public ByteArrayWrapper getKey()
     {
         return key;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return super.hashCode();  //TODO
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return super.equals(obj); //TODO
     }
 
     @Override
