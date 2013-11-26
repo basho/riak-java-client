@@ -16,32 +16,39 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
+import static com.basho.riak.client.operations.FetchValue.fetch;
+
+class IndexMultiFetch extends MultiFetch
 {
 
-    @Override
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    private final FetchIndex index;
+
+    IndexMultiFetch(FetchIndex index)
     {
-        return null;
+        this.index = index;
     }
 
-    public static class Response<T>
+    @Override
+    Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        private final T datatype;
+        ArrayList<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
 
-        Response(T datatype)
+        FetchIndex.Response indices = index.execute(cluster);
+        while (indices.hasContinuation())
         {
-            this.datatype = datatype;
+
+            for (FetchIndex.IndexEntry e : indices)
+            {
+                values.add(fetch(e.getKey()).execute(cluster));
+            }
+
         }
 
-        public T getDatatype()
-        {
-            return datatype;
-        }
+        return new Response(values);
     }
 }

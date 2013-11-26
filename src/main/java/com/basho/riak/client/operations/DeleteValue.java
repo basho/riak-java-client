@@ -26,23 +26,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class DeleteValue implements RiakCommand<DeleteValue.Response>
+public class DeleteValue extends RiakCommand<DeleteValue.Response>
 {
 
-    private final RiakCluster cluster;
     private final Key location;
     private final Map<DeleteOption<?>, Object> options;
     private VClock vClock;
 
-    DeleteValue(RiakCluster cluster, Key location)
+    DeleteValue(Key location)
     {
-        this.cluster = cluster;
         this.location = location;
         this.options = new HashMap<DeleteOption<?>, Object>();
     }
 
+    public static DeleteValue delete(Key location)
+    {
+        return new DeleteValue(location);
+    }
+
     @Override
-    public Response execute() throws ExecutionException, InterruptedException
+    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         ByteArrayWrapper type = location.getType();

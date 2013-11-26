@@ -15,14 +15,15 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
 
 import java.util.concurrent.ExecutionException;
 
-public class UpdateDatatype<T extends RiakDatatype> implements RiakCommand<UpdateDatatype.Response<T>>
+public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>>
 {
     @Override
-    public Response<T> execute() throws ExecutionException, InterruptedException
+    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         return null;
     }

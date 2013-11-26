@@ -16,19 +16,23 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.operations.datatypes.DatatypeMutation;
+import com.basho.riak.client.operations.datatypes.RiakDatatype;
+import com.basho.riak.client.query.RiakObject;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class UpdateValue<T> implements RiakCommand<UpdateValue.Response<T>>
+public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 {
 
-    private final RiakCluster cluster;
     private final Location location;
     private final Converter<T> converter;
     private final Update<T> update;
@@ -36,9 +40,8 @@ public class UpdateValue<T> implements RiakCommand<UpdateValue.Response<T>>
     private final Map<FetchOption, Object> fetchOptions;
     private final Map<StoreOption, Object> storeOptions;
 
-    UpdateValue(RiakCluster cluster, Location location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
+    UpdateValue(Location location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
     {
-        this.cluster = cluster;
         this.location = location;
         this.converter = converter;
         this.resolver = resolver;
@@ -46,6 +49,46 @@ public class UpdateValue<T> implements RiakCommand<UpdateValue.Response<T>>
         this.fetchOptions = new HashMap<FetchOption, Object>();
         this.storeOptions = new HashMap<StoreOption, Object>();
 
+    }
+
+    public static <T> UpdateValue<T> update(Key location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
+    {
+        return new UpdateValue<T>(location, converter, resolver, update);
+    }
+
+    public static <T> UpdateValue<T> update(Key location, Converter<T> converter, Update<T> update)
+    {
+        return new UpdateValue<T>(location, converter, new DefaultResolver<T>(), update);
+    }
+
+    public static UpdateValue<RiakObject> update(Key location, ConflictResolver<RiakObject> resolver, Update<RiakObject> update)
+    {
+        return new UpdateValue<RiakObject>(location, new PassThroughConverter(), resolver, update);
+    }
+
+    public static UpdateValue<RiakObject> update(Key location, Update<RiakObject> update)
+    {
+        return new UpdateValue<RiakObject>(location, new PassThroughConverter(), new DefaultResolver<RiakObject>(), update);
+    }
+
+    public static <T extends RiakDatatype> UpdateDatatype<T> update(Key location, T datatype)
+    {
+        return new UpdateDatatype<T>();
+    }
+
+    public static <T extends RiakDatatype> UpdateDatatype<T> update(Key location, DatatypeMutation<T> mutation)
+    {
+        return new UpdateDatatype<T>();
+    }
+
+    public static <T> UpdateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
+    {
+        return new UpdateValue<T>(location, converter, resolver, Update.<T>identity());
+    }
+
+    public static UpdateValue<RiakObject> resolve(Key location, ConflictResolver<RiakObject> resolver)
+    {
+        return new UpdateValue<RiakObject>(location, new PassThroughConverter(), resolver, Update.<RiakObject>identity());
     }
 
     public <U> UpdateValue<T> withFetchOption(FetchOption<U> option, U value)
@@ -61,16 +104,16 @@ public class UpdateValue<T> implements RiakCommand<UpdateValue.Response<T>>
     }
 
     @Override
-    public Response<T> execute() throws ExecutionException, InterruptedException
+    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        FetchValue<T> fetch = new FetchValue<T>(cluster, location, converter);
+        FetchValue<T> fetch = new FetchValue<T>(location, converter);
         for (Map.Entry<FetchOption, Object> optPair : fetchOptions.entrySet())
         {
             fetch.withOption(optPair.getKey(), optPair.getValue());
         }
 
-        FetchValue.Response<T> fetchResponse = fetch.execute();
+        FetchValue.Response<T> fetchResponse = fetch.execute(cluster);
 
         List<T> value = fetchResponse.getValue();
         T resolved = resolver.resolve(value);
@@ -79,12 +122,12 @@ public class UpdateValue<T> implements RiakCommand<UpdateValue.Response<T>>
         if (update.isModified())
         {
 
-            StoreValue<T> store = new StoreValue<T>(cluster, location, updated, converter);
+            StoreValue<T> store = new StoreValue<T>(location, updated, converter);
             for (Map.Entry<StoreOption, Object> optPair : storeOptions.entrySet())
             {
                 store.withOption(optPair.getKey(), optPair.getValue());
             }
-            StoreValue.Response<T> storeResponse = store.execute();
+            StoreValue.Response<T> storeResponse = store.execute(cluster);
 
             List<T> values = storeResponse.getValue();
             VClock clock = storeResponse.getvClock();

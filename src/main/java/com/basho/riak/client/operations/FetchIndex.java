@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.Collections.unmodifiableList;
 
-public class FetchIndex implements RiakCommand<FetchIndex.Response>
+public class FetchIndex extends RiakCommand<FetchIndex.Response>
 {
 
     private final Bucket bucket;
@@ -39,6 +40,11 @@ public class FetchIndex implements RiakCommand<FetchIndex.Response>
         this.op = op;
     }
 
+    public static FetchIndex lookupIndex(Bucket bucket, String index, FetchIndex.Operation op)
+    {
+        return new FetchIndex(bucket, index, op);
+    }
+
     public FetchIndex withContinuation(ByteArrayWrapper continuation)
     {
         this.continuation = continuation;
@@ -52,7 +58,7 @@ public class FetchIndex implements RiakCommand<FetchIndex.Response>
     }
 
     @Override
-    public Response execute() throws ExecutionException, InterruptedException
+    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         return null;
     }
@@ -154,13 +160,13 @@ public class FetchIndex implements RiakCommand<FetchIndex.Response>
         }
     }
 
-    public static final class Response<T> implements Iterable<IndexEntry<T>>
+    public static final class Response implements Iterable<IndexEntry<?>>
     {
 
         private final ByteArrayWrapper continuation;
-        private final List<IndexEntry<T>> entries;
+        private final List<IndexEntry<?>> entries;
 
-        Response(ByteArrayWrapper continuation, List<IndexEntry<T>> entries)
+        Response(ByteArrayWrapper continuation, List<IndexEntry<?>> entries)
         {
             this.continuation = continuation;
             this.entries = entries;
@@ -177,7 +183,7 @@ public class FetchIndex implements RiakCommand<FetchIndex.Response>
         }
 
         @Override
-        public Iterator<IndexEntry<T>> iterator()
+        public Iterator<IndexEntry<?>> iterator()
         {
             return unmodifiableList(entries).iterator();
         }

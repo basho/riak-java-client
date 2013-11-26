@@ -18,7 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.Converters;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.KvResponse;
@@ -32,23 +32,45 @@ import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.convert.Converters.convert;
 
-public class StoreValue<V> implements RiakCommand<StoreValue.Response<V>>
+public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 {
 
-    private final RiakCluster cluster;
     private final Location location;
     private final Map<StoreOption<?>, Object> options;
     private final V value;
     private final Converter<V> converter;
     private VClock vClock;
 
-    StoreValue(RiakCluster cluster, Location location, V value, Converter<V> converter)
+    StoreValue(Location location, V value, Converter<V> converter)
     {
-        this.cluster = cluster;
         this.options = new HashMap<StoreOption<?>, Object>();
         this.location = location;
         this.value = value;
         this.converter = converter;
+    }
+
+    public static <T> StoreValue<T> store(Location location, T value, Converter<T> converter)
+    {
+        return new StoreValue<T>(location, value, converter);
+    }
+
+    public static <T> StoreValue<T> store(Location location, T value, VClock vClock, Converter<T> converter)
+    {
+        StoreValue<T> sv = new StoreValue<T>(location, value, converter);
+        sv.withVectorClock(vClock);
+        return sv;
+    }
+
+    public static StoreValue<RiakObject> store(Location location, RiakObject value)
+    {
+        return new StoreValue<RiakObject>(location, value, new PassThroughConverter());
+    }
+
+    public static StoreValue<RiakObject> store(Location location, RiakObject value, VClock vClock)
+    {
+        StoreValue<RiakObject> sv = new StoreValue<RiakObject>(location, value, new PassThroughConverter());
+        sv.withVectorClock(vClock);
+        return sv;
     }
 
     public StoreValue<V> withVectorClock(VClock vClock)
@@ -74,7 +96,7 @@ public class StoreValue<V> implements RiakCommand<StoreValue.Response<V>>
     }
 
     @Override
-    public Response<V> execute() throws ExecutionException, InterruptedException
+    public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         ByteArrayWrapper type = location.getType();
@@ -154,7 +176,7 @@ public class StoreValue<V> implements RiakCommand<StoreValue.Response<V>>
 
         StoreOperation operation = builder.build();
         cluster.execute(operation);
-                                  
+
         KvResponse<List<RiakObject>> response = operation.get();
         List<V> converted = convert(converter, response.getContent());
 

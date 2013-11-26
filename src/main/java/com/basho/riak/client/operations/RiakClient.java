@@ -16,18 +16,13 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
-import com.basho.riak.client.operations.datatypes.DatatypeConverter;
-import com.basho.riak.client.operations.datatypes.DatatypeMutation;
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -36,10 +31,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.operations.FetchIndex.match;
-import static com.basho.riak.client.operations.FetchIndex.range;
+import static com.basho.riak.client.operations.DeleteValue.delete;
+import static com.basho.riak.client.operations.FetchIndex.*;
+import static com.basho.riak.client.operations.FetchValue.fetch;
 import static com.basho.riak.client.operations.Location.bucket;
 import static com.basho.riak.client.operations.Location.defaultBucketType;
+import static com.basho.riak.client.operations.StoreValue.store;
+import static com.basho.riak.client.operations.UpdateValue.resolve;
 
 public class RiakClient
 {
@@ -53,88 +51,9 @@ public class RiakClient
         this.cluster = cluster;
     }
 
-    public <T> FetchValue<T> fetch(Key location, Converter<T> converter)
+    public <T> T execute(RiakCommand<T> command) throws ExecutionException, InterruptedException
     {
-        return new FetchValue(cluster, location, converter);
-    }
-
-    public FetchValue<RiakObject> fetch(Key location)
-    {
-        return new FetchValue<RiakObject>(cluster, location, DEFAULT_CONVERTER);
-    }
-
-    public <T extends RiakDatatype> FetchDatatype<T> fetch(Key location, DatatypeConverter<T> converter)
-    {
-        return new FetchDatatype<T>();
-    }
-
-    public <T> StoreValue<T> store(Location location, T value, Converter<T> converter)
-    {
-        return new StoreValue<T>(cluster, location, value, converter);
-    }
-
-    public <T> StoreValue<T> store(Location location, T value, VClock vClock, Converter<T> converter)
-    {
-        StoreValue<T> sv = new StoreValue<T>(cluster, location, value, converter);
-        sv.withVectorClock(vClock);
-        return sv;
-    }
-
-    public StoreValue<RiakObject> store(Location location, RiakObject value)
-    {
-        return new StoreValue<RiakObject>(cluster, location, value, DEFAULT_CONVERTER);
-    }
-
-    public StoreValue<RiakObject> store(Location location, RiakObject value, VClock vClock)
-    {
-        StoreValue<RiakObject> sv = new StoreValue<RiakObject>(cluster, location, value, DEFAULT_CONVERTER);
-        sv.withVectorClock(vClock);
-        return sv;
-    }
-
-    public <T> UpdateValue<T> update(Key location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
-    {
-        return new UpdateValue<T>(cluster, location, converter, resolver, update);
-    }
-
-    public <T> UpdateValue<T> update(Key location, Converter<T> converter, Update<T> update)
-    {
-        return new UpdateValue<T>(cluster, location, converter, new DefaultResolver<T>(), update);
-    }
-
-    public UpdateValue<RiakObject> update(Key location, ConflictResolver<RiakObject> resolver, Update<RiakObject> update)
-    {
-        return new UpdateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, update);
-    }
-
-    public UpdateValue<RiakObject> update(Key location, Update<RiakObject> update)
-    {
-        return new UpdateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, new DefaultResolver<RiakObject>(), update);
-    }
-
-    public <T extends RiakDatatype> UpdateDatatype<T> update(Key location, T datatype)
-    {
-        return new UpdateDatatype<T>();
-    }
-
-    public <T extends RiakDatatype> UpdateDatatype<T> update(Key location, DatatypeMutation<T> mutation)
-    {
-        return new UpdateDatatype<T>();
-    }
-
-    public <T> UpdateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
-    {
-        return new UpdateValue<T>(cluster, location, converter, resolver, Update.<T>identity());
-    }
-
-    public UpdateValue<RiakObject> resolve(Key location, ConflictResolver<RiakObject> resolver)
-    {
-        return new UpdateValue<RiakObject>(cluster, location, DEFAULT_CONVERTER, resolver, Update.<RiakObject>identity());
-    }
-
-    public DeleteValue delete(Key location)
-    {
-        return new DeleteValue(cluster, location);
+        return command.execute(cluster);
     }
 
     public RiakCommand<Iterable<Key>> listKeys(final Bucket bucket, final int timeout)
@@ -142,7 +61,8 @@ public class RiakClient
         return new RiakCommand<Iterable<Key>>()
         {
             @Override
-            public Iterable<Key> execute() throws ExecutionException, InterruptedException
+            public Iterable<Key> execute(RiakCluster cluster)
+                throws ExecutionException, InterruptedException
             {
                 ByteArrayWrapper b = bucket.getBucket();
                 ListKeysOperation operation = timeout > 0
@@ -165,7 +85,8 @@ public class RiakClient
         return new RiakCommand<Iterable<Bucket>>()
         {
             @Override
-            public Iterable<Bucket> execute() throws ExecutionException, InterruptedException
+            public Iterable<Bucket> execute(RiakCluster cluster)
+                throws ExecutionException, InterruptedException
             {
                 ListBucketsOperation operation = timeout > 0
                     ? new ListBucketsOperation(timeout, stream)
@@ -187,25 +108,6 @@ public class RiakClient
         return listBuckets(defaultBucketType(), -1, false);
     }
 
-    public FetchIndex lookupIndex(Bucket bucket, String index, FetchIndex.Operation op)
-    {
-        return new FetchIndex(bucket, index, op);
-    }
-
-    public static RiakObject resolve(List<RiakObject> siblings)
-    {
-        return siblings.get(0);
-    }
-
-    public static RiakObject mutate(RiakObject o)
-    {
-        String original = o.getValue().toString();
-        System.out.println(original);
-        String updated = original + "hi";
-        o.setValue(ByteArrayWrapper.create(updated));
-        return o;
-    }
-
     public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException
     {
 
@@ -223,86 +125,86 @@ public class RiakClient
         RiakObject obj = new RiakObject();
         obj.setValue(ByteArrayWrapper.create("stuff"));
 
-        StoreValue.Response<RiakObject> initialStore = client.store(bucket, obj)
-            .withOption(StoreOption.RETURN_BODY, true)
-            .execute();
+        StoreValue.Response<RiakObject> initialStore = client.execute(
+            store(bucket, obj).withOption(StoreOption.RETURN_BODY, true));
         System.out.println(initialStore.getValue().get(0).getValue());
 
         // (type, bucket, key) are represented as Locations
         Key key = initialStore.getKey();
 
         // A simple fetch
-        FetchValue.Response<RiakObject> simple = client.fetch(key).execute();
+        FetchValue.Response<RiakObject> simple = client.execute(fetch(key));
         System.out.println(simple.getValue().get(0).getValue());
 
         // A fetch using FetchOptions
-        FetchValue.Response<RiakObject> fetch = client.fetch(key)
-            .withOption(FetchOption.TIMEOUT, 1000)
-            .execute();
+        FetchValue.Response<RiakObject> fetch = client.execute(fetch(key)
+            .withOption(FetchOption.TIMEOUT, 1000));
         System.out.println(fetch.getValue().get(0).getValue());
 
         // Manual resolution
-        obj = resolve(fetch.getValue());
+        obj = fetch.getValue().get(0);
 
         // Store the resolved object back
-        client.store(key, obj, fetch.getvClock())
+        client.execute(store(key, obj, fetch.getvClock())
 //            .withOption(StoreOption.RETURN_HEAD, true) // TODO RETURN_HEAD is broken
-            .withOption(StoreOption.TIMEOUT, 1000)
-            .execute();
+            .withOption(StoreOption.TIMEOUT, 1000));
 
         // Store a bunch of things in a bucket with riak assigning keys
         for (int i = 0; i < 1000; ++i)
         {
             StoreValue.Response<RiakObject> response =
-                client.store(bucket, obj).execute();
+                client.execute(store(bucket, obj));
             System.out.println(response.getKey());
         }
 
         // Represent anything that has to fetch, then resolve, then store back
         // as an update
         UpdateValue.Response<RiakObject> update =
-            client.update(key, new Update<RiakObject>()
+            client.execute(UpdateValue.update(key, new Update<RiakObject>()
             {
                 @Override
-                public RiakObject apply(RiakObject original)
+                public RiakObject apply(RiakObject o)
                 {
-                    return mutate(original);
+                    String original = o.getValue().toString();
+                    System.out.println(original);
+                    String updated = original + "hi";
+                    o.setValue(ByteArrayWrapper.create(updated));
+                    return o;
                 }
 
-            }).withStoreOption(StoreOption.RETURN_BODY, true).execute();
+            }).withStoreOption(StoreOption.RETURN_BODY, true));
 
         System.out.println(update.getValue().get(0).getValue());
 
         // Resolve conflicts for a given key
-        client.resolve(key, Resolvers.MyResolver);
+        client.execute(resolve(key, Resolvers.MyResolver));
 
         // Delete a value
-        client.delete(key).execute();
+        client.execute(delete(key));
 
-        Iterable<Key> keys = client.listKeys(bucket).execute();
+        Iterable<Key> keys = client.execute(client.listKeys(bucket));
         for (Key k : keys)
         {
-            client.delete(k).execute();
+            client.execute(delete(k));
         }
 
-        Iterable<Bucket> buckets = client.listBuckets().execute();
+        Iterable<Bucket> buckets = client.execute(client.listBuckets());
         for (Bucket bucket1 : buckets)
         {
             System.out.println(bucket1);
         }
 
-        client.lookupIndex(bucket, "dave_int", range(0, 100)).execute();
+        client.execute(lookupIndex(bucket, "dave_int", range(0, 100)));
 
-        client.lookupIndex(bucket, "other_bin", match("12345")).execute();
+        client.execute(lookupIndex(bucket, "other_bin", match("12345")));
 
-        client.lookupIndex(bucket, "other_bin", match(new byte[] {0x1, 0x2, 0x3})).execute();
+        client.execute(lookupIndex(bucket, "other_bin", match(new byte[]{0x1, 0x2, 0x3})));
 
-        FetchIndex fetchIndex = client
-            .lookupIndex(bucket, "dave_int", match(1000))
+        FetchIndex fetchIndex = lookupIndex(bucket, "dave_int", match(1000))
             .withOption(IndexOption.MAX_RESULTS, 25)
             .withOption(IndexOption.RETURN_TERMS, true);
 
-        FetchIndex.Response result = fetchIndex.execute();
+        FetchIndex.Response result = client.execute(fetchIndex);
         while (result.hasContinuation())
         {
             for (FetchIndex.IndexEntry entry : result)
@@ -310,7 +212,7 @@ public class RiakClient
                 System.out.println(entry.getKey());
             }
             fetchIndex.withContinuation(result.getContinuation());
-            result = fetchIndex.execute();
+            result = client.execute(fetchIndex);
         }
 
 //
@@ -348,7 +250,7 @@ public class RiakClient
         @Override
         public RiakObject resolve(List<RiakObject> objectList) throws UnresolvedConflictException
         {
-            return null;
+            return objectList.get(0);
         }
 
     }

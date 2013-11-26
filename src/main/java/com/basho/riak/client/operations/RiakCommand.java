@@ -19,12 +19,7 @@ import com.basho.riak.client.core.RiakCluster;
 
 import java.util.concurrent.ExecutionException;
 
-public interface RiakCommand<T>
+public abstract class RiakCommand<T>
 {
-    T execute() throws ExecutionException, InterruptedException;
+    abstract T execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
 }
-//
-//public abstract class RiakComment<T>
-//{
-//    abstract T execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
-//}

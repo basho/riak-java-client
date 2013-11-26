@@ -18,8 +18,11 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.operations.datatypes.DatatypeConverter;
+import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -31,20 +34,33 @@ import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.convert.Converters.convert;
 
-public class FetchValue<T> implements RiakCommand<FetchValue.Response<T>>
+public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 {
 
-    private final RiakCluster cluster;
     private final Location location;
     private final Map<FetchOption<?>, Object> options;
     private final Converter<T> converter;
 
-    FetchValue(RiakCluster cluster, Location location, Converter<T> converter)
+    FetchValue(Location location, Converter<T> converter)
     {
-        this.cluster = cluster;
         this.options = new HashMap<FetchOption<?>, Object>();
         this.converter = converter;
         this.location = location;
+    }
+
+    public static <T> FetchValue<T> fetch(Key location, Converter<T> converter)
+    {
+        return new FetchValue(location, converter);
+    }
+
+    public static FetchValue<RiakObject> fetch(Key location)
+    {
+        return new FetchValue<RiakObject>(location, new PassThroughConverter());
+    }
+
+    public static <T extends RiakDatatype> FetchDatatype<T> fetch(Key location, DatatypeConverter<T> converter)
+    {
+        return new FetchDatatype<T>();
     }
 
     public <U> FetchValue<T> withOption(FetchOption<U> option, U value)
@@ -54,7 +70,7 @@ public class FetchValue<T> implements RiakCommand<FetchValue.Response<T>>
     }
 
     @Override
-    public Response<T> execute() throws ExecutionException, InterruptedException
+    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         ByteArrayWrapper type = location.getType();
