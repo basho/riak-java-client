@@ -36,7 +36,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static com.basho.riak.client.operations.FetchIndex.match;
+import static com.basho.riak.client.operations.FetchIndex.range;
 import static com.basho.riak.client.operations.Location.bucket;
+import static com.basho.riak.client.operations.Location.defaultBucketType;
 
 public class RiakClient
 {
@@ -179,6 +182,16 @@ public class RiakClient
         return listBuckets(type, -1, false);
     }
 
+    public RiakCommand<Iterable<Bucket>> listBuckets()
+    {
+        return listBuckets(defaultBucketType(), -1, false);
+    }
+
+    public FetchIndex lookupIndex(Bucket bucket, String index, FetchIndex.Operation op)
+    {
+        return new FetchIndex(bucket, index, op);
+    }
+
     public static RiakObject resolve(List<RiakObject> siblings)
     {
         return siblings.get(0);
@@ -269,7 +282,35 @@ public class RiakClient
         Iterable<Key> keys = client.listKeys(bucket).execute();
         for (Key k : keys)
         {
-            System.out.println(k);
+            client.delete(k).execute();
+        }
+
+        Iterable<Bucket> buckets = client.listBuckets().execute();
+        for (Bucket bucket1 : buckets)
+        {
+            System.out.println(bucket1);
+        }
+
+        client.lookupIndex(bucket, "dave_int", range(0, 100)).execute();
+
+        client.lookupIndex(bucket, "other_bin", match("12345")).execute();
+
+        client.lookupIndex(bucket, "other_bin", match(new byte[] {0x1, 0x2, 0x3})).execute();
+
+        FetchIndex fetchIndex = client
+            .lookupIndex(bucket, "dave_int", match(1000))
+            .withOption(IndexOption.MAX_RESULTS, 25)
+            .withOption(IndexOption.RETURN_TERMS, true);
+
+        FetchIndex.Response result = fetchIndex.execute();
+        while (result.hasContinuation())
+        {
+            for (FetchIndex.IndexEntry entry : result)
+            {
+                System.out.println(entry.getKey());
+            }
+            fetchIndex.withContinuation(result.getContinuation());
+            result = fetchIndex.execute();
         }
 
 //

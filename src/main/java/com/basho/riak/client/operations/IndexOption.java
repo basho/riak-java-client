@@ -15,16 +15,14 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.core.RiakCluster;
-
-import java.util.concurrent.ExecutionException;
-
-public interface RiakCommand<T>
+public class IndexOption<T> extends RiakOption<T>
 {
-    T execute() throws ExecutionException, InterruptedException;
+
+    public static final IndexOption<Integer> MAX_RESULTS = new IndexOption<Integer>("MAX_RESULTS");
+    public static final IndexOption<Boolean> RETURN_TERMS = new IndexOption<Boolean>("RETURN_TERMS");
+
+    public IndexOption(String name)
+    {
+        super(name);
+    }
 }
-//
-//public abstract class RiakComment<T>
-//{
-//    abstract T execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
-//}
