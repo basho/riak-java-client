@@ -21,6 +21,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.operations.datatypes.DatatypeMutation;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.query.RiakObject;
