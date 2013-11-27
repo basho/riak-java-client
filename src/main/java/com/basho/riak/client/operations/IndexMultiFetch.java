@@ -38,16 +38,22 @@ class IndexMultiFetch extends MultiFetch
 
         ArrayList<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
 
-        FetchIndex.Response indices = index.execute(cluster);
-        while (indices.hasContinuation())
+        FetchIndex.Response result;
+        do
         {
-
-            for (FetchIndex.IndexEntry e : indices)
+            result = index.execute(cluster);
+            for (FetchIndex.IndexEntry entry : result)
             {
-                values.add(fetch(e.getKey()).execute(cluster));
+                Key key = entry.getKey();
+                values.add(fetch(key).execute(cluster));
             }
 
+            if (result.hasContinuation())
+            {
+                index.withContinuation(result.getContinuation());
+            }
         }
+        while (result.hasContinuation());
 
         return new Response(values);
     }

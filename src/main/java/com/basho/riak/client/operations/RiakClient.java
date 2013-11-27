@@ -36,8 +36,10 @@ import static com.basho.riak.client.operations.FetchIndex.*;
 import static com.basho.riak.client.operations.FetchValue.fetch;
 import static com.basho.riak.client.operations.Location.bucket;
 import static com.basho.riak.client.operations.Location.defaultBucketType;
+import static com.basho.riak.client.operations.MultiFetch.multiFetch;
 import static com.basho.riak.client.operations.StoreValue.store;
 import static com.basho.riak.client.operations.UpdateValue.resolve;
+import static com.basho.riak.client.operations.UpdateValue.update;
 
 public class RiakClient
 {
@@ -160,7 +162,7 @@ public class RiakClient
         // Represent anything that has to fetch, then resolve, then store back
         // as an update
         UpdateValue.Response<RiakObject> update =
-            client.execute(UpdateValue.update(key, new Update<RiakObject>()
+            client.execute(update(key, new Update<RiakObject>()
             {
                 @Override
                 public RiakObject apply(RiakObject o)
@@ -200,20 +202,24 @@ public class RiakClient
 
         client.execute(lookupIndex(bucket, "other_bin", match(new byte[]{0x1, 0x2, 0x3})));
 
-        FetchIndex fetchIndex = lookupIndex(bucket, "dave_int", match(1000))
+        FetchIndex index = lookupIndex(bucket, "dave_int", match(1000))
             .withOption(IndexOption.MAX_RESULTS, 25)
             .withOption(IndexOption.RETURN_TERMS, true);
 
-        FetchIndex.Response result = client.execute(fetchIndex);
-        while (result.hasContinuation())
+
+        FetchIndex.Response result;
+        do
         {
+            result = client.execute(index);
             for (FetchIndex.IndexEntry entry : result)
             {
                 System.out.println(entry.getKey());
             }
-            fetchIndex.withContinuation(result.getContinuation());
-            result = client.execute(fetchIndex);
+            index.withContinuation(result.getContinuation());
         }
+        while (result.hasContinuation());
+
+        MultiFetch.Response values = client.execute(multiFetch(index));
 
 //
 //        // Fetch a Counter CRDT

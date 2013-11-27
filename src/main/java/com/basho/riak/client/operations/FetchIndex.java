@@ -29,18 +29,18 @@ public class FetchIndex extends RiakCommand<FetchIndex.Response>
 
     private final Bucket bucket;
     private final String index;
-    private final Operation op;
+    private final Criteria op;
     private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
     private ByteArrayWrapper continuation;
 
-    public FetchIndex(Bucket bucket, String index, Operation op)
+    public FetchIndex(Bucket bucket, String index, Criteria op)
     {
         this.bucket = bucket;
         this.index = index;
         this.op = op;
     }
 
-    public static FetchIndex lookupIndex(Bucket bucket, String index, FetchIndex.Operation op)
+    public static FetchIndex lookupIndex(Bucket bucket, String index, Criteria op)
     {
         return new FetchIndex(bucket, index, op);
     }
@@ -60,49 +60,49 @@ public class FetchIndex extends RiakCommand<FetchIndex.Response>
     @Override
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        return null;
+        return new Response(null, Collections.<IndexEntry<?>>emptyList());
     }
 
-    public static Operation range(int start, int end)
+    public static Criteria range(int start, int end)
     {
-        return new RangeOperation(start, end);
+        return new RangeCriteria(start, end);
     }
 
-    public static Operation match(String term)
+    public static Criteria match(String term)
     {
-        return new MatchOperation(term);
+        return new MatchCriteria(term);
     }
 
-    public static Operation match(int term)
+    public static Criteria match(int term)
     {
-        return new MatchOperation(term);
+        return new MatchCriteria(term);
     }
 
-    public static Operation match(byte[] term)
+    public static Criteria match(byte[] term)
     {
-        return new MatchOperation(term);
+        return new MatchCriteria(term);
     }
 
-    public static abstract class Operation
+    public static abstract class Criteria
     {
         abstract void configure(SecondaryIndexQueryOperation.Builder op);
     }
 
-    private static class MatchOperation extends Operation
+    private static class MatchCriteria extends Criteria
     {
         final ByteArrayWrapper match;
 
-        public MatchOperation(String match)
+        public MatchCriteria(String match)
         {
             this.match = ByteArrayWrapper.create(match);
         }
 
-        public MatchOperation(int match)
+        public MatchCriteria(int match)
         {
             this.match = ByteArrayWrapper.create(Integer.toString(match));
         }
 
-        public MatchOperation(byte[] match)
+        public MatchCriteria(byte[] match)
         {
             this.match = ByteArrayWrapper.create(match);
         }
@@ -114,12 +114,12 @@ public class FetchIndex extends RiakCommand<FetchIndex.Response>
         }
     }
 
-    private static class RangeOperation extends Operation
+    private static class RangeCriteria extends Criteria
     {
         final int start;
         final int stop;
 
-        public RangeOperation(int start, int stop)
+        public RangeCriteria(int start, int stop)
         {
             this.start = start;
             this.stop = stop;
