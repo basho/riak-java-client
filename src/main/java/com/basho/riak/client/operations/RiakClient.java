@@ -30,6 +30,8 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static com.basho.riak.client.operations.DeleteValue.delete;
 import static com.basho.riak.client.operations.FetchIndex.*;
@@ -47,10 +49,12 @@ public class RiakClient
     private static final Converter<RiakObject> DEFAULT_CONVERTER = new PassThroughConverter();
 
     private final RiakCluster cluster;
+    private final Executor executor;
 
-    public RiakClient(RiakCluster cluster)
+    public RiakClient(RiakCluster cluster, Executor executor)
     {
         this.cluster = cluster;
+        this.executor = executor;
     }
 
     public <T> T execute(RiakCommand<T> command) throws ExecutionException, InterruptedException
@@ -119,7 +123,7 @@ public class RiakClient
 
         cluster.start();
 
-        RiakClient client = new RiakClient(cluster);
+        RiakClient client = new RiakClient(cluster, Executors.newCachedThreadPool());
 
         Bucket bucket = bucket("bucket-o-stuff");
 
@@ -196,18 +200,20 @@ public class RiakClient
             System.out.println(bucket1);
         }
 
-        client.execute(lookupIndex(bucket, "dave_int", range(0, 100)));
+        client.execute(lookupIndex(bucket, "dave", IndexType.INT, range(0, 100)));
 
-        client.execute(lookupIndex(bucket, "other_bin", match("12345")));
+        client.execute(lookupIndex(bucket, "dave", IndexType.INT, match(12345)));
 
-        client.execute(lookupIndex(bucket, "other_bin", match(new byte[]{0x1, 0x2, 0x3})));
+        client.execute(lookupIndex(bucket, "other", IndexType.BIN, match("12345")));
 
-        FetchIndex index = lookupIndex(bucket, "dave_int", match(1000))
+        client.execute(lookupIndex(bucket, "other", IndexType.BIN, match(new byte[]{0x1, 0x2, 0x3})));
+
+        FetchIndex<Integer> index = lookupIndex(bucket, "dave", IndexType.INT, match(1000))
             .withOption(IndexOption.MAX_RESULTS, 25)
             .withOption(IndexOption.RETURN_TERMS, true);
 
 
-        FetchIndex.Response result;
+        FetchIndex.Response<Integer> result;
         do
         {
             result = client.execute(index);

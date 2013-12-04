@@ -16,104 +16,96 @@
 package com.basho.riak.client.core;
 
 import java.util.HashSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractRiakFuture<V> implements RiakFuture<V>
 {
 
-    private final HashSet<RiakFutureListener<V>> listeners = new HashSet<RiakFutureListener<V>>();
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private volatile boolean listenersFired = false;
-    private volatile Throwable exception;
-    private volatile V result;
+    private final SettableCallable<V> settable = new SettableCallable<V>();
+    private final SettableTask<V> task = new SettableTask<V>(settable);
 
-    protected synchronized boolean set(V result)
+    private final ReentrantLock listenersLock = new ReentrantLock();
+    private final HashSet<RiakFutureListener<V>> listeners =
+        new HashSet<RiakFutureListener<V>>();
+    private volatile boolean listenersFired = false;
+
+    @Override
+    public boolean isCancelled()
     {
-        if (!isDone())
-        {
-            this.result = result;
-            latch.countDown();
-            fireListeners();
-            return true;
-        }
-        return false;
+        return task.isCancelled();
     }
 
-    protected synchronized boolean setException(Throwable t)
+    @Override
+    public boolean isDone()
     {
-        if (!isDone())
-        {
-            this.exception = t;
-            latch.countDown();
-            fireListeners();
-            return true;
-        }
-        return false;
+        return task.isDone();
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning)
     {
-        return false;
-    }
-
-    private synchronized V internalGet() throws ExecutionException
-    {
-        if (result != null)
-        {
-            return result;
-        }
-
-        throw new ExecutionException(exception);
+        return task.cancel(mayInterruptIfRunning);
     }
 
     @Override
     public V get() throws InterruptedException, ExecutionException
     {
-        latch.await();
-
-        return internalGet();
-
+        return task.get();
     }
 
     @Override
     public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
-        if (!latch.await(timeout, unit))
+        return task.get(timeout, unit);
+    }
+
+    private void doDone()
+    {
+        boolean fireNow = false;
+        listenersLock.lock();
+        try
         {
-            throw new TimeoutException();
+            if (!listenersFired)
+            {
+                fireNow = true;
+                listenersFired = true;
+            }
+        }
+        finally
+        {
+            listenersLock.unlock();
         }
 
-        return internalGet();
+        if (fireNow)
+        {
+            for (RiakFutureListener<V> listener : listeners)
+            {
+                listener.handle(this);
+            }
+        }
     }
 
     @Override
-    public boolean isCancelled()
-    {
-        return false;
-    }
-
-    @Override
-    public synchronized boolean isDone()
-    {
-        return (result != null) || (exception != null);
-    }
-
-    @Override
-    public synchronized void addListener(RiakFutureListener<V> listener)
+    public void addListener(RiakFutureListener<V> listener)
     {
 
         boolean fireNow = false;
-        if (listenersFired)
+        listenersLock.lock();
+        try
         {
-            fireNow = true;
+            if (listenersFired)
+            {
+                fireNow = true;
+            }
+            else
+            {
+                listeners.add(listener);
+            }
         }
-        else
+        finally
         {
-            listeners.add(listener);
+            listenersLock.unlock();
         }
 
         // the future has already been completed, fire on caller's thread
@@ -125,31 +117,98 @@ public abstract class AbstractRiakFuture<V> implements RiakFuture<V>
     }
 
     @Override
-    public synchronized void removeListener(RiakFutureListener<V> listener)
+    public void removeListener(RiakFutureListener<V> listener)
     {
-        if (!listenersFired)
+        listenersLock.lock();
+        try
         {
-            listeners.remove(listener);
-        } // else, we don't care, they've already been fired
-    }
-
-    private void fireListeners()
-    {
-
-        boolean fireNow = false;
-        if (!listenersFired)
-        {
-            fireNow = true;
-            listenersFired = true;
-        }
-
-        if (fireNow)
-        {
-            for (RiakFutureListener<V> listener : listeners)
+            if (!listenersFired)
             {
-                listener.handle(this);
-            }
+                listeners.remove(listener);
+            } // else, we don't care, they've already been fired
+        }
+        finally
+        {
+            listenersLock.unlock();
+        }
+    }
+
+    protected boolean set(V v)
+    {
+        boolean set;
+        if ((set = settable.set(v)))
+        {
+            task.run();
+        }
+        return set;
+    }
+
+    protected boolean setException(Throwable t)
+    {
+        boolean set;
+        if ((set = settable.setException(t)))
+        {
+            task.run();
+        }
+        return set;
+    }
+
+    private class SettableTask<V> extends FutureTask<V>
+    {
+        private SettableTask(Callable<V> callable)
+        {
+            super(callable);
+        }
+
+        @Override
+        protected void done()
+        {
+            doDone();
         }
 
     }
+
+    private static class SettableCallable<V> implements Callable<V>
+    {
+
+        private volatile Throwable t;
+        private volatile V v;
+
+        @Override
+        public V call() throws Exception
+        {
+            if (v != null)
+            {
+                return v;
+            }
+            throw new ExecutionException(t);
+        }
+
+        private boolean isSet()
+        {
+            return (v != null) || (t != null);
+        }
+
+        public synchronized boolean setException(Throwable t)
+        {
+            if (!isSet())
+            {
+                this.t = t;
+                return true;
+            }
+            return false;
+        }
+
+        public synchronized boolean set(V v)
+        {
+            if (!isSet())
+            {
+                this.v = v;
+                return true;
+            }
+            return false;
+        }
+    }
+
+
 }

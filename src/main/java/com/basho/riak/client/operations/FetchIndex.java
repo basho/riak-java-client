@@ -17,50 +17,105 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.query.indexes.SecondaryIndexEntry;
+import com.basho.riak.client.query.indexes.SecondaryIndexQueryResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+import static java.util.Collections.replaceAll;
 import static java.util.Collections.unmodifiableList;
 
-public class FetchIndex extends RiakCommand<FetchIndex.Response>
+public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 {
 
     private final Bucket bucket;
     private final String index;
     private final Criteria op;
     private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
+    private final IndexType<T> type;
     private ByteArrayWrapper continuation;
 
-    public FetchIndex(Bucket bucket, String index, Criteria op)
+    public FetchIndex(Bucket bucket, String index, IndexType<T> type, Criteria op)
     {
         this.bucket = bucket;
         this.index = index;
         this.op = op;
+        this.type = type;
     }
 
-    public static FetchIndex lookupIndex(Bucket bucket, String index, Criteria op)
+    public static <T> FetchIndex<T> lookupIndex(Bucket bucket, String index, IndexType<T> type, Criteria op)
     {
-        return new FetchIndex(bucket, index, op);
+        return new FetchIndex(bucket, index, type, op);
     }
 
-    public FetchIndex withContinuation(ByteArrayWrapper continuation)
+    public FetchIndex<T> withContinuation(ByteArrayWrapper continuation)
     {
         this.continuation = continuation;
         return this;
     }
 
-    public <T> FetchIndex withOption(IndexOption<T> option, T value)
+    public <U> FetchIndex<T> withOption(IndexOption<U> option, U value)
     {
         options.put(option, value);
         return this;
     }
 
     @Override
-    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        return new Response(null, Collections.<IndexEntry<?>>emptyList());
+
+        ByteArrayWrapper indexName = null;
+        if (type == IndexType.INT)
+        {
+            ByteArrayWrapper.create(index + "_int");
+        }
+        else
+        {
+            ByteArrayWrapper.create(index + "_bin");
+        }
+
+        SecondaryIndexQueryOperation.Builder builder =
+            new SecondaryIndexQueryOperation.Builder(bucket.getBucket(), indexName);
+
+        builder.withBucketType(bucket.getType());
+
+        for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
+        {
+            if (option.getKey() == IndexOption.MAX_RESULTS)
+            {
+                builder.withMaxResults((Integer) option.getValue());
+            }
+            else if (option.getKey() == IndexOption.RETURN_TERMS)
+            {
+                builder.withReturnKeyAndIndex((Boolean) option.getValue());
+            }
+        }
+
+        op.configure(builder);
+
+        if (continuation != null)
+        {
+            builder.withContinuation(continuation);
+        }
+
+        SecondaryIndexQueryOperation operation = builder.build();
+        cluster.execute(operation);
+
+        SecondaryIndexQueryResponse opResponse = operation.get();
+
+        ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(opResponse.size());
+
+        for (SecondaryIndexEntry entry : opResponse)
+        {
+            Key key = Location.key(bucket, entry.getIndexKey());
+            T objectKey = type.convert(entry.getObjectKey());
+            IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
+            indexEntries.add(indexEntry);
+        }
+
+        return new Response(opResponse.getContinuation(), indexEntries);
     }
 
     public static Criteria range(int start, int end)
@@ -160,13 +215,13 @@ public class FetchIndex extends RiakCommand<FetchIndex.Response>
         }
     }
 
-    public static final class Response implements Iterable<IndexEntry<?>>
+    public static final class Response<T> implements Iterable<IndexEntry<T>>
     {
 
         private final ByteArrayWrapper continuation;
-        private final List<IndexEntry<?>> entries;
+        private final List<IndexEntry<T>> entries;
 
-        Response(ByteArrayWrapper continuation, List<IndexEntry<?>> entries)
+        Response(ByteArrayWrapper continuation, List<IndexEntry<T>> entries)
         {
             this.continuation = continuation;
             this.entries = entries;
@@ -183,7 +238,7 @@ public class FetchIndex extends RiakCommand<FetchIndex.Response>
         }
 
         @Override
-        public Iterator<IndexEntry<?>> iterator()
+        public Iterator<IndexEntry<T>> iterator()
         {
             return unmodifiableList(entries).iterator();
         }

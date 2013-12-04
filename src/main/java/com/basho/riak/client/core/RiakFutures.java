@@ -30,7 +30,7 @@ public class RiakFutures
         RiakFuture<O> apply(I input);
     }
 
-    public static <U, V> RiakFuture<U> map(RiakFuture<V> future, final Func<V, U> mapping)
+    public static <U, V> RiakFuture<U> map(final RiakFuture<V> future, final Func<V, U> mapping)
     {
 
         final RiakPromise<U> promise = new RiakPromise<U>();
@@ -61,28 +61,25 @@ public class RiakFutures
                 }
             }
         });
-        return promise;
-    }
 
-    private static <V> V getUnchecked(RiakFuture<V> future)
-    {
-        try
+        promise.addListener(new RiakFutureListener<U>()
         {
-            return future.get();
-        }
-        catch (ExecutionException e)
-        {
-            throw new RuntimeException(e.getCause());
-        }
-        catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
-        }
+            @Override
+            public void handle(RiakFuture<U> f)
+            {
+                if (f.isCancelled())
+                {
+                    future.cancel(false);
+                }
+            }
+        });
+
+        return promise;
     }
 
     public static <U, V> RiakFuture<U> flatMap(RiakFuture<V> future, final AsyncFunc<V, U> mapping)
     {
-        RiakFuture<RiakFuture<U>> f = map(future, new Func<V, RiakFuture<U>>()
+        final RiakFuture<RiakFuture<U>> f = map(future, new Func<V, RiakFuture<U>>()
         {
             @Override
             public RiakFuture<U> apply(V input)
@@ -105,6 +102,12 @@ public class RiakFutures
                         @Override
                         public void handle(RiakFuture<U> inner)
                         {
+                            if (inner.isCancelled())
+                            {
+                                promise.cancel(false);
+                                return;
+                            }
+
                             try
                             {
                                 promise.set(inner.get());
@@ -119,6 +122,18 @@ public class RiakFutures
                 catch (Exception e)
                 {
                     throw new RuntimeException(e);
+                }
+            }
+        });
+
+        promise.addListener(new RiakFutureListener<U>()
+        {
+            @Override
+            public void handle(RiakFuture<U> input)
+            {
+                if (input.isCancelled())
+                {
+                    f.cancel(false);
                 }
             }
         });
