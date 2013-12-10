@@ -50,7 +50,7 @@ public abstract class PBStreamingOperation<S,T> implements StreamingOperation<T>
 
     public void cancel()
     {
-        client.close();
+        client.cancel();
     }
 
     public Iterator<T> iterator()
