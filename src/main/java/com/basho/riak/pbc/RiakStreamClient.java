@@ -87,6 +87,14 @@ public abstract class RiakStreamClient<T> implements Iterable<T> {
 		}
 	}
 	
+    public synchronized void cancel() {
+        if (!isClosed())
+        {
+            conn.close();
+            close();
+        }
+    }
+    
 	public synchronized void close() {
 		if (!isClosed()) {
 			reaper.cancel();
