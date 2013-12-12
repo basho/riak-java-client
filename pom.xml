@@ -4,7 +4,7 @@
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
     <packaging>bundle</packaging>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>1.4.3</version>
     <name>Riak Client for Java</name>
     <description>HttpClient-based client for Riak</description>
     <url>https://github.com/basho/riak-java-client</url>
