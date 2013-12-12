@@ -17,8 +17,6 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -86,9 +84,9 @@ public class RiakClusterFixtureTest
         
         try
         {
-            KvResponse<List<RiakObject>> response = operation.get();
-            assertEquals(response.getContent().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!response.notFound());
+            FetchOperation.Response response = operation.get();
+            assertEquals(response.getObjectList().get(0).getValue().toString(), "This is a value!");
+            assertTrue(!response.isNotFound());
         }
         catch(InterruptedException e)
         {
@@ -125,7 +123,7 @@ public class RiakClusterFixtureTest
         
         try
         {
-            KvResponse<List<RiakObject>> response = operation.get();
+            FetchOperation.Response response = operation.get();
         }
         finally
         {

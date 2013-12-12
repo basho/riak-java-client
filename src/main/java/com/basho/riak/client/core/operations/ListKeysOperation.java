@@ -29,55 +29,13 @@ import java.util.concurrent.ExecutionException;
 
 public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbListKeysResp>
 {
-
-    private final Integer timeout;
-    private final ByteArrayWrapper bucket;
-    private ByteArrayWrapper bucketType;
-
-    public ListKeysOperation(ByteArrayWrapper bucket, Integer timeout)
-    {
-
-        if ((null == bucket) || bucket.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket can not be null or empty");
-        }
-
-        if (timeout < 0)
-        {
-            throw new IllegalArgumentException("Negative timeout values not allowed");
-        }
-
-        this.timeout = timeout;
-        this.bucket = bucket;
-    }
-
-    public ListKeysOperation(ByteArrayWrapper bucket)
-    {
-        if ((null == bucket) || bucket.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket can not be null or empty");
-        }
-
-        this.timeout = null;
-        this.bucket = bucket;
-    }
-
-    /**
-     * Set the bucket type.
-     * If unset "default" is used. 
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public ListKeysOperation withBucketType(ByteArrayWrapper bucketType)
-    {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-        this.bucketType = bucketType;
-        return this;
-    }
+    private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
+    private ListKeysOperation(Builder builder)
+    {
+        this.reqBuilder = builder.reqBuilder;
+    }
+
     @Override
     protected List<ByteArrayWrapper> convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
     {
@@ -95,19 +53,7 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakKvPB.RpbListKeysReq.Builder request = RiakKvPB.RpbListKeysReq.newBuilder();
-
-        request.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-        if (timeout != null)
-        {
-            request.setTimeout(timeout);
-        }
-        if (bucketType != null)
-        {
-            request.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-        }
-
-        return new RiakMessage(RiakMessageCodes.MSG_ListKeysReq, request.build().toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_ListKeysReq, reqBuilder.build().toByteArray());
     }
 
     @Override
@@ -129,4 +75,55 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
     {
         return message.getDone();
     }
+    
+    public static class Builder
+    {
+        RiakKvPB.RpbListKeysReq.Builder reqBuilder =
+            RiakKvPB.RpbListKeysReq.newBuilder();
+        
+        public Builder(ByteArrayWrapper bucketName)
+        {
+            if ((null == bucketName) || bucketName.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket name can not be null or empty");
+            }
+            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
+        }
+        
+        /**
+        * Set the bucket type.
+        * If unset "default" is used. 
+        * @param bucketType the bucket type to use
+        * @return A reference to this object.
+        */
+        public Builder withBucketType(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            return this;
+        }
+        
+        public Builder withTimeout(int timeout)
+        {
+            if (timeout <= 0)
+            {
+                throw new IllegalArgumentException("Timeout can not be zero or less");
+            }
+            reqBuilder.setTimeout(timeout);
+            return this;
+        }
+        
+        public ListKeysOperation build()
+        {
+            return new ListKeysOperation(this);
+        }
+        
+        
+        
+        
+    }
+    
 }

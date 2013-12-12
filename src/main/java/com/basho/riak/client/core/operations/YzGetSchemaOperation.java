@@ -31,16 +31,11 @@ import java.util.concurrent.ExecutionException;
  */
 public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYokozunaPB.RpbYokozunaSchemaGetResp>
 {
-    private final String schemaName;
+    private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder;
 
-    public YzGetSchemaOperation(String schemaName)
+    private YzGetSchemaOperation(Builder builder)
     {
-        if (null == schemaName || schemaName.length() == 0)
-        {
-            throw new IllegalArgumentException("Schema name cannot be null or zero length");
-        }
-        
-        this.schemaName = schemaName;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
@@ -57,11 +52,7 @@ public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYo
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder builder = 
-            RiakYokozunaPB.RpbYokozunaSchemaGetReq.newBuilder();
-        
-        builder.setName(ByteString.copyFromUtf8(schemaName));
-        RiakYokozunaPB.RpbYokozunaSchemaGetReq req = builder.build();
+        RiakYokozunaPB.RpbYokozunaSchemaGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_GetYzSchemaReq, req.toByteArray());
         
     }
@@ -79,6 +70,26 @@ public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYo
             throw new IllegalArgumentException("Invalid message received", ex);
         }
         
+    }
+    
+    public static class Builder
+    {
+        private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder = 
+            RiakYokozunaPB.RpbYokozunaSchemaGetReq.newBuilder();
+        
+        public Builder(String schemaName)
+        {
+            if (null == schemaName || schemaName.length() == 0)
+            {
+                throw new IllegalArgumentException("Schema name cannot be null or zero length");
+            }
+            reqBuilder.setName(ByteString.copyFromUtf8(schemaName));
+        }
+        
+        public YzGetSchemaOperation build()
+        {
+            return new YzGetSchemaOperation(this);
+        }
     }
     
 }

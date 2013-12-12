@@ -28,43 +28,25 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutIndexOperation extends FutureOperation<Void, Void>
+public class YzPutIndexOperation extends FutureOperation<Boolean, Void>
 {
-    private final YokozunaIndex index;
+    private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder;
     
-    public YzPutIndexOperation(YokozunaIndex index)
+    private YzPutIndexOperation(Builder builder)
     {
-        if (null == index)
-        {
-            throw new IllegalArgumentException("Index can not be null");
-        }
-        this.index = index;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        return true;
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakYokozunaPB.RpbYokozunaIndex.Builder indexBuilder =
-            RiakYokozunaPB.RpbYokozunaIndex.newBuilder();
-        
-        indexBuilder.setName(ByteString.copyFromUtf8(index.getName()));
-        // A null schema is valid; the default will be used 
-        if (index.getSchema() != null)
-        {
-            indexBuilder.setSchema(ByteString.copyFromUtf8(index.getSchema()));
-        }
-        
-        RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder builder =
-            RiakYokozunaPB.RpbYokozunaIndexPutReq.newBuilder();
-        
-        builder.setIndex(indexBuilder);
-        RiakYokozunaPB.RpbYokozunaIndexPutReq req = builder.build();
+        RiakYokozunaPB.RpbYokozunaIndexPutReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_PutYzIndexReq, req.toByteArray());
         
     }
@@ -74,5 +56,37 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void>
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
+    }
+    
+    public static class Builder
+    {
+        private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder =
+            RiakYokozunaPB.RpbYokozunaIndexPutReq.newBuilder();
+        
+        public Builder(YokozunaIndex index)
+        {
+            if (null == index)
+            {
+                throw new IllegalArgumentException("Index can not be null");
+            }
+            
+            RiakYokozunaPB.RpbYokozunaIndex.Builder indexBuilder =
+                RiakYokozunaPB.RpbYokozunaIndex.newBuilder();
+        
+            indexBuilder.setName(ByteString.copyFromUtf8(index.getName()));
+            // A null schema is valid; the default will be used 
+            if (index.getSchema() != null)
+            {
+                indexBuilder.setSchema(ByteString.copyFromUtf8(index.getSchema()));
+            }
+            
+            reqBuilder.setIndex(indexBuilder);
+        }
+        
+        public YzPutIndexOperation build()
+        {
+            return new YzPutIndexOperation(this);
+        }
+        
     }
 }

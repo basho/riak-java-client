@@ -20,7 +20,6 @@ import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -54,7 +53,7 @@ public class ITestListBucketsOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        ListBucketsOperation listOp = new ListBucketsOperation();
+        ListBucketsOperation listOp = new ListBucketsOperation.Builder().build();
         cluster.execute(listOp);
         List<ByteArrayWrapper> bucketList = listOp.get();
         assertTrue(bucketList.size() > 0);
@@ -79,13 +78,13 @@ public class ITestListBucketsOperation extends ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<KvResponse<List<RiakObject>>> listener =
-            new RiakFutureListener<KvResponse<List<RiakObject>>>() {
+        RiakFutureListener<StoreOperation.Response> listener =
+            new RiakFutureListener<StoreOperation.Response>() {
                 
                 private AtomicInteger received = new AtomicInteger();
                 
                 @Override
-                public void handle(RiakFuture<KvResponse<List<RiakObject>>> f)
+                public void handle(RiakFuture<StoreOperation.Response> f)
                 {
                     try
                     {
@@ -125,7 +124,7 @@ public class ITestListBucketsOperation extends ITestBase
         
         latch.await();
         
-        ListBucketsOperation listOp = new ListBucketsOperation();
+        ListBucketsOperation listOp = new ListBucketsOperation.Builder().build();
         cluster.execute(listOp);
         List<ByteArrayWrapper> bucketList = listOp.get();
         assertTrue(bucketList.size() >= 1000);

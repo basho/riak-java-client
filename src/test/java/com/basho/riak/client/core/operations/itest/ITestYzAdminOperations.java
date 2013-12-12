@@ -67,12 +67,12 @@ public class ITestYzAdminOperations extends ITestBase
             + "</schema>");
         
         
-        YzPutSchemaOperation putOp = new YzPutSchemaOperation(yzSchema);
+        YzPutSchemaOperation putOp = new YzPutSchemaOperation.Builder(yzSchema).build();
         cluster.execute(putOp);
         putOp.get();
         
         YzGetSchemaOperation getOp =
-            new YzGetSchemaOperation("test_schema");
+            new YzGetSchemaOperation.Builder("test_schema").build();
         
         cluster.execute(getOp);
         YokozunaSchema yzSchema2 = getOp.get();
@@ -87,7 +87,7 @@ public class ITestYzAdminOperations extends ITestBase
     {
         Assume.assumeTrue(testYokozuna);
         YzGetSchemaOperation getOp =
-            new YzGetSchemaOperation("_yz_default");
+            new YzGetSchemaOperation.Builder("_yz_default").build();
         
         cluster.execute(getOp);
         YokozunaSchema yzSchema = getOp.get();
@@ -95,7 +95,7 @@ public class ITestYzAdminOperations extends ITestBase
         assertNotNull(yzSchema.getName());
         assertNotNull(yzSchema.getContent());
         
-        YzPutSchemaOperation putOp = new YzPutSchemaOperation(yzSchema);
+        YzPutSchemaOperation putOp = new YzPutSchemaOperation.Builder(yzSchema).build();
         cluster.execute(putOp);
         putOp.get();
         
@@ -106,7 +106,7 @@ public class ITestYzAdminOperations extends ITestBase
     {
         Assume.assumeTrue(testYokozuna);
         YokozunaIndex index = new YokozunaIndex("test_index");
-        YzPutIndexOperation putOp = new YzPutIndexOperation(index);
+        YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
         putOp.get();
@@ -114,7 +114,9 @@ public class ITestYzAdminOperations extends ITestBase
         // Testing has shown that even though Riak responds to the create op ... 
         // the index isn't actually created yet and the delete op return "not found" 
         
-        YzFetchIndexOperation fetchOp = new YzFetchIndexOperation("test_index");
+        YzFetchIndexOperation fetchOp = 
+            new YzFetchIndexOperation.Builder().withIndexName("test_index")
+                .build();
         
         cluster.execute(fetchOp);
         List<YokozunaIndex> indexList = fetchOp.get();
@@ -125,12 +127,13 @@ public class ITestYzAdminOperations extends ITestBase
         
     }
     
+    // This ppears to also be broken in Riak as of pre7
     @Test
     public void testDeleteIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testYokozuna);
         YokozunaIndex index = new YokozunaIndex("test_index5");
-        YzPutIndexOperation putOp = new YzPutIndexOperation(index);
+        YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
         putOp.get();
@@ -139,7 +142,8 @@ public class ITestYzAdminOperations extends ITestBase
         // the index isn't actually created yet and the delete op return "not found" 
         Thread.sleep(5000);
         
-        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation("test_index5");
+        YzDeleteIndexOperation delOp = 
+            new YzDeleteIndexOperation.Builder("test_index5").build();
         cluster.execute(delOp);
         delOp.get();
         

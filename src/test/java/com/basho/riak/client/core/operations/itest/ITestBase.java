@@ -22,7 +22,6 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -106,24 +105,25 @@ public abstract class ITestBase
 
     protected static void resetAndEmptyBucket(ByteArrayWrapper name, ByteArrayWrapper type) throws InterruptedException, ExecutionException
     {
-        ListKeysOperation keysOp = new ListKeysOperation(name);
+        ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(name);
         if (type != null)
         {
-            keysOp.withBucketType(type);
+            keysOpBuilder.withBucketType(type);
         }
 
+        ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
         List<ByteArrayWrapper> keyList = keysOp.get();
         final int totalKeys = keyList.size();
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<KvResponse<Boolean>> listener = new RiakFutureListener<KvResponse<Boolean>>() {
+        RiakFutureListener<Boolean> listener = new RiakFutureListener<Boolean>() {
 
-            private AtomicInteger received = new AtomicInteger();
+            private final AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<KvResponse<Boolean>> f)
+            public void handle(RiakFuture<Boolean> f)
             {
                 try
                 {
@@ -165,12 +165,14 @@ public abstract class ITestBase
             latch.await();
         }
         
-        ResetBucketPropsOperation resetOp = new ResetBucketPropsOperation(name);
+        ResetBucketPropsOperation.Builder resetOpBuilder = 
+            new ResetBucketPropsOperation.Builder(name);
         if (type != null)
         {
-            resetOp.withBucketType(type);
+            resetOpBuilder.withBucketType(type);
         }
 
+        ResetBucketPropsOperation resetOp = resetOpBuilder.build();
         cluster.execute(resetOp);
         resetOp.get();
 

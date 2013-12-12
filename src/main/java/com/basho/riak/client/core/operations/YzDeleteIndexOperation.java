@@ -27,34 +27,25 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzDeleteIndexOperation extends FutureOperation<Void, Void>
+public class YzDeleteIndexOperation extends FutureOperation<Boolean, Void>
 {
-    private final String indexName;
+    private final RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder;
     
-    public YzDeleteIndexOperation(String indexName)
+    private YzDeleteIndexOperation(Builder builder)
     {
-        if (null == indexName || indexName.length() == 0)
-        {
-            throw new IllegalArgumentException("Index name cannot be null or zero length");
-        }
-        this.indexName = indexName;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        return true;
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder builder =
-            RiakYokozunaPB.RpbYokozunaIndexDeleteReq.newBuilder();
-        
-        builder.setName(ByteString.copyFromUtf8(indexName));
-        
-        RiakYokozunaPB.RpbYokozunaIndexDeleteReq req = builder.build();
+        RiakYokozunaPB.RpbYokozunaIndexDeleteReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_DelYzIndexReq, req.toByteArray());
         
     }
@@ -64,6 +55,26 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void>
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DelResp);
         return null;
+    }
+    
+    public static class Builder
+    {
+        private RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder =
+            RiakYokozunaPB.RpbYokozunaIndexDeleteReq.newBuilder();
+        
+        public Builder(String indexName)
+        {
+            if (null == indexName || indexName.length() == 0)
+            {
+                throw new IllegalArgumentException("Index name cannot be null or zero length");
+            }
+            reqBuilder.setName(ByteString.copyFromUtf8(indexName));
+        }
+        
+        public YzDeleteIndexOperation build()
+        {
+            return new YzDeleteIndexOperation(this);
+        }
     }
     
 }
