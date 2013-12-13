@@ -311,19 +311,15 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         
     }
     
-    public static class Response
+    static abstract class ResponseBase
     {
         private final List<RiakObject> objectList;
         private final VClock vclock;
-        private final boolean notFound;
-        private final boolean unchanged;
         
-        private Response(Builder builder)
+        protected ResponseBase(Init<?> builder)
         {
             this.objectList = builder.objectList;
             this.vclock = builder.vclock;
-            this.notFound = builder.notFound;
-            this.unchanged = builder.unchanged;
         }
         
         public List<RiakObject> getObjectList()
@@ -341,6 +337,48 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return vclock;
         }
         
+        protected static abstract class Init<T extends Init<T>>
+        {
+            private final List<RiakObject> objectList =
+                new LinkedList<RiakObject>();
+            private VClock vclock;
+            
+            protected abstract T self();
+            abstract ResponseBase build();
+            
+            T addObject(RiakObject object)
+            {
+                objectList.add(object);
+                return self();
+            }
+            
+            T addObjects(List<RiakObject> objects)
+            {
+                objectList.addAll(objects);
+                return self();
+            }
+            
+            T withVClock(VClock vclock)
+            {
+                this.vclock = vclock;
+                return self();
+            }
+        }
+    }
+    
+    
+    public static class Response extends ResponseBase
+    {
+        private final boolean notFound;
+        private final boolean unchanged;
+        
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.notFound = builder.notFound;
+            this.unchanged = builder.unchanged;
+        }
+        
         public boolean isNotFound()
         {
             return notFound;
@@ -351,51 +389,36 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return unchanged;
         }
         
-        static class Builder
+        protected static abstract class Init<T extends Init<T>> extends ResponseBase.Init<T>
         {
-            private final List<RiakObject> objectList =
-                new LinkedList<RiakObject>();
-            private VClock vclock;
             private boolean notFound;
             private boolean unchanged;
             
-            Builder()
-            {}
-            
-            Builder addObject(RiakObject object)
-            {
-                objectList.add(object);
-                return this;
-            }
-            
-            Builder addObjects(List<RiakObject> objects)
-            {
-                objectList.addAll(objects);
-                return this;
-            }
-            
-            
-            Builder withVClock(VClock vclock)
-            {
-                this.vclock = vclock;
-                return this;
-            }
-            
-            Builder withNotFound(boolean notFound)
+            T withNotFound(boolean notFound)
             {
                 this.notFound = notFound;
-                return this;
+                return self();
             }
             
-            Builder withUnchanged(boolean unchanged)
+            T withUnchanged(boolean unchanged)
             {
                 this.unchanged = unchanged;
-                return this;
+                return self();
             }
             
+            @Override
             Response build()
             {
                 return new Response(this);
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
             }
         }
     }

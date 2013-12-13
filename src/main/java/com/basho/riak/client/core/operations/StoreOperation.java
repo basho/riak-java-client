@@ -71,7 +71,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             // This only exists if no key was specified in the put request
             if (response.hasKey())
             {
-                responseBuilder.withGeneratedKey(response.getKey().toStringUtf8());
+                responseBuilder.withGeneratedKey(ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray()));
             }
         
             if (response.hasVclock())
@@ -354,22 +354,14 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         
     }
     
-    public static class Response
+    public static class Response extends FetchOperation.ResponseBase
     {
-        private final List<RiakObject> objectList;
-        private final String generatedKey;
-        private final VClock vclock;
+        private final ByteArrayWrapper generatedKey;
         
-        private Response(Builder builder)
+        private Response(Init<?> builder)
         {
-            this.objectList = builder.objectList;
+            super(builder);
             this.generatedKey = builder.generatedKey;
-            this.vclock = builder.vclock;
-        }
-        
-        public List<RiakObject> getObjectList()
-        {
-            return objectList;
         }
         
         public boolean hasGeneratedKey()
@@ -377,60 +369,35 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             return generatedKey != null;
         }
         
-        public String getGeneratedKey()
+        public ByteArrayWrapper getGeneratedKey()
         {
             return generatedKey;
         }
         
-        public boolean hasVClock()
+        protected static abstract class Init<T extends Init<T>> extends FetchOperation.ResponseBase.Init<T>
         {
-            return vclock != null;
-        }
-        
-        public VClock getVClock()
-        {
-            return vclock;
-        }
-        
-        static class Builder
-        {
-            private final List<RiakObject> objectList =
-                new LinkedList<RiakObject>();
-            private String generatedKey;
-            private VClock vclock;
+            private ByteArrayWrapper generatedKey;
             
-            Builder()
-            {}
-            
-            Builder addObjects(List<RiakObject> objects)
-            {
-                objectList.addAll(objects);
-                return this;
-            }
-            
-            Builder addObject(RiakObject object)
-            {
-                objectList.add(object);
-                return this;
-            }
-            
-            Builder withGeneratedKey(String generatedKey)
+            T withGeneratedKey(ByteArrayWrapper generatedKey)
             {
                 this.generatedKey = generatedKey;
-                return this;
+                return self();
             }
             
-            Builder withVClock(VClock vclock)
-            {
-                this.vclock = vclock;
-                return this;
-            }
-            
+            @Override
             Response build()
             {
                 return new Response(this);
             }
         }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+        }
     }
-
 }
