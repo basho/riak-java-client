@@ -45,7 +45,7 @@ public abstract class ITestBase
     protected static boolean test2i;
     protected static boolean testBucketType;
     protected static boolean testCrdt;
-    protected static boolean riakSearch;
+    protected static boolean legacyRiakSearch;
     protected static ByteArrayWrapper bucketName;
     protected static ByteArrayWrapper counterBucketType;
     protected static ByteArrayWrapper setBucketType;
@@ -62,7 +62,7 @@ public abstract class ITestBase
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
         bucketType = ByteArrayWrapper.unsafeCreate("test_type".getBytes());
-        riakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
+        legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
         bucketName = ByteArrayWrapper.unsafeCreate("ITestBase".getBytes());
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withMinConnections(10);

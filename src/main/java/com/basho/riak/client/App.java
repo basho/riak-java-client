@@ -36,15 +36,17 @@ public class App implements RiakFutureListener<RiakObject>
     public void doIt() throws InterruptedException, ExecutionException
     {
         FetchBucketTypePropsOperation btpOp = 
-            new FetchBucketTypePropsOperation(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()));
+            new FetchBucketTypePropsOperation.Builder(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()))
+                .build();
         
         cluster.execute(btpOp);
         BucketProperties props = btpOp.get();
         System.out.println(props);
         
         FetchBucketPropsOperation bpOp = 
-            new FetchBucketPropsOperation(ByteArrayWrapper.unsafeCreate("test_bucket3)".getBytes()))
-                .withBucketType(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()));
+            new FetchBucketPropsOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket3)".getBytes()))
+                .withBucketType(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()))
+                .build();
                                
         cluster.execute(bpOp);
         props = bpOp.get();

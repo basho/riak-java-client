@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
@@ -84,11 +83,10 @@ public class ITestFetchOperation extends ITestBase
         final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_3".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        BucketProperties props = 
-            new BucketProperties()
-                .withAllowMulti(true);
-        
-        StoreBucketPropsOperation op = new StoreBucketPropsOperation(bucketName, props);
+        StoreBucketPropsOperation op = 
+            new StoreBucketPropsOperation.Builder(bucketName)
+                .withAllowMulti(true)
+                .build();
         cluster.execute(op);
         op.get();
         

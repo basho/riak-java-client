@@ -17,13 +17,11 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -34,21 +32,11 @@ import java.util.concurrent.ExecutionException;
  */
 public class StoreBucketTypePropsOperation extends FutureOperation<Boolean, Void>
 {
-    private final ByteArrayWrapper bucketType;
-    private final BucketProperties bucketProperties;
+    private final RiakPB.RpbSetBucketTypeReq.Builder reqBuilder;
     
-    public StoreBucketTypePropsOperation(ByteArrayWrapper bucketType, BucketProperties properties)
+    private StoreBucketTypePropsOperation(Builder builder)
     {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type cannot be null or zero length.");
-        }
-        if (null == properties)
-        {
-            throw new IllegalArgumentException("Bucket properties cannot be null.");
-        }
-        this.bucketType = bucketType;
-        this.bucketProperties = properties;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
@@ -60,104 +48,7 @@ public class StoreBucketTypePropsOperation extends FutureOperation<Boolean, Void
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakPB.RpbBucketProps.Builder propsBuilder =
-            RiakPB.RpbBucketProps.newBuilder();
-        
-        if (bucketProperties.hasNVal())
-        {
-            propsBuilder.setNVal(bucketProperties.getNVal());
-        }
-        if (bucketProperties.hasAllowMulti())
-        {
-            propsBuilder.setAllowMult(bucketProperties.getAllowMulti());
-        }
-        if (bucketProperties.hasLastWriteWins())
-        {
-            propsBuilder.setLastWriteWins(bucketProperties.getLastWriteWins());
-        }
-        if (bucketProperties.hasPrecommitHooks())
-        {
-            propsBuilder.addAllPrecommit(convertHooks(bucketProperties.getPrecommitHooks()));
-        }
-        if (bucketProperties.hasPostcommitHooks())
-        {
-            propsBuilder.addAllPostcommit(convertHooks(bucketProperties.getPostcommitHooks()));
-        }
-        if (bucketProperties.hasChashKeyFunction())
-        {
-            propsBuilder.setChashKeyfun(convertModFun(bucketProperties.getChashKeyFunction()));
-        }
-        if (bucketProperties.hasLinkwalkFunction())
-        {
-            propsBuilder.setLinkfun(convertModFun(bucketProperties.getLinkwalkFunction()));
-        }
-        if (bucketProperties.hasOldVClock())
-        {
-            propsBuilder.setOldVclock(bucketProperties.getOldVClock().intValue());
-        }
-        if (bucketProperties.hasYoungVClock())
-        {
-            propsBuilder.setYoungVclock(bucketProperties.getYoungVClock().intValue());
-        }
-        if (bucketProperties.hasBigVClock())
-        {
-            propsBuilder.setBigVclock(bucketProperties.getBigVClock().intValue());
-        }
-        if (bucketProperties.hasSmallVClock())
-        {
-            propsBuilder.setSmallVclock(bucketProperties.getSmallVClock().intValue());
-        }
-        if (bucketProperties.hasPr())
-        {
-            propsBuilder.setPr(bucketProperties.getPr().getIntValue());
-        }
-        if (bucketProperties.hasR())
-        {
-            propsBuilder.setR(bucketProperties.getR().getIntValue());
-        }
-        if (bucketProperties.hasW())
-        {
-            propsBuilder.setW(bucketProperties.getW().getIntValue());
-        }
-        if (bucketProperties.hasPw())
-        {
-            propsBuilder.setPw(bucketProperties.getPw().getIntValue());
-        }
-        if (bucketProperties.hasDw())
-        {
-            propsBuilder.setDw(bucketProperties.getDw().getIntValue());
-        }
-        if (bucketProperties.hasRw())
-        {
-            propsBuilder.setRw(bucketProperties.getRw().getIntValue());
-        }
-        if (bucketProperties.hasBasicQuorum())
-        {
-            propsBuilder.setBasicQuorum(bucketProperties.getBasicQuorum());
-        }
-        if (bucketProperties.hasNotFoundOk())
-        {
-            propsBuilder.setNotfoundOk(bucketProperties.getNotFoundOk());
-        }
-        if (bucketProperties.hasBackend())
-        {
-            propsBuilder.setBackend(ByteString.copyFromUtf8(bucketProperties.getBackend()));
-        }
-        if (bucketProperties.hasRiakSearchEnabled())
-        {
-            propsBuilder.setSearch(bucketProperties.getRiakSearchEnabled());
-        }
-        if (bucketProperties.hasYokozunaIndex())
-        {
-            propsBuilder.setSearchIndex(ByteString.copyFromUtf8(bucketProperties.getYokozunaIndex()));
-        }    
-    
-        RiakPB.RpbSetBucketTypeReq req = 
-            RiakPB.RpbSetBucketTypeReq.newBuilder()
-                .setType(ByteString.copyFrom(bucketType.unsafeGetValue()))
-                .setProps(propsBuilder)
-                .build();
-        
+        RiakPB.RpbSetBucketTypeReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_SetBucketTypeReq, req.toByteArray());
     }
 
@@ -168,33 +59,399 @@ public class StoreBucketTypePropsOperation extends FutureOperation<Boolean, Void
         return null;
     }
     
-    private RiakPB.RpbModFun convertModFun(Function f)
+    static abstract class PropsBuilder<T extends PropsBuilder<T>>
     {
-        return RiakPB.RpbModFun.newBuilder()
-                    .setModule(ByteString.copyFromUtf8(f.getModule()))
-                    .setFunction(ByteString.copyFromUtf8(f.getFunction()))
-                    .build();
-    }
-    
-    private List<RiakPB.RpbCommitHook> convertHooks(List<Function> hookList) 
-    {
-        List<RiakPB.RpbCommitHook> pbHookList = new ArrayList<RiakPB.RpbCommitHook>(hookList.size());
-        RiakPB.RpbCommitHook.Builder builder = RiakPB.RpbCommitHook.newBuilder();
-        RiakPB.RpbModFun.Builder mfBuilder = RiakPB.RpbModFun.newBuilder();
-        for (Function hook : hookList) {
-            if (hook.isJavascript()) {
+
+        protected final RiakPB.RpbBucketProps.Builder propsBuilder
+            = RiakPB.RpbBucketProps.newBuilder();
+        
+        protected abstract T self();
+
+        /**
+         * Set the allow_multi value.
+         *
+         * @param allow whether to allow sibling objects to be created.
+         * @return a reference to this object.
+         */
+        public T withAllowMulti(boolean allow)
+        {
+            propsBuilder.setAllowMult(allow);
+            return self();
+        }
+
+        /**
+         * Set the backend used by this bucket. Only applies when using
+         * {@code riak_kv_multi_backend} in Riak.
+         *
+         * @param backend the name of the backend to use.
+         * @return a reference to this object.
+         */
+        public T withBackend(String backend)
+        {
+            if (null == backend || backend.length() == 0)
+            {
+                throw new IllegalArgumentException("Backend can not be null or zero length");
+            }
+            propsBuilder.setBackend(ByteString.copyFromUtf8(backend));
+            return self();
+        }
+
+        /**
+         * Set the basic_quorum value.
+         *
+         * The parameter controls whether a read request should return early in
+         * some fail cases. E.g. If a quorum of nodes has already returned
+         * notfound/error, don't wait around for the rest.
+         *
+         * @param use the basic_quorum value.
+         * @return a reference to this object.
+         */
+        public T withBasicQuorum(boolean use)
+        {
+            propsBuilder.setBasicQuorum(use);
+            return self();
+        }
+
+        /**
+         * Set the big_vclock value.
+         *
+         * @param bigVClock a long representing a epoch time value.
+         * @return a reference to this object.
+         * @see <a
+         * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a> for details.
+         */
+        public T withBigVClock(Long bigVClock)
+        {
+            propsBuilder.setBigVclock(bigVClock.intValue());
+            return self();
+        }
+
+        /**
+         * Set the chash_keyfun value.
+         *
+         * @param func a Function representing the Erlang func to use.
+         * @return a reference to this object.
+         */
+        public T withChashkeyFunction(Function func)
+        {
+            verifyErlangFunc(func);
+            propsBuilder.setChashKeyfun(convertModFun(func));
+            return self();
+        }
+
+        /**
+         * Set the last_write_wins value. Unless you really know what you're
+         * doing, you probably do not want to set this to true.
+         *
+         * @param wins whether to ignore vector clocks when writing.
+         * @return a reference to this object.
+         */
+        public T withLastWriteWins(boolean wins)
+        {
+            propsBuilder.setLastWriteWins(wins);
+            return self();
+        }
+
+        /**
+         * Set the linkfun value.
+         *
+         * @param func a Function representing the Erlang func to use.
+         * @return a reference to this object.
+         */
+        public T withLinkwalkFunction(Function func)
+        {
+            verifyErlangFunc(func);
+            propsBuilder.setLinkfun(convertModFun(func));
+            return self();
+        }
+
+        /**
+         * Set the rw value. Individual requests (or buckets in a bucket type)
+         * can override this.
+         *
+         * @param rw the rw value as an integer.
+         * @return a reference to this object.
+         */
+        public T withRw(int rw)
+        {
+            propsBuilder.setRw(rw);
+            return self();
+        }
+
+        /**
+         * Set the dw value. Individual requests (or buckets in a bucket type)
+         * can override this.
+         *
+         * @param dw the dw value as an integer.
+         * @return a reference to this object.
+         */
+        public T withDw(int dw)
+        {
+            propsBuilder.setDw(dw);
+            return self();
+        }
+
+        /**
+         * Set the w value. Individual requests (or buckets in a bucket type)
+         * can override this.
+         *
+         * @param w the w value as an integer.
+         * @return a reference to this object.
+         */
+        public T withW(int w)
+        {
+            propsBuilder.setW(w);
+            return self();
+        }
+
+        /**
+         * Set the r value. Individual requests (or buckets in a bucket type)
+         * can override this.
+         *
+         * @param r the r value as an integer.
+         * @return a reference to this object.
+         */
+        public T withR(int r)
+        {
+            propsBuilder.setR(r);
+            return self();
+        }
+
+        /**
+         * Set the pr value. Individual requests (or buckets in a bucket type)
+         * can override this.
+         *
+         * @param pr the pr value as an integer.
+         * @return a reference to this object.
+         */
+        public T withPr(int pr)
+        {
+            propsBuilder.setPr(pr);
+            return self();
+        }
+
+        /**
+         * Set the pw value. Individual requests (or buckets in a bucket type)
+         * can override this.
+         *
+         * @param pw the pw value as an integer.
+         * @return a reference to this object.
+         */
+        public T withPw(int pw)
+        {
+            propsBuilder.setPw(pw);
+            return self();
+        }
+
+        /**
+         * Set the not_found_ok value. If true a vnode returning notfound for a
+         * key increments the r tally. False is higher consistency, true is
+         * higher availability.
+         *
+         * @param ok the not_found_ok value.
+         * @return a reference to this object.
+         */
+        public T withNotFoundOk(boolean ok)
+        {
+            propsBuilder.setNotfoundOk(ok);
+            return self();
+        }
+
+        /**
+         * Add a pre-commit hook. The supplied Function must be an Erlang or
+         * Named JS function.
+         *
+         * @param hook the Function to add.
+         * @return a reference to this object.
+         * @see <a
+         * href="http://docs.basho.com/riak/latest/dev/using/commit-hooks/">Using
+         * Commit Hooks</a>
+         */
+        public T withPrecommitHook(Function hook)
+        {
+            if (null == hook || !(!hook.isJavascript() || hook.isNamed()))
+            {
+                throw new IllegalArgumentException("Must be a named JS or Erlang function.");
+            }
+
+            propsBuilder.addPrecommit(convertHook(hook));
+            return self();
+        }
+
+        /**
+         * Add a post-commit hook. The supplied Function must be an Erlang or
+         * Named JS function.
+         *
+         * @param hook the Function to add.
+         * @return a reference to this object.
+         * @see <a
+         * href="http://docs.basho.com/riak/latest/dev/using/commit-hooks/">Using
+         * Commit Hooks</a>
+         */
+        public T withPostcommitHook(Function hook)
+        {
+            verifyErlangFunc(hook);
+            propsBuilder.addPostcommit(convertHook(hook));
+            return self();
+        }
+
+        /**
+         * Set the old_vclock value.
+         *
+         * @param oldVClock an long representing a epoch time value.
+         * @return a reference to this object.
+         * @see <a
+         * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a> for details.
+         */
+        public T withOldVClock(Long oldVClock)
+        {
+            propsBuilder.setOldVclock(oldVClock.intValue());
+            return self();
+        }
+
+        /**
+         * Set the young_vclock value.
+         *
+         * @param youngVClock a long representing a epoch time value.
+         * @return a reference to this object.
+         * @see <a
+         * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a> for details.
+         */
+        public T withYoungVClock(Long youngVClock)
+        {
+            propsBuilder.setYoungVclock(youngVClock.intValue());
+            return self();
+        }
+
+        /**
+         * Set the small_vclock value.
+         *
+         * @param smallVClock a long representing a epoch time value.
+         * @return a reference to this object.
+         * @see <a
+         * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a> for details.
+         */
+        public T withSmallVClock(Long smallVClock)
+        {
+            propsBuilder.setSmallVclock(smallVClock.intValue());
+            return self();
+        }
+
+        /**
+         * Set the nVal.
+         *
+         * @param nVal the number of replicas.
+         * @return a reference to this object.
+         */
+        public T withNVal(int nVal)
+        {
+            if (nVal <= 0)
+            {
+                throw new IllegalArgumentException("nVal must be >= 1");
+            }
+            propsBuilder.setNVal(nVal);
+            return self();
+        }
+
+        /**
+         * Enable Legacy Riak Search. Setting this to true causes the search
+         * pre-commit hook to be added.
+         *
+         * <b>Note this is only for legacy Riak (&lt; v2.0) Search support.</b>
+         *
+         * @param enable add/remove (true/false) the pre-commit hook for Legacy
+         * Riak Search.
+         * @return a reference to this object.
+         */
+        public T withLegacyRiakSearchEnabled(boolean enable)
+        {
+            propsBuilder.setSearch(enable);
+            return self();
+        }
+
+        /**
+         * Associate a Search Index. This only applies if Yokozuna is enabled in
+         * Riak v2.0.
+         *
+         * @param indexName The name of the search index to use.
+         * @return a reference to this object.
+         */
+        public T withSearchIndex(String indexName)
+        {
+            if (null == indexName || indexName.length() == 0)
+            {
+                throw new IllegalArgumentException("Index name cannot be null or zero length");
+            }
+            propsBuilder.setSearchIndex(ByteString.copyFromUtf8(indexName));
+            return self();
+        }
+
+        private void verifyErlangFunc(Function f)
+        {
+            if (null == f || f.isJavascript())
+            {
+                throw new IllegalArgumentException("Must be an Erlang Function.");
+            }
+        }
+
+        private RiakPB.RpbModFun convertModFun(Function f)
+        {
+            return RiakPB.RpbModFun.newBuilder()
+                .setModule(ByteString.copyFromUtf8(f.getModule()))
+                .setFunction(ByteString.copyFromUtf8(f.getFunction()))
+                .build();
+        }
+
+        private RiakPB.RpbCommitHook convertHook(Function hook)
+        {
+            RiakPB.RpbCommitHook.Builder builder = RiakPB.RpbCommitHook.newBuilder();
+            RiakPB.RpbModFun.Builder mfBuilder = RiakPB.RpbModFun.newBuilder();
+
+            if (hook.isJavascript())
+            {
                 builder.setName(ByteString.copyFromUtf8(hook.getName()));
-            } else {
+            }
+            else
+            {
                 mfBuilder.setModule(ByteString.copyFromUtf8(hook.getModule()));
                 mfBuilder.setFunction(ByteString.copyFromUtf8(hook.getFunction()));
                 builder.setModfun(mfBuilder);
             }
-            
-            pbHookList.add(builder.build());
-            builder.clear();
-            mfBuilder.clear();
+
+            return builder.build();
         }
-        return pbHookList;
+    }
+
+    public static class Builder extends PropsBuilder<Builder>
+    {
+        private final RiakPB.RpbSetBucketTypeReq.Builder reqBuilder
+            = RiakPB.RpbSetBucketTypeReq.newBuilder();
+
+        public Builder(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
+        
+         public StoreBucketTypePropsOperation build()
+        {
+            reqBuilder.setProps(propsBuilder);
+            return new StoreBucketTypePropsOperation(this);
+        }
+
     }
     
 }

@@ -52,7 +52,7 @@ public class ITestBucketTypeProperties extends ITestBase
         assertTrue(props.hasPr());
         assertTrue(props.hasPw());
         assertTrue(props.hasR());
-        assertTrue(props.hasRiakSearchEnabled());
+        assertTrue(props.hasLegacyRiakSearchEnabled());
         assertTrue(props.hasRw());
         assertTrue(props.hasSmallVClock());
         assertTrue(props.hasW());
@@ -61,22 +61,22 @@ public class ITestBucketTypeProperties extends ITestBase
         assertFalse(props.hasBackend());
         assertFalse(props.hasPostcommitHooks());
         assertFalse(props.hasPrecommitHooks());
-        assertFalse(props.hasYokozunaIndex());
+        assertFalse(props.hasSearchIndex());
     }
     
     @Test
     public void testSetBucketTypeProperties() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        BucketProperties props = 
-            new BucketProperties()
+        StoreBucketTypePropsOperation.Builder builder = 
+            new StoreBucketTypePropsOperation.Builder(bucketType)
                 .withAllowMulti(true)
                 .withNVal(4)
                 .withR(1);
         
-        storeBucketTypeProps(bucketType, props);
+        storeBucketTypeProps(builder);
         
-        props = fetchBucketTypeProps(bucketType);
+        BucketProperties props = fetchBucketTypeProps(bucketType);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertEquals(props.getR().getIntValue(), 1);
@@ -87,13 +87,13 @@ public class ITestBucketTypeProperties extends ITestBase
     public void testResetBucketTypeProps() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        BucketProperties props = 
-            new BucketProperties()
+        StoreBucketTypePropsOperation.Builder builder = 
+            new StoreBucketTypePropsOperation.Builder(bucketType)
                 .withAllowMulti(true)
                 .withNVal(4);
         
-        storeBucketTypeProps(bucketType, props);
-        props = fetchBucketTypeProps(bucketType);
+        storeBucketTypeProps(builder);
+        BucketProperties props = fetchBucketTypeProps(bucketType);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
@@ -110,14 +110,16 @@ public class ITestBucketTypeProperties extends ITestBase
     
     private BucketProperties fetchBucketTypeProps(ByteArrayWrapper bucketType) throws InterruptedException, ExecutionException
     {
-        FetchBucketTypePropsOperation op = new FetchBucketTypePropsOperation(bucketType);
+        FetchBucketTypePropsOperation op = 
+            new FetchBucketTypePropsOperation.Builder(bucketType)
+                .build();
         cluster.execute(op);
         return op.get();
     }
     
-    private void storeBucketTypeProps(ByteArrayWrapper bucketType, BucketProperties props) throws InterruptedException, ExecutionException
+    private void storeBucketTypeProps(StoreBucketTypePropsOperation.Builder builder) throws InterruptedException, ExecutionException
     {
-        StoreBucketTypePropsOperation op = new StoreBucketTypePropsOperation(bucketType, props);
+        StoreBucketTypePropsOperation op = builder.build();
         cluster.execute(op);
         
         op.get();
