@@ -20,7 +20,6 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -43,9 +42,9 @@ public class ITestFetchOperation extends ITestBase
             new FetchOperation.Builder(bucketName, key).build();
                 
         cluster.execute(fetchOp);
-        KvResponse<List<RiakObject>> response = fetchOp.get();
-        assertTrue(response.notFound());
-        assertFalse(response.hasContent());
+        FetchOperation.Response response = fetchOp.get();
+        assertTrue(response.isNotFound());
+        assertTrue(response.getObjectList().isEmpty());
         
     }
     
@@ -70,10 +69,9 @@ public class ITestFetchOperation extends ITestBase
             new FetchOperation.Builder(bucketName, key).build();
         
         cluster.execute(fetchOp);
-        KvResponse<List<RiakObject>> response = fetchOp.get();
-        assertFalse(response.notFound());
-        assertTrue(response.hasContent());
-        List<RiakObject> objectList = response.getContent();
+        FetchOperation.Response response = fetchOp.get();
+        assertFalse(response.isNotFound());
+        List<RiakObject> objectList = response.getObjectList();
         assertEquals(1, objectList.size());
         RiakObject ro = objectList.get(0);
         assertEquals(ro.getValue().toString(), value);
@@ -118,10 +116,10 @@ public class ITestFetchOperation extends ITestBase
             new FetchOperation.Builder(bucketName, key).build();
                 
         cluster.execute(fetchOp);
-        KvResponse<List<RiakObject>> response = fetchOp.get();
-        assertTrue(response.getContent().size() > 1);
+        FetchOperation.Response response = fetchOp.get();
+        assertTrue(response.getObjectList().size() > 1);
         
-        RiakObject ro = response.getContent().get(0);
+        RiakObject ro = response.getObjectList().get(0);
         assertEquals(ro.getValue().toString(), value);
         
     }

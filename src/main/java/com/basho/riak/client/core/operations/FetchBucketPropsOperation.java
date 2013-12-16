@@ -118,9 +118,9 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
                 }
             }
             
-            if (pbProps.hasYzIndex())
+            if (pbProps.hasSearchIndex())
             {
-                props.withYokozunaIndex(pbProps.getYzIndex().toStringUtf8());
+                props.withYokozunaIndex(pbProps.getSearchIndex().toStringUtf8());
             }
             
             if (pbProps.hasBackend())

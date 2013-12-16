@@ -28,39 +28,25 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutSchemaOperation extends FutureOperation<Void, Void>
+public class YzPutSchemaOperation extends FutureOperation<Boolean, Void>
 {
-    private final YokozunaSchema schema;
+    private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder;
     
-    public YzPutSchemaOperation(YokozunaSchema schema)
+    private YzPutSchemaOperation(Builder builder)
     {
-        if (null == schema)
-        {
-            throw new IllegalArgumentException("Schema can not be null");
-        }
-        this.schema = schema;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        return true;
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakYokozunaPB.RpbYokozunaSchema.Builder schemaBuilder = 
-            RiakYokozunaPB.RpbYokozunaSchema.newBuilder();
-        
-        schemaBuilder.setName(ByteString.copyFromUtf8(schema.getName()));
-        schemaBuilder.setContent(ByteString.copyFromUtf8(schema.getContent()));
-        
-        RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder builder =
-            RiakYokozunaPB.RpbYokozunaSchemaPutReq.newBuilder();
-        
-        builder.setSchema(schemaBuilder);
-        RiakYokozunaPB.RpbYokozunaSchemaPutReq req = builder.build();
+        RiakYokozunaPB.RpbYokozunaSchemaPutReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_PutYzSchemaReq, req.toByteArray());
     }
 
@@ -69,5 +55,26 @@ public class YzPutSchemaOperation extends FutureOperation<Void, Void>
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
+    }
+    
+    public static class Builder
+    {
+        private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder =
+            RiakYokozunaPB.RpbYokozunaSchemaPutReq.newBuilder();
+        
+        public Builder(YokozunaSchema schema)
+        {
+            RiakYokozunaPB.RpbYokozunaSchema.Builder schemaBuilder = 
+            RiakYokozunaPB.RpbYokozunaSchema.newBuilder();
+        
+            schemaBuilder.setName(ByteString.copyFromUtf8(schema.getName()));
+            schemaBuilder.setContent(ByteString.copyFromUtf8(schema.getContent()));
+            reqBuilder.setSchema(schemaBuilder);
+        }
+        
+        public YzPutSchemaOperation build()
+        {
+            return new YzPutSchemaOperation(this);
+        }
     }
 }

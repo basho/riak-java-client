@@ -20,7 +20,6 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,25 +41,18 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> the user type of the operation to store
  */
-public class StoreOperation extends FutureOperation<KvResponse<List<RiakObject>>, RiakKvPB.RpbPutResp>
+public class StoreOperation extends FutureOperation<StoreOperation.Response, RiakKvPB.RpbPutResp>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
-    
     private final RiakKvPB.RpbPutReq.Builder reqBuilder;
-    private final ByteArrayWrapper bucketName;
-    private final ByteArrayWrapper bucketType;
-    private volatile ByteArrayWrapper key;
-
+    
     private StoreOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
-        this.bucketName = builder.bucketName;
-        this.key = builder.key;
-        this.bucketType = builder.bucketName;
     }
 
     @Override
-    protected KvResponse<List<RiakObject>> convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
     {
         // There should only be one response message from Riak.
         if (responses.size() != 1)
@@ -68,26 +61,26 @@ public class StoreOperation extends FutureOperation<KvResponse<List<RiakObject>>
         }
 
         RiakKvPB.RpbPutResp response = responses.get(0);
+        StoreOperation.Response.Builder responseBuilder = 
+            new StoreOperation.Response.Builder();
         
-        // This only exists if no key was specified in the put request
-        if (response.hasKey())
+        if (response.getContentCount() > 0)
         {
-            key = ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray());
+            responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList()));
+        
+            // This only exists if no key was specified in the put request
+            if (response.hasKey())
+            {
+                responseBuilder.withGeneratedKey(ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray()));
+            }
+        
+            if (response.hasVclock())
+            {
+                responseBuilder.withVClock(new BasicVClock(response.getVclock().toByteArray()));
+            }
         }
         
-        List<RiakObject> riakObjects = RiakObjectConverter.convert(response.getContentList());
-        
-        VClock vclock = null;
-        if (response.hasVclock())
-        {
-            vclock = new BasicVClock(response.getVclock().toByteArray());
-        }
-        
-        return new KvResponse.Builder<List<RiakObject>>(bucketName, key)
-                            .withBucketType(bucketType)
-                            .withContent(riakObjects)
-                            .withVClock(vclock)
-                            .build();
+        return responseBuilder.build();
     }
 
     @Override
@@ -121,6 +114,7 @@ public class StoreOperation extends FutureOperation<KvResponse<List<RiakObject>>
         
         /**
          * Constructs a builder for a StoreOperation
+         * @param bucketName the bucket name for this operation
          */
         public Builder(ByteArrayWrapper bucketName)
         {
@@ -359,5 +353,51 @@ public class StoreOperation extends FutureOperation<KvResponse<List<RiakObject>>
         }
         
     }
-
+    
+    public static class Response extends FetchOperation.ResponseBase
+    {
+        private final ByteArrayWrapper generatedKey;
+        
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.generatedKey = builder.generatedKey;
+        }
+        
+        public boolean hasGeneratedKey()
+        {
+            return generatedKey != null;
+        }
+        
+        public ByteArrayWrapper getGeneratedKey()
+        {
+            return generatedKey;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends FetchOperation.ResponseBase.Init<T>
+        {
+            private ByteArrayWrapper generatedKey;
+            
+            T withGeneratedKey(ByteArrayWrapper generatedKey)
+            {
+                this.generatedKey = generatedKey;
+                return self();
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+        }
+    }
 }

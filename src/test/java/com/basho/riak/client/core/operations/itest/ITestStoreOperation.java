@@ -20,9 +20,7 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -56,7 +54,7 @@ public class ITestStoreOperation extends ITestBase
                 new FetchOperation.Builder(bucketName, key).build();
                 
         cluster.execute(fetchOp);
-        RiakObject obj2 = fetchOp.get().getContent().get(0);
+        RiakObject obj2 = fetchOp.get().getObjectList().get(0);
         
         assertEquals(obj.getValue(), obj2.getValue());
                
@@ -88,8 +86,8 @@ public class ITestStoreOperation extends ITestBase
                 .build();
         
         cluster.execute(storeOp);
-        KvResponse<List<RiakObject>> response = storeOp.get();
-        obj = response.getContent().get(0);
+        StoreOperation.Response response = storeOp.get();
+        obj = response.getObjectList().get(0);
         
         assertTrue(response.hasVClock());
         
@@ -103,7 +101,7 @@ public class ITestStoreOperation extends ITestBase
         
         cluster.execute(storeOp);
         response = storeOp.get();
-        obj = response.getContent().get(0);
+        obj = response.getObjectList().get(0);
         
         assertEquals(obj.getValue().toString(), "changed");
         

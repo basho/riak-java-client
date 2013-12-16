@@ -17,14 +17,13 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.indexes.SecondaryIndexEntry;
-import com.basho.riak.client.query.indexes.SecondaryIndexQueryResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -33,11 +32,11 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryResponse, RiakKvPB.RpbIndexResp>
+public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp>
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     
-    public SecondaryIndexQueryOperation(Builder builder)
+    private SecondaryIndexQueryOperation(Builder builder)
     {
         // Yo dawg, we don't ever not want to use streaming.
         builder.pbReqBuilder.setStream(true);
@@ -45,9 +44,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected SecondaryIndexQueryResponse convert(List<RiakKvPB.RpbIndexResp> rawResponse) throws ExecutionException
+    protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse) throws ExecutionException
     {
-        SecondaryIndexQueryResponse response = new SecondaryIndexQueryResponse();
+        SecondaryIndexQueryOperation.Response.Builder responseBuilder = 
+            new SecondaryIndexQueryOperation.Response.Builder();
+        
         for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
         {
             /**
@@ -64,7 +65,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 {
                     for (RpbPair pair : pbEntry.getResultsList())
                     {
-                        response.add(new SecondaryIndexEntry(ByteArrayWrapper.unsafeCreate(pair.getKey().toByteArray()), 
+                        responseBuilder.addEntry(new Response.Entry(ByteArrayWrapper.unsafeCreate(pair.getKey().toByteArray()), 
                                                              ByteArrayWrapper.unsafeCreate(pair.getValue().toByteArray())));
                     }
                 }
@@ -72,7 +73,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 {
                     for (ByteString objKey : pbEntry.getKeysList())
                     {
-                        response.add(new SecondaryIndexEntry(ByteArrayWrapper.unsafeCreate(pbReq.getKey().toByteArray()),
+                        responseBuilder.addEntry(new Response.Entry(ByteArrayWrapper.unsafeCreate(pbReq.getKey().toByteArray()),
                                                              ByteArrayWrapper.unsafeCreate(objKey.toByteArray())));
                     }
                 }
@@ -84,16 +85,16 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                  */
                 for (ByteString objKey : pbEntry.getKeysList())
                 {
-                    response.add(new SecondaryIndexEntry(ByteArrayWrapper.unsafeCreate(objKey.toByteArray())));
+                    responseBuilder.addEntry(new Response.Entry(ByteArrayWrapper.unsafeCreate(objKey.toByteArray())));
                 }
             }
             
             if (pbEntry.hasContinuation())
             {
-                response.setContinuation(ByteArrayWrapper.unsafeCreate(pbEntry.getContinuation().toByteArray()));
+                responseBuilder.withContinuation(ByteArrayWrapper.unsafeCreate(pbEntry.getContinuation().toByteArray()));
             }
         }
-        return response;
+        return responseBuilder.build();
     }
 
     @Override
@@ -278,5 +279,91 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         }
     }
     
+    public static class Response 
+    {
+        private final ByteArrayWrapper continuation;
+        private final List<Response.Entry> entryList;
+
+        Response(Builder builder)
+        {
+            this.continuation = builder.continuation;
+            this.entryList = builder.entryList;
+        }
+        
+        public boolean hasContinuation()
+        {
+            return continuation != null;
+        }
+
+        public ByteArrayWrapper getContinuation()
+        {
+            return continuation;
+        }
+        
+        public List<Response.Entry> getEntryList()
+        {
+            return entryList;
+        }
+        
+        public static class Entry
+        {
+            private final ByteArrayWrapper indexKey;
+            private final ByteArrayWrapper objectKey;
+
+            Entry(ByteArrayWrapper objectKey)
+            {
+                this(null, objectKey);
+            }
+
+            Entry(ByteArrayWrapper indexKey, ByteArrayWrapper objectKey)
+            {
+                this.indexKey = indexKey;
+                this.objectKey = objectKey;
+            }
+
+            public boolean hasIndexKey()
+            {
+                return indexKey != null;
+            }
+
+            public ByteArrayWrapper getIndexKey()
+            {
+                return indexKey;
+            }
+
+            public ByteArrayWrapper getObjectKey()
+            {
+                return objectKey;
+            }
+        }
+        
+        static class Builder
+        {
+            private ByteArrayWrapper continuation;
+            private List<Response.Entry> entryList = 
+                new ArrayList<Response.Entry>();
+            
+            Builder()
+            {}
+            
+            Builder withContinuation(ByteArrayWrapper continuation)
+            {
+                this.continuation = continuation;
+                return this;
+            }
+            
+            Builder addEntry(Response.Entry entry)
+            {
+                entryList.add(entry);
+                return this;
+            }
+            
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+        
+    }
     
 }

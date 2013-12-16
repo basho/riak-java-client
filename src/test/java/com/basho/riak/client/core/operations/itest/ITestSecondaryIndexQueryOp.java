@@ -20,7 +20,6 @@ import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
-import com.basho.riak.client.query.indexes.SecondaryIndexQueryResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.concurrent.ExecutionException;
 import org.junit.Assume;
@@ -64,11 +63,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                 .build();
         
         cluster.execute(queryOp);
-        SecondaryIndexQueryResponse response = queryOp.get();
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
         
-        assertEquals(1, response.size());
-        assertFalse(response.get(0).hasIndexKey());
-        assertEquals(response.get(0).getObjectKey().toString(), keyBase + "5");
+        assertEquals(1, response.getEntryList().size());
+        assertFalse(response.getEntryList().get(0).hasIndexKey());
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
         queryOp = 
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
@@ -79,10 +78,10 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         cluster.execute(queryOp);
         response = queryOp.get();
         
-        assertEquals(1, response.size());
-        assertTrue(response.get(0).hasIndexKey());
-        assertEquals(response.get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
-        assertEquals(response.get(0).getObjectKey().toString(), keyBase + "5");
+        assertEquals(1, response.getEntryList().size());
+        assertTrue(response.getEntryList().get(0).hasIndexKey());
+        assertEquals(response.getEntryList().get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
     }
     
     @Test
@@ -116,11 +115,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                 .build();
         
         cluster.execute(queryOp);
-        SecondaryIndexQueryResponse response = queryOp.get();
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
         
-        assertEquals(100, response.size());
-        assertFalse(response.get(0).hasIndexKey());
-        assertEquals(response.get(0).getObjectKey().toString(), keyBase + "0");
+        assertEquals(100, response.getEntryList().size());
+        assertFalse(response.getEntryList().get(0).hasIndexKey());
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "0");
         
         queryOp = 
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
@@ -131,10 +130,10 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         cluster.execute(queryOp);
         response = queryOp.get();
         
-        assertEquals(100, response.size());
-        assertTrue(response.get(0).hasIndexKey());
-        assertEquals(response.get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
-        assertEquals(response.get(0).getObjectKey().toString(), keyBase + "0");
+        assertEquals(100, response.getEntryList().size());
+        assertTrue(response.getEntryList().get(0).hasIndexKey());
+        assertEquals(response.getEntryList().get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "0");
         
     }
     
@@ -170,11 +169,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                     .build();
         
         cluster.execute(queryOp);
-        SecondaryIndexQueryResponse response = queryOp.get();
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
         
-        assertEquals(16, response.size());
-        assertFalse(response.get(0).hasIndexKey());
-        assertEquals(response.get(0).getObjectKey().toString(), keyBase + "5");
+        assertEquals(16, response.getEntryList().size());
+        assertFalse(response.getEntryList().get(0).hasIndexKey());
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
         queryOp = 
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
@@ -185,10 +184,10 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         
         cluster.execute(queryOp);
         response = queryOp.get();
-        assertEquals(16, response.size());
-        assertTrue(response.get(0).hasIndexKey());
-        assertEquals(response.get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
-        assertEquals(response.get(0).getObjectKey().toString(), keyBase + "5");
+        assertEquals(16, response.getEntryList().size());
+        assertTrue(response.getEntryList().get(0).hasIndexKey());
+        assertEquals(response.getEntryList().get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
     }
     
     

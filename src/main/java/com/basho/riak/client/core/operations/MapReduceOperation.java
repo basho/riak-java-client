@@ -33,31 +33,11 @@ import java.util.concurrent.ExecutionException;
  */
 public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbMapRedResp>
 {
-
-    private final ByteArrayWrapper mrFunction;
-    private final String contentType;
-
-    /**
-     * Create a MapReduce operation with the given function
-     *
-     * @param function    a binary blob of type {@code contentType}
-     * @param contentType a http-style content encoding type (tupically application/json)
-     */
-    public MapReduceOperation(ByteArrayWrapper function, String contentType)
+    private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
+    
+    private MapReduceOperation(Builder builder)
     {
-
-        if ((null == function) || function.length() == 0)
-        {
-            throw new IllegalArgumentException("Function can not be null or empty");
-        }
-
-        if ((null == contentType) || contentType.length() == 0)
-        {
-            throw new IllegalArgumentException("contentType can not be null or empty");
-        }
-
-        this.mrFunction = function;
-        this.contentType = contentType;
+        this.reqBuilder = builder.reqBuilder;
     }
 
     @Override
@@ -77,14 +57,8 @@ public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakKvPB.RpbMapRedReq request =
-            RiakKvPB.RpbMapRedReq.newBuilder()
-                .setRequest(ByteString.copyFrom(mrFunction.unsafeGetValue()))
-                .setContentType(ByteString.copyFromUtf8(contentType))
-                .build();
-
+        RiakKvPB.RpbMapRedReq request = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_MapRedReq, request.toByteArray());
-
     }
 
     @Override
@@ -106,4 +80,40 @@ public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, 
     {
         return message.getDone();
     }
+    
+    public static class Builder
+    {
+        private final RiakKvPB.RpbMapRedReq.Builder reqBuilder =
+            RiakKvPB.RpbMapRedReq.newBuilder();
+        
+        /**
+     * Create a MapReduce operation builder with the given function.
+     *
+     * @param function    a binary blob of type {@code contentType}
+     * @param contentType a http-style content encoding type (typically application/json)
+     */
+        public Builder(ByteArrayWrapper function, String contentType)
+        {
+
+            if ((null == function) || function.length() == 0)
+            {
+                throw new IllegalArgumentException("Function can not be null or empty");
+            }
+
+            if ((null == contentType) || contentType.length() == 0)
+            {
+                throw new IllegalArgumentException("contentType can not be null or empty");
+            }
+            
+            reqBuilder.setRequest(ByteString.copyFrom(function.unsafeGetValue()))
+                        .setContentType(ByteString.copyFromUtf8(contentType));
+        
+        }
+        
+        public MapReduceOperation build()
+        {
+            return new MapReduceOperation(this);
+        }
+    }
+    
 }

@@ -24,7 +24,6 @@ import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.search.SearchResult;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class ITestSearchOperation extends ITestBase
         SearchOperation searchOp = new SearchOperation.Builder(bucketName, "Alice*").build();
         
         cluster.execute(searchOp);
-        SearchResult result = searchOp.get();
+        SearchOperation.Response result = searchOp.get();
         
         assertEquals(result.numResults(), 2);
         for (Map<String, String> map : result.getAllResults())
@@ -72,7 +71,7 @@ public class ITestSearchOperation extends ITestBase
         Assume.assumeTrue(testYokozuna);
         // First we have to create an index and attach it to a bucket
         YokozunaIndex index = new YokozunaIndex("test_index");
-        YzPutIndexOperation putOp = new YzPutIndexOperation(index);
+        YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
         putOp.get();
@@ -94,7 +93,7 @@ public class ITestSearchOperation extends ITestBase
         SearchOperation searchOp = new SearchOperation.Builder(ByteArrayWrapper.create("test_index"), "Alice*").build();
         
         cluster.execute(searchOp);
-        SearchResult result = searchOp.get();        
+        SearchOperation.Response result = searchOp.get();        
         for (Map<String, String> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());

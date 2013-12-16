@@ -98,13 +98,14 @@ public class ITestBucketTypeProperties extends ITestBase
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
         
-        ResetBucketTypePropsOperation resetOp = new ResetBucketTypePropsOperation(bucketType);
+        ResetBucketTypePropsOperation resetOp = 
+            new ResetBucketTypePropsOperation.Builder(bucketType).build();
         cluster.execute(resetOp);
         resetOp.get();
         
         props = fetchBucketTypeProps(bucketType);
         assertEquals(Integer.valueOf(3), props.getNVal());
-        assertFalse(props.getAllowMulti());
+        assertTrue(props.getAllowMulti());
     }
     
     private BucketProperties fetchBucketTypeProps(ByteArrayWrapper bucketType) throws InterruptedException, ExecutionException

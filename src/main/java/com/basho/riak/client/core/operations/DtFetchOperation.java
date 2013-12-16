@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
-import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -29,7 +28,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtFetchResp>
+public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response, RiakDtPB.DtFetchResp>
 {
 
     private final RiakDtPB.DtFetchReq.Builder reqBuilder;
@@ -40,7 +39,7 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
     }
 
     @Override
-    protected CrdtResponse convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
     {
         if (rawResponse.size() != 1)
         {
@@ -52,22 +51,13 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
         CrdtResponseConverter converter = new CrdtResponseConverter();
         CrdtElement element = converter.convert(response);
 
-
-        ByteArrayWrapper bucket = ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray());
-        ByteArrayWrapper key = ByteArrayWrapper.create(reqBuilder.getKey().toByteArray());
-        CrdtResponse.Builder responseBuilder = new CrdtResponse.Builder(bucket, key)
+        Response.Builder responseBuilder = new Response.Builder()
             .withCrdtElement(element);
 
         if (response.hasContext())
         {
             ByteArrayWrapper ctxWrapper = ByteArrayWrapper.create(response.getContext().toByteArray());
             responseBuilder.withContext(ctxWrapper);
-        }
-
-        if (reqBuilder.hasType())
-        {
-            ByteArrayWrapper bucketType = ByteArrayWrapper.create(reqBuilder.getType().toByteArray());
-            responseBuilder.withBucketType(bucketType);
         }
 
         return responseBuilder.build();
@@ -96,10 +86,6 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
 
     public static class Builder
     {
-
-        private final ByteArrayWrapper bucket;
-        private final ByteArrayWrapper key;
-        private ByteArrayWrapper bucketType;
         private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();
 
         public Builder(ByteArrayWrapper bucket, ByteArrayWrapper key)
@@ -115,9 +101,7 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
                 throw new IllegalArgumentException("key can not be null or empty");
             }
 
-            this.bucket = bucket;
             reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-            this.key = key;
             reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
         }
 
@@ -135,7 +119,6 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
                 throw new IllegalArgumentException("Bucket type can not be null or zero length");
             }
             reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            this.bucketType = bucketType;
             return this;
         }
 
@@ -262,5 +245,82 @@ public class DtFetchOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtF
             return new DtFetchOperation(this);
         }
 
+    }
+    
+    public static class Response
+    {
+        private final ByteArrayWrapper context;
+        private final CrdtElement crdtElement;
+
+        protected Response(Init<?> builder)
+        {
+            this.context = builder.context;
+            this.crdtElement = builder.crdtElement;
+        }
+
+        public boolean hasContext()
+        {
+            return context != null;
+        }
+
+        public ByteArrayWrapper getContext()
+        {
+            return context;
+        }
+
+        public boolean hasCrdtElement()
+        {
+            return crdtElement != null;
+        }
+
+        public CrdtElement getCrdtElement()
+        {
+            return crdtElement;
+        }
+
+        protected static abstract class Init<T extends Init<T>>
+        {
+            private ByteArrayWrapper context;
+            private CrdtElement crdtElement;
+            
+            protected abstract T self();
+            
+            T withContext(ByteArrayWrapper context)
+            {
+                if (context != null)
+                {
+                    if (context.length() == 0)
+                    {
+                        throw new IllegalArgumentException("Context cannot be null or zero length");
+                    }
+                    else
+                    {
+                        this.context = context;
+                    }
+                }
+                return self();
+            }
+            
+            T withCrdtElement(CrdtElement crdtElement)
+            {
+                this.crdtElement = crdtElement;
+                return self();
+            }
+            
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+        
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+        }
     }
 }

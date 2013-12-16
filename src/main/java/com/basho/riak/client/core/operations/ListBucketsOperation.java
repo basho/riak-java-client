@@ -29,45 +29,13 @@ import java.util.concurrent.ExecutionException;
 
 public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbListBucketsResp>
 {
-
-    private final Integer timeout;
-    private final boolean stream;
-    private ByteArrayWrapper bucketType;
-
-    public ListBucketsOperation(int timeout, boolean stream)
-    {
-
-        if (timeout < 0)
-        {
-            throw new IllegalArgumentException("Negative timeout values not allowed");
-        }
-
-        this.timeout = timeout;
-        this.stream = stream;
-    }
-
-    public ListBucketsOperation()
-    {
-        this.timeout = null;
-        this.stream = true;
-    }
-
-     /**
-     * Set the bucket type.
-     * If unset "default" is used. 
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public ListBucketsOperation withBucketType(ByteArrayWrapper bucketType)
-    {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-        this.bucketType = bucketType;
-        return this;
-    }
+    private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     
+    private ListBucketsOperation(Builder builder)
+    {
+        this.reqBuilder = builder.reqBuilder;
+    }
+
     @Override
     protected boolean done(RiakKvPB.RpbListBucketsResp message)
     {
@@ -91,20 +59,7 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakKvPB.RpbListBucketsReq.Builder request = RiakKvPB.RpbListBucketsReq.newBuilder();
-
-        request.setStream(stream);
-        if (timeout != null)
-        {
-            request.setTimeout(timeout);
-        }
-        
-        if (bucketType != null)
-        {
-            request.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-        }
-
-        return new RiakMessage(RiakMessageCodes.MSG_ListBucketsReq, request.build().toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_ListBucketsReq, reqBuilder.build().toByteArray());
     }
 
     @Override
@@ -121,4 +76,54 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
         }
 
     }
+    
+    public static class Builder
+    {
+        RiakKvPB.RpbListBucketsReq.Builder reqBuilder = 
+            RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
+        
+        /**
+         * Create a Builder for a ListBucketsOperation.
+         */
+        public Builder()
+        {}
+        
+        /**
+         * Provide a timeout for this operation.
+         * @param timeout value in milliseconds
+         * @return a reference to this object
+         */
+        public Builder withTimeout(int timeout)
+        {
+            if (timeout <= 0)
+            {
+                throw new IllegalArgumentException("Timeout can not be zero or less.");
+            }
+            reqBuilder.setTimeout(timeout);
+            return this;
+        }
+        
+        /**
+        * Set the bucket type.
+        * If unset "default" is used. 
+        * @param bucketType the bucket type to use
+        * @return A reference to this object.
+        */
+        public Builder withBucketType(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            return this;
+        }
+        
+        public ListBucketsOperation build()
+        {
+            return new ListBucketsOperation(this);
+        }
+        
+    }
+    
 }
