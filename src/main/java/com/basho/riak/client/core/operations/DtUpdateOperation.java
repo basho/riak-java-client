@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
-import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -31,7 +30,7 @@ import org.w3c.dom.css.Counter;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.DtUpdateResp>
+public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Response, RiakDtPB.DtUpdateResp>
 {
 
     private final RiakDtPB.DtUpdateReq.Builder reqBuilder;
@@ -42,7 +41,7 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
     }
 
     @Override
-    protected CrdtResponse convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
     {
         if (rawResponse.size() != 1)
         {
@@ -50,32 +49,17 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
         }
 
         RiakDtPB.DtUpdateResp response = rawResponse.iterator().next();
-
-        ByteArrayWrapper bucket = ByteArrayWrapper.unsafeCreate(reqBuilder.getBucket().toByteArray());
-
-        ByteArrayWrapper key;
-        if (reqBuilder.hasKey())
-        {
-            key = ByteArrayWrapper.unsafeCreate(reqBuilder.getKey().toByteArray());
-        }
-        else
-        {
-            key = ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray());
-        }
-
-        CrdtResponse.Builder responseBuilder = new CrdtResponse.Builder(bucket, key);
-
-
         CrdtResponseConverter converter = new CrdtResponseConverter();
         CrdtElement element = converter.convert(response);
-        responseBuilder.withCrdtElement(element);
-
-        if (reqBuilder.hasType())
+        
+        Response.Builder responseBuilder = 
+            new Response.Builder().withCrdtElement(element);
+        
+        if (reqBuilder.hasKey())
         {
-            ByteArrayWrapper bucketType = ByteArrayWrapper.unsafeCreate(reqBuilder.getType().toByteArray());
-            responseBuilder.withBucketType(bucketType);
+            ByteArrayWrapper.unsafeCreate(reqBuilder.getKey().toByteArray());
         }
-
+        
         if (response.hasContext())
         {
             ByteArrayWrapper context = ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray());
@@ -445,4 +429,53 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
         }
 
     }
+    
+    public static class Response extends DtFetchOperation.Response
+    {
+        private final ByteArrayWrapper generatedKey;
+        
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.generatedKey = builder.generatedKey;
+        }
+        
+        public boolean hasGeneratedKey()
+        {
+            return generatedKey != null;
+        }
+        
+        public ByteArrayWrapper getGeneratedKey()
+        {
+            return generatedKey;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends DtFetchOperation.Response.Init<T>
+        {
+            private ByteArrayWrapper generatedKey;
+            
+            T withGeneratedKey(ByteArrayWrapper generatedKey)
+            {
+                this.generatedKey = generatedKey;
+                return self();
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+            
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+        }
+    }
+    
 }

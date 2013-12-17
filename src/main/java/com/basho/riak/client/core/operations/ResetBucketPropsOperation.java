@@ -29,56 +29,26 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ResetBucketPropsOperation extends FutureOperation<Void, Void>
+public class ResetBucketPropsOperation extends FutureOperation<Boolean, Void>
 {
-    private ByteArrayWrapper bucketType;
-    private final ByteArrayWrapper bucketName;
+    private final RiakPB.RpbResetBucketReq.Builder reqBuilder;
     
-    public ResetBucketPropsOperation(ByteArrayWrapper bucketName)
+    private ResetBucketPropsOperation(Builder builder)
     {
-        if (null == bucketName || bucketName.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket name cannot be null or zero length");
-        }
-        this.bucketName = bucketName;
-    }
-    
-    /**
-     * Set the bucket type.
-     * If unset "default" is used. 
-     * @param bucketType the bucket type to use
-     * @return A reference to this object.
-     */
-    public ResetBucketPropsOperation withBucketType(ByteArrayWrapper bucketType)
-    {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-        this.bucketType = bucketType;
-        return this;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        return true;
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakPB.RpbResetBucketReq.Builder builder = 
-            RiakPB.RpbResetBucketReq.newBuilder();
-        
-        if (bucketType != null)
-        {
-            builder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-        }
-        
         RiakPB.RpbResetBucketReq req = 
-            builder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()))
-                   .build();
+            reqBuilder.build();
         
         return new RiakMessage(RiakMessageCodes.MSG_ResetBucketReq, req.toByteArray());
     }
@@ -88,6 +58,46 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void>
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_ResetBucketResp);
         return null;
+    }
+    
+    public static class Builder
+    {
+        RiakPB.RpbResetBucketReq.Builder reqBuilder = 
+            RiakPB.RpbResetBucketReq.newBuilder();
+        
+        /**
+         * Construct a Builder.
+         * @param bucketName the bucket name for the operation. 
+         */
+        public Builder(ByteArrayWrapper bucketName)
+        {
+            if (null == bucketName || bucketName.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+            }
+            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
+        }
+        
+        /**
+        * Set the bucket type.
+        * If unset "default" is used. 
+        * @param bucketType the bucket type to use
+        * @return A reference to this object.
+        */
+        public Builder withBucketType(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            return this;
+        }
+        
+        public ResetBucketPropsOperation build()
+        {
+            return new ResetBucketPropsOperation(this);
+        }
     }
     
 }

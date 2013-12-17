@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
  * @since 2.0
  */
 //TODO: return some sort of "success" instead of Void
-public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
+public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
 {
     private final ByteArrayWrapper bucketName;
     private ByteArrayWrapper bucketType;
@@ -72,9 +72,9 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
     }
     
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        return true;
     }
 
     @Override
@@ -169,7 +169,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void>
         }
         if (bucketProperties.hasYokozunaIndex())
         {
-            propsBuilder.setYzIndex(ByteString.copyFromUtf8(bucketProperties.getYokozunaIndex()));
+            propsBuilder.setSearchIndex(ByteString.copyFromUtf8(bucketProperties.getYokozunaIndex()));
         }
         
         RiakPB.RpbSetBucketReq.Builder builder = 

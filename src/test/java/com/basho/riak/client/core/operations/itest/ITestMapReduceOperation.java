@@ -93,7 +93,8 @@ public class ITestMapReduceOperation extends ITestBase
             "else r[w] = v[i][w];}}return [r];}\"}}]}";
         
         MapReduceOperation mrOp = 
-            new MapReduceOperation(ByteArrayWrapper.unsafeCreate(query.getBytes()), "application/json");
+            new MapReduceOperation.Builder(ByteArrayWrapper.unsafeCreate(query.getBytes()), "application/json")
+                .build();
         
         cluster.execute(mrOp);
         List<ByteArrayWrapper> resultList = mrOp.get();

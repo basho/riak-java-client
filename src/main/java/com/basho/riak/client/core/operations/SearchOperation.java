@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.search.SearchResult;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
@@ -26,6 +25,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +44,7 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class SearchOperation extends FutureOperation<SearchResult, RiakSearchPB.RpbSearchQueryResp>
+public class SearchOperation extends FutureOperation<SearchOperation.Response, RiakSearchPB.RpbSearchQueryResp>
 {
 
     private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder;
@@ -54,9 +54,8 @@ public class SearchOperation extends FutureOperation<SearchResult, RiakSearchPB.
         this.reqBuilder = builder.reqBuilder;
     }
 
-
     @Override
-    protected SearchResult convert(List<RiakSearchPB.RpbSearchQueryResp> rawResponse) throws ExecutionException
+    protected SearchOperation.Response convert(List<RiakSearchPB.RpbSearchQueryResp> rawResponse) throws ExecutionException
     {
         // This isn't a streaming op, there will only be one protobuf
         RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);
@@ -70,7 +69,7 @@ public class SearchOperation extends FutureOperation<SearchResult, RiakSearchPB.
             }
             docList.add(map);
         }
-        return new SearchResult(docList, resp.getMaxScore(), resp.getNumFound());
+        return new Response(docList, resp.getMaxScore(), resp.getNumFound());
 
     }
 
@@ -255,4 +254,52 @@ public class SearchOperation extends FutureOperation<SearchResult, RiakSearchPB.
         }
     }
 
+    public static class Response implements Iterable
+    {
+        private final List<Map<String, String>> results;
+        private final float maxScore;
+        private final int numResults; 
+
+        Response(List<Map<String,String>> results, float maxScore, int numResults)
+        {
+            this.results = results;
+            this.maxScore = maxScore;
+            this.numResults = numResults;
+        }
+
+        @Override
+        public Iterator<Map<String,String>> iterator()
+        {
+            return results.iterator();
+        }
+
+        /**
+         * Returns the max score from the search query.
+         * @return the max score.
+         */
+        public float getMaxScore()
+        {
+            return maxScore;
+        }
+
+        /**
+         * Returns the number of results from the search query.
+         * @return the number of results.
+         */
+        public int numResults()
+        {
+            return numResults;
+        }
+
+        /**
+         * Returns the entire list of results from the search query.
+         * @return a list containing all the result sets. 
+         */
+        public List<Map<String,String>> getAllResults()
+        {
+            return results;
+        }
+        
+    }
+    
 }

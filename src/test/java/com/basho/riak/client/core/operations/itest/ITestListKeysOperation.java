@@ -20,7 +20,6 @@ import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -42,7 +41,7 @@ public class ITestListKeysOperation extends ITestBase
     public void testListNoKeys() throws InterruptedException, ExecutionException
     {
         final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_1").getBytes());
-        ListKeysOperation klistOp = new ListKeysOperation(bName);
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
         cluster.execute(klistOp);
         List<ByteArrayWrapper> kList = klistOp.get();
         assertTrue(kList.isEmpty());
@@ -68,7 +67,7 @@ public class ITestListKeysOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        ListKeysOperation klistOp = new ListKeysOperation(bName);
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
         cluster.execute(klistOp);
         List<ByteArrayWrapper> kList = klistOp.get();
         
@@ -87,14 +86,14 @@ public class ITestListKeysOperation extends ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<KvResponse<List<RiakObject>>> listener =
-            new RiakFutureListener<KvResponse<List<RiakObject>>>() {
+        RiakFutureListener<StoreOperation.Response> listener =
+            new RiakFutureListener<StoreOperation.Response>() {
             
-            private int expected = 1000;
-            private AtomicInteger received = new AtomicInteger();
+            private final int expected = 1000;
+            private final AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<KvResponse<List<RiakObject>>> f)
+            public void handle(RiakFuture<StoreOperation.Response> f)
             {
                 try 
                 {
@@ -104,7 +103,7 @@ public class ITestListKeysOperation extends ITestBase
 
                     if (expected == received.intValue())
                     {
-                        ListKeysOperation klistOp = new ListKeysOperation(bName);
+                        ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
                         cluster.execute(klistOp);
                         List<ByteArrayWrapper> kList;
                         kList = klistOp.get();

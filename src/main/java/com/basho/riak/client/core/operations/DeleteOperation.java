@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -35,7 +34,7 @@ import static com.basho.riak.client.core.operations.Operations.checkMessageType;
  * @author David Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
+public class DeleteOperation extends FutureOperation<Boolean, Void>
 {
 
     private final RiakKvPB.RpbDelReq.Builder reqBuilder;
@@ -46,17 +45,9 @@ public class DeleteOperation extends FutureOperation<KvResponse<Boolean>, Void>
     }
 
     @Override
-    protected KvResponse<Boolean> convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        KvResponse.Builder<Boolean> builder = 
-            new KvResponse.Builder<Boolean>(ByteArrayWrapper.create(reqBuilder.getKey().toByteArray()),
-                                    ByteArrayWrapper.create(reqBuilder.getBucket().toByteArray()));
-                
-        if (reqBuilder.hasType())
-        {
-            builder.withBucketType(ByteArrayWrapper.create(reqBuilder.getType().toByteArray()));
-        }
-        return builder.withContent(true).build();
+        return true;
     }
 
     @Override

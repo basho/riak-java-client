@@ -16,10 +16,10 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.cap.BasicVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -38,20 +38,14 @@ import org.slf4j.LoggerFactory;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>, RiakKvPB.RpbGetResp>
+public class FetchOperation extends FutureOperation<FetchOperation.Response, RiakKvPB.RpbGetResp>
 {
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper key;
-    private final ByteArrayWrapper bucketType;
     private final RiakKvPB.RpbGetReq.Builder reqBuilder;
     
     private final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
 
     private FetchOperation(Builder builder)
     {
-        this.bucket = builder.bucketName;
-        this.key = builder.key;
-        this.bucketType = builder.bucketType;
         this.reqBuilder = builder.reqBuilder;
     }
 
@@ -79,7 +73,7 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
     }
 
     @Override
-    protected KvResponse<List<RiakObject>> convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
+    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
     {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
@@ -87,43 +81,38 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
             logger.error("Received {} responses when only one was expected.", responses.size());
         }
         
-        List<RiakObject> riakObjects = new LinkedList<RiakObject>();
-
         RiakKvPB.RpbGetResp response = responses.get(0);
+        
+        FetchOperation.Response.Builder responseBuilder =
+                new FetchOperation.Response.Builder();
         
         // If the response is null ... it means not found. Riak only sends 
         // a message code and zero bytes when that's the case. (See: decode() )
         // Because that makes sense!
         if (null == response)
         {
-            return new KvResponse.Builder<List<RiakObject>>(bucket, key)
-                            .withBucketType(bucketType)
-                            .withNotFound(true)
-                            .build();
+            responseBuilder.withNotFound(true);
         }
         else
         {
-            int responseCount = response.getContentCount();
-            
             // To unify the behavior of having just a tombstone vs. siblings
             // that include a tombstone, we create an empty object and mark
             // it deleted
-            if (responseCount == 0)
+            if (response.getContentCount() == 0)
             {
-                riakObjects.add(new RiakObject().setDeleted(true));
+                responseBuilder.addObject(new RiakObject().setDeleted(true));
             }
             else
             {
-                riakObjects.addAll(RiakObjectConverter.convert(response.getContentList()));
+                responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList()));
             }
+            
+            responseBuilder.withVClock(new BasicVClock(response.getVclock().toByteArray()))
+                           .withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
+            
         }
         
-        return new KvResponse.Builder<List<RiakObject>>(bucket, key)
-                            .withBucketType(bucketType)
-                            .withContent(riakObjects)
-                            .withVClock(new BasicVClock(response.getVclock().toByteArray()))
-                            .withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false)
-                            .build();
+        return responseBuilder.build();
     }
 
     @Override
@@ -142,7 +131,9 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
         private ByteArrayWrapper bucketType;
         
         /**
-         * Constructs a builder for a FetchOperation
+         * Constructs a builder for a FetchOperation.
+         * @param bucketName The name of the bucket for the operation.
+         * @param key The key for the operation.
          */
         public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper key)
         {
@@ -318,6 +309,118 @@ public class FetchOperation extends FutureOperation<KvResponse<List<RiakObject>>
         }
         
         
+    }
+    
+    static abstract class ResponseBase
+    {
+        private final List<RiakObject> objectList;
+        private final VClock vclock;
+        
+        protected ResponseBase(Init<?> builder)
+        {
+            this.objectList = builder.objectList;
+            this.vclock = builder.vclock;
+        }
+        
+        public List<RiakObject> getObjectList()
+        {
+            return objectList;
+        }
+        
+        public boolean hasVClock()
+        {
+            return vclock != null;
+        }
+        
+        public VClock getVClock()
+        {
+            return vclock;
+        }
+        
+        protected static abstract class Init<T extends Init<T>>
+        {
+            private final List<RiakObject> objectList =
+                new LinkedList<RiakObject>();
+            private VClock vclock;
+            
+            protected abstract T self();
+            abstract ResponseBase build();
+            
+            T addObject(RiakObject object)
+            {
+                objectList.add(object);
+                return self();
+            }
+            
+            T addObjects(List<RiakObject> objects)
+            {
+                objectList.addAll(objects);
+                return self();
+            }
+            
+            T withVClock(VClock vclock)
+            {
+                this.vclock = vclock;
+                return self();
+            }
+        }
+    }
+    
+    
+    public static class Response extends ResponseBase
+    {
+        private final boolean notFound;
+        private final boolean unchanged;
+        
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.notFound = builder.notFound;
+            this.unchanged = builder.unchanged;
+        }
+        
+        public boolean isNotFound()
+        {
+            return notFound;
+        }
+        
+        public boolean isUnchanged()
+        {
+            return unchanged;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseBase.Init<T>
+        {
+            private boolean notFound;
+            private boolean unchanged;
+            
+            T withNotFound(boolean notFound)
+            {
+                this.notFound = notFound;
+                return self();
+            }
+            
+            T withUnchanged(boolean unchanged)
+            {
+                this.unchanged = unchanged;
+                return self();
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+        }
     }
     
 }

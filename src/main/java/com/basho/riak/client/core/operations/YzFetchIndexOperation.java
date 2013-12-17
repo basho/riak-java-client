@@ -30,26 +30,13 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  */
 public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, RiakYokozunaPB.RpbYokozunaIndexGetResp>
-{
-    private final String indexName;
+{    
+    private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder;
     
-    /**
-     * Constructs a YzFetchIndexOperation that will return all indexes.
-     */
-    public YzFetchIndexOperation()
+    private YzFetchIndexOperation(Builder builder)
     {
-        this(null);
+        this.reqBuilder = builder.reqBuilder;
     }
-    
-    /**
-     * Constructs a YzFetchIndexOperation that will return the specified index.
-     * @param indexName the name of the index. 
-     */
-    public YzFetchIndexOperation(String indexName)
-    {
-        this.indexName = indexName;
-    }
-    
     
     @Override
     protected List<YokozunaIndex> convert(List<RiakYokozunaPB.RpbYokozunaIndexGetResp> rawResponse) throws ExecutionException
@@ -70,14 +57,7 @@ public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder builder =  
-            RiakYokozunaPB.RpbYokozunaIndexGetReq.newBuilder();
-        if (indexName != null)
-        {
-            builder.setName(ByteString.copyFromUtf8(indexName));
-        }
-        
-        RiakYokozunaPB.RpbYokozunaIndexGetReq req = builder.build();
+        RiakYokozunaPB.RpbYokozunaIndexGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_GetYzIndexReq, req.toByteArray());
         
     }
@@ -95,5 +75,31 @@ public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, 
             throw new IllegalArgumentException("Invalid message received", ex);
         }
         
+    }
+    
+    public static class Builder
+    {
+        RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder =  
+            RiakYokozunaPB.RpbYokozunaIndexGetReq.newBuilder();
+        
+        public Builder()
+        {
+            
+        }
+        
+        public Builder withIndexName(String indexName) 
+        {
+            if (null == indexName || indexName.length() == 0)
+            {
+                throw new IllegalArgumentException("Index name cannot be null or zero length");
+            }
+            reqBuilder.setName(ByteString.copyFromUtf8(indexName));
+            return this;
+        }
+        
+        public YzFetchIndexOperation build()
+        {
+            return new YzFetchIndexOperation(this);
+        }
     }
 }

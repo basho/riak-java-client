@@ -29,33 +29,25 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ResetBucketTypePropsOperation extends FutureOperation<Void, Void>
+public class ResetBucketTypePropsOperation extends FutureOperation<Boolean, Void>
 {
-    private final ByteArrayWrapper bucketType;
+    private final RiakPB.RpbResetBucketTypeReq.Builder reqBuilder;
     
-    public ResetBucketTypePropsOperation(ByteArrayWrapper bucketType)
+    private ResetBucketTypePropsOperation(Builder builder)
     {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type cannot be null or zero length.");
-        }
-        this.bucketType = bucketType;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
-    protected Void convert(List<Void> rawResponse) throws ExecutionException
+    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
     {
-        return null;
+        return true;
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakPB.RpbResetBucketTypeReq req = 
-            RiakPB.RpbResetBucketTypeReq.newBuilder()
-                .setType(ByteString.copyFrom(bucketType.unsafeGetValue()))
-                .build();
-        
+        RiakPB.RpbResetBucketTypeReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_ResetBucketTypeReq, req.toByteArray());
     }
 
@@ -64,6 +56,26 @@ public class ResetBucketTypePropsOperation extends FutureOperation<Void, Void>
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_ResetBucketResp);
         return null;
+    }
+    
+    public static class Builder
+    {
+        RiakPB.RpbResetBucketTypeReq.Builder reqBuilder = 
+            RiakPB.RpbResetBucketTypeReq.newBuilder();
+        
+        public Builder(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type cannot be null or zero length.");
+            }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+        }
+        
+        public ResetBucketTypePropsOperation build()
+        {
+            return new ResetBucketTypePropsOperation(this);
+        }
     }
     
 }

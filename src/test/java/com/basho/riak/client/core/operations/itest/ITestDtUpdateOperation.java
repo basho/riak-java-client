@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -40,7 +39,7 @@ public class ITestDtUpdateOperation extends ITestBase
     {
         DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
         cluster.execute(fetch);
-        CrdtResponse response = fetch.get();
+        DtFetchOperation.Response response = fetch.get();
         CrdtElement element = response.getCrdtElement();
 
         assertNotNull(element);
@@ -55,7 +54,7 @@ public class ITestDtUpdateOperation extends ITestBase
         DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
 
         cluster.execute(fetch);
-        CrdtResponse response = fetch.get();
+        DtFetchOperation.Response response = fetch.get();
         CrdtElement element = response.getCrdtElement();
 
         assertNotNull(element);
@@ -70,7 +69,7 @@ public class ITestDtUpdateOperation extends ITestBase
         DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
 
         cluster.execute(fetch);
-        CrdtResponse response = fetch.get();
+        DtFetchOperation.Response response = fetch.get();
         CrdtElement element = response.getCrdtElement();
 
         assertNotNull(element);
