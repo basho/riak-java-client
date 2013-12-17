@@ -21,27 +21,29 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
-import com.basho.riak.client.core.operations.ListBucketsOperation;
-import com.basho.riak.client.core.operations.ListKeysOperation;
+import com.basho.riak.client.operations.datatypes.CounterUpdate;
+import com.basho.riak.client.operations.datatypes.MapUpdate;
+import com.basho.riak.client.operations.datatypes.RiakCounter;
+import com.basho.riak.client.operations.datatypes.SetUpdate;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.net.UnknownHostException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static com.basho.riak.client.operations.DeleteValue.delete;
-import static com.basho.riak.client.operations.FetchIndex.*;
+import static com.basho.riak.client.operations.FetchIndex.match;
+import static com.basho.riak.client.operations.FetchIndex.range;
 import static com.basho.riak.client.operations.FetchValue.fetch;
+import static com.basho.riak.client.operations.Index.binIndex;
+import static com.basho.riak.client.operations.Index.intIndex;
 import static com.basho.riak.client.operations.Location.bucket;
-import static com.basho.riak.client.operations.Location.defaultBucketType;
 import static com.basho.riak.client.operations.MultiFetch.multiFetch;
 import static com.basho.riak.client.operations.StoreValue.store;
 import static com.basho.riak.client.operations.UpdateValue.resolve;
-import static com.basho.riak.client.operations.UpdateValue.update;
 
 public class RiakClient
 {
@@ -60,58 +62,6 @@ public class RiakClient
     public <T> T execute(RiakCommand<T> command) throws ExecutionException, InterruptedException
     {
         return command.execute(cluster);
-    }
-
-    public RiakCommand<Iterable<Key>> listKeys(final Bucket bucket, final int timeout)
-    {
-        return new RiakCommand<Iterable<Key>>()
-        {
-            @Override
-            public Iterable<Key> execute(RiakCluster cluster)
-                throws ExecutionException, InterruptedException
-            {
-                ByteArrayWrapper b = bucket.getBucket();
-                ListKeysOperation operation = timeout > 0
-                    ? new ListKeysOperation(b, timeout)
-                    : new ListKeysOperation(b);
-                operation.withBucketType(bucket.getType());
-                cluster.execute(operation);
-                return new KeyIterable(operation.get(), bucket);
-            }
-        };
-    }
-
-    public RiakCommand<Iterable<Key>> listKeys(Bucket bucket)
-    {
-        return listKeys(bucket, -1);
-    }
-
-    public RiakCommand<Iterable<Bucket>> listBuckets(final BucketType type, final int timeout, final boolean stream)
-    {
-        return new RiakCommand<Iterable<Bucket>>()
-        {
-            @Override
-            public Iterable<Bucket> execute(RiakCluster cluster)
-                throws ExecutionException, InterruptedException
-            {
-                ListBucketsOperation operation = timeout > 0
-                    ? new ListBucketsOperation(timeout, stream)
-                    : new ListBucketsOperation();
-                operation.withBucketType(type.getType());
-                cluster.execute(operation);
-                return new BucketIterable(operation.get(), type);
-            }
-        };
-    }
-
-    public RiakCommand<Iterable<Bucket>> listBuckets(BucketType type)
-    {
-        return listBuckets(type, -1, false);
-    }
-
-    public RiakCommand<Iterable<Bucket>> listBuckets()
-    {
-        return listBuckets(defaultBucketType(), -1, false);
     }
 
     public static void main(String[] args) throws UnknownHostException, ExecutionException, InterruptedException
@@ -166,7 +116,7 @@ public class RiakClient
         // Represent anything that has to fetch, then resolve, then store back
         // as an update
         UpdateValue.Response<RiakObject> update =
-            client.execute(update(key, new Update<RiakObject>()
+            client.execute(UpdateValue.update(key, new UpdateValue.Update<RiakObject>()
             {
                 @Override
                 public RiakObject apply(RiakObject o)
@@ -188,68 +138,59 @@ public class RiakClient
         // Delete a value
         client.execute(delete(key));
 
-        Iterable<Key> keys = client.execute(client.listKeys(bucket));
+        Iterable<Key> keys = client.execute(new ListKeys(bucket));
         for (Key k : keys)
         {
             client.execute(delete(k));
         }
 
-        Iterable<Bucket> buckets = client.execute(client.listBuckets());
+        ListBuckets.Response buckets = client.execute(new ListBuckets());
         for (Bucket bucket1 : buckets)
         {
             System.out.println(bucket1);
         }
 
-        client.execute(lookupIndex(bucket, "dave", IndexType.INT, range(0, 100)));
+        FetchIndex.Response<Integer> r1 = client.execute(new FetchIndex<Integer>(bucket, intIndex("dave"), range(0, 100)));
 
-        client.execute(lookupIndex(bucket, "dave", IndexType.INT, match(12345)));
+        FetchIndex.Response<Integer> r2 = client.execute(new FetchIndex<Integer>(bucket, intIndex("dave"), match(12345)));
 
-        client.execute(lookupIndex(bucket, "other", IndexType.BIN, match("12345")));
+        FetchIndex.Response<byte[]> r3 = client.execute(new FetchIndex<byte[]>(bucket, binIndex("other"), match("12345")));
 
-        client.execute(lookupIndex(bucket, "other", IndexType.BIN, match(new byte[]{0x1, 0x2, 0x3})));
+        FetchIndex.Response<byte[]> r4 = client.execute(new FetchIndex<byte[]>(bucket, binIndex("other"), match(new byte[]{0x1, 0x2, 0x3})));
 
-        FetchIndex<Integer> index = lookupIndex(bucket, "dave", IndexType.INT, match(1000))
-            .withOption(IndexOption.MAX_RESULTS, 25)
-            .withOption(IndexOption.RETURN_TERMS, true);
-
-
-        FetchIndex.Response<Integer> result;
-        do
-        {
-            result = client.execute(index);
-            for (FetchIndex.IndexEntry entry : result)
-            {
-                System.out.println(entry.getKey());
-            }
-            index.withContinuation(result.getContinuation());
-        }
-        while (result.hasContinuation());
+        FetchIndex<Integer> index =
+            new FetchIndex<Integer>(bucket, intIndex("dave"), match(1000))
+                .withOption(IndexOption.MAX_RESULTS, 25)
+                .withOption(IndexOption.RETURN_TERMS, true);
 
         MultiFetch.Response values = client.execute(multiFetch(index));
 
-//
-//        // Fetch a Counter CRDT
-//        Key counterKey = key("counters", "counter");
-//        FetchDatatype.Response<RiakCounter> counterResponse =
-//            client.fetch(counterKey, asCounter()).execute();
-//
-//        RiakCounter counter = counterResponse.getDatatype();
-//        counter.increment(10000);
-//        System.out.println(counter.view());
-//
-//        UpdateDatatype.Response<RiakCounter> updateResponse =
-//            client.update(counterKey, counter).execute();
-//
-//        // OR, just fling an update at a CRDT...
-//        client.update(counterKey, incrementBy(10000)).execute();
-//
-//        ByteArrayWrapper name = ByteArrayWrapper.create("element");
-//        client.update(key("sets", "set"), addElement(name)).execute();
-//
-//        // Create a new datatype and store it
-//        RiakMap myMap = new RiakMap();
-//        myMap.put("counter", new RiakCounter());
-//        client.update(key("maps", "my_map"), myMap);
+
+        // Fetch a Counter CRDT
+        Key counterKey = Location.key("counters", "counter");
+        FetchDatatype.Response<RiakCounter> counterResponse =
+            client.execute(FetchDatatype.fetchCounter(counterKey));
+
+        RiakCounter counter = counterResponse.getDatatype();
+        System.out.println(counter.view());
+
+        UpdateDatatype.Response<RiakCounter> updateResponse =
+            client.execute(UpdateDatatype
+                .update(counterKey, new CounterUpdate(1000))
+                .withOption(DtUpdateOption.RETURN_BODY, true));
+
+        // OR, just fling an update at a CRDT...
+        client.execute(UpdateDatatype.update(counterKey, new CounterUpdate(1000)));
+
+        Key setKey = Location.key("sets", "myset");
+        client.execute(UpdateDatatype.update(setKey, new SetUpdate().add(new byte[]{'0'})));
+
+        Bucket mapBucket = Bucket.bucket("maps", "mymap");
+        client.execute(UpdateDatatype.update(mapBucket, new MapUpdate()
+            .add("things", new CounterUpdate(1000))
+            .add("stuff", new SetUpdate().add(new byte[]{'1'}))
+            .add("dodads", new MapUpdate()
+                .addCounter("countedDodads"))));
 
         cluster.shutdown();
 
@@ -265,106 +206,6 @@ public class RiakClient
             return objectList.get(0);
         }
 
-    }
-
-    private static class KeyIterable implements Iterable<Key>
-    {
-
-        private final Iterable<ByteArrayWrapper> iterable;
-        private final Bucket bucket;
-
-        private KeyIterable(Iterable<ByteArrayWrapper> iterable, Bucket bucket)
-        {
-            this.iterable = iterable;
-            this.bucket = bucket;
-        }
-
-        @Override
-        public Iterator<Key> iterator()
-        {
-            return new Itr(iterable.iterator(), bucket);
-        }
-
-        private static class Itr implements Iterator<Key>
-        {
-            private final Iterator<ByteArrayWrapper> iterator;
-            private final Bucket bucket;
-
-            private Itr(Iterator<ByteArrayWrapper> iterator, Bucket bucket)
-            {
-                this.iterator = iterator;
-                this.bucket = bucket;
-            }
-
-            @Override
-            public boolean hasNext()
-            {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public Key next()
-            {
-                ByteArrayWrapper key = iterator.next();
-                return Location.key(bucket, key);
-            }
-
-            @Override
-            public void remove()
-            {
-                iterator.remove();
-            }
-        }
-    }
-
-    private static class BucketIterable implements Iterable<Bucket>
-    {
-
-        private final Iterable<ByteArrayWrapper> iterable;
-        private final BucketType type;
-
-        private BucketIterable(Iterable<ByteArrayWrapper> iterable, BucketType type)
-        {
-            this.iterable = iterable;
-            this.type = type;
-        }
-
-        @Override
-        public Iterator<Bucket> iterator()
-        {
-            return new Itr(iterable.iterator(), type);
-        }
-
-        private static class Itr implements Iterator<Bucket>
-        {
-            private final Iterator<ByteArrayWrapper> iterator;
-            private final BucketType type;
-
-            private Itr(Iterator<ByteArrayWrapper> iterator, BucketType type)
-            {
-                this.iterator = iterator;
-                this.type = type;
-            }
-
-            @Override
-            public boolean hasNext()
-            {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public Bucket next()
-            {
-                ByteArrayWrapper bucket = iterator.next();
-                return Location.bucket(type, bucket);
-            }
-
-            @Override
-            public void remove()
-            {
-                iterator.remove();
-            }
-        }
     }
 
 }

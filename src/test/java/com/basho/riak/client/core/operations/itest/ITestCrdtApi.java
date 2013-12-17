@@ -17,8 +17,8 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.operations.datatypes.MapMutation;
-import com.basho.riak.client.operations.datatypes.SetMutation;
+import com.basho.riak.client.operations.datatypes.MapUpdate;
+import com.basho.riak.client.operations.datatypes.SetUpdate;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import org.junit.Test;
@@ -26,11 +26,11 @@ import org.junit.Test;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.operations.datatypes.CounterMutation.increment;
-import static com.basho.riak.client.operations.datatypes.DatatypeMutation.forMap;
-import static com.basho.riak.client.operations.datatypes.DatatypeMutation.forSet;
-import static com.basho.riak.client.operations.datatypes.FlagMutation.enabled;
-import static com.basho.riak.client.operations.datatypes.RegisterMutation.registerValue;
+import static com.basho.riak.client.operations.datatypes.CounterUpdate.increment;
+import static com.basho.riak.client.operations.datatypes.DatatypeUpdate.forMap;
+import static com.basho.riak.client.operations.datatypes.DatatypeUpdate.forSet;
+import static com.basho.riak.client.operations.datatypes.FlagUpdate.enabled;
+import static com.basho.riak.client.operations.datatypes.RegisterUpdate.registerValue;
 import static junit.framework.Assert.*;
 
 public class ITestCrdtApi extends ITestBase
@@ -72,7 +72,7 @@ public class ITestCrdtApi extends ITestBase
 
         // Build a shopping cart. We're buying the digits!!!!
         ByteBuffer buffer = ByteBuffer.allocate(4);
-        SetMutation favorites = forSet();
+        SetUpdate favorites = forSet();
         for (int i = 0; i < 10; ++i)
         {
             buffer.putInt(i);
@@ -81,14 +81,14 @@ public class ITestCrdtApi extends ITestBase
         }
 
         // Create an update for the user's values
-        MapMutation userMapUpdate = forMap()
+        MapUpdate userMapUpdate = forMap()
             .update(numLogins, increment())                // counter
             .update(lastLoginTime, registerValue(now))     // register
             .update(loggedIn, enabled())                   // flag
             .update(shoppingCart, favorites);              // asSet
 
         // Now create an update for the user's entry
-        MapMutation userEntryUpdate = forMap()
+        MapUpdate userEntryUpdate = forMap()
             .update(username, userMapUpdate);
 
         DtUpdateOperation update =

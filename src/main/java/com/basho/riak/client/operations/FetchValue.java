@@ -58,11 +58,6 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
         return new FetchValue<RiakObject>(location, new PassThroughConverter());
     }
 
-    public static <T extends RiakDatatype> FetchDatatype<T> fetch(Key location, DatatypeConverter<T> converter)
-    {
-        return new FetchDatatype<T>();
-    }
-
     public <U> FetchValue<T> withOption(FetchOption<U> option, U value)
     {
         options.put(option, value);

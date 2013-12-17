@@ -26,6 +26,7 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.w3c.dom.css.Counter;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -378,10 +379,34 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
         }
 
         /**
+         * Add an update op to this operation
+         *
+         * @param op the update
+         * @return this
+         */
+        public Builder withOp(CrdtOp op)
+        {
+            if (op instanceof CounterOp)
+            {
+                withOp((CounterOp) op);
+            }
+            else if (op instanceof MapOp)
+            {
+                withOp((MapOp) op);
+            }
+            else if (op instanceof SetOp)
+            {
+                withOp((SetOp) op);
+            }
+
+            return this;
+        }
+
+        /**
          * Add a counter update operation to this operation.
          *
          * @param op the update
-         * @return
+         * @return this
          */
         public Builder withOp(CounterOp op)
         {
@@ -395,7 +420,7 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
          * Add a asMap update operation to this operation.
          *
          * @param op the update
-         * @return
+         * @return this
          */
         public Builder withOp(MapOp op)
         {
@@ -408,7 +433,7 @@ public class DtUpdateOperation extends FutureOperation<CrdtResponse, RiakDtPB.Dt
          * Add a asSet update operation to this operation.
          *
          * @param op the update
-         * @return
+         * @return this
          */
         public Builder withOp(SetOp op)
         {

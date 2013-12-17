@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
+import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.query.crdt.types.CrdtSet;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -22,53 +23,25 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RiakSet extends RiakDatatype<Set<ByteArrayWrapper>>
+public class RiakSet extends RiakDatatype<Set<byte[]>>
 {
 
-    private Set<ByteArrayWrapper> values;
-    private final SetMutation mutation;
-
-    public RiakSet()
-    {
-        this(new CrdtSet(Collections.EMPTY_LIST), new SetMutation());
-    }
+    private final CrdtSet set;
 
     public RiakSet(CrdtSet set)
     {
-        this(set, new SetMutation());
-    }
-
-
-    RiakSet(CrdtSet set, SetMutation mutation)
-    {
-        this.values = new HashSet<ByteArrayWrapper>(set.viewAsSet());
-        this.mutation = mutation;
-    }
-
-    public SetMutation add(ByteArrayWrapper value)
-    {
-        return mutation.add(value);
-    }
-
-    public SetMutation remove(ByteArrayWrapper value)
-    {
-        return mutation.remove(value);
+        this.set = set;
     }
 
     @Override
-    public Set<ByteArrayWrapper> view()
+    public Set<byte[]> view()
     {
-        Set<ByteArrayWrapper> current =
-            new HashSet<ByteArrayWrapper>(values);
-        current.addAll(mutation.getAdds());
-        current.removeAll(mutation.getRemoves());
-        return Collections.unmodifiableSet(current);
-    }
-
-    @Override
-    SetMutation getMutation()
-    {
-        return mutation;
+        Set<byte[]> rset = new HashSet<byte[]>();
+        for (ByteArrayWrapper entry : set.viewAsSet())
+        {
+            rset.add(entry.getValue());
+        }
+        return Collections.unmodifiableSet(rset);
     }
 
 }

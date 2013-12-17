@@ -21,8 +21,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.operations.datatypes.DatatypeMutation;
+import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.query.RiakObject;
 
@@ -70,16 +69,6 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     public static UpdateValue<RiakObject> update(Key location, Update<RiakObject> update)
     {
         return new UpdateValue<RiakObject>(location, new PassThroughConverter(), new DefaultResolver<RiakObject>(), update);
-    }
-
-    public static <T extends RiakDatatype> UpdateDatatype<T> update(Key location, T datatype)
-    {
-        return new UpdateDatatype<T>();
-    }
-
-    public static <T extends RiakDatatype> UpdateDatatype<T> update(Key location, DatatypeMutation<T> mutation)
-    {
-        return new UpdateDatatype<T>();
     }
 
     public static <T> UpdateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
@@ -162,5 +151,35 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
             return value;
         }
 
+    }
+
+    public abstract static class Update<T>
+    {
+
+        private boolean modified = true;
+
+        public abstract T apply(T original);
+
+        protected void setModified(boolean modified)
+        {
+            this.modified = modified;
+        }
+
+        public boolean isModified()
+        {
+            return modified;
+        }
+
+        public static <T> Update<T> identity()
+        {
+            return new Update<T>()
+            {
+                @Override
+                public T apply(T original)
+                {
+                    return original;
+                }
+            };
+        }
     }
 }

@@ -15,12 +15,11 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
+import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 public abstract class RiakDatatype<T>
 {
-
-    abstract DatatypeMutation getMutation();
 
     public abstract T view();
 

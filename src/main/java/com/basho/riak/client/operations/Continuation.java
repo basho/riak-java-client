@@ -17,29 +17,11 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.util.ByteArrayWrapper;
 
-import java.nio.ByteBuffer;
-
-public abstract class IndexType<T>
+class Continuation<T> extends FetchIndex<T>
 {
 
-    public static final IndexType<Integer> INT = new IndexType<Integer>()
+    Continuation(Bucket bucket, Index<T> type, Criteria op, ByteArrayWrapper continuation)
     {
-        @Override
-        public Integer convert(ByteArrayWrapper input)
-        {
-            return ByteBuffer.wrap(input.unsafeGetValue()).getInt();
-        }
-    };
-
-    public static final IndexType<ByteArrayWrapper> BIN = new IndexType<ByteArrayWrapper>()
-    {
-        @Override
-        public ByteArrayWrapper convert(ByteArrayWrapper input)
-        {
-            return input;
-        }
-    };
-
-    abstract T convert(ByteArrayWrapper input);
-
+        super(bucket, type, op, continuation);
+    }
 }

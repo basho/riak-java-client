@@ -15,26 +15,154 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
+import com.basho.riak.client.core.operations.DtUpdateOperation;
+import com.basho.riak.client.operations.datatypes.*;
+import com.basho.riak.client.query.CrdtResponse;
+import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.util.ByteArrayWrapper;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>>
 {
+
+    private final Location loc;
+    private final Context ctx;
+    private final DatatypeUpdate<T> datatype;
+    private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
+
+    UpdateDatatype(Location loc, Context ctx, DatatypeUpdate<T> datatype)
+    {
+        this.loc = loc;
+        this.ctx = ctx;
+        this.datatype = datatype;
+    }
+
+    public static <U extends RiakDatatype> UpdateDatatype<U> update(Location loc, DatatypeUpdate<U> update)
+    {
+        return new UpdateDatatype<U>(loc, null, update);
+    }
+
+    public static <U extends RiakDatatype> UpdateDatatype<U> update(Location loc, Context ctx, DatatypeUpdate<U> update)
+    {
+        return new UpdateDatatype<U>(loc, ctx, update);
+    }
+
+    public <U> UpdateDatatype<T> withOption(DtUpdateOption<U> option, U value)
+    {
+        options.put(option, value);
+        return this;
+    }
+
     @Override
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        return null;
+        DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc.getType(), loc.getBucket());
+
+        if (loc.hasKey())
+        {
+            builder.withKey(loc.getKey());
+        }
+
+        if (ctx != null)
+        {
+            builder.withContext(ByteArrayWrapper.create(ctx.getBytes()));
+        }
+
+        builder.withOp(datatype.getOp());
+
+        for (Map.Entry<DtUpdateOption<?>, Object> entry : options.entrySet())
+        {
+            if (entry.getKey() == DtUpdateOption.DW)
+            {
+                builder.withDw(((Quorum) entry.getValue()).getIntValue());
+            }
+            else if (entry.getKey() == DtUpdateOption.N_VAL)
+            {
+                builder.withNVal((Integer) entry.getValue());
+            }
+            else if (entry.getKey() == DtUpdateOption.PW)
+            {
+                builder.withPw(((Quorum) entry.getValue()).getIntValue());
+            }
+            else if (entry.getKey() == DtUpdateOption.RETURN_BODY)
+            {
+                builder.withReturnBody((Boolean) entry.getValue());
+            }
+            else if (entry.getKey() == DtUpdateOption.SLOPPY_QUORUM)
+            {
+                builder.withSloppyQuorum((Boolean) entry.getValue());
+            }
+            else if (entry.getKey() == DtUpdateOption.TIMEOUT)
+            {
+                builder.withTimeout((Integer) entry.getValue());
+            }
+            else if (entry.getKey() == DtUpdateOption.W)
+            {
+                builder.withW(((Quorum) entry.getValue()).getIntValue());
+            }
+        }
+
+        DtUpdateOperation operation = builder.build();
+        CrdtResponse crdtResponse = operation.get();
+        CrdtElement element = crdtResponse.getCrdtElement();
+
+        T riakDatatype = null;
+        if (element.isMap())
+        {
+            riakDatatype = (T) new RiakMap(element.getAsMap());
+        }
+        else if (element.isSet())
+        {
+            riakDatatype = (T) new RiakSet(element.getAsSet());
+        }
+        else if (element.isCounter())
+        {
+            riakDatatype = (T) new RiakCounter(element.getAsCounter());
+        }
+
+        Key key = Location.key(loc.getType(), loc.getBucket(), crdtResponse.getKey());
+        Context returnedCtx = new Context(crdtResponse.getContext().getValue());
+
+        return new Response<T>(key, returnedCtx, riakDatatype);
+
     }
 
     public static class Response<T>
     {
         private final T datatype;
+        private final Context context;
+        private final Key key;
 
-        Response(T datatype)
+        Response(Key key, Context context, T datatype)
         {
+            this.key = key;
             this.datatype = datatype;
+            this.context = context;
+        }
+
+        public Key getKey()
+        {
+            return key;
+        }
+
+        public boolean hasContext()
+        {
+            return context != null;
+        }
+
+        public Context getContext()
+        {
+            return context;
+        }
+
+        public boolean hasDatatype()
+        {
+            return datatype != null;
         }
 
         public T getDatatype()

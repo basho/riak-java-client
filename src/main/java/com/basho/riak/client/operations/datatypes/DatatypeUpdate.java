@@ -15,23 +15,10 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.query.crdt.types.CrdtFlag;
+import com.basho.riak.client.query.crdt.ops.CrdtOp;
 
-public class RiakFlag extends RiakDatatype<Boolean>
+public abstract class DatatypeUpdate<T extends RiakDatatype>
 {
-
-    private final CrdtFlag flag;
-
-    public RiakFlag(CrdtFlag flag)
-    {
-        this.flag = flag;
-    }
-
-    @Override
-    public Boolean view()
-    {
-        return flag.getEnabled();
-    }
+    public abstract CrdtOp getOp();
 
 }

@@ -17,7 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.util.ByteArrayWrapper;
 
-public class Location
+public abstract class Location
 {
 
     private static final String DEFAULT_TYPE = "default";
@@ -128,9 +128,19 @@ public class Location
         return bucket;
     }
 
+    public boolean hasType()
+    {
+        return type != null;
+    }
+
     public boolean hasKey()
     {
         return key != null;
+    }
+
+    public boolean hasBucket()
+    {
+        return bucket != null;
     }
 
     public ByteArrayWrapper getKey()
@@ -141,13 +151,31 @@ public class Location
     @Override
     public int hashCode()
     {
-        return super.hashCode();  //TODO
+        int result = 17;
+        result = 37 * result + getType().hashCode();
+        result = 37 * result + getBucket().hashCode();
+        result = 37 * result + getKey().hashCode();
+        return result;
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        return super.equals(obj); //TODO
+        if (obj == this)
+        {
+            return true;
+        }
+
+        if (!(obj instanceof Location))
+        {
+            return false;
+        }
+
+        Location other = (Location) obj;
+
+        return ((!hasType() && !other.hasType()) || (hasType() && other.hasType() && getType().equals(other.getType()))) &&
+            ((!hasBucket() && !other.hasBucket()) && (hasBucket() && other.hasBucket() && getBucket().equals(other.getBucket()))) &&
+            ((!hasKey() && !other.hasKey()) || (hasKey() && other.hasKey() && getKey().equals(other.getKey())));
     }
 
     @Override

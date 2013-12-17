@@ -16,54 +16,22 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.CrdtCounter;
+import com.basho.riak.client.query.crdt.types.CrdtElement;
 
 public class RiakCounter extends RiakDatatype<Long>
 {
 
-    private final long initialValue;
-    private final CounterMutation mutation;
-
-    public RiakCounter()
-    {
-        this(new CrdtCounter(0), new CounterMutation());
-    }
+    private final CrdtCounter counter;
 
     public RiakCounter(CrdtCounter counter)
     {
-        this(counter, new CounterMutation());
-    }
-
-    RiakCounter(CrdtCounter counter, CounterMutation mutation)
-    {
-        this.initialValue = counter.getValue();
-        this.mutation = mutation;
-    }
-
-    public void increment(long amount)
-    {
-        mutation.increment(amount);
-    }
-
-    public void increment()
-    {
-        mutation.increment(1);
-    }
-
-    public void decrement()
-    {
-        mutation.increment(-1);
+        this.counter = counter;
     }
 
     @Override
     public Long view()
     {
-        return initialValue + mutation.getDelta();
-    }
-
-    @Override
-    CounterMutation getMutation()
-    {
-        return mutation;
+        return counter.getValue();
     }
 
 }

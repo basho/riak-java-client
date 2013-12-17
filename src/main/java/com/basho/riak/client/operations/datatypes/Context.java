@@ -13,34 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.datatypes;
 
-public abstract class Update<T>
+public class Context
 {
 
-    private boolean modified = true;
+    private final byte[] bytes;
 
-    public abstract T apply(T original);
-
-    protected void setModified(boolean modified)
+    public Context(byte[] bytes)
     {
-        this.modified = modified;
+        this.bytes = bytes;
     }
 
-    public boolean isModified()
+    public byte[] getBytes()
     {
-        return modified;
-    }
-
-    public static <T> Update<T> identity()
-    {
-        return new Update<T>()
-        {
-            @Override
-            public T apply(T original)
-            {
-                return original;
-            }
-        };
+        return bytes;
     }
 }

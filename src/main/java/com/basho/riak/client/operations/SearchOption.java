@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.datatypes;
+package com.basho.riak.client.operations;
 
-import com.basho.riak.client.query.crdt.ops.CrdtOp;
-
-public abstract class DatatypeMutation<T extends RiakDatatype>
+public class SearchOption<T> extends RiakOption<T>
 {
 
-    public abstract CrdtOp getOp();
-
-    public static MapMutation forMap()
+    public static enum Operation
     {
-        return new MapMutation();
+        AND("and"), OR("or");
+
+        final String opStr;
+
+        Operation(String opStr)
+        {
+            this.opStr = opStr;
+        }
     }
 
-    public static SetMutation forSet()
+    public static SearchOption<Operation> DEFAULT_OPERATION = new SearchOption<Operation>("DEFAULT_OPERATION");
+    public static SearchOption<String> DEFAULT_FIELD = new SearchOption<String>("DEFAULT_FIELD");
+
+    private SearchOption(String name)
     {
-        return new SetMutation();
+        super(name);
     }
 
-    public static CounterMutation forCounter()
-    {
-        return new CounterMutation();
-    }
 
 }

@@ -21,33 +21,23 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetMutation extends DatatypeMutation<RiakSet>
+public class SetUpdate extends DatatypeUpdate<RiakSet>
 {
 
     private final Set<ByteArrayWrapper> adds = new HashSet<ByteArrayWrapper>();
     private final Set<ByteArrayWrapper> removes = new HashSet<ByteArrayWrapper>();
 
-    SetMutation()
+    public SetUpdate()
     {
     }
 
-    public static SetMutation addElement(ByteArrayWrapper value)
+    public SetUpdate add(byte[] value)
     {
-        return new SetMutation().add(value);
-    }
-
-    public static SetMutation removeElement(ByteArrayWrapper value)
-    {
-        return new SetMutation().remove(value);
-    }
-
-    public SetMutation add(ByteArrayWrapper value)
-    {
-        this.adds.add(value);
+        this.adds.add(ByteArrayWrapper.create(value));
         return this;
     }
 
-    public SetMutation remove(ByteArrayWrapper value)
+    public SetUpdate remove(ByteArrayWrapper value)
     {
         this.removes.add(value);
         return this;

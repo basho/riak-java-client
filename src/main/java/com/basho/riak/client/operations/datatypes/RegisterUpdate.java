@@ -18,37 +18,27 @@ package com.basho.riak.client.operations.datatypes;
 import com.basho.riak.client.query.crdt.ops.RegisterOp;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
-public class RegisterMutation extends DatatypeMutation
+public class RegisterUpdate extends DatatypeUpdate
 {
 
     private ByteArrayWrapper value = null;
 
-    RegisterMutation(ByteArrayWrapper value)
+    public RegisterUpdate(ByteArrayWrapper value)
     {
         this.value = value;
     }
 
-    RegisterMutation()
+    public RegisterUpdate()
     {
     }
 
-    public static RegisterMutation registerValue(ByteArrayWrapper value)
-    {
-        return new RegisterMutation(value);
-    }
-
-    public static RegisterMutation emptyRegister()
-    {
-        return new RegisterMutation();
-    }
-
-    public RegisterMutation set(ByteArrayWrapper value)
+    public RegisterUpdate set(ByteArrayWrapper value)
     {
         this.value = value;
         return this;
     }
 
-    public RegisterMutation clear()
+    public RegisterUpdate clear()
     {
         this.value = null;
         return this;

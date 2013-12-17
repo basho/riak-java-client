@@ -17,42 +17,27 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.FlagOp;
 
-public class FlagMutation extends DatatypeMutation
+public class FlagUpdate extends DatatypeUpdate
 {
 
     private boolean flag = false;
 
-    FlagMutation(boolean flag)
+    public FlagUpdate(boolean flag)
     {
         this.flag = flag;
     }
 
-    FlagMutation()
+    public FlagUpdate()
     {
     }
 
-    public static FlagMutation newBuilder()
-    {
-        return new FlagMutation();
-    }
-
-    public static FlagMutation enabled()
-    {
-        return new FlagMutation(true);
-    }
-
-    public static FlagMutation disabled()
-    {
-        return new FlagMutation(false);
-    }
-
-    public FlagMutation setFlag(boolean flag)
+    public FlagUpdate set(boolean flag)
     {
         this.flag = flag;
         return this;
     }
 
-    public boolean getEnabled()
+    public boolean isEnabled()
     {
         return flag;
     }

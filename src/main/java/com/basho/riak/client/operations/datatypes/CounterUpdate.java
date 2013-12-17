@@ -17,44 +17,18 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.CounterOp;
 
-public class CounterMutation extends DatatypeMutation<RiakCounter>
+public class CounterUpdate extends DatatypeUpdate<RiakCounter>
 {
 
     private long delta = 0;
 
-    CounterMutation()
+    public CounterUpdate()
     {
     }
 
-    CounterMutation(long delta)
+    public CounterUpdate(long delta)
     {
         this.delta = delta;
-    }
-
-    public static CounterMutation newCounter()
-    {
-        return new CounterMutation();
-    }
-
-    public static CounterMutation increment()
-    {
-        return new CounterMutation(1);
-    }
-
-    public static CounterMutation incrementBy(long delta)
-    {
-        return new CounterMutation(delta);
-    }
-
-    public static CounterMutation decrement()
-    {
-        return new CounterMutation(-1);
-    }
-
-    public CounterMutation increment(long delta)
-    {
-        this.delta += delta;
-        return this;
     }
 
     public long getDelta()
