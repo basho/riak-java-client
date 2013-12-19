@@ -19,7 +19,6 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DeleteOperation;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashMap;
@@ -105,7 +104,7 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
         DeleteOperation operation = builder.build();
         cluster.execute(operation);
 
-        KvResponse<Boolean> response = operation.get();
+        operation.get();
 
         return new Response(true);
 

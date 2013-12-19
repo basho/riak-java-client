@@ -15,11 +15,13 @@
  */
 package com.basho.riak.client.core;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Ignore
 public class AbstractRiakFutureTest
 {
 

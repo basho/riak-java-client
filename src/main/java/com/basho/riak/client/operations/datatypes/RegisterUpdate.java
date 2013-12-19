@@ -21,9 +21,9 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 public class RegisterUpdate extends DatatypeUpdate
 {
 
-    private ByteArrayWrapper value = null;
+    private byte[] value = null;
 
-    public RegisterUpdate(ByteArrayWrapper value)
+    public RegisterUpdate(byte[] value)
     {
         this.value = value;
     }
@@ -32,7 +32,7 @@ public class RegisterUpdate extends DatatypeUpdate
     {
     }
 
-    public RegisterUpdate set(ByteArrayWrapper value)
+    public RegisterUpdate set(byte[] value)
     {
         this.value = value;
         return this;
@@ -44,7 +44,7 @@ public class RegisterUpdate extends DatatypeUpdate
         return this;
     }
 
-    public ByteArrayWrapper get()
+    public byte[] get()
     {
         return value;
     }
@@ -52,7 +52,7 @@ public class RegisterUpdate extends DatatypeUpdate
     @Override
     public RegisterOp getOp()
     {
-        return new RegisterOp(value);
+        return new RegisterOp(ByteArrayWrapper.create(value));
     }
 
 

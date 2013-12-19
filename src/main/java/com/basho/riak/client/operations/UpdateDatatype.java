@@ -19,7 +19,6 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.*;
-import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -108,7 +107,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
         }
 
         DtUpdateOperation operation = builder.build();
-        CrdtResponse crdtResponse = operation.get();
+        DtUpdateOperation.Response crdtResponse = operation.get();
         CrdtElement element = crdtResponse.getCrdtElement();
 
         T riakDatatype = null;
@@ -125,7 +124,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
             riakDatatype = (T) new RiakCounter(element.getAsCounter());
         }
 
-        Key key = Location.key(loc.getType(), loc.getBucket(), crdtResponse.getKey());
+        Key key = Location.key(loc.getType(), loc.getBucket(), crdtResponse.getGeneratedKey());
         Context returnedCtx = new Context(crdtResponse.getContext().getValue());
 
         return new Response<T>(key, returnedCtx, riakDatatype);

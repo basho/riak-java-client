@@ -17,16 +17,14 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.*;
-import com.basho.riak.client.query.search.SearchResult;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.query.search.YokozunaSchema;
 import com.basho.riak.client.util.ByteArrayWrapper;
-import com.sun.org.apache.regexp.internal.recompile;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class Search extends RiakCommand<SearchResult>
+public class Search extends RiakCommand<SearchOperation.Response>
 {
 
     public static enum Presort
@@ -82,7 +80,9 @@ public class Search extends RiakCommand<SearchResult>
             @Override
             YokozunaIndex execute(RiakCluster cluster) throws ExecutionException, InterruptedException
             {
-                YzFetchIndexOperation operation = new YzFetchIndexOperation(index);
+                YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
+                builder.withIndexName(index);
+                YzFetchIndexOperation operation = builder.build();
                 cluster.execute(operation);
                 return operation.get().get(1);
             }
@@ -96,7 +96,7 @@ public class Search extends RiakCommand<SearchResult>
             @Override
             List<YokozunaIndex> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
             {
-                YzFetchIndexOperation operation = new YzFetchIndexOperation();
+                YzFetchIndexOperation operation = new YzFetchIndexOperation.Builder().build();
                 cluster.execute(operation);
                 return operation.get();
             }
@@ -110,7 +110,7 @@ public class Search extends RiakCommand<SearchResult>
             @Override
             Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
             {
-                YzPutIndexOperation operation = new YzPutIndexOperation(index);
+                YzPutIndexOperation operation = new YzPutIndexOperation.Builder(index).build();
                 cluster.execute(operation);
                 operation.get();
                 return true;
@@ -125,7 +125,7 @@ public class Search extends RiakCommand<SearchResult>
             @Override
             Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
             {
-                YzDeleteIndexOperation operation = new YzDeleteIndexOperation(index);
+                YzDeleteIndexOperation operation = new YzDeleteIndexOperation.Builder(index).build();
                 cluster.execute(operation);
                 operation.get();
                 return true;
@@ -140,7 +140,7 @@ public class Search extends RiakCommand<SearchResult>
             @Override
             YokozunaSchema execute(RiakCluster cluster) throws ExecutionException, InterruptedException
             {
-                YzGetSchemaOperation operation = new YzGetSchemaOperation(schema);
+                YzGetSchemaOperation operation = new YzGetSchemaOperation.Builder(schema).build();
                 cluster.execute(operation);
                 return operation.get();
             }
@@ -154,7 +154,7 @@ public class Search extends RiakCommand<SearchResult>
             @Override
             Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
             {
-                YzPutSchemaOperation operation = new YzPutSchemaOperation(schema);
+                YzPutSchemaOperation operation = new YzPutSchemaOperation.Builder(schema).build();
                 cluster.execute(operation);
                 operation.get();
                 return true;
@@ -163,7 +163,7 @@ public class Search extends RiakCommand<SearchResult>
     }
 
     @Override
-    SearchResult execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         SearchOperation.Builder builder = new SearchOperation.Builder(ByteArrayWrapper.create(index), query);

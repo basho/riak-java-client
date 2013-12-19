@@ -158,14 +158,6 @@ public class RiakClient
 
         FetchIndex.Response<byte[]> r4 = client.execute(new FetchIndex<byte[]>(bucket, binIndex("other"), match(new byte[]{0x1, 0x2, 0x3})));
 
-        FetchIndex<Integer> index =
-            new FetchIndex<Integer>(bucket, intIndex("dave"), match(1000))
-                .withOption(IndexOption.MAX_RESULTS, 25)
-                .withOption(IndexOption.RETURN_TERMS, true);
-
-        MultiFetch.Response values = client.execute(multiFetch(index));
-
-
         // Fetch a Counter CRDT
         Key counterKey = Location.key("counters", "counter");
         FetchDatatype.Response<RiakCounter> counterResponse =

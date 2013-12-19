@@ -39,11 +39,6 @@ public abstract class MultiFetch extends RiakCommand<MultiFetch.Response>
         return new KeyMultiFetch(keys);
     }
 
-    public static MultiFetch multiFetch(FetchIndex index)
-    {
-        return new IndexMultiFetch(index);
-    }
-
     public static final class Response<T> implements Iterable<FetchValue.Response<T>>
     {
 

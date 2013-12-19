@@ -21,9 +21,6 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.operations.datatypes.DatatypeConverter;
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -127,10 +124,10 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
         FetchOperation operation = builder.build();
         cluster.execute(operation);
 
-        KvResponse<List<RiakObject>> response = operation.get();
-        List<T> converted = convert(converter, response.getContent());
+        FetchOperation.Response response = operation.get();
+        List<T> converted = convert(converter, response.getObjectList());
 
-        return new Response<T>(response.notFound(), response.unchanged(), converted, response.getVClock());
+        return new Response<T>(response.isNotFound(), response.isUnchanged(), converted, response.getVClock());
 
     }
 

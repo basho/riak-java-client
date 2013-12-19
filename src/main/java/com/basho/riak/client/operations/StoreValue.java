@@ -21,7 +21,6 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.query.KvResponse;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -177,44 +176,28 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation operation = builder.build();
         cluster.execute(operation);
 
-        KvResponse<List<RiakObject>> response = operation.get();
-        List<V> converted = convert(converter, response.getContent());
+        StoreOperation.Response response = operation.get();
+        List<V> converted = convert(converter, response.getObjectList());
 
-        Key k = Location.key(type, bucket, response.getKey());
+        Key k = Location.key(type, bucket, response.getGeneratedKey());
         VClock clock = response.getVClock();
-        boolean unchanged = response.unchanged();
-        boolean notFound = response.notFound();
 
-        return new Response<V>(notFound, unchanged, converted, clock, k);
+        return new Response<V>(converted, clock, k);
 
     }
 
     public static class Response<T>
     {
 
-        private final boolean notFound;
-        private final boolean unchanged;
         private final Key key;
         private final VClock vClock;
         private final List<T> value;
 
-        Response(boolean notFound, boolean unchanged, List<T> value, VClock vClock, Key key)
+        Response(List<T> value, VClock vClock, Key key)
         {
-            this.notFound = notFound;
-            this.unchanged = unchanged;
             this.value = value;
             this.vClock = vClock;
             this.key = key;
-        }
-
-        public boolean isNotFound()
-        {
-            return notFound;
-        }
-
-        public boolean isUnchanged()
-        {
-            return unchanged;
         }
 
         public boolean hasvClock()

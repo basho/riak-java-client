@@ -17,8 +17,6 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.query.indexes.SecondaryIndexEntry;
-import com.basho.riak.client.query.indexes.SecondaryIndexQueryResponse;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.*;
@@ -95,11 +93,11 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         SecondaryIndexQueryOperation operation = builder.build();
         cluster.execute(operation);
 
-        SecondaryIndexQueryResponse opResponse = operation.get();
+        SecondaryIndexQueryOperation.Response opResponse = operation.get();
 
-        ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(opResponse.size());
+        ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(opResponse.getEntryList().size());
 
-        for (SecondaryIndexEntry entry : opResponse)
+        for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
         {
             Key key = Location.key(bucket, entry.getIndexKey());
             T objectKey = index.convert(entry.getObjectKey());

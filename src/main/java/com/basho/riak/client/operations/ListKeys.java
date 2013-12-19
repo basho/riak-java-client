@@ -43,11 +43,13 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
     @Override
     Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        ByteArrayWrapper b = bucket.getBucket();
-        ListKeysOperation operation = timeout > 0
-            ? new ListKeysOperation(b, timeout)
-            : new ListKeysOperation(b);
-        operation.withBucketType(bucket.getType());
+        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(bucket.getBucket());
+        if (timeout > 0)
+        {
+            builder.withTimeout(timeout);
+        }
+        builder.withBucketType(bucket.getType());
+        ListKeysOperation operation = builder.build();
         cluster.execute(operation);
         return new Response(bucket, operation.get());
     }

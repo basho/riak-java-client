@@ -19,7 +19,6 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.operations.datatypes.*;
-import com.basho.riak.client.query.CrdtResponse;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
@@ -113,7 +112,7 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
         DtFetchOperation operation = builder.build();
         cluster.execute(operation);
 
-        CrdtResponse response = operation.get();
+        DtFetchOperation.Response response = operation.get();
         CrdtElement element = response.getCrdtElement();
         ByteArrayWrapper context = response.getContext();
 

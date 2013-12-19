@@ -23,44 +23,46 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static com.basho.riak.client.operations.Location.bucketType;
 import static com.basho.riak.client.operations.Location.defaultBucketType;
 
 public class ListBuckets extends RiakCommand<ListBuckets.Response>
 {
 
     private final int timeout;
-    private final boolean stream;
     private final BucketType type;
 
-    public ListBuckets(BucketType type, int timeout, boolean stream)
+    public ListBuckets(BucketType type, int timeout)
     {
         this.type = type;
         this.timeout = timeout;
-        this.stream = stream;
-    }
-
-    public ListBuckets(int timeout, boolean stream)
-    {
-        this(defaultBucketType(), timeout, stream);
-    }
-
-    public ListBuckets(BucketType type)
-    {
-        this(type, -1, false);
     }
 
     public ListBuckets()
     {
-        this(defaultBucketType(), -1, false);
+        this(defaultBucketType());
+    }
+
+    public ListBuckets(int timeout)
+    {
+        this(defaultBucketType(), timeout);
+    }
+
+    public ListBuckets(BucketType type)
+    {
+        this(type, -1);
     }
 
     @Override
     Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        ListBucketsOperation operation = timeout > 0
-            ? new ListBucketsOperation(timeout, stream)
-            : new ListBucketsOperation();
-        operation.withBucketType(type.getType());
+        ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
+        if (timeout > 0)
+        {
+            builder.withTimeout(timeout);
+        }
+        builder.withBucketType(type.getType());
+        ListBucketsOperation operation = builder.build();
         cluster.execute(operation);
         return new Response(type, operation.get());
     }
