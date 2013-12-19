@@ -31,6 +31,9 @@ import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.convert.Converters.convert;
 
+/**
+ * Command used to fetch a value from Riak, referenced by it's key.
+ */
 public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 {
 
@@ -45,16 +48,39 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
         this.location = location;
     }
 
+    /**
+     * Factory method for a FetchValue command with a conversion step
+     *
+     * @param location  the key to fetch
+     * @param converter a domain object converter
+     * @param <T>       the type of the domain object
+     * @return a response object
+     */
     public static <T> FetchValue<T> fetch(Key location, Converter<T> converter)
     {
         return new FetchValue(location, converter);
     }
 
+    /**
+     * Factory method for a FetchValue command returning raw RiakObjects
+     *
+     * @param location the key to fetch
+     * @return a response object
+     */
     public static FetchValue<RiakObject> fetch(Key location)
     {
         return new FetchValue<RiakObject>(location, new PassThroughConverter());
     }
 
+    /**
+     * Add an optional setting for this command. This will be passed along with the
+     * request to Riak to tell it how to behave when servicing the request.
+     *
+     * @param option
+     * @param value
+     * @param <U>
+     * @return
+     */
     public <U> FetchValue<T> withOption(FetchOption<U> option, U value)
     {
         options.put(option, value);
@@ -62,7 +88,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
     }
 
     @Override
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         ByteArrayWrapper type = location.getType();
@@ -108,7 +134,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
             }
             else if (option == FetchOption.PR)
             {
-                builder.withPr((Integer) opPair.getValue());
+                builder.withPr(((Quorum) opPair.getValue()).getIntValue());
             }
             else if (option == FetchOption.SLOPPY_QUORUM)
             {
@@ -122,15 +148,19 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
         }
 
         FetchOperation operation = builder.build();
-        cluster.execute(operation);
 
-        FetchOperation.Response response = operation.get();
+        FetchOperation.Response response = cluster.execute(operation).get();
         List<T> converted = convert(converter, response.getObjectList());
 
         return new Response<T>(response.isNotFound(), response.isUnchanged(), converted, response.getVClock());
 
     }
 
+    /**
+     * A response from Riak including the vector clock.
+     *
+     * @param <T> the type of the returned object, if no converter given this will be RiakObject
+     */
     public static class Response<T>
     {
 

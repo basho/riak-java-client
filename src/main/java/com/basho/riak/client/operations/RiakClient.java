@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static com.basho.riak.client.operations.DeleteValue.delete;
 import static com.basho.riak.client.operations.FetchIndex.match;
 import static com.basho.riak.client.operations.FetchIndex.range;
 import static com.basho.riak.client.operations.FetchValue.fetch;
@@ -136,12 +135,12 @@ public class RiakClient
         client.execute(resolve(key, Resolvers.MyResolver));
 
         // Delete a value
-        client.execute(delete(key));
+        client.execute(new DeleteValue(key));
 
         Iterable<Key> keys = client.execute(new ListKeys(bucket));
         for (Key k : keys)
         {
-            client.execute(delete(k));
+            client.execute(new DeleteValue(k));
         }
 
         ListBuckets.Response buckets = client.execute(new ListBuckets());

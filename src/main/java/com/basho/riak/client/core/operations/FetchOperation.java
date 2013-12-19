@@ -311,7 +311,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         
     }
     
-    static abstract class ResponseBase
+    public static abstract class ResponseBase
     {
         private final List<RiakObject> objectList;
         private final VClock vclock;

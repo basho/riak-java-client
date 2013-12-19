@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Command used to delete a value from Riak, referenced by it's key.
+ */
 public class DeleteValue extends RiakCommand<DeleteValue.Response>
 {
 
@@ -32,15 +35,10 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     private final Map<DeleteOption<?>, Object> options;
     private VClock vClock;
 
-    DeleteValue(Key location)
+    public DeleteValue(Key location)
     {
         this.location = location;
         this.options = new HashMap<DeleteOption<?>, Object>();
-    }
-
-    public static DeleteValue delete(Key location)
-    {
-        return new DeleteValue(location);
     }
 
     @Override
@@ -69,7 +67,7 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
             }
             else if (option == DeleteOption.N_VAL)
             {
-                builder.withNVal(((Quorum) optPair.getValue()).getIntValue());
+                builder.withNVal((Integer) optPair.getValue());
             }
             else if (option == DeleteOption.PR)
             {
@@ -102,9 +100,7 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
         }
 
         DeleteOperation operation = builder.build();
-        cluster.execute(operation);
-
-        operation.get();
+        cluster.execute(operation).get();
 
         return new Response(true);
 

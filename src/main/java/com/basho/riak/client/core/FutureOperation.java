@@ -148,7 +148,8 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         this.lastNode = node;
     }
 
-    synchronized final void setResponse(RiakMessage rawResponse)
+    // Exposed for testing.
+    public synchronized final void setResponse(RiakMessage rawResponse)
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         U decodedMessage = decode(rawResponse);
