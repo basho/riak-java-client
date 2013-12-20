@@ -35,6 +35,11 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     private final Map<DeleteOption<?>, Object> options;
     private VClock vClock;
 
+    /**
+     * Delete value at the given key
+     *
+     * @param location the Riak key where the value is located
+     */
     public DeleteValue(Key location)
     {
         this.location = location;
@@ -106,18 +111,35 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
 
     }
 
+    /**
+     * Specify the VClock to use when deleting the object from Riak
+     *
+     * @param vClock the vclock
+     * @return this
+     */
     public DeleteValue withVClock(VClock vClock)
     {
         this.vClock = vClock;
         return this;
     }
 
+    /**
+     * Add a delete option
+     *
+     * @param option the option
+     * @param value  the value associated with the option
+     * @param <T>    the type required by the option
+     * @return
+     */
     public <T> DeleteValue withOption(DeleteOption<T> option, T value)
     {
         options.put(option, value);
         return this;
     }
 
+    /**
+     * The response from Riak
+     */
     public static class Response
     {
         private final boolean deleted;

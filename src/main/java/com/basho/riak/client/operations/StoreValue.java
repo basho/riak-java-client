@@ -174,9 +174,8 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         }
 
         StoreOperation operation = builder.build();
-        cluster.execute(operation);
 
-        StoreOperation.Response response = operation.get();
+        StoreOperation.Response response = cluster.execute(operation).get();
         List<V> converted = convert(converter, response.getObjectList());
 
         Key k = Location.key(type, bucket, response.getGeneratedKey());

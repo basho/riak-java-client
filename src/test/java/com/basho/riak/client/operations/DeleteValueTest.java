@@ -55,7 +55,7 @@ public class DeleteValueTest
         when(mockFuture.isDone()).thenReturn(true);
         when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
         when(mockVclock.getBytes()).thenReturn(new byte[]{'O', '_', 'o'});
-        client = new RiakClient(mockCluster, null);
+        client = new RiakClient(mockCluster);
     }
 
     @Test

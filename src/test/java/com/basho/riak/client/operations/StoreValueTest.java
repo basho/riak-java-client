@@ -21,9 +21,11 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.protobuf.RiakKvPB;
+import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,20 +34,25 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static junit.framework.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class FetchValueTest
+public class StoreValueTest
 {
+
+
     @Mock RiakCluster mockCluster;
     @Mock VClock mockVclock;
     @Mock RiakFuture mockFuture;
-    @Mock FetchOperation.Response mockResponse;
+    @Mock StoreOperation.Response mockResponse;
     RiakClient client;
+    RiakObject riakObject;
     Key key = Location.key("type", "bucket", "key");
 
     @Before
@@ -60,47 +67,51 @@ public class FetchValueTest
         when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
         when(mockVclock.getBytes()).thenReturn(new byte[]{'O', '_', 'o'});
         client = new RiakClient(mockCluster);
+        riakObject = new RiakObject();
+        riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
     }
 
     @Test
-    public void testFetch() throws Exception
+    public void testStore() throws ExecutionException, InterruptedException
     {
 
-        FetchValue<RiakObject> fetchValue = FetchValue.fetch(key)
-            .withOption(FetchOption.TIMEOUT, 100)
-            .withOption(FetchOption.BASIC_QUORUM, true)
-            .withOption(FetchOption.DELETED_VCLOCK, true)
-            .withOption(FetchOption.HEAD, true)
-            .withOption(FetchOption.IF_MODIFIED, mockVclock)
-            .withOption(FetchOption.N_VAL, 1)
-            .withOption(FetchOption.NOTFOUND_OK, true)
-            .withOption(FetchOption.PR, new Quorum(1))
-            .withOption(FetchOption.R, new Quorum(1))
-            .withOption(FetchOption.SLOPPY_QUORUM, true);
+        StoreValue<RiakObject> store = StoreValue.store(key, riakObject, mockVclock)
+            .withOption(StoreOption.ASIS, true)
+            .withOption(StoreOption.DW, new Quorum(1))
+            .withOption(StoreOption.IF_NONE_MATCH, true)
+            .withOption(StoreOption.IF_NOT_MODIFIED, true)
+            .withOption(StoreOption.PW, new Quorum(1))
+            .withOption(StoreOption.N_VAL, 1)
+            .withOption(StoreOption.RETURN_BODY, true)
+            .withOption(StoreOption.RETURN_HEAD, true)
+            .withOption(StoreOption.SLOPPY_QUORUM, true)
+            .withOption(StoreOption.TIMEOUT, 1000)
+            .withOption(StoreOption.W, new Quorum(1));
 
-        client.execute(fetchValue);
+        client.execute(store);
 
-        ArgumentCaptor<FetchOperation> captor =
-            ArgumentCaptor.forClass(FetchOperation.class);
+        ArgumentCaptor<StoreOperation> captor =
+            ArgumentCaptor.forClass(StoreOperation.class);
         verify(mockCluster).execute(captor.capture());
 
-        FetchOperation operation = captor.getValue();
-        RiakKvPB.RpbGetReq.Builder builder =
-            (RiakKvPB.RpbGetReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
+        StoreOperation operation = captor.getValue();
+        RiakKvPB.RpbPutReq.Builder builder =
+            (RiakKvPB.RpbPutReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
-        assertEquals("type", builder.getType().toStringUtf8());
-        assertEquals("bucket", builder.getBucket().toStringUtf8());
-        assertEquals("key", builder.getKey().toStringUtf8());
-        assertEquals(100, builder.getTimeout());
-        assertEquals(true, builder.getBasicQuorum());
-        assertEquals(true, builder.getDeletedvclock());
-        assertEquals(true, builder.getHead());
-        assertTrue(Arrays.equals(mockVclock.getBytes(), builder.getIfModified().toByteArray()));
+        assertTrue(builder.hasVclock());
+        assertEquals(true, builder.getAsis());
+        assertEquals(1, builder.getDw());
+        assertEquals(true, builder.getIfNotModified());
+        assertEquals(true, builder.getIfNoneMatch());
+        assertEquals(1, builder.getPw());
         assertEquals(1, builder.getNVal());
-        assertEquals(true, builder.getNotfoundOk());
-        assertEquals(1, builder.getPr());
-        assertEquals(1, builder.getR());
+        assertEquals(true, builder.getReturnBody());
+        assertEquals(true, builder.getReturnHead());
         assertEquals(true, builder.getSloppyQuorum());
+        assertEquals(1000, builder.getTimeout());
+        assertEquals(1, builder.getW());
+
     }
+
 
 }
