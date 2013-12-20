@@ -40,9 +40,9 @@ import static org.mockito.Mockito.*;
 public class UpdateValueTest
 {
     @Mock RiakCluster mockCluster;
+    Key key = Location.key("type", "bucket", "key");
     RiakClient client;
     RiakObject riakObject;
-    Key key = Location.key("type", "bucket", "key");
 
     @Before
     public void init() throws Exception

@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
@@ -40,10 +41,10 @@ public class DeleteValueTest
 {
 
     @Mock RiakCluster mockCluster;
-    @Mock VClock mockVclock;
     @Mock RiakFuture mockFuture;
-    RiakClient client;
+    VClock vClock = new BasicVClock(new byte[]{'1'});
     Key key = Location.key("type", "bucket", "key");
+    RiakClient client;
 
     @Before
     public void init() throws Exception
@@ -54,14 +55,13 @@ public class DeleteValueTest
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
         when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
-        when(mockVclock.getBytes()).thenReturn(new byte[]{'O', '_', 'o'});
         client = new RiakClient(mockCluster);
     }
 
     @Test
     public void testDelete() throws Exception
     {
-        DeleteValue delete = new DeleteValue(key)
+        DeleteValue delete = new DeleteValue(key, vClock)
             .withOption(DeleteOption.DW, new Quorum(1))
             .withOption(DeleteOption.N_VAL, 1)
             .withOption(DeleteOption.PR, new Quorum(1))
@@ -84,6 +84,7 @@ public class DeleteValueTest
         RiakKvPB.RpbDelReq.Builder builder =
             (RiakKvPB.RpbDelReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
+        assertTrue(builder.hasVclock());
         assertEquals(1, builder.getDw());
         assertEquals(1, builder.getNVal());
         assertEquals(1, builder.getPr());

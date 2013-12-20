@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class ImmediateRiakFuture<V> implements RiakFuture<V>
+class ImmediateRiakFuture<V> implements RiakFuture<V>
 {
 
     private final V value;

@@ -21,9 +21,13 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.client.query.crdt.types.CrdtMap;
+import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.protobuf.RiakDtPB;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,14 +42,17 @@ import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class FetchValueTest
+public class FetchDatatypeTest
 {
+
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
-    @Mock FetchOperation.Response mockResponse;
-    VClock vClock = new BasicVClock(new byte[]{'1'});
+    @Mock DtFetchOperation.Response mockResponse;
     Key key = Location.key("type", "bucket", "key");
     RiakClient client;
 
@@ -53,7 +60,8 @@ public class FetchValueTest
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        when(mockResponse.getObjectList()).thenReturn(new ArrayList<RiakObject>());
+        when(mockResponse.getCrdtElement()).thenReturn(new CrdtMap(new ArrayList<CrdtMap.MapEntry>()));
+        when(mockResponse.getContext()).thenReturn(ByteArrayWrapper.create(new byte[]{'1'}));
         when(mockFuture.get()).thenReturn(mockResponse);
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
         when(mockFuture.isCancelled()).thenReturn(false);
@@ -66,40 +74,37 @@ public class FetchValueTest
     public void testFetch() throws Exception
     {
 
-        FetchValue<RiakObject> fetchValue = FetchValue.fetch(key)
-            .withOption(FetchOption.TIMEOUT, 100)
-            .withOption(FetchOption.BASIC_QUORUM, true)
-            .withOption(FetchOption.DELETED_VCLOCK, true)
-            .withOption(FetchOption.HEAD, true)
-            .withOption(FetchOption.IF_MODIFIED, vClock)
-            .withOption(FetchOption.N_VAL, 1)
-            .withOption(FetchOption.NOTFOUND_OK, true)
-            .withOption(FetchOption.PR, new Quorum(1))
-            .withOption(FetchOption.R, new Quorum(1))
-            .withOption(FetchOption.SLOPPY_QUORUM, true);
+        FetchDatatype<RiakMap> fetchValue = FetchDatatype.fetchMap(key)
+            .withOption(DtFetchOption.TIMEOUT, 100)
+            .withOption(DtFetchOption.BASIC_QUORUM, true)
+            .withOption(DtFetchOption.N_VAL, 1)
+            .withOption(DtFetchOption.NOTFOUND_OK, true)
+            .withOption(DtFetchOption.PR, new Quorum(1))
+            .withOption(DtFetchOption.R, new Quorum(1))
+            .withOption(DtFetchOption.SLOPPY_QUORUM, true)
+            .withOption(DtFetchOption.INCLUDE_CONTEXT, true);
 
         client.execute(fetchValue);
 
-        ArgumentCaptor<FetchOperation> captor =
-            ArgumentCaptor.forClass(FetchOperation.class);
+        ArgumentCaptor<DtFetchOperation> captor =
+            ArgumentCaptor.forClass(DtFetchOperation.class);
         verify(mockCluster).execute(captor.capture());
 
-        FetchOperation operation = captor.getValue();
-        RiakKvPB.RpbGetReq.Builder builder =
-            (RiakKvPB.RpbGetReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
+        DtFetchOperation operation = captor.getValue();
+        RiakDtPB.DtFetchReq.Builder builder =
+            (RiakDtPB.DtFetchReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
         assertEquals("type", builder.getType().toStringUtf8());
         assertEquals("bucket", builder.getBucket().toStringUtf8());
         assertEquals("key", builder.getKey().toStringUtf8());
         assertEquals(100, builder.getTimeout());
         assertEquals(true, builder.getBasicQuorum());
-        assertEquals(true, builder.getDeletedvclock());
-        assertEquals(true, builder.getHead());
         assertEquals(1, builder.getNVal());
         assertEquals(true, builder.getNotfoundOk());
         assertEquals(1, builder.getPr());
         assertEquals(1, builder.getR());
         assertEquals(true, builder.getSloppyQuorum());
     }
+
 
 }

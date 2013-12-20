@@ -35,6 +35,13 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     private final Map<DeleteOption<?>, Object> options;
     private VClock vClock;
 
+    public DeleteValue(Key location, VClock vClock)
+    {
+        this.location = location;
+        this.options = new HashMap<DeleteOption<?>, Object>();
+        this.vClock = vClock;
+    }
+
     /**
      * Delete value at the given key
      *
@@ -42,9 +49,9 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
      */
     public DeleteValue(Key location)
     {
-        this.location = location;
-        this.options = new HashMap<DeleteOption<?>, Object>();
+        this(location, null);
     }
+
 
     @Override
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
@@ -55,6 +62,11 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
         ByteArrayWrapper key = location.getKey();
 
         DeleteOperation.Builder builder = new DeleteOperation.Builder(bucket, key);
+
+        if (vClock != null)
+        {
+            builder.withVclock(vClock);
+        }
 
         if (type != null)
         {

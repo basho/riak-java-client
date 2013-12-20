@@ -107,7 +107,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
         }
 
         DtUpdateOperation operation = builder.build();
-        DtUpdateOperation.Response crdtResponse = operation.get();
+        DtUpdateOperation.Response crdtResponse = cluster.execute(operation).get();
         CrdtElement element = crdtResponse.getCrdtElement();
 
         T riakDatatype = null;

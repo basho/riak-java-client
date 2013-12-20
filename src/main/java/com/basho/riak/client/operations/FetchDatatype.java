@@ -37,6 +37,7 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
     {
         this.key = key;
         this.converter = converter;
+        withOption(DtFetchOption.INCLUDE_CONTEXT, true);
     }
 
     public static FetchDatatype<RiakMap> fetchMap(Key key)
@@ -110,9 +111,8 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
         }
 
         DtFetchOperation operation = builder.build();
-        cluster.execute(operation);
 
-        DtFetchOperation.Response response = operation.get();
+        DtFetchOperation.Response response = cluster.execute(operation).get();
         CrdtElement element = response.getCrdtElement();
         ByteArrayWrapper context = response.getContext();
 

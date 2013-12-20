@@ -39,7 +39,7 @@ public class RiakClient
     }
 
     /**
-     * Execute a command agains Riak
+     * Execute a command against Riak
      *
      * @param command The command
      * @param <T>     The command's return type
