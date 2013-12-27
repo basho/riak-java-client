@@ -55,6 +55,11 @@ public abstract class Index<T>
         return name;
     }
 
+    public String getFullName()
+    {
+        return name + type.getExt();
+    }
+
     public Type getType()
     {
         return type;

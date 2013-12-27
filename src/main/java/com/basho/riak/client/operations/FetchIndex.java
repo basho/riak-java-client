@@ -58,15 +58,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        ByteArrayWrapper indexName = null;
-        if (index.getType().equals(Index.Type.INT))
-        {
-            ByteArrayWrapper.create(index.getName() + "_int");
-        }
-        else
-        {
-            ByteArrayWrapper.create(index.getName() + "_bin");
-        }
+        ByteArrayWrapper indexName = ByteArrayWrapper.create(index.getFullName());
 
         SecondaryIndexQueryOperation.Builder builder =
             new SecondaryIndexQueryOperation.Builder(bucket.getBucket(), indexName);
