@@ -243,6 +243,29 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             pbReqBuilder.setContinuation(ByteString.copyFrom(continuation.unsafeGetValue()));
             return this;
         }
+
+        /**
+         * Set whether to sort the results returned by the query.
+         * Setting this to true will sort the results.
+         * @param orderByKey true to sort the results, false to return as-is.
+         * @return a reference to this object.
+         */
+        public Builder withPaginationSort(boolean orderByKey)
+        {
+            pbReqBuilder.setPaginationSort(orderByKey);
+            return this;
+        }
+
+        /**
+         * Set the regex to filter result terms by for this query.
+         * @param filter the regex to filter terms by.
+         * @return a reference to this object.
+         */
+        public Builder withRegexTermFilter(ByteArrayWrapper filter)
+        {
+            pbReqBuilder.setTermRegex(ByteString.copyFrom(filter.unsafeGetValue()));
+            return this;
+        }
         
         /**
          * Construct a new SecondaryIndexQueryOperation.
@@ -263,6 +286,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             else if (pbReqBuilder.hasRangeMin() && pbReqBuilder.hasKey())
             {
                 throw new IllegalArgumentException("Cannot specify single index key and range");
+            }
+            else if (pbReqBuilder.hasMaxResults() && pbReqBuilder.hasPaginationSort()
+                                                  && !pbReqBuilder.getPaginationSort())
+            {
+                throw new IllegalArgumentException("Cannot set paginationSort=false while setting maxResults");
             }
             
             if (pbReqBuilder.hasKey())
