@@ -142,6 +142,7 @@ public class NetworkTestFixture implements Runnable
                                         break;
                                     case ACCEPT_THEN_CLOSE:
                                         client = h.getServerSocketChannel().accept();
+                                        Thread.sleep(100);
                                         client.close();
                                         break;
                                 }
@@ -169,6 +170,10 @@ public class NetworkTestFixture implements Runnable
                     catch (ClosedSelectorException e)
                     {
                         // no op
+                    }
+                    catch (InterruptedException ex)
+                    {
+                        ex.printStackTrace();
                     }
                 }
                 else

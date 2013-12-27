@@ -204,7 +204,6 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
 
     public synchronized final Object channelMessage()
     {
-        stateCheck(State.CREATED, State.RETRY);
         Object message = createChannelMessage();
         state = State.WRITTEN;
         return message;

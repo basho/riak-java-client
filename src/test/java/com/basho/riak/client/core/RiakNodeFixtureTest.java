@@ -60,7 +60,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         PowerMockito.verifyPrivate(node, atLeastOnce()).invoke("checkHealth", new Object[0]);
         
     }
-    
+        
     @Test
     public void idleConnectionsAreRemoved() throws UnknownHostException, InterruptedException, Exception
     {
@@ -71,6 +71,11 @@ public class RiakNodeFixtureTest extends FixtureTest
                                .build();
         
         node.start();
+        
+        // The node has 10 connections that should never be reaped. We want to make
+        // it create 2 more by checking out 12, then return them all. The extra 2
+        // should get reaped.
+        
         List<Channel> channelList = new LinkedList<Channel>();
         for (int i = 0; i < 12; i++)
         {
@@ -196,8 +201,8 @@ public class RiakNodeFixtureTest extends FixtureTest
                     .build();
         
         boolean accepted = node.execute(operation);
-        FetchOperation.Response response = operation.get();
-    }
+            FetchOperation.Response response = operation.get();
+        }
     
     @Test(expected=ExecutionException.class)
     public void operationTimesOut() throws IOException, InterruptedException, ExecutionException
