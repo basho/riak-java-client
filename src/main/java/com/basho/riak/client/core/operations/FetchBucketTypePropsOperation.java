@@ -17,14 +17,13 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.converters.BucketPropertiesConverter;
 import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -34,15 +33,11 @@ import java.util.concurrent.ExecutionException;
  */
 public class FetchBucketTypePropsOperation extends FutureOperation<BucketProperties, RiakPB.RpbGetBucketResp>
 {
-    private final ByteArrayWrapper bucketType;
+    private final RiakPB.RpbGetBucketTypeReq.Builder reqBuilder;
     
-    public FetchBucketTypePropsOperation(ByteArrayWrapper bucketType)
+    public FetchBucketTypePropsOperation(Builder builder)
     {
-        if (null == bucketType || bucketType.length() == 0)
-        {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
-        }
-        this.bucketType = bucketType;
+        this.reqBuilder = builder.reqBuilder;
     }
     
     @Override
@@ -50,67 +45,13 @@ public class FetchBucketTypePropsOperation extends FutureOperation<BucketPropert
     {
         // This isn't streaming, there will only be one response. 
         RiakPB.RpbBucketProps pbProps = rawResponse.get(0).getProps();
-        BucketProperties props = new BucketProperties()
-            .withNVal(pbProps.getNVal())
-            .withAllowMulti(pbProps.getAllowMult())
-            .withLastWriteWins(pbProps.getLastWriteWins())
-            .withOldVClock(Operations.getUnsignedIntValue(pbProps.getOldVclock()))
-            .withYoungVClock(Operations.getUnsignedIntValue(pbProps.getYoungVclock()))
-            .withBigVClock(Operations.getUnsignedIntValue(pbProps.getBigVclock()))
-            .withSmallVClock(Operations.getUnsignedIntValue(pbProps.getSmallVclock()))
-            .withPr(pbProps.getPr())
-            .withR(pbProps.getR())
-            .withW(pbProps.getW())
-            .withPw(pbProps.getPw())
-            .withDw(pbProps.getDw())
-            .withRw(pbProps.getRw())
-            .withBasicQuorum(pbProps.getBasicQuorum())
-            .withNotFoundOk(pbProps.getNotfoundOk())
-            .withRiakSearchEnabled(pbProps.getSearch())
-            .withChashkeyFunction(
-                new Function.Builder()
-                    .withModule(pbProps.getChashKeyfun().getModule().toStringUtf8())
-                    .withFunction(pbProps.getChashKeyfun().getFunction().toStringUtf8())
-                    .build());
-            
-            
-        
-            if (pbProps.hasHasPrecommit())
-            {
-                for (Function f : parseHooks(pbProps.getPrecommitList()))
-                {
-                    props.withPrecommitHook(f);
-                }
-            }
-            
-            if (pbProps.hasHasPostcommit())
-            {
-                for (Function f : parseHooks(pbProps.getPostcommitList()))
-                {
-                    props.withPostcommitHook(f);
-                }
-            }
-            
-            if (pbProps.hasSearchIndex())
-            {
-                props.withYokozunaIndex(pbProps.getSearchIndex().toStringUtf8());
-            }
-            
-            if (pbProps.hasBackend())
-            {
-                props.withBackend(pbProps.getBackend().toStringUtf8());
-            }
-            
-            return props;
+        return BucketPropertiesConverter.convert(pbProps);
     }
 
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakPB.RpbGetBucketTypeReq req =
-            RiakPB.RpbGetBucketTypeReq.newBuilder()
-                .setType(ByteString.copyFrom(bucketType.unsafeGetValue()))
-                .build();
+        RiakPB.RpbGetBucketTypeReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_GetBucketTypeReq, req.toByteArray());
     }
 
@@ -128,24 +69,24 @@ public class FetchBucketTypePropsOperation extends FutureOperation<BucketPropert
         }
     }
     
-    private List<Function> parseHooks(List<RiakPB.RpbCommitHook> hooks) {
-        List<Function> list = new ArrayList<Function>(hooks.size());
-        for ( RiakPB.RpbCommitHook hook : hooks) {
-            if (hook.hasName()) {
-                Function f = 
-                    new Function.Builder()
-                        .withName(hook.getName().toStringUtf8())
-                        .build();
-                list.add(f);
-            } else {
-                Function f = new Function.Builder()
-                    .withModule(hook.getModfun().getModule().toStringUtf8())
-                    .withFunction(hook.getModfun().getFunction().toStringUtf8())
-                    .build();
-                list.add(f);
+    public static class Builder
+    {
+        private final RiakPB.RpbGetBucketTypeReq.Builder reqBuilder =
+            RiakPB.RpbGetBucketTypeReq.newBuilder();
+        
+        public Builder(ByteArrayWrapper bucketType)
+        {
+            if (null == bucketType || bucketType.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket type can not be null or zero length");
             }
+            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
         }
-        return list;
+        
+        public FetchBucketTypePropsOperation build()
+        {
+            return new FetchBucketTypePropsOperation(this);
+        }
+        
     }
-    
 }

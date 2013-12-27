@@ -22,7 +22,6 @@ import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
-import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.ByteArrayWrapper;
@@ -41,12 +40,13 @@ public class ITestSearchOperation extends ITestBase
     @Test
     public void testSimpleSearch() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(riakSearch);
-        BucketProperties props = 
-            new BucketProperties()
-                .withRiakSearchEnabled(true);
+        Assume.assumeTrue(legacyRiakSearch);
         
-        StoreBucketPropsOperation op = new StoreBucketPropsOperation(bucketName, props);
+        StoreBucketPropsOperation op = 
+            new StoreBucketPropsOperation.Builder(bucketName)
+                .withLegacyRiakSearchEnabled(true)
+                .build();
+        
         cluster.execute(op);
         op.get();
         
@@ -76,11 +76,10 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(putOp);
         putOp.get();
         
-        BucketProperties props = 
-            new BucketProperties()
-                .withYokozunaIndex("test_index");
-                
-        StoreBucketPropsOperation propsOp = new StoreBucketPropsOperation(bucketName, props);
+        StoreBucketPropsOperation propsOp = 
+            new StoreBucketPropsOperation.Builder(bucketName)
+                .withSearchIndex("test_index")
+                .build();
         cluster.execute(propsOp);
         propsOp.get();
         
