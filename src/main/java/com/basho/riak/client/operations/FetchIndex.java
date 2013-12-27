@@ -39,6 +39,8 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         this.op = op;
         this.index = index;
         this.continuation = continuation;
+
+        //TODO add check if op can be performed on the given index
     }
 
     public FetchIndex(Bucket bucket, Index<T> index, Criteria op)
@@ -99,7 +101,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
         for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
         {
-            Key key = Location.key(bucket, entry.getIndexKey());
+            Key key = new Key(bucket.getType(), bucket.getBucket(), entry.getIndexKey());
             T objectKey = index.convert(entry.getObjectKey());
             IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
             indexEntries.add(indexEntry);

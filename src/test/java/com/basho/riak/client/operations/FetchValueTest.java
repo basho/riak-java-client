@@ -23,7 +23,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,11 +32,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class FetchValueTest
@@ -46,7 +43,7 @@ public class FetchValueTest
     @Mock RiakFuture mockFuture;
     @Mock FetchOperation.Response mockResponse;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-    Key key = Location.key("type", "bucket", "key");
+    Key key = new Key("type", "bucket", "key");
     RiakClient client;
 
     @Before

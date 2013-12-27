@@ -16,21 +16,16 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.operations.datatypes.Context;
-import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
 import com.basho.riak.client.operations.datatypes.MapUpdate;
 import com.basho.riak.client.operations.datatypes.RiakMap;
-import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.crdt.types.CrdtMap;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.protobuf.RiakDtPB;
-import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,7 +38,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -56,7 +50,7 @@ public class UpdateDatatypeTest
     @Mock DtUpdateOperation.Response mockResponse;
     @Mock Context context;
     RiakClient client;
-    Key key = Location.key("type", "bucket", "key");
+    Key key = new Key("type", "bucket", "key");
 
     @Before
     public void init() throws Exception

@@ -19,12 +19,12 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 
 public class BucketType extends Location
 {
-    BucketType(ByteArrayWrapper type)
+    public BucketType(ByteArrayWrapper type)
     {
         super(type, null, null);
     }
 
-    BucketType(String type)
+    public BucketType(String type)
     {
         super(type, null, null);
     }

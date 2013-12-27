@@ -17,7 +17,6 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.DefaultResolver;
-import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.FutureOperation;
@@ -40,7 +39,7 @@ import static org.mockito.Mockito.*;
 public class UpdateValueTest
 {
     @Mock RiakCluster mockCluster;
-    Key key = Location.key("type", "bucket", "key");
+    Key key = new Key("type", "bucket", "key");
     RiakClient client;
     RiakObject riakObject;
 

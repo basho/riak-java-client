@@ -15,20 +15,15 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.operations.datatypes.RiakMap;
-import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.crdt.types.CrdtMap;
 import com.basho.riak.client.util.ByteArrayWrapper;
 import com.basho.riak.protobuf.RiakDtPB;
-import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,11 +32,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -53,7 +46,7 @@ public class FetchDatatypeTest
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     @Mock DtFetchOperation.Response mockResponse;
-    Key key = Location.key("type", "bucket", "key");
+    Key key = new Key("type", "bucket", "key");
     RiakClient client;
 
     @Before

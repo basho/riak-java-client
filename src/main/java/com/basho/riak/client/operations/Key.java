@@ -19,13 +19,14 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 
 public class Key extends Location
 {
-    protected Key(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
+    public Key(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
     {
         super(type, bucket, key);
     }
 
-    protected Key(String type, String bucket, String key)
+    public Key(String type, String bucket, String key)
     {
         super(type, bucket, key);
     }
+
 }
