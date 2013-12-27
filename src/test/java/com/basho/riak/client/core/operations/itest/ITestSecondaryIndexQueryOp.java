@@ -37,7 +37,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSingleQuerySingleResponse() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
@@ -75,7 +75,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSingleQueryMultipleResponse() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
@@ -130,7 +130,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testRangeQuery() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
@@ -171,9 +171,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testNoSortWithNoPaging() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
 
-        String indexName = "test_pagination_index";
+        String indexName = "test_index_pagination";
         String value = "value";
 
         SetupIndexTestData(indexName, "", value);
@@ -194,9 +194,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSortWithNoPaging() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
 
-        String indexName = "test_pagination_index";
+        String indexName = "test_index_pagination";
         String value = "value";
 
         SetupIndexTestData(indexName, "", value);
@@ -219,9 +219,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testNoSortWithPaging() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
 
-        String indexName = "test_pagination_index";
+        String indexName = "test_index_pagination";
         String value = "value";
 
         SetupIndexTestData(indexName, "", value);
@@ -245,9 +245,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSortWithPaging() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
 
-        String indexName = "test_pagination_index";
+        String indexName = "test_index_pagination";
         String value = "value";
 
         SetupIndexTestData(indexName, "", value);
@@ -271,7 +271,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testRegexTermFilter() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
 
         String indexName = "test_index_regex";
         String value = "value";
