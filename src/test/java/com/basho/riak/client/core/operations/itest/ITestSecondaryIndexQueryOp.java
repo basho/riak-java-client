@@ -309,7 +309,25 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), "2");
         assertEquals(response.getEntryList().get(1).getIndexKey(), ByteArrayWrapper.unsafeCreate("foo12".getBytes()));
         assertEquals(response.getEntryList().get(1).getObjectKey().toString(), "12");
+    }
 
+    @Test
+    public void testExceptionThrownWhenUsingRegexFilterOnIntIndexes()
+    {
+        Assume.assumeTrue(test2i);
+        
+        try {
+            new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate(("foo_int").getBytes()))
+                    .withRangeStart(ByteArrayWrapper.unsafeCreate("0".getBytes()))
+                    .withRangeEnd(ByteArrayWrapper.unsafeCreate("100".getBytes()))
+                    .withRegexTermFilter(ByteArrayWrapper.unsafeCreate("2".getBytes()))
+                    .build();
+
+            fail("Didn't throw IllegalArgumentException");
+        }
+        catch(IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
     }
 
     private void SetupIndexTestData(String indexName, String keyBase, String value)

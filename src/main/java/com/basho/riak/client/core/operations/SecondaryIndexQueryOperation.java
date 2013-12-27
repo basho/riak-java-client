@@ -293,7 +293,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 throw new IllegalArgumentException("Cannot set paginationSort=false while setting maxResults");
             }
-            
+            else if (pbReqBuilder.hasTermRegex() && pbReqBuilder.getIndex().toStringUtf8().endsWith("_int"))
+            {
+                throw new IllegalArgumentException("Cannot use term regular expression in integer query");
+            }
+
             if (pbReqBuilder.hasKey())
             {
                 pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
