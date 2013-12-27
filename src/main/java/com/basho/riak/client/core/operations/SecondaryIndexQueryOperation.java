@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp>
