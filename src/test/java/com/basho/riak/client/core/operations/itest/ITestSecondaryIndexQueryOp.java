@@ -19,6 +19,7 @@ import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
+import com.basho.riak.client.query.indexes.StringBinIndex;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.concurrent.ExecutionException;
@@ -265,6 +266,50 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(20, response.getEntryList().size());
 
         AssertLongObjectsInOrder(response);
+    }
+
+    @Test
+    public void testRegexTermFilter() throws InterruptedException, ExecutionException
+    {
+        //Assume.assumeTrue(test2i);
+
+        String indexName = "test_index_regex";
+        String value = "value";
+
+        for (long i = 0; i < 20; i++)
+        {
+            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+
+            obj.getIndexes().getIndex(new StringBinIndex.Name(indexName)).add("foo" + String.format("%02d", i));
+
+            StoreOperation storeOp =
+                    new StoreOperation.Builder(bucketName)
+                            .withKey(ByteArrayWrapper.unsafeCreate(Long.toString(i).getBytes()))
+                            .withContent(obj)
+                            .build();
+
+            cluster.execute(storeOp);
+            storeOp.get();
+        }
+
+        SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_bin").getBytes()))
+                        .withRangeStart(ByteArrayWrapper.unsafeCreate("foo00".getBytes()))
+                        .withRangeEnd(ByteArrayWrapper.unsafeCreate("foo19".getBytes()))
+                        .withRegexTermFilter(ByteArrayWrapper.unsafeCreate("2".getBytes()))
+                        .withReturnKeyAndIndex(true)
+                        .withPaginationSort(true)
+                        .build();
+
+        cluster.execute(queryOp);
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
+
+        assertEquals(2, response.getEntryList().size());
+        assertEquals(response.getEntryList().get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("foo02".getBytes()));
+        assertEquals(response.getEntryList().get(0).getObjectKey().toString(), "2");
+        assertEquals(response.getEntryList().get(1).getIndexKey(), ByteArrayWrapper.unsafeCreate("foo12".getBytes()));
+        assertEquals(response.getEntryList().get(1).getObjectKey().toString(), "12");
+
     }
 
     private void SetupIndexTestData(String indexName, String keyBase, String value)
