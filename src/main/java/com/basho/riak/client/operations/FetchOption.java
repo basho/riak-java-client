@@ -21,20 +21,34 @@ import com.basho.riak.client.cap.VClock;
 public class FetchOption<T> extends RiakOption<T>
 {
 
-    public static final FetchOption<Quorum> R = new FetchOption<Quorum>("R");
-    public static final FetchOption<Quorum> PR = new FetchOption<Quorum>("PR");
-    public static final FetchOption<Boolean> BASIC_QUORUM = new FetchOption<Boolean>("BASIC_QUORUM");
-    public static final FetchOption<Boolean> NOTFOUND_OK = new FetchOption<Boolean>("NOTFOUND_OK");
-    public static final FetchOption<VClock> IF_MODIFIED = new FetchOption<VClock>("IF_MODIFIED");
-    public static final FetchOption<Boolean> HEAD = new FetchOption<Boolean>("HEAD");
-    public static final FetchOption<Boolean> DELETED_VCLOCK = new FetchOption<Boolean>("DELETED_VCLOCK");
-    public static final FetchOption<Integer> TIMEOUT = new FetchOption<Integer>("TIMEOUT");
-    public static final FetchOption<Boolean> SLOPPY_QUORUM = new FetchOption<Boolean>("SLOPPY_QUORUM");
-    public static final FetchOption<Integer> N_VAL = new FetchOption<Integer>("N_VAL");
-
-    private FetchOption(String name)
+    static enum Type
     {
-        super(name);
+        R, PR, BASIC_QUORUM, NOTFOUND_OK, IF_MODIFIED, HEAD, DELETED_VCLOCK, TIMEOUT,
+        SLOPPY_QUORUM, N_VAL;
     }
+    
+    public static final FetchOption<Quorum> R = new FetchOption<Quorum>(Type.R);
+    public static final FetchOption<Quorum> PR = new FetchOption<Quorum>(Type.PR);
+    public static final FetchOption<Boolean> BASIC_QUORUM = new FetchOption<Boolean>(Type.BASIC_QUORUM);
+    public static final FetchOption<Boolean> NOTFOUND_OK = new FetchOption<Boolean>(Type.NOTFOUND_OK);
+    public static final FetchOption<VClock> IF_MODIFIED = new FetchOption<VClock>(Type.IF_MODIFIED);
+    public static final FetchOption<Boolean> HEAD = new FetchOption<Boolean>(Type.HEAD);
+    public static final FetchOption<Boolean> DELETED_VCLOCK = new FetchOption<Boolean>(Type.DELETED_VCLOCK);
+    public static final FetchOption<Integer> TIMEOUT = new FetchOption<Integer>(Type.TIMEOUT);
+    public static final FetchOption<Boolean> SLOPPY_QUORUM = new FetchOption<Boolean>(Type.SLOPPY_QUORUM);
+    public static final FetchOption<Integer> N_VAL = new FetchOption<Integer>(Type.N_VAL);
 
+    private final Type type;
+   
+    private FetchOption(Type type)
+    {
+        super(type.name());
+        this.type = type;
+    }
+    
+    Type getType()
+    {
+        return type;
+    }
+    
 }

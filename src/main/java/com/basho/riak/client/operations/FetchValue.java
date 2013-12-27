@@ -24,12 +24,12 @@ import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.convert.Converters.convert;
+import java.util.EnumMap;
 
 /**
  * Command used to fetch a value from Riak, referenced by it's key.
@@ -38,12 +38,12 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 {
 
     private final Location location;
-    private final Map<FetchOption<?>, Object> options;
+    private final EnumMap<FetchOption.Type, Object> options;
     private final Converter<T> converter;
 
     FetchValue(Location location, Converter<T> converter)
     {
-        this.options = new HashMap<FetchOption<?>, Object>();
+        this.options = new EnumMap<FetchOption.Type, Object>(FetchOption.Type.class);
         this.converter = converter;
         this.location = location;
     }
@@ -83,7 +83,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
      */
     public <U> FetchValue<T> withOption(FetchOption<U> option, U value)
     {
-        options.put(option, value);
+        options.put(option.getType(), value);
         return this;
     }
 
@@ -98,53 +98,44 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
         FetchOperation.Builder builder = new FetchOperation.Builder(bucket, key);
         builder.withBucketType(type);
 
-        for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
+        for (Map.Entry<FetchOption.Type, Object> opPair : options.entrySet())
         {
 
-            RiakOption<?> option = opPair.getKey();
+            FetchOption.Type option = opPair.getKey();
 
-            if (option == FetchOption.R)
+            switch(option)
             {
-                builder.withR(((Quorum) opPair.getValue()).getIntValue());
+                case R:
+                    builder.withR(((Quorum) opPair.getValue()).getIntValue());
+                    break;
+                case DELETED_VCLOCK:
+                    builder.withReturnDeletedVClock((Boolean) opPair.getValue());
+                    break;
+                case TIMEOUT:
+                    builder.withTimeout((Integer) opPair.getValue());
+                    break;
+                case HEAD:
+                    builder.withHeadOnly((Boolean) opPair.getValue());
+                    break;
+                case BASIC_QUORUM:
+                    builder.withBasicQuorum((Boolean) opPair.getValue());
+                    break;
+                case IF_MODIFIED:
+                    VClock clock = (VClock) opPair.getValue();
+                    builder.withIfNotModified(clock.getBytes());
+                    break;
+                case N_VAL:
+                    builder.withNVal((Integer) opPair.getValue());
+                    break;
+                case PR:
+                    builder.withPr(((Quorum) opPair.getValue()).getIntValue());
+                    break;
+                case SLOPPY_QUORUM:
+                    builder.withSloppyQuorum((Boolean) opPair.getValue());
+                    break;
+                case NOTFOUND_OK:
+                    builder.withNotFoundOK((Boolean) opPair.getValue());
             }
-            else if (option == FetchOption.DELETED_VCLOCK)
-            {
-                builder.withReturnDeletedVClock((Boolean) opPair.getValue());
-            }
-            else if (option == FetchOption.TIMEOUT)
-            {
-                builder.withTimeout((Integer) opPair.getValue());
-            }
-            else if (option == FetchOption.HEAD)
-            {
-                builder.withHeadOnly((Boolean) opPair.getValue());
-            }
-            else if (option == FetchOption.BASIC_QUORUM)
-            {
-                builder.withBasicQuorum((Boolean) opPair.getValue());
-            }
-            else if (option == FetchOption.IF_MODIFIED)
-            {
-                VClock clock = (VClock) opPair.getValue();
-                builder.withIfNotModified(clock.getBytes());
-            }
-            else if (option == FetchOption.N_VAL)
-            {
-                builder.withNVal((Integer) opPair.getValue());
-            }
-            else if (option == FetchOption.PR)
-            {
-                builder.withPr(((Quorum) opPair.getValue()).getIntValue());
-            }
-            else if (option == FetchOption.SLOPPY_QUORUM)
-            {
-                builder.withSloppyQuorum((Boolean) opPair.getValue());
-            }
-            else if (option == FetchOption.NOTFOUND_OK)
-            {
-                builder.withNotFoundOK((Boolean) opPair.getValue());
-            }
-
         }
 
         FetchOperation operation = builder.build();
