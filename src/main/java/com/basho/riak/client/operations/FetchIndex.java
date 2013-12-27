@@ -111,7 +111,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
             continuation = new Continuation<T>(bucket, index, op, opResponse.getContinuation());
         }
 
-        return new Response(continuation, indexEntries);
+        return new Response<T>(continuation, indexEntries);
     }
 
     public static Criteria range(int start, int end)

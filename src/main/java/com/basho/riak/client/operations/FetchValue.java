@@ -58,7 +58,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
      */
     public static <T> FetchValue<T> fetch(Key location, Converter<T> converter)
     {
-        return new FetchValue(location, converter);
+        return new FetchValue<T>(location, converter);
     }
 
     /**

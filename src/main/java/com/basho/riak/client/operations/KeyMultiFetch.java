@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 
 import java.util.ArrayList;
@@ -25,18 +26,21 @@ import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.operations.FetchValue.fetch;
 
-class KeyMultiFetch extends MultiFetch
+class KeyMultiFetch<T> extends MultiFetch<T>
 {
 
+    private final Converter<T> converter;
     private final ArrayList<Key> keys;
 
-    KeyMultiFetch(Key... keys)
+    KeyMultiFetch(Converter<T> converter, Key... keys)
     {
+        this.converter = converter;
         this.keys = new ArrayList<Key>(Arrays.asList(keys));
     }
 
-    KeyMultiFetch(Iterable<Key> keys)
+    KeyMultiFetch(Converter<T> converter, Iterable<Key> keys)
     {
+        this.converter = converter;
         this.keys = new ArrayList<Key>();
         Iterator<Key> itr = keys.iterator();
         while (itr.hasNext())
@@ -52,7 +56,7 @@ class KeyMultiFetch extends MultiFetch
         List<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
         for (Key key : keys)
         {
-            values.add(fetch(key).execute(cluster));
+            values.add(fetch(key, converter).execute(cluster));
         }
 
         return new Response(values);

@@ -16,23 +16,19 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.sun.org.apache.xpath.internal.operations.Quo;
 
-public class DtFetchOption<T> extends RiakOption<T>
-{
+public class DtFetchOption<T> extends RiakOption<T> {
 
-    public static final DtFetchOption<Quorum> R = new DtFetchOption<Quorum>("R");
-    public static final DtFetchOption<Quorum> PR = new DtFetchOption<Quorum>("PR");
-    public static final DtFetchOption<Boolean> BASIC_QUORUM = new DtFetchOption<Boolean>("BASIC_QUORUM");
-    public static final DtFetchOption<Boolean> NOTFOUND_OK = new DtFetchOption<Boolean>("NOTFOUND_OK");
-    public static final DtFetchOption<Integer> TIMEOUT = new DtFetchOption<Integer>("TIMEOUT");
-    public static final DtFetchOption<Boolean> SLOPPY_QUORUM = new DtFetchOption<Boolean>("SLOPPY_QUORUM");
-    public static final DtFetchOption<Integer> N_VAL = new DtFetchOption<Integer>("N_VAL");
-    public static final DtFetchOption<Boolean> INCLUDE_CONTEXT = new DtFetchOption<Boolean>("INCLUDE_CONTEXT");
+  public static final DtFetchOption<Quorum> R = new DtFetchOption<Quorum>("R");
+  public static final DtFetchOption<Quorum> PR = new DtFetchOption<Quorum>("PR");
+  public static final DtFetchOption<Boolean> BASIC_QUORUM = new DtFetchOption<Boolean>("BASIC_QUORUM");
+  public static final DtFetchOption<Boolean> NOTFOUND_OK = new DtFetchOption<Boolean>("NOTFOUND_OK");
+  public static final DtFetchOption<Integer> TIMEOUT = new DtFetchOption<Integer>("TIMEOUT");
+  public static final DtFetchOption<Boolean> SLOPPY_QUORUM = new DtFetchOption<Boolean>("SLOPPY_QUORUM");
+  public static final DtFetchOption<Integer> N_VAL = new DtFetchOption<Integer>("N_VAL");
+  public static final DtFetchOption<Boolean> INCLUDE_CONTEXT = new DtFetchOption<Boolean>("INCLUDE_CONTEXT");
 
-    public DtFetchOption(String name)
-    {
-        super(name);
-    }
+  public DtFetchOption(String name) {
+    super(name);
+  }
 }

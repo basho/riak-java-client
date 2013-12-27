@@ -15,7 +15,10 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.query.RiakObject;
 
 import java.util.Iterator;
 import java.util.List;
@@ -23,20 +26,30 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.Collections.unmodifiableList;
 
-public abstract class MultiFetch extends RiakCommand<MultiFetch.Response>
+public abstract class MultiFetch<T> extends RiakCommand<MultiFetch.Response>
 {
 
     @Override
     abstract Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
 
-    public static MultiFetch multiFetch(Key... keys)
+    public static MultiFetch<RiakObject> multiFetch(Key... keys)
     {
-        return new KeyMultiFetch(keys);
+        return new KeyMultiFetch<RiakObject>(new PassThroughConverter(), keys);
     }
 
-    public static MultiFetch multiFetch(Iterable<Key> keys)
+    public static MultiFetch<RiakObject> multiFetch(Iterable<Key> keys)
     {
-        return new KeyMultiFetch(keys);
+        return new KeyMultiFetch<RiakObject>(new PassThroughConverter(), keys);
+    }
+
+    public static <U> MultiFetch<U> multiFetch(Converter<U> converter, Key... keys)
+    {
+      return new KeyMultiFetch<U>(converter, keys);
+    }
+
+    public static <U> MultiFetch<U> multiFetch(Converter<U> conterver, Iterable<Key> keys)
+    {
+      return new KeyMultiFetch<U>(conterver, keys);
     }
 
     public static final class Response<T> implements Iterable<FetchValue.Response<T>>

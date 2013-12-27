@@ -18,7 +18,11 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.operations.datatypes.*;
+import com.basho.riak.client.operations.datatypes.DatatypeConverter;
+import com.basho.riak.client.operations.datatypes.RiakCounter;
+import com.basho.riak.client.operations.datatypes.RiakDatatype;
+import com.basho.riak.client.operations.datatypes.RiakMap;
+import com.basho.riak.client.operations.datatypes.RiakSet;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
