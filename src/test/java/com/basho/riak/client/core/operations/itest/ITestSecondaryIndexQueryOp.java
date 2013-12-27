@@ -17,10 +17,10 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.util.ByteArrayWrapper;
+
 import java.util.concurrent.ExecutionException;
 import org.junit.Assume;
 import static org.junit.Assert.*;
@@ -29,34 +29,21 @@ import org.junit.Test;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore  <amoore at basho dot com>
  */
 public class ITestSecondaryIndexQueryOp extends ITestBase
 {
     @Test
     public void testSingleQuerySingleResponse() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(test2i);
+        //Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
-        
-        for (long i = 0; i < 100; i++)
-        {
-            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
-            
-            obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
-            
-            StoreOperation storeOp = 
-                new StoreOperation.Builder(bucketName)
-                    .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
-                    .withContent(obj)
-                    .build();
-            
-            cluster.execute(storeOp);
-            storeOp.get();
-        }
-        
+
+        SetupIndexTestData(indexName, keyBase, value);
+
         SecondaryIndexQueryOperation queryOp = 
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(ByteArrayWrapper.unsafeCreate(String.valueOf(5L).getBytes()))
@@ -87,7 +74,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSingleQueryMultipleResponse() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(test2i);
+        //Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
@@ -96,15 +83,15 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         for (long i = 0; i < 100; i++)
         {
             RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
-            
+
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(5L);
-            
-            StoreOperation storeOp = 
+
+            StoreOperation storeOp =
                 new StoreOperation.Builder(bucketName)
                     .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
                     .withContent(obj)
                     .build();
-            
+
             cluster.execute(storeOp);
             storeOp.get();
         }
@@ -112,6 +99,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SecondaryIndexQueryOperation queryOp = 
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(ByteArrayWrapper.unsafeCreate(String.valueOf(5L).getBytes()))
+                .withPaginationSort(true)
                 .build();
         
         cluster.execute(queryOp);
@@ -125,6 +113,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(ByteArrayWrapper.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withReturnKeyAndIndex(true)
+                .withPaginationSort(true)
                 .build();
         
         cluster.execute(queryOp);
@@ -140,32 +129,19 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testRangeQuery() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(test2i);
+        //Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
-        
-        for (long i = 0; i < 100; i++)
-        {
-            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
-            
-            obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
-            
-            StoreOperation storeOp = 
-                new StoreOperation.Builder(bucketName)
-                    .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
-                    .withContent(obj)
-                    .build();
-            
-            cluster.execute(storeOp);
-            storeOp.get();
-        }
-        
+
+        SetupIndexTestData(indexName, keyBase, value);
+
         SecondaryIndexQueryOperation queryOp = 
             new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
                     .withRangeStart(ByteArrayWrapper.unsafeCreate(String.valueOf(5L).getBytes()))
                     .withRangeEnd(ByteArrayWrapper.unsafeCreate(String.valueOf(20L).getBytes()))
+                    .withPaginationSort(true)
                     .build();
         
         cluster.execute(queryOp);
@@ -180,6 +156,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                     .withRangeStart(ByteArrayWrapper.unsafeCreate(String.valueOf(5L).getBytes()))
                     .withRangeEnd(ByteArrayWrapper.unsafeCreate(String.valueOf(20L).getBytes()))
                     .withReturnKeyAndIndex(true)
+                    .withPaginationSort(true)
                     .build();
         
         cluster.execute(queryOp);
@@ -189,6 +166,134 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getIndexKey(), ByteArrayWrapper.unsafeCreate("5".getBytes()));
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
     }
-    
-    
+
+    @Test
+    public void testNoSortWithNoPaging() throws InterruptedException, ExecutionException
+    {
+        //Assume.assumeTrue(test2i);
+
+        String indexName = "test_pagination_index";
+        String value = "value";
+
+        SetupIndexTestData(indexName, "", value);
+
+        SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
+                        .withRangeStart(ByteArrayWrapper.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(ByteArrayWrapper.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(false)
+                        .build();
+
+        cluster.execute(queryOp);
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
+
+        assertEquals(100, response.getEntryList().size());
+    }
+
+    @Test
+    public void testSortWithNoPaging() throws InterruptedException, ExecutionException
+    {
+        //Assume.assumeTrue(test2i);
+
+        String indexName = "test_pagination_index";
+        String value = "value";
+
+        SetupIndexTestData(indexName, "", value);
+
+        SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
+                        .withRangeStart(ByteArrayWrapper.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(ByteArrayWrapper.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(true)
+                        .build();
+
+        cluster.execute(queryOp);
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
+
+        assertEquals(100, response.getEntryList().size());
+
+        AssertLongObjectsInOrder(response);
+    }
+
+    @Test
+    public void testNoSortWithPaging() throws InterruptedException, ExecutionException
+    {
+        //Assume.assumeTrue(test2i);
+
+        String indexName = "test_pagination_index";
+        String value = "value";
+
+        SetupIndexTestData(indexName, "", value);
+
+        try {
+            SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
+                        .withRangeStart(ByteArrayWrapper.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(ByteArrayWrapper.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(false)
+                        .withMaxResults(20)
+                        .build();
+
+            fail("Didn't throw IllegalArgumentException");
+        }
+        catch(IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+    }
+
+    @Test
+    public void testSortWithPaging() throws InterruptedException, ExecutionException
+    {
+        //Assume.assumeTrue(test2i);
+
+        String indexName = "test_pagination_index";
+        String value = "value";
+
+        SetupIndexTestData(indexName, "", value);
+
+        SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(bucketName, ByteArrayWrapper.unsafeCreate((indexName + "_int").getBytes()))
+                        .withRangeStart(ByteArrayWrapper.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(ByteArrayWrapper.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(true)
+                        .withMaxResults(20)
+                        .build();
+
+        cluster.execute(queryOp);
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
+
+        assertEquals(20, response.getEntryList().size());
+
+        AssertLongObjectsInOrder(response);
+    }
+
+    private void SetupIndexTestData(String indexName, String keyBase, String value)
+            throws InterruptedException, ExecutionException
+    {
+        for (long i = 0; i < 100; i++)
+        {
+            RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+
+            obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
+
+            StoreOperation storeOp =
+                    new StoreOperation.Builder(bucketName)
+                            .withKey(ByteArrayWrapper.unsafeCreate((keyBase + i).getBytes()))
+                            .withContent(obj)
+                            .build();
+
+            cluster.execute(storeOp);
+            storeOp.get();
+        }
+    }
+
+    private void AssertLongObjectsInOrder(SecondaryIndexQueryOperation.Response response) {
+        Long previousKey = Long.parseLong(response.getEntryList().get(0).getObjectKey().toString());
+        for (int j = 1; j < response.getEntryList().size(); j++) {
+            Long currentKey = Long.parseLong(response.getEntryList().get(j).getObjectKey().toString());
+            assertTrue(previousKey <= currentKey);
+            previousKey = currentKey;
+        }
+    }
 }
+
