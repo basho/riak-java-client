@@ -66,7 +66,7 @@ public class FetchValueTest
     public void testFetch() throws Exception
     {
 
-        FetchValue<RiakObject> fetchValue = FetchValue.fetch(key)
+        FetchValue<RiakObject> fetchValue = new FetchValue<RiakObject>(key)
             .withOption(FetchOption.TIMEOUT, 100)
             .withOption(FetchOption.BASIC_QUORUM, true)
             .withOption(FetchOption.DELETED_VCLOCK, true)

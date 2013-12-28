@@ -166,7 +166,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        FetchValue<T> fetch = new FetchValue<T>(location, converter);
+        FetchValue<T> fetch = new FetchValue<T>(location).withConverter(converter);
         for (Map.Entry<FetchOption, Object> optPair : fetchOptions.entrySet())
         {
             fetch.withOption(optPair.getKey(), optPair.getValue());

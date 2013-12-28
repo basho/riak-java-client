@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright 2013 Brian Roach <roach at basho dot com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.convert;
 
-import com.basho.riak.client.query.RiakObject;
+package com.basho.riak.client.operations;
 
+import java.util.List;
 
 /**
- * For working with {@link RiakObject} rather than domain types.
- * 
- * @author Russel Brown <russelldb at basho dot com>
- * @since 1.0
+ *
+ * @author Brian Roach <roach at basho dot com>
  */
-public class PassThroughConverter<T> implements Converter<T>
+public class DefaultResolver<T> implements ConflictResolver<T>
 {
-    @Override
-    @SuppressWarnings("unchecked")
-    public T toDomain(RiakObject riakObject)
-    {
-        return (T)riakObject;
-    }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public RiakObject fromDomain(T domainObject)
+    public T resolve(List<T> siblings)
     {
-        return (RiakObject)domainObject;
+        if (siblings.size() > 1)
+        {
+            throw new IllegalStateException("Fetch returned siblings but no conflict resolver supplied");
+        }
+        else if (siblings.isEmpty())
+        {
+            return null;
+        }
+        else
+        {
+            return siblings.get(0);
+        }
     }
     
 }

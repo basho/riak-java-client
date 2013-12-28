@@ -21,7 +21,6 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.List;
@@ -38,40 +37,59 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 {
 
     private final Location location;
-    private final EnumMap<FetchOption.Type, Object> options;
-    private final Converter<T> converter;
-
-    FetchValue(Location location, Converter<T> converter)
+    private final EnumMap<FetchOption.Type, Object> options =
+        new EnumMap<FetchOption.Type, Object>(FetchOption.Type.class);
+    private final FetchOperation.Builder opBuilder =
+        new FetchOperation.Builder();
+    
+    private volatile Converter<T> converter = new PassThroughConverter<T>();
+    private volatile ConflictResolver<T> resolver = new DefaultResolver<T>();
+    
+    
+    public FetchValue(Location location)
     {
-        this.options = new EnumMap<FetchOption.Type, Object>(FetchOption.Type.class);
-        this.converter = converter;
         this.location = location;
+        if (!location.hasKey() || !location.hasBucket())
+        {
+            throw new IllegalArgumentException("Location must contain key and bucket");
+        }
+        else
+        {
+            opBuilder.withKey(location.getKey())
+                    .withBucket(location.getBucket());
+        }
+        
+        if (location.hasType())
+        {
+            opBuilder.withBucketType(location.getType());
+        }
     }
-
-    /**
-     * Factory method for a FetchValue command with a conversion step
-     *
-     * @param location  the key to fetch
-     * @param converter a domain object converter
-     * @param <T>       the type of the domain object
-     * @return a response object
-     */
-    public static <T> FetchValue<T> fetch(Key location, Converter<T> converter)
+    
+    public FetchValue<T> withConverter(Converter<T> converter)
     {
-        return new FetchValue(location, converter);
+        this.converter = converter;
+        return this;
     }
-
+    
     /**
-     * Factory method for a FetchValue command returning raw RiakObjects
-     *
-     * @param location the key to fetch
-     * @return a response object
+     * Specify a class for JSON conversion.
+     * @param clazz
+     * @return this
      */
-    public static FetchValue<RiakObject> fetch(Key location)
+    public FetchValue<T> convertJsonTo(Class<T> clazz)
     {
-        return new FetchValue<RiakObject>(location, new PassThroughConverter());
+        // converter = new JSONConverter(clazz, ...); 
+        
+        return this;
     }
-
+    
+    public FetchValue<T> withConflictResolver(ConflictResolver<T> resolver)
+    {
+        this.resolver = resolver;
+        return this;
+    }
+    
+    
     /**
      * Add an optional setting for this command. This will be passed along with the
      * request to Riak to tell it how to behave when servicing the request.
@@ -95,8 +113,11 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
         ByteArrayWrapper bucket = location.getBucket();
         ByteArrayWrapper key = location.getKey();
 
-        FetchOperation.Builder builder = new FetchOperation.Builder(bucket, key);
-        builder.withBucketType(type);
+        FetchOperation.Builder builder = 
+            new FetchOperation.Builder()
+                .withBucket(bucket)
+                .withKey(key)
+                .withBucketType(type);
 
         for (Map.Entry<FetchOption.Type, Object> opPair : options.entrySet())
         {

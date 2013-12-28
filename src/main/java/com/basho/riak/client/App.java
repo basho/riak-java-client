@@ -54,7 +54,9 @@ public class App implements RiakFutureListener<RiakObject>
         
         
         FetchOperation fetchOp =
-            new FetchOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket2".getBytes()), ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation.Builder()
+                .withBucket(ByteArrayWrapper.unsafeCreate("test_bucket2".getBytes()))
+                .withKey(ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
                 .build();
                     
         

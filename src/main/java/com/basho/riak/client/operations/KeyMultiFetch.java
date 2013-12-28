@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.operations.FetchValue.fetch;
 
 class KeyMultiFetch extends MultiFetch
 {
@@ -52,7 +51,7 @@ class KeyMultiFetch extends MultiFetch
         List<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
         for (Key key : keys)
         {
-            values.add(fetch(key).execute(cluster));
+            values.add(new FetchValue(key).execute(cluster));
         }
 
         return new Response(values);

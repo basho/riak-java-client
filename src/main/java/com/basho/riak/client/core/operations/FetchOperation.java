@@ -122,34 +122,41 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         return new RiakMessage(RiakMessageCodes.MSG_GetReq, req.toByteArray());
     }
     
-    public static class Builder
+    public final static class Builder
     {
         private final RiakKvPB.RpbGetReq.Builder reqBuilder = 
             RiakKvPB.RpbGetReq.newBuilder();
-        private final ByteArrayWrapper key;
-        private final ByteArrayWrapper bucketName;
-        private ByteArrayWrapper bucketType;
         
         /**
          * Constructs a builder for a FetchOperation.
-         * @param bucketName The name of the bucket for the operation.
-         * @param key The key for the operation.
          */
+        public Builder()
+        {}
+        
         public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper key)
+        {
+            withBucket(bucketName);
+            withKey(key);
+        }
+        
+        public Builder withBucket(ByteArrayWrapper bucketName)
+        {
+            if (null == bucketName || bucketName.length() == 0)
+            {
+                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+            }
+            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
+            return this;
+        }
+        
+        public Builder withKey(ByteArrayWrapper key)
         {
             if (null == key || key.length() == 0)
             {
                 throw new IllegalArgumentException("Key cannot be null or zero length");
             }
             reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-            this.key = key;
-            
-            if (null == bucketName || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-            this.bucketName = bucketName;
+            return this;
         }
         
         /**
@@ -165,7 +172,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
                 throw new IllegalArgumentException("Bucket type can not be null or zero length");
             }
             reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            this.bucketType = bucketType;
             return this;
         }
         
@@ -202,7 +208,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         * <p>
         * If not asSet the bucket default is used.
         * </p>
-        * @param notFoundOk the not_found_ok value.
+        * @param notFoundOK the not_found_ok value.
         * @return a reference to this object.
         */
 		public Builder withNotFoundOK(boolean notFoundOK)
