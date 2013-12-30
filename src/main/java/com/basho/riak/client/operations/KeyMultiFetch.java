@@ -54,7 +54,7 @@ class KeyMultiFetch<T> extends MultiFetch<T>
         List<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
         for (Location key : keys)
         {
-            values.add(new FetchValue<T>(key, converter).execute(cluster));
+            values.add(new FetchValue.Builder<T>(key).withConverter(converter).build().execute(cluster));
         }
 
         return new Response(values);
