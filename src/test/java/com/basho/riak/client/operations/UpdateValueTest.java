@@ -38,63 +38,67 @@ import static org.mockito.Mockito.*;
 
 public class UpdateValueTest
 {
-    @Mock RiakCluster mockCluster;
+	@Mock RiakCluster mockCluster;
 	Location key = new Location("bucket", "key").withType("type");
-    RiakClient client;
-    RiakObject riakObject;
+	RiakClient client;
+	RiakObject riakObject;
 
-    @Before
-    public void init() throws Exception
-    {
-        MockitoAnnotations.initMocks(this);
+	@Before
+	public void init() throws Exception
+	{
+		MockitoAnnotations.initMocks(this);
 
-        riakObject = new RiakObject();
-        riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
+		riakObject = new RiakObject();
+		riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
 
-        ArrayList<RiakObject> objects = new ArrayList<RiakObject>();
-        objects.add(riakObject);
+		ArrayList<RiakObject> objects = new ArrayList<RiakObject>();
+		objects.add(riakObject);
 
-        FetchOperation.Response fetchResponse = mock(FetchOperation.Response.class);
-        when(fetchResponse.getObjectList()).thenReturn(objects);
+		FetchOperation.Response fetchResponse = mock(FetchOperation.Response.class);
+		when(fetchResponse.getObjectList()).thenReturn(objects);
 
-        StoreOperation.Response storeResponse = mock(StoreOperation.Response.class);
-        when(storeResponse.getObjectList()).thenReturn(objects);
+		StoreOperation.Response storeResponse = mock(StoreOperation.Response.class);
+		when(storeResponse.getObjectList()).thenReturn(objects);
 
-        when(mockCluster.execute(any(FutureOperation.class)))
-            .thenReturn(new ImmediateRiakFuture<FetchOperation.Response>(fetchResponse))
-            .thenReturn(new ImmediateRiakFuture<StoreOperation.Response>(storeResponse));
+		when(mockCluster.execute(any(FutureOperation.class)))
+			.thenReturn(new ImmediateRiakFuture<FetchOperation.Response>(fetchResponse))
+			.thenReturn(new ImmediateRiakFuture<StoreOperation.Response>(storeResponse));
 
-        client = new RiakClient(mockCluster);
+		client = new RiakClient(mockCluster);
 
-    }
+	}
 
 
-    @Test
-    public void testUpdateValue() throws ExecutionException, InterruptedException
-    {
-        UpdateValue.Update spiedUpdate = spy(new NoopUpdate());
-        ConflictResolver<RiakObject> spiedResolver = spy(new DefaultResolver<RiakObject>());
-        Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
+	@Test
+	public void testUpdateValue() throws ExecutionException, InterruptedException
+	{
+		UpdateValue.Update spiedUpdate = spy(new NoopUpdate());
+		ConflictResolver<RiakObject> spiedResolver = spy(new DefaultResolver<RiakObject>());
+		Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
 
-        UpdateValue update = UpdateValue.update(key,spiedConverter, spiedResolver, spiedUpdate);
+		UpdateValue.Builder update =
+			new UpdateValue.Builder(key)
+				.withConverter(spiedConverter)
+				.withResolver(spiedResolver)
+				.withUpdate(spiedUpdate);
 
-        client.execute(update);
+		client.execute(update.build());
 
-        verify(mockCluster, times(2)).execute(any(FutureOperation.class));
-        verify(spiedResolver, times(1)).resolve(anyList());
-        verify(spiedUpdate, times(1)).apply(any(RiakObject.class));
-        verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class));
-        verify(spiedConverter, times(2)).toDomain(any(RiakObject.class));
+		verify(mockCluster, times(2)).execute(any(FutureOperation.class));
+		verify(spiedResolver, times(1)).resolve(anyList());
+		verify(spiedUpdate, times(1)).apply(any(RiakObject.class));
+		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class));
+		verify(spiedConverter, times(2)).toDomain(any(RiakObject.class));
 
-    }
+	}
 
-    private static class NoopUpdate extends UpdateValue.Update<RiakObject>
-    {
-        @Override
-        public RiakObject apply(RiakObject original)
-        {
-            return original;
-        }
-    }
+	private static class NoopUpdate extends UpdateValue.Update<RiakObject>
+	{
+		@Override
+		public RiakObject apply(RiakObject original)
+		{
+			return original;
+		}
+	}
 
 }

@@ -16,12 +16,9 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.query.RiakObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,126 +37,19 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     private final Converter<T> converter;
     private final Update<T> update;
     private final ConflictResolver<T> resolver;
-    private final Map<FetchOption, Object> fetchOptions;
-    private final Map<StoreOption, Object> storeOptions;
+    private final Map<FetchOption, Object> fetchOptions =
+	    new HashMap<FetchOption, Object>();
+    private final Map<StoreOption, Object> storeOptions =
+	    new HashMap<StoreOption, Object>();
 
-    UpdateValue(Location location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
+    UpdateValue(Builder<T> builder)
     {
-        this.location = location;
-        this.converter = converter;
-        this.resolver = resolver;
-        this.update = update;
-        this.fetchOptions = new HashMap<FetchOption, Object>();
-        this.storeOptions = new HashMap<StoreOption, Object>();
-
-    }
-
-    /**
-     * Create an update command to update a domain object in Riak
-     *
-     * @param location  where the object is located
-     * @param converter converter to/from domain object
-     * @param resolver  resolution strategy
-     * @param update    business logic mutation
-     * @param <T>       the domain object type
-     * @return a response
-     */
-    public static <T> UpdateValue<T> update(Location location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
-    {
-        return new UpdateValue<T>(location, converter, resolver, update);
-    }
-
-    /**
-     * Create an update command to update a domain object in Riak
-     *
-     * @param location  where the object is located
-     * @param converter converter to/from domain object
-     * @param update    business logic mutation
-     * @param <T>       the domain object type
-     * @return a response
-     */
-    public static <T> UpdateValue<T> update(Location location, Converter<T> converter, Update<T> update)
-    {
-        return new UpdateValue<T>(location, converter, new DefaultResolver<T>(), update);
-    }
-
-    /**
-     * Create an update command to update a {@link RiakObject} in Riak
-     *
-     * @param location where the object is located
-     * @param resolver resolution strategy
-     * @param update   business logic mutation
-     * @return a response
-     */
-    public static UpdateValue<RiakObject> update(Location location, ConflictResolver<RiakObject> resolver, Update<RiakObject> update)
-    {
-        return new UpdateValue<RiakObject>(location, new PassThroughConverter(), resolver, update);
-    }
-
-    /**
-     * Create an update command to update a {@link RiakObject} in Riak
-     *
-     * @param location where the object is located
-     * @param update   business logic mutation
-     * @return a response
-     */
-    public static UpdateValue<RiakObject> update(Location location, Update<RiakObject> update)
-    {
-        return new UpdateValue<RiakObject>(location, new PassThroughConverter(), new DefaultResolver<RiakObject>(), update);
-    }
-
-    /**
-     * Resolve siblings on a domain object using the given resolution strategy and conflict resolver.
-     *
-     * @param location  where the object is located
-     * @param converter converter to/from domain object
-     * @param resolver  resolution strategy
-     * @param <T>       the domain object type
-     * @return a response
-     */
-    public static <T> UpdateValue<T> resolve(Location location, Converter<T> converter, ConflictResolver<T> resolver)
-    {
-        return new UpdateValue<T>(location, converter, resolver, Update.<T>noopUpdate());
-    }
-
-    /**
-     * Resolve siblings on a {@link RiakObject} using the given resolution strategy and conflict resolver.
-     *
-     * @param location where the object is located
-     * @param resolver resolution strategy
-     * @return a response
-     */
-    public static UpdateValue<RiakObject> resolve(Location location, ConflictResolver<RiakObject> resolver)
-    {
-        return new UpdateValue<RiakObject>(location, new PassThroughConverter(), resolver, Update.<RiakObject>noopUpdate());
-    }
-
-    /**
-     * Add an option for the fetch phase of the update
-     *
-     * @param option the option
-     * @param value  the option's value
-     * @param <U>    the type of the option's value
-     * @return this
-     */
-    public <U> UpdateValue<T> withFetchOption(FetchOption<U> option, U value)
-    {
-        fetchOptions.put(option, value);
-        return this;
-    }
-
-    /**
-     * Add an option for the store phase of the update
-     *
-     * @param option the option
-     * @param value  the option's value
-     * @param <U>    the type of the option's value
-     * @return this
-     */
-    public <U> UpdateValue<T> withStoreOption(StoreOption<U> option, U value)
-    {
-        storeOptions.put(option, value);
-        return this;
+        this.location = builder.location;
+        this.converter = builder.converter;
+        this.resolver = builder.resolver;
+        this.update = builder.update;
+	    this.fetchOptions.putAll(builder.fetchOptions);
+	    this.storeOptions.putAll(builder.storeOptions);
     }
 
     @Override
@@ -181,12 +71,13 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
         if (update.isModified())
         {
 
-            StoreValue<T> store = new StoreValue<T>(location, updated, converter);
+            StoreValue.Builder<T> store = new StoreValue.Builder<T>(location, updated)
+	            .withConverter(converter);
             for (Map.Entry<StoreOption, Object> optPair : storeOptions.entrySet())
             {
                 store.withOption(optPair.getKey(), optPair.getValue());
             }
-            StoreValue.Response<T> storeResponse = store.execute(cluster);
+            StoreValue.Response<T> storeResponse = store.build().execute(cluster);
 
             List<T> values = storeResponse.getValue();
             VClock clock = storeResponse.getvClock();
@@ -278,4 +169,72 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
             };
         }
     }
+
+	public static class Builder<T>
+	{
+		private final Location location;
+		private Converter<T> converter;
+		private Update<T> update;
+		private ConflictResolver<T> resolver;
+		private final Map<FetchOption, Object> fetchOptions =
+			new HashMap<FetchOption, Object>();
+		private final Map<StoreOption, Object> storeOptions =
+			new HashMap<StoreOption, Object>();
+
+		public Builder(Location location)
+		{
+			this.location = location;
+		}
+
+		/**
+		 * Add an option for the fetch phase of the update
+		 *
+		 * @param option the option
+		 * @param value  the option's value
+		 * @param <U>    the type of the option's value
+		 * @return this
+		 */
+		public <U> Builder<T> withFetchOption(FetchOption<U> option, U value)
+		{
+			fetchOptions.put(option, value);
+			return this;
+		}
+
+		/**
+		 * Add an option for the store phase of the update
+		 *
+		 * @param option the option
+		 * @param value  the option's value
+		 * @param <U>    the type of the option's value
+		 * @return this
+		 */
+		public <U> Builder<T> withStoreOption(StoreOption<U> option, U value)
+		{
+			storeOptions.put(option, value);
+			return this;
+		}
+
+		public Builder<T> withConverter(Converter<T> converter)
+		{
+			this.converter = converter;
+			return this;
+		}
+
+		public Builder<T> withResolver(ConflictResolver<T> resolver)
+		{
+			this.resolver = resolver;
+			return this;
+		}
+
+		public Builder<T> withUpdate(Update<T> update)
+		{
+			this.update = update;
+			return this;
+		}
+
+		public UpdateValue<T> build()
+		{
+			return new UpdateValue<T>(this);
+		}
+	}
 }
