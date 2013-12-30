@@ -74,7 +74,8 @@ public class StoreValueTest
     public void testStore() throws ExecutionException, InterruptedException
     {
 
-        StoreValue<RiakObject> store = StoreValue.store(key, riakObject, vClock)
+        StoreValue.Builder<RiakObject> store = new StoreValue.Builder(key, riakObject)
+	        .withVectorClock(vClock)
             .withOption(StoreOption.ASIS, true)
             .withOption(StoreOption.DW, new Quorum(1))
             .withOption(StoreOption.IF_NONE_MATCH, true)
@@ -87,7 +88,7 @@ public class StoreValueTest
             .withOption(StoreOption.TIMEOUT, 1000)
             .withOption(StoreOption.W, new Quorum(1));
 
-        client.execute(store);
+        client.execute(store.build());
 
         ArgumentCaptor<StoreOperation> captor =
             ArgumentCaptor.forClass(StoreOperation.class);

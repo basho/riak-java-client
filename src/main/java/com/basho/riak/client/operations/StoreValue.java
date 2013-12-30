@@ -18,10 +18,8 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashMap;
@@ -35,63 +33,19 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 {
 
     private final Location location;
-    private final Map<StoreOption<?>, Object> options;
+    private final Map<StoreOption<?>, Object> options =
+	    new HashMap<StoreOption<?>, Object>();
     private final V value;
     private final Converter<V> converter;
     private VClock vClock;
 
-    StoreValue(Location location, V value, Converter<V> converter)
+    StoreValue(Builder<V> builder)
     {
-        this.options = new HashMap<StoreOption<?>, Object>();
-        this.location = location;
-        this.value = value;
-        this.converter = converter;
-    }
-
-    public static <T> StoreValue<T> store(Location location, T value, Converter<T> converter)
-    {
-        return new StoreValue<T>(location, value, converter);
-    }
-
-    public static <T> StoreValue<T> store(Location location, T value, VClock vClock, Converter<T> converter)
-    {
-        StoreValue<T> sv = new StoreValue<T>(location, value, converter);
-        sv.withVectorClock(vClock);
-        return sv;
-    }
-
-    public static StoreValue<RiakObject> store(Location location, RiakObject value)
-    {
-        return new StoreValue<RiakObject>(location, value, new PassThroughConverter());
-    }
-
-    public static StoreValue<RiakObject> store(Location location, RiakObject value, VClock vClock)
-    {
-        StoreValue<RiakObject> sv = new StoreValue<RiakObject>(location, value, new PassThroughConverter());
-        sv.withVectorClock(vClock);
-        return sv;
-    }
-
-    public StoreValue<V> withVectorClock(VClock vClock)
-    {
-        this.vClock = vClock;
-        return this;
-    }
-
-    public <T> StoreValue<V> withOption(StoreOption<T> option, T value)
-    {
-        options.put(option, value);
-        return this;
-    }
-
-    public Location getLocation()
-    {
-        return location;
-    }
-
-    public V getValue()
-    {
-        return value;
+        this.options.putAll(builder.options);
+        this.location = builder.location;
+        this.value = builder.value;
+        this.converter = builder.converter;
+	    this.vClock = builder.vClock;
     }
 
     @Override
@@ -225,4 +179,44 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         }
 
     }
+
+	public static class Builder<V>
+	{
+
+		private final Location location;
+		private final Map<StoreOption<?>, Object> options =
+			new HashMap<StoreOption<?>, Object>();
+		private final V value;
+		private Converter<V> converter;
+		private VClock vClock;
+
+		public Builder(Location location, V value)
+		{
+			this.location = location;
+			this.value = value;
+		}
+
+		public Builder<V> withVectorClock(VClock vClock)
+		{
+			this.vClock = vClock;
+			return this;
+		}
+
+		public <T> Builder<V> withOption(StoreOption<T> option, T value)
+		{
+			options.put(option, value);
+			return this;
+		}
+
+		public Builder<V> withConverter(Converter<V> converter)
+		{
+			this.converter = converter;
+			return this;
+		}
+
+		public StoreValue<V> build()
+		{
+			return new StoreValue<V>(this);
+		}
+	}
 }
