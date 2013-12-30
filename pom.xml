@@ -23,6 +23,18 @@
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
+        <developer>
+            <name>David Rusek</name>
+            <email>drusek@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Alex Moore</name>
+            <email>amoore@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
     </developers>
 
     <properties>
