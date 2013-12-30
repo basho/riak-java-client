@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.core.RiakCluster;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -26,30 +27,43 @@ import java.util.concurrent.ExecutionException;
 public class RiakClient
 {
 
-    private final RiakCluster cluster;
+	private final RiakCluster cluster;
 
-    /**
-     * Create a new RiakClient to perform operations on the given cluster
-     *
-     * @param cluster the cluster to perform operations against
-     */
-    public RiakClient(RiakCluster cluster)
-    {
-        this.cluster = cluster;
-    }
+	/**
+	 * Create a new RiakClient to perform operations on the given cluster
+	 *
+	 * @param cluster
+	 * 	the cluster to perform operations against
+	 */
+	public RiakClient(RiakCluster cluster)
+	{
+		this.cluster = cluster;
+	}
 
-    /**
-     * Execute a command against Riak
-     *
-     * @param command The command
-     * @param <T>     The command's return type
-     * @return a response from Riak
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    public <T> T execute(RiakCommand<T> command) throws ExecutionException, InterruptedException
-    {
-        return command.execute(cluster);
-    }
+	/**
+	 * Execute a command against Riak
+	 *
+	 * @param command
+	 * 	The command
+	 * @param <T>
+	 * 	The command's return type
+	 * @return a response from Riak
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public <T> T execute(RiakCommand<T> command) throws ExecutionException, InterruptedException
+	{
+		return command.execute(cluster);
+	}
+
+	/**
+	 *  Shutdown the client and the underlying cluster.
+	 *
+	 *  @return a future that will complete when shutdown
+	 */
+	public Future<Boolean> shutdown()
+	{
+		return cluster.shutdown();
+	}
 
 }
