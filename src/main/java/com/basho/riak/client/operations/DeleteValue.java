@@ -31,11 +31,11 @@ import java.util.concurrent.ExecutionException;
 public class DeleteValue extends RiakCommand<DeleteValue.Response>
 {
 
-    private final Key location;
+    private final Location location;
     private final Map<DeleteOption<?>, Object> options;
     private VClock vClock;
 
-    public DeleteValue(Key location, VClock vClock)
+    public DeleteValue(Location location, VClock vClock)
     {
         this.location = location;
         this.options = new HashMap<DeleteOption<?>, Object>();
@@ -47,7 +47,7 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
      *
      * @param location the Riak key where the value is located
      */
-    public DeleteValue(Key location)
+    public DeleteValue(Location location)
     {
         this(location, null);
     }
@@ -57,9 +57,9 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        ByteArrayWrapper type = location.getType();
-        ByteArrayWrapper bucket = location.getBucket();
-        ByteArrayWrapper key = location.getKey();
+        ByteArrayWrapper type = ByteArrayWrapper.create(location.getType());
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(location.getBucket());
+        ByteArrayWrapper key = ByteArrayWrapper.create(location.getKey());
 
         DeleteOperation.Builder builder = new DeleteOperation.Builder(bucket, key);
 

@@ -27,13 +27,13 @@ import static java.util.Collections.unmodifiableList;
 public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 {
 
-    private final Bucket bucket;
+    private final Location bucket;
     private final Criteria op;
     private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
     private final Index<T> index;
     private final ByteArrayWrapper continuation;
 
-    FetchIndex(Bucket bucket, Index<T> index, Criteria op, ByteArrayWrapper continuation)
+    FetchIndex(Location bucket, Index<T> index, Criteria op, ByteArrayWrapper continuation)
     {
         this.bucket = bucket;
         this.op = op;
@@ -43,7 +43,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         //TODO add check if op can be performed on the given index
     }
 
-    public FetchIndex(Bucket bucket, Index<T> index, Criteria op)
+    public FetchIndex(Location bucket, Index<T> index, Criteria op)
     {
         this(bucket, index, op, null);
     }
@@ -60,10 +60,12 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
         ByteArrayWrapper indexName = ByteArrayWrapper.create(index.getFullName());
 
+	    ByteArrayWrapper wrappedBucket = ByteArrayWrapper.create(bucket.getBucket());
         SecondaryIndexQueryOperation.Builder builder =
-            new SecondaryIndexQueryOperation.Builder(bucket.getBucket(), indexName);
+            new SecondaryIndexQueryOperation.Builder(wrappedBucket, indexName);
 
-        builder.withBucketType(bucket.getType());
+	    ByteArrayWrapper wrappedType = ByteArrayWrapper.create(bucket.getType());
+        builder.withBucketType(wrappedType);
 
         for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
         {
@@ -93,7 +95,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
         for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
         {
-            Key key = new Key(bucket.getType(), bucket.getBucket(), entry.getIndexKey());
+            Location key = new Location(bucket.getBucket(), entry.getIndexKey().toStringUtf8()).withType(bucket.getType());
             T objectKey = index.convert(entry.getObjectKey());
             IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
             indexEntries.add(indexEntry);
@@ -180,16 +182,16 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
     public static final class IndexEntry<T>
     {
-        private final Key key;
+        private final Location key;
         private final T term;
 
-        IndexEntry(Key key, T term)
+        IndexEntry(Location key, T term)
         {
             this.key = key;
             this.term = term;
         }
 
-        public Key getKey()
+        public Location getKey()
         {
             return key;
         }

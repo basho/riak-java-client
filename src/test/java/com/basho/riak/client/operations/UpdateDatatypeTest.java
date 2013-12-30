@@ -50,7 +50,7 @@ public class UpdateDatatypeTest
     @Mock DtUpdateOperation.Response mockResponse;
     @Mock Context context;
     RiakClient client;
-    Key key = new Key("type", "bucket", "key");
+	Location key = new Location("bucket", "key").withType("type");
 
     @Before
     public void init() throws Exception

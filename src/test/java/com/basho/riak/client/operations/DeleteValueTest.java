@@ -43,7 +43,7 @@ public class DeleteValueTest
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-    Key key = new Key("type", "bucket", "key");
+    Location key = new Location("bucket", "key").withType("type");
     RiakClient client;
 
     @Before

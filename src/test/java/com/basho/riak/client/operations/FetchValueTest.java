@@ -43,7 +43,7 @@ public class FetchValueTest
     @Mock RiakFuture mockFuture;
     @Mock FetchOperation.Response mockResponse;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-    Key key = new Key("type", "bucket", "key");
+	Location key = new Location("bucket", "key").withType("type");
     RiakClient client;
 
     @Before
@@ -63,7 +63,7 @@ public class FetchValueTest
     public void testFetch() throws Exception
     {
 
-        FetchValue<RiakObject> fetchValue = FetchValue.fetch(key)
+        FetchValue<RiakObject> fetchValue = new FetchValue(key)
             .withOption(FetchOption.TIMEOUT, 100)
             .withOption(FetchOption.BASIC_QUORUM, true)
             .withOption(FetchOption.DELETED_VCLOCK, true)

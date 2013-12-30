@@ -26,16 +26,16 @@ import java.util.concurrent.ExecutionException;
 public class ListKeys extends RiakCommand<ListKeys.Response>
 {
 
-    private final Bucket bucket;
+    private final Location bucket;
     private final int timeout;
 
-    public ListKeys(Bucket bucket, int timeout)
+    public ListKeys(Location bucket, int timeout)
     {
         this.bucket = bucket;
         this.timeout = timeout;
     }
 
-    public ListKeys(Bucket bucket)
+    public ListKeys(Location bucket)
     {
         this(bucket, -1);
     }
@@ -43,42 +43,43 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
     @Override
     Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(bucket.getBucket());
+	    ByteArrayWrapper wrappedBucket = ByteArrayWrapper.create(bucket.getBucket());
+        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(wrappedBucket);
         if (timeout > 0)
         {
             builder.withTimeout(timeout);
         }
-        builder.withBucketType(bucket.getType());
+        builder.withBucketType(ByteArrayWrapper.create(bucket.getType()));
         ListKeysOperation operation = builder.build();
         cluster.execute(operation);
-        return new Response(bucket, operation.get());
+        return new Response(bucket.getBucket(), operation.get());
     }
 
-    public static class Response implements Iterable<Key>
+    public static class Response implements Iterable<Location>
     {
 
-        private final Bucket bucket;
+        private final String bucket;
         private final List<ByteArrayWrapper> keys;
 
-        public Response(Bucket bucket, List<ByteArrayWrapper> keys)
+        public Response(String bucket, List<ByteArrayWrapper> keys)
         {
             this.bucket = bucket;
             this.keys = keys;
         }
 
         @Override
-        public Iterator<Key> iterator()
+        public Iterator<Location> iterator()
         {
             return new Itr(bucket, keys.iterator());
         }
     }
 
-    private static class Itr implements Iterator<Key>
+    private static class Itr implements Iterator<Location>
     {
         private final Iterator<ByteArrayWrapper> iterator;
-        private final Bucket bucket;
+        private final String bucket;
 
-        private Itr( Bucket bucket, Iterator<ByteArrayWrapper> iterator)
+        private Itr( String bucket, Iterator<ByteArrayWrapper> iterator)
         {
             this.iterator = iterator;
             this.bucket = bucket;
@@ -91,10 +92,10 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
         }
 
         @Override
-        public Key next()
+        public Location next()
         {
             ByteArrayWrapper key = iterator.next();
-            return Location.key(bucket, key);
+            return new Location(bucket, key.toStringUtf8());
         }
 
         @Override

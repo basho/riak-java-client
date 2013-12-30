@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 public class UpdateValueTest
 {
     @Mock RiakCluster mockCluster;
-    Key key = new Key("type", "bucket", "key");
+	Location key = new Location("bucket", "key").withType("type");
     RiakClient client;
     RiakObject riakObject;
 

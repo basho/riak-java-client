@@ -33,28 +33,28 @@ import java.util.concurrent.ExecutionException;
 public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
 {
 
-    private final Key key;
+    private final Location key;
     private final DatatypeConverter<T> converter;
     private final Map<DtFetchOption<?>, Object> options = new HashMap<DtFetchOption<?>, Object>();
 
-    public FetchDatatype(Key key, DatatypeConverter<T> converter)
+    public FetchDatatype(Location key, DatatypeConverter<T> converter)
     {
         this.key = key;
         this.converter = converter;
         withOption(DtFetchOption.INCLUDE_CONTEXT, true);
     }
 
-    public static FetchDatatype<RiakMap> fetchMap(Key key)
+    public static FetchDatatype<RiakMap> fetchMap(Location key)
     {
         return new FetchDatatype<RiakMap>(key, DatatypeConverter.asMap());
     }
 
-    public static FetchDatatype<RiakSet> fetchSet(Key key)
+    public static FetchDatatype<RiakSet> fetchSet(Location key)
     {
         return new FetchDatatype<RiakSet>(key, DatatypeConverter.asSet());
     }
 
-    public static FetchDatatype<RiakCounter> fetchCounter(Key key)
+    public static FetchDatatype<RiakCounter> fetchCounter(Location key)
     {
         return new FetchDatatype<RiakCounter>(key, DatatypeConverter.asCounter());
     }
@@ -68,13 +68,13 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
     @Override
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        ByteArrayWrapper bucket = ByteArrayWrapper.create(key.getBucket().getValue());
-        ByteArrayWrapper key = ByteArrayWrapper.create(this.key.getKey().getValue());
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(key.getBucket());
+        ByteArrayWrapper key = ByteArrayWrapper.create(this.key.getKey());
         DtFetchOperation.Builder builder = new DtFetchOperation.Builder(bucket, key);
 
         if (this.key.hasType())
         {
-            ByteArrayWrapper type = ByteArrayWrapper.create(this.key.getType().getValue());
+            ByteArrayWrapper type = ByteArrayWrapper.create(this.key.getType());
             builder.withBucketType(type);
         }
 

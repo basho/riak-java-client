@@ -60,11 +60,13 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
     @Override
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc.getType(), loc.getBucket());
+	    ByteArrayWrapper wrappedType = ByteArrayWrapper.create(loc.getType());
+	    ByteArrayWrapper wrappedBucket = ByteArrayWrapper.create(loc.getBucket());
+        DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(wrappedType, wrappedBucket);
 
         if (loc.hasKey())
         {
-            builder.withKey(loc.getKey());
+            builder.withKey(ByteArrayWrapper.create(loc.getKey()));
         }
 
         if (ctx != null)
@@ -124,7 +126,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
             riakDatatype = (T) new RiakCounter(element.getAsCounter());
         }
 
-        Key key = Location.key(loc.getType(), loc.getBucket(), crdtResponse.getGeneratedKey());
+        Location key = new Location(loc.getBucket(), crdtResponse.getGeneratedKey().toStringUtf8()).withType(loc.getType());
         Context returnedCtx = new Context(crdtResponse.getContext().getValue());
 
         return new Response<T>(key, returnedCtx, riakDatatype);
@@ -135,16 +137,16 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
     {
         private final T datatype;
         private final Context context;
-        private final Key key;
+        private final Location key;
 
-        Response(Key key, Context context, T datatype)
+        Response(Location key, Context context, T datatype)
         {
             this.key = key;
             this.datatype = datatype;
             this.context = context;
         }
 
-        public Key getKey()
+        public Location getKey()
         {
             return key;
         }

@@ -23,16 +23,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.operations.Location.bucketType;
-import static com.basho.riak.client.operations.Location.defaultBucketType;
-
 public class ListBuckets extends RiakCommand<ListBuckets.Response>
 {
+	private static final String DEFAULT_BUCKET_TYPE = "default";
 
     private final int timeout;
-    private final BucketType type;
+    private final String type;
 
-    public ListBuckets(BucketType type, int timeout)
+    public ListBuckets(String type, int timeout)
     {
         this.type = type;
         this.timeout = timeout;
@@ -40,15 +38,15 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 
     public ListBuckets()
     {
-        this(defaultBucketType());
+        this(DEFAULT_BUCKET_TYPE, -1);
     }
 
     public ListBuckets(int timeout)
     {
-        this(defaultBucketType(), timeout);
+        this(DEFAULT_BUCKET_TYPE, timeout);
     }
 
-    public ListBuckets(BucketType type)
+    public ListBuckets(String type)
     {
         this(type, -1);
     }
@@ -61,36 +59,36 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         {
             builder.withTimeout(timeout);
         }
-        builder.withBucketType(type.getType());
+        builder.withBucketType(ByteArrayWrapper.create(type));
         ListBucketsOperation operation = builder.build();
         cluster.execute(operation);
         return new Response(type, operation.get());
     }
 
-    public static class Response implements Iterable<Bucket> {
+    public static class Response implements Iterable<Location> {
 
-        private final BucketType type;
+        private final String type;
         private final List<ByteArrayWrapper> buckets;
 
-        public Response(BucketType type, List<ByteArrayWrapper> buckets)
+        public Response(String type, List<ByteArrayWrapper> buckets)
         {
             this.type = type;
             this.buckets = buckets;
         }
 
         @Override
-        public Iterator<Bucket> iterator()
+        public Iterator<Location> iterator()
         {
             return new Itr(buckets.iterator(), type);
         }
     }
 
-    private static class Itr implements Iterator<Bucket>
+    private static class Itr implements Iterator<Location>
     {
         private final Iterator<ByteArrayWrapper> iterator;
-        private final BucketType type;
+        private final String type;
 
-        private Itr(Iterator<ByteArrayWrapper> iterator, BucketType type)
+        private Itr(Iterator<ByteArrayWrapper> iterator, String type)
         {
             this.iterator = iterator;
             this.type = type;
@@ -103,10 +101,10 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         }
 
         @Override
-        public Bucket next()
+        public Location next()
         {
             ByteArrayWrapper bucket = iterator.next();
-            return Location.bucket(type, bucket);
+            return new Location(type).withType(bucket.toStringUtf8());
         }
 
         @Override

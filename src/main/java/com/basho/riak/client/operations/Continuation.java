@@ -20,7 +20,7 @@ import com.basho.riak.client.util.ByteArrayWrapper;
 class Continuation<T> extends FetchIndex<T>
 {
 
-    Continuation(Bucket bucket, Index<T> type, Criteria op, ByteArrayWrapper continuation)
+    Continuation(Location bucket, Index<T> type, Criteria op, ByteArrayWrapper continuation)
     {
         super(bucket, type, op, continuation);
     }

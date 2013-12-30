@@ -46,7 +46,7 @@ public class FetchDatatypeTest
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     @Mock DtFetchOperation.Response mockResponse;
-    Key key = new Key("type", "bucket", "key");
+	Location key = new Location("bucket", "key").withType("type");
     RiakClient client;
 
     @Before

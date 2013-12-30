@@ -24,25 +24,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.operations.FetchValue.fetch;
-
 class KeyMultiFetch<T> extends MultiFetch<T>
 {
 
     private final Converter<T> converter;
-    private final ArrayList<Key> keys;
+    private final ArrayList<Location> keys;
 
-    KeyMultiFetch(Converter<T> converter, Key... keys)
+    KeyMultiFetch(Converter<T> converter, Location... keys)
     {
         this.converter = converter;
-        this.keys = new ArrayList<Key>(Arrays.asList(keys));
+        this.keys = new ArrayList<Location>(Arrays.asList(keys));
     }
 
-    KeyMultiFetch(Converter<T> converter, Iterable<Key> keys)
+    KeyMultiFetch(Converter<T> converter, Iterable<Location> keys)
     {
         this.converter = converter;
-        this.keys = new ArrayList<Key>();
-        Iterator<Key> itr = keys.iterator();
+        this.keys = new ArrayList<Location>();
+        Iterator<Location> itr = keys.iterator();
         while (itr.hasNext())
         {
             this.keys.add(itr.next());
@@ -54,9 +52,9 @@ class KeyMultiFetch<T> extends MultiFetch<T>
     {
 
         List<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
-        for (Key key : keys)
+        for (Location key : keys)
         {
-            values.add(fetch(key, converter).execute(cluster));
+            values.add(new FetchValue<T>(key, converter).execute(cluster));
         }
 
         return new Response(values);

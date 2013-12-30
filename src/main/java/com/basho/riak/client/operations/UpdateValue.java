@@ -64,7 +64,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
      * @param <T>       the domain object type
      * @return a response
      */
-    public static <T> UpdateValue<T> update(Key location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
+    public static <T> UpdateValue<T> update(Location location, Converter<T> converter, ConflictResolver<T> resolver, Update<T> update)
     {
         return new UpdateValue<T>(location, converter, resolver, update);
     }
@@ -78,7 +78,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
      * @param <T>       the domain object type
      * @return a response
      */
-    public static <T> UpdateValue<T> update(Key location, Converter<T> converter, Update<T> update)
+    public static <T> UpdateValue<T> update(Location location, Converter<T> converter, Update<T> update)
     {
         return new UpdateValue<T>(location, converter, new DefaultResolver<T>(), update);
     }
@@ -91,7 +91,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
      * @param update   business logic mutation
      * @return a response
      */
-    public static UpdateValue<RiakObject> update(Key location, ConflictResolver<RiakObject> resolver, Update<RiakObject> update)
+    public static UpdateValue<RiakObject> update(Location location, ConflictResolver<RiakObject> resolver, Update<RiakObject> update)
     {
         return new UpdateValue<RiakObject>(location, new PassThroughConverter(), resolver, update);
     }
@@ -103,7 +103,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
      * @param update   business logic mutation
      * @return a response
      */
-    public static UpdateValue<RiakObject> update(Key location, Update<RiakObject> update)
+    public static UpdateValue<RiakObject> update(Location location, Update<RiakObject> update)
     {
         return new UpdateValue<RiakObject>(location, new PassThroughConverter(), new DefaultResolver<RiakObject>(), update);
     }
@@ -117,7 +117,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
      * @param <T>       the domain object type
      * @return a response
      */
-    public static <T> UpdateValue<T> resolve(Key location, Converter<T> converter, ConflictResolver<T> resolver)
+    public static <T> UpdateValue<T> resolve(Location location, Converter<T> converter, ConflictResolver<T> resolver)
     {
         return new UpdateValue<T>(location, converter, resolver, Update.<T>noopUpdate());
     }
@@ -129,7 +129,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
      * @param resolver resolution strategy
      * @return a response
      */
-    public static UpdateValue<RiakObject> resolve(Key location, ConflictResolver<RiakObject> resolver)
+    public static UpdateValue<RiakObject> resolve(Location location, ConflictResolver<RiakObject> resolver)
     {
         return new UpdateValue<RiakObject>(location, new PassThroughConverter(), resolver, Update.<RiakObject>noopUpdate());
     }

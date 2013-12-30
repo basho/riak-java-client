@@ -15,95 +15,132 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
-
-public abstract class Location
+public class Location
 {
 
-    private static final String DEFAULT_TYPE = "default";
-    private static final BucketType DEFAULT_BUCKET_TYPE = new BucketType(DEFAULT_TYPE);
+	private static final String DEFAULT_TYPE = "default";
 
-    private final ByteArrayWrapper type;
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper key;
+	private String type;
+	private String bucket;
+	private String key;
 
-    protected Location(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
-    {
-        this.type = type;
-        this.bucket = bucket;
-        this.key = key;
-    }
+	/**
+	 * Construct a location using both a bucket and a key
+	 *
+	 * @param bucket the bucket for this location
+	 * @param key    the key for this location
+	 */
+	protected Location(String bucket, String key)
+	{
+		this.bucket = bucket;
+		this.key = key;
+	}
 
-    protected Location(String type, String bucket, String key)
-    {
-        this.type = ByteArrayWrapper.create(type);
-        this.bucket = ByteArrayWrapper.create(bucket);
-        this.key = key == null ? null : ByteArrayWrapper.create(key);
-    }
+	/**
+	 * Construct a location using just a bucket
+	 *
+	 * @param bucket the bucket for this location
+	 */
+	public Location(String bucket)
+	{
+		this.bucket = bucket;
+	}
 
-    public ByteArrayWrapper getType()
-    {
-        return type;
-    }
+	/**
+	 * Specify the bucket type of this location
+	 *
+	 * @param type the bucket type for this location
+	 * @return this
+	 */
+	public Location withType(String type)
+	{
+		this.type = type;
+		return this;
+	}
 
-    public ByteArrayWrapper getBucket()
-    {
-        return bucket;
-    }
+	/**
+	 * Get the bucket type
+	 *
+	 * @return bucket type
+	 */
+	public String getType()
+	{
+		return type;
+	}
 
-    public boolean hasType()
-    {
-        return type != null;
-    }
+	/**
+	 * Get the bucket
+	 *
+	 * @return the bucket
+	 */
+	public String getBucket()
+	{
+		return bucket;
+	}
 
-    public boolean hasKey()
-    {
-        return key != null;
-    }
+	/**
+	 * Get the key
+	 *
+	 * @return the key
+	 */
+	public String getKey()
+	{
+		return key;
+	}
 
-    public boolean hasBucket()
-    {
-        return bucket != null;
-    }
+	/**
+	 * Does this location specify a type
+	 *
+	 * @return true if a type was specified
+	 */
+	public boolean hasType()
+	{
+		return type != null;
+	}
 
-    public ByteArrayWrapper getKey()
-    {
-        return key;
-    }
+	/**
+	 * Does this location specify a key
+	 *
+	 * @return true if a key was specified
+	 */
+	public boolean hasKey()
+	{
+		return key != null;
+	}
 
-    @Override
-    public int hashCode()
-    {
-        int result = 17;
-        result = 37 * result + getType().hashCode();
-        result = 37 * result + getBucket().hashCode();
-        result = 37 * result + getKey().hashCode();
-        return result;
-    }
+	@Override
+	public int hashCode()
+	{
+		int result = 17;
+		result = 37 * result + getType().hashCode();
+		result = 37 * result + getBucket().hashCode();
+		result = 37 * result + getKey().hashCode();
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj == this)
-        {
-            return true;
-        }
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == this)
+		{
+			return true;
+		}
 
-        if (!(obj instanceof Location))
-        {
-            return false;
-        }
+		if (!(obj instanceof Location))
+		{
+			return false;
+		}
 
-        Location other = (Location) obj;
+		Location other = (Location) obj;
 
-        return ((!hasType() && !other.hasType()) || (hasType() && other.hasType() && getType().equals(other.getType()))) &&
-            ((!hasBucket() && !other.hasBucket()) && (hasBucket() && other.hasBucket() && getBucket().equals(other.getBucket()))) &&
-            ((!hasKey() && !other.hasKey()) || (hasKey() && other.hasKey() && getKey().equals(other.getKey())));
-    }
+		return ((!hasType() && !other.hasType()) || (hasType() && other.hasType() && getType().equals(other.getType()))) &&
+			( (getBucket().equals(other.getBucket()))) &&
+			((!hasKey() && !other.hasKey()) || (hasKey() && other.hasKey() && getKey().equals(other.getKey())));
+	}
 
-    @Override
-    public String toString()
-    {
-        return "{type: " + type + ", bucket: " + bucket + ", key: " + key + "}";
-    }
+	@Override
+	public String toString()
+	{
+		return "{type: " + type + ", bucket: " + bucket + ", key: " + key + "}";
+	}
 }

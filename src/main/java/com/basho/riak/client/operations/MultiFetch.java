@@ -32,22 +32,22 @@ public abstract class MultiFetch<T> extends RiakCommand<MultiFetch.Response>
     @Override
     abstract Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
 
-    public static MultiFetch<RiakObject> multiFetch(Key... keys)
+    public static MultiFetch<RiakObject> multiFetch(Location... keys)
     {
         return new KeyMultiFetch<RiakObject>(new PassThroughConverter(), keys);
     }
 
-    public static MultiFetch<RiakObject> multiFetch(Iterable<Key> keys)
+    public static MultiFetch<RiakObject> multiFetch(Iterable<Location> keys)
     {
         return new KeyMultiFetch<RiakObject>(new PassThroughConverter(), keys);
     }
 
-    public static <U> MultiFetch<U> multiFetch(Converter<U> converter, Key... keys)
+    public static <U> MultiFetch<U> multiFetch(Converter<U> converter, Location... keys)
     {
       return new KeyMultiFetch<U>(converter, keys);
     }
 
-    public static <U> MultiFetch<U> multiFetch(Converter<U> conterver, Iterable<Key> keys)
+    public static <U> MultiFetch<U> multiFetch(Converter<U> conterver, Iterable<Location> keys)
     {
       return new KeyMultiFetch<U>(conterver, keys);
     }

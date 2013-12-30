@@ -48,26 +48,14 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
     }
 
     /**
-     * Factory method for a FetchValue command with a conversion step
-     *
-     * @param location  the key to fetch
-     * @param converter a domain object converter
-     * @return a response object
-     */
-    public FetchValue(Key location, Converter<T> converter)
-    {
-        this((Location) location, converter);
-    }
-
-    /**
      * Factory method for a FetchValue command returning raw RiakObjects
      *
      * @param location the key to fetch
      * @return a response object
      */
-    public FetchValue(Key location)
+    public FetchValue(Location location)
     {
-        this((Location) location, (Converter<T>) new PassThroughConverter());
+        this(location, (Converter<T>) new PassThroughConverter());
     }
 
     /**
@@ -89,9 +77,9 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
     Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        ByteArrayWrapper type = location.getType();
-        ByteArrayWrapper bucket = location.getBucket();
-        ByteArrayWrapper key = location.getKey();
+        ByteArrayWrapper type = ByteArrayWrapper.create(location.getType());
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(location.getBucket());
+        ByteArrayWrapper key = ByteArrayWrapper.create(location.getKey());
 
         FetchOperation.Builder builder = new FetchOperation.Builder(bucket, key);
         builder.withBucketType(type);

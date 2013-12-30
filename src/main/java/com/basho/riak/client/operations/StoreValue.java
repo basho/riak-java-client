@@ -98,9 +98,9 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
     public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        ByteArrayWrapper type = location.getType();
-        ByteArrayWrapper bucket = location.getBucket();
-        ByteArrayWrapper key = location.getKey();
+        ByteArrayWrapper type = ByteArrayWrapper.create(location.getType());
+        ByteArrayWrapper bucket = ByteArrayWrapper.create(location.getBucket());
+        ByteArrayWrapper key = ByteArrayWrapper.create(location.getKey());
 
         StoreOperation.Builder builder = new StoreOperation.Builder(bucket);
 
@@ -178,7 +178,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation.Response response = cluster.execute(operation).get();
         List<V> converted = convert(converter, response.getObjectList());
 
-        Key k = Location.key(type, bucket, response.getGeneratedKey());
+        Location k = new Location(bucket.toStringUtf8(), response.getGeneratedKey().toStringUtf8()).withType(type.toStringUtf8());
         VClock clock = response.getVClock();
 
         return new Response<V>(converted, clock, k);
@@ -188,11 +188,11 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
     public static class Response<T>
     {
 
-        private final Key key;
+        private final Location key;
         private final VClock vClock;
         private final List<T> value;
 
-        Response(List<T> value, VClock vClock, Key key)
+        Response(List<T> value, VClock vClock, Location key)
         {
             this.value = value;
             this.vClock = vClock;
@@ -219,7 +219,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
             return value;
         }
 
-        public Key getKey()
+        public Location getKey()
         {
             return key;
         }

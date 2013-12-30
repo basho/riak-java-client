@@ -51,7 +51,7 @@ public class StoreValueTest
     @Mock RiakFuture mockFuture;
     @Mock StoreOperation.Response mockResponse;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-    Key key = new Key("type", "bucket", "key");
+	Location key = new Location("bucket", "key").withType("type");
     RiakClient client;
     RiakObject riakObject;
 
