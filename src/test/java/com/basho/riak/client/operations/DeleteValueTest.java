@@ -61,7 +61,8 @@ public class DeleteValueTest
     @Test
     public void testDelete() throws Exception
     {
-        DeleteValue delete = new DeleteValue(key, vClock)
+        DeleteValue.Builder delete = new DeleteValue.Builder(key)
+	        .withVClock(vClock)
             .withOption(DeleteOption.DW, new Quorum(1))
             .withOption(DeleteOption.N_VAL, 1)
             .withOption(DeleteOption.PR, new Quorum(1))
@@ -74,7 +75,7 @@ public class DeleteValueTest
             .withOption(DeleteOption.W, new Quorum(1));
 
 
-        client.execute(delete);
+        client.execute(delete.build());
 
         ArgumentCaptor<DeleteOperation> captor =
             ArgumentCaptor.forClass(DeleteOperation.class);

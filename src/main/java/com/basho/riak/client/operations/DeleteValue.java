@@ -32,26 +32,16 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
 {
 
     private final Location location;
-    private final Map<DeleteOption<?>, Object> options;
+    private final Map<DeleteOption<?>, Object> options =
+	    new HashMap<DeleteOption<?>, Object>();
     private VClock vClock;
 
-    public DeleteValue(Location location, VClock vClock)
+    public DeleteValue(Builder builder)
     {
-        this.location = location;
-        this.options = new HashMap<DeleteOption<?>, Object>();
-        this.vClock = vClock;
+        this.location = builder.location;
+        this.options.putAll(builder.options);
+        this.vClock = builder.vClock;
     }
-
-    /**
-     * Delete value at the given key
-     *
-     * @param location the Riak key where the value is located
-     */
-    public DeleteValue(Location location)
-    {
-        this(location, null);
-    }
-
 
     @Override
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
@@ -123,31 +113,7 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
 
     }
 
-    /**
-     * Specify the VClock to use when deleting the object from Riak
-     *
-     * @param vClock the vclock
-     * @return this
-     */
-    public DeleteValue withVClock(VClock vClock)
-    {
-        this.vClock = vClock;
-        return this;
-    }
 
-    /**
-     * Add a delete option
-     *
-     * @param option the option
-     * @param value  the value associated with the option
-     * @param <T>    the type required by the option
-     * @return
-     */
-    public <T> DeleteValue withOption(DeleteOption<T> option, T value)
-    {
-        options.put(option, value);
-        return this;
-    }
 
     /**
      * The response from Riak
@@ -166,5 +132,51 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
             return deleted;
         }
     }
+
+	public static class Builder
+	{
+
+		private final Location location;
+		private final Map<DeleteOption<?>, Object> options =
+			new HashMap<DeleteOption<?>, Object>();
+		private VClock vClock;
+
+		public Builder(Location location)
+		{
+			this.location = location;
+		}
+
+		/**
+		 * Specify the VClock to use when deleting the object from Riak
+		 *
+		 * @param vClock the vclock
+		 * @return this
+		 */
+		public Builder withVClock(VClock vClock)
+		{
+			this.vClock = vClock;
+			return this;
+		}
+
+		/**
+		 * Add a delete option
+		 *
+		 * @param option the option
+		 * @param value  the value associated with the option
+		 * @param <T>    the type required by the option
+		 * @return
+		 */
+		public <T> Builder withOption(DeleteOption<T> option, T value)
+		{
+			options.put(option, value);
+			return this;
+		}
+
+		public DeleteValue build()
+		{
+			return new DeleteValue(this);
+		}
+
+	}
 
 }
