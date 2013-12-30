@@ -21,7 +21,6 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashMap;
@@ -41,7 +40,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
     private final Map<FetchOption<?>, Object> options;
     private final Converter<T> converter;
 
-    FetchValue(Location location, Converter<T> converter)
+    public FetchValue(Location location, Converter<T> converter)
     {
         this.options = new HashMap<FetchOption<?>, Object>();
         this.converter = converter;
@@ -53,12 +52,11 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
      *
      * @param location  the key to fetch
      * @param converter a domain object converter
-     * @param <T>       the type of the domain object
      * @return a response object
      */
-    public static <T> FetchValue<T> fetch(Key location, Converter<T> converter)
+    public FetchValue(Key location, Converter<T> converter)
     {
-        return new FetchValue<T>(location, converter);
+        this((Location) location, converter);
     }
 
     /**
@@ -67,9 +65,9 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
      * @param location the key to fetch
      * @return a response object
      */
-    public static FetchValue<RiakObject> fetch(Key location)
+    public FetchValue(Key location)
     {
-        return new FetchValue<RiakObject>(location, new PassThroughConverter());
+        this((Location) location, (Converter<T>) new PassThroughConverter());
     }
 
     /**
