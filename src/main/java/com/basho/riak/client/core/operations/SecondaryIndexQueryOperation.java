@@ -246,8 +246,15 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         }
 
         /**
-         * Set whether to sort the results returned by the query.
-         * Setting this to true will sort the results.
+         * Set whether to sort the results of a non-paginated 2i query.
+         * <p>
+         * Setting this to true will sort the results in Riak before returning them.
+         * </p>
+         * <p>
+         * Note that this is not recommended for queries that could return a large
+         * result set; the overhead in Riak is substantial. 
+         * </p>
+         * 
          * @param orderByKey true to sort the results, false to return as-is.
          * @return a reference to this object.
          */
