@@ -88,10 +88,10 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
             indexEntries.add(indexEntry);
         }
 
-        Continuation<T> continuation = null;
+        byte[] continuation = null;
         if (opResponse.hasContinuation())
         {
-            continuation = new Continuation<T>(bucket, index, op, opResponse.getContinuation());
+            continuation = opResponse.getContinuation().getValue();
         }
 
         return new Response<T>(continuation, indexEntries);
@@ -197,12 +197,12 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     public static final class Response<T> implements Iterable<IndexEntry<T>>
     {
 
-        private final Continuation<T> continuation;
+	    private final byte[] continuation;
         private final List<IndexEntry<T>> entries;
 
-        Response(Continuation<T> continuation, List<IndexEntry<T>> entries)
+        Response(byte[] continuation, List<IndexEntry<T>> entries)
         {
-            this.continuation = continuation;
+	        this.continuation = continuation;
             this.entries = entries;
         }
 
@@ -211,7 +211,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
             return continuation != null;
         }
 
-        public FetchIndex<T> getContinuation()
+        public byte[] getContinuation()
         {
             return continuation;
         }
