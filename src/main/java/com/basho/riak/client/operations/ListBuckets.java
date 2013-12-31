@@ -30,25 +30,10 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
     private final int timeout;
     private final String type;
 
-    public ListBuckets(String type, int timeout)
+    ListBuckets(Builder builder)
     {
-        this.type = type;
-        this.timeout = timeout;
-    }
-
-    public ListBuckets()
-    {
-        this(DEFAULT_BUCKET_TYPE, -1);
-    }
-
-    public ListBuckets(int timeout)
-    {
-        this(DEFAULT_BUCKET_TYPE, timeout);
-    }
-
-    public ListBuckets(String type)
-    {
-        this(type, -1);
+		this.timeout = builder.timeout;
+	    this.type = builder.type;
     }
 
     @Override
@@ -113,5 +98,27 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
             iterator.remove();
         }
     }
+
+	public static class Builder
+	{
+		private int timeout;
+		private final String type;
+
+		public Builder(String type)
+		{
+			this.type = type;
+		}
+
+		public Builder withTimeout(int timeout)
+		{
+			this.timeout = timeout;
+			return this;
+		}
+
+		public ListBuckets build()
+		{
+			return new ListBuckets(this);
+		}
+	}
 
 }

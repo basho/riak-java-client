@@ -29,15 +29,10 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
     private final Location bucket;
     private final int timeout;
 
-    public ListKeys(Location bucket, int timeout)
+    ListKeys(Builder builder)
     {
-        this.bucket = bucket;
-        this.timeout = timeout;
-    }
-
-    public ListKeys(Location bucket)
-    {
-        this(bucket, -1);
+        this.bucket = builder.bucket;
+        this.timeout = builder.timeout;
     }
 
     @Override
@@ -104,5 +99,27 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
             iterator.remove();
         }
     }
+
+	public static class Builder
+	{
+		private final Location bucket;
+		private int timeout;
+
+		public Builder(Location bucket)
+		{
+			this.bucket = bucket;
+		}
+
+		public Builder withTimeout(int timeout)
+		{
+			this.timeout = timeout;
+			return this;
+		}
+
+		public ListKeys build()
+		{
+			return new ListKeys(this);
+		}
+	}
 
 }
