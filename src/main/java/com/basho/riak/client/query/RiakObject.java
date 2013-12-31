@@ -356,10 +356,4 @@ public final class RiakObject
     {
         return isDeleted;
     }
-    
-    public static class Builder
-    {
-        
-    }
-    
 }
