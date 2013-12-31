@@ -247,7 +247,7 @@ public class RiakNodeTest
 
         for (int i = 0; i < 5; i++)
         {
-            ChannelFutureListener listener = Whitebox.getInternalState(node, "closeListener", RiakNode.class);
+            ChannelFutureListener listener = Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode.class);
             listener.operationComplete(future);
         }
 

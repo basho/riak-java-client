@@ -68,11 +68,10 @@ public class ITestStoreOperation extends ITestBase
         ByteArrayWrapper bName = 
             ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_1").getBytes());
         
-        BucketProperties props = 
-            new BucketProperties()
-                .withAllowMulti(true);
-        
-        StoreBucketPropsOperation op = new StoreBucketPropsOperation(bName, props);
+        StoreBucketPropsOperation op = 
+            new StoreBucketPropsOperation.Builder(bName)
+                .withAllowMulti(true)
+                .build();
         cluster.execute(op);
         op.get();
         

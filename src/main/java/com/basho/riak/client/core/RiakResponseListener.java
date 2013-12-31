@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.netty.RiakResponseException;
 import io.netty.channel.Channel;
 
 /**
@@ -25,5 +26,6 @@ import io.netty.channel.Channel;
 public interface RiakResponseListener
 {
     public void onSuccess(Channel channel, RiakMessage response);
+    public void onRiakErrorResponse(Channel channel, RiakResponseException response); 
     public void onException(Channel channel, Throwable t);
 }

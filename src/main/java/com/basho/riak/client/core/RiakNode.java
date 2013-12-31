@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.RiakChannelInitializer;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -48,8 +49,6 @@ public class RiakNode implements RiakResponseListener
 
     private final LinkedBlockingDeque<ChannelWithIdleTime> available =
         new LinkedBlockingDeque<ChannelWithIdleTime>();
-    private final ConcurrentLinkedQueue<Channel> inUse =
-        new ConcurrentLinkedQueue<Channel>();
     private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed =
         new ConcurrentLinkedQueue<ChannelWithIdleTime>();
     private final List<NodeStateListener> stateListeners =
@@ -75,38 +74,82 @@ public class RiakNode implements RiakResponseListener
 
     private volatile int readTimeoutInMillis;
 
-    private ChannelFutureListener writeListener =
+    private final ChannelFutureListener writeListener =
         new ChannelFutureListener()
         {
-
             @Override
             public void operationComplete(ChannelFuture future) throws Exception
             {
-                // See how the write worked out ...
+                // If there's a write failure, we yank the operation, close
+                // the channel, and set the exception. Returning the closed 
+                // channel to the pool discards it and records a disconnect
+                // for the health check. 
                 if (!future.isSuccess())
                 {
+                    logger.error("Write failed on RiakNode {}:{} id: {}; cause: {}", 
+                                remoteAddress, port, future.channel().hashCode(),
+                                future.cause());
                     FutureOperation inProgress = inProgressMap.remove(future.channel());
-                    logger.info("Write failed on RiakNode {}:{}", remoteAddress, port);
-                    returnConnection(future.channel());
-                    inProgress.setException(future.cause());
+                    if (inProgress != null)
+                    {
+                        future.channel().close();
+                        returnConnection(future.channel()); // to release permit
+                        recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
+                        inProgress.setException(future.cause());
+                    }
+                }
+                else
+                {
+                    // On a successful write we add the in-progress close listener 
+                    // and let it handle a disco during an op.
+                    future.channel().closeFuture().addListener(inProgressCloseListener);
                 }
             }
 
         };
 
-    private final ChannelFutureListener closeListener =
+    private final ChannelFutureListener inAvailableCloseListener =
         new ChannelFutureListener()
         {
-
             @Override
             public void operationComplete(ChannelFuture future) throws Exception
             {
-                // Because we aren't storing raw channels in available we just throw
-                // these in the recentlyClosed as an indicator. We'll leave it up
-                // to the healthcheck task to purge the available queue of dead
-                // connections and make decisions on what to do
+                // Rather than having to do an O(n) search here, we just leave 
+                // the channel in available. Because it's closed it'll be discarded
+                // the next time it's pulled from the pool. 
+                // We record the disco for the health check. 
                 recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-                logger.debug("Channel closed; id:{} {}:{}", future.channel().hashCode(), remoteAddress, port);
+                logger.error("inAvailable channel closed; id:{} {}:{}", 
+                             future.channel().hashCode(), remoteAddress, port);
+            }
+        };
+    
+    private final ChannelFutureListener inProgressCloseListener =
+        new ChannelFutureListener()
+        {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception
+            {
+                FutureOperation inProgress = inProgressMap.remove(future.channel());
+                logger.error("Channel closed while operation in progress; id:{} {}:{}", 
+                             future.channel().hashCode(), remoteAddress, port);
+                if (inProgress != null)
+                {
+                    returnConnection(future.channel()); // to release permit
+                    recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
+                    
+                    // Netty seems to not bother telling you *why* the connection
+                    // was closed.
+                    if (future.cause() != null)
+                    {
+                        inProgress.setException(future.cause());
+                    }
+                    else
+                    {
+                        inProgress.setException(new Exception("Connection closed unexpectantly"));
+                    }
+                }
+                
             }
         };
 
@@ -167,7 +210,7 @@ public class RiakNode implements RiakResponseListener
     public synchronized RiakNode start()
     {
         stateCheck(State.CREATED);
-
+        
         if (executor == null)
         {
             executor = Executors.newSingleThreadScheduledExecutor();
@@ -210,6 +253,7 @@ public class RiakNode implements RiakResponseListener
             for (Channel c : minChannels)
             {
                 available.offerFirst(new ChannelWithIdleTime(c));
+                c.closeFuture().addListener(inAvailableCloseListener);
             }
         }
 
@@ -545,11 +589,13 @@ public class RiakNode implements RiakResponseListener
             inProgressMap.put(channel, operation);
             ChannelFuture writeFuture = channel.writeAndFlush(operation);
             writeFuture.addListener(writeListener);
-            logger.debug("Operation executed on RiakNode {}:{}", remoteAddress, port);
+            logger.debug("Operation being executed on RiakNode {}:{}", remoteAddress, port);
             return true;
         }
         else
         {
+            logger.debug("Operation not being executed Riaknode {}:{}; no connections available",
+                            remoteAddress, port);
             return false;
         }
     }
@@ -604,7 +650,7 @@ public class RiakNode implements RiakResponseListener
             try
             {
                 channel = doGetConnection();
-                inUse.add(channel);
+                channel.closeFuture().removeListener(inAvailableCloseListener);
             }
             catch (ConnectionFailedException ex)
             {
@@ -630,18 +676,15 @@ public class RiakNode implements RiakResponseListener
             }
         }
 
-
         ChannelFuture f = bootstrap.connect();
-        // Any channels that don't connect will trigger a close operation as well
-        f.channel().closeFuture().addListener(closeListener);
-
+        
         try
         {
             f.await();
         }
         catch (InterruptedException ex)
         {
-            logger.info("Thread interrupted waiting for new connection to be made; {}",
+            logger.error("Thread interrupted waiting for new connection to be made; {}",
                 remoteAddress);
             Thread.currentThread().interrupt();
             throw new ConnectionFailedException(ex);
@@ -659,19 +702,12 @@ public class RiakNode implements RiakResponseListener
     }
 
     /**
-     * Return a Netty channel to the pool.
+     * Return a Netty channel.
      *
      * @param c The Netty channel to return to the pool
-     * @throws IllegalArgumentException If the channel did not originate from this pool
      */
     private void returnConnection(Channel c)
     {
-        stateCheck(State.RUNNING, State.SHUTTING_DOWN, State.SHUTDOWN, State.HEALTH_CHECKING);
-        if (!inUse.remove(c))
-        {
-            throw new IllegalArgumentException("Channel not managed by this pool");
-        }
-
         switch (state)
         {
             case SHUTTING_DOWN:
@@ -681,25 +717,36 @@ public class RiakNode implements RiakResponseListener
             case RUNNING:
             case HEALTH_CHECKING:
             default:
-                if (c.isOpen())
+                if (inProgressMap.containsKey(c))
                 {
-                    logger.debug("Channel id:{} returned to pool", c.hashCode());
-                    available.offerFirst(new ChannelWithIdleTime(c));
+                    logger.error("Channel returned to pool while still in use. id: {}",
+                        c.hashCode());
                 }
                 else
                 {
-                    logger.debug("Closed channel id:{} returned to pool; discarding", c.hashCode());
+                    if (c.isOpen())
+                    {
+                        logger.debug("Channel id:{} returned to pool", c.hashCode());
+                        c.closeFuture().removeListener(inProgressCloseListener);
+                        c.closeFuture().addListener(inAvailableCloseListener);
+                        available.offerFirst(new ChannelWithIdleTime(c));
+                    }
+                    else
+                    {
+                        logger.debug("Closed channel id:{} returned to pool; discarding", c.hashCode());
+                    }
+                    logger.debug("Released pool permit");
+                    permits.release();
                 }
-                permits.release();
-                break;
-        }
+            }
     }
 
     private void closeConnection(Channel c)
     {
         // If we are explicitly closing the connection we don't want to hear
         // about it.
-        c.closeFuture().removeListener(closeListener);
+        c.closeFuture().removeListener(inProgressCloseListener);
+        c.closeFuture().removeListener(inAvailableCloseListener);
         c.close();
     }
 
@@ -717,36 +764,52 @@ public class RiakNode implements RiakResponseListener
         }
 
         final FutureOperation inProgress = inProgressMap.get(channel);
-        inProgress.setResponse(response);
-
-        if (inProgress.isDone())
+        
+        // Especially with a streaming op, the close listener may trigger causing
+        // a race. This check guards that. 
+        if (inProgress != null)  
         {
-            inProgressMap.remove(channel);
-            returnConnection(channel);
-        }
+            inProgress.setResponse(response);
 
+            if (inProgress.isDone())
+            {
+                inProgressMap.remove(channel);
+                returnConnection(channel); // return permit
+            }
+        }
     }
 
     @Override
+    public void onRiakErrorResponse(Channel channel, RiakResponseException ex)
+    {
+        logger.debug("Riak replied with error; {}:{}", ex.getCode(), ex.getMessage());
+        final FutureOperation inProgress = inProgressMap.remove(channel);
+        if (inProgress != null)
+        {
+            inProgress.setException(ex);
+            returnConnection(channel); // release permit
+        }
+    }
+    
+    @Override
     public void onException(Channel channel, final Throwable t)
     {
-        logger.debug("Operation onException() channel: id:{} {}:{} {}",
+        logger.error("Operation onException() channel: id:{} {}:{} {}",
             channel.hashCode(), remoteAddress, port, t);
-
+        
         final FutureOperation inProgress = inProgressMap.remove(channel);
         // There are fail cases where multiple exceptions are thrown from 
         // the pipeline. In that case we'll get an exception from the 
         // handler but will not have an entry in inProgress because it's
-        // already been handled.
+        // already been handled. 
         if (inProgress != null)
         {
             if (readTimeoutInMillis > 0)
             {
                 channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
             }
-            returnConnection(channel);
             inProgress.setException(t);
-
+            returnConnection(channel); // release permit
         }
     }
 
@@ -860,7 +923,7 @@ public class RiakNode implements RiakResponseListener
     {
         // with all the concurrency there's really no reason to keep 
         // checking the sizes. This is really just a "best guess"
-        int currentNum = inUse.size() + available.size();
+        int currentNum = inProgressMap.size() + available.size();
         if (currentNum > minConnections)
         {
             // Note this will not throw a ConncurrentModificationException
@@ -977,7 +1040,7 @@ public class RiakNode implements RiakResponseListener
         @Override
         public void run()
         {
-            if (inUse.isEmpty())
+            if (inProgressMap.isEmpty())
             {
                 state = State.SHUTDOWN;
                 notifyStateListeners();

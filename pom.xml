@@ -23,6 +23,18 @@
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
+        <developer>
+            <name>David Rusek</name>
+            <email>drusek@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Alex Moore</name>
+            <email>amoore@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
     </developers>
 
     <properties>
@@ -209,11 +221,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.0.7.Final</version>
-        </dependency>
-        <dependency>
             <groupId>com.jayway.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <version>1.3.5</version>
@@ -228,6 +235,11 @@
             <groupId>com.basho.riak.protobuf</groupId>
             <artifactId>riak-pb</artifactId>
             <version>2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.13.Final</version>
         </dependency>
     </dependencies>
 </project>
