@@ -77,7 +77,7 @@ public class UpdateValueTest
 		Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
 
 		UpdateValue.Builder update =
-			new UpdateValue.Builder(key)
+			new UpdateValue.Builder<RiakObject>(key)
 				.withConverter(spiedConverter)
 				.withResolver(spiedResolver)
 				.withUpdate(spiedUpdate);

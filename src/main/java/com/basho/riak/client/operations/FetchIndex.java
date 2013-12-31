@@ -33,25 +33,12 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     private final Index<T> index;
     private final ByteArrayWrapper continuation;
 
-    FetchIndex(Location bucket, Index<T> index, Criteria op, ByteArrayWrapper continuation)
+    FetchIndex(Builder<T> builder)
     {
-        this.bucket = bucket;
-        this.op = op;
-        this.index = index;
-        this.continuation = continuation;
-
-        //TODO add check if op can be performed on the given index
-    }
-
-    public FetchIndex(Location bucket, Index<T> index, Criteria op)
-    {
-        this(bucket, index, op, null);
-    }
-
-    public <U> FetchIndex<T> withOption(IndexOption<U> option, U value)
-    {
-        options.put(option, value);
-        return this;
+        this.bucket = builder.bucket;
+        this.op = builder.op;
+        this.index = builder.index;
+        this.continuation = builder.continuation;
     }
 
     @Override
@@ -235,6 +222,46 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
             return unmodifiableList(entries).iterator();
         }
     }
+
+	public static class Builder<T>
+	{
+
+		private final Location bucket;
+		private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
+		private final Index<T> index;
+		private Criteria op;
+		private ByteArrayWrapper continuation;
+
+		public Builder(Location bucket, Index<T> index)
+		{
+			this.bucket = bucket;
+			this.index = index;
+		}
+
+		public Builder<T> withCriteria(Criteria op)
+		{
+			this.op = op;
+			return this;
+		}
+
+		public <U> Builder<T> withOption(IndexOption<U> option, U value)
+		{
+			this.options.put(option, value);
+			return this;
+		}
+
+		public Builder<T> withContinuation(byte[] continuation)
+		{
+			this.continuation = ByteArrayWrapper.create(continuation);
+			return this;
+		}
+
+		public FetchIndex<T> build()
+		{
+			return new FetchIndex<T>(this);
+		}
+
+	}
 
 }
 

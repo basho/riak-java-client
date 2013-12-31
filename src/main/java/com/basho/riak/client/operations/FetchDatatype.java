@@ -154,4 +154,6 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
         }
     }
 
+
+
 }
