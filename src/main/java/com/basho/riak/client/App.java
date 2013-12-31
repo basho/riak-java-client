@@ -5,7 +5,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
-import com.basho.riak.client.core.operations.FetchBucketTypePropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
@@ -35,24 +34,14 @@ public class App implements RiakFutureListener<RiakObject>
     
     public void doIt() throws InterruptedException, ExecutionException
     {
-        FetchBucketTypePropsOperation btpOp = 
-            new FetchBucketTypePropsOperation.Builder(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()))
-                .build();
-        
-        cluster.execute(btpOp);
-        BucketProperties props = btpOp.get();
-        System.out.println(props);
-        
-        FetchBucketPropsOperation bpOp = 
+        FetchBucketPropsOperation bpOp =
             new FetchBucketPropsOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket3)".getBytes()))
                 .withBucketType(ByteArrayWrapper.unsafeCreate("test_type2".getBytes()))
                 .build();
                                
         cluster.execute(bpOp);
-        props = bpOp.get();
+        BucketProperties props = bpOp.get();
         System.out.println(props);
-        
-        
         
         
         FetchOperation fetchOp =
