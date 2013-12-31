@@ -47,30 +47,20 @@ public class Search extends RiakCommand<SearchOperation.Response>
     private String filterQuery;
     private String sortField;
     private List<String> returnFields;
-    private Map<SearchOption<?>, Object> options = new HashMap<SearchOption<?>, Object>();
+    private Map<SearchOption<?>, Object> options =
+	    new HashMap<SearchOption<?>, Object>();
 
-    public Search(String index, String query, int start, int rows, Presort presort)
+    public Search(Builder builder)
     {
-        this.index = index;
-        this.query = query;
-        this.start = start;
-        this.rows = rows;
-        this.presort = presort;
-    }
-
-    public static Search search(String index, String query)
-    {
-        return new Search(index, query, -1, -1, null);
-    }
-
-    public static Search search(String index, String query, int start, int rows)
-    {
-        return new Search(index, query, -1, -1, null);
-    }
-
-    public static Search search(String index, String query, int start, int rows, Presort presort)
-    {
-        return new Search(index, query, start, rows, presort);
+        this.index = builder.index;
+        this.query = builder.query;
+        this.start = builder.start;
+        this.rows = builder.rows;
+        this.presort = builder.presort;
+	    this.filterQuery = builder.filterQuery;
+	    this.sortField = builder.sortField;
+	    this.returnFields = builder.returnFields;
+	    this.options.putAll(builder.options);
     }
 
     public static RiakCommand<YokozunaIndex> fetchIndex(final String index)
@@ -219,38 +209,81 @@ public class Search extends RiakCommand<SearchOperation.Response>
 
     }
 
-    public <T> Search withOption(SearchOption<T> option, T value)
-    {
-        options.put(option, value);
-        return this;
-    }
+	public static class Builder
+	{
+		private final String index;
+		private final String query;
+		private int start;
+		private int rows;
+		private Presort presort;
+		private String filterQuery;
+		private String sortField;
+		private List<String> returnFields;
+		private Map<SearchOption<?>, Object> options = new HashMap<SearchOption<?>, Object>();
 
-    public Search filter(String query)
-    {
-        this.filterQuery = query;
-        return this;
-    }
+		public Builder(String index, String query)
+		{
+			this.index = index;
+			this.query = query;
+		}
 
-    public Search sort(String field)
-    {
-        this.sortField = field;
-        return this;
-    }
+		public Builder withPresort(Presort presort)
+		{
+			this.presort = presort;
+			return this;
+		}
 
-    public Search returnFields(Iterable<String> fields)
-    {
-        this.returnFields = new ArrayList<String>();
-        for (String field : fields)
-        {
-            returnFields.add(field);
-        }
-        return this;
-    }
+		public Builder withStart(int start)
+		{
+			this.start = start;
+			return this;
+		}
 
-    public Search returnFields(String... fields)
-    {
-        this.returnFields(Arrays.asList(fields));
-        return this;
-    }
+		public Builder withRows(int rows)
+		{
+			this.rows = rows;
+			return this;
+		}
+
+		public <T> Builder withOption(SearchOption<T> option, T value)
+		{
+			options.put(option, value);
+			return this;
+		}
+
+		public Builder filter(String query)
+		{
+			this.filterQuery = query;
+			return this;
+		}
+
+		public Builder sort(String field)
+		{
+			this.sortField = field;
+			return this;
+		}
+
+		public Builder returnFields(Iterable<String> fields)
+		{
+			this.returnFields = new ArrayList<String>();
+			for (String field : fields)
+			{
+				returnFields.add(field);
+			}
+			return this;
+		}
+
+		public Builder returnFields(String... fields)
+		{
+			this.returnFields(Arrays.asList(fields));
+			return this;
+		}
+
+		public Search build()
+		{
+			return new Search(this);
+		}
+
+	}
 
 }
