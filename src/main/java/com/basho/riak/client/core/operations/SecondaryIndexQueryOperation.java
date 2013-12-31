@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp>
@@ -243,6 +244,36 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             pbReqBuilder.setContinuation(ByteString.copyFrom(continuation.unsafeGetValue()));
             return this;
         }
+
+        /**
+         * Set whether to sort the results of a non-paginated 2i query.
+         * <p>
+         * Setting this to true will sort the results in Riak before returning them.
+         * </p>
+         * <p>
+         * Note that this is not recommended for queries that could return a large
+         * result set; the overhead in Riak is substantial. 
+         * </p>
+         * 
+         * @param orderByKey true to sort the results, false to return as-is.
+         * @return a reference to this object.
+         */
+        public Builder withPaginationSort(boolean orderByKey)
+        {
+            pbReqBuilder.setPaginationSort(orderByKey);
+            return this;
+        }
+
+        /**
+         * Set the regex to filter result terms by for this query.
+         * @param filter the regex to filter terms by.
+         * @return a reference to this object.
+         */
+        public Builder withRegexTermFilter(ByteArrayWrapper filter)
+        {
+            pbReqBuilder.setTermRegex(ByteString.copyFrom(filter.unsafeGetValue()));
+            return this;
+        }
         
         /**
          * Construct a new SecondaryIndexQueryOperation.
@@ -264,7 +295,16 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 throw new IllegalArgumentException("Cannot specify single index key and range");
             }
-            
+            else if (pbReqBuilder.hasMaxResults() && pbReqBuilder.hasPaginationSort()
+                                                  && !pbReqBuilder.getPaginationSort())
+            {
+                throw new IllegalArgumentException("Cannot set paginationSort=false while setting maxResults");
+            }
+            else if (pbReqBuilder.hasTermRegex() && pbReqBuilder.getIndex().toStringUtf8().endsWith("_int"))
+            {
+                throw new IllegalArgumentException("Cannot use term regular expression in integer query");
+            }
+
             if (pbReqBuilder.hasKey())
             {
                 pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
