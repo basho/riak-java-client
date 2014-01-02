@@ -37,7 +37,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 	    new HashMap<StoreOption<?>, Object>();
     private final V value;
     private final Converter<V> converter;
-    private VClock vClock;
+    private final VClock vClock;
 
     StoreValue(Builder<V> builder)
     {
@@ -132,7 +132,12 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation.Response response = cluster.execute(operation).get();
         List<V> converted = convert(converter, response.getObjectList());
 
-        Location k = new Location(bucket.toStringUtf8(), response.getGeneratedKey().toStringUtf8()).withType(type.toStringUtf8());
+	    String returnedKey = response.hasGeneratedKey()
+		    ? response.getGeneratedKey().toStringUtf8()
+		    : location.getKey();
+
+        Location k = new Location(bucket.toStringUtf8(), returnedKey).withType(type.toStringUtf8());
+
         VClock clock = response.getVClock();
 
         return new Response<V>(converted, clock, k);

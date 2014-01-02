@@ -37,10 +37,10 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     private final Converter<T> converter;
     private final Update<T> update;
     private final ConflictResolver<T> resolver;
-    private final Map<FetchOption, Object> fetchOptions =
-	    new HashMap<FetchOption, Object>();
-    private final Map<StoreOption, Object> storeOptions =
-	    new HashMap<StoreOption, Object>();
+    private final Map<FetchOption<?>, Object> fetchOptions =
+	    new HashMap<FetchOption<?>, Object>();
+    private final Map<StoreOption<?>, Object> storeOptions =
+	    new HashMap<StoreOption<?>, Object>();
 
     UpdateValue(Builder<T> builder)
     {
@@ -57,9 +57,9 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     {
 
         FetchValue.Builder<T> fetchBuilder = new FetchValue.Builder<T>(location).withConverter(converter);
-        for (Map.Entry<FetchOption, Object> optPair : fetchOptions.entrySet())
+        for (Map.Entry<FetchOption<?>, Object> optPair : fetchOptions.entrySet())
         {
-            fetchBuilder.withOption(optPair.getKey(), optPair.getValue());
+            fetchBuilder.withOption((FetchOption<Object>) optPair.getKey(), optPair.getValue());
         }
 
         FetchValue.Response<T> fetchResponse = fetchBuilder.build().execute(cluster);
@@ -73,9 +73,9 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 
             StoreValue.Builder<T> store = new StoreValue.Builder<T>(location, updated)
 	            .withConverter(converter);
-            for (Map.Entry<StoreOption, Object> optPair : storeOptions.entrySet())
+            for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
             {
-                store.withOption(optPair.getKey(), optPair.getValue());
+                store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
             }
             StoreValue.Response<T> storeResponse = store.build().execute(cluster);
 
@@ -176,10 +176,10 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 		private Converter<T> converter;
 		private Update<T> update;
 		private ConflictResolver<T> resolver;
-		private final Map<FetchOption, Object> fetchOptions =
-			new HashMap<FetchOption, Object>();
-		private final Map<StoreOption, Object> storeOptions =
-			new HashMap<StoreOption, Object>();
+		private final Map<FetchOption<?>, Object> fetchOptions =
+			new HashMap<FetchOption<?>, Object>();
+		private final Map<StoreOption<?>, Object> storeOptions =
+			new HashMap<StoreOption<?>, Object>();
 
 		public Builder(Location location)
 		{

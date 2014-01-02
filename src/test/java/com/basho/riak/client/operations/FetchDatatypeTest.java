@@ -50,6 +50,7 @@ public class FetchDatatypeTest
     RiakClient client;
 
     @Before
+    @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);

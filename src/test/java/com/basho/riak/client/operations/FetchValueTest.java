@@ -47,6 +47,7 @@ public class FetchValueTest
     RiakClient client;
 
     @Before
+    @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
@@ -63,7 +64,7 @@ public class FetchValueTest
     public void testFetch() throws Exception
     {
 
-        FetchValue<RiakObject> fetchValue = new FetchValue(key)
+        FetchValue.Builder<RiakObject> fetchValue = new FetchValue.Builder<RiakObject>(key)
             .withOption(FetchOption.TIMEOUT, 100)
             .withOption(FetchOption.BASIC_QUORUM, true)
             .withOption(FetchOption.DELETED_VCLOCK, true)
@@ -75,7 +76,7 @@ public class FetchValueTest
             .withOption(FetchOption.R, new Quorum(1))
             .withOption(FetchOption.SLOPPY_QUORUM, true);
 
-        client.execute(fetchValue);
+        client.execute(fetchValue.build());
 
         ArgumentCaptor<FetchOperation> captor =
             ArgumentCaptor.forClass(FetchOperation.class);

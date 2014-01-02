@@ -44,6 +44,7 @@ public class UpdateValueTest
 	RiakObject riakObject;
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void init() throws Exception
 	{
 		MockitoAnnotations.initMocks(this);
@@ -70,6 +71,7 @@ public class UpdateValueTest
 
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testUpdateValue() throws ExecutionException, InterruptedException
 	{
 		UpdateValue.Update spiedUpdate = spy(new NoopUpdate());

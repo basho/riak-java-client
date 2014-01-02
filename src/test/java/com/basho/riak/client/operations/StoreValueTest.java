@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
@@ -47,71 +48,75 @@ public class StoreValueTest
 {
 
 
-    @Mock RiakCluster mockCluster;
-    @Mock RiakFuture mockFuture;
-    @Mock StoreOperation.Response mockResponse;
-    VClock vClock = new BasicVClock(new byte[]{'1'});
+	@Mock RiakCluster mockCluster;
+	@Mock RiakFuture mockFuture;
+	@Mock StoreOperation.Response mockResponse;
+	VClock vClock = new BasicVClock(new byte[]{'1'});
 	Location key = new Location("bucket", "key").withType("type");
-    RiakClient client;
-    RiakObject riakObject;
+	RiakClient client;
+	RiakObject riakObject;
 
-    @Before
-    public void init() throws Exception
-    {
-        MockitoAnnotations.initMocks(this);
-        when(mockResponse.getObjectList()).thenReturn(new ArrayList<RiakObject>());
-        when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
-        when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
-        client = new RiakClient(mockCluster);
-        riakObject = new RiakObject();
-        riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
-    }
+	@Before
+	@SuppressWarnings("unchecked")
+	public void init() throws Exception
+	{
+		MockitoAnnotations.initMocks(this);
+		when(mockResponse.getObjectList()).thenReturn(new ArrayList<RiakObject>());
+		when(mockResponse.hasGeneratedKey()).thenReturn(false);
+		when(mockFuture.get()).thenReturn(mockResponse);
+		when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
+		when(mockFuture.isCancelled()).thenReturn(false);
+		when(mockFuture.isDone()).thenReturn(true);
+		when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
+		client = new RiakClient(mockCluster);
+		riakObject = new RiakObject();
+		riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
+	}
 
-    @Test
-    public void testStore() throws ExecutionException, InterruptedException
-    {
+	@Test
+	public void testStore() throws ExecutionException, InterruptedException
+	{
 
-        StoreValue.Builder<RiakObject> store = new StoreValue.Builder(key, riakObject)
-	        .withVectorClock(vClock)
-            .withOption(StoreOption.ASIS, true)
-            .withOption(StoreOption.DW, new Quorum(1))
-            .withOption(StoreOption.IF_NONE_MATCH, true)
-            .withOption(StoreOption.IF_NOT_MODIFIED, true)
-            .withOption(StoreOption.PW, new Quorum(1))
-            .withOption(StoreOption.N_VAL, 1)
-            .withOption(StoreOption.RETURN_BODY, true)
-            .withOption(StoreOption.RETURN_HEAD, true)
-            .withOption(StoreOption.SLOPPY_QUORUM, true)
-            .withOption(StoreOption.TIMEOUT, 1000)
-            .withOption(StoreOption.W, new Quorum(1));
+		StoreValue.Builder<RiakObject> store =
+			new StoreValue.Builder<RiakObject>(key, riakObject)
+				.withConverter(new PassThroughConverter())
+				.withVectorClock(vClock)
+				.withOption(StoreOption.ASIS, true)
+				.withOption(StoreOption.DW, new Quorum(1))
+				.withOption(StoreOption.IF_NONE_MATCH, true)
+				.withOption(StoreOption.IF_NOT_MODIFIED, true)
+				.withOption(StoreOption.PW, new Quorum(1))
+				.withOption(StoreOption.N_VAL, 1)
+				.withOption(StoreOption.RETURN_BODY, true)
+				.withOption(StoreOption.RETURN_HEAD, true)
+				.withOption(StoreOption.SLOPPY_QUORUM, true)
+				.withOption(StoreOption.TIMEOUT, 1000)
+				.withOption(StoreOption.W, new Quorum(1));
 
-        client.execute(store.build());
+		client.execute(store.build());
 
-        ArgumentCaptor<StoreOperation> captor =
-            ArgumentCaptor.forClass(StoreOperation.class);
-        verify(mockCluster).execute(captor.capture());
+		ArgumentCaptor<StoreOperation> captor =
+			ArgumentCaptor.forClass(StoreOperation.class);
+		verify(mockCluster).execute(captor.capture());
 
-        StoreOperation operation = captor.getValue();
-        RiakKvPB.RpbPutReq.Builder builder =
-            (RiakKvPB.RpbPutReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
+		StoreOperation operation = captor.getValue();
+		RiakKvPB.RpbPutReq.Builder builder =
+			(RiakKvPB.RpbPutReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
-        assertTrue(builder.hasVclock());
-        assertEquals(true, builder.getAsis());
-        assertEquals(1, builder.getDw());
-        assertEquals(true, builder.getIfNotModified());
-        assertEquals(true, builder.getIfNoneMatch());
-        assertEquals(1, builder.getPw());
-        assertEquals(1, builder.getNVal());
-        assertEquals(true, builder.getReturnBody());
-        assertEquals(true, builder.getReturnHead());
-        assertEquals(true, builder.getSloppyQuorum());
-        assertEquals(1000, builder.getTimeout());
-        assertEquals(1, builder.getW());
+		assertTrue(builder.hasVclock());
+		assertEquals(true, builder.getAsis());
+		assertEquals(1, builder.getDw());
+		assertEquals(true, builder.getIfNotModified());
+		assertEquals(true, builder.getIfNoneMatch());
+		assertEquals(1, builder.getPw());
+		assertEquals(1, builder.getNVal());
+		assertEquals(true, builder.getReturnBody());
+		assertEquals(true, builder.getReturnHead());
+		assertEquals(true, builder.getSloppyQuorum());
+		assertEquals(1000, builder.getTimeout());
+		assertEquals(1, builder.getW());
 
-    }
+	}
 
 
 }

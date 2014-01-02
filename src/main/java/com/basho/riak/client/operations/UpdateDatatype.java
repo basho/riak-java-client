@@ -126,7 +126,11 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
             riakDatatype = (T) new RiakCounter(element.getAsCounter());
         }
 
-        Location key = new Location(loc.getBucket(), crdtResponse.getGeneratedKey().toStringUtf8()).withType(loc.getType());
+	    String returnedKey = crdtResponse.hasGeneratedKey()
+		    ? crdtResponse.getGeneratedKey().toStringUtf8()
+		    : loc.getKey();
+
+        Location key = new Location(loc.getBucket(), returnedKey).withType(loc.getType());
         Context returnedCtx = new Context(crdtResponse.getContext().getValue());
 
         return new Response<T>(key, returnedCtx, riakDatatype);

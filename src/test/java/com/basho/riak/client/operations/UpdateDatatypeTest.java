@@ -53,6 +53,7 @@ public class UpdateDatatypeTest
 	Location key = new Location("bucket", "key").withType("type");
 
     @Before
+    @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
