@@ -1,9 +1,11 @@
-## Riak Java client v2.0 technical preview
+## Riak Java client v2.0 development branch
 
-This branch of the Riak Java Client is for the new v2.0 client, to be used with the
+This branch of the Riak Java Client is the development branch for the new v2.0 client, to be used with the
 upcoming Riak 2.0 (also currently in pre-release). 
 
 The current release branches are:
+
+[riak-client-2.0-technical-preview](https://github.com/basho/riak-java-client/tree/master) - Core preview for Riak 2.0
 
 [riak-client-1.4.2](https://github.com/basho/riak-java-client/tree/1.4.2) - For use with Riak 1.4+
 
