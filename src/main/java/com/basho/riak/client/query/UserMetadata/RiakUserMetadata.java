@@ -37,16 +37,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
- * @see com.basho.riak.client.query.RiakObject#setUserMeta(com.basho.riak.client.query.UserMetadata.RiakUserMetadata) 
  * @see com.basho.riak.client.query.RiakObject#getUserMeta() 
  */
 public class RiakUserMetadata
 {
-    private ConcurrentHashMap<BinaryValue, BinaryValue> meta =
+    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta =
         new ConcurrentHashMap<BinaryValue, BinaryValue>();
     
     /**
-     * Determine if usermeta is present
+     * Determine if usermeta is present.
      * @return {@code true} if there are no entries, {@code false} otherwise.
      */
     public boolean isEmpty()
@@ -55,7 +54,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Determine if a specific usermeta entry is present
+     * Determine if a specific usermeta entry is present.
      * <p>
      * This method uses the default {@code Charset} to convert the supplied key.
      * </p>
@@ -68,7 +67,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Determine if a specific usermeta entry is present
+     * Determine if a specific usermeta entry is present.
      * <p>
      * This method uses the supplied {@code Charset} to convert the supplied key.
      * </p>
@@ -81,7 +80,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Get a user metadata entry
+     * Get a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#put(java.lang.String, java.lang.String) }
      * counterpart use the default {@code Charset} to convert the {@code String}s.
@@ -95,7 +94,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Get a user metadata entry
+     * Get a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#put(java.lang.String, java.lang.String, java.nio.charset.Charset)  }
      * counterpart use the supplied {@code Charset} to convert the {@code String}s.
@@ -119,9 +118,9 @@ public class RiakUserMetadata
     }
     
     /**
-     * Get a user metadata entry
+     * Get a user metadata entry.
      * <p>
-     * This method and its {@link RiakUserMetadata#put(com.basho.riak.client.util.ByteArrayWrapper, com.basho.riak.client.util.ByteArrayWrapper)}
+     * This method and its {@link RiakUserMetadata#put(com.basho.riak.client.util.BinaryValue, com.basho.riak.client.util.BinaryValue)}
      * allow access to the raw bytes.
      * </p>
      * @param key the key for the user metadata entry  
@@ -146,7 +145,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Set a user metadata entry
+     * Set a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#get(java.lang.String) }
      * counterpart use the default {@code Charset} to convert the {@code String}s.
@@ -160,7 +159,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Set a user metadata entry
+     * Set a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#get(java.lang.String, java.nio.charset.Charset)  }
      * counterpart use the supplied {@code Charset} to convert the {@code String}s.
@@ -176,9 +175,9 @@ public class RiakUserMetadata
     }
     
     /**
-     * Set a user metadata entry using raw bytes
+     * Set a user metadata entry using raw bytes.
      * <p>
-     * This method and its {@link RiakUserMetadata#get(com.basho.riak.client.util.ByteArrayWrapper)}
+     * This method and its {@link RiakUserMetadata#get(com.basho.riak.client.util.BinaryValue)}
      * counterpart all access to the user metadata raw bytes
      * </p>
      * @param key the key for the user metadata entry 
@@ -198,7 +197,7 @@ public class RiakUserMetadata
     }
     
     /**
-     * Get the number of user metadata entries
+     * Get the number of user metadata entries.
      * @return the number of entries
      */
     public int size()

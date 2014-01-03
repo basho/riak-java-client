@@ -22,7 +22,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -452,8 +451,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         /**
          * Sets the Threadpool for this cluster. 
          * 
-         * This threadpool is passed down to the {@link RiakNode}s and their 
-         * underlying {@link ConnectionPool}s. At the very least it needs to have
+         * This threadpool is passed down to the {@link RiakNode}s. 
+         * At the very least it needs to have
          * two threads available. It is not necessary to supply your own as the 
          * {@link RiakCluster} will instantiate one upon construction if this is
          * not set.
@@ -469,8 +468,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         /**
          * The Netty {@link Bootstrap} this cluster will use.
          * 
-         * This Bootstrap is passed down to the {@link RiakNode}s and their 
-         * underlying {@link ConnectionPool}s. It is not necessary to supply your
+         * This Bootstrap is passed down to the {@link RiakNode}s.
+         * It is not necessary to supply your
          * own as the {@link RiakCluster} will instantiate one upon construction
          * if this is not set.
          * @param bootstrap

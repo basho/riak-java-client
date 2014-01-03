@@ -365,7 +365,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * Add a counter update operation to this operation.
          *
          * @param op the update
-         * @return
+         * @return a reference to this object.
          */
         public Builder withOp(CounterOp op)
         {
@@ -379,7 +379,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * Add a map update operation to this operation.
          *
          * @param op the update
-         * @return
+         * @return a reference to this object.
          */
         public Builder withOp(MapOp op)
         {
@@ -392,7 +392,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * Add a set update operation to this operation.
          *
          * @param op the update
-         * @return
+         * @return a reference to this object.
          */
         public Builder withOp(SetOp op)
         {

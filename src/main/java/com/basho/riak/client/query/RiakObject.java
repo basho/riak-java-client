@@ -183,7 +183,7 @@ public final class RiakObject
      * a HTTP {@code Content-Type} header. 
      * </p>
      * @return a {@code String} representing the content type of this object's value
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public String getContentType()
     {
@@ -198,7 +198,7 @@ public final class RiakObject
      * </p>
      * @param contentType a {@code String} representing the content type of this object's value
      * @return a reference to this object
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public RiakObject setContentType(String contentType)
     {
@@ -223,7 +223,7 @@ public final class RiakObject
      * </p>
      * @return The character set {@code String}
      * @see RiakObject#setCharset(java.lang.String) 
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public String getCharset()
     {
@@ -238,7 +238,7 @@ public final class RiakObject
      * </p>
      * @param charset the {@link Charset} to be set
      * @return a reference to this object
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public RiakObject setCharset(String charset)
     {

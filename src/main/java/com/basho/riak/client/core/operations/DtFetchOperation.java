@@ -127,7 +127,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
          * Default to false
          *
          * @param context return context
-         * @return
+         * @return a reference to this object.
          */
         public Builder includeContext(boolean context)
         {
@@ -153,7 +153,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
          * If not set the bucket default is used.
          *
          * @param pr the PR value.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withPr(int pr)
         {

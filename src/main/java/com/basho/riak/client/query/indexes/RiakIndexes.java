@@ -91,7 +91,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakObject#getIndexes() 
- * @see RiakObject#setIndexes(com.basho.riak.client.query.indexes.RiakIndexes) 
  */
 public class RiakIndexes implements Iterable<RiakIndex<?>>
 {

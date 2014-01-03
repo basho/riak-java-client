@@ -1072,7 +1072,7 @@ public class RiakNode implements RiakResponseListener
         /**
          * The default port number to be used if not specified: {@value #DEFAULT_REMOTE_PORT}
          *
-         * @see AbstractCollection#withRemotePort(int)
+         * @see #withRemotePort(int)
          */
         public final static int DEFAULT_REMOTE_PORT = 8087;
         /**

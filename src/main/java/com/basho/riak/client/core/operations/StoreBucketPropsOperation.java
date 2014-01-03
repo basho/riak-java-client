@@ -119,9 +119,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
          *
          * @param bigVClock a long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a
-         * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
          */
         public T withBigVClock(Long bigVClock)
         {
@@ -305,7 +303,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public T withOldVClock(Long oldVClock)
         {
@@ -320,7 +318,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public T withYoungVClock(Long youngVClock)
         {
@@ -335,7 +333,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public T withSmallVClock(Long smallVClock)
         {

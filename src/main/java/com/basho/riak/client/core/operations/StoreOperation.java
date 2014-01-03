@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An operation to store a riak object
- *
- * @param <T> the user type of the operation to store
  */
 public class StoreOperation extends FutureOperation<StoreOperation.Response, RiakKvPB.RpbPutResp>
 {
@@ -267,7 +265,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * Use of this feature is discouraged.
          * </p>
          * @param ifNotModified
-         * @return 
+         * @return a reference to this object.
          */
 		public Builder withIfNotModified(boolean ifNotModified)
 		{

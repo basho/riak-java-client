@@ -185,7 +185,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * Set the PR value for this query.
          * If not set the bucket default is used.
          * @param pr the PR value.
-         * @return 
+         * @return a reference to this object.
          */
 		public Builder withPr(int pr)
 		{
@@ -205,9 +205,9 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         * @param notFoundOk the not_found_ok value.
         * @return a reference to this object.
         */
-		public Builder withNotFoundOK(boolean notFoundOK)
+		public Builder withNotFoundOK(boolean notFoundOk)
 		{
-			reqBuilder.setNotfoundOk(notFoundOK);
+			reqBuilder.setNotfoundOk(notFoundOk);
 			return this;
 		}
 
