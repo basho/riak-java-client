@@ -17,7 +17,6 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.RiakChannelInitializer;
 import com.basho.riak.client.core.netty.RiakResponseException;
-import com.basho.riak.client.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -25,7 +24,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,7 +156,6 @@ public class RiakNode implements RiakResponseListener
     
     private RiakNode(Builder builder) throws UnknownHostException
     {
-        this.readTimeoutInMillis = builder.readTimeout;
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
@@ -578,14 +575,6 @@ public class RiakNode implements RiakResponseListener
         Channel channel = getConnection();
         if (channel != null)
         {
-            // Add a timeout handler to the pipeline if the readTIeout is set
-            if (readTimeoutInMillis > 0)
-            {
-                channel.pipeline()
-                    .addAfter(Constants.OPERATION_ENCODER, Constants.TIMEOUT_HANDLER,
-                        new ReadTimeoutHandler(readTimeoutInMillis, TimeUnit.MILLISECONDS));
-            }
-
             inProgressMap.put(channel, operation);
             ChannelFuture writeFuture = channel.writeAndFlush(operation);
             writeFuture.addListener(writeListener);
@@ -758,11 +747,7 @@ public class RiakNode implements RiakResponseListener
     {
         logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(),
             remoteAddress, port);
-        if (readTimeoutInMillis > 0)
-        {
-            channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
-        }
-
+        
         final FutureOperation inProgress = inProgressMap.get(channel);
         
         // Especially with a streaming op, the close listener may trigger causing
@@ -804,10 +789,6 @@ public class RiakNode implements RiakResponseListener
         // already been handled. 
         if (inProgress != null)
         {
-            if (readTimeoutInMillis > 0)
-            {
-                channel.pipeline().remove(Constants.TIMEOUT_HANDLER);
-            }
             inProgress.setException(t);
             returnConnection(channel); // release permit
         }
@@ -1099,13 +1080,7 @@ public class RiakNode implements RiakResponseListener
          * @see #withConnectionTimeout(int)
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
-        /**
-         * The default TCP read timeout in milliseconds if not specified: {@value #DEFAULT_TCP_READ_TIMEOUT}
-         * A value of {@code 0} means to wait indefinitely
-         *
-         * @see #withReadTimeout(int)
-         */
-        public final static int DEFAULT_TCP_READ_TIMEOUT = 0;
+        
 
         private int port = DEFAULT_REMOTE_PORT;
         private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
@@ -1113,7 +1088,6 @@ public class RiakNode implements RiakResponseListener
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-        private int readTimeout = DEFAULT_TCP_READ_TIMEOUT;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
         private boolean blockOnMaxConnections;
@@ -1222,21 +1196,6 @@ public class RiakNode implements RiakResponseListener
         public Builder withConnectionTimeout(int connectionTimeoutInMillis)
         {
             this.connectionTimeout = connectionTimeoutInMillis;
-            return this;
-        }
-
-        //TODO: Now that we have operation timeouts, do we really want to expose the TCP read timeout?
-
-        /**
-         * Specifies the TCP read timeout when waiting for a reply from Riak.
-         *
-         * @param readTimeoutInMillis - a timeout in milliseconds
-         * @return this
-         * @see #DEFAULT_READ_TIMEOUT
-         */
-        public Builder withReadTimeout(int readTimeoutInMillis)
-        {
-            this.readTimeout = readTimeoutInMillis;
             return this;
         }
 
