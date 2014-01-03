@@ -37,7 +37,7 @@ import java.nio.charset.Charset;
  * </p>
  * <p>
  * @riak.threadsafety RiakObject is designed to be thread safe. All methods 
- * which mutate the object do so via a thread safe mechanism. The only caveat is
+ * which update the object do so via a thread safe mechanism. The only caveat is
  * that if you use any of the methods prefixed with "unsafe" you need to
  * understand the ramifications as noted in their Javadoc.
  * </p>
@@ -84,7 +84,7 @@ public final class RiakObject
     
     /**
      * Returns whether or not this RiakObject has a value
-     * @return true if the value has been set, false otherwise
+     * @return true if the value has been asSet, false otherwise
      */
     public boolean hasValue()
     {
@@ -124,7 +124,7 @@ public final class RiakObject
     }
     
     /**
-     * Returns the version tag (if it is one of a set of siblings) for this RiakObject
+     * Returns the version tag (if it is one of a asSet of siblings) for this RiakObject
      * 
      * @return the vtag if present, otherwise {@code null}
      */
@@ -155,7 +155,7 @@ public final class RiakObject
      * <p>
      * The timestamp is returned as a {@code long} (Unix) epoch time. 
      * </p>
-     * @return The last modified time or {@code 0} if it has not been set.
+     * @return The last modified time or {@code 0} if it has not been asSet.
      * @see RiakObject#setLastModified(long) 
      */
     public long getLastModified()
@@ -164,7 +164,7 @@ public final class RiakObject
     }
     
     /**
-     * A {@code long} timestamp of milliseconds since the epoch to set as
+     * A {@code long} timestamp of milliseconds since the epoch to asSet as
      * the last modified date on this RiakObject.
      *
      * @param lastModified
@@ -207,7 +207,7 @@ public final class RiakObject
     }
     
     /**
-     * Determine if there is a character set present in the content-type.
+     * Determine if there is a character asSet present in the content-type.
      * @return true if a charset is present, false otherwise.
      */
     public boolean hasCharset()
@@ -216,12 +216,12 @@ public final class RiakObject
     }
     
     /**
-     * Get the character set for this RiakObject's content (value)
+     * Get the character asSet for this RiakObject's content (value)
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header. 
      * </p>
-     * @return The character set {@code String}
+     * @return The character asSet {@code String}
      * @see RiakObject#setCharset(java.lang.String) 
      * @see RiakObject#setValue(ByteArrayWrapper) 
      */
@@ -231,12 +231,12 @@ public final class RiakObject
     }
     
     /**
-     * Set the character set for this object's content (value).  
+     * Set the character asSet for this object's content (value).
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header. 
      * </p>
-     * @param charset the {@link Charset} to be set
+     * @param charset the {@link Charset} to be asSet
      * @return a reference to this object
      * @see RiakObject#setValue(ByteArrayWrapper) 
      */

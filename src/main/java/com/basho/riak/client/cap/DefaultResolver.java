@@ -24,7 +24,7 @@ import java.util.List;
  * @author Russell Brown <Russelldb at basho dot com>
  * @since 1.0
  */
-public final class DefaultResolver<T> implements ConflictResolver<T>
+public class DefaultResolver<T> implements ConflictResolver<T>
 {
 
     /**

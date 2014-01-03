@@ -59,7 +59,7 @@ public interface Mutation<T> {
    * Applies a mutation to the <code>original</code> value passed in
    *
    * @param original
-   *            the value to mutate.
+   *            the value to update.
    * @return the mutated value.
    */
   T apply(T original);

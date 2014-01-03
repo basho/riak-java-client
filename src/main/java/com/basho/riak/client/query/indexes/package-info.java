@@ -65,7 +65,7 @@
  * <h6>Special note when using RawIndex</h6>
  * A {@code RiakIndex} is uniquely identified by its textual name and {@code IndexType} 
  * regardless of the concrete {@code RiakIndex} implementation being used to view
- * or mutate it. This container enforces this uniqueness by being the source of 
+ * or update it. This container enforces this uniqueness by being the source of
  * all {@code RiakIndex} instances and managing them in a thread-safe way with 
  * atomic operations. 
  * <p>
@@ -104,7 +104,7 @@
  * lends itself well to this as its byte ordering is the same as its lexical ordering.
  * </p> 
  * <p>
- * If you are using a {@code _bin} index with a character set whose byte ordering 
+ * If you are using a {@code _bin} index with a character asSet whose byte ordering
  * differs from its lexical ordering, range queries will be affected.
  * </p>
  * @see <a

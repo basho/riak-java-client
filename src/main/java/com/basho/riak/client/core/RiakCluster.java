@@ -189,12 +189,13 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         
     }
     
-    public void execute(FutureOperation operation)
+    public <V> RiakFuture<V> execute(FutureOperation<V, ?> operation)
     {
         stateCheck(State.RUNNING);
         operation.setRetrier(this, executionAttempts); 
         inFlightCount.incrementAndGet();
         this.execute(operation, null);
+        return operation;
     }
     
     private void execute(FutureOperation operation, RiakNode previousNode) 
@@ -205,10 +206,10 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     /**
      * Adds a {@link RiakNode} to this cluster. 
      * The node can not have been started nor have its Bootstrap or Executor
-     * set.
+     * asSet.
      * @param node the RiakNode to add
      * @throws java.net.UnknownHostException if the RiakNode's hostname cannot be resolved
-     * @throws IllegalArgumentException if the node's Bootstrap or Executor are already set.
+     * @throws IllegalArgumentException if the node's Bootstrap or Executor are already asSet.
      */
     public void addNode(RiakNode node) throws UnknownHostException
     {
@@ -456,7 +457,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * underlying {@link ConnectionPool}s. At the very least it needs to have
          * two threads available. It is not necessary to supply your own as the 
          * {@link RiakCluster} will instantiate one upon construction if this is
-         * not set.
+         * not asSet.
          * @param executor
          * @return this
          */
@@ -472,7 +473,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * This Bootstrap is passed down to the {@link RiakNode}s and their 
          * underlying {@link ConnectionPool}s. It is not necessary to supply your
          * own as the {@link RiakCluster} will instantiate one upon construction
-         * if this is not set.
+         * if this is not asSet.
          * @param bootstrap
          * @return this
          */

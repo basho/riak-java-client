@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * allows the user to manipulate that data.
  * </p>
  * <p>
- * Data in Riak is character set agnostic; it's simply raw bytes. Methods are provided here 
- * to either use your default character set or supply a specific one to convert to and
+ * Data in Riak is character asSet agnostic; it's simply raw bytes. Methods are provided here
+ * to either use your default character asSet or supply a specific one to convert to and
  * from {@code String}s.
  * <p>
  * 

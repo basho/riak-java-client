@@ -124,10 +124,10 @@ public class DtUpdateOperationTest
     {
 
         ByteArrayWrapper counterKey = ByteArrayWrapper.create("counter");
-        ByteArrayWrapper setKey = ByteArrayWrapper.create("set");
+        ByteArrayWrapper setKey = ByteArrayWrapper.create("asSet");
         ByteArrayWrapper flagKey = ByteArrayWrapper.create("flag");
         ByteArrayWrapper registerKey = ByteArrayWrapper.create("register");
-        ByteArrayWrapper mapKey = ByteArrayWrapper.create("map");
+        ByteArrayWrapper mapKey = ByteArrayWrapper.create("asMap");
 
         ByteArrayWrapper setAddValue = ByteArrayWrapper.create("1");
 
