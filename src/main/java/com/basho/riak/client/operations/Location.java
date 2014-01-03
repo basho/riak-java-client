@@ -15,14 +15,16 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.util.ByteArrayWrapper;
+
 public class Location
 {
 
 	private static final String DEFAULT_TYPE = "default";
 
-	private String type;
-	private String bucket;
-	private String key;
+	private ByteArrayWrapper type;
+	private ByteArrayWrapper bucket;
+	private ByteArrayWrapper key;
 
 	/**
 	 * Construct a location using both a bucket and a key
@@ -30,7 +32,19 @@ public class Location
 	 * @param bucket the bucket for this location
 	 * @param key    the key for this location
 	 */
-	protected Location(String bucket, String key)
+	public Location(String bucket, String key)
+	{
+		this.bucket = ByteArrayWrapper.create(bucket);
+		this.key = ByteArrayWrapper.create(key);
+	}
+
+	/**
+	 * Construct a location using both a bucket and a key
+	 *
+	 * @param bucket the bucket for this location
+	 * @param key    the key for this location
+	 */
+	public Location(ByteArrayWrapper bucket, ByteArrayWrapper key)
 	{
 		this.bucket = bucket;
 		this.key = key;
@@ -43,6 +57,16 @@ public class Location
 	 */
 	public Location(String bucket)
 	{
+		this.bucket = ByteArrayWrapper.create(bucket);
+	}
+
+	/**
+	 * Construct a location using just a bucket
+	 *
+	 * @param bucket the bucket for this location
+	 */
+	public Location(ByteArrayWrapper bucket)
+	{
 		this.bucket = bucket;
 	}
 
@@ -54,6 +78,18 @@ public class Location
 	 */
 	public Location withType(String type)
 	{
+		this.type = ByteArrayWrapper.create(type);
+		return this;
+	}
+
+	/**
+	 * Specify the bucket type of this location
+	 *
+	 * @param type the bucket type for this location
+	 * @return this
+	 */
+	public Location withType(ByteArrayWrapper type)
+	{
 		this.type = type;
 		return this;
 	}
@@ -63,7 +99,7 @@ public class Location
 	 *
 	 * @return bucket type
 	 */
-	public String getType()
+	public ByteArrayWrapper getType()
 	{
 		return type;
 	}
@@ -73,7 +109,7 @@ public class Location
 	 *
 	 * @return the bucket
 	 */
-	public String getBucket()
+	public ByteArrayWrapper getBucket()
 	{
 		return bucket;
 	}
@@ -83,7 +119,7 @@ public class Location
 	 *
 	 * @return the key
 	 */
-	public String getKey()
+	public ByteArrayWrapper getKey()
 	{
 		return key;
 	}

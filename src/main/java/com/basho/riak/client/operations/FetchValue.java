@@ -20,7 +20,6 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -51,12 +50,12 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 	Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
-		ByteArrayWrapper type = ByteArrayWrapper.create(location.getType());
-		ByteArrayWrapper bucket = ByteArrayWrapper.create(location.getBucket());
-		ByteArrayWrapper key = ByteArrayWrapper.create(location.getKey());
+		FetchOperation.Builder builder = new FetchOperation.Builder(location.getBucket(), location.getKey());
 
-		FetchOperation.Builder builder = new FetchOperation.Builder(bucket, key);
-		builder.withBucketType(type);
+		if (location.hasType())
+		{
+			builder.withBucketType(location.getType());
+		}
 
 		for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
 		{

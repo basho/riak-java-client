@@ -28,7 +28,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 	private static final String DEFAULT_BUCKET_TYPE = "default";
 
     private final int timeout;
-    private final String type;
+    private final ByteArrayWrapper type;
 
     ListBuckets(Builder builder)
     {
@@ -44,7 +44,6 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         {
             builder.withTimeout(timeout);
         }
-        builder.withBucketType(ByteArrayWrapper.create(type));
         ListBucketsOperation operation = builder.build();
         cluster.execute(operation);
         return new Response(type, operation.get());
@@ -52,10 +51,10 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 
     public static class Response implements Iterable<Location> {
 
-        private final String type;
+        private final ByteArrayWrapper type;
         private final List<ByteArrayWrapper> buckets;
 
-        public Response(String type, List<ByteArrayWrapper> buckets)
+        public Response(ByteArrayWrapper type, List<ByteArrayWrapper> buckets)
         {
             this.type = type;
             this.buckets = buckets;
@@ -71,9 +70,9 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
     private static class Itr implements Iterator<Location>
     {
         private final Iterator<ByteArrayWrapper> iterator;
-        private final String type;
+        private final ByteArrayWrapper type;
 
-        private Itr(Iterator<ByteArrayWrapper> iterator, String type)
+        private Itr(Iterator<ByteArrayWrapper> iterator, ByteArrayWrapper type)
         {
             this.iterator = iterator;
             this.type = type;
@@ -102,9 +101,14 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 	public static class Builder
 	{
 		private int timeout;
-		private final String type;
+		private final ByteArrayWrapper type;
 
 		public Builder(String type)
+		{
+			this.type = ByteArrayWrapper.create(type);
+		}
+
+		public Builder(ByteArrayWrapper type)
 		{
 			this.type = type;
 		}

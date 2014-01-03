@@ -52,20 +52,16 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
     public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        ByteArrayWrapper type = ByteArrayWrapper.create(location.getType());
-        ByteArrayWrapper bucket = ByteArrayWrapper.create(location.getBucket());
-        ByteArrayWrapper key = ByteArrayWrapper.create(location.getKey());
+        StoreOperation.Builder builder = new StoreOperation.Builder(location.getBucket());
 
-        StoreOperation.Builder builder = new StoreOperation.Builder(bucket);
-
-        if (type != null)
+        if (location.hasType())
         {
-            builder.withBucketType(type);
+            builder.withBucketType(location.getType());
         }
 
-        if (key != null)
+        if (location.hasKey())
         {
-            builder.withKey(key);
+            builder.withKey(location.getKey());
         }
 
         builder.withContent(converter.fromDomain(value));
@@ -132,11 +128,15 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation.Response response = cluster.execute(operation).get();
         List<V> converted = convert(converter, response.getObjectList());
 
-	    String returnedKey = response.hasGeneratedKey()
-		    ? response.getGeneratedKey().toStringUtf8()
+	    ByteArrayWrapper returnedKey = response.hasGeneratedKey()
+		    ? response.getGeneratedKey()
 		    : location.getKey();
 
-        Location k = new Location(bucket.toStringUtf8(), returnedKey).withType(type.toStringUtf8());
+        Location k = new Location(location.getBucket(), returnedKey);
+	    if (location.hasType())
+	    {
+			k.withType(location.getType());
+	    }
 
         VClock clock = response.getVClock();
 

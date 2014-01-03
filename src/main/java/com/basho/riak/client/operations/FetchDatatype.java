@@ -33,13 +33,13 @@ import java.util.concurrent.ExecutionException;
 public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
 {
 
-    private final Location key;
+    private final Location location;
     private final DatatypeConverter<T> converter;
     private final Map<DtFetchOption<?>, Object> options = new HashMap<DtFetchOption<?>, Object>();
 
-    public FetchDatatype(Location key, DatatypeConverter<T> converter)
+    public FetchDatatype(Location location, DatatypeConverter<T> converter)
     {
-        this.key = key;
+        this.location = location;
         this.converter = converter;
         withOption(DtFetchOption.INCLUDE_CONTEXT, true);
     }
@@ -68,14 +68,11 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
     @Override
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        ByteArrayWrapper bucket = ByteArrayWrapper.create(key.getBucket());
-        ByteArrayWrapper key = ByteArrayWrapper.create(this.key.getKey());
-        DtFetchOperation.Builder builder = new DtFetchOperation.Builder(bucket, key);
+        DtFetchOperation.Builder builder = new DtFetchOperation.Builder(location.getBucket(), location.getKey());
 
-        if (this.key.hasType())
+        if (location.hasType())
         {
-            ByteArrayWrapper type = ByteArrayWrapper.create(this.key.getType());
-            builder.withBucketType(type);
+            builder.withBucketType(location.getType());
         }
 
         for (Map.Entry<DtFetchOption<?>, Object> entry : options.entrySet())

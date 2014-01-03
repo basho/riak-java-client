@@ -26,79 +26,85 @@ import java.util.concurrent.ExecutionException;
 public class ListKeys extends RiakCommand<ListKeys.Response>
 {
 
-    private final Location bucket;
-    private final int timeout;
+	private final Location bucket;
+	private final int timeout;
 
-    ListKeys(Builder builder)
-    {
-        this.bucket = builder.bucket;
-        this.timeout = builder.timeout;
-    }
+	ListKeys(Builder builder)
+	{
+		this.bucket = builder.bucket;
+		this.timeout = builder.timeout;
+	}
 
-    @Override
-    Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-	    ByteArrayWrapper wrappedBucket = ByteArrayWrapper.create(bucket.getBucket());
-        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(wrappedBucket);
-        if (timeout > 0)
-        {
-            builder.withTimeout(timeout);
-        }
-        builder.withBucketType(ByteArrayWrapper.create(bucket.getType()));
-        ListKeysOperation operation = builder.build();
-        cluster.execute(operation);
-        return new Response(bucket.getBucket(), operation.get());
-    }
+	@Override
+	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	{
+		ListKeysOperation.Builder builder = new ListKeysOperation.Builder(bucket.getBucket());
 
-    public static class Response implements Iterable<Location>
-    {
+		if (timeout > 0)
+		{
+			builder.withTimeout(timeout);
+		}
 
-        private final String bucket;
-        private final List<ByteArrayWrapper> keys;
+		if (bucket.hasType())
+		{
+			builder.withBucketType(bucket.getType());
+		}
 
-        public Response(String bucket, List<ByteArrayWrapper> keys)
-        {
-            this.bucket = bucket;
-            this.keys = keys;
-        }
+		ListKeysOperation operation = builder.build();
+		cluster.execute(operation);
 
-        @Override
-        public Iterator<Location> iterator()
-        {
-            return new Itr(bucket, keys.iterator());
-        }
-    }
+		return new Response(bucket.getBucket(), operation.get());
+	}
 
-    private static class Itr implements Iterator<Location>
-    {
-        private final Iterator<ByteArrayWrapper> iterator;
-        private final String bucket;
+	public static class Response implements Iterable<Location>
+	{
 
-        private Itr( String bucket, Iterator<ByteArrayWrapper> iterator)
-        {
-            this.iterator = iterator;
-            this.bucket = bucket;
-        }
+		private final ByteArrayWrapper bucket;
+		private final List<ByteArrayWrapper> keys;
 
-        @Override
-        public boolean hasNext()
-        {
-            return iterator.hasNext();
-        }
+		public Response(ByteArrayWrapper bucket, List<ByteArrayWrapper> keys)
+		{
+			this.bucket = bucket;
+			this.keys = keys;
+		}
 
-        @Override
-        public Location next()
-        {
-            ByteArrayWrapper key = iterator.next();
-            return new Location(bucket, key.toStringUtf8());
-        }
+		@Override
+		public Iterator<Location> iterator()
+		{
+			return new Itr(bucket, keys.iterator());
+		}
+	}
 
-        @Override
-        public void remove()
-        {
-            iterator.remove();
-        }
-    }
+	private static class Itr implements Iterator<Location>
+	{
+		private final Iterator<ByteArrayWrapper> iterator;
+		private final ByteArrayWrapper bucket;
+
+		private Itr(ByteArrayWrapper bucket, Iterator<ByteArrayWrapper> iterator)
+		{
+			this.iterator = iterator;
+			this.bucket = bucket;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Location next()
+		{
+			ByteArrayWrapper key = iterator.next();
+			return new Location(bucket, key);
+		}
+
+		@Override
+		public void remove()
+		{
+			iterator.remove();
+		}
+	}
 
 	public static class Builder
 	{
