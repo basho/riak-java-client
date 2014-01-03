@@ -15,19 +15,19 @@
  */
 package com.basho.riak.client.query.crdt.ops;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 public class RegisterOp implements CrdtOp
 {
 
-    private final ByteArrayWrapper value;
+    private final BinaryValue value;
 
-    public RegisterOp(ByteArrayWrapper value)
+    public RegisterOp(BinaryValue value)
     {
         this.value = value;
     }
 
-    public ByteArrayWrapper getValue()
+    public BinaryValue getValue()
     {
         return value;
     }

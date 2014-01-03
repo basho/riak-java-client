@@ -44,8 +44,8 @@ cluster.start();
 Once you have a cluster up and running, you can create operations and execute them:
 
 ```java
-ByteArrayWrapper bucket = ByteArrayWrapper.create("test_bucket");
-ByteArrayWrapper key = ByteArrayWrapper.create("test_key");
+BinaryValue bucket = BinaryValue.create("test_bucket");
+BinaryValue key = BinaryValue.create("test_key");
 FetchOperation fetchop =
             new FetchOperation.Builder(bucket, key)
                 .build();

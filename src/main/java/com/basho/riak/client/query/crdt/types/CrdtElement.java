@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 public abstract class CrdtElement
 {

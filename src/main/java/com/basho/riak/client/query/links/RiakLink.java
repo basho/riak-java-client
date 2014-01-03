@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.links;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.nio.charset.Charset;
 
 /**
@@ -37,9 +37,9 @@ import java.nio.charset.Charset;
 public class RiakLink
 {
 
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper key;
-    private final ByteArrayWrapper tag;
+    private final BinaryValue bucket;
+    private final BinaryValue key;
+    private final BinaryValue tag;
 
     /**
      * Create a RiakLink from the specified parameters.
@@ -69,9 +69,9 @@ public class RiakLink
      */
     public RiakLink(String bucket, String key, String tag, Charset charset)
     {
-        this.bucket = ByteArrayWrapper.unsafeCreate(bucket.getBytes(charset));
-        this.key = ByteArrayWrapper.unsafeCreate(key.getBytes(charset));
-        this.tag = ByteArrayWrapper.unsafeCreate(tag.getBytes(charset));
+        this.bucket = BinaryValue.unsafeCreate(bucket.getBytes(charset));
+        this.key = BinaryValue.unsafeCreate(key.getBytes(charset));
+        this.tag = BinaryValue.unsafeCreate(tag.getBytes(charset));
     }
     
     /**
@@ -80,7 +80,7 @@ public class RiakLink
      * @param key the key
      * @param tag the link tag
      */
-    public RiakLink(ByteArrayWrapper bucket, ByteArrayWrapper key, ByteArrayWrapper tag)
+    public RiakLink(BinaryValue bucket, BinaryValue key, BinaryValue tag)
     {
         this.bucket = bucket;
         this.key = key;
@@ -127,9 +127,9 @@ public class RiakLink
     
     /**
      * Get the bucket as a wrapped byte array
-     * @return the bucket name in a {@link ByteArrayWrapper}
+     * @return the bucket name in a {@link BinaryValue}
      */
-    public ByteArrayWrapper getBucketAsBytes()
+    public BinaryValue getBucketAsBytes()
     {
         return bucket;
     }
@@ -162,9 +162,9 @@ public class RiakLink
     
     /**
      * Return the key as a wrapped byte array
-     * @return the key in a {@link ByteArrayWrapper}
+     * @return the key in a {@link BinaryValue}
      */
-    public ByteArrayWrapper getKeyAsBytes()
+    public BinaryValue getKeyAsBytes()
     {
         return key;
     }
@@ -197,9 +197,9 @@ public class RiakLink
     
     /**
      * Get the tag as bytes
-     * @return the tag in a {@link ByteArrayWrapper}
+     * @return the tag in a {@link BinaryValue}
      */
-    public ByteArrayWrapper getTagAsBytes()
+    public BinaryValue getTagAsBytes()
     {
         return tag;
     }

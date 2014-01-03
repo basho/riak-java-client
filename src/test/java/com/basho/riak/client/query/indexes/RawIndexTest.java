@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.indexes;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,7 +65,7 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         byte[] array = "value".getBytes();
-        ByteArrayWrapper baw = ByteArrayWrapper.unsafeCreate(array);
+        BinaryValue baw = BinaryValue.unsafeCreate(array);
         
         assertEquals(index.size(), 0);
         index.add(baw);
@@ -79,17 +79,17 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
-        List<ByteArrayWrapper> values = new LinkedList<ByteArrayWrapper>();
+        List<BinaryValue> values = new LinkedList<BinaryValue>();
         for (int i = 0; i < 5; i++)
         {
-            values.add(ByteArrayWrapper.unsafeCreate(("value" + i).getBytes()));
+            values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
         
         index.add(values);
         
         assertEquals(index.size(), 5);
         
-        for (ByteArrayWrapper baw : values)
+        for (BinaryValue baw : values)
         {
             assertTrue(index.hasValue(baw));
         }
@@ -100,10 +100,10 @@ public class RawIndexTest
     {
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        ByteArrayWrapper baw = null;
+        BinaryValue baw = null;
         for (int i = 0; i < 3; i++)
         {
-            baw = ByteArrayWrapper.unsafeCreate(("value" + i).getBytes());
+            baw = BinaryValue.unsafeCreate(("value" + i).getBytes());
             index.add(baw);
         }
         
@@ -120,20 +120,20 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
-        List<ByteArrayWrapper> values = new LinkedList<ByteArrayWrapper>();
+        List<BinaryValue> values = new LinkedList<BinaryValue>();
         for (int i = 0; i < 5; i++)
         {
-            values.add(ByteArrayWrapper.unsafeCreate(("value" + i).getBytes()));
+            values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
         
         index.add(values);
         
         assertEquals(index.size(), 5);
-        ByteArrayWrapper baw = values.remove(0);
+        BinaryValue baw = values.remove(0);
         index.remove(values);
         assertEquals(index.size(), 1);
         assertTrue(index.hasValue(baw));
-        for (ByteArrayWrapper b : values )
+        for (BinaryValue b : values )
         {
             assertFalse(index.hasValue(b));
         }
@@ -147,7 +147,7 @@ public class RawIndexTest
         
         for (int i = 0; i < 5; i++)
         {
-            index.add(ByteArrayWrapper.unsafeCreate("value".getBytes()));
+            index.add(BinaryValue.unsafeCreate("value".getBytes()));
         }
         
         assertEquals(index.size(), 1);
@@ -160,10 +160,10 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
-        List<ByteArrayWrapper> values = new LinkedList<ByteArrayWrapper>();
+        List<BinaryValue> values = new LinkedList<BinaryValue>();
         for (int i = 0; i < 5; i++)
         {
-            values.add(ByteArrayWrapper.unsafeCreate(("value" + i).getBytes()));
+            values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
         
         index.add(values);
@@ -185,10 +185,10 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
-        List<ByteArrayWrapper> values = new LinkedList<ByteArrayWrapper>();
+        List<BinaryValue> values = new LinkedList<BinaryValue>();
         for (int i = 0; i < 5; i++)
         {
-            values.add(ByteArrayWrapper.unsafeCreate(("value" + i).getBytes()));
+            values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
         
         index.add(values);
@@ -209,24 +209,24 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
-        List<ByteArrayWrapper> values = new LinkedList<ByteArrayWrapper>();
+        List<BinaryValue> values = new LinkedList<BinaryValue>();
         for (int i = 0; i < 5; i++)
         {
-            values.add(ByteArrayWrapper.unsafeCreate(("value" + i).getBytes()));
+            values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
         
         index.add(values);
         
-        for (ByteArrayWrapper b : index)
+        for (BinaryValue b : index)
         {
             assertTrue(index.hasValue(b));
         }
         
-        Iterator<ByteArrayWrapper> i = index.iterator();
+        Iterator<BinaryValue> i = index.iterator();
         
         while (i.hasNext())
         {
-            ByteArrayWrapper b = i.next();
+            BinaryValue b = i.next();
             i.remove();
             assertFalse(index.hasValue(b));
         }
@@ -238,17 +238,17 @@ public class RawIndexTest
         RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
-        List<ByteArrayWrapper> values = new LinkedList<ByteArrayWrapper>();
+        List<BinaryValue> values = new LinkedList<BinaryValue>();
         for (int i = 0; i < 5; i++)
         {
-            values.add(ByteArrayWrapper.unsafeCreate(("value" + i).getBytes()));
+            values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
         
         index.add(values);
         
-        Set<ByteArrayWrapper> valueSet = index.values();
+        Set<BinaryValue> valueSet = index.values();
         
-        for (ByteArrayWrapper b : values)
+        for (BinaryValue b : values)
         {
             assertTrue(valueSet.contains(b));
         }

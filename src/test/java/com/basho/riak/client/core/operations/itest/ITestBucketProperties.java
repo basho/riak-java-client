@@ -21,7 +21,7 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testBucketType;
 import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Assume;
@@ -152,7 +152,7 @@ public class ITestBucketProperties extends ITestBase
         assertEquals(props.getNVal(), Integer.valueOf(3));
     }
     
-    private BucketProperties fetchBucketProps(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType) throws InterruptedException, ExecutionException
+    private BucketProperties fetchBucketProps(BinaryValue bucketName, BinaryValue bucketType) throws InterruptedException, ExecutionException
     {
         FetchBucketPropsOperation.Builder builder = new FetchBucketPropsOperation.Builder(bucketName);
         if (bucketType != null)

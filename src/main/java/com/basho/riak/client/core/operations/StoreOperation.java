@@ -21,7 +21,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -71,7 +71,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             // This only exists if no key was specified in the put request
             if (response.hasKey())
             {
-                responseBuilder.withGeneratedKey(ByteArrayWrapper.unsafeCreate(response.getKey().toByteArray()));
+                responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
             }
         
             if (response.hasVclock())
@@ -108,15 +108,15 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     public static class Builder
     {
         private final RiakKvPB.RpbPutReq.Builder reqBuilder = RiakKvPB.RpbPutReq.newBuilder();
-        private ByteArrayWrapper key;
-        private final ByteArrayWrapper bucketName;
-        private ByteArrayWrapper bucketType;
+        private BinaryValue key;
+        private final BinaryValue bucketName;
+        private BinaryValue bucketType;
         
         /**
          * Constructs a builder for a StoreOperation
          * @param bucketName the bucket name for this operation
          */
-        public Builder(ByteArrayWrapper bucketName)
+        public Builder(BinaryValue bucketName)
         {
             if (null == bucketName || bucketName.length() == 0)
             {
@@ -135,7 +135,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param key the key.
          * @return a reference to this object.
          */
-        public Builder withKey(ByteArrayWrapper key)
+        public Builder withKey(BinaryValue key)
         {
             if (key != null)
             {
@@ -158,7 +158,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param bucketType the bucket type
          * @return a reference to this object.
          */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {
@@ -356,7 +356,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     
     public static class Response extends FetchOperation.ResponseBase
     {
-        private final ByteArrayWrapper generatedKey;
+        private final BinaryValue generatedKey;
         
         private Response(Init<?> builder)
         {
@@ -369,16 +369,16 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             return generatedKey != null;
         }
         
-        public ByteArrayWrapper getGeneratedKey()
+        public BinaryValue getGeneratedKey()
         {
             return generatedKey;
         }
         
         protected static abstract class Init<T extends Init<T>> extends FetchOperation.ResponseBase.Init<T>
         {
-            private ByteArrayWrapper generatedKey;
+            private BinaryValue generatedKey;
             
-            T withGeneratedKey(ByteArrayWrapper generatedKey)
+            T withGeneratedKey(BinaryValue generatedKey)
             {
                 this.generatedKey = generatedKey;
                 return self();

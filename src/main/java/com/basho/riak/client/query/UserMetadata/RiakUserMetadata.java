@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.UserMetadata;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
@@ -42,8 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RiakUserMetadata
 {
-    private ConcurrentHashMap<ByteArrayWrapper, ByteArrayWrapper> meta =
-        new ConcurrentHashMap<ByteArrayWrapper, ByteArrayWrapper>();
+    private ConcurrentHashMap<BinaryValue, BinaryValue> meta =
+        new ConcurrentHashMap<BinaryValue, BinaryValue>();
     
     /**
      * Determine if usermeta is present
@@ -77,7 +77,7 @@ public class RiakUserMetadata
      */
     public boolean contains(String key, Charset charset)
     {
-        return meta.contains(ByteArrayWrapper.unsafeCreate(key.getBytes()));
+        return meta.contains(BinaryValue.unsafeCreate(key.getBytes()));
     }
     
     /**
@@ -105,8 +105,8 @@ public class RiakUserMetadata
      */
     public String get(String key, Charset charset)
     {
-        ByteArrayWrapper wrappedKey = ByteArrayWrapper.unsafeCreate(key.getBytes(charset));
-        ByteArrayWrapper value = meta.get(wrappedKey);
+        BinaryValue wrappedKey = BinaryValue.unsafeCreate(key.getBytes(charset));
+        BinaryValue value = meta.get(wrappedKey);
         if (value != null)
         {
             return value.toString(charset);
@@ -127,7 +127,7 @@ public class RiakUserMetadata
      * @param key the key for the user metadata entry  
      * @return the value for the entry 
      */
-    public ByteArrayWrapper get(ByteArrayWrapper key)
+    public BinaryValue get(BinaryValue key)
     {
         return meta.get(key);
     }
@@ -140,7 +140,7 @@ public class RiakUserMetadata
      * <p>
      * @return an unmodifiable view of all the entries.
      */
-    public Set<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> getUserMetadata()
+    public Set<Map.Entry<BinaryValue, BinaryValue>> getUserMetadata()
     {
         return Collections.unmodifiableSet(meta.entrySet());
     }
@@ -170,8 +170,8 @@ public class RiakUserMetadata
      */
     public void put(String key, String value, Charset charset)
     {
-        ByteArrayWrapper wrappedKey = ByteArrayWrapper.unsafeCreate(key.getBytes(charset));
-        ByteArrayWrapper wrappedValue = ByteArrayWrapper.unsafeCreate(value.getBytes(charset));
+        BinaryValue wrappedKey = BinaryValue.unsafeCreate(key.getBytes(charset));
+        BinaryValue wrappedValue = BinaryValue.unsafeCreate(value.getBytes(charset));
         meta.put(wrappedKey, wrappedValue);
     }
     
@@ -184,7 +184,7 @@ public class RiakUserMetadata
      * @param key the key for the user metadata entry 
      * @param value the value for the entry 
      */
-    public void put(ByteArrayWrapper key, ByteArrayWrapper value)
+    public void put(BinaryValue key, BinaryValue value)
     {
         meta.put(key, value);
     }

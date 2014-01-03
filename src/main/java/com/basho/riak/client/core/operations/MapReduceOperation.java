@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
  * A Map/Reduce Operation on Riak. No error checking is done on the content type of the content itself
  * with the exception to making sure they are provided.
  */
-public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbMapRedResp>
+public class MapReduceOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbMapRedResp>
 {
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     
@@ -41,14 +41,14 @@ public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, 
     }
 
     @Override
-    protected List<ByteArrayWrapper> convert(List<RiakKvPB.RpbMapRedResp> rawResponse) throws ExecutionException
+    protected List<BinaryValue> convert(List<RiakKvPB.RpbMapRedResp> rawResponse) throws ExecutionException
     {
-        List<ByteArrayWrapper> results = new ArrayList<ByteArrayWrapper>(rawResponse.size());
+        List<BinaryValue> results = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbMapRedResp response : rawResponse)
         {
             if (response.hasResponse())
             {
-                results.add(ByteArrayWrapper.create(response.getResponse().toByteArray()));
+                results.add(BinaryValue.create(response.getResponse().toByteArray()));
             }
         }
         return results;
@@ -92,7 +92,7 @@ public class MapReduceOperation extends FutureOperation<List<ByteArrayWrapper>, 
      * @param function    a binary blob of type {@code contentType}
      * @param contentType a http-style content encoding type (typically application/json)
      */
-        public Builder(ByteArrayWrapper function, String contentType)
+        public Builder(BinaryValue function, String contentType)
         {
 
             if ((null == function) || function.length() == 0)

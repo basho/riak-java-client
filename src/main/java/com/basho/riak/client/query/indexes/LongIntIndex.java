@@ -16,7 +16,7 @@
 package com.basho.riak.client.query.indexes;
 
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.nio.charset.Charset;
 
 /**
@@ -40,15 +40,15 @@ public class LongIntIndex extends RiakIndex<Long>
     }
 
     @Override
-    protected ByteArrayWrapper convert(Long value)
+    protected BinaryValue convert(Long value)
     {
         // The Protocol Buffers API takes the bytes for the textual representation
         // of the number rather than an actual bytes for the number :/ 
-        return ByteArrayWrapper.unsafeCreate(value.toString().getBytes(Charset.forName("UTF-8")));
+        return BinaryValue.unsafeCreate(value.toString().getBytes(Charset.forName("UTF-8")));
     }
 
     @Override
-    protected Long convert(ByteArrayWrapper value)
+    protected Long convert(BinaryValue value)
     {
         // The Protocol Buffers API returns the bytes for the textual representation
         // of the number rather than an actual bytes for the number :/ 

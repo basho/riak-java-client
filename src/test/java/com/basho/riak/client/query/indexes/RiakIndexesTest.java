@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.indexes;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -61,7 +61,7 @@ public class RiakIndexesTest
         assertTrue(lii.hasValue(4L));
         
         RawIndex rri = indexes.getIndex(new RawIndex.Name("my_index", IndexType.INT));
-        assertTrue(rri.hasValue(ByteArrayWrapper.unsafeCreate(String.valueOf(4L).getBytes())));
+        assertTrue(rri.hasValue(BinaryValue.unsafeCreate(String.valueOf(4L).getBytes())));
         
         assertEquals(indexes.size(), 1);
         
@@ -143,7 +143,7 @@ public class RiakIndexesTest
     public void wrapping()
     {
         RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
-        ByteArrayWrapper baw = ByteArrayWrapper.unsafeCreate("value".getBytes());
+        BinaryValue baw = BinaryValue.unsafeCreate("value".getBytes());
         index.add(baw);
         
         StringBinIndex wrapper = indexes.getIndex(new StringBinIndex.Name("foo"));

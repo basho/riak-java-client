@@ -22,7 +22,7 @@ import java.util.Arrays;
  * Lightweight utility class for byte arrays.
  * <p>
  * In almost all cases Riak is character set agnostic when it comes to data; buckets,
- * keys, values and metadata are all stored in Riak simply as bytes. 
+ * keys, values and metadata are all stored in Riak simply as binary values. 
  * <p>
  * <p>
  * This utility class is used throughout the client in order to encapsulate 
@@ -39,89 +39,90 @@ import java.util.Arrays;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class ByteArrayWrapper
+public final class BinaryValue
 {
     private final byte[] data;
     
-    private ByteArrayWrapper(byte[] data)
+    private BinaryValue(byte[] data)
     {
         this.data = data;
     }
     
     /**
-     * Create a ByteArrayWrapper containing a copy of the supplied {@code byte[]}
+     * Create a BinaryValue containing a copy of the supplied {@code byte[]}
      * <p>
      * A copy of the supplied {@code byte[]} is made.
      * </p>
      * 
      * @param data the {@code byte[]} to copy 
-     * @return a new {@code ByteArrayWrapper}
+     * @return a new {@code BinaryValue}
      */
-    public static ByteArrayWrapper create(byte[] data)
+    public static BinaryValue create(byte[] data)
     {
         if (data != null)
         {
            data = Arrays.copyOf(data, data.length);
         }
-        return new ByteArrayWrapper(data);
+        return new BinaryValue(data);
     }
 
     /**
-     * Create a ByteArrayWrapper containing a copy of the supplied String
-     * encoded using the default character set.
+     * Create a BinaryValue containing a copy of the supplied String
+ encoded using the default character set.
      *
      * @param data the data to copy
-     * @return a new {@code ByteArrayWrapper}
+     * @return a new {@code BinaryValue}
      */
-    public static ByteArrayWrapper create(String data)
+    public static BinaryValue create(String data)
     {
         return create(data, Charset.defaultCharset());
     }
     
     /**
-     * Create a ByteArrayWrapper containing a copy of the supplied String
-     * encoded using UTF-8.
+     * Create a BinaryValue containing a copy of the supplied String
+ encoded using UTF-8.
      *
      * @param data the data to copy
-     * @return a new {@code ByteArrayWrapper}
+     * @return a new {@code BinaryValue}
      */
-    public static ByteArrayWrapper createFromUtf8(String data)
+    public static BinaryValue createFromUtf8(String data)
     {
         return create(data, Charset.forName("UTF-8"));
     }
     
     /**
-     * Create a ByteArrayWrapper containing a copy of the supplied string
-     * encoded using the supplied Charset.
+     * Create a BinaryValue containing a copy of the supplied string
+ encoded using the supplied Charset.
      *
      * @param data the data to copy
-     * @return a new {@code ByteArrayWrapper}
+     * @param charset the charset to use for encoding
+     * @return a new {@code BinaryValue}
      */
-    public static ByteArrayWrapper create(String data, Charset charset)
+    public static BinaryValue create(String data, Charset charset)
     {
         byte[] bytes = null;
         if (data != null)
         {
                 bytes = data.getBytes(charset);
         }
-        return new ByteArrayWrapper(bytes);
+        return new BinaryValue(bytes);
     }
     
     /**
-     * Create a ByteArrayWrapper containing the supplied {@code byte[]}
+     * Create a BinaryValue containing the supplied {@code byte[]}
      * <p>
      * The {@code byte[]} is not copied.
      * <p>
      * @param data the {@code byte[]} to wrap
-     * @return a new {@code ByteArrayWrapper}
+     * @return a new {@code BinaryValue}
      * @riak.threadsafety The supplied <code>byte[]</code> is not copied and the reference is used
      * directly. Retaining a reference to this array and making subsequent
      * changes will lead to undefined behavior in regard to thread safety and
      * visibility. 
      */
-    public static ByteArrayWrapper unsafeCreate(byte[] data)
+    public static BinaryValue unsafeCreate(byte[] data)
     {
-        return new ByteArrayWrapper(data);
+        return new BinaryValue(data);
     }
     
     /**
@@ -158,22 +159,14 @@ public final class ByteArrayWrapper
     @Override
     public boolean equals(Object other)
     {
-        if (!(other instanceof ByteArrayWrapper))
+        if (!(other instanceof BinaryValue))
         {
             return false;
         }
-        else if (data == null)
+        else 
         {
-            if (((ByteArrayWrapper)other).data != null)
-            {
-                return false;
-            }
-            else 
-            {
-                return true;
-            }
+            return Arrays.equals(data, ((BinaryValue)other).data);
         }
-        return Arrays.equals(data, ((ByteArrayWrapper)other).data);
     }
 
     @Override

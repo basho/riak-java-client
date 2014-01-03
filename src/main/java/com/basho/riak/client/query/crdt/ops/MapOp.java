@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.crdt.ops;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,9 +33,9 @@ public class MapOp implements CrdtOp
     public static class MapField
     {
         public final FieldType type;
-        public final ByteArrayWrapper key;
+        public final BinaryValue key;
 
-        public MapField(FieldType type, ByteArrayWrapper key)
+        public MapField(FieldType type, BinaryValue key)
         {
             this.type = type;
             this.key = key;
@@ -58,7 +58,7 @@ public class MapOp implements CrdtOp
     private final Set<MapField> removes = new HashSet<MapField>();
     private final Set<MapUpdate> updates = new HashSet<MapUpdate>();
 
-    private MapOp update(ByteArrayWrapper key, CrdtOp op, FieldType type)
+    private MapOp update(BinaryValue key, CrdtOp op, FieldType type)
     {
         MapField field = new MapField(type, key);
         MapUpdate update = new MapUpdate(field, op);
@@ -66,32 +66,32 @@ public class MapOp implements CrdtOp
         return this;
     }
 
-    public MapOp update(ByteArrayWrapper key, SetOp op)
+    public MapOp update(BinaryValue key, SetOp op)
     {
         return update(key, op, FieldType.SET);
     }
 
-    public MapOp update(ByteArrayWrapper key, CounterOp op)
+    public MapOp update(BinaryValue key, CounterOp op)
     {
         return update(key, op, FieldType.COUNTER);
     }
 
-    public MapOp update(ByteArrayWrapper key, MapOp op)
+    public MapOp update(BinaryValue key, MapOp op)
     {
         return update(key, op, FieldType.MAP);
     }
 
-    public MapOp update(ByteArrayWrapper key, RegisterOp op)
+    public MapOp update(BinaryValue key, RegisterOp op)
     {
         return update(key, op, FieldType.REGISTER);
     }
 
-    public MapOp update(ByteArrayWrapper key, FlagOp op)
+    public MapOp update(BinaryValue key, FlagOp op)
     {
         return update(key, op, FieldType.FLAG);
     }
 
-    public MapOp add(ByteArrayWrapper key, FieldType type)
+    public MapOp add(BinaryValue key, FieldType type)
     {
         MapField field = new MapField(type, key);
         adds.add(field);
@@ -99,7 +99,7 @@ public class MapOp implements CrdtOp
         return this;
     }
 
-    public MapOp remove(ByteArrayWrapper key, FieldType type)
+    public MapOp remove(BinaryValue key, FieldType type)
     {
         MapField field = new MapField(type, key);
         removes.add(field);

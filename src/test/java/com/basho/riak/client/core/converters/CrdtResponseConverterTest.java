@@ -16,7 +16,7 @@
 package com.basho.riak.client.core.converters;
 
 import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
 import org.junit.Test;
@@ -56,10 +56,10 @@ public class CrdtResponseConverterTest
         values.add(ByteString.copyFromUtf8("2"));
         values.add(ByteString.copyFromUtf8("3"));
 
-        Set<ByteArrayWrapper> wrappedValues = new HashSet<ByteArrayWrapper>();
-        wrappedValues.add(ByteArrayWrapper.create("1"));
-        wrappedValues.add(ByteArrayWrapper.create("2"));
-        wrappedValues.add(ByteArrayWrapper.create("3"));
+        Set<BinaryValue> wrappedValues = new HashSet<BinaryValue>();
+        wrappedValues.add(BinaryValue.create("1"));
+        wrappedValues.add(BinaryValue.create("2"));
+        wrappedValues.add(BinaryValue.create("3"));
 
         RiakDtPB.DtUpdateResp resp = RiakDtPB.DtUpdateResp.newBuilder()
             .addAllSetValue(values)
@@ -83,22 +83,22 @@ public class CrdtResponseConverterTest
         setValues.add(ByteString.copyFromUtf8("2"));
         setValues.add(ByteString.copyFromUtf8("3"));
 
-        Set<ByteArrayWrapper> wrappedSetValues = new HashSet<ByteArrayWrapper>();
-        wrappedSetValues.add(ByteArrayWrapper.create("1"));
-        wrappedSetValues.add(ByteArrayWrapper.create("2"));
-        wrappedSetValues.add(ByteArrayWrapper.create("3"));
+        Set<BinaryValue> wrappedSetValues = new HashSet<BinaryValue>();
+        wrappedSetValues.add(BinaryValue.create("1"));
+        wrappedSetValues.add(BinaryValue.create("2"));
+        wrappedSetValues.add(BinaryValue.create("3"));
 
         final long counterValue = 1;
 
         final boolean flagValue = true;
 
-        ByteArrayWrapper registerValue = ByteArrayWrapper.create("stuff");
+        BinaryValue registerValue = BinaryValue.create("stuff");
 
-        ByteArrayWrapper counterKey = ByteArrayWrapper.create("1");
-        ByteArrayWrapper setKey = ByteArrayWrapper.create("2");
-        ByteArrayWrapper mapKey = ByteArrayWrapper.create("3");
-        ByteArrayWrapper registerKey = ByteArrayWrapper.create("4");
-        ByteArrayWrapper flagKey = ByteArrayWrapper.create("5");
+        BinaryValue counterKey = BinaryValue.create("1");
+        BinaryValue setKey = BinaryValue.create("2");
+        BinaryValue mapKey = BinaryValue.create("3");
+        BinaryValue registerKey = BinaryValue.create("4");
+        BinaryValue flagKey = BinaryValue.create("5");
 
         RiakDtPB.DtUpdateResp resp = RiakDtPB.DtUpdateResp.newBuilder()
             .addMapValue(RiakDtPB.MapEntry.newBuilder()
@@ -159,7 +159,7 @@ public class CrdtResponseConverterTest
     @Test
     public void testDtUpdateRespNestedMap()
     {
-        ByteArrayWrapper mapKey = ByteArrayWrapper.create("key");
+        BinaryValue mapKey = BinaryValue.create("key");
 
         RiakDtPB.DtUpdateResp resp = RiakDtPB.DtUpdateResp.newBuilder()
             .addMapValue(RiakDtPB.MapEntry.newBuilder()

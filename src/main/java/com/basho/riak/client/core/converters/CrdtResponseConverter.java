@@ -16,7 +16,7 @@
 package com.basho.riak.client.core.converters;
 
 import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
 
@@ -27,10 +27,10 @@ public class CrdtResponseConverter
 {
     private CrdtElement parseSet(List<ByteString> setValues)
     {
-        List<ByteArrayWrapper> entries = new ArrayList<ByteArrayWrapper>(setValues.size());
+        List<BinaryValue> entries = new ArrayList<BinaryValue>(setValues.size());
         for (ByteString bstring : setValues)
         {
-            entries.add(ByteArrayWrapper.unsafeCreate(bstring.toByteArray()));
+            entries.add(BinaryValue.unsafeCreate(bstring.toByteArray()));
         }
         return new CrdtSet(entries);
     }
@@ -56,7 +56,7 @@ public class CrdtResponseConverter
                     element = parseMap(entry.getMapValueList());
                     break;
                 case REGISTER:
-                    element = new CrdtRegister(ByteArrayWrapper.unsafeCreate(entry.getRegisterValue().toByteArray()));
+                    element = new CrdtRegister(BinaryValue.unsafeCreate(entry.getRegisterValue().toByteArray()));
                     break;
                 case SET:
                     element = parseSet(entry.getSetValueList());
@@ -65,7 +65,7 @@ public class CrdtResponseConverter
                     throw new IllegalStateException("Expecting a datatype in map entry but none found");
             }
 
-            ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate(entry.getField().getName().toByteArray());
+            BinaryValue key = BinaryValue.unsafeCreate(entry.getField().getName().toByteArray());
             entries.add(new CrdtMap.MapEntry(key, element));
         }
 

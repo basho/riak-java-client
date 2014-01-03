@@ -19,7 +19,7 @@ import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
@@ -35,7 +35,7 @@ public class ITestFetchOperation extends ITestBase
     @Test
     public void testFetchOpNotFound() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_1".getBytes());
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key_1".getBytes());
         final String value = "{\"value\":\"value\"}";
         FetchOperation fetchOp = 
             new FetchOperation.Builder(bucketName, key).build();
@@ -50,10 +50,10 @@ public class ITestFetchOperation extends ITestBase
     @Test
     public void testFetchOpNoSiblings() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_2".getBytes());
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key_2".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bucketName)
@@ -80,7 +80,7 @@ public class ITestFetchOperation extends ITestBase
     @Test
     public void testFetchOpWithSiblings() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key_3".getBytes());
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key_3".getBytes());
         final String value = "{\"value\":\"value\"}";
         
         StoreBucketPropsOperation op = 
@@ -90,7 +90,7 @@ public class ITestFetchOperation extends ITestBase
         cluster.execute(op);
         op.get();
         
-        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bucketName)

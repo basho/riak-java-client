@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
@@ -66,16 +66,16 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 {
                     for (RpbPair pair : pbEntry.getResultsList())
                     {
-                        responseBuilder.addEntry(new Response.Entry(ByteArrayWrapper.unsafeCreate(pair.getKey().toByteArray()), 
-                                                             ByteArrayWrapper.unsafeCreate(pair.getValue().toByteArray())));
+                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()), 
+                                                             BinaryValue.unsafeCreate(pair.getValue().toByteArray())));
                     }
                 }
                 else
                 {
                     for (ByteString objKey : pbEntry.getKeysList())
                     {
-                        responseBuilder.addEntry(new Response.Entry(ByteArrayWrapper.unsafeCreate(pbReq.getKey().toByteArray()),
-                                                             ByteArrayWrapper.unsafeCreate(objKey.toByteArray())));
+                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pbReq.getKey().toByteArray()),
+                                                             BinaryValue.unsafeCreate(objKey.toByteArray())));
                     }
                 }
             }
@@ -86,13 +86,13 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                  */
                 for (ByteString objKey : pbEntry.getKeysList())
                 {
-                    responseBuilder.addEntry(new Response.Entry(ByteArrayWrapper.unsafeCreate(objKey.toByteArray())));
+                    responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(objKey.toByteArray())));
                 }
             }
             
             if (pbEntry.hasContinuation())
             {
-                responseBuilder.withContinuation(ByteArrayWrapper.unsafeCreate(pbEntry.getContinuation().toByteArray()));
+                responseBuilder.withContinuation(BinaryValue.unsafeCreate(pbEntry.getContinuation().toByteArray()));
             }
         }
         return responseBuilder.build();
@@ -138,8 +138,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param bucketName the name of the bucket.
          * @param indexName the name of the index (including suffix).
          */
-        public Builder(ByteArrayWrapper bucketName, 
-                        ByteArrayWrapper indexName)
+        public Builder(BinaryValue bucketName, 
+                        BinaryValue indexName)
         {
             if (null == bucketName || bucketName.length() == 0)
             {
@@ -161,7 +161,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param bucketType the bucket type.
          * @return a reference to this object.
          */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {
@@ -178,7 +178,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param key the secondary index key.
          * @return a reference to this object.
          */
-        public Builder withIndexKey(ByteArrayWrapper key)
+        public Builder withIndexKey(BinaryValue key)
         {
             pbReqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
             return this;
@@ -191,7 +191,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param startingIndex the starting index for a range query.
          * @return a reference to this object.
          */
-        public Builder withRangeStart(ByteArrayWrapper startingIndex)
+        public Builder withRangeStart(BinaryValue startingIndex)
         {
             pbReqBuilder.setRangeMin(ByteString.copyFrom(startingIndex.unsafeGetValue()));
             return this;
@@ -204,7 +204,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param endIndex the ending index for a range query.
          * @return a reference to this object.
          */
-        public Builder withRangeEnd(ByteArrayWrapper endIndex) 
+        public Builder withRangeEnd(BinaryValue endIndex) 
         {
             pbReqBuilder.setRangeMax(ByteString.copyFrom(endIndex.unsafeGetValue()));
             return this;
@@ -239,7 +239,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param continuation the continuation.
          * @return a reference to this object.
          */
-        public Builder withContinuation(ByteArrayWrapper continuation)
+        public Builder withContinuation(BinaryValue continuation)
         {
             pbReqBuilder.setContinuation(ByteString.copyFrom(continuation.unsafeGetValue()));
             return this;
@@ -269,7 +269,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * @param filter the regex to filter terms by.
          * @return a reference to this object.
          */
-        public Builder withRegexTermFilter(ByteArrayWrapper filter)
+        public Builder withRegexTermFilter(BinaryValue filter)
         {
             pbReqBuilder.setTermRegex(ByteString.copyFrom(filter.unsafeGetValue()));
             return this;
@@ -321,7 +321,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     
     public static class Response 
     {
-        private final ByteArrayWrapper continuation;
+        private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
 
         Response(Builder builder)
@@ -335,7 +335,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return continuation != null;
         }
 
-        public ByteArrayWrapper getContinuation()
+        public BinaryValue getContinuation()
         {
             return continuation;
         }
@@ -347,15 +347,15 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         
         public static class Entry
         {
-            private final ByteArrayWrapper indexKey;
-            private final ByteArrayWrapper objectKey;
+            private final BinaryValue indexKey;
+            private final BinaryValue objectKey;
 
-            Entry(ByteArrayWrapper objectKey)
+            Entry(BinaryValue objectKey)
             {
                 this(null, objectKey);
             }
 
-            Entry(ByteArrayWrapper indexKey, ByteArrayWrapper objectKey)
+            Entry(BinaryValue indexKey, BinaryValue objectKey)
             {
                 this.indexKey = indexKey;
                 this.objectKey = objectKey;
@@ -366,12 +366,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 return indexKey != null;
             }
 
-            public ByteArrayWrapper getIndexKey()
+            public BinaryValue getIndexKey()
             {
                 return indexKey;
             }
 
-            public ByteArrayWrapper getObjectKey()
+            public BinaryValue getObjectKey()
             {
                 return objectKey;
             }
@@ -379,14 +379,14 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         
         static class Builder
         {
-            private ByteArrayWrapper continuation;
+            private BinaryValue continuation;
             private List<Response.Entry> entryList = 
                 new ArrayList<Response.Entry>();
             
             Builder()
             {}
             
-            Builder withContinuation(ByteArrayWrapper continuation)
+            Builder withContinuation(BinaryValue continuation)
             {
                 this.continuation = continuation;
                 return this;

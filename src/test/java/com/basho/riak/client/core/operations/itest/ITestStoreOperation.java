@@ -20,7 +20,7 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -32,14 +32,14 @@ import org.junit.Test;
  */
 public class ITestStoreOperation extends ITestBase
 {
-    final private ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
+    final private BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
     final private String value = "{\"value\":\"some value\"}";
     
     @Test
     public void testSimpleStore() throws InterruptedException, ExecutionException
     {
         
-        RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+        RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bucketName)
@@ -65,8 +65,8 @@ public class ITestStoreOperation extends ITestBase
     {
         // Enable allow_multi, store a new item, then do a read/modify/write 
         // using the vclock
-        ByteArrayWrapper bName = 
-            ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_1").getBytes());
+        BinaryValue bName = 
+            BinaryValue.unsafeCreate((bucketName.toString() + "_1").getBytes());
         
         StoreBucketPropsOperation op = 
             new StoreBucketPropsOperation.Builder(bName)
@@ -75,7 +75,7 @@ public class ITestStoreOperation extends ITestBase
         cluster.execute(op);
         op.get();
         
-        RiakObject obj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+        RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bName)
@@ -90,7 +90,7 @@ public class ITestStoreOperation extends ITestBase
         
         assertTrue(response.hasVClock());
         
-        obj.setValue(ByteArrayWrapper.create("changed"));
+        obj.setValue(BinaryValue.create("changed"));
         storeOp = new StoreOperation.Builder(bName)
                 .withKey(key)
                 .withContent(obj)
