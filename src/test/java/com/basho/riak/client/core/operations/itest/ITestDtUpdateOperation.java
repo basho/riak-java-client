@@ -19,7 +19,7 @@ import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
@@ -34,7 +34,7 @@ import static org.junit.Assume.assumeTrue;
 public class ITestDtUpdateOperation extends ITestBase
 {
 
-    private CrdtCounter fetchCounter(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
+    private CrdtCounter fetchCounter(BinaryValue type, BinaryValue bucket, BinaryValue key)
         throws ExecutionException, InterruptedException
     {
         DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
@@ -48,7 +48,7 @@ public class ITestDtUpdateOperation extends ITestBase
         return element.getAsCounter();
     }
 
-    private CrdtSet fetchSet(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
+    private CrdtSet fetchSet(BinaryValue type, BinaryValue bucket, BinaryValue key)
         throws ExecutionException, InterruptedException
     {
         DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
@@ -63,7 +63,7 @@ public class ITestDtUpdateOperation extends ITestBase
         return element.getAsSet();
     }
 
-    private CrdtMap fetchMap(ByteArrayWrapper type, ByteArrayWrapper bucket, ByteArrayWrapper key)
+    private CrdtMap fetchMap(BinaryValue type, BinaryValue bucket, BinaryValue key)
         throws ExecutionException, InterruptedException
     {
         DtFetchOperation fetch = new DtFetchOperation.Builder(bucket, key).withBucketType(type).build();
@@ -86,7 +86,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         final int iterations = 1;
 
-        ByteArrayWrapper key = ByteArrayWrapper.create("key");
+        BinaryValue key = BinaryValue.create("key");
 
         resetAndEmptyBucket(bucketName, counterBucketType);
 
@@ -135,18 +135,18 @@ public class ITestDtUpdateOperation extends ITestBase
 
         final int iterations = 1;
 
-        ByteArrayWrapper key = ByteArrayWrapper.create("key");
+        BinaryValue key = BinaryValue.create("key");
 
         resetAndEmptyBucket(bucketName, setBucketType);
 
         CrdtSet set = fetchSet(setBucketType, bucketName, key);
         assertTrue(set.viewAsSet().isEmpty());
 
-        Set<ByteArrayWrapper> testValues = new HashSet<ByteArrayWrapper>(iterations);
+        Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
         for (int i = 0; i < iterations; ++i)
         {
             ByteBuffer buff = (ByteBuffer) ByteBuffer.allocate(8).putInt(i).rewind();
-            ByteArrayWrapper wrapped = ByteArrayWrapper.create(buff.array());
+            BinaryValue wrapped = BinaryValue.create(buff.array());
             testValues.add(wrapped);
 
             DtUpdateOperation update =
@@ -163,7 +163,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertEquals(iterations, set.viewAsSet().size());
         assertEquals(testValues, set.viewAsSet());
 
-        for (ByteArrayWrapper setElement : testValues)
+        for (BinaryValue setElement : testValues)
         {
 
             DtUpdateOperation update =
@@ -192,18 +192,18 @@ public class ITestDtUpdateOperation extends ITestBase
 
         final int iterations = 1;
 
-        ByteArrayWrapper key = ByteArrayWrapper.create("key");
+        BinaryValue key = BinaryValue.create("key");
 
         resetAndEmptyBucket(bucketName, setBucketType);
 
         CrdtSet set = fetchSet(setBucketType, bucketName, key);
         assertTrue(set.viewAsSet().isEmpty());
 
-        Set<ByteArrayWrapper> testValues = new HashSet<ByteArrayWrapper>(iterations);
+        Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
         for (int i = 0; i < iterations; ++i)
         {
             ByteBuffer buff = (ByteBuffer) ByteBuffer.allocate(8).putInt(i).rewind();
-            ByteArrayWrapper wrapped = ByteArrayWrapper.create(buff.array());
+            BinaryValue wrapped = BinaryValue.create(buff.array());
             testValues.add(wrapped);
 
             DtUpdateOperation add =
@@ -238,7 +238,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         assumeTrue(testCrdt);
 
-        ByteArrayWrapper key = ByteArrayWrapper.create("key");
+        BinaryValue key = BinaryValue.create("key");
 
         resetAndEmptyBucket(bucketName, mapBucketType);
 
@@ -246,8 +246,8 @@ public class ITestDtUpdateOperation extends ITestBase
 
         assertTrue(map.viewAsMap().isEmpty());
 
-        ByteArrayWrapper setValue = ByteArrayWrapper.create("value");
-        ByteArrayWrapper mapKey = ByteArrayWrapper.create("set");
+        BinaryValue setValue = BinaryValue.create("value");
+        BinaryValue mapKey = BinaryValue.create("set");
         DtUpdateOperation add =
             new DtUpdateOperation.Builder(bucketName, mapBucketType)
                 .withOp(new MapOp().add(mapKey, MapOp.FieldType.SET))
@@ -273,7 +273,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertTrue(set.viewAsSet().contains(setValue));
 
 
-        mapKey = ByteArrayWrapper.create("counter");
+        mapKey = BinaryValue.create("counter");
         add = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.COUNTER))
             .withKey(key)
@@ -297,7 +297,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertEquals(1, counter.getValue());
 
 
-        mapKey = ByteArrayWrapper.create("flag");
+        mapKey = BinaryValue.create("flag");
 
         DtUpdateOperation addSet =
             new DtUpdateOperation.Builder(bucketName, mapBucketType)
@@ -324,7 +324,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertTrue(flag.getEnabled());
 
 
-        mapKey = ByteArrayWrapper.create("register");
+        mapKey = BinaryValue.create("register");
         addSet = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.REGISTER))
             .withKey(key)
@@ -347,7 +347,7 @@ public class ITestDtUpdateOperation extends ITestBase
         assertEquals(mapKey, register.getValue());
 
 
-        mapKey = ByteArrayWrapper.create("map");
+        mapKey = BinaryValue.create("map");
 
         addSet = new DtUpdateOperation.Builder(bucketName, mapBucketType)
             .withOp(new MapOp().add(mapKey, MapOp.FieldType.MAP))
@@ -366,13 +366,13 @@ public class ITestDtUpdateOperation extends ITestBase
         add.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        Map<ByteArrayWrapper, CrdtElement> mapView = map.viewAsMap();
+        Map<BinaryValue, CrdtElement> mapView = map.viewAsMap();
         assertEquals(5, mapView.size());
 
         assertTrue(mapView.containsKey(mapKey));
         assertTrue(mapView.get(mapKey).isMap());
         CrdtMap nestedMap = mapView.get(mapKey).getAsMap();
-        Map<ByteArrayWrapper, CrdtElement> nestedMapView = nestedMap.viewAsMap();
+        Map<BinaryValue, CrdtElement> nestedMapView = nestedMap.viewAsMap();
         assertEquals(1, nestedMapView.size());
 
         assertTrue(nestedMapView.containsKey(mapKey));

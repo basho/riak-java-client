@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.crdt.ops;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,10 +23,10 @@ import java.util.Set;
 public class SetOp implements CrdtOp
 {
 
-    private final Set<ByteArrayWrapper> adds = new HashSet<ByteArrayWrapper>();
-    private final Set<ByteArrayWrapper> removes = new HashSet<ByteArrayWrapper>();
+    private final Set<BinaryValue> adds = new HashSet<BinaryValue>();
+    private final Set<BinaryValue> removes = new HashSet<BinaryValue>();
 
-    public SetOp(Set<ByteArrayWrapper> adds, Set<ByteArrayWrapper> removes)
+    public SetOp(Set<BinaryValue> adds, Set<BinaryValue> removes)
     {
         this.adds.addAll(adds);
         this.removes.addAll(removes);
@@ -34,24 +34,24 @@ public class SetOp implements CrdtOp
 
     public SetOp() {}
 
-    public SetOp add(ByteArrayWrapper element)
+    public SetOp add(BinaryValue element)
     {
         this.adds.add(element);
         return this;
     }
 
-    public SetOp remove(ByteArrayWrapper element)
+    public SetOp remove(BinaryValue element)
     {
         this.removes.add(element);
         return this;
     }
 
-    public Set<ByteArrayWrapper> getAdds()
+    public Set<BinaryValue> getAdds()
     {
         return adds;
     }
 
-    public Set<ByteArrayWrapper> getRemoves()
+    public Set<BinaryValue> getRemoves()
     {
         return removes;
     }

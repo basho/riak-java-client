@@ -19,7 +19,7 @@ import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -33,10 +33,10 @@ public class ITestDeleteOperation extends ITestBase
     @Test
     public void testDeleteObject() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.unsafeCreate(value.getBytes()));
+        RiakObject rObj = new RiakObject().setValue(BinaryValue.unsafeCreate(value.getBytes()));
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bucketName)

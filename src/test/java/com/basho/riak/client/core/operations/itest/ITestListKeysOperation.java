@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -40,10 +40,10 @@ public class ITestListKeysOperation extends ITestBase
     @Test
     public void testListNoKeys() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_1").getBytes());
+        final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_1").getBytes());
         ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
         cluster.execute(klistOp);
-        List<ByteArrayWrapper> kList = klistOp.get();
+        List<BinaryValue> kList = klistOp.get();
         assertTrue(kList.isEmpty());
         resetAndEmptyBucket(bName);
 
@@ -52,11 +52,11 @@ public class ITestListKeysOperation extends ITestBase
     @Test
     public void testListKey() throws InterruptedException, ExecutionException
     {
-        final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_2").getBytes());
-        final ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate("my_key".getBytes());
+        final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_2").getBytes());
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bName)
@@ -69,7 +69,7 @@ public class ITestListKeysOperation extends ITestBase
         
         ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
         cluster.execute(klistOp);
-        List<ByteArrayWrapper> kList = klistOp.get();
+        List<BinaryValue> kList = klistOp.get();
         
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), key);
@@ -82,7 +82,7 @@ public class ITestListKeysOperation extends ITestBase
     {
         final String baseKey = "my_key";
         final String value = "{\"value\":\"value\"}";
-        final ByteArrayWrapper bName = ByteArrayWrapper.unsafeCreate((bucketName.toString() + "_3").getBytes());
+        final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_3").getBytes());
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
@@ -105,7 +105,7 @@ public class ITestListKeysOperation extends ITestBase
                     {
                         ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
                         cluster.execute(klistOp);
-                        List<ByteArrayWrapper> kList;
+                        List<BinaryValue> kList;
                         kList = klistOp.get();
                         assertEquals(kList.size(), 1000);
                         latch.countDown();
@@ -125,8 +125,8 @@ public class ITestListKeysOperation extends ITestBase
         for (int i = 0; i < 1000; i++)
         {
             semaphore.acquire();
-            ByteArrayWrapper key = ByteArrayWrapper.unsafeCreate((baseKey + i).getBytes());
-            RiakObject rObj = new RiakObject().setValue(ByteArrayWrapper.create(value));
+            BinaryValue key = BinaryValue.unsafeCreate((baseKey + i).getBytes());
+            RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
             StoreOperation storeOp = 
                 new StoreOperation.Builder(bName)
                 .withKey(key)

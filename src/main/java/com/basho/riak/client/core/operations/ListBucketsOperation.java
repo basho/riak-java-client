@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbListBucketsResp>
+public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbListBucketsResp>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     
@@ -43,14 +43,14 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
     }
 
     @Override
-    protected List<ByteArrayWrapper> convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) throws ExecutionException
+    protected List<BinaryValue> convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) throws ExecutionException
     {
-        List<ByteArrayWrapper> buckets = new ArrayList<ByteArrayWrapper>(rawResponse.size());
+        List<BinaryValue> buckets = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
         {
             for (ByteString bucket : resp.getBucketsList())
             {
-                buckets.add(ByteArrayWrapper.unsafeCreate(bucket.toByteArray()));
+                buckets.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
             }
         }
         return buckets;
@@ -109,7 +109,7 @@ public class ListBucketsOperation extends FutureOperation<List<ByteArrayWrapper>
         * @param bucketType the bucket type to use
         * @return A reference to this object.
         */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {

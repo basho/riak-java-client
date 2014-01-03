@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +26,8 @@ import static java.util.Collections.unmodifiableMap;
 public class CrdtMap extends CrdtElement
 {
 
-    private final Map<ByteArrayWrapper, CrdtElement> entries =
-        new HashMap<ByteArrayWrapper, CrdtElement>();
+    private final Map<BinaryValue, CrdtElement> entries =
+        new HashMap<BinaryValue, CrdtElement>();
 
     public CrdtMap(List<MapEntry> entries)
     {
@@ -37,7 +37,7 @@ public class CrdtMap extends CrdtElement
         }
     }
 
-    public CrdtElement get(ByteArrayWrapper key)
+    public CrdtElement get(BinaryValue key)
     {
         return entries.get(key);
     }
@@ -47,7 +47,7 @@ public class CrdtMap extends CrdtElement
      *
      * @return a read-only view of the map
      */
-    public Map<ByteArrayWrapper, CrdtElement> viewAsMap()
+    public Map<BinaryValue, CrdtElement> viewAsMap()
     {
         return unmodifiableMap(entries);
     }
@@ -55,16 +55,16 @@ public class CrdtMap extends CrdtElement
     public static final class MapEntry
     {
 
-        private final ByteArrayWrapper field;
+        private final BinaryValue field;
         private final CrdtElement element;
 
-        public MapEntry(ByteArrayWrapper field, CrdtElement element)
+        public MapEntry(BinaryValue field, CrdtElement element)
         {
             this.field = field;
             this.element = element;
         }
 
-        public ByteArrayWrapper getField()
+        public BinaryValue getField()
         {
             return field;
         }

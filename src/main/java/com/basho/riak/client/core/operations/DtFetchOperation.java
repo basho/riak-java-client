@@ -19,7 +19,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
@@ -56,7 +56,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
         if (response.hasContext())
         {
-            ByteArrayWrapper ctxWrapper = ByteArrayWrapper.create(response.getContext().toByteArray());
+            BinaryValue ctxWrapper = BinaryValue.create(response.getContext().toByteArray());
             responseBuilder.withContext(ctxWrapper);
         }
 
@@ -88,7 +88,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     {
         private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();
 
-        public Builder(ByteArrayWrapper bucket, ByteArrayWrapper key)
+        public Builder(BinaryValue bucket, BinaryValue key)
         {
 
             if ((null == bucket) || bucket.length() == 0)
@@ -112,7 +112,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
          * @param bucketType the bucket type
          * @return a reference to this object.
          */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {
@@ -249,7 +249,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     
     public static class Response
     {
-        private final ByteArrayWrapper context;
+        private final BinaryValue context;
         private final CrdtElement crdtElement;
 
         protected Response(Init<?> builder)
@@ -263,7 +263,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             return context != null;
         }
 
-        public ByteArrayWrapper getContext()
+        public BinaryValue getContext()
         {
             return context;
         }
@@ -280,12 +280,12 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
         protected static abstract class Init<T extends Init<T>>
         {
-            private ByteArrayWrapper context;
+            private BinaryValue context;
             private CrdtElement crdtElement;
             
             protected abstract T self();
             
-            T withContext(ByteArrayWrapper context)
+            T withContext(BinaryValue context)
             {
                 if (context != null)
                 {

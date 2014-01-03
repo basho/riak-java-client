@@ -16,7 +16,7 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.query.crdt.ops.*;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
 import org.junit.Test;
@@ -27,8 +27,8 @@ import static junit.framework.Assert.assertTrue;
 public class DtUpdateOperationTest
 {
 
-    private final ByteArrayWrapper bucket = ByteArrayWrapper.create("buket");
-    private final ByteArrayWrapper type = ByteArrayWrapper.create("type");
+    private final BinaryValue bucket = BinaryValue.create("buket");
+    private final BinaryValue type = BinaryValue.create("type");
 
     @Test
     public void testGetCounterOp()
@@ -47,8 +47,8 @@ public class DtUpdateOperationTest
     public void testGetSetOp()
     {
 
-        ByteArrayWrapper addition = ByteArrayWrapper.create("1");
-        ByteArrayWrapper removal = ByteArrayWrapper.create("2");
+        BinaryValue addition = BinaryValue.create("1");
+        BinaryValue removal = BinaryValue.create("2");
 
         SetOp op = new SetOp()
             .add(addition)
@@ -57,8 +57,8 @@ public class DtUpdateOperationTest
         DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(bucket, type);
         RiakDtPB.SetOp setOp = operation.getSetOp(op);
 
-        ByteArrayWrapper serializedAddition = ByteArrayWrapper.unsafeCreate(setOp.getAdds(0).toByteArray());
-        ByteArrayWrapper serializedRemoval = ByteArrayWrapper.unsafeCreate(setOp.getRemoves(0).toByteArray());
+        BinaryValue serializedAddition = BinaryValue.unsafeCreate(setOp.getAdds(0).toByteArray());
+        BinaryValue serializedRemoval = BinaryValue.unsafeCreate(setOp.getRemoves(0).toByteArray());
 
         assertEquals(addition, serializedAddition);
         assertEquals(removal, serializedRemoval);
@@ -84,7 +84,7 @@ public class DtUpdateOperationTest
     public void testGetRegisterOp()
     {
 
-        final ByteArrayWrapper registerValue = ByteArrayWrapper.create("value");
+        final BinaryValue registerValue = BinaryValue.create("value");
 
         RegisterOp op = new RegisterOp(registerValue);
 
@@ -99,8 +99,8 @@ public class DtUpdateOperationTest
     public void testGetMapOpAdditionsAndRemovals()
     {
 
-        ByteArrayWrapper addKey = ByteArrayWrapper.create("add");
-        ByteArrayWrapper removeKey = ByteArrayWrapper.create("remove");
+        BinaryValue addKey = BinaryValue.create("add");
+        BinaryValue removeKey = BinaryValue.create("remove");
 
         MapOp op = new MapOp()
             .add(addKey, MapOp.FieldType.COUNTER)
@@ -123,17 +123,17 @@ public class DtUpdateOperationTest
     public void testGetMapOpUpdates()
     {
 
-        ByteArrayWrapper counterKey = ByteArrayWrapper.create("counter");
-        ByteArrayWrapper setKey = ByteArrayWrapper.create("set");
-        ByteArrayWrapper flagKey = ByteArrayWrapper.create("flag");
-        ByteArrayWrapper registerKey = ByteArrayWrapper.create("register");
-        ByteArrayWrapper mapKey = ByteArrayWrapper.create("map");
+        BinaryValue counterKey = BinaryValue.create("counter");
+        BinaryValue setKey = BinaryValue.create("set");
+        BinaryValue flagKey = BinaryValue.create("flag");
+        BinaryValue registerKey = BinaryValue.create("register");
+        BinaryValue mapKey = BinaryValue.create("map");
 
-        ByteArrayWrapper setAddValue = ByteArrayWrapper.create("1");
+        BinaryValue setAddValue = BinaryValue.create("1");
 
-        ByteArrayWrapper registerValue = ByteArrayWrapper.create("value");
+        BinaryValue registerValue = BinaryValue.create("value");
 
-        ByteArrayWrapper mapAddValue = ByteArrayWrapper.create("value");
+        BinaryValue mapAddValue = BinaryValue.create("value");
 
         MapOp op = new MapOp()
             .update(counterKey, new CounterOp(1))
@@ -154,13 +154,13 @@ public class DtUpdateOperationTest
     public void testGetMapOpUpdateNestedMaps()
     {
 
-        ByteArrayWrapper key1 = ByteArrayWrapper.create("key1");
+        BinaryValue key1 = BinaryValue.create("key1");
         MapOp op1 = new MapOp().update(key1, new CounterOp(1));
 
-        ByteArrayWrapper key2 = ByteArrayWrapper.create("key2");
+        BinaryValue key2 = BinaryValue.create("key2");
         MapOp op2 = new MapOp().update(key2, op1);
 
-        ByteArrayWrapper key3 = ByteArrayWrapper.create("key3");
+        BinaryValue key3 = BinaryValue.create("key3");
         MapOp op3 = new MapOp().update(key3, op2);
 
         DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(bucket, type);

@@ -22,7 +22,7 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -46,12 +46,12 @@ public abstract class ITestBase
     protected static boolean testBucketType;
     protected static boolean testCrdt;
     protected static boolean legacyRiakSearch;
-    protected static ByteArrayWrapper bucketName;
-    protected static ByteArrayWrapper counterBucketType;
-    protected static ByteArrayWrapper setBucketType;
-    protected static ByteArrayWrapper mapBucketType;
+    protected static BinaryValue bucketName;
+    protected static BinaryValue counterBucketType;
+    protected static BinaryValue setBucketType;
+    protected static BinaryValue mapBucketType;
     
-    protected static ByteArrayWrapper bucketType;
+    protected static BinaryValue bucketType;
 
     @BeforeClass
     public static void setUp() throws UnknownHostException
@@ -61,9 +61,9 @@ public abstract class ITestBase
         // You must create a bucket type 'test_type' if you enable this.
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
-        bucketType = ByteArrayWrapper.unsafeCreate("test_type".getBytes());
+        bucketType = BinaryValue.unsafeCreate("test_type".getBytes());
         legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
-        bucketName = ByteArrayWrapper.unsafeCreate("ITestBase".getBytes());
+        bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withMinConnections(10);
 
@@ -76,9 +76,9 @@ public abstract class ITestBase
          * sets: allow_mult = true, datatype = set
          * counters: allow_mult = true, datatype = counter
          */
-        counterBucketType = ByteArrayWrapper.create("counters");
-        setBucketType = ByteArrayWrapper.create("sets");
-        mapBucketType = ByteArrayWrapper.create("maps");
+        counterBucketType = BinaryValue.create("counters");
+        setBucketType = BinaryValue.create("sets");
+        mapBucketType = BinaryValue.create("maps");
 
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
@@ -97,13 +97,13 @@ public abstract class ITestBase
         cluster.shutdown().get();
     }
     
-    public static void resetAndEmptyBucket(ByteArrayWrapper name) throws InterruptedException, ExecutionException
+    public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
     {
         resetAndEmptyBucket(name, null);
 
     }
 
-    protected static void resetAndEmptyBucket(ByteArrayWrapper name, ByteArrayWrapper type) throws InterruptedException, ExecutionException
+    protected static void resetAndEmptyBucket(BinaryValue name, BinaryValue type) throws InterruptedException, ExecutionException
     {
         ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(name);
         if (type != null)
@@ -113,7 +113,7 @@ public abstract class ITestBase
 
         ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
-        List<ByteArrayWrapper> keyList = keysOp.get();
+        List<BinaryValue> keyList = keysOp.get();
         final int totalKeys = keyList.size();
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -147,7 +147,7 @@ public abstract class ITestBase
             
         };
         
-        for (ByteArrayWrapper k : keyList)
+        for (BinaryValue k : keyList)
         {
             DeleteOperation.Builder delOpBuilder = new DeleteOperation.Builder(name, k);
             if (type != null)

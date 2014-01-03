@@ -18,7 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -68,7 +68,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
 
         private final RiakKvPB.RpbDelReq.Builder reqBuilder = RiakKvPB.RpbDelReq.newBuilder();
 
-        public Builder(ByteArrayWrapper bucket, ByteArrayWrapper key)
+        public Builder(BinaryValue bucket, BinaryValue key)
         {
             if ((null == bucket) || bucket.length() == 0)
             {
@@ -84,7 +84,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
             reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
         }
 
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {

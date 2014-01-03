@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, RiakKvPB.RpbListKeysResp>
+public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbListKeysResp>
 {
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
@@ -37,14 +37,14 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
     }
 
     @Override
-    protected List<ByteArrayWrapper> convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
+    protected List<BinaryValue> convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
     {
-        List<ByteArrayWrapper> keys = new ArrayList<ByteArrayWrapper>(rawResponse.size());
+        List<BinaryValue> keys = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
         {
             for (ByteString bucket : resp.getKeysList())
             {
-                keys.add(ByteArrayWrapper.unsafeCreate(bucket.toByteArray()));
+                keys.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
             }
         }
         return keys;
@@ -81,7 +81,7 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
         RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
         
-        public Builder(ByteArrayWrapper bucketName)
+        public Builder(BinaryValue bucketName)
         {
             if ((null == bucketName) || bucketName.length() == 0)
             {
@@ -96,7 +96,7 @@ public class ListKeysOperation extends FutureOperation<List<ByteArrayWrapper>, R
         * @param bucketType the bucket type to use
         * @return A reference to this object.
         */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {
