@@ -23,7 +23,7 @@ import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.query.links.RiakLinks;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakKvPB.RpbContent;
 import com.basho.riak.protobuf.RiakPB;
@@ -75,7 +75,7 @@ public class RiakObjectConverter
             
             if (content.hasValue())
             {
-                ro.setValue(ByteArrayWrapper.unsafeCreate(content.getValue().toByteArray()));
+                ro.setValue(BinaryValue.unsafeCreate(content.getValue().toByteArray()));
             }
             
             if (content.hasVtag())
@@ -107,7 +107,7 @@ public class RiakObjectConverter
                     {
                         IndexType type = IndexType.typeFromFullname(name);
                         indexes.getIndex(new RawIndex.Name(name, type))
-                            .add(ByteArrayWrapper.unsafeCreate(p.getValue().toByteArray()));
+                            .add(BinaryValue.unsafeCreate(p.getValue().toByteArray()));
                     }
                     catch (IllegalArgumentException e)
                     {
@@ -122,8 +122,8 @@ public class RiakObjectConverter
                 for (int j = 0; j < content.getUsermetaCount(); j++)
                 {
                     RiakPB.RpbPair pair = content.getUsermeta(j);
-                    userMeta.put(ByteArrayWrapper.unsafeCreate(pair.getKey().toByteArray()),
-                        ByteArrayWrapper.unsafeCreate(pair.getValue().toByteArray()));
+                    userMeta.put(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),
+                        BinaryValue.unsafeCreate(pair.getValue().toByteArray()));
                 }
             }
              
@@ -165,7 +165,7 @@ public class RiakObjectConverter
         {
             for (RiakIndex<?> index : ro.getIndexes())
             {
-                for (ByteArrayWrapper value : index.rawValues())
+                for (BinaryValue value : index.rawValues())
                 {
                     RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();
                     pair.setKey(ByteString.copyFrom(index.getFullname().getBytes()));
@@ -177,7 +177,7 @@ public class RiakObjectConverter
         
         if (ro.hasUserMeta())
         {
-            for (Map.Entry<ByteArrayWrapper,ByteArrayWrapper> entry 
+            for (Map.Entry<BinaryValue,BinaryValue> entry 
                  : ro.getUserMeta().getUserMetadata())
             {
                 RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();

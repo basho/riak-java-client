@@ -17,7 +17,7 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -76,8 +76,8 @@ public class RiakClusterFixtureTest
         cluster.start();
         
         FetchOperation operation = 
-            new FetchOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
-                                            ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation.Builder(BinaryValue.unsafeCreate("test_bucket".getBytes()), 
+                                            BinaryValue.unsafeCreate("test_key2".getBytes()))
                     .build();
 
         cluster.execute(operation);
@@ -115,8 +115,8 @@ public class RiakClusterFixtureTest
         cluster.start();
         
         FetchOperation operation = 
-            new FetchOperation.Builder(ByteArrayWrapper.unsafeCreate("test_bucket".getBytes()), 
-                                            ByteArrayWrapper.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation.Builder(BinaryValue.unsafeCreate("test_bucket".getBytes()), 
+                                            BinaryValue.unsafeCreate("test_key2".getBytes()))
                     .build();
 
         cluster.execute(operation);

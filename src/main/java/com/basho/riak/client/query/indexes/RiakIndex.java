@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.query.indexes;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class RiakIndex<T> implements Iterable<T>
 {
-    private final Set<ByteArrayWrapper> values;
+    private final Set<BinaryValue> values;
     private final IndexType type;
     private final String name;
 
@@ -71,7 +71,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
         }
         else
         {
-            this.values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
+            this.values = Collections.newSetFromMap(new ConcurrentHashMap<BinaryValue, Boolean>());
         }
     }
 
@@ -165,7 +165,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         return new Iterator<T>()
         {
-            private Iterator<ByteArrayWrapper> i = values.iterator();
+            private Iterator<BinaryValue> i = values.iterator();
 
             @Override
             public boolean hasNext()
@@ -210,7 +210,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      * 
      * @return an unmodifiable view of the raw values in this index.
      */
-    public final Set<ByteArrayWrapper> rawValues()
+    public final Set<BinaryValue> rawValues()
     {
         return Collections.unmodifiableSet(values);
     }
@@ -223,7 +223,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     public final Set<T> values()
     {
         Set<T> convertedValues = new HashSet<T>();
-        for (ByteArrayWrapper baw : values)
+        for (BinaryValue baw : values)
         {
             convertedValues.add(convert(baw));
         }
@@ -261,15 +261,15 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Convert a value to a ByteArrayWrapper. 
+     * Convert a value to a BinaryValue. 
      * <p> Index values are stored
      * internally as bytes. Concrete classes implement this method to convert
      * values to bytes. </p>
      *
      * @param value the value to convert
-     * @return a ByteArrayWrapper containing the converted bytes
+     * @return a BinaryValue containing the converted bytes
      */
-    protected abstract ByteArrayWrapper convert(T value);
+    protected abstract BinaryValue convert(T value);
 
     /**
      * Convert bytes to a value type. 
@@ -280,7 +280,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      * @param value the value to convert
      * @return a value of type T
      */
-    protected abstract T convert(ByteArrayWrapper value);
+    protected abstract T convert(BinaryValue value);
 
     /**
      * Returns a hash code value for the object. 
@@ -356,7 +356,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         protected final String name;
         protected final IndexType type;
-        private volatile Set<ByteArrayWrapper> values;
+        private volatile Set<BinaryValue> values;
         
         protected Name(String name, IndexType type)
         {
@@ -432,8 +432,8 @@ public abstract class RiakIndex<T> implements Iterable<T>
          */
         final Name<T> copyFrom(RiakIndex<?> otherIndex)
         {
-            values = Collections.newSetFromMap(new ConcurrentHashMap<ByteArrayWrapper, Boolean>());
-            for (ByteArrayWrapper baw : otherIndex.values)
+            values = Collections.newSetFromMap(new ConcurrentHashMap<BinaryValue, Boolean>());
+            for (BinaryValue baw : otherIndex.values)
             {
                 values.add(baw);
             }

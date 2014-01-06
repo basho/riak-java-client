@@ -15,18 +15,18 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 public class CrdtRegister extends CrdtElement
 {
-    private ByteArrayWrapper value;
+    private BinaryValue value;
 
-    public CrdtRegister(ByteArrayWrapper value)
+    public CrdtRegister(BinaryValue value)
     {
         this.value = value;
     }
 
-    public ByteArrayWrapper getValue()
+    public BinaryValue getValue()
     {
         return value;
     }

@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
@@ -57,12 +57,12 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         
         if (reqBuilder.hasKey())
         {
-            ByteArrayWrapper.unsafeCreate(reqBuilder.getKey().toByteArray());
+            BinaryValue.unsafeCreate(reqBuilder.getKey().toByteArray());
         }
         
         if (response.hasContext())
         {
-            ByteArrayWrapper context = ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray());
+            BinaryValue context = BinaryValue.unsafeCreate(response.getContext().toByteArray());
             responseBuilder.withContext(context);
         }
 
@@ -95,7 +95,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     {
         private final RiakDtPB.DtUpdateReq.Builder reqBuilder = RiakDtPB.DtUpdateReq.newBuilder();
         
-        public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper bucketType)
+        public Builder(BinaryValue bucketName, BinaryValue bucketType)
         {
             if (null == bucketName || bucketName.length() == 0)
             {
@@ -120,7 +120,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * @param key the key.
          * @return a reference to this object.
          */
-        public Builder withKey(ByteArrayWrapper key)
+        public Builder withKey(BinaryValue key)
         {
             if (key != null)
             {
@@ -142,7 +142,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * @param ctx a context from a previous fetch operation.
          * @return a reference to this object.
          */
-        public Builder withContext(ByteArrayWrapper ctx)
+        public Builder withContext(BinaryValue ctx)
         {
             if (null == ctx)
             {
@@ -262,12 +262,12 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         {
             RiakDtPB.SetOp.Builder setOpBuilder = RiakDtPB.SetOp.newBuilder();
 
-            for (ByteArrayWrapper element : op.getAdds())
+            for (BinaryValue element : op.getAdds())
             {
                 setOpBuilder.addAdds(ByteString.copyFrom(element.unsafeGetValue()));
             }
 
-            for (ByteArrayWrapper element : op.getRemoves())
+            for (BinaryValue element : op.getRemoves())
             {
                 setOpBuilder.addRemoves(ByteString.copyFrom(element.unsafeGetValue()));
             }
@@ -390,7 +390,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * Add a counter update operation to this operation.
          *
          * @param op the update
-         * @return this
+         * @return a reference to this object.
          */
         public Builder withOp(CounterOp op)
         {
@@ -404,7 +404,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * Add a asMap update operation to this operation.
          *
          * @param op the update
-         * @return this
+         * @return a reference to this object.
          */
         public Builder withOp(MapOp op)
         {
@@ -417,7 +417,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
          * Add a asSet update operation to this operation.
          *
          * @param op the update
-         * @return this
+         * @return a reference to this object.
          */
         public Builder withOp(SetOp op)
         {
@@ -432,7 +432,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     
     public static class Response extends DtFetchOperation.Response
     {
-        private final ByteArrayWrapper generatedKey;
+        private final BinaryValue generatedKey;
         
         private Response(Init<?> builder)
         {
@@ -445,16 +445,16 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             return generatedKey != null;
         }
         
-        public ByteArrayWrapper getGeneratedKey()
+        public BinaryValue getGeneratedKey()
         {
             return generatedKey;
         }
         
         protected static abstract class Init<T extends Init<T>> extends DtFetchOperation.Response.Init<T>
         {
-            private ByteArrayWrapper generatedKey;
+            private BinaryValue generatedKey;
             
-            T withGeneratedKey(ByteArrayWrapper generatedKey)
+            T withGeneratedKey(BinaryValue generatedKey)
             {
                 this.generatedKey = generatedKey;
                 return self();

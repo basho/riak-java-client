@@ -15,11 +15,11 @@
  */
 package com.basho.riak.client.query.indexes;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 /**
  * {@code RiakIndex} implementation used to access a Riak {@code _int} or {@code _bin} 
- * Secondary Index using {@code ByteArrayWrapper} ({@code byte[]}) values.
+ * Secondary Index using {@code BinaryValue} ({@code byte[]}) values.
  * <p>
  * Data in Riak including secondary indexes is stored as bytes. This implementation 
  * of {@code RiakIndex} provides direct access to those bytes. 
@@ -28,7 +28,7 @@ import com.basho.riak.client.util.ByteArrayWrapper;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RawIndex extends RiakIndex<ByteArrayWrapper>
+public class RawIndex extends RiakIndex<BinaryValue>
 {
     private RawIndex(Name name)
     {
@@ -36,7 +36,7 @@ public class RawIndex extends RiakIndex<ByteArrayWrapper>
     }
     
     @Override
-    protected ByteArrayWrapper convert(ByteArrayWrapper value)
+    protected BinaryValue convert(BinaryValue value)
     {
         return value;
     }

@@ -18,7 +18,7 @@ package com.basho.riak.client.query;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLinks;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.CharsetUtils;
 import java.nio.charset.Charset;
 
@@ -57,7 +57,7 @@ public final class RiakObject
     // Worth noting here is that changes to the contents of this  
     // are not guaranteed to be seen outside of a single thread. We never 
     // expose it directly outside the RiakObject except via "unsafe" methods
-    private volatile ByteArrayWrapper value;
+    private volatile BinaryValue value;
     
     // Mutable collections 
     private volatile RiakIndexes riakIndexes;
@@ -96,7 +96,7 @@ public final class RiakObject
      * 
      * @return the value of this RiakObject
      */
-    public ByteArrayWrapper getValue()
+    public BinaryValue getValue()
     {
         return value;
     }
@@ -113,7 +113,7 @@ public final class RiakObject
      * @return a reference to this object.
      * @throws IllegalArgumentException if {@code value} is zero length.
      */
-    public RiakObject setValue(ByteArrayWrapper value)
+    public RiakObject setValue(BinaryValue value)
     {
         if (value != null && value.length() == 0)
         {
@@ -183,7 +183,7 @@ public final class RiakObject
      * a HTTP {@code Content-Type} header. 
      * </p>
      * @return a {@code String} representing the content type of this object's value
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public String getContentType()
     {
@@ -198,7 +198,7 @@ public final class RiakObject
      * </p>
      * @param contentType a {@code String} representing the content type of this object's value
      * @return a reference to this object
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public RiakObject setContentType(String contentType)
     {
@@ -223,7 +223,7 @@ public final class RiakObject
      * </p>
      * @return The character asSet {@code String}
      * @see RiakObject#setCharset(java.lang.String) 
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public String getCharset()
     {
@@ -238,7 +238,7 @@ public final class RiakObject
      * </p>
      * @param charset the {@link Charset} to be asSet
      * @return a reference to this object
-     * @see RiakObject#setValue(ByteArrayWrapper) 
+     * @see RiakObject#setValue(com.basho.riak.client.util.BinaryValue) 
      */
     public RiakObject setCharset(String charset)
     {
@@ -356,10 +356,4 @@ public final class RiakObject
     {
         return isDeleted;
     }
-    
-    public static class Builder
-    {
-        
-    }
-    
 }

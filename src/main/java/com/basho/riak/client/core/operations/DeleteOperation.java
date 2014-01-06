@@ -18,7 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -68,7 +68,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
 
         private final RiakKvPB.RpbDelReq.Builder reqBuilder = RiakKvPB.RpbDelReq.newBuilder();
 
-        public Builder(ByteArrayWrapper bucket, ByteArrayWrapper key)
+        public Builder(BinaryValue bucket, BinaryValue key)
         {
             if ((null == bucket) || bucket.length() == 0)
             {
@@ -84,7 +84,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
             reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
         }
 
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {
@@ -113,7 +113,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
          * If not asSet the bucket default is used.
          *
          * @param pr the PR value.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withPr(int pr)
         {
@@ -126,7 +126,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
          * If not asSet the bucket default is used.
          *
          * @param w the W value.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withW(int w)
         {
@@ -139,7 +139,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
          * If not asSet the bucket default is used.
          *
          * @param dw the DW value.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withDw(int dw)
         {
@@ -152,7 +152,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
          * If not asSet the bucket default is used.
          *
          * @param pw the PW value.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withPw(int pw)
         {
@@ -165,7 +165,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
          * If not asSet the bucket default is used.
          *
          * @param rw the RW value.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withRw(int rw)
         {
@@ -178,7 +178,7 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
          * If not asSet siblings may be created depending on bucket properties.
          *
          * @param vclock the last fetched vclock.
-         * @return
+         * @return a reference to this object.
          */
         public Builder withVclock(VClock vclock)
         {

@@ -15,26 +15,26 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
 
 public class CrdtSet extends CrdtElement
 {
-    private final Set<ByteArrayWrapper> elements =
-        new HashSet<ByteArrayWrapper>();
+    private final Set<BinaryValue> elements =
+        new HashSet<BinaryValue>();
 
-    public CrdtSet(List<ByteArrayWrapper> elements)
+    public CrdtSet(List<BinaryValue> elements)
     {
         this.elements.addAll(elements);
     }
 
-    public Set<ByteArrayWrapper> viewAsSet()
+    public Set<BinaryValue> viewAsSet()
     {
         return Collections.unmodifiableSet(elements);
     }
 
-    public boolean contains(ByteArrayWrapper element)
+    public boolean contains(BinaryValue element)
     {
         return elements.contains(element);
     }

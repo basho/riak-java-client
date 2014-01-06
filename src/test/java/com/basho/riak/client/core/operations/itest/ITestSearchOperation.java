@@ -24,7 +24,7 @@ import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.search.YokozunaIndex;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
@@ -89,7 +89,7 @@ public class ITestSearchOperation extends ITestBase
         // to complete.
         Thread.sleep(3000);
         
-        SearchOperation searchOp = new SearchOperation.Builder(ByteArrayWrapper.create("test_index"), "Alice*").build();
+        SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "Alice*").build();
         
         cluster.execute(searchOp);
         SearchOperation.Response result = searchOp.get();        
@@ -107,7 +107,7 @@ public class ITestSearchOperation extends ITestBase
 
         RiakObject obj = new RiakObject();
                             
-        obj.setValue(ByteArrayWrapper.create("Alice was beginning to get very tired of sitting by her sister on the " +
+        obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
                     "bank, and of having nothing to do: once or twice she had peeped into the " +
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
@@ -115,14 +115,14 @@ public class ITestSearchOperation extends ITestBase
         
         StoreOperation storeOp = 
             new StoreOperation.Builder(bucketName)
-                .withKey(ByteArrayWrapper.unsafeCreate("p1".getBytes()))
+                .withKey(BinaryValue.unsafeCreate("p1".getBytes()))
                 .withContent(obj)
                 .build();
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        obj.setValue(ByteArrayWrapper.create("So she was considering in her own mind (as well as she could, for the " +
+        obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
                     "hot day made her feel very sleepy and stupid), whether the pleasure " +
                     "of making a daisy-chain would be worth the trouble of getting up and " +
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
@@ -132,14 +132,14 @@ public class ITestSearchOperation extends ITestBase
         
         storeOp = 
             new StoreOperation.Builder(bucketName)
-                .withKey(ByteArrayWrapper.unsafeCreate("p2".getBytes()))
+                .withKey(BinaryValue.unsafeCreate("p2".getBytes()))
                 .withContent(obj)
                 .build();
         
         cluster.execute(storeOp);
         storeOp.get();
         
-        obj.setValue(ByteArrayWrapper.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
+        obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
                     "well."));
@@ -148,7 +148,7 @@ public class ITestSearchOperation extends ITestBase
         
         storeOp = 
             new StoreOperation.Builder(bucketName)
-                .withKey(ByteArrayWrapper.unsafeCreate("p3".getBytes()))
+                .withKey(BinaryValue.unsafeCreate("p3".getBytes()))
                 .withContent(obj)
                 .build();
         

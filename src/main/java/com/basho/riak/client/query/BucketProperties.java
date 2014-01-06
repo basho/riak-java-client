@@ -257,7 +257,7 @@ public class BucketProperties
      * Get the not_found_ok value.
      *
      * @return the not_found_ok value or null if not set.
-     * @see BucketProperties#withNotFoundOk(boolean)
+     * @see BucketProperties.Builder#withNotFoundOk(boolean)
      */
     public Boolean getNotFoundOk()
     {
@@ -278,7 +278,7 @@ public class BucketProperties
      * Get the basic_quorum value.
      *
      * @return the basic_quorum value, or null if not set.
-     * @see BucketProperties#withBasicQuorum(boolean)
+     * @see BucketProperties.Builder#withBasicQuorum(boolean)
      */
     public Boolean getBasicQuorum()
     {
@@ -300,7 +300,7 @@ public class BucketProperties
      *
      * @return a List containing the pre-commit hooks.
      * @see
-     * BucketProperties#withPrecommitHook(com.basho.riak.client.query.functions.Function)
+     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.query.functions.Function)
      */
     public List<Function> getPrecommitHooks()
     {
@@ -322,7 +322,7 @@ public class BucketProperties
      *
      * @return a List containing the post-commit hooks
      * @see
-     * BucketProperties#withPostcommitHook(com.basho.riak.client.query.functions.Function)
+     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.query.functions.Function)
      */
     public List<Function> getPostcommitHooks()
     {
@@ -343,7 +343,7 @@ public class BucketProperties
      * Get the old_vclock value.
      *
      * @return the old_vclock value as a long or null if not set.
-     * @see BucketProperties#withOldVClock(long)
+     * @see BucketProperties.Builder#withOldVClock(long)
      */
     public Long getOldVClock()
     {
@@ -364,7 +364,7 @@ public class BucketProperties
      * Get the young_vclock value.
      *
      * @return the young_vclock value as an long or null if not set.
-     * @see BucketProperties#withYoungVClock(long)
+     * @see BucketProperties.Builder#withYoungVClock(long)
      */
     public Long getYoungVClock()
     {
@@ -385,7 +385,7 @@ public class BucketProperties
      * Get the big_vclock value.
      *
      * @return the big_vclock value as a long or null if not set.
-     * @see BucketProperties#withBigVClock(long)
+     * @see BucketProperties.Builder#withBigVClock(long)
      */
     public Long getBigVClock()
     {
@@ -406,7 +406,7 @@ public class BucketProperties
      * Get the small_vclock value.
      *
      * @return the small_vclock value as a long or null if not set.
-     * @see BucketProperties#withSmallVClock(long)
+     * @see BucketProperties.Builder#withSmallVClock(long)
      */
     public Long getSmallVClock()
     {
@@ -724,7 +724,7 @@ public class BucketProperties
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public Builder withBigVClock(long bigVClock)
         {
@@ -973,7 +973,7 @@ public class BucketProperties
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public Builder withOldVClock(long oldVClock)
         {
@@ -988,7 +988,7 @@ public class BucketProperties
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public Builder withYoungVClock(long youngVClock)
         {
@@ -1003,7 +1003,7 @@ public class BucketProperties
          * @return a reference to this object.
          * @see <a
          * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-         * Clock Pruning</a> for details.
+         * Clock Pruning</a>
          */
         public Builder withSmallVClock(long smallVClock)
         {

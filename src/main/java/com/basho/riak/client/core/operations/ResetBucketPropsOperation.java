@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -69,7 +69,7 @@ public class ResetBucketPropsOperation extends FutureOperation<Boolean, Void>
          * Construct a Builder.
          * @param bucketName the bucket name for the operation. 
          */
-        public Builder(ByteArrayWrapper bucketName)
+        public Builder(BinaryValue bucketName)
         {
             if (null == bucketName || bucketName.length() == 0)
             {
@@ -84,7 +84,7 @@ public class ResetBucketPropsOperation extends FutureOperation<Boolean, Void>
         * @param bucketType the bucket type to use
         * @return A reference to this object.
         */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {

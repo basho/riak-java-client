@@ -20,7 +20,7 @@ import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLink;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -41,8 +41,8 @@ public class StoreOperationTest
 
         byte[] expectedValue = new byte[]{'O', '_', 'o'};
 
-        ByteArrayWrapper bucket = ByteArrayWrapper.create("bucket".getBytes());
-        ByteArrayWrapper key = ByteArrayWrapper.create("key".getBytes());
+        BinaryValue bucket = BinaryValue.create("bucket".getBytes());
+        BinaryValue key = BinaryValue.create("key".getBytes());
 
         RiakObject ro = new RiakObject();
 
@@ -54,7 +54,7 @@ public class StoreOperationTest
         LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name("dave"));
         longIndex.add(42L);
 
-        ro.setValue(ByteArrayWrapper.unsafeCreate(expectedValue));
+        ro.setValue(BinaryValue.unsafeCreate(expectedValue));
 
         StoreOperation operation =
             new StoreOperation.Builder(bucket)

@@ -16,7 +16,7 @@
 package com.basho.riak.client.query.indexes;
 
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import java.nio.charset.Charset;
 
 /**
@@ -53,13 +53,13 @@ public class StringBinIndex extends RiakIndex<String>
     }
     
     @Override
-    protected ByteArrayWrapper convert(String value)
+    protected BinaryValue convert(String value)
     {
-        return ByteArrayWrapper.unsafeCreate(value.getBytes(charset));
+        return BinaryValue.unsafeCreate(value.getBytes(charset));
     }
 
     @Override
-    protected String convert(ByteArrayWrapper value)
+    protected String convert(BinaryValue value)
     {
         return value.toString(charset);
     }

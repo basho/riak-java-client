@@ -21,7 +21,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -126,16 +126,16 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     {
         private final RiakKvPB.RpbGetReq.Builder reqBuilder = 
             RiakKvPB.RpbGetReq.newBuilder();
-        private final ByteArrayWrapper key;
-        private final ByteArrayWrapper bucketName;
-        private ByteArrayWrapper bucketType;
+        private final BinaryValue key;
+        private final BinaryValue bucketName;
+        private BinaryValue bucketType;
         
         /**
          * Constructs a builder for a FetchOperation.
          * @param bucketName The name of the bucket for the operation.
          * @param key The key for the operation.
          */
-        public Builder(ByteArrayWrapper bucketName, ByteArrayWrapper key)
+        public Builder(BinaryValue bucketName, BinaryValue key)
         {
             if (null == key || key.length() == 0)
             {
@@ -158,7 +158,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * @param bucketType the bucket type
          * @return a reference to this object.
          */
-        public Builder withBucketType(ByteArrayWrapper bucketType)
+        public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
             {
@@ -185,7 +185,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * Set the PR value for this query.
          * If not asSet the bucket default is used.
          * @param pr the PR value.
-         * @return 
+         * @return a reference to this object.
          */
 		public Builder withPr(int pr)
 		{
@@ -205,9 +205,9 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         * @param notFoundOk the not_found_ok value.
         * @return a reference to this object.
         */
-		public Builder withNotFoundOK(boolean notFoundOK)
+		public Builder withNotFoundOK(boolean notFoundOk)
 		{
-			reqBuilder.setNotfoundOk(notFoundOK);
+			reqBuilder.setNotfoundOk(notFoundOk);
 			return this;
 		}
 

@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.basho.riak.protobuf.RiakSearchPB;
@@ -97,12 +97,12 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     public static class Builder
     {
 
-        private final ByteArrayWrapper indexName;
+        private final BinaryValue indexName;
         private final String queryString;
         private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder =
             RiakSearchPB.RpbSearchQueryReq.newBuilder();
 
-        public Builder(ByteArrayWrapper indexName, String queryString)
+        public Builder(BinaryValue indexName, String queryString)
         {
             if (null == indexName || indexName.length() == 0)
             {
