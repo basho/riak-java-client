@@ -21,7 +21,7 @@ import java.util.Arrays;
 /**
  * Lightweight utility class for byte arrays.
  * <p>
-<<<<<<< HEAD:src/main/java/com/basho/riak/client/util/ByteArrayWrapper.java
+<<<<<<< HEAD:src/main/java/com/basho/riak/client/util/BinaryValue.java
  * In almost all cases Riak is character asSet agnostic when it comes to data; buckets,
  * keys, values and metadata are all stored in Riak simply as bytes. 
 =======
@@ -72,7 +72,7 @@ public final class BinaryValue
     }
 
     /**
-     * Create a ByteArrayWrapper containing a copy of the supplied String
+     * Create a BinaryValue containing a copy of the supplied String
      * encoded using the default character asSet.
      *
      * @param data the data to copy

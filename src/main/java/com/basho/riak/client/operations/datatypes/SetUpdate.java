@@ -16,7 +16,7 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.SetOp;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,8 +24,8 @@ import java.util.Set;
 public class SetUpdate extends DatatypeUpdate<RiakSet>
 {
 
-    private final Set<ByteArrayWrapper> adds = new HashSet<ByteArrayWrapper>();
-    private final Set<ByteArrayWrapper> removes = new HashSet<ByteArrayWrapper>();
+    private final Set<BinaryValue> adds = new HashSet<BinaryValue>();
+    private final Set<BinaryValue> removes = new HashSet<BinaryValue>();
 
     public SetUpdate()
     {
@@ -33,22 +33,22 @@ public class SetUpdate extends DatatypeUpdate<RiakSet>
 
     public SetUpdate add(byte[] value)
     {
-        this.adds.add(ByteArrayWrapper.create(value));
+        this.adds.add(BinaryValue.create(value));
         return this;
     }
 
-    public SetUpdate remove(ByteArrayWrapper value)
+    public SetUpdate remove(BinaryValue value)
     {
         this.removes.add(value);
         return this;
     }
 
-    public Set<ByteArrayWrapper> getAdds()
+    public Set<BinaryValue> getAdds()
     {
         return adds;
     }
 
-    public Set<ByteArrayWrapper> getRemoves()
+    public Set<BinaryValue> getRemoves()
     {
         return removes;
     }

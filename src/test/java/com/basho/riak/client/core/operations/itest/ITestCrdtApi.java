@@ -19,7 +19,7 @@ import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
@@ -40,7 +40,7 @@ public class ITestCrdtApi extends ITestBase
 
         resetAndEmptyBucket(bucketName, mapBucketType);
 
-        // ByteArrayWrappers make it look messy, so define them all here.
+        // BinaryValues make it look messy, so define them all here.
         final String numLogins = "logins";
         final String lastLoginTime = "last-login";
         final ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
@@ -49,7 +49,7 @@ public class ITestCrdtApi extends ITestBase
         final String loggedIn = "logged-in";
         final String shoppingCart = "cart";
 
-        ByteArrayWrapper key = ByteArrayWrapper.create("user-info");
+        BinaryValue key = BinaryValue.create("user-info");
 
         /*
 
@@ -106,34 +106,34 @@ public class ITestCrdtApi extends ITestBase
         CrdtMap usersMap = element.getAsMap();
 
         // username
-        CrdtElement usernameElement = usersMap.get(ByteArrayWrapper.create(username));
+        CrdtElement usernameElement = usersMap.get(BinaryValue.create(username));
         assertNotNull(usernameElement);
         assertTrue(usernameElement.isMap());
         CrdtMap usernameMap = usernameElement.getAsMap();
 
         // logins - counter
-        CrdtElement numLoginsElement = usernameMap.get(ByteArrayWrapper.create(numLogins));
+        CrdtElement numLoginsElement = usernameMap.get(BinaryValue.create(numLogins));
         assertNotNull(numLoginsElement);
         assertTrue(numLoginsElement.isCounter());
         CrdtCounter numLoginsCounter = numLoginsElement.getAsCounter();
         assertEquals(1, numLoginsCounter.getValue());
 
         // last-login - register
-        CrdtElement lastLoginTimeElement = usernameMap.get(ByteArrayWrapper.create(lastLoginTime));
+        CrdtElement lastLoginTimeElement = usernameMap.get(BinaryValue.create(lastLoginTime));
         assertNotNull(lastLoginTimeElement);
         assertTrue(lastLoginTimeElement.isRegister());
         CrdtRegister lastLoginTimeRegister = lastLoginTimeElement.getAsRegister();
         assertEquals(now, lastLoginTimeRegister.getValue());
 
         // logged-in - flag
-        CrdtElement loggedInElement = usernameMap.get(ByteArrayWrapper.create(loggedIn));
+        CrdtElement loggedInElement = usernameMap.get(BinaryValue.create(loggedIn));
         assertNotNull(loggedInElement);
         assertTrue(loggedInElement.isFlag());
         CrdtFlag loggedInFlag = loggedInElement.getAsFlag();
         assertEquals(true, loggedInFlag.getEnabled());
 
         // cart - asSet
-        CrdtElement shoppingCartElement = usernameMap.get(ByteArrayWrapper.create(shoppingCart));
+        CrdtElement shoppingCartElement = usernameMap.get(BinaryValue.create(shoppingCart));
         assertNotNull(shoppingCartElement);
         assertTrue(shoppingCartElement.isSet());
 

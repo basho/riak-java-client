@@ -24,7 +24,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -50,7 +50,7 @@ public class UpdateValueTest
 		MockitoAnnotations.initMocks(this);
 
 		riakObject = new RiakObject();
-		riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
+		riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
 
 		ArrayList<RiakObject> objects = new ArrayList<RiakObject>();
 		objects.add(riakObject);

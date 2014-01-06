@@ -22,7 +22,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.query.crdt.types.CrdtMap;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class FetchDatatypeTest
     {
         MockitoAnnotations.initMocks(this);
         when(mockResponse.getCrdtElement()).thenReturn(new CrdtMap(new ArrayList<CrdtMap.MapEntry>()));
-        when(mockResponse.getContext()).thenReturn(ByteArrayWrapper.create(new byte[]{'1'}));
+        when(mockResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
         when(mockFuture.get()).thenReturn(mockResponse);
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
         when(mockFuture.isCancelled()).thenReturn(false);

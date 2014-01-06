@@ -16,7 +16,7 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public class Converters
             public RiakObject fromDomain(String domainObject)
             {
                 RiakObject ro = new RiakObject();
-                ro.setValue(ByteArrayWrapper.create(domainObject));
+                ro.setValue(BinaryValue.create(domainObject));
                 return ro;
             }
         };

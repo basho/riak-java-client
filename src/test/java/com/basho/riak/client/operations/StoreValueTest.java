@@ -24,7 +24,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class StoreValueTest
 		when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
 		client = new RiakClient(mockCluster);
 		riakObject = new RiakObject();
-		riakObject.setValue(ByteArrayWrapper.create(new byte[]{'O', '_', 'o'}));
+		riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
 	}
 
 	@Test

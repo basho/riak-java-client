@@ -15,16 +15,16 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 public class Location
 {
 
 	private static final String DEFAULT_TYPE = "default";
 
-	private ByteArrayWrapper type;
-	private ByteArrayWrapper bucket;
-	private ByteArrayWrapper key;
+	private BinaryValue type;
+	private BinaryValue bucket;
+	private BinaryValue key;
 
 	/**
 	 * Construct a location using both a bucket and a key
@@ -34,8 +34,8 @@ public class Location
 	 */
 	public Location(String bucket, String key)
 	{
-		this.bucket = ByteArrayWrapper.create(bucket);
-		this.key = ByteArrayWrapper.create(key);
+		this.bucket = BinaryValue.create(bucket);
+		this.key = BinaryValue.create(key);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class Location
 	 * @param bucket the bucket for this location
 	 * @param key    the key for this location
 	 */
-	public Location(ByteArrayWrapper bucket, ByteArrayWrapper key)
+	public Location(BinaryValue bucket, BinaryValue key)
 	{
 		this.bucket = bucket;
 		this.key = key;
@@ -57,7 +57,7 @@ public class Location
 	 */
 	public Location(String bucket)
 	{
-		this.bucket = ByteArrayWrapper.create(bucket);
+		this.bucket = BinaryValue.create(bucket);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class Location
 	 *
 	 * @param bucket the bucket for this location
 	 */
-	public Location(ByteArrayWrapper bucket)
+	public Location(BinaryValue bucket)
 	{
 		this.bucket = bucket;
 	}
@@ -78,7 +78,7 @@ public class Location
 	 */
 	public Location withType(String type)
 	{
-		this.type = ByteArrayWrapper.create(type);
+		this.type = BinaryValue.create(type);
 		return this;
 	}
 
@@ -88,7 +88,7 @@ public class Location
 	 * @param type the bucket type for this location
 	 * @return this
 	 */
-	public Location withType(ByteArrayWrapper type)
+	public Location withType(BinaryValue type)
 	{
 		this.type = type;
 		return this;
@@ -99,7 +99,7 @@ public class Location
 	 *
 	 * @return bucket type
 	 */
-	public ByteArrayWrapper getType()
+	public BinaryValue getType()
 	{
 		return type;
 	}
@@ -109,7 +109,7 @@ public class Location
 	 *
 	 * @return the bucket
 	 */
-	public ByteArrayWrapper getBucket()
+	public BinaryValue getBucket()
 	{
 		return bucket;
 	}
@@ -119,7 +119,7 @@ public class Location
 	 *
 	 * @return the key
 	 */
-	public ByteArrayWrapper getKey()
+	public BinaryValue getKey()
 	{
 		return key;
 	}

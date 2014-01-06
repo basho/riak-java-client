@@ -20,7 +20,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -128,7 +128,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation.Response response = cluster.execute(operation).get();
         List<V> converted = convert(converter, response.getObjectList());
 
-	    ByteArrayWrapper returnedKey = response.hasGeneratedKey()
+	    BinaryValue returnedKey = response.hasGeneratedKey()
 		    ? response.getGeneratedKey()
 		    : location.getKey();
 

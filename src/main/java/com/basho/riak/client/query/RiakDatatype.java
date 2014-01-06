@@ -16,17 +16,17 @@
 package com.basho.riak.client.query;
 
 import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 public class RiakDatatype
 {
 
-    private final ByteArrayWrapper bucket;
-    private final ByteArrayWrapper bucketType;
-    private final ByteArrayWrapper key;
+    private final BinaryValue bucket;
+    private final BinaryValue bucketType;
+    private final BinaryValue key;
     private final CrdtElement datatype;
 
-    public RiakDatatype(ByteArrayWrapper bucket, ByteArrayWrapper bucketType, ByteArrayWrapper key, CrdtElement datatype)
+    public RiakDatatype(BinaryValue bucket, BinaryValue bucketType, BinaryValue key, CrdtElement datatype)
     {
         this.bucket = bucket;
         this.bucketType = bucketType;
@@ -34,17 +34,17 @@ public class RiakDatatype
         this.datatype = datatype;
     }
 
-    public ByteArrayWrapper getBucket()
+    public BinaryValue getBucket()
     {
         return bucket;
     }
 
-    public ByteArrayWrapper getBucketType()
+    public BinaryValue getBucketType()
     {
         return bucketType;
     }
 
-    public ByteArrayWrapper getKey()
+    public BinaryValue getKey()
     {
         return key;
     }

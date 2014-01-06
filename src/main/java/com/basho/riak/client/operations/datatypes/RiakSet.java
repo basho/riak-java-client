@@ -17,7 +17,7 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.query.crdt.types.CrdtSet;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,7 +37,7 @@ public class RiakSet extends RiakDatatype<Set<byte[]>>
     public Set<byte[]> view()
     {
         Set<byte[]> rset = new HashSet<byte[]>();
-        for (ByteArrayWrapper entry : set.viewAsSet())
+        for (BinaryValue entry : set.viewAsSet())
         {
             rset.add(entry.getValue());
         }

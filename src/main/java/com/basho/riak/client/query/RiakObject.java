@@ -107,7 +107,7 @@ public final class RiakObject
      * Note that if {@link RiakObject#setContentType(java.lang.String)} is not 
      * called a value of {@value #DEFAULT_CONTENT_TYPE} is used.
      * </p>
-     * @riak.threadsafety Unsafe modifications to the supplied ByteArrayWrapper's 
+     * @riak.threadsafety Unsafe modifications to the supplied BinaryValue's
      * underlying byte[] would be a bad thing.
      * @param value the value to be stored in Riak.
      * @return a reference to this object.

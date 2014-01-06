@@ -17,7 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.ListKeysOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
 import java.util.List;
@@ -59,10 +59,10 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 	public static class Response implements Iterable<Location>
 	{
 
-		private final ByteArrayWrapper bucket;
-		private final List<ByteArrayWrapper> keys;
+		private final BinaryValue bucket;
+		private final List<BinaryValue> keys;
 
-		public Response(ByteArrayWrapper bucket, List<ByteArrayWrapper> keys)
+		public Response(BinaryValue bucket, List<BinaryValue> keys)
 		{
 			this.bucket = bucket;
 			this.keys = keys;
@@ -77,10 +77,10 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 
 	private static class Itr implements Iterator<Location>
 	{
-		private final Iterator<ByteArrayWrapper> iterator;
-		private final ByteArrayWrapper bucket;
+		private final Iterator<BinaryValue> iterator;
+		private final BinaryValue bucket;
 
-		private Itr(ByteArrayWrapper bucket, Iterator<ByteArrayWrapper> iterator)
+		private Itr(BinaryValue bucket, Iterator<BinaryValue> iterator)
 		{
 			this.iterator = iterator;
 			this.bucket = bucket;
@@ -95,7 +95,7 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 		@Override
 		public Location next()
 		{
-			ByteArrayWrapper key = iterator.next();
+			BinaryValue key = iterator.next();
 			return new Location(bucket, key);
 		}
 

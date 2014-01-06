@@ -17,7 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +31,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     private final Criteria op;
     private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
     private final Index<T> index;
-    private final ByteArrayWrapper continuation;
+    private final BinaryValue continuation;
 
     FetchIndex(Builder<T> builder)
     {
@@ -45,7 +45,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        ByteArrayWrapper indexName = ByteArrayWrapper.create(index.getFullName());
+        BinaryValue indexName = BinaryValue.create(index.getFullName());
 
         SecondaryIndexQueryOperation.Builder builder =
             new SecondaryIndexQueryOperation.Builder(bucket.getBucket(), indexName);
@@ -122,21 +122,21 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
     private static class MatchCriteria extends Criteria
     {
-        final ByteArrayWrapper match;
+        final BinaryValue match;
 
         public MatchCriteria(String match)
         {
-            this.match = ByteArrayWrapper.create(match);
+            this.match = BinaryValue.create(match);
         }
 
         public MatchCriteria(int match)
         {
-            this.match = ByteArrayWrapper.create(Integer.toString(match));
+            this.match = BinaryValue.create(Integer.toString(match));
         }
 
         public MatchCriteria(byte[] match)
         {
-            this.match = ByteArrayWrapper.create(match);
+            this.match = BinaryValue.create(match);
         }
 
         @Override
@@ -160,8 +160,8 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         @Override
         void configure(SecondaryIndexQueryOperation.Builder op)
         {
-            op.withRangeStart(ByteArrayWrapper.create(Integer.toString(start)));
-            op.withRangeEnd(ByteArrayWrapper.create(Integer.toString(stop)));
+            op.withRangeStart(BinaryValue.create(Integer.toString(start)));
+            op.withRangeEnd(BinaryValue.create(Integer.toString(stop)));
         }
     }
 
@@ -228,7 +228,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 		private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
 		private final Index<T> index;
 		private Criteria op;
-		private ByteArrayWrapper continuation;
+		private BinaryValue continuation;
 
 		public Builder(Location bucket, Index<T> index)
 		{
@@ -250,7 +250,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
 		public Builder<T> withContinuation(byte[] continuation)
 		{
-			this.continuation = ByteArrayWrapper.create(continuation);
+			this.continuation = BinaryValue.create(continuation);
 			return this;
 		}
 

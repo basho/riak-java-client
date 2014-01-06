@@ -19,7 +19,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.*;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.query.search.YokozunaSchema;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -156,7 +156,7 @@ public class Search extends RiakCommand<SearchOperation.Response>
     SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        SearchOperation.Builder builder = new SearchOperation.Builder(ByteArrayWrapper.create(index), query);
+        SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);
 
         for (Map.Entry<SearchOption<?>, Object> option : options.entrySet())
         {

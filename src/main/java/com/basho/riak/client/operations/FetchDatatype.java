@@ -24,7 +24,7 @@ import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.operations.datatypes.RiakSet;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -115,7 +115,7 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
 
         DtFetchOperation.Response response = cluster.execute(operation).get();
         CrdtElement element = response.getCrdtElement();
-        ByteArrayWrapper context = response.getContext();
+        BinaryValue context = response.getContext();
 
         T datatype = converter.convert(element);
 

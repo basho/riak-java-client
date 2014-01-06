@@ -94,7 +94,7 @@ public class CrdtResponseConverter
         {
             if (response.hasContext())
             {
-                element.setContext(ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray()));
+                element.setContext(BinaryValue.unsafeCreate(response.getContext().toByteArray()));
             }
         }
 
@@ -122,7 +122,7 @@ public class CrdtResponseConverter
 
         if (response.hasContext())
         {
-            element.setContext(ByteArrayWrapper.unsafeCreate(response.getContext().toByteArray()));
+            element.setContext(BinaryValue.unsafeCreate(response.getContext().toByteArray()));
         }
 
         return element;

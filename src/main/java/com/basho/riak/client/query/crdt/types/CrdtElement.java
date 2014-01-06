@@ -20,9 +20,9 @@ import com.basho.riak.client.util.BinaryValue;
 public abstract class CrdtElement
 {
 
-    private ByteArrayWrapper context = null;
+    private BinaryValue context = null;
 
-    public void setContext(ByteArrayWrapper context)
+    public void setContext(BinaryValue context)
     {
         this.context = context;
     }
@@ -32,7 +32,7 @@ public abstract class CrdtElement
         return context != null;
     }
 
-    public ByteArrayWrapper getContext()
+    public BinaryValue getContext()
     {
         return context;
     }

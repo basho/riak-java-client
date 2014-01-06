@@ -16,7 +16,7 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.MapOp;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,135 +34,135 @@ public class MapUpdate extends DatatypeUpdate<RiakMap>
 
     public MapUpdate addCounter(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         adds.add(new MapOp.MapField(MapOp.FieldType.COUNTER, k));
         return this;
     }
 
     public MapUpdate addRegister(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         adds.add(new MapOp.MapField(MapOp.FieldType.REGISTER, k));
         return this;
     }
 
     public MapUpdate addFlag(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         adds.add(new MapOp.MapField(MapOp.FieldType.FLAG, k));
         return this;
     }
 
     public MapUpdate addSet(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         adds.add(new MapOp.MapField(MapOp.FieldType.SET, k));
         return this;
     }
 
     public MapUpdate addMap(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         adds.add(new MapOp.MapField(MapOp.FieldType.MAP, k));
         return this;
     }
 
     public MapUpdate removeCounter(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         removes.add(new MapOp.MapField(MapOp.FieldType.COUNTER, k));
         return this;
     }
 
     public MapUpdate removeRegister(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         removes.add(new MapOp.MapField(MapOp.FieldType.REGISTER, k));
         return this;
     }
 
     public MapUpdate removeFlag(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         removes.add(new MapOp.MapField(MapOp.FieldType.FLAG, k));
         return this;
     }
 
     public MapUpdate removeSet(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         removes.add(new MapOp.MapField(MapOp.FieldType.SET, k));
         return this;
     }
 
     public MapUpdate removeMap(String key)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         removes.add(new MapOp.MapField(MapOp.FieldType.MAP, k));
         return this;
     }
 
     public MapUpdate add(String key, MapUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         return update(key, builder);
     }
 
     public MapUpdate add(String key, SetUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         return update(key, builder);
     }
 
     public MapUpdate add(String key, CounterUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         return update(key, builder);
     }
 
     public MapUpdate add(String key, RegisterUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         return update(key, builder);
     }
 
     public MapUpdate add(String key, FlagUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         return update(key, builder);
     }
 
     public MapUpdate update(String key, MapUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.MAP, k), builder.getOp()));
         return this;
     }
 
     public MapUpdate update(String key, SetUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.SET, k), builder.getOp()));
         return this;
     }
 
     public MapUpdate update(String key, CounterUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.COUNTER, k), builder.getOp()));
         return this;
     }
 
     public MapUpdate update(String key, RegisterUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.REGISTER, k), builder.getOp()));
         return this;
     }
 
     public MapUpdate update(String key, FlagUpdate builder)
     {
-        ByteArrayWrapper k = ByteArrayWrapper.create(key);
+        BinaryValue k = BinaryValue.create(key);
         updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.FLAG, k), builder.getOp()));
         return this;
     }

@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +69,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
 
         if (ctx != null)
         {
-            builder.withContext(ByteArrayWrapper.create(ctx.getBytes()));
+            builder.withContext(BinaryValue.create(ctx.getBytes()));
         }
 
         builder.withOp(datatype.getOp());
@@ -124,7 +124,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
             riakDatatype = (T) new RiakCounter(element.getAsCounter());
         }
 
-	    ByteArrayWrapper returnedKey = crdtResponse.hasGeneratedKey()
+	    BinaryValue returnedKey = crdtResponse.hasGeneratedKey()
 		    ? crdtResponse.getGeneratedKey()
 		    : loc.getKey();
 

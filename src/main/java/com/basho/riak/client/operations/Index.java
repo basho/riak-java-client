@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.nio.ByteBuffer;
 
@@ -48,7 +48,7 @@ public abstract class Index<T>
         this.name = name;
     }
 
-    abstract T convert(ByteArrayWrapper input);
+    abstract T convert(BinaryValue input);
 
     public String getName()
     {
@@ -119,7 +119,7 @@ public abstract class Index<T>
         }
 
         @Override
-        byte[] convert(ByteArrayWrapper input)
+        byte[] convert(BinaryValue input)
         {
             return input.unsafeGetValue();
         }
@@ -134,7 +134,7 @@ public abstract class Index<T>
         }
 
         @Override
-        Integer convert(ByteArrayWrapper input)
+        Integer convert(BinaryValue input)
         {
             return ByteBuffer.wrap(input.unsafeGetValue()).getInt();
         }

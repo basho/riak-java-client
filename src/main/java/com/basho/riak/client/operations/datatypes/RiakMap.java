@@ -16,7 +16,7 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,58 +35,58 @@ public class RiakMap extends RiakDatatype<Map<byte[], RiakDatatype<?>>>
 
     public RiakSet getSet(byte[] key)
     {
-        return new RiakSet(map.get(ByteArrayWrapper.create(key)).getAsSet());
+        return new RiakSet(map.get(BinaryValue.create(key)).getAsSet());
     }
 
     public RiakSet getSet(String key)
     {
-        return new RiakSet(map.get(ByteArrayWrapper.create(key)).getAsSet());
+        return new RiakSet(map.get(BinaryValue.create(key)).getAsSet());
     }
 
     public RiakMap getMap(byte[] key)
     {
-        return new RiakMap(map.get(ByteArrayWrapper.create(key)).getAsMap());
+        return new RiakMap(map.get(BinaryValue.create(key)).getAsMap());
     }
 
     public RiakMap getMap(String key)
     {
-        return new RiakMap(map.get(ByteArrayWrapper.create(key)).getAsMap());
+        return new RiakMap(map.get(BinaryValue.create(key)).getAsMap());
     }
 
     public RiakRegister getRegister(byte[] key)
     {
-        return new RiakRegister(map.get(ByteArrayWrapper.create(key)).getAsRegister());
+        return new RiakRegister(map.get(BinaryValue.create(key)).getAsRegister());
     }
 
     public RiakRegister getRegister(String key)
     {
-        return new RiakRegister(map.get(ByteArrayWrapper.create(key)).getAsRegister());
+        return new RiakRegister(map.get(BinaryValue.create(key)).getAsRegister());
     }
 
     public RiakCounter getCounter(byte[] key)
     {
-        return new RiakCounter(map.get(ByteArrayWrapper.create(key)).getAsCounter());
+        return new RiakCounter(map.get(BinaryValue.create(key)).getAsCounter());
     }
 
     public RiakCounter getCounter(String key)
     {
-        return new RiakCounter(map.get(ByteArrayWrapper.create(key)).getAsCounter());
+        return new RiakCounter(map.get(BinaryValue.create(key)).getAsCounter());
     }
 
     public RiakFlag getFlag(byte[] key)
     {
-        return new RiakFlag(map.get(ByteArrayWrapper.create(key)).getAsFlag());
+        return new RiakFlag(map.get(BinaryValue.create(key)).getAsFlag());
     }
 
     public RiakFlag getFlag(String key)
     {
-        return new RiakFlag(map.get(ByteArrayWrapper.create(key)).getAsFlag());
+        return new RiakFlag(map.get(BinaryValue.create(key)).getAsFlag());
     }
 
     public Map<byte[], RiakDatatype<?>> view()
     {
         Map<byte[], RiakDatatype<?>> rmap = new HashMap<byte[], RiakDatatype<?>>();
-        for (Map.Entry<ByteArrayWrapper, CrdtElement> entry : map.viewAsMap().entrySet())
+        for (Map.Entry<BinaryValue, CrdtElement> entry : map.viewAsMap().entrySet())
         {
             RiakDatatype<?> datatype = null;
             CrdtElement element = entry.getValue();

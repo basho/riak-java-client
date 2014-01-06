@@ -16,7 +16,7 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.RegisterOp;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 public class RegisterUpdate extends DatatypeUpdate
 {
@@ -52,7 +52,7 @@ public class RegisterUpdate extends DatatypeUpdate
     @Override
     public RegisterOp getOp()
     {
-        return new RegisterOp(ByteArrayWrapper.create(value));
+        return new RegisterOp(BinaryValue.create(value));
     }
 
 

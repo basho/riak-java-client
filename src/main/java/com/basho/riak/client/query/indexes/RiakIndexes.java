@@ -69,7 +69,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {
  *     // creates or fetches the BIN (_bin) index named "foo", adds a value to it  
  *     RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
- *     ByteArrayWrapper baw = ByteArrayWrapper.unsafeCreate("value".getBytes());
+ *     BinaryValue baw = BinaryValue.unsafeCreate("value".getBytes());
  *     index.add(baw);
  *       
  *     // fetches the previously created index as a StringBinIndex

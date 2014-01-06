@@ -17,7 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +28,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 	private static final String DEFAULT_BUCKET_TYPE = "default";
 
     private final int timeout;
-    private final ByteArrayWrapper type;
+    private final BinaryValue type;
 
     ListBuckets(Builder builder)
     {
@@ -51,10 +51,10 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 
     public static class Response implements Iterable<Location> {
 
-        private final ByteArrayWrapper type;
-        private final List<ByteArrayWrapper> buckets;
+        private final BinaryValue type;
+        private final List<BinaryValue> buckets;
 
-        public Response(ByteArrayWrapper type, List<ByteArrayWrapper> buckets)
+        public Response(BinaryValue type, List<BinaryValue> buckets)
         {
             this.type = type;
             this.buckets = buckets;
@@ -69,10 +69,10 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 
     private static class Itr implements Iterator<Location>
     {
-        private final Iterator<ByteArrayWrapper> iterator;
-        private final ByteArrayWrapper type;
+        private final Iterator<BinaryValue> iterator;
+        private final BinaryValue type;
 
-        private Itr(Iterator<ByteArrayWrapper> iterator, ByteArrayWrapper type)
+        private Itr(Iterator<BinaryValue> iterator, BinaryValue type)
         {
             this.iterator = iterator;
             this.type = type;
@@ -87,7 +87,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         @Override
         public Location next()
         {
-            ByteArrayWrapper bucket = iterator.next();
+            BinaryValue bucket = iterator.next();
             return new Location(type).withType(bucket.toStringUtf8());
         }
 
@@ -101,14 +101,14 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
 	public static class Builder
 	{
 		private int timeout;
-		private final ByteArrayWrapper type;
+		private final BinaryValue type;
 
 		public Builder(String type)
 		{
-			this.type = ByteArrayWrapper.create(type);
+			this.type = BinaryValue.create(type);
 		}
 
-		public Builder(ByteArrayWrapper type)
+		public Builder(BinaryValue type)
 		{
 			this.type = type;
 		}
