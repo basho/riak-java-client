@@ -16,9 +16,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.operations.*;
-import com.basho.riak.client.query.search.YokozunaIndex;
-import com.basho.riak.client.query.search.YokozunaSchema;
+import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
@@ -63,94 +61,6 @@ public class Search extends RiakCommand<SearchOperation.Response>
 	    this.options.putAll(builder.options);
     }
 
-    public static RiakCommand<YokozunaIndex> fetchIndex(final String index)
-    {
-        return new RiakCommand<YokozunaIndex>()
-        {
-            @Override
-            YokozunaIndex execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-            {
-                YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
-                builder.withIndexName(index);
-                YzFetchIndexOperation operation = builder.build();
-                cluster.execute(operation);
-                return operation.get().get(1);
-            }
-        };
-    }
-
-    public static RiakCommand<List<YokozunaIndex>> fetchIndices()
-    {
-        return new RiakCommand<List<YokozunaIndex>>()
-        {
-            @Override
-            List<YokozunaIndex> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-            {
-                YzFetchIndexOperation operation = new YzFetchIndexOperation.Builder().build();
-                cluster.execute(operation);
-                return operation.get();
-            }
-        };
-    }
-
-    public static RiakCommand<Boolean> putIndex(final YokozunaIndex index)
-    {
-        return new RiakCommand<Boolean>()
-        {
-            @Override
-            Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-            {
-                YzPutIndexOperation operation = new YzPutIndexOperation.Builder(index).build();
-                cluster.execute(operation);
-                operation.get();
-                return true;
-            }
-        };
-    }
-
-    public static RiakCommand<Boolean> deleteIndex(final String index)
-    {
-        return new RiakCommand<Boolean>()
-        {
-            @Override
-            Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-            {
-                YzDeleteIndexOperation operation = new YzDeleteIndexOperation.Builder(index).build();
-                cluster.execute(operation);
-                operation.get();
-                return true;
-            }
-        };
-    }
-
-    public static RiakCommand<YokozunaSchema> fetchSchema(final String schema)
-    {
-        return new RiakCommand<YokozunaSchema>()
-        {
-            @Override
-            YokozunaSchema execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-            {
-                YzGetSchemaOperation operation = new YzGetSchemaOperation.Builder(schema).build();
-                cluster.execute(operation);
-                return operation.get();
-            }
-        };
-    }
-
-    public static RiakCommand<Boolean> storeSchema(final YokozunaSchema schema)
-    {
-        return new RiakCommand<Boolean>()
-        {
-            @Override
-            Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
-            {
-                YzPutSchemaOperation operation = new YzPutSchemaOperation.Builder(schema).build();
-                cluster.execute(operation);
-                operation.get();
-                return true;
-            }
-        };
-    }
 
     @Override
     SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
@@ -204,8 +114,7 @@ public class Search extends RiakCommand<SearchOperation.Response>
         }
 
         SearchOperation operation = builder.build();
-        cluster.execute(operation);
-        return operation.get();
+        return cluster.execute(operation).get();
 
     }
 
