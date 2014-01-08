@@ -139,7 +139,7 @@ class RiakConnection implements Comparable<RiakConnection>
 		try {
 			len = din.readInt();
 			get_code = din.read();
-			if (code == RiakClient.MSG_ErrorResp) {
+			if (get_code == RiakClient.MSG_ErrorResp) {
 				RpbErrorResp err = com.basho.riak.protobuf.RiakPB.RpbErrorResp.parseFrom(din);
 				throw new RiakError(err);
 			}
