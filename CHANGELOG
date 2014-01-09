@@ -1,3 +1,9 @@
+1.1.4
+-----
+This is a minor bugfix release
+
+875bfbe Brian Roach Fix RiakConnection.get_code(int)
+
 1.1.3
 -----
 This is a minor bugfix/maintenece release
