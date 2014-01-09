@@ -1,3 +1,9 @@
+1.4.4
+-----
+This is a minor bugfix release.
+
+1a52233 Brian Roach receive_code() now reads error message off wire.
+
 1.4.3
 -----
 This is a minor bugfix release.
