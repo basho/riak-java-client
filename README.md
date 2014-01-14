@@ -7,9 +7,9 @@ The current release branches are:
 
 [riak-client-2.0-technical-preview](https://github.com/basho/riak-java-client/tree/master) - Core preview for Riak 2.0
 
-[riak-client-1.4.2](https://github.com/basho/riak-java-client/tree/1.4.2) - For use with Riak 1.4+
+[riak-client-1.4.4](https://github.com/basho/riak-java-client/tree/1.4.4) - For use with Riak 1.4+
 
-[riak-client-1.1.3](https://github.com/basho/riak-java-client/tree/1.1.3) - For use with < Riak 1.4.0
+[riak-client-1.1.4](https://github.com/basho/riak-java-client/tree/1.1.4) - For use with < Riak 1.4.0
 
 ## Roadmap
 
