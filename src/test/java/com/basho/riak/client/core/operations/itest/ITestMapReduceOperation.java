@@ -85,7 +85,7 @@ public class ITestMapReduceOperation extends ITestBase
             
         String bName = bucketName.toString();
         String query = "{\"inputs\":[[\"" + bName + "\",\"p1\"],[\"" + bName + "\",\"p2\"],[\"" + bName + "\",\"p3\"]]," +
-            "\"query\":[{\"map\":{\"language\":\"javascript\",\"source\":\"" +
+            "\"query\":[{\"asMap\":{\"language\":\"javascript\",\"source\":\"" +
             "function(v) {var m = v.values[0].data.toLowerCase().match(/\\w*/g); var r = [];" +
             "for(var i in m) {if(m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
             "\"}},{\"reduce\":{\"language\":\"javascript\",\"source\":\"" +
@@ -100,7 +100,7 @@ public class ITestMapReduceOperation extends ITestBase
         List<BinaryValue> resultList = mrOp.get();
         
         // The query should return one result which is a JSON array containing a 
-        // single JSON object that is a set of word counts.
+        // single JSON object that is a asSet of word counts.
         assertEquals(resultList.size(), 1);
         
         String json = resultList.get(0).toString();

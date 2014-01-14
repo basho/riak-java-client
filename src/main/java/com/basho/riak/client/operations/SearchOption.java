@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright 2013 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,28 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.core.RiakFuture;
-
-import java.util.concurrent.ExecutionException;
-
-/**
- * @author Brian Roach <roach at basho dot com>
- * @since 2.0
- */
-public interface ClientOperation<T>
+public class SearchOption<T> extends RiakOption<T>
 {
-	T execute() throws InterruptedException, ExecutionException;
 
-	RiakFuture<T> executeAsync();
+    public static enum Operation
+    {
+        AND("and"), OR("or");
+
+        final String opStr;
+
+        Operation(String opStr)
+        {
+            this.opStr = opStr;
+        }
+    }
+
+    public static SearchOption<Operation> DEFAULT_OPERATION = new SearchOption<Operation>("DEFAULT_OPERATION");
+    public static SearchOption<String> DEFAULT_FIELD = new SearchOption<String>("DEFAULT_FIELD");
+
+    private SearchOption(String name)
+    {
+        super(name);
+    }
+
+
 }

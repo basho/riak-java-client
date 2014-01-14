@@ -33,7 +33,7 @@ import java.nio.charset.Charset;
  * lends itself well to this as its byte ordering is the same as its lexical ordering.
  * </p> 
  * <p>
- * If you are using a character set whose byte ordering differs from its lexical ordering,
+ * If you are using a character asSet whose byte ordering differs from its lexical ordering,
  * range queries will be affected.
  * </p>
  * 
@@ -65,7 +65,7 @@ public class StringBinIndex extends RiakIndex<String>
     }
     
     /**
-     * Encapsulates the name, character set, and {@code IndexType} for a {@code StringBinIndex}
+     * Encapsulates the name, character asSet, and {@code IndexType} for a {@code StringBinIndex}
      */
     public static class Name extends RiakIndex.Name<StringBinIndex>
     {
@@ -73,7 +73,7 @@ public class StringBinIndex extends RiakIndex<String>
         
         /**
          * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
-         * The default character set is used for encoding the values.
+         * The default character asSet is used for encoding the values.
          * @param name The name of this index.
          */
         public Name(String name)
@@ -82,9 +82,9 @@ public class StringBinIndex extends RiakIndex<String>
         }
         /**
          * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
-         * The supplied character set is used for encoding the values.
+         * The supplied character asSet is used for encoding the values.
          * @param name The name of this index.
-         * @param charset The character set to use for encoding values
+         * @param charset The character asSet to use for encoding values
          */
         public Name(String name, Charset charset)
         {

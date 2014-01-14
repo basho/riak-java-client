@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <h6>Special note when using RawIndex</h6>
  * A {@code RiakIndex} is uniquely identified by its textual name and {@code IndexType} 
  * regardless of the concrete {@code RiakIndex} implementation being used to view
- * or mutate it. This container enforces this uniqueness by being the source of 
+ * or update it. This container enforces this uniqueness by being the source of
  * all {@code RiakIndex} instances and managing them in a thread-safe way with 
  * atomic operations. 
  * <p>
@@ -69,7 +69,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {
  *     // creates or fetches the BIN (_bin) index named "foo", adds a value to it  
  *     RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
- *     ByteArrayWrapper baw = ByteArrayWrapper.unsafeCreate("value".getBytes());
+ *     BinaryValue baw = BinaryValue.unsafeCreate("value".getBytes());
  *     index.add(baw);
  *       
  *     // fetches the previously created index as a StringBinIndex

@@ -25,7 +25,7 @@ import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.ByteArrayWrapper;
+import com.basho.riak.client.util.BinaryValue;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -39,7 +39,7 @@ public class StoreFetchDeleteTest
 
 	private final Converter<RiakObject> domainObjectConverter = new PassThroughConverter();
 	private static RiakCluster cluster;
-	private ByteArrayWrapper bucket = ByteArrayWrapper.create("bucket");
+	private BinaryValue bucket = BinaryValue.create("bucket");
 
 	@BeforeClass
 	public static void setup() throws UnknownHostException
@@ -75,7 +75,7 @@ public class StoreFetchDeleteTest
 
 		RiakObject storeReturn = store.get();
 
-		ByteArrayWrapper returnedKey = ByteArrayWrapper.create(storeReturn.getBucketAsBytes());
+		BinaryValue returnedKey = BinaryValue.create(storeReturn.getBucketAsBytes());
 		FetchOperation<RiakObject> fetch =
 			new FetchOperation<RiakObject>(bucket, returnedKey)
 			.withConverter(domainObjectConverter);
@@ -118,7 +118,7 @@ public class StoreFetchDeleteTest
 
 		RiakObject storeReturn1 = store1.get();
 
-		ByteArrayWrapper key = ByteArrayWrapper.create(storeReturn1.getKeyAsBytes());
+		BinaryValue key = BinaryValue.create(storeReturn1.getKeyAsBytes());
 		StoreOperation<RiakObject> store2 =
 			new StoreOperation<RiakObject>(bucket, key, o)
 				.withConverter(domainObjectConverter)

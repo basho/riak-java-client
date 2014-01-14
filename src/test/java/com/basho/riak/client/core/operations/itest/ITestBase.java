@@ -72,8 +72,8 @@ public abstract class ITestBase
          * create the following bucket types in your riak instance
          * with the corresponding bucket properties.
          *
-         * maps: allow_mult = true, datatype = map
-         * sets: allow_mult = true, datatype = set
+         * maps: allow_mult = true, datatype = asMap
+         * sets: allow_mult = true, datatype = asSet
          * counters: allow_mult = true, datatype = counter
          */
         counterBucketType = BinaryValue.create("counters");

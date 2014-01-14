@@ -25,8 +25,8 @@ import java.nio.charset.Charset;
  * They can be used to loosely model graph like relationships between objects in Riak.
  * </p>
  * <p>
- * Data in Riak is character set agnostic; it's simply raw bytes. Methods are provided here 
- * to either use your default character set or supply a specific one to convert to and
+ * Data in Riak is character asSet agnostic; it's simply raw bytes. Methods are provided here
+ * to either use your default character asSet or supply a specific one to convert to and
  * from {@code String}s.
  * <p>
  *
@@ -65,7 +65,7 @@ public class RiakLink
      * @param bucket the bucket
      * @param key the key
      * @param tag the link tag
-     * @param charset the character set for the supplied {@code String}s
+     * @param charset the character asSet for the supplied {@code String}s
      */
     public RiakLink(String bucket, String key, String tag, Charset charset)
     {

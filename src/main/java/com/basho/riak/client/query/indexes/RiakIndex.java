@@ -88,7 +88,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Add a set of values to this secondary index.
+     * Add a asSet of values to this secondary index.
      *
      * @param values a collection of values to add
      * @return a reference to this object
@@ -128,7 +128,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Remove a set of values from this index
+     * Remove a asSet of values from this index
      *
      * @param values a collection of values to remove
      * @return a reference to this object
@@ -153,7 +153,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
     
     /**
-     * Returns an iterator over the set of values in this index.
+     * Returns an iterator over the asSet of values in this index.
      * This iterator is a "weakly consistent" iterator that will never throw 
      * {@link ConcurrentModificationException}, and guarantees to traverse elements 
      * as they existed upon construction of the iterator, and may (but is not guaranteed to) 

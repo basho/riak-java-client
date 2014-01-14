@@ -18,7 +18,7 @@ package com.basho.riak.client.query.indexes;
 import junit.framework.Assert;
 import org.junit.Test;
 
-public class IndexTypeTest
+public class IndexTest
 {
 
     @Test(expected = IllegalArgumentException.class)

@@ -121,7 +121,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
 
         /**
          * Specify the maximum number of results to return.
-         * Riak defaults to 10 if this is not set.
+         * Riak defaults to 10 if this is not asSet.
          *
          * @param rows the maximum number of results to return.
          * @return a reference to this object.

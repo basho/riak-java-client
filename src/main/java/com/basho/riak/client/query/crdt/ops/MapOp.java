@@ -54,9 +54,23 @@ public class MapOp implements CrdtOp
         }
     }
 
-    private final Set<MapField> adds = new HashSet<MapField>();
-    private final Set<MapField> removes = new HashSet<MapField>();
-    private final Set<MapUpdate> updates = new HashSet<MapUpdate>();
+    private final Set<MapField> adds;
+    private final Set<MapField> removes;
+    private final Set<MapUpdate> updates;
+
+    public MapOp()
+    {
+        adds = new HashSet<MapField>();
+        removes = new HashSet<MapField>();
+        updates = new HashSet<MapUpdate>();
+    }
+
+    public MapOp(Set<MapField> adds, Set<MapField> removes, Set<MapUpdate> updates)
+    {
+        this.adds = adds;
+        this.removes = removes;
+        this.updates = updates;
+    }
 
     private MapOp update(BinaryValue key, CrdtOp op, FieldType type)
     {

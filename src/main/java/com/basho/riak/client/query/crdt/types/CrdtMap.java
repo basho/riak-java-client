@@ -43,9 +43,9 @@ public class CrdtMap extends CrdtElement
     }
 
     /**
-     * Get this CrdtMap as a {@link Map}. The returned map  is unmodifiable.
+     * Get this CrdtMap as a {@link Map}. The returned asMap  is unmodifiable.
      *
-     * @return a read-only view of the map
+     * @return a read-only view of the asMap
      */
     public Map<BinaryValue, CrdtElement> viewAsMap()
     {

@@ -20,6 +20,23 @@ import com.basho.riak.client.util.BinaryValue;
 public abstract class CrdtElement
 {
 
+    private BinaryValue context = null;
+
+    public void setContext(BinaryValue context)
+    {
+        this.context = context;
+    }
+
+    public boolean hasContext()
+    {
+        return context != null;
+    }
+
+    public BinaryValue getContext()
+    {
+        return context;
+    }
+
     public boolean isMap()
     {
         return this instanceof CrdtMap;
