@@ -20,7 +20,6 @@ import com.basho.riak.client.core.RiakCluster;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -40,24 +39,23 @@ class KeyMultiFetch<T> extends MultiFetch<T>
     {
         this.converter = converter;
         this.keys = new ArrayList<Location>();
-        Iterator<Location> itr = keys.iterator();
-        while (itr.hasNext())
-        {
-            this.keys.add(itr.next());
-        }
+	    for (Location key : keys)
+	    {
+		    this.keys.add(key);
+	    }
     }
 
     @Override
-    Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        List<FetchValue.Response> values = new ArrayList<FetchValue.Response>();
+        List<FetchValue.Response<T>> values = new ArrayList<FetchValue.Response<T>>();
         for (Location key : keys)
         {
             values.add(new FetchValue.Builder<T>(key).withConverter(converter).build().execute(cluster));
         }
 
-        return new Response(values);
+        return new Response<T>(values);
 
     }
 }

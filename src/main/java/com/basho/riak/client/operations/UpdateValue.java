@@ -53,6 +53,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 

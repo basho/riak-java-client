@@ -58,6 +58,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc.getBucket(), loc.getType());
