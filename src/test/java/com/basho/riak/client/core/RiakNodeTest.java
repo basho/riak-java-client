@@ -105,7 +105,6 @@ public class RiakNodeTest
         assertEquals(node.availablePermits(), MAX_CONNECTIONS);
         assertEquals(node.getPort(), PORT);
 
-        assertEquals(node.getReadTimeout(), READ_TIMEOUT);
     }
 
     @Test
