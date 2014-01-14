@@ -69,9 +69,6 @@ public class RiakNode implements RiakResponseListener
     private volatile int connectionTimeout;
     private volatile boolean blockOnMaxConnections;
 
-
-    private volatile int readTimeoutInMillis;
-
     private final ChannelFutureListener writeListener =
         new ChannelFutureListener()
         {
@@ -353,32 +350,6 @@ public class RiakNode implements RiakResponseListener
         }
         this.executor = executor;
         return this;
-    }
-
-    /**
-     * Sets the read timeout for connections.
-     *
-     * @param readTimeoutInMillis the readTimeout to set
-     * @return a reference to this RiakNode
-     * @see Builder#withReadTimeout(int)
-     */
-    public RiakNode setReadTimeout(int readTimeoutInMillis)
-    {
-        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        this.readTimeoutInMillis = readTimeoutInMillis;
-        return this;
-    }
-
-    /**
-     * Returns the read timeout in milliseconds for connections.
-     *
-     * @return the readTimeout
-     * @see Builder#withReadTimeout(int)
-     */
-    public int getReadTimeout()
-    {
-        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        return readTimeoutInMillis;
     }
 
     /**

@@ -204,27 +204,6 @@ public class RiakNodeFixtureTest extends FixtureTest
             FetchOperation.Response response = operation.get();
         }
     
-    @Test(expected=ExecutionException.class)
-    public void operationTimesOut() throws IOException, InterruptedException, ExecutionException
-    {
-        NetworkTestFixture nonRunningFixture = new NetworkTestFixture(8000);
-        RiakNode node = 
-            new RiakNode.Builder()
-                        .withRemoteAddress("127.0.0.1")
-                        .withRemotePort(8000 + NetworkTestFixture.ACCEPT_THEN_CLOSE)
-                        .withReadTimeout(5000)
-                        .build();
-        node.start();
-        FetchOperation operation = 
-            new FetchOperation.Builder(BinaryValue.unsafeCreate("test_bucket".getBytes()), 
-                                            BinaryValue.unsafeCreate("test_key2".getBytes()))
-                    .build();
-
-        
-        boolean accepted = node.execute(operation);
-        FetchOperation.Response response = operation.get();
-    }
-    
     @Test
     public void nodeChangesStateOnPoolState() throws UnknownHostException, IOException, InterruptedException
     {
