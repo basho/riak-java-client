@@ -94,7 +94,6 @@ public interface Constants {
     // Netty Channel handler constants
     public static final String MESSAGE_CODEC = "codec";
     public static final String OPERATION_ENCODER = "operationEncoder";
-    public static final String TIMEOUT_HANDLER = "timeoutHandler";
     public static final String RESPONSE_HANDLER = "responseHandler";
     
 }
