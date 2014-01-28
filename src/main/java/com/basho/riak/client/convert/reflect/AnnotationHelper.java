@@ -13,12 +13,13 @@
  */
 package com.basho.riak.client.convert.reflect;
 
-import java.util.Collection;
-import java.util.Map;
-
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.indexes.RiakIndexes;
+import com.basho.riak.client.query.links.RiakLink;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Singleton that wraps a cache of Class -> AnnotatioInfo and provides
@@ -117,7 +118,7 @@ public class AnnotationHelper {
         return obj;
     }
 
-    public <T> Collection<RiakLink> getLinks(T obj) {
+    public <T> List<RiakLink> getLinks(T obj) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
         return annotationInfo.getLinks(obj);
     }

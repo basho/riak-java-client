@@ -13,14 +13,14 @@
  */
 package com.basho.riak.client.convert;
 
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * @author russell
@@ -64,8 +64,8 @@ public class UsermetaConverterTest {
     }
 
     /**
-     * @param vargs
-     * @param vargs2
+     * @param keys
+     * @param values
      * @return
      */
     private Map<String, String> makeMap(String[] keys, String[] values) {
@@ -81,9 +81,7 @@ public class UsermetaConverterTest {
 
     /**
      * @param <T>
-     * @param string
-     * @param string2
-     * @param string3
+     * @param args
      * @return
      */
     private <T> T[] vargs(T... args) {

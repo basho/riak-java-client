@@ -18,8 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.basho.riak.client.bucket.DefaultBucket;
-
 /**
  * Annotation to declare a field or method as the key to a data item in Riak.
  * <p>
@@ -45,7 +43,6 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * @author russell
  * @author Brian Roach <roach at basho dot com>
  * @see JSONConverter
- * @see DefaultBucket
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakKey {
 

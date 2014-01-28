@@ -14,11 +14,9 @@
 package com.basho.riak.client.convert;
 
 import com.fasterxml.jackson.databind.Module.SetupContext;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 import org.junit.Test;
+
+import static org.mockito.Mockito.*;
 
 /**
  * @author russell
@@ -28,7 +26,7 @@ public class RiakJacksonModuleTest {
 
     /**
      * Test method for
-     * {@link com.basho.riak.client.convert.RiakJacksonModule#setupModule(org.codehaus.jackson.map.Module.SetupContext)}
+     * {@link com.basho.riak.client.convert.RiakJacksonModule#setupModule(com.fasterxml.jackson.databind.Module.SetupContext)}
      * .
      */
     @Test public void setupAddsRiakbeanSerializerModifierToContext() {

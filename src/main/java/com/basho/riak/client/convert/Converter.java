@@ -15,7 +15,9 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.BinaryValue;
 
 /**
  *
@@ -24,7 +26,7 @@ import com.basho.riak.client.query.RiakObject;
  */
 public interface Converter<T>
 {
-    T toDomain(RiakObject riakObject);
+    T toDomain(RiakObject riakObject, VClock vClock, BinaryValue key);
     RiakObject fromDomain(T domainObject);
     
 }

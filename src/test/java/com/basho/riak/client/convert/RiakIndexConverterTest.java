@@ -13,13 +13,18 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
-import org.junit.Test;
+import com.basho.riak.client.query.indexes.StringBinIndex;
 import org.junit.Before;
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -40,14 +45,14 @@ public class RiakIndexConverterTest
     {
         final String[] languages = {"c","erlang","java"};
         final HashSet<String> langSet = new HashSet<String>(Arrays.asList(languages));
-        final Integer[] numbers = {1,2,7};
-        final HashSet<Integer> luckySet = new HashSet<Integer>(Arrays.asList(numbers));
+        final Long[] numbers = {1L,2L,7L};
+        final HashSet<Long> luckySet = new HashSet<Long>(Arrays.asList(numbers));
         
         
         RiakIndexes rIndexes = new RiakIndexes();
-        rIndexes.addBinSet("favorite_languages", langSet);
-        rIndexes.addIntSet("lucky_numbers", luckySet);
-        rIndexes.addIntSet("other_numbers", luckySet);
+        rIndexes.getIndex(new StringBinIndex.Name("favorite_languages")).add(langSet);
+        rIndexes.getIndex(new LongIntIndex.Name("lucky_numbers")).add(luckySet);
+        rIndexes.getIndex(new LongIntIndex.Name("other_numbers")).add(luckySet);
         
         DomainObject obj = new DomainObject();
         
@@ -62,21 +67,21 @@ public class RiakIndexConverterTest
         rIndexes = converter.getIndexes(obj);
         
         assertNotNull("Expected RiakIndexes BinIndexes to be populated", 
-                      rIndexes.getBinIndex("favorite_languages"));
+                      rIndexes.hasIndex(new StringBinIndex.Name("favorite_languages")));
         assertNotNull("Expected RiakIndexes IntIndexes to be populated", 
-                      rIndexes.getBinIndex("other_numbers"));
+                      rIndexes.hasIndex(new StringBinIndex.Name("other_numbers")));
         assertNotNull("Expected Method RiakIndexes IntIndexes to be populated",
-                      rIndexes.getIntIndex("calculated_longs"));
+                      rIndexes.hasIndex(new LongIntIndex.Name("calculated_longs")));
         assertNotNull("Expected Method RiakIndexes IntIndexes to be populated",
-                      rIndexes.getIntIndex("calculated_integers"));
+                      rIndexes.hasIndex(new LongIntIndex.Name("calculated_integers")));
         assertNotNull("Expected Method RiakIndexes BinIndexes to be populated",
-                      rIndexes.getBinIndex("calculated_strings"));
-        assertEquals(langSet.size(), rIndexes.getBinIndex("favorite_languages").size());
-        assertEquals(luckySet.size(), rIndexes.getIntIndex("other_numbers").size());
-        assertEquals(1, rIndexes.getIntIndex("lucky_numbers").size()); 
-        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIntIndex("calculated_longs").size());
-        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIntIndex("calculated_integers").size());
-        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getBinIndex("calculated_strings").size());
+                      rIndexes.hasIndex(new StringBinIndex.Name("calculated_strings")));
+        assertEquals(langSet.size(), rIndexes.getIndex(new StringBinIndex.Name("favorite_languages")).size());
+        assertEquals(luckySet.size(), rIndexes.getIndex(new LongIntIndex.Name("other_numbers")).size());
+        assertEquals(1, rIndexes.getIndex(new LongIntIndex.Name("lucky_numbers")).size());
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIndex(new LongIntIndex.Name("calculated_longs")).size());
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIndex(new LongIntIndex.Name("calculated_integers")).size());
+        assertEquals(DomainObject.CALCULATIONS_COUNT, rIndexes.getIndex(new StringBinIndex.Name("calculated_strings")).size());
         
     }
     

@@ -13,14 +13,12 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.bucket.DefaultBucket;
 
 /**
  * Thrown by an operation that requires a key but doesn't have one.
  *
  * @author russell
  * @see JSONConverter
- * @see DefaultBucket
  */
 public class NoKeySpecifiedException extends RuntimeException {
 

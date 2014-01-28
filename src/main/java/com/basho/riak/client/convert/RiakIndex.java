@@ -13,8 +13,6 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.bucket.DefaultBucket;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -61,7 +59,6 @@ import java.lang.annotation.Target;
  * 
  * @author russell
  * @see JSONConverter
- * @see DefaultBucket
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakIndex {
     /**

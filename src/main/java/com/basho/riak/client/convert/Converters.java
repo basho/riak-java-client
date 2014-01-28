@@ -15,10 +15,10 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +26,8 @@ import java.util.List;
 public class Converters
 {
 
-    public static <T> List<T> convert(Converter<T> converter, List<? extends RiakObject> objects)
+    public static <T> List<T> convert(Converter<T> converter, List<? extends RiakObject> objects,
+                                      VClock vClock, BinaryValue key)
     {
         if (objects == null)
         {
@@ -36,34 +37,9 @@ public class Converters
         List<T> converted = new ArrayList<T>(objects.size());
         for (RiakObject o : objects)
         {
-            converted.add(converter.toDomain(o));
+            converted.add(converter.toDomain(o, vClock, key));
         }
         return converted;
     }
 
-    public static Converter<String> stringConverter()
-    {
-        return new Converter<String>()
-        {
-            @Override
-            public String toDomain(RiakObject riakObject)
-            {
-                return new String(riakObject.getValue().unsafeGetValue());
-            }
-
-            @Override
-            public RiakObject fromDomain(String domainObject)
-            {
-                RiakObject ro = new RiakObject();
-                ro.setValue(BinaryValue.create(domainObject));
-                return ro;
-            }
-        };
-    }
-
-
-    public static <T> Converter<T> jsonConverter()
-    {
-        return null;
-    }
 }

@@ -13,10 +13,11 @@
  */
 package com.basho.riak.client.convert;
 
-import java.util.Collection;
-
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.convert.reflect.AnnotationHelper;
+import com.basho.riak.client.query.links.RiakLink;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Handles the copying of RiakLinks from domain objects -> IRiakObject and back
@@ -29,7 +30,7 @@ public class RiakLinksConverter<T> {
 
     private final AnnotationHelper annotationHelper = AnnotationHelper.getInstance();
 
-    public Collection<RiakLink> getLinks(T domainObject) {
+    public List<RiakLink> getLinks(T domainObject) {
         return annotationHelper.getLinks(domainObject);
     }
 

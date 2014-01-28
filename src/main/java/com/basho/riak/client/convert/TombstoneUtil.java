@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.reflect.AnnotationHelper;
 
 /**
@@ -35,7 +34,7 @@ public class TombstoneUtil
      * @return <code>domainObject</code> with {@link RiakTombstone} annotated field
      *         set to <code>isTombstone</code>
      * @throws ConversionException
-     *             if there is a {@link Riaktombstone} annotated field but it cannot
+     *             if there is a {@link RiakTombstone} annotated field but it cannot
      *             be set to the value of <code>isTombstone</code>
      */
     public static <T> T setTombstone(T domainObject, boolean isTombstone) throws ConversionException {

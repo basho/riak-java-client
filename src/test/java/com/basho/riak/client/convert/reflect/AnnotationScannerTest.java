@@ -1,13 +1,16 @@
 package com.basho.riak.client.convert.reflect;
 
 
-import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.convert.*;
+import com.basho.riak.client.query.links.RiakLink;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class AnnotationScannerTest {
 
@@ -19,8 +22,8 @@ public class AnnotationScannerTest {
         assertEquals("keyValue", info.getRiakKey(instance));
         assertEquals("clock", info.getRiakVClock(instance).asString());
         assertEquals(1, info.getUsermetaData(instance).size());
-        assertEquals(1, info.getIndexes(instance).getBinIndex("myBinIndex").size());
-        assertEquals(1, info.getIndexes(instance).getIntIndex("myIntIndex").size());
+        assertEquals(1, info.getIndexes(instance).size());
+        assertEquals(1, info.getIndexes(instance).size());
         assertEquals(1, info.getLinks(instance).size());
         
         scanner = new AnnotationScanner(MethodClass.class);

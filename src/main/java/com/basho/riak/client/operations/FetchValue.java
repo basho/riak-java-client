@@ -100,7 +100,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		FetchOperation operation = builder.build();
 
 		FetchOperation.Response response = cluster.execute(operation).get();
-		List<T> converted = convert(converter, response.getObjectList());
+		List<T> converted = convert(converter, response.getObjectList(), null, location.getKey());
 
 		return new Response<T>(response.isNotFound(), response.isUnchanged(), converted, response.getVClock());
 

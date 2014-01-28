@@ -18,8 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.basho.riak.client.bucket.DefaultBucket;
-
 /**
  * Annotation to declare a field as holding a collection of RiakLinks
  * <p>
@@ -44,7 +42,6 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * 
  * @author russell
  * @see JSONConverter
- * @see DefaultBucket
  */
 @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakLinks {
 }
