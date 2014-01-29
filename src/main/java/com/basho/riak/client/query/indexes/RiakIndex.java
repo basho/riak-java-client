@@ -255,7 +255,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      */
     public final String getFullname()
     {
-        return name + getType().suffix();
+        return name.getName() + getType().suffix();
     }
 
 	/**
