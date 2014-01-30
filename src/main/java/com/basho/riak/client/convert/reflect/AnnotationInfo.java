@@ -414,10 +414,10 @@ public class AnnotationInfo
 					final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
 					if (String.class.equals(genericType))
 					{
-						val = indexes.getIndex(new StringBinIndex.Name(f.getIndexName())).rawValues();
+						val = indexes.getIndex(new StringBinIndex.Name(f.getIndexName())).values();
 					} else if (Integer.class.equals(genericType))
 					{
-						val = indexes.getIndex(new LongIntIndex.Name(f.getIndexName())).rawValues();
+						val = indexes.getIndex(new LongIntIndex.Name(f.getIndexName())).values();
 					}
 				}
 				if (val != null && !val.isEmpty())
@@ -438,7 +438,7 @@ public class AnnotationInfo
 					val = iSet;
 				} else if (String.class.equals(f.getType()))
 				{
-					val = indexes.getIndex(new StringBinIndex.Name(f.getIndexName())).rawValues();
+					val = indexes.getIndex(new StringBinIndex.Name(f.getIndexName())).values();
 				} else if (Long.class.equals(f.getType()) || long.class.equals(f.getType()))
 				{
 					val = indexes.getIndex(new LongIntIndex.Name(f.getIndexName())).values();
