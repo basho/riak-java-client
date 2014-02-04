@@ -16,13 +16,11 @@ package com.basho.riak.client.convert;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedField;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.util.LinkedList;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -59,15 +57,25 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
     @Override public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
                                                                BeanDescription beanDesc,
                                                                List<BeanPropertyWriter> beanProperties) {
-
-        List<BeanPropertyWriter> keptProperties = new LinkedList<BeanPropertyWriter>();
-
+        final List<BeanPropertyWriter> keptProperties = new ArrayList<BeanPropertyWriter>();
         for (BeanPropertyWriter w : beanProperties) {
             if (keepProperty(w)) {
                 keptProperties.add(w);
             }
         }
+
         return keptProperties;
+    }
+
+    static final List<Class<? extends Annotation>> RIAK_ANNOTATIONS=new ArrayList<Class<? extends Annotation>>();
+
+    static {
+        RIAK_ANNOTATIONS.add(RiakKey.class);
+        RIAK_ANNOTATIONS.add(RiakUsermeta.class);
+        RIAK_ANNOTATIONS.add(RiakLinks.class);
+        RIAK_ANNOTATIONS.add(RiakIndex.class);
+        RIAK_ANNOTATIONS.add(RiakVClock.class);
+        RIAK_ANNOTATIONS.add(RiakTombstone.class);
     }
 
     /**
@@ -87,47 +95,14 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier {
 	 * JsonProperty annotated, false otherwise
      */
     private boolean keepProperty(BeanPropertyWriter beanPropertyWriter) {
-        RiakKey key = null;
-        RiakUsermeta usermeta = null;
-        RiakLinks links = null;
-        RiakIndex index = null;
-        RiakVClock vclock = null;
-		JsonProperty jacksonJsonProperty = null;
-        RiakTombstone tombstone = null;
-
-        AnnotatedMember member = beanPropertyWriter.getMember();
-        if (member instanceof AnnotatedField) {
-            AnnotatedElement element = member.getAnnotated();
-            key = element.getAnnotation(RiakKey.class);
-            usermeta = element.getAnnotation(RiakUsermeta.class);
-            links = element.getAnnotation(RiakLinks.class);
-            index = element.getAnnotation(RiakIndex.class);
-            vclock = element.getAnnotation(RiakVClock.class);
-            tombstone = element.getAnnotation(RiakTombstone.class);
-            jacksonJsonProperty = element.getAnnotation(JsonProperty.class);
-        } else {
-            @SuppressWarnings("rawtypes") Class clazz = member.getDeclaringClass();
-            Field field;
-            try {
-                field = clazz.getDeclaredField(beanPropertyWriter.getName());
-                key = field.getAnnotation(RiakKey.class);
-                usermeta = field.getAnnotation(RiakUsermeta.class);
-                links = field.getAnnotation(RiakLinks.class);
-                index = field.getAnnotation(RiakIndex.class);
-                vclock = field.getAnnotation(RiakVClock.class);
-                tombstone = field.getAnnotation(RiakTombstone.class);
-                jacksonJsonProperty = field.getAnnotation(JsonProperty.class);
-            } catch (SecurityException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchFieldException e) {
-                // ignore, not a field means not a Riak annotated field.
+        if (beanPropertyWriter.getAnnotation(JsonProperty.class) != null) {
+            return true;
+        }
+        for (Class<? extends Annotation> annotation : RIAK_ANNOTATIONS) {
+            if (beanPropertyWriter.getAnnotation(annotation) != null) {
+                return false;
             }
         }
-
-        if (jacksonJsonProperty != null) {
-            return true;
-		} else {
-            return key == null && usermeta == null && links == null && vclock == null && index == null && tombstone == null;
-        }
+        return true;
     }
 }
