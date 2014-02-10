@@ -111,7 +111,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
             currentClass = currentClass.getSuperclass();
         }
         
-        final Method[] methods = classToScan.getMethods();
+        final Method[] methods = classToScan.getDeclaredMethods();
         for (Method method : methods) {
             if (method.isAnnotationPresent(RiakIndex.class)) {
                 indexMethods.add(new RiakIndexMethod(ClassUtil.checkAndFixAccess(method)));
