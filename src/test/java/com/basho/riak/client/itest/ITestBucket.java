@@ -13,41 +13,7 @@
  */
 package com.basho.riak.client.itest;
 
-import static com.basho.riak.client.AllTests.emptyBucket;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertArrayEquals;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.basho.riak.client.IRiakClient;
-import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.IndexEntry;
-import com.basho.riak.client.RiakException;
-import com.basho.riak.client.RiakLink;
-import com.basho.riak.client.RiakRetryFailedException;
-import com.basho.riak.client.RiakTestProperties;
+import com.basho.riak.client.*;
 import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.Mutation;
@@ -63,6 +29,16 @@ import com.basho.riak.client.query.indexes.IntIndex;
 import com.basho.riak.client.query.indexes.KeyIndex;
 import com.basho.riak.client.raw.MatchFoundException;
 import com.basho.riak.client.raw.ModifiedException;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.util.*;
+import java.util.concurrent.*;
+
+import static com.basho.riak.client.AllTests.emptyBucket;
+import static org.junit.Assert.*;
 
 /**
  * @author russell
@@ -352,6 +328,33 @@ public abstract class ITestBucket {
         }
         assertEquals(count, 5000);
         assertFalse(executeStreaming.hasContinuation());
+
+        for (int i = 0; i < 5000; i++) {
+          IRiakObject ro = RiakObjectBuilder.newBuilder(tmpBucket, key + String.valueOf(i) + "10000").build();
+          ro.setValue(value + String.valueOf(i));
+          ro.addIndex(indexName + "1", 1);
+          ro.addIndex(indexName + "1", indexValue);
+          b.store(ro).execute();
+        }
+
+        executeStreaming = b.fetchIndex(IntIndex.named(indexName + "1"))
+                        .withValue(1)
+                        .maxResults(10)
+                        .executeStreaming();
+
+        all = executeStreaming.getAll();
+        assertEquals(all.size(), 10);
+        assertTrue(executeStreaming.hasContinuation());
+
+        executeStreaming = b.fetchIndex(IntIndex.named(indexName + "1"))
+            .withContinuation(executeStreaming.getContinuation())
+            .withValue(1)
+            .maxResults(10)
+            .executeStreaming();
+
+        all = executeStreaming.getAll();
+        assertEquals(all.size(), 10);
+        assertTrue(executeStreaming.hasContinuation());
         
         emptyBucket(bucketName + "1", client);
         
