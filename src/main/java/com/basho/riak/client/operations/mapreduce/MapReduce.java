@@ -232,11 +232,11 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 	 */
 	protected abstract void writeInput(JsonGenerator jsonGenerator) throws IOException;
 
-	public static class Builder
+	protected static abstract class Builder<T extends Builder<T>>
 	{
 
-		private Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
-		private Long timeout;
+		protected Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+		protected Long timeout;
 
 		/**
 		 * Set the operations timeout
@@ -244,10 +244,10 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param timeout
 		 * @return this
 		 */
-		public Builder timeout(long timeout)
+		public T timeout(long timeout)
 		{
 			this.timeout = timeout;
-			return this;
+			return self();
 		}
 
 		/**
@@ -257,14 +257,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          keep the results and return them with the query results?
 		 * @return this
 		 */
-		public Builder addMapPhase(Function phaseFunction, boolean keep)
+		public T addMapPhase(Function phaseFunction, boolean keep)
 		{
 			synchronized (phases)
 			{
 				phases.add(new MapPhase(phaseFunction, keep));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -275,14 +275,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          if the result should be returned or merely provide input for the next phase.
 		 * @return this
 		 */
-		public Builder addMapPhase(Function phaseFunction, Object arg, boolean keep)
+		public T addMapPhase(Function phaseFunction, Object arg, boolean keep)
 		{
 			synchronized (phases)
 			{
 				phases.add(new MapPhase(phaseFunction, arg, keep));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -292,14 +292,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
 		 * @return this
 		 */
-		public Builder addMapPhase(Function phaseFunction, Object arg)
+		public T addMapPhase(Function phaseFunction, Object arg)
 		{
 			synchronized (phases)
 			{
 				phases.add(new MapPhase(phaseFunction, arg));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -308,14 +308,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param phaseFunction the {@link Function}
 		 * @return this
 		 */
-		public Builder addMapPhase(Function phaseFunction)
+		public T addMapPhase(Function phaseFunction)
 		{
 			synchronized (phases)
 			{
 				phases.add(new MapPhase(phaseFunction));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -325,14 +325,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          keep the results and return them with the query results?
 		 * @return this
 		 */
-		public Builder addReducePhase(Function phaseFunction, boolean keep)
+		public T addReducePhase(Function phaseFunction, boolean keep)
 		{
 			synchronized (phases)
 			{
 				phases.add(new ReducePhase(phaseFunction, keep));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -343,14 +343,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          if the result should be returned or merely provide input for the next phase.
 		 * @return this
 		 */
-		public Builder addReducePhase(Function phaseFunction, Object arg, boolean keep)
+		public T addReducePhase(Function phaseFunction, Object arg, boolean keep)
 		{
 			synchronized (phases)
 			{
 				phases.add(new ReducePhase(phaseFunction, arg, keep));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -360,14 +360,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param arg           an argument that will be passed to the phase verbatim
 		 * @return this
 		 */
-		public Builder addReducePhase(Function phaseFunction, Object arg)
+		public T addReducePhase(Function phaseFunction, Object arg)
 		{
 			synchronized (phases)
 			{
 				phases.add(new ReducePhase(phaseFunction, arg));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -376,14 +376,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param phaseFunction
 		 * @return this
 		 */
-		public Builder addReducePhase(Function phaseFunction)
+		public T addReducePhase(Function phaseFunction)
 		{
 			synchronized (phases)
 			{
 				phases.add(new ReducePhase(phaseFunction));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -393,14 +393,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param tag    the tag (or ("_", or "" for wildcard)
 		 * @param keep   to keep the result of this phase and return it at the end of the operation
 		 */
-		public Builder addLinkPhase(String bucket, String tag, boolean keep)
+		public T addLinkPhase(String bucket, String tag, boolean keep)
 		{
 			synchronized (phases)
 			{
 				phases.add(new LinkPhase(bucket, tag, keep));
 			}
 
-			return this;
+			return self();
 		}
 
 		/**
@@ -410,15 +410,17 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
 		 * @param tag    the tag (or ("_", or "" for wildcard)
 		 */
-		public Builder addLinkPhase(String bucket, String tag)
+		public T addLinkPhase(String bucket, String tag)
 		{
 			synchronized (phases)
 			{
 				phases.add(new LinkPhase(bucket, tag));
 			}
 
-			return this;
+			return self();
 		}
+
+		protected abstract T self();
 
 	}
 
