@@ -17,11 +17,8 @@ package com.basho.riak.client.operations.mapreduce;
  * Shared common interface for Map/Reduce phase definitions.
  * @author russell
  * 
- * @see MapReduce.Builder#addMapPhase(com.basho.riak.client.query.functions.Function)
- * @see MapReduce.Builder#addLinkPhase(String, String)
- * @see MapReduce.Builder#addReducePhase(com.basho.riak.client.query.functions.Function)
  */
-public interface MapReducePhase {
+interface MapReducePhase {
 
     /**
      * Possible phase typess.

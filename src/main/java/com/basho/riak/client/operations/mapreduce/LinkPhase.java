@@ -22,7 +22,7 @@ package com.basho.riak.client.operations.mapreduce;
  * @see MapPhase
  * @see ReducePhase
  */
-public class LinkPhase implements MapReducePhase {
+class LinkPhase implements MapReducePhase {
 
     private final String bucket;
     private final String tag;
