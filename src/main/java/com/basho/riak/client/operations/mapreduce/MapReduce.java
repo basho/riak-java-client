@@ -47,7 +47,8 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		this.timeout = builder.timeout;
 	}
 
-	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	@Override
+    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		try
 		{
@@ -55,9 +56,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 
 			MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
 
-			cluster.execute(operation);
-
-			List<BinaryValue> output = operation.get();
+			List<BinaryValue> output = cluster.execute(operation).get();
 
 			return new Response(output);
 
@@ -257,7 +256,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          keep the results and return them with the query results?
 		 * @return this
 		 */
-		public T addMapPhase(Function phaseFunction, boolean keep)
+		public T withMapPhase(Function phaseFunction, boolean keep)
 		{
 			synchronized (phases)
 			{
@@ -275,7 +274,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          if the result should be returned or merely provide input for the next phase.
 		 * @return this
 		 */
-		public T addMapPhase(Function phaseFunction, Object arg, boolean keep)
+		public T withMapPhase(Function phaseFunction, Object arg, boolean keep)
 		{
 			synchronized (phases)
 			{
@@ -292,7 +291,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
 		 * @return this
 		 */
-		public T addMapPhase(Function phaseFunction, Object arg)
+		public T withMapPhase(Function phaseFunction, Object arg)
 		{
 			synchronized (phases)
 			{
@@ -308,7 +307,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param phaseFunction the {@link Function}
 		 * @return this
 		 */
-		public T addMapPhase(Function phaseFunction)
+		public T withMapPhase(Function phaseFunction)
 		{
 			synchronized (phases)
 			{
@@ -325,7 +324,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          keep the results and return them with the query results?
 		 * @return this
 		 */
-		public T addReducePhase(Function phaseFunction, boolean keep)
+		public T withReducePhase(Function phaseFunction, boolean keep)
 		{
 			synchronized (phases)
 			{
@@ -343,7 +342,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param keep          if the result should be returned or merely provide input for the next phase.
 		 * @return this
 		 */
-		public T addReducePhase(Function phaseFunction, Object arg, boolean keep)
+		public T withReducePhase(Function phaseFunction, Object arg, boolean keep)
 		{
 			synchronized (phases)
 			{
@@ -360,7 +359,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param arg           an argument that will be passed to the phase verbatim
 		 * @return this
 		 */
-		public T addReducePhase(Function phaseFunction, Object arg)
+		public T withReducePhase(Function phaseFunction, Object arg)
 		{
 			synchronized (phases)
 			{
@@ -376,7 +375,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param phaseFunction
 		 * @return this
 		 */
-		public T addReducePhase(Function phaseFunction)
+		public T withReducePhase(Function phaseFunction)
 		{
 			synchronized (phases)
 			{
@@ -393,7 +392,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param tag    the tag (or ("_", or "" for wildcard)
 		 * @param keep   to keep the result of this phase and return it at the end of the operation
 		 */
-		public T addLinkPhase(String bucket, String tag, boolean keep)
+		public T withLinkPhase(String bucket, String tag, boolean keep)
 		{
 			synchronized (phases)
 			{
@@ -410,7 +409,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
 		 * @param tag    the tag (or ("_", or "" for wildcard)
 		 */
-		public T addLinkPhase(String bucket, String tag)
+		public T withLinkPhase(String bucket, String tag)
 		{
 			synchronized (phases)
 			{

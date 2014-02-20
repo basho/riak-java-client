@@ -16,7 +16,7 @@ public class StoreSchema extends RiakCommand<Boolean>
 	}
 
 	@Override
-	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutSchemaOperation operation = new YzPutSchemaOperation.Builder(schema).build();
 	    return cluster.execute(operation).get();

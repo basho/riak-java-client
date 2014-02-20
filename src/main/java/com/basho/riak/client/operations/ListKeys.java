@@ -36,7 +36,7 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 	}
 
 	@Override
-	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		ListKeysOperation.Builder builder = new ListKeysOperation.Builder(bucket.getBucket());
 

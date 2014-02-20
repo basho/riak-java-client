@@ -30,7 +30,7 @@ public abstract class MultiFetch<T> extends RiakCommand<MultiFetch.Response>
 {
 
     @Override
-    abstract Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
+    public abstract Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
 
     public static MultiFetch<RiakObject> multiFetch(Location... keys)
     {

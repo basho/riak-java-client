@@ -17,7 +17,7 @@ public class BucketMapReduce extends RiakCommand<BucketMapReduce.Response>
 	}
 
 	@Override
-	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		return null;
 	}

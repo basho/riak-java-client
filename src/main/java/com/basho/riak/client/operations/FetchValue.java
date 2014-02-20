@@ -47,7 +47,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 	}
 
 	@Override
-	Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		FetchOperation.Builder builder = new FetchOperation.Builder(location.getBucket(), location.getKey());

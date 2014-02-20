@@ -16,7 +16,7 @@ public class StoreSearchIndex extends RiakCommand<Boolean>
 	}
 
 	@Override
-	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutIndexOperation operation = new YzPutIndexOperation.Builder(index).build();
 	    return cluster.execute(operation).get();

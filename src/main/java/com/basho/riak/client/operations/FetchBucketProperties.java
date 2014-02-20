@@ -17,7 +17,7 @@ public class FetchBucketProperties extends RiakCommand<BucketProperties>
 	}
 
 	@Override
-	BucketProperties execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public BucketProperties execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		FetchBucketPropsOperation.Builder operation = new FetchBucketPropsOperation.Builder(location.getBucket());
 

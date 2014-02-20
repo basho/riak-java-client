@@ -63,7 +63,7 @@ public class Search extends RiakCommand<SearchOperation.Response>
 
 
     @Override
-    SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    public SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);

@@ -21,5 +21,5 @@ import java.util.concurrent.ExecutionException;
 
 public abstract class RiakCommand<T>
 {
-    abstract T execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
+   public abstract T execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
 }
