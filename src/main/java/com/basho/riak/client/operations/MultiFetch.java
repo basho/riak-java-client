@@ -92,7 +92,7 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 	}
 
 	@Override
-	Response<T> execute(final RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Response<T> execute(final RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		List<Future<FetchValue.Response<T>>> values =

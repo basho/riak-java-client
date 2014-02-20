@@ -12,16 +12,14 @@
  * the License.
  */
 /**
- * The set of key filters that can be used in a {@link com.basho.riak.client.query.BucketMapReduce}
- * 
- 
+ * The set of key filters that can be used in a {@link com.basho.riak.client.operations.mapreduce.MapReduce}
+ *
+
  * <p>
  * Please see the basho wiki on 
  * <a href="http://wiki.basho.com/MapReduce.html">Map/Reduce</a> and 
  * <a href="http://wiki.basho.com/Key-Filters.html">key Filters</a> for more details.
  * </p>
  * 
- * @see com.basho.riak.client.IRiakClient#mapReduce(String)
- * @see com.basho.riak.client.query.BucketMapReduce#addKeyFilter(KeyFilter)
  */
 package com.basho.riak.client.query.filter;

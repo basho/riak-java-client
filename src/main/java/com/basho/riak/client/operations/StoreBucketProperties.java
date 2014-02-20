@@ -64,7 +64,7 @@ public class StoreBucketProperties extends RiakCommand<StoreBucketPropsOperation
 	}
 
 	@Override
-	StoreBucketPropsOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public StoreBucketPropsOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		StoreBucketPropsOperation.Builder builder = 

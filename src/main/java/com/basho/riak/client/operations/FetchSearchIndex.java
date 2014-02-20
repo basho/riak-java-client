@@ -15,7 +15,7 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
 	}
 
 	@Override
-	YzFetchIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YzFetchIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
 	    builder.withIndexName(index);

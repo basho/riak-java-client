@@ -2,7 +2,6 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.YzGetSchemaOperation;
-import com.basho.riak.client.query.search.YokozunaSchema;
 
 import java.util.concurrent.ExecutionException;
 
@@ -16,7 +15,7 @@ public class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response>
 	}
 
 	@Override
-	YzGetSchemaOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YzGetSchemaOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		YzGetSchemaOperation operation = new YzGetSchemaOperation.Builder(schema).build();
 		return cluster.execute(operation).get();

@@ -18,22 +18,37 @@ public class BucketKeyMapReduce extends MapReduce
 		this.input.addAll(builder.input);
 	}
 
-	@Override
-	protected void writeInput(JsonGenerator jg) throws IOException
+	private void writeSingleInput(JsonGenerator jg, Input i) throws IOException
 	{
+		Location location = i.location;
+		String keyData = i.keyData;
+
 		jg.writeStartArray();
-		for (Input input : this.input)
+		jg.writeString(location.getBucket().toString());
+		jg.writeString(location.getKey().toString());
+		if (i.hasKeyData() || location.hasType())
 		{
-			jg.writeStartArray();
-			jg.writeString(input.location.getBucket().toString());
-			jg.writeString(input.location.getKey().toString());
-			jg.writeString(input.keyData);
-			jg.writeEndArray();
+			jg.writeString(keyData);
+		}
+		if (location.hasType())
+		{
+			jg.writeString(location.getType().toString());
 		}
 		jg.writeEndArray();
 	}
 
-	public static class Builder extends MapReduce.Builder
+	@Override
+	protected void writeInput(JsonGenerator jg) throws IOException
+	{
+		jg.writeStartArray();
+		for (Input i : input)
+		{
+			writeSingleInput(jg, i);
+		}
+		jg.writeEndArray();
+	}
+
+	public static class Builder extends MapReduce.Builder<Builder>
 	{
 
 		private List<Input> input = new ArrayList<Input>();
@@ -58,6 +73,11 @@ public class BucketKeyMapReduce extends MapReduce
 
 		public BucketKeyMapReduce build()
 		{
+			if (input == null)
+			{
+				throw new IllegalStateException("At least one location must be specified");
+			}
+
 			return new BucketKeyMapReduce(this);
 		}
 

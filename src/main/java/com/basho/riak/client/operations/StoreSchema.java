@@ -16,7 +16,7 @@ public class StoreSchema extends RiakCommand<YzPutSchemaOperation.Response>
 	}
 
 	@Override
-	YzPutSchemaOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YzPutSchemaOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutSchemaOperation operation = new YzPutSchemaOperation.Builder(schema).build();
 	    return cluster.execute(operation).get();

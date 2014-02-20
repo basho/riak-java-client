@@ -16,7 +16,7 @@ public class StoreSearchIndex extends RiakCommand<YzPutIndexOperation.Response>
 	}
 
 	@Override
-	YzPutIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YzPutIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutIndexOperation operation = new YzPutIndexOperation.Builder(index).build();
 	    return cluster.execute(operation).get();

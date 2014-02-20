@@ -15,7 +15,7 @@ public class DeleteSearchIndex extends RiakCommand<YzDeleteIndexOperation.Respon
 	}
 
 	@Override
-	YzDeleteIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YzDeleteIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		YzDeleteIndexOperation operation = new YzDeleteIndexOperation.Builder(index).build();
 		return cluster.execute(operation).get();
