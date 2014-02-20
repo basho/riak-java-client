@@ -21,7 +21,7 @@ import com.basho.riak.client.query.functions.Function;
  * @author russell
  * 
  */
-public class MapPhase implements MapReducePhase {
+ class MapPhase implements MapReducePhase {
 
     private final Function phaseFunction;
     private final Boolean keep;
@@ -39,7 +39,6 @@ public class MapPhase implements MapReducePhase {
      *            if the result should be returned or merely provide input for
      *            the next phase.
      * 
-     * @see MapReduce#addMapPhase(Function, Object, boolean)
      */
     public MapPhase(Function phaseFunction, Object arg, boolean keepResult) {
         this.phaseFunction = phaseFunction;
@@ -55,7 +54,6 @@ public class MapPhase implements MapReducePhase {
      * @param arg
      *            an argument that will be passed to the phase verbatim
      *            (Object#toString)
-     * @see MapReduce#addMapPhase(Function, Object)
      */
     public MapPhase(Function phaseFunction, Object arg) {
         this.phaseFunction = phaseFunction;
@@ -69,7 +67,6 @@ public class MapPhase implements MapReducePhase {
      * @param phaseFunction
      *            the {@link Function}
      * 
-     * @see MapReduce#addMapPhase(Function)
      */
     public MapPhase(Function phaseFunction) {
         this.phaseFunction = phaseFunction;
@@ -82,11 +79,10 @@ public class MapPhase implements MapReducePhase {
      * 
      * @param phaseFunction
      *            the {@link Function}
-     * @param keepResult
+     * @param keep
      *            if the result should be returned or merely provide input for
      *            the next phase.
      * 
-     * @see MapReduce#addMapPhase(Function, Object, boolean)
      */
     public MapPhase(Function phaseFunction, boolean keep) {
         this.phaseFunction = phaseFunction;

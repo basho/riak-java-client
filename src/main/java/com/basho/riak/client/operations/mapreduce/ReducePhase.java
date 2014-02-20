@@ -21,7 +21,7 @@ import com.basho.riak.client.query.functions.Function;
  * @author russell
  * 
  */
-public class ReducePhase extends MapPhase {
+class ReducePhase extends MapPhase {
 
     /**
      * Create a Reduce Phase
