@@ -19,6 +19,8 @@ import com.basho.riak.client.query.indexes.RiakIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.util.BinaryValue;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,38 +52,19 @@ public class JSONConverter<T> implements Converter<T>
 	}
 
 	private final Class<T> clazz;
-	private final String bucket;
 	private final UsermetaConverter<T> usermetaConverter;
 	private final RiakIndexConverter<T> riakIndexConverter;
 	private final RiakLinksConverter<T> riakLinksConverter;
-	private String defaultKey;
-
-	/**
-	 * Create a JSONConverter for creating instances of <code>clazz</code> from JSON and instances of {@link RiakObject}
-	 * with a JSON payload from instances of <code>clazz</code>
-	 *
-	 * @param clazz  the type to convert to/from
-	 * @param bucket the bucket
-	 */
-	public JSONConverter(Class<T> clazz, String bucket)
-	{
-		this(clazz, bucket, null);
-	}
 
 	/**
 	 * Create a JSONConverter for creating instances of <code>clazz</code> from JSON and instances of {@link RiakObject}
 	 * with a JSON payload from instances of <code>clazz</code>
 	 *
 	 * @param clazz      the type to convert to/from
-	 * @param bucket     the bucket
-	 * @param defaultKey for cases where <code>clazz</code> does not have a {@link RiakKey} annotated field, pass the
-	 *                   key to use in this conversion.
 	 */
-	public JSONConverter(Class<T> clazz, String bucket, String defaultKey)
+	public JSONConverter(Class<T> clazz)
 	{
 		this.clazz = clazz;
-		this.bucket = bucket;
-		this.defaultKey = defaultKey;
 		this.usermetaConverter = new UsermetaConverter<T>();
 		this.riakIndexConverter = new RiakIndexConverter<T>();
 		this.riakLinksConverter = new RiakLinksConverter<T>();
@@ -101,6 +84,7 @@ public class JSONConverter<T> implements Converter<T>
 			BinaryValue value = BinaryValue.create(OBJECT_MAPPER.writeValueAsBytes(domainObject));
 			RiakObject riakObject = new RiakObject()
 				.setValue(value)
+				.setCharset("charset=UTF-8")
 				.setContentType("application/json");
 
 			List<RiakLink> links = riakLinksConverter.getLinks(domainObject);
