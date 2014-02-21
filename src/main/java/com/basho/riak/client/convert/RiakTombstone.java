@@ -1,7 +1,4 @@
-/*
- * Copyright 2013 Basho Technologies Inc
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
+/*Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -15,18 +12,19 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.BinaryValue;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
+ * This annotation is used to denote a boolean field that will be marked true
+ * if the object is a tombstone (deleted vector clock)
+ * 
  * @author Brian Roach <roach at basho dot com>
- * @since 2.0
  */
-public interface Converter<T>
-{
-    T toDomain(RiakObject riakObject, VClock vClock, BinaryValue key);
-    RiakObject fromDomain(T domainObject);
-    
+
+@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakTombstone {
+
 }

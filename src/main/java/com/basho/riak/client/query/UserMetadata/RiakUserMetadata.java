@@ -157,7 +157,7 @@ public class RiakUserMetadata
     {
         put(key, value, Charset.defaultCharset());
     }
-    
+
     /**
      * Set a user metadata entry.
      * <p>

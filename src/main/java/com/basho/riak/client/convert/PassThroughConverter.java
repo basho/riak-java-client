@@ -15,7 +15,9 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.BinaryValue;
 
 
 /**
@@ -27,7 +29,7 @@ import com.basho.riak.client.query.RiakObject;
 public class PassThroughConverter implements Converter<RiakObject>
 {
     @Override
-    public RiakObject toDomain(RiakObject riakObject)
+    public RiakObject toDomain(RiakObject riakObject, VClock vClock, BinaryValue key)
     {
         return riakObject;
     }

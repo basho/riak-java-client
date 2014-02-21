@@ -320,7 +320,7 @@ public final class RiakObject
     
     /**
      * Returns the User Meta for this RiakObject
-     * @riak.threadsafety The returned <code>RiakUserMetadata}</code> encapsulates any/all 
+     * @riak.threadsafety The returned <code>RiakUserMetadata</code> encapsulates any/all
      * user meta entries for this <code>RaikObject</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RaikObject</code>.
      * @return the {@code RiakUserMetadata} that contains any/all User Meta entries for this {@code RiakObject}
@@ -335,7 +335,7 @@ public final class RiakObject
         
         return userMeta;
     }
-    
+
     /**
      * Marks this RiakObject as being a tombstone in Riak
      * 

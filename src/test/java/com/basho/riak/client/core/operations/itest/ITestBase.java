@@ -23,15 +23,16 @@ import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
 import com.basho.riak.client.util.BinaryValue;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 /**
  *
@@ -72,8 +73,8 @@ public abstract class ITestBase
          * create the following bucket types in your riak instance
          * with the corresponding bucket properties.
          *
-         * maps: allow_mult = true, datatype = asMap
-         * sets: allow_mult = true, datatype = asSet
+         * maps: allow_mult = true, datatype = map
+         * sets: allow_mult = true, datatype = set
          * counters: allow_mult = true, datatype = counter
          */
         counterBucketType = BinaryValue.create("counters");
