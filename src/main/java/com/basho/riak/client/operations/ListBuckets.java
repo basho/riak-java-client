@@ -37,7 +37,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
     }
 
     @Override
-    Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
         if (timeout > 0)

@@ -63,7 +63,7 @@ public class StoreBucketProperties extends RiakCommand<Boolean>
 	}
 
 	@Override
-	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		StoreBucketPropsOperation.Builder builder = new StoreBucketPropsOperation.Builder(location.getBucket());

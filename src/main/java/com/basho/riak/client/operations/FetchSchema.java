@@ -16,7 +16,7 @@ public class FetchSchema extends RiakCommand<YokozunaSchema>
 	}
 
 	@Override
-	YokozunaSchema execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YokozunaSchema execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		YzGetSchemaOperation operation = new YzGetSchemaOperation.Builder(schema).build();
 		return cluster.execute(operation).get();

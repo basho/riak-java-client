@@ -46,7 +46,7 @@ class KeyMultiFetch<T> extends MultiFetch<T>
     }
 
     @Override
-    Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         List<FetchValue.Response<T>> values = new ArrayList<FetchValue.Response<T>>();

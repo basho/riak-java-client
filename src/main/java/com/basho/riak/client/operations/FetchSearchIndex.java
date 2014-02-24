@@ -16,7 +16,7 @@ public class FetchSearchIndex extends RiakCommand<YokozunaIndex>
 	}
 
 	@Override
-	YokozunaIndex execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public YokozunaIndex execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
 	    builder.withIndexName(index);
