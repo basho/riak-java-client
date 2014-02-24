@@ -25,7 +25,6 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.w3c.dom.css.Counter;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,10 +53,11 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         
         Response.Builder responseBuilder = 
             new Response.Builder().withCrdtElement(element);
-        
-        if (reqBuilder.hasKey())
+
+        if (response.hasKey())
         {
-            BinaryValue.unsafeCreate(reqBuilder.getKey().toByteArray());
+            BinaryValue key = BinaryValue.unsafeCreate(response.getKey().toByteArray());
+	        responseBuilder.withGeneratedKey(key);
         }
         
         if (response.hasContext())

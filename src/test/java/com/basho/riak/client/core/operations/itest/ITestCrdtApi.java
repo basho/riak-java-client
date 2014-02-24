@@ -23,6 +23,7 @@ import com.basho.riak.client.util.BinaryValue;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import static junit.framework.Assert.*;
@@ -123,7 +124,7 @@ public class ITestCrdtApi extends ITestBase
         assertNotNull(lastLoginTimeElement);
         assertTrue(lastLoginTimeElement.isRegister());
         CrdtRegister lastLoginTimeRegister = lastLoginTimeElement.getAsRegister();
-        assertEquals(now, lastLoginTimeRegister.getValue());
+        assertTrue(Arrays.equals(now, lastLoginTimeRegister.getValue().getValue()));
 
         // logged-in - flag
         CrdtElement loggedInElement = usernameMap.get(BinaryValue.create(loggedIn));
