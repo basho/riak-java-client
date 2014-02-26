@@ -16,41 +16,81 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.query.RiakObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.Collections.unmodifiableList;
 
-public abstract class MultiFetch<T> extends RiakCommand<MultiFetch.Response>
+public class MultiFetch<T> extends RiakCommand<MultiFetch.Response>
 {
 
-    @Override
-    abstract Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
+	private final Converter<T> converter;
+	private final ArrayList<Location> keys = new ArrayList<Location>();
 
-    public static MultiFetch<RiakObject> multiFetch(Location... keys)
-    {
-        return new KeyMultiFetch<RiakObject>(new PassThroughConverter(), keys);
-    }
+	private MultiFetch(Builder builder)
+	{
+		this.converter = builder.converter;
+		this.keys.addAll(builder.keys);
+	}
 
-    public static MultiFetch<RiakObject> multiFetch(Iterable<Location> keys)
-    {
-        return new KeyMultiFetch<RiakObject>(new PassThroughConverter(), keys);
-    }
+	@Override
+	Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	{
 
-    public static <U> MultiFetch<U> multiFetch(Converter<U> converter, Location... keys)
-    {
-      return new KeyMultiFetch<U>(converter, keys);
-    }
+		List<FetchValue.Response<T>> values = new ArrayList<FetchValue.Response<T>>();
+		for (Location key : keys)
+		{
+			values.add(new FetchValue.Builder<T>(key).withConverter(converter).build().execute(cluster));
+		}
 
-    public static <U> MultiFetch<U> multiFetch(Converter<U> conterver, Iterable<Location> keys)
-    {
-      return new KeyMultiFetch<U>(conterver, keys);
-    }
+		return new Response<T>(values);
+
+	}
+
+	public static class Builder<T>
+	{
+
+		private Converter<T> converter;
+		private ArrayList<Location> keys = new ArrayList<Location>();
+
+		public Builder withConverter(Converter<T> converter)
+		{
+			this.converter = converter;
+			return this;
+		}
+
+		public Builder withKey(Location key)
+		{
+			keys.add(key);
+			return this;
+		}
+
+		public Builder withKeys(Location... key)
+		{
+			keys.addAll(Arrays.asList(key));
+			return this;
+		}
+
+		public Builder withKeys(Iterable<Location> key)
+		{
+			for (Location loc : key)
+			{
+				keys.add(loc);
+			}
+			return this;
+		}
+
+		public MultiFetch<T> build()
+		{
+			return new MultiFetch<T>(this);
+		}
+
+	}
 
     public static final class Response<T> implements Iterable<FetchValue.Response<T>>
     {
