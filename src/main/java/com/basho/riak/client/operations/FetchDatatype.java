@@ -18,11 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.operations.datatypes.DatatypeConverter;
-import com.basho.riak.client.operations.datatypes.RiakCounter;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
-import com.basho.riak.client.operations.datatypes.RiakMap;
-import com.basho.riak.client.operations.datatypes.RiakSet;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -30,33 +26,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
+public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
 {
 
     private final Location location;
-    private final DatatypeConverter<T> converter;
     private final Map<DtFetchOption<?>, Object> options = new HashMap<DtFetchOption<?>, Object>();
 
-    public FetchDatatype(Location location, DatatypeConverter<T> converter)
+    protected FetchDatatype(Builder builder)
     {
-        this.location = location;
-        this.converter = converter;
-        withOption(DtFetchOption.INCLUDE_CONTEXT, true);
-    }
-
-    public static FetchDatatype<RiakMap> fetchMap(Location key)
-    {
-        return new FetchDatatype<RiakMap>(key, DatatypeConverter.asMap());
-    }
-
-    public static FetchDatatype<RiakSet> fetchSet(Location key)
-    {
-        return new FetchDatatype<RiakSet>(key, DatatypeConverter.asSet());
-    }
-
-    public static FetchDatatype<RiakCounter> fetchCounter(Location key)
-    {
-        return new FetchDatatype<RiakCounter>(key, DatatypeConverter.asCounter());
+        this.location = builder.location;
+	    this.options.putAll(builder.options);
     }
 
     public <U> FetchDatatype<T> withOption(DtFetchOption<U> option, U value)
@@ -64,6 +43,8 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
         options.put(option, value);
         return this;
     }
+
+	public abstract T extractDatatype(CrdtElement element);
 
     @Override
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
@@ -117,11 +98,32 @@ public class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchData
         CrdtElement element = response.getCrdtElement();
         BinaryValue context = response.getContext();
 
-        T datatype = converter.convert(element);
+        T datatype = extractDatatype(element);
 
         return new Response<T>(datatype, context.getValue());
 
     }
+
+	protected static abstract class Builder<T extends Builder<T>>
+	{
+
+		private final Location location;
+		private final Map<DtFetchOption<?>, Object> options = new HashMap<DtFetchOption<?>, Object>();
+
+		protected Builder(Location location)
+		{
+			this.location = location;
+		}
+
+		public <U> T withOption(DtFetchOption<U> option, U value)
+		{
+			this.options.put(option, value);
+			return self();
+		}
+
+		protected abstract T self();
+
+	}
 
     public static class Response<T extends RiakDatatype>
     {

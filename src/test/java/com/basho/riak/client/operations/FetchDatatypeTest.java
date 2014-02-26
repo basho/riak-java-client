@@ -20,7 +20,6 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.query.crdt.types.CrdtMap;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -68,7 +67,7 @@ public class FetchDatatypeTest
     public void testFetch() throws Exception
     {
 
-        FetchDatatype<RiakMap> fetchValue = FetchDatatype.fetchMap(key)
+        FetchMap fetchValue = new FetchMap.Builder(key)
             .withOption(DtFetchOption.TIMEOUT, 100)
             .withOption(DtFetchOption.BASIC_QUORUM, true)
             .withOption(DtFetchOption.N_VAL, 1)
@@ -76,7 +75,8 @@ public class FetchDatatypeTest
             .withOption(DtFetchOption.PR, new Quorum(1))
             .withOption(DtFetchOption.R, new Quorum(1))
             .withOption(DtFetchOption.SLOPPY_QUORUM, true)
-            .withOption(DtFetchOption.INCLUDE_CONTEXT, true);
+            .withOption(DtFetchOption.INCLUDE_CONTEXT, true)
+	        .build();
 
         client.execute(fetchValue);
 
