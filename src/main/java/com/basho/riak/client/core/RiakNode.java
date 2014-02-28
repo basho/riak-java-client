@@ -722,7 +722,7 @@ public class RiakNode implements RiakResponseListener
                 else
                 {
                     c.close();
-                    logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause().getStackTrace());
+                    logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
                     throw new ConnectionFailedException(promise.cause());
                 }
                 
