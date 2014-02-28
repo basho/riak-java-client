@@ -70,4 +70,8 @@ public interface RiakMessageCodes
     public static final byte MSG_DtFetchResp = 81;
     public static final byte MSG_DtUpdateReq = 82;
     public static final byte MSG_DtUpdateResp = 83;
+    
+    public static final byte MSG_RpbAuthReq = (byte)253;
+    public static final byte MSG_RpbAuthResp = (byte)254;
+    public static final byte MSG_RpbStartTls = (byte)255;
 }
