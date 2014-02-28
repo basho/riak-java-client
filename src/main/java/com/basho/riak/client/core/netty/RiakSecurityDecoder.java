@@ -1,7 +1,17 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.basho.riak.client.core.netty;
@@ -76,7 +86,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                     case TLS_WAIT:
                         switch(code)
                         {
-                            case RiakMessageCodes.MSG_RpbStartTls:
+                            case RiakMessageCodes.MSG_StartTls:
                                 logger.debug("Received MSG_RpbStartTls reply");
                                 // change state
                                 this.state = State.SSL_WAIT;
@@ -102,7 +112,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                         chc.channel().pipeline().remove(this);
                         switch(code)
                         {
-                            case RiakMessageCodes.MSG_RpbAuthResp:
+                            case RiakMessageCodes.MSG_AuthResp:
                                 logger.debug("Received MSG_RpbAuthResp reply");
                                 promise.trySuccess(null);
                                 break;
@@ -142,7 +152,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         state = State.TLS_WAIT;
         promise = new DefaultPromise<Void>(ctx.executor());
         promiseLatch.countDown();
-        ctx.channel().writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_RpbStartTls, 
+        ctx.channel().writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_StartTls, 
                                     new byte[0]));
         
     }
@@ -204,7 +214,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                     .setUser(ByteString.copyFromUtf8(username))
                     .setPassword(ByteString.copyFromUtf8(password))
                     .build();
-                c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_RpbAuthReq, 
+                c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq, 
                                 authReq.toByteArray()));
                 
             }
