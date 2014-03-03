@@ -53,7 +53,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <cobertura.version>2.4</cobertura.version>
-        <jackson.version>2.3.1</jackson.version>
+        <jackson.version>2.3.2</jackson.version>
     </properties>
 
     <distributionManagement>
