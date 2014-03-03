@@ -472,7 +472,9 @@ public class ClientHelper {
             entity = response.getEntity();
 
             if (streamResponse) {
-                stream = entity.getContent();
+                if (entity != null){
+                    stream = entity.getContent();
+                }
             } else {
                 if(null != entity) {
                     body = EntityUtils.toByteArray(entity);
