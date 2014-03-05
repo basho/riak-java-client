@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+import org.junit.Assume;
 
 public class ITestDatatype extends ITestBase
 {
@@ -20,7 +21,8 @@ public class ITestDatatype extends ITestBase
 	@Test
 	public void simpleTest() throws ExecutionException, InterruptedException
 	{
-
+        Assume.assumeTrue(testCrdt);
+        
 		/**
 		 * Update some info about a user in a table of users
 		 */

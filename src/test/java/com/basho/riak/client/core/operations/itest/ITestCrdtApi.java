@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import static junit.framework.Assert.*;
+import org.junit.Assume;
 
 public class ITestCrdtApi extends ITestBase
 {
@@ -34,7 +35,7 @@ public class ITestCrdtApi extends ITestBase
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
-
+        Assume.assumeTrue(testCrdt);
         /**
          * Update some info about a user in a table of users
          */
