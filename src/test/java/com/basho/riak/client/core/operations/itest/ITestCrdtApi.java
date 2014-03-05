@@ -23,9 +23,11 @@ import com.basho.riak.client.util.BinaryValue;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import static junit.framework.Assert.*;
+import org.junit.Assume;
 
 public class ITestCrdtApi extends ITestBase
 {
@@ -33,7 +35,7 @@ public class ITestCrdtApi extends ITestBase
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
-
+        Assume.assumeTrue(testCrdt);
         /**
          * Update some info about a user in a table of users
          */
@@ -123,7 +125,7 @@ public class ITestCrdtApi extends ITestBase
         assertNotNull(lastLoginTimeElement);
         assertTrue(lastLoginTimeElement.isRegister());
         CrdtRegister lastLoginTimeRegister = lastLoginTimeElement.getAsRegister();
-        assertEquals(now, lastLoginTimeRegister.getValue());
+        assertTrue(Arrays.equals(now, lastLoginTimeRegister.getValue().getValue()));
 
         // logged-in - flag
         CrdtElement loggedInElement = usernameMap.get(BinaryValue.create(loggedIn));
