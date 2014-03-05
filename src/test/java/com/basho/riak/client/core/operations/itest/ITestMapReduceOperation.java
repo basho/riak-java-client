@@ -20,12 +20,15 @@ import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import static org.junit.Assert.*;
-import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -85,7 +88,7 @@ public class ITestMapReduceOperation extends ITestBase
             
         String bName = bucketName.toString();
         String query = "{\"inputs\":[[\"" + bName + "\",\"p1\"],[\"" + bName + "\",\"p2\"],[\"" + bName + "\",\"p3\"]]," +
-            "\"query\":[{\"asMap\":{\"language\":\"javascript\",\"source\":\"" +
+            "\"query\":[{\"map\":{\"language\":\"javascript\",\"source\":\"" +
             "function(v) {var m = v.values[0].data.toLowerCase().match(/\\w*/g); var r = [];" +
             "for(var i in m) {if(m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
             "\"}},{\"reduce\":{\"language\":\"javascript\",\"source\":\"" +
