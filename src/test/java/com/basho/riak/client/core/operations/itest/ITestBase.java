@@ -72,9 +72,9 @@ public abstract class ITestBase
          * create the following bucket types in your riak instance
          * with the corresponding bucket properties.
          *
-         * maps: allow_mult = true, datatype = asMap
-         * sets: allow_mult = true, datatype = asSet
-         * counters: allow_mult = true, datatype = counter
+         * riak-admin bucket-type create maps '{"props":{"allow_mult":true, "datatype": "map"}}'
+         * riak-admin bucket type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
+         * riak-admin bucket-type create counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
          */
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
