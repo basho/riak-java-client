@@ -34,27 +34,12 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
     private final DatatypeUpdate<T> datatype;
     private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
-    UpdateDatatype(Location loc, Context ctx, DatatypeUpdate<T> datatype)
+    private UpdateDatatype(Builder<T> builder)
     {
-        this.loc = loc;
-        this.ctx = ctx;
-        this.datatype = datatype;
-    }
-
-    public static <U extends RiakDatatype> UpdateDatatype<U> update(Location loc, DatatypeUpdate<U> update)
-    {
-        return new UpdateDatatype<U>(loc, null, update);
-    }
-
-    public static <U extends RiakDatatype> UpdateDatatype<U> update(Location loc, Context ctx, DatatypeUpdate<U> update)
-    {
-        return new UpdateDatatype<U>(loc, ctx, update);
-    }
-
-    public <U> UpdateDatatype<T> withOption(DtUpdateOption<U> option, U value)
-    {
-        options.put(option, value);
-        return this;
+        this.loc = builder.loc;
+        this.ctx = builder.ctx;
+        this.datatype = builder.datatype;
+	    this.options.putAll(builder.options);
     }
 
     @Override
@@ -135,6 +120,42 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
         return new Response<T>(key, returnedCtx, riakDatatype);
 
     }
+
+	public static class Builder<T extends RiakDatatype>
+	{
+		private final Location loc;
+		private Context ctx;
+		private DatatypeUpdate<T> datatype;
+		private Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
+
+		public Builder(Location loc)
+		{
+			this.loc = loc;
+		}
+
+		public Builder<T> withContext(Context context)
+		{
+			this.ctx = context;
+			return this;
+		}
+
+		public <U> Builder<T> withOption(DtUpdateOption<U> option, U value)
+		{
+			this.options.put(option, value);
+			return this;
+		}
+
+		public Builder<T> withUpdate(DatatypeUpdate<T> update)
+		{
+			this.datatype = update;
+			return this;
+		}
+
+		public UpdateDatatype<T> build()
+		{
+			return new UpdateDatatype<T>(this);
+		}
+	}
 
     public static class Response<T>
     {

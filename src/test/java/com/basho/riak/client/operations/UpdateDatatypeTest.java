@@ -74,14 +74,17 @@ public class UpdateDatatypeTest
 
         MapUpdate update = new MapUpdate();
 
-        UpdateDatatype<RiakMap> store = UpdateDatatype.update(key, context, update)
+        UpdateDatatype<RiakMap> store = new UpdateDatatype.Builder<RiakMap>(key)
+	        .withContext(context)
+	        .withUpdate(update)
             .withOption(DtUpdateOption.DW, new Quorum(1))
             .withOption(DtUpdateOption.PW, new Quorum(1))
             .withOption(DtUpdateOption.N_VAL, 1)
             .withOption(DtUpdateOption.RETURN_BODY, true)
             .withOption(DtUpdateOption.SLOPPY_QUORUM, true)
             .withOption(DtUpdateOption.TIMEOUT, 1000)
-            .withOption(DtUpdateOption.W, new Quorum(1));
+            .withOption(DtUpdateOption.W, new Quorum(1))
+	        .build();
 
         client.execute(store);
 
