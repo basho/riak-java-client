@@ -215,7 +215,7 @@ public abstract class ITestBucket {
     // fetch index
     @Test public void fetchIndex() throws Exception {
         Assume.assumeTrue(RiakTestProperties.is2iEnabled());
-
+        
         final Bucket b = client.fetchBucket(bucketName).execute();
 
         // create objects with indexes

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Customer {
 
-    @RiakKey private final String userId;
+    @RiakKey private String userId;
     private String username;
 
     
@@ -42,10 +42,12 @@ public class Customer {
 
     @RiakUsermeta private final Map<String, String> preferences = new HashMap<String, String>();
 
+    public Customer() {}
+    
     /**
      * @param userId
      */
-    public Customer(@JsonProperty("userId") String userId) {
+    public Customer(String userId) {
         this.userId = userId;
     }
 

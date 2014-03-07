@@ -412,9 +412,6 @@ public class AnnotationInfo {
             Set<?> val = null;
             Method m = rim.getMethod();
             if (m.getReturnType().equals(Void.TYPE)) {
-//                Type[] parameterTypes = m.getParameterTypes();
-//                System.out.println(Arrays.toString(parameterTypes));
-//                if (Set.class.isAssignableFrom(parameterTypes[0].getClass())) {
                 Type[] genericParameterTypes = m.getGenericParameterTypes();
                 Type t = genericParameterTypes[0];
                 if (t instanceof ParameterizedType) {
@@ -460,28 +457,6 @@ public class AnnotationInfo {
                 }
                 
             }
-//                else
-//                {
-//                    Class clazz = parameterTypes[0].getClass();
-//                    if (Integer.class.equals(clazz) || int.class.equals(clazz)) {
-//                    // Support Integer / int for legacy. New code should use Long / long
-//                        Set<Long> lSet = indexes.getIntIndex(rim.getIndexName());
-//                        Set<Integer> iSet = new HashSet<Integer>();
-//                        for (Long l : lSet ) {
-//                            iSet.add(l.intValue());
-//                        }
-//                        val = iSet;
-//                    } else if (String.class.equals(clazz)) {
-//                        val = indexes.getBinIndex(rim.getIndexName());
-//                    } else if (Long.class.equals(clazz) || long.class.equals(clazz)) {
-//                        val = indexes.getIntIndex(rim.getIndexName());
-//                    } 
-//
-//                    if (val != null && !val.isEmpty()) {
-//                        setMethodValue(m, obj, val.iterator().next()); // take the first value
-//                    }
-//                }
-//            }
         }
     }
 
