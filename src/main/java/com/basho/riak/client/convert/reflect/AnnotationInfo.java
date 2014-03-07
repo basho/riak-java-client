@@ -33,9 +33,11 @@ import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.UsermetaField;
+import com.basho.riak.client.convert.UsermetaMethod;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * Class that contains the Riak annotated fields for an annotated class
@@ -45,92 +47,51 @@ import java.util.HashSet;
  */
 public class AnnotationInfo {
 
-    private static final String NO_RIAK_KEY_FIELD_PRESENT = "no riak key field present";
-    private static final String NO_RIAK_VCLOCK_FIELD_PRESENT = "no riak vclock field present";
-    private static final String NO_RIAK_TOMBSTONE_FIELD_PRESENT = "no riak tombstone field present";
     private final Field riakKeyField;
     private final Method riakKeySetterMethod;
     private final Method riakKeyGetterMethod;
-    private final List<UsermetaField> usermetaItemFields;
-    private final Field usermetaMapField;
+    private final List<UsermetaField> usermetaFields;
+    private final List<UsermetaMethod> usermetaMethods;
     private final List<RiakIndexField> indexFields;
     private final List<RiakIndexMethod> indexMethods;
     private final Field riakLinksField;
+    private final Method riakLinksGetterMethod;
+    private final Method riakLinksSetterMethod;
     private final Field riakVClockField;
+    private final Method riakVClockSetterMethod;
+    private final Method riakVClockGetterMethod;
     private final Field riakTombstoneField;
+    private final Method riakTombstoneSetterMethod;
+    private final Method riakTombstoneGetterMethod;
 
-    /**
-     * @param riakKeyField
-     * @param usermetaItemFields
-     * @param usermetaMapField
-     * @param riakLinksField 
-     * @param indexFields
-     * 
-     */
-
-    public AnnotationInfo(Field riakKeyField, Method riakKeyGetterMethod,
-                          Method riakKeySetterMethod, List<UsermetaField> usermetaItemFields, 
-                          Field usermetaMapField, List<RiakIndexField> indexFields, 
-                          List<RiakIndexMethod> indexMethods, Field riakLinksField, 
-                          Field riakVClockField, Field riakTombstoneField) {
-
-        this.riakKeyField = riakKeyField;
-        this.riakKeyGetterMethod = riakKeyGetterMethod;
-        this.riakKeySetterMethod = riakKeySetterMethod;
-        this.usermetaItemFields = usermetaItemFields;
-        validateUsermetaMapField(usermetaMapField);
-        this.usermetaMapField = usermetaMapField;
-        this.indexFields = indexFields;
-        this.indexMethods = indexMethods;
-        validateRiakLinksField(riakLinksField);
-        this.riakLinksField = riakLinksField;
-        this.riakVClockField = riakVClockField;
-        this.riakTombstoneField = riakTombstoneField;
+    private AnnotationInfo(Builder builder)
+    {
+        this.riakKeyField = builder.riakKeyField;
+        this.riakKeyGetterMethod = builder.riakKeyGetterMethod;
+        this.riakKeySetterMethod = builder.riakKeySetterMethod;
+        this.riakLinksField = builder.riakLinksField;
+        this.riakLinksGetterMethod = builder.riakLinksGetterMethod;
+        this.riakLinksSetterMethod = builder.riakLinksSetterMethod;
+        this.riakVClockField = builder.riakVClockField;
+        this.riakVClockGetterMethod = builder.riakVClockGetterMethod;
+        this.riakVClockSetterMethod = builder.riakVClockSetterMethod;
+        this.riakTombstoneField = builder.riakTombstoneField;
+        this.riakTombstoneGetterMethod = builder.riakTombstoneGetterMethod;
+        this.riakTombstoneSetterMethod = builder.riakTombstoneSetterMethod;
+        this.usermetaFields = builder.usermetaFields;
+        this.usermetaMethods = builder.usermetaMethods;
+        this.indexFields = builder.indexFields;
+        this.indexMethods = builder.indexMethods;
     }
-
+    
     /**
-     * @param riakLinksField
-     */
-    private void validateRiakLinksField(Field riakLinksField) {
-        if (riakLinksField == null) {
-            return;
-        }
-
-        ParameterizedType type = (ParameterizedType) riakLinksField.getGenericType();
-        if (type.getRawType().equals(Collection.class)) {
-
-            Type[] genericParams = type.getActualTypeArguments();
-            if (genericParams.length == 1 && genericParams[0].equals(RiakLink.class)) {
-                return;
-            }
-        }
-        throw new IllegalArgumentException("riak links field must be Collection<RiakLink>");
-    }
-
-    /**
-     * @param usermetaMapField
-     */
-    private void validateUsermetaMapField(Field usermetaMapField) {
-        if (usermetaMapField == null) {
-            return;
-        }
-
-        ParameterizedType type = (ParameterizedType) usermetaMapField.getGenericType();
-        if (type.getRawType().equals(Map.class)) {
-
-            Type[] genericParams = type.getActualTypeArguments();
-            if (genericParams.length == 2 && genericParams[0].equals(String.class) &&
-                genericParams[1].equals(String.class)) {
-                return;
-            }
-        }
-        throw new IllegalArgumentException("user meta map field must be Map<String, String>");
-    }
-
-    /**
-     * @param <T>
-     * @param obj
-     * @return
+     * Returns the key.
+     * <p>
+     * The @RiakKey annotation allows for any type to be used. this method
+     * will call the object's toString() method to return a String.
+     * </p>
+     * @param obj the domain object
+     * @return the String representation of the key
      */
     public <T> String getRiakKey(T obj) {
         
@@ -154,88 +115,114 @@ public class AnnotationInfo {
         }
     }
 
-    public boolean hasRiakVClock() {
-        return riakVClockField != null;
-    }
-    
     public <T> VClock getRiakVClock(T obj) {
-        if (!hasRiakVClock()) {
-            throw new IllegalStateException(NO_RIAK_VCLOCK_FIELD_PRESENT);
-        }
         
-        VClock vclock;
+        VClock vclock = null;
         
         // We allow the annotated field to be either an actual VClock, or
-        // a byte array. This is enforced in the AnnotationScanner
+        // a byte array.
         
-        if (riakVClockField.getType().isAssignableFrom(VClock.class)) {
-            vclock = (VClock) getFieldValue(riakVClockField, obj);
-        } else {
-            vclock = new BasicVClock((byte[]) getFieldValue(riakVClockField, obj));
+        if (riakVClockField != null) {
+            if (riakVClockField.getType().isAssignableFrom(VClock.class)) {
+                vclock = (VClock) getFieldValue(riakVClockField, obj);
+            } else {
+                vclock = new BasicVClock((byte[]) getFieldValue(riakVClockField, obj));
+            }
+        }
+        else if (riakVClockGetterMethod != null)
+        {
+            if (riakVClockGetterMethod.getReturnType().isArray()) {
+                vclock = new BasicVClock((byte[]) getMethodValue(riakVClockGetterMethod, obj));
+            } else {
+                vclock = (VClock) getMethodValue(riakVClockGetterMethod, obj);
+            }
         }
         
         return vclock;
-        
     }
     
     public <T> void setRiakVClock(T obj, VClock vclock) {
-        if (!hasRiakVClock()) {
-            throw new IllegalStateException(NO_RIAK_VCLOCK_FIELD_PRESENT);
-        }
             
         // We allow the annotated field to be either an actual VClock, or
         // a byte array. This is enforced in the AnnotationScanner
         
-        if (riakVClockField.getType().isAssignableFrom(VClock.class)) {
-            setFieldValue(riakVClockField, obj, vclock);
-        } else {
-            setFieldValue(riakVClockField, obj, vclock.getBytes());
+        if (riakVClockField != null) {
+        
+            if (riakVClockField.getType().isAssignableFrom(VClock.class)) {
+                setFieldValue(riakVClockField, obj, vclock);
+            } else {
+                setFieldValue(riakVClockField, obj, vclock.getBytes());
+            }
+        } else if (riakVClockSetterMethod != null) {
+            Class<?> pType = riakVClockSetterMethod.getParameterTypes()[0];
+            if (pType.isArray()) {
+                setMethodValue(riakVClockSetterMethod, obj, vclock.getBytes());
+            } else {
+                setMethodValue(riakVClockSetterMethod, obj, vclock);
+            }
         }
-    }
-    
-    public boolean hasRiakTombstone() {
-        return riakTombstoneField != null;
     }
     
     public <T> boolean getRiakTombstone(T obj)
     {
-        if (!hasRiakTombstone()) {
-            throw new IllegalStateException(NO_RIAK_TOMBSTONE_FIELD_PRESENT);
+        boolean tombstone = false;
+        if (riakTombstoneField != null) {
+            tombstone = (Boolean)getFieldValue(riakTombstoneField, obj);
+        } else if (riakTombstoneGetterMethod != null) {
+            tombstone = (Boolean) getMethodValue(riakTombstoneGetterMethod, obj);
         }
         
-        boolean tombstone = (Boolean)getFieldValue(riakTombstoneField, obj);
         return tombstone;
     }
     
     public <T> void setRiakTombstone(T obj, Boolean isDeleted) {
-        if (!hasRiakTombstone()) {
-            throw new IllegalStateException(NO_RIAK_TOMBSTONE_FIELD_PRESENT);
-        }
         
-        setFieldValue(riakTombstoneField, obj, isDeleted);
+        if (riakTombstoneField != null) {
+            setFieldValue(riakTombstoneField, obj, isDeleted);
+        } else if (riakTombstoneSetterMethod != null) {
+            setMethodValue(riakTombstoneSetterMethod, obj, isDeleted);
+        }
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" }) public <T> Map<String, String> getUsermetaData(T obj) {
         final Map<String, String> usermetaData = new LinkedHashMap<String, String>();
-        Map<String, String> objectMetaMap = null;
 
-        for (UsermetaField f : usermetaItemFields) {
-            Object o = getFieldValue(f.getField(), obj);
-            String val = o == null ? null : o.toString();
-            String key = f.getUsermetaDataKey();
-            // null is not a user meta datum
-            if(o != null) {
-                usermetaData.put(key, val);
+        for (UsermetaField uf : usermetaFields) {
+            Field f = uf.getField();
+            if (Map.class.isAssignableFrom(f.getType())) {
+                Map<String,String> o = (Map<String,String>)getFieldValue(f, obj);
+                if (o != null) {
+                    usermetaData.putAll(o);
+                }
+            } else {
+                Object o = getFieldValue(f, obj);
+                String val = o == null ? null : o.toString();
+                String key = uf.getUsermetaDataKey();
+                // null is not a user meta datum
+                if(o != null) {
+                    usermetaData.put(key, val);
+                }
             }
         }
-
-        if (usermetaMapField != null) {
-            objectMetaMap = (Map) getFieldValue(usermetaMapField, obj);
+        
+        for (UsermetaMethod um : usermetaMethods) {
+            Method m = um.getMethod();
+            if (Map.class.isAssignableFrom(m.getReturnType())) {
+                Map<String,String> o = (Map<String,String>)getMethodValue(m, obj);
+                if (o != null) {
+                    usermetaData.putAll(o);
+                }
+            } else if (!m.getReturnType().equals(Void.TYPE)) {
+                Object o = getMethodValue(m, obj);
+                String val = o == null ? null : o.toString();
+                String key = um.getUsermetaDataKey();
+                if (o != null)
+                {
+                    usermetaData.put(key, val);
+                }
+            }
         }
-
-        if (objectMetaMap != null) {
-            usermetaData.putAll(objectMetaMap);
-        }
+        
         return usermetaData;
     }
 
@@ -244,17 +231,42 @@ public class AnnotationInfo {
         final Map<String, String> localMetaCopy = new HashMap<String, String>(usermetaData);
 
         // set any individual annotated fields
-        for (UsermetaField f : usermetaItemFields) {
-            if (localMetaCopy.containsKey(f.getUsermetaDataKey())) {
-                setFieldValue(f.getField(), obj, localMetaCopy.get(f.getUsermetaDataKey()));
-                localMetaCopy.remove(f.getUsermetaDataKey());
+        Field mapField = null;
+        for (UsermetaField uf : usermetaFields) {
+            Field f = uf.getField();
+            if (Map.class.isAssignableFrom(f.getType())) {
+                mapField = f;
+            } else {
+                if (localMetaCopy.containsKey(uf.getUsermetaDataKey())) {
+                    setFieldValue(f, obj, localMetaCopy.get(uf.getUsermetaDataKey()));
+                    localMetaCopy.remove(uf.getUsermetaDataKey());
+                }
             }
         }
 
-        // set a catch all map field
-        if(usermetaMapField != null) {
-            setFieldValue(usermetaMapField, obj, localMetaCopy);
+        Method mapSetter = null;
+        for (UsermetaMethod um : usermetaMethods) {
+            Method m = um.getMethod();
+            if (m.getReturnType().equals(Void.TYPE)) {
+                if (um.getUsermetaDataKey().isEmpty()) {
+                    mapSetter = m;
+                } else {
+                    if (localMetaCopy.containsKey(um.getUsermetaDataKey())) {
+                        setMethodValue(um.getMethod(), obj, localMetaCopy.get(um.getUsermetaDataKey()));
+                        localMetaCopy.remove(um.getUsermetaDataKey());
+                    }
+                }
+            }
         }
+        
+        if (mapSetter != null) {
+            setMethodValue(mapSetter, obj, localMetaCopy);
+        }
+    
+        // set a catch all map field
+        if(mapField != null) {
+            setFieldValue(mapField, obj, localMetaCopy);
+        }  
     }
 
     /**
@@ -272,7 +284,7 @@ public class AnnotationInfo {
                     Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
                     if (String.class.equals(genericType)) {
                         riakIndexes.addBinSet(f.getIndexName(), (Set<String>)getFieldValue(f.getField(), obj)); 
-                    } else if (Long.class.equals(genericType) ||Integer.class.equals(genericType)) {                        
+                    } else if (Long.class.equals(genericType)) {                        
                         riakIndexes.addIntSet(f.getIndexName(), (Set<Long>)getFieldValue(f.getField(), obj));
                     } else if (Integer.class.equals(genericType)) {
                         // Supporting Integer as legacy. All new code should use Long
@@ -322,7 +334,7 @@ public class AnnotationInfo {
                         }
                     }
                 }
-            } else {
+            } else if (!m.getType().equals(Void.TYPE)) {
                 final Object val = getMethodValue(m.getMethod(), obj);
                 // null is not an index value
                 if (val != null) {
@@ -359,8 +371,17 @@ public class AnnotationInfo {
                     if (String.class.equals(genericType)) {
                         val = indexes.getBinIndex(f.getIndexName());
                     } else if (Integer.class.equals(genericType)) {
+                        // Support Integer / int for legacy. New code should use Long / long
+                        Set<Long> lSet = indexes.getIntIndex(f.getIndexName());
+                        Set<Integer> iSet = new HashSet<Integer>();
+                        for (Long l : lSet ) {
+                            iSet.add(l.intValue());
+                        }
+                        val = iSet;
+                    } else if (Long.class.equals(genericType)) {
                         val = indexes.getIntIndex(f.getIndexName());
                     }
+                    
                 }
                 if (val != null && !val.isEmpty()) {
                     setFieldValue(f.getField(), obj, val); 
@@ -385,22 +406,435 @@ public class AnnotationInfo {
                 }
             }
         }
+        
+        for (RiakIndexMethod rim : indexMethods) {
+            Set<?> val = null;
+            Method m = rim.getMethod();
+            if (m.getReturnType().equals(Void.TYPE)) {
+                Type[] genericParameterTypes = m.getGenericParameterTypes();
+                final Class<?> genericType = (Class<?>)((ParameterizedType)genericParameterTypes[0]).getActualTypeArguments()[0];
+                if (String.class.equals(genericType)) {
+                    val = indexes.getBinIndex(rim.getIndexName());
+                } else if (Integer.class.equals(genericType)) {
+                    // Support Integer / int for legacy. New code should use Long / long
+                    Set<Long> lSet = indexes.getIntIndex(rim.getIndexName());
+                    Set<Integer> iSet = new HashSet<Integer>();
+                    for (Long l : lSet ) {
+                        iSet.add(l.intValue());
+                    }
+                    val = iSet;
+                } else if (Long.class.equals(genericType)) {
+                    val = indexes.getIntIndex(rim.getIndexName());
+                }
+                
+                if (val != null && !val.isEmpty()) {
+                    setMethodValue(m, obj, val);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked") public <T> Collection<RiakLink> getLinks(T obj) {
         final Collection<RiakLink> links = new ArrayList<RiakLink>();
+        Object o = null;
         if (riakLinksField != null) {
-            Object o = getFieldValue(riakLinksField, obj);
-            if (o != null && o instanceof Collection) {
-                links.addAll((Collection<RiakLink>) o);
-            }
+            o = getFieldValue(riakLinksField, obj);
+        } else if (riakLinksGetterMethod != null) {
+            o = getMethodValue(riakLinksGetterMethod, obj);
         }
+        
+        if (o != null && o instanceof Collection) {
+            links.addAll((Collection<RiakLink>) o);
+        }
+        
         return links;
     }
 
     public <T> void setLinks(Collection<RiakLink> links, T obj) {
         if (riakLinksField != null) {
             setFieldValue(riakLinksField, obj, links);
+        } else if (riakLinksSetterMethod != null) {
+            setMethodValue(riakLinksSetterMethod, obj, links);
         }
+    }
+    
+    public static class Builder {
+        
+        private Field riakKeyField;
+        private Method riakKeySetterMethod;
+        private Method riakKeyGetterMethod;
+        private Field riakLinksField;
+        private Method riakLinksGetterMethod;
+        private Method riakLinksSetterMethod;
+        private Field riakVClockField;
+        private Method riakVClockSetterMethod;
+        private Method riakVClockGetterMethod;
+        private Field riakTombstoneField;
+        private Method riakTombstoneSetterMethod;
+        private Method riakTombstoneGetterMethod;
+        private final List<UsermetaField> usermetaFields;
+        private final List<UsermetaMethod> usermetaMethods;
+        private final List<RiakIndexField> indexFields;
+        private final List<RiakIndexMethod> indexMethods;
+        
+        
+        /**
+         * Constructs a builder for a new AnnotationInfo
+         */
+        public Builder() {}
+        {
+            usermetaFields = new LinkedList<UsermetaField>();
+            usermetaMethods = new LinkedList<UsermetaMethod>();
+            indexFields = new LinkedList<RiakIndexField>();
+            indexMethods = new LinkedList<RiakIndexMethod>();
+        }
+        
+        /**
+         * Set the @RiakKey annotated field.
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder withRiakKeyField(Field f) 
+        {
+            this.riakKeyField = ClassUtil.checkAndFixAccess(f);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakKey annotated getter.
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder withRiakKeyGetter(Method m)
+        {
+            this.riakKeyGetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakKey annotated setter.
+         * @param m the annotated setter
+         * @return a reference to this object
+         */
+        public Builder withRiakKeySetter(Method m)
+        {
+            this.riakKeySetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakLinks annotated field.
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder withRiakLinksField(Field f)
+        {
+            validateRiakLinksField(f);
+            this.riakLinksField = ClassUtil.checkAndFixAccess(f);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakLinks annotated getter.
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder withRiakLinksGetter(Method m)
+        {
+            validateRiakLinksMethod(m);
+            this.riakLinksGetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakLinks annotated setter.
+         * @param m the annotated method
+         * @return a reference to this object
+         **/
+        public Builder withRiakLinksSetter(Method m)
+        {
+            validateRiakLinksMethod(m);
+            this.riakLinksSetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+      
+        /**
+         * Add a @RiakUsermeta annotated field.
+         * @param f the annotated field.
+         * @return a reference to this object.
+         */
+        public Builder addRiakUsermetaField(Field f)
+        {
+            this.usermetaFields.add(new UsermetaField(ClassUtil.checkAndFixAccess(f)));
+            return this;
+        }
+        
+        /**
+         * Add a @RiakUsermeta annotated method
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder addRiakUsermetaMethod(Method m)
+        {
+            this.usermetaMethods.add(new UsermetaMethod(ClassUtil.checkAndFixAccess(m)));
+            return this;
+        }
+        
+        /**
+         * Add a @RiakIndex annotated method.
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder addRiakIndexMethod(Method m)
+        {
+            this.indexMethods.add(new RiakIndexMethod(ClassUtil.checkAndFixAccess(m)));
+            return this;
+        }
+        
+        /**
+         * Add a @RiakIndex annotated field.
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder addRiakIndexField(Field f)
+        {
+            this.indexFields.add(new RiakIndexField(ClassUtil.checkAndFixAccess(f)));
+            return this;
+        }
+        
+        /**
+         * Set the @RiakVClock annotated field.
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder withRiakVClockField(Field f)
+        {
+            validateVClockField(f);
+            this.riakVClockField = ClassUtil.checkAndFixAccess(f);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakVClock annotated setter method.
+         * @param m the annotated method.
+         * @return a reference to this object
+         */
+        public Builder withRiakVClockSetter(Method m)
+        {
+            validateVClockMethod(m);
+            this.riakVClockSetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        /**
+         * Set the @RiakVClock annotated getter method.
+         * @param m the annotated method
+         * @return a reference to this object.
+         */
+        public Builder withRiakVClockGetter(Method m)
+        {
+            validateVClockMethod(m);
+            this.riakVClockGetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        public Builder withRiakTombstoneField(Field f)
+        {
+            validateTombstoneField(f);
+            this.riakTombstoneField = ClassUtil.checkAndFixAccess(f);
+            return this;
+        }
+        
+        public Builder withRiakTombstoneSetterMethod(Method m)
+        {
+            validateTombstoneMethod(m);
+            this.riakTombstoneSetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        public Builder withRiakTombstoneGetterMethod(Method m)
+        {
+            validateTombstoneMethod(m);
+            this.riakTombstoneGetterMethod = ClassUtil.checkAndFixAccess(m);
+            return this;
+        }
+        
+        public AnnotationInfo build()
+        {
+            validateAnnotatedSet(riakVClockField, riakVClockGetterMethod, 
+                                 riakVClockSetterMethod, "@RiakVClock");
+            validateAnnotatedSet(riakTombstoneField, riakTombstoneGetterMethod,
+                                 riakTombstoneSetterMethod, "@RiakTombstone");
+            validateAnnotatedSet(riakLinksField, riakLinksGetterMethod,
+                                 riakLinksSetterMethod, "@RiakLinks");
+            validateAnnotatedSet(riakKeyField, riakKeyGetterMethod,
+                                 riakKeySetterMethod, "@RiakKey");
+            
+            return new AnnotationInfo(this);
+        }
+        
+        private void validateAnnotatedSet(Field f, Method getter, Method setter, String annotation)
+        {
+            if (f == null && (getter == null || setter == null))
+            {
+                if (getter != null && setter == null)
+                {
+                    throw new IllegalStateException("Getter present for " + annotation + " without setter.");
+                }
+                else if (setter != null && getter == null)
+                {
+                    throw new IllegalStateException("Setter present for " + annotation + " without getter.");
+                }
+            }
+        }
+        
+        private void validateRiakLinksField(Field riakLinksField) 
+        {
+            
+            if (riakLinksGetterMethod != null || riakLinksSetterMethod != null)
+            {
+                throw new IllegalArgumentException("@RiakLinks annotated method already set");
+            }
+            
+            Type t = riakLinksField.getGenericType();
+            if (t instanceof ParameterizedType)
+            {
+                ParameterizedType type = (ParameterizedType) t;
+                if (type.getRawType().equals(Collection.class)) {
+
+                    Type[] genericParams = type.getActualTypeArguments();
+                    if (genericParams.length == 1 && genericParams[0].equals(RiakLink.class)) {
+                        return;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("@RiakLinks field must be Collection<RiakLink>");
+        }
+        
+        private void validateRiakLinksMethod(Method m)
+        {
+            if (riakLinksField != null)
+            {
+                throw new IllegalArgumentException("@RiakLinks annotated field already set.");
+            }
+            if (m.getReturnType().equals(Void.TYPE))
+            {
+                // it's a setter, check the arg type
+                Type[] genericParameterTypes = m.getGenericParameterTypes();
+                Type t = genericParameterTypes[0];
+                if (t instanceof ParameterizedType)
+                {
+                    ParameterizedType pType = (ParameterizedType)t;
+                    if (pType.getRawType().equals(Collection.class))
+                    {
+                        Class<?> genericType = (Class<?>)pType.getActualTypeArguments()[0];
+                        if (RiakLink.class.equals(genericType))
+                        {
+                            return;
+                        }
+                    }
+                }
+                
+                throw new IllegalArgumentException("@RiakLinks setter must take Collection<RiakLink>");
+            }
+            else
+            {
+                // it's a getter, check return type
+                Type t = m.getGenericReturnType();
+                if (t instanceof ParameterizedType)
+                {
+                    ParameterizedType pType = (ParameterizedType)t;
+                    if (pType.getRawType().equals(Collection.class))
+                    {
+                        Class<?> genericType = (Class<?>)pType.getActualTypeArguments()[0];
+                        if (RiakLink.class.equals(genericType))
+                        {
+                            return;
+                        }
+                    }
+                }
+                throw new IllegalArgumentException("@RiakLinks getter must return Collection<RiakLink>");
+                
+            }
+        }
+        
+        private void validateVClockField(Field f)
+        {
+            if (riakVClockGetterMethod != null || riakVClockSetterMethod != null)
+            {
+                throw new IllegalArgumentException("@RiakVClock annotated method already set.");
+            }
+            else if ( !(f.getType().isArray() && f.getType().getComponentType().equals(byte.class)) &&
+                 !f.getType().isAssignableFrom(VClock.class)) 
+            {
+                throw new IllegalArgumentException("@RiakVClock field must be a VClock or byte[]");
+            }
+        }
+        
+        private void validateVClockMethod(Method m)
+        {
+            if (riakVClockField != null)
+            {
+                throw new IllegalArgumentException("@RiakVClock annotated field already set.");
+            }
+            else if (m.getReturnType().equals(Void.TYPE))
+            {
+                // It's a setter
+                Class<?> pType = m.getParameterTypes()[0];
+                if ( !(pType.isArray() && pType.getComponentType().equals(byte.class)) &&
+                 !pType.isAssignableFrom(VClock.class)) 
+                {
+                   throw new IllegalArgumentException("@RiakVClock setter must take VClock or byte[]");
+                }
+            }
+            else
+            {
+                Class<?> rType = m.getReturnType();
+                if ( !(rType.isArray() && rType.getComponentType().equals(byte.class)) &&
+                 !rType.isAssignableFrom(VClock.class)) 
+                {
+                   throw new IllegalArgumentException("@RiakVClock getter must return VClock or byte[]");
+                }
+            }
+                
+        }
+        
+        private void validateTombstoneField(Field f)
+        {
+            if (riakTombstoneGetterMethod != null || riakTombstoneSetterMethod != null)
+            {
+                throw new IllegalArgumentException("@RiakTombstone annotated method already set.");
+            }
+            else if (!f.getType().equals(Boolean.class) && !f.getType().equals(boolean.class))
+            {
+                throw new IllegalArgumentException("@RiakTombstone field must be Boolean or boolean");
+            }
+        }
+        
+        private void validateTombstoneMethod(Method m)
+        {
+            if (riakTombstoneField != null)
+            {
+                throw new IllegalArgumentException("@RiakTombstone annotated field already set");
+            }
+            else if (m.getReturnType().equals(Void.TYPE))
+            {
+                Class<?> pType = m.getParameterTypes()[0];
+                if (!pType.equals(Boolean.class) && !pType.equals(boolean.class))
+                {
+                    throw new IllegalArgumentException("@RiakTombstone setter must take boolean or Boolean");
+                }
+            }
+            else
+            {
+                Class<?> rType = m.getReturnType();
+                if (!rType.equals(Boolean.class) && !rType.equals(boolean.class))
+                {
+                    throw new IllegalArgumentException("@RiakTombstone getter must return boolean or Boolean");
+                }
+            }
+        }
+        
+        
     }
 }

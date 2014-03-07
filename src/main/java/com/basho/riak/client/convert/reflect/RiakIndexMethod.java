@@ -42,10 +42,11 @@ public class RiakIndexMethod
             || "".equals(method.getAnnotation(RiakIndex.class).name())
             || (!method.getReturnType().equals(String.class)
             && !method.getReturnType().equals(Integer.class)
-            && !method.getReturnType().equals(int.class))
+            && !method.getReturnType().equals(int.class)
             && !method.getReturnType().equals(Long.class)
             && !method.getReturnType().equals(long.class)
-            && !Set.class.isAssignableFrom(method.getReturnType()))
+            && !method.getReturnType().equals(Void.TYPE)
+            && !Set.class.isAssignableFrom(method.getReturnType())))
         {
             throw new IllegalArgumentException(method.getReturnType().toString());
         }

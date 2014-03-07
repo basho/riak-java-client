@@ -13,150 +13,179 @@
  */
 package com.basho.riak.client.convert;
 
-import com.basho.riak.client.cap.BasicVClock;
+import com.basho.riak.client.RiakLink;
 import com.basho.riak.client.cap.VClock;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertArrayEquals;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
-
-import java.util.Calendar;
-import java.util.Date;
-
-import org.junit.Test;
-
-import com.basho.riak.client.convert.KeyUtil;
-import com.basho.riak.client.convert.RiakKey;
-import com.basho.riak.client.convert.VClockUtil;
-import com.basho.riak.client.convert.RiakVClock;
 
 /**
- * @author russell
+ * @author Brian Roach <roach at basho dot com>
  * 
  */
 public class ConversionUtilTest {
 
-    @Test public void getKey() {
-        final String expected = "aKey";
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakKey private final String domainProperty = expected;
-
-        };
-
-        assertEquals(expected, KeyUtil.getKey(o));
-    }
-
-    @Test public void getNonStringKey() {
-        final Date expected = Calendar.getInstance().getTime();
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakKey private final Date domainProperty = expected;
-
-        };
-
-        assertEquals(expected.toString(), KeyUtil.getKey(o));
-    }
-
-    @Test public void noKeyField() {
-        final Object o = new Object() {
-            @SuppressWarnings("unused") private final String domainProperty = "tomatoes";
-
-        };
-
-        assertNull(KeyUtil.getKey(o));
-    }
-
-    @Test public void nullKeyField() {
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakKey private final Date domainProperty = null;
-
-        };
-
-        assertNull(KeyUtil.getKey(o));
-    }
+    protected static final String META_KEY_ONE = "metaKeyOne";
     
-    @Test public void getVClock () {
-        final byte[] clockBytes = "a85hYGBgzGDKBVIcypz/fvo/2e2UwZTImMfKwHIy/SRfFgA=".getBytes();
-        final VClock expected = new BasicVClock(clockBytes);
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakVClock private final VClock domainProperty = expected;
-
-        };
-
-        assertEquals(expected, VClockUtil.getVClock(o));
-    }
-
-    @Test public void getVClockFromBytes () {
-        final byte[] clockBytes = "a85hYGBgzGDKBVIcypz/fvo/2e2UwZTImMfKwHIy/SRfFgA=".getBytes();
+    protected static final class PojoWithAnnotatedFields<T>
+    {
+        @RiakKey
+        T key;
+     
+        @RiakVClock
+        VClock vclock;
         
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakVClock private final byte[] domainProperty = clockBytes;
-
-        };
-
-        assertArrayEquals(clockBytes, VClockUtil.getVClock(o).getBytes());
-    }
-    
-    @Test public void noVClockField() {
-        final Object o = new Object() {
-            @SuppressWarnings("unused") private final String domainProperty = "tomatoes";
-
-        };
-
-        assertNull(VClockUtil.getVClock(o));
-    }
-
-    @Test public void nullVClockField() {
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakVClock private final VClock domainProperty = null;
-
-        };
-
-        assertNull(VClockUtil.getVClock(o));
-    }
-    
-    @Test public void illegalVClockFieldType() {
-        final Object o = new Object() {
-            @SuppressWarnings("unused") @RiakVClock private final String domainProperty = null;
-
-        };
+        @RiakUsermeta(key = META_KEY_ONE) 
+        String metaItemOne;
         
-        try {
-            VClock vclock = VClockUtil.getVClock(o);
-            fail("Excepted IllegalArgumentException to be thrown");
-        } catch (RuntimeException e) {
-            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        @RiakUsermeta
+        Map<String,String> usermeta;
+        
+        @RiakIndex(name = "favorite_languages") 
+        public Set<String> languages;
+
+        @RiakIndex(name = "lucky_language")
+        public String luckyLanguage;
+        
+        @RiakIndex(name = "lucky_int")
+        public int luckyInt;
+        
+        @RiakIndex(name = "lucky_integer")
+        public Integer luckyInteger;
+        
+        @RiakIndex(name = "integers")
+        public Set<Integer> integers;
+        
+        @RiakIndex(name = "lucky_long")
+        public long luckyLong;
+        
+        @RiakIndex(name = "lucky_longlong")
+        public Long luckyLongLong; 
+        
+        @RiakIndex(name = "longs")
+        public Set<Long> longs;
+        
+        @RiakTombstone
+        boolean tombstone;
+        
+        @RiakLinks
+        Collection<RiakLink> links;
+        
+        
+    }
+    
+    protected static final class PojoWithAnnotatedMethods<T>
+    {
+        private T key;
+        private Map<String,String> usermeta;
+        private String metaItemOne;
+        private Set<Long> longs;
+        private Set<Integer> integers;
+        private Set<String> strings;
+        private VClock vClock;
+        private boolean tombstone;
+        private Collection<RiakLink> links;
+        
+        @RiakKey
+        public T getKey()
+        {
+            return this.key;
         }
         
+        @RiakKey
+        public void setKey(T key)
+        {
+            this.key = key;
+        }
         
+        @RiakVClock
+        public VClock getVClock()
+        {
+            return this.vClock;
+        }
+        
+        @RiakVClock
+        public void setVClock(VClock vclock)
+        {
+            this.vClock = vclock;
+        }
+        
+        @RiakUsermeta
+        public Map<String, String> getUsermeta()
+        {
+            return this.usermeta;
+        }
+        
+        @RiakUsermeta
+        public void setUsermeta(Map<String,String> usermeta)
+        {
+            this.usermeta = usermeta;
+        }
+        
+        @RiakUsermeta(key = META_KEY_ONE)
+        public String getMetaItemOne() 
+        {
+            return this.metaItemOne;
+        }
+        
+        @RiakUsermeta(key = META_KEY_ONE)
+        public void setMetaItemOne(String item)
+        {
+            this.metaItemOne = item;
+        }
+        
+        @RiakIndex(name = "longs")
+        public Set<Long> getLongs() {
+          return longs;
+        }
+        
+        @RiakIndex(name = "longs")
+        public void setLongs(Set<Long> longs) {
+            this.longs = longs;
+        }
+
+        @RiakIndex(name = "integers")
+        public Set<Integer> getIntegers() {
+            return integers;
+        }
+        
+        @RiakIndex(name = "integers")
+        public void setIntegers(Set<Integer> ints)
+        {
+            this.integers = ints;
+        }
+        
+        @RiakIndex(name = "strings") 
+        public Set<String> getStrings() {
+            return strings;
+        }
+        
+        @RiakIndex(name = "strings") 
+        public void setStrings(Set<String> strings) {
+            this.strings = strings;
+        }
+        
+        @RiakTombstone
+        public Boolean getTombstone() {
+            return this.tombstone;
+        }
+        
+        @RiakTombstone
+        public void setTombstone(Boolean tombstone) {
+            this.tombstone = tombstone;
+        }
+        
+        @RiakLinks
+        public Collection<RiakLink> getLinks()
+        {
+            return this.links;
+        }
+        
+        @RiakLinks
+        public void setLinks(Collection<RiakLink> links)
+        {
+            this.links = links;
+        }
     }
-    
-    @Test public void setVClock() {
-        
-        Object o = new Object() {
-            @SuppressWarnings("unused") @RiakVClock private final VClock domainProperty= null;
-
-        };
-        
-        final byte[] clockBytes = "a85hYGBgzGDKBVIcypz/fvo/2e2UwZTImMfKwHIy/SRfFgA=".getBytes();
-        final VClock expected = new BasicVClock(clockBytes);
-        
-        VClockUtil.setVClock(o, expected);
-        
-        assertEquals(VClockUtil.getVClock(o), expected);
-        
-        
-        o = new Object() {
-            @SuppressWarnings("unused") @RiakVClock private final byte[] domainProperty= null;
-
-        };
-        
-        VClockUtil.setVClock(o, expected);
-        
-        assertArrayEquals(VClockUtil.getVClock(o).getBytes(), clockBytes);
-        
-        
-    }
-    
-
 }

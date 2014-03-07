@@ -14,6 +14,7 @@
 package com.basho.riak.client.cap;
 
 import com.basho.riak.client.util.CharsetUtils;
+import java.util.Arrays;
 
 /**
  * An implementation of {@link VClock} that wraps a <code>byte[]</code>
@@ -49,4 +50,27 @@ public class BasicVClock implements VClock {
     public String asString() {
         return CharsetUtils.asUTF8String(value);
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (obj == this) {
+            return true;
+        } else if (!(obj instanceof BasicVClock)) {
+            return false;
+        } 
+        
+        BasicVClock bvc = (BasicVClock)obj;
+        return Arrays.equals(value, bvc.value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 97 * hash + Arrays.hashCode(this.value);
+        return hash;
+    }
+    
 }

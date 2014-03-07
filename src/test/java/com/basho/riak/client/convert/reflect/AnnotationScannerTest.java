@@ -85,6 +85,18 @@ public class AnnotationScannerTest {
         assertEquals("clock", info.getRiakVClock(instance).asString());
     }
 
+    @Test 
+    public void testSimpleMethodInheritance() throws Exception {
+        
+        AnnotationScanner scanner = new AnnotationScanner(ChildMethodClass.class);
+        AnnotationInfo info = scanner.call();
+        ChildMethodClass instance = new ChildMethodClass();
+        assertEquals("keyValue", info.getRiakKey(instance));
+        assertEquals("clock", info.getRiakVClock(instance).asString());
+    }
+    
+    
+    
     public class ChildClass extends ParentClass {
         @RiakVClock
         private byte[] vClock = "clock".getBytes();
@@ -93,6 +105,26 @@ public class AnnotationScannerTest {
     public class ParentClass {
         @RiakKey
         private String key = "keyValue";
+    }
+    
+    public class ChildMethodClass extends ParentMethodClass {
+        @RiakVClock
+        private byte[] vClock = "clock".getBytes();
+    }
+    
+    public class ParentMethodClass {
+        private String key = "keyValue";
+        
+        @RiakKey
+        public String getKey() {
+            return this.key;
+        }
+        
+        @RiakKey void setKey(String key) {
+            this.key = key;
+        }
+            
+        
     }
 
 }

@@ -26,41 +26,47 @@ import org.junit.Test;
  * @author russell
  * 
  */
-public class UsermetaConverterTest {
-
-    /**
-     * 
-     */
-    private static final String META_KEY_ONE = "metaKeyOne";
-    private UsermetaConverter<DomainObject> converter;
-
-    @Before public void setUp() {
-        this.converter = new UsermetaConverter<DomainObject>();
-    }
+public class UsermetaConverterTest extends ConversionUtilTest {
 
     /**
      * Test method for
      * {@link com.basho.riak.client.convert.UsermetaConverter#getUsermetaData(java.lang.Object)}
      * .
      */
-    @Test public void getPopulatedUsermeta() {
+    @Test public void getPopulatedUsermetaField() {
         final String userMetaItemOne = "userMetaItemOne";
         final Map<String, String> userMetaData = makeMap(vargs("key2", "key3", "key4"), vargs("val2", "val3", "val4"));
-        final DomainObject obj = new DomainObject();
-
-        obj.setMetaItemOne(userMetaItemOne);
-        obj.setUsermetaData(userMetaData);
-
+        final UsermetaConverter<PojoWithAnnotatedFields<Void>> converter =
+            new UsermetaConverter<PojoWithAnnotatedFields<Void>>();
+        
+        PojoWithAnnotatedFields<Void> obj = new PojoWithAnnotatedFields<Void>();
+        obj.usermeta = userMetaData;
+        obj.metaItemOne = userMetaItemOne;
+        
         Map<String, String> actual = converter.getUsermetaData(obj);
-
-        for (Map.Entry<String, String> e : userMetaData.entrySet()) {
-            assertTrue("Expected key " + e.getKey() + " to be present", actual.containsKey(e.getKey()));
-            assertEquals(e.getValue(), actual.get(e.getKey()));
-        }
-
+        
+        assertTrue(actual.entrySet().containsAll(userMetaData.entrySet()));
         assertTrue(actual.containsKey(META_KEY_ONE));
         assertEquals(userMetaItemOne, actual.get(META_KEY_ONE));
-
+        
+    }
+    
+    @Test
+    public void getPopulatedUsermetaMethod() {
+        final String userMetaItemOne = "userMetaItemOne";
+        final Map<String, String> userMetaData = makeMap(vargs("key2", "key3", "key4"), vargs("val2", "val3", "val4"));
+        final UsermetaConverter<PojoWithAnnotatedMethods<Void>> converter =
+            new UsermetaConverter<PojoWithAnnotatedMethods<Void>>();
+        
+        PojoWithAnnotatedMethods<Void> obj = new PojoWithAnnotatedMethods<Void>();
+        obj.setUsermeta(userMetaData);
+        obj.setMetaItemOne(userMetaItemOne);
+        
+        Map<String, String> actual = converter.getUsermetaData(obj);
+        
+        assertTrue(actual.entrySet().containsAll(userMetaData.entrySet()));
+        assertTrue(actual.containsKey(META_KEY_ONE));
+        assertEquals(userMetaItemOne, actual.get(META_KEY_ONE));
     }
 
     /**
@@ -95,65 +101,54 @@ public class UsermetaConverterTest {
      * {@link com.basho.riak.client.convert.UsermetaConverter#populateUsermeta(java.util.Map, java.lang.Object)}
      * .
      */
-    @Test public void testPopulateUsermeta() {
+    @Test public void testPopulateUsermetaField() {
         final String userMetaItemOne = "userMetaItemOne";
         final Map<String, String> usermetaData = makeMap(vargs(META_KEY_ONE, "key2", "key3", "key4"),
                                                          vargs(userMetaItemOne, "val2", "val3", "val4"));
-
+        final UsermetaConverter<PojoWithAnnotatedFields<Void>> converter =
+            new UsermetaConverter<PojoWithAnnotatedFields<Void>>();
+        
         final Map<String, String> expected = new HashMap<String, String>(usermetaData);
         expected.remove(META_KEY_ONE);
 
-        DomainObject obj = new DomainObject();
+        PojoWithAnnotatedFields<Void> pojo = new PojoWithAnnotatedFields<Void>();
 
-        obj = converter.populateUsermeta(usermetaData, obj);
+        pojo = converter.populateUsermeta(usermetaData, pojo);
 
-        Map<String, String> actual = obj.getUsermetaData();
+        Map<String, String> actual = pojo.usermeta;
 
         assertNotNull("Expected meta data field to be populated", actual);
 
-        for (Map.Entry<String, String> e : expected.entrySet()) {
-            assertTrue("Expected key " + e.getKey() + " to be present", actual.containsKey(e.getKey()));
-            assertEquals(e.getValue(), actual.get(e.getKey()));
-        }
+        assertTrue(actual.entrySet().containsAll(expected.entrySet()));
 
-        assertEquals(userMetaItemOne, obj.getMetaItemOne());
+        assertEquals(userMetaItemOne, pojo.metaItemOne);
     }
 
-    private static final class DomainObject {
+    @Test
+    public void testPopulateUsermetaMethod() {
+        final String userMetaItemOne = "userMetaItemOne";
+        final Map<String, String> usermetaData = makeMap(vargs(META_KEY_ONE, "key2", "key3", "key4"),
+                                                         vargs(userMetaItemOne, "val2", "val3", "val4"));
+        final UsermetaConverter<PojoWithAnnotatedMethods<Void>> converter =
+            new UsermetaConverter<PojoWithAnnotatedMethods<Void>>();
+        
+        final Map<String, String> expected = new HashMap<String, String>(usermetaData);
+        expected.remove(META_KEY_ONE);
+        
+        PojoWithAnnotatedMethods<Void> pojo = new PojoWithAnnotatedMethods<Void>();
+        
+        pojo = converter.populateUsermeta(usermetaData, pojo);
 
-        @RiakUsermeta(key = META_KEY_ONE) private String metaItemOne;
+        Map<String, String> actual = pojo.getUsermeta();
 
-        @RiakUsermeta private Map<String, String> usermetaData;
+        assertNotNull("Expected meta data field to be populated", actual);
 
-        /**
-         * @return the metaItemOne
-         */
-        public String getMetaItemOne() {
-            return metaItemOne;
-        }
+        assertTrue(actual.entrySet().containsAll(expected.entrySet()));
 
-        /**
-         * @param metaItemOne
-         *            the metaItemOne to set
-         */
-        public void setMetaItemOne(String metaItemOne) {
-            this.metaItemOne = metaItemOne;
-        }
-
-        /**
-         * @return the usermetaData
-         */
-        public Map<String, String> getUsermetaData() {
-            return usermetaData;
-        }
-
-        /**
-         * @param usermetaData
-         *            the usermetaData to set
-         */
-        public void setUsermetaData(Map<String, String> usermetaData) {
-            this.usermetaData = usermetaData;
-        }
+        assertEquals(userMetaItemOne, pojo.getMetaItemOne());
+        
     }
+    
+    
 
 }

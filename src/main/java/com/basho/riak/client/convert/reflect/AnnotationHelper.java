@@ -30,8 +30,7 @@ import com.basho.riak.client.query.indexes.RiakIndexes;
 public class AnnotationHelper {
 
     private static final AnnotationHelper INSTANCE = new AnnotationHelper();
-
-    private AnnotationCache annotationCache = new AnnotationCache();
+    private final AnnotationCache annotationCache = new AnnotationCache();
 
     private AnnotationHelper() {}
 
@@ -40,11 +39,8 @@ public class AnnotationHelper {
     }
 
     public <T> String getRiakKey(T obj) {
-        String key = null;
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-        key = annotationInfo.getRiakKey(obj);
-        
-        return key;
+        return annotationInfo.getRiakKey(obj);
     }
 
     public <T> T setRiakKey(T obj, String key) {
@@ -56,40 +52,26 @@ public class AnnotationHelper {
 
     public <T> T setRiakVClock(T obj, VClock vclock) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-        if (annotationInfo.hasRiakVClock()) {
-            annotationInfo.setRiakVClock(obj, vclock);
-        }
+        annotationInfo.setRiakVClock(obj, vclock);
         
         return obj;
     }
     
     public <T> VClock getRiakVClock(T obj) {
-        VClock vclock = null;
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-        
-        if (annotationInfo.hasRiakVClock()) {
-            vclock = annotationInfo.getRiakVClock(obj);
-        }
-        
-        return vclock;
+        return annotationInfo.getRiakVClock(obj);
     }
     
     public <T> T setRiakTombstone(T obj, boolean isTombstone) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-        if (annotationInfo.hasRiakTombstone()) {
-            annotationInfo.setRiakTombstone(obj, isTombstone);
-        }
+        annotationInfo.setRiakTombstone(obj, isTombstone);
         
         return obj;
     }
     
     public <T> Boolean getRiakTombstone(T obj) {
-        Boolean tombstone = null;
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
-        
-        if (annotationInfo.hasRiakTombstone()) {
-            tombstone = annotationInfo.getRiakTombstone(obj);
-        }
+        Boolean tombstone = annotationInfo.getRiakTombstone(obj);
         
         return tombstone;
     }

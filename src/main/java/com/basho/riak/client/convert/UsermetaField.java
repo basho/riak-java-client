@@ -14,6 +14,7 @@
 package com.basho.riak.client.convert;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 /**
  * Convenience wrapper for a String field that is annotated with
@@ -32,8 +33,15 @@ public class UsermetaField {
      * @param field
      */
     public UsermetaField(final Field field) {
-        if (field == null || field.getAnnotation(RiakUsermeta.class) == null ||
-            "".equals(field.getAnnotation(RiakUsermeta.class).key()) || !field.getType().equals(String.class)) {
+        if (field == null || 
+            field.getAnnotation(RiakUsermeta.class) == null ||
+            (
+                ("".equals(field.getAnnotation(RiakUsermeta.class).key()) && 
+                     !field.getType().equals(String.class)) &&
+                !Map.class.isAssignableFrom(field.getType())
+            )
+        )
+        {
             throw new IllegalArgumentException();
         }
         this.field = field;

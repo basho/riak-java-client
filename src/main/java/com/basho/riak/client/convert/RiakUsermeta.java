@@ -48,7 +48,7 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * @see JSONConverter
  * @see DefaultBucket
  */
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakUsermeta {
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakUsermeta {
     /**
      * Use a lower case key. The riak HTTP API *will* lower case key names.
      * @return the key for the user meta item

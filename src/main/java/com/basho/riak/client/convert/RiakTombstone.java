@@ -25,6 +25,6 @@ import java.lang.annotation.Target;
  * @author Brian Roach <roach at basho dot com>
  */
 
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakTombstone {
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakTombstone {
 
 }

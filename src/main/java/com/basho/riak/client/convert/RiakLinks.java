@@ -46,5 +46,5 @@ import com.basho.riak.client.bucket.DefaultBucket;
  * @see JSONConverter
  * @see DefaultBucket
  */
-@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface RiakLinks {
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakLinks {
 }
