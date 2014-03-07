@@ -34,11 +34,13 @@ import org.junit.Test;
 import com.basho.riak.client.AllTests;
 import com.basho.riak.client.raw.pbc.PBClientAdapter;
 import com.basho.riak.client.util.CharsetUtils;
+import com.basho.riak.pbc.BucketProperties;
 import com.basho.riak.pbc.RequestMeta;
 import com.basho.riak.pbc.RiakClient;
 import com.basho.riak.pbc.RiakObject;
 import com.basho.riak.test.util.ExpectedValues;
 import com.google.protobuf.ByteString;
+import java.io.IOException;
 
 /**
  * Assumes Riak is reachable at {@link com.basho.riak.client.http.Hosts#RIAK_HOST }.
@@ -52,10 +54,14 @@ public class ITestDataLoad {
 
     byte data[][] = new byte[NUM_VALUES][VALUE_LENGTH];
 
-    @Before public void setup() {
+    @Before public void setup() throws IOException {
         for (int i = 0; i < 10; i++) {
             new Random().nextBytes(data[i]);
         }
+        final RiakClient riak = new RiakClient(RIAK_HOST, RIAK_PORT);
+        BucketProperties bp = new BucketProperties();
+        bp.allowMult(false);
+        riak.setBucketProperties(ByteString.copyFromUtf8(BUCKET), bp);
     }
 
     @After public void teardown() throws Exception {
