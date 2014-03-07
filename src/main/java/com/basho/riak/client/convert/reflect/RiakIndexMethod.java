@@ -38,38 +38,16 @@ public class RiakIndexMethod
      */
     public RiakIndexMethod(final Method method)
     {
-        if (method == null || method.getAnnotation(RiakIndex.class) == null
-            || "".equals(method.getAnnotation(RiakIndex.class).name())
-            || (!method.getReturnType().equals(String.class)
-            && !method.getReturnType().equals(Integer.class)
-            && !method.getReturnType().equals(int.class)
-            && !method.getReturnType().equals(Long.class)
-            && !method.getReturnType().equals(long.class)
-            && !method.getReturnType().equals(Void.TYPE)
-            && !Set.class.isAssignableFrom(method.getReturnType())))
-        {
-            throw new IllegalArgumentException(method.getReturnType().toString());
-        }
-
-        if (Set.class.isAssignableFrom(method.getReturnType()))
-        {
-            // Verify it's a Set<String> or Set<Integer>
-            final Type t = method.getGenericReturnType();
-            if (t instanceof ParameterizedType)
-            {
-                final Class<?> genericType = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
-                if (!genericType.equals(String.class) && !genericType.equals(Integer.class) && !genericType.equals(Long.class))
-                {
-                    throw new IllegalArgumentException(method.getReturnType().toString());
-                }
-            }
-            else
-            {
-                throw new IllegalArgumentException(method.getReturnType().toString());
-            }
-        }
+        validateMethod(method);
+        
         this.method = method;
         this.indexName = method.getAnnotation(RiakIndex.class).name();
+        
+        if (indexName.isEmpty())
+        {
+            throw new IllegalArgumentException("@RiakIndex must have 'name' parameter");
+        }
+        
         this.type = method.getReturnType();
     }
 
@@ -95,5 +73,76 @@ public class RiakIndexMethod
     public Class<?> getType()
     {
         return type;
+    }
+    
+    private void validateMethod(Method m)
+    {
+        if (m.getReturnType().equals(Void.TYPE))
+        {
+            // It's a setter
+            Type[] genericParameterTypes = m.getGenericParameterTypes();
+            Type t = genericParameterTypes[0];
+            if (t instanceof ParameterizedType)
+            {
+                ParameterizedType pType = (ParameterizedType)t;
+                if (pType.getRawType().equals(Set.class))
+                {
+                    Class<?> genericType = (Class<?>)pType.getActualTypeArguments()[0];
+                    if (String.class.equals(genericType) ||
+                        Integer.class.equals(genericType) ||
+                        Long.class.equals(genericType))
+                    {
+                        return;
+                    }
+                }
+            }
+            else 
+            {
+                t = m.getParameterTypes()[0];
+                if (t.equals(Integer.class) ||
+                    t.equals(int.class) ||
+                    t.equals(String.class) ||
+                    t.equals(Long.class) ||
+                    t.equals(long.class)
+                    )
+                {
+                    return;
+                }
+            }
+            throw new IllegalArgumentException("@RiakIndex setter must take a single or Set<> of String, Long, or Integer: " + m);
+        }
+        else 
+        {
+            // It's a getter
+            Type t = m.getGenericReturnType();
+            if (t instanceof ParameterizedType)
+            {
+                ParameterizedType pType = (ParameterizedType)t;
+                if (pType.getRawType().equals(Set.class))
+                {
+                    Class<?> genericType = (Class<?>)pType.getActualTypeArguments()[0];
+                    if (Integer.class.equals(genericType) ||
+                        String.class.equals(genericType) ||
+                        Long.class.equals(genericType))
+                    {
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                t = m.getReturnType();
+                if (t.equals(Integer.class) ||
+                    t.equals(int.class) ||
+                    t.equals(String.class) ||
+                    t.equals(Long.class) ||
+                    t.equals(long.class)
+                    )
+                {
+                    return;
+                }
+            }
+            throw new IllegalArgumentException("@RiakIndex getter must return a single or Set<> of String, Long, or Integer: " +m );
+        }
     }
 }

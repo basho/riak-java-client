@@ -83,6 +83,11 @@ public class ConversionUtilTest {
         private Set<Long> longs;
         private Set<Integer> integers;
         private Set<String> strings;
+        private long myLong;
+        private Long myLongLong;
+        private String myString;
+        private int myInt;
+        private Integer myInteger;
         private VClock vClock;
         private boolean tombstone;
         private Collection<RiakLink> links;
@@ -164,6 +169,58 @@ public class ConversionUtilTest {
         @RiakIndex(name = "strings") 
         public void setStrings(Set<String> strings) {
             this.strings = strings;
+        }
+        
+        @RiakIndex(name = "long")
+        public long getLong() {
+          return myLong;
+        }
+        
+        @RiakIndex(name = "long")
+        public void setLong(long l) {
+            this.myLong = l;
+        }
+        
+        @RiakIndex(name = "longlong")
+        public Long getLongLong() {
+          return myLongLong;
+        }
+        
+        @RiakIndex(name = "longlong")
+        public void setLongLong(Long l) {
+            this.myLongLong = l;
+        }
+
+        @RiakIndex(name = "integer")
+        public Integer getInteger() {
+            return myInteger;
+        }
+        
+        @RiakIndex(name = "integer")
+        public void setIntegers(Integer i)
+        {
+            this.myInteger = i;
+        }
+        
+        @RiakIndex(name = "int")
+        public int getInt() {
+            return myInteger;
+        }
+        
+        @RiakIndex(name = "int")
+        public void setInt(int i)
+        {
+            this.myInt = i;
+        }
+        
+        @RiakIndex(name = "string") 
+        public String getString() {
+            return myString;
+        }
+        
+        @RiakIndex(name = "string") 
+        public void setString(String s) {
+            this.myString = s;
         }
         
         @RiakTombstone

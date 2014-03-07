@@ -40,7 +40,6 @@ public class RiakIndexConverterTest extends ConversionUtilTest
         longs = new HashSet<Long>(Arrays.asList(4L,9L,12L));
     }
     
-    
     @Test
     public void testPopulateAndGetIndexFields()
     {
@@ -83,22 +82,22 @@ public class RiakIndexConverterTest extends ConversionUtilTest
         
         rIndexes = converter.getIndexes(pojo);
         
-        assertNotNull("Expected RiakIndexes BinIndex (favorite_languages) to be populated", 
-                      rIndexes.getBinIndex("favorite_languages"));        
-        assertNotNull("Expected RiakIndexes BinIndex (lucky_language) to be populated", 
-                      rIndexes.getBinIndex("lucky_language"));
-        assertNotNull("Expected RiakIndexes IntIndex (integers) to be populated", 
-                      rIndexes.getIntIndex("integers"));
-        assertNotNull("Expected RiakIndexes IntIndex (lucky_int) to be populated", 
-                      rIndexes.getIntIndex("lucky_int"));
-        assertNotNull("Expected RiakIndexes IntIndex (lucky_integer) to be populated", 
-                      rIndexes.getIntIndex("lucky_integer"));
-        assertNotNull("Expected RiakIndexes IntIndex (longs) to be populated", 
-                      rIndexes.getIntIndex("longs"));
-        assertNotNull("Expected RiakIndexes IntIndex (lucky_long) to be populated", 
-                      rIndexes.getIntIndex("lucky_long"));
-        assertNotNull("Expected RiakIndexes IntIndex (lucky_longlong) to be populated", 
-                      rIndexes.getIntIndex("lucky_longlong"));
+        assertEquals("Expected RiakIndexes BinIndex (favorite_languages) to be populated", 
+                      rIndexes.getBinIndex("favorite_languages").size(), langs.size());        
+        assertEquals("Expected RiakIndexes BinIndex (lucky_language) to be populated", 
+                      rIndexes.getBinIndex("lucky_language").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (integers) to be populated", 
+                      rIndexes.getIntIndex("integers").size(), integers.size());
+        assertEquals("Expected RiakIndexes IntIndex (lucky_int) to be populated", 
+                      rIndexes.getIntIndex("lucky_int").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (lucky_integer) to be populated", 
+                      rIndexes.getIntIndex("lucky_integer").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (longs) to be populated", 
+                      rIndexes.getIntIndex("longs").size(), longs.size());
+        assertEquals("Expected RiakIndexes IntIndex (lucky_long) to be populated", 
+                      rIndexes.getIntIndex("lucky_long").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (lucky_longlong) to be populated", 
+                      rIndexes.getIntIndex("lucky_longlong").size(), 1);
         
         assertTrue(rIndexes.getBinIndex("favorite_languages").containsAll(langs));
         assertEquals(rIndexes.getBinIndex("lucky_language").size(), 1);
@@ -133,26 +132,55 @@ public class RiakIndexConverterTest extends ConversionUtilTest
         rIndexes.addBinSet("strings", langs);
         rIndexes.addIntSet("integers", integers);
         rIndexes.addIntSet("longs", longs);
+        rIndexes.addIntSet("long", longs);
+        rIndexes.addIntSet("longlong", longs);
+        rIndexes.addIntSet("integer", integers);
+        rIndexes.addIntSet("int", integers);
+        rIndexes.addBinSet("string", langs);
         
         PojoWithAnnotatedMethods<Void> pojo = new PojoWithAnnotatedMethods<Void>();
         
         converter.populateIndexes(rIndexes, pojo);
         
-        assertNotNull("Expected bin index field (Set<String> strings) to be populated", pojo.getStrings());
-        assertNotNull("Expected int index field (Set<Integer> integers) to be populated", pojo.getIntegers());
-        assertNotNull("Expected int index field (Set<Long> longs) to be populated", pojo.getLongs());
+        assertNotNull("Expected bin index method (Set<String> getStrings) to be populated", pojo.getStrings());
+        assertNotNull("Expected int index method (Set<Integer> getIntegers) to be populated", pojo.getIntegers());
+        assertNotNull("Expected int index method (Set<Long> getLongs) to be populated", pojo.getLongs());
+        assertNotNull("Expected bin index method (String getString) to be populated", pojo.getString());
+        assertNotNull("Expected int index method (Integer getInteger) to be populated", pojo.getInteger());
+        assertNotNull("Expected int index method (int getInt) to be populated", pojo.getInt());
+        assertNotNull("Expected int index method (Long getLongLong) to be populated", pojo.getLongLong());
+        assertNotNull("Expected int index method (Long getLong) to be populated", pojo.getLong());
+
+
+
+        
         assertEquals(langs.size(), pojo.getStrings().size());
         assertEquals(integers.size(), pojo.getIntegers().size());
         assertEquals(longs.size(), pojo.getLongs().size());
-
+        assertEquals(langs.iterator().next(), pojo.getString());
+        assertEquals(integers.iterator().next(), pojo.getInteger());
+        assertEquals(integers.iterator().next().intValue(), pojo.getInt());
+        assertEquals(longs.iterator().next(), pojo.getLongLong());
+        assertEquals(longs.iterator().next().longValue(), pojo.getLong());
+        
         rIndexes = converter.getIndexes(pojo);
         
-        assertNotNull("Expected RiakIndexes BinIndex (strings) to be populated", 
-                      rIndexes.getBinIndex("strings"));
-        assertNotNull("Expected RiakIndexes IntIndex (integers) to be populated", 
-                      rIndexes.getBinIndex("integers"));
-        assertNotNull("Expected RiakIndexes IntIndex (longs) to be populated", 
-                      rIndexes.getBinIndex("longs"));
+        assertEquals("Expected RiakIndexes BinIndex (strings) to be populated", 
+                      rIndexes.getBinIndex("strings").size(), langs.size());
+        assertEquals("Expected RiakIndexes IntIndex (integers) to be populated", 
+                      rIndexes.getIntIndex("integers").size(), integers.size());
+        assertEquals("Expected RiakIndexes IntIndex (longs) to be populated", 
+                      rIndexes.getIntIndex("longs").size(), longs.size());
+        assertEquals("Expected RiakIndexes BinIndex (string) to be populated", 
+                      rIndexes.getBinIndex("string").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (integer) to be populated", 
+                      rIndexes.getIntIndex("integer").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (int) to be populated", 
+                      rIndexes.getIntIndex("int").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (long) to be populated", 
+                      rIndexes.getIntIndex("long").size(), 1);
+        assertEquals("Expected RiakIndexes IntIndex (longlong) to be populated", 
+                      rIndexes.getIntIndex("longlong").size(), 1);
         
         assertTrue(rIndexes.getBinIndex("strings").containsAll(langs));
         assertTrue(rIndexes.getIntIndex("longs").containsAll(longs));
@@ -166,10 +194,156 @@ public class RiakIndexConverterTest extends ConversionUtilTest
         
     }
     
-    
-    
+    @Test
+    public void illegalRiakIndexFieldType()
+    {
+        final RiakIndexConverter<Object> converter = 
+            new RiakIndexConverter<Object>();
+        final RiakIndexes rIndexes = new RiakIndexes();
+        
+        Object o = new Object()
+        {
+            @RiakIndex(name="whatever")
+            private final Boolean domainProperty = null;
 
+        };
+        
+        try
+        {
+            converter.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+        o = new Object()
+        {
+            @RiakIndex(name="whatever")
+            private final Set<Boolean> domainProperty = null;
+
+        };
+        
+        try
+        {
+            converter.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+        
+    }
     
+    @Test
+    public void illegalRiakIndexSetterType()
+    {
+        final RiakIndexConverter<Object> converter = 
+            new RiakIndexConverter<Object>();
+        final RiakIndexes rIndexes = new RiakIndexes();
+        
+        Object o = new Object()
+        {
+            @RiakIndex(name="whatever")
+            public void setIndex(Boolean b)
+            {}
+            
+            @RiakIndex(name="whatever")
+            public Set<Integer> getIndex() 
+            {
+                return null;
+            }
+
+        };
+        
+        try
+        {
+            converter.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+        o = new Object()
+        {
+            @RiakIndex(name="whatever")
+            public void setIndex(Set<Boolean> index)
+            {}
+            
+            @RiakIndex(name="whatever")
+            public Set<Integer> getIndex() 
+            {
+                return null;
+            }
+
+        };
+        
+        try
+        {
+            converter.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+    }
+    
+    @Test
+    public void missingIndexNameInAnnotation()
+    {
+        final RiakIndexConverter<Object> converter = 
+            new RiakIndexConverter<Object>();
+        final RiakIndexes rIndexes = new RiakIndexes();
+        
+        Object o = new Object()
+        {
+            @RiakIndex
+            public void setIndex(Set<String> index)
+            {}
+            
+            @RiakIndex
+            public Set<String> getIndex() 
+            {
+                return null;
+            }
+
+        };
+        
+        try
+        {
+            converter.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+        o = new Object()
+        {
+            @RiakIndex
+            private String index = null;
+
+        };
+        
+        try
+        {
+            converter.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+    }
     
     
 }

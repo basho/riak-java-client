@@ -36,35 +36,15 @@ public class RiakIndexField {
      * @param field
      */
     public RiakIndexField(final Field field) {
-        // Supporting int / Integer for legacy. New code should use long / Long
-        if (field == null || field.getAnnotation(RiakIndex.class) == null ||
-            "".equals(field.getAnnotation(RiakIndex.class).name()) ||
-            (!field.getType().equals(String.class) &&
-                !field.getType().equals(Integer.class) && 
-                !field.getType().equals(int.class) &&
-                !field.getType().equals(long.class) &&
-                !field.getType().equals(Long.class)) &&
-                !Set.class.isAssignableFrom(field.getType())
-            ) {
-            throw new IllegalArgumentException(field.getType().toString());
-        }
-
-        if (Set.class.isAssignableFrom(field.getType())) {
-            // Verify it's a Set<String> or Set<Long>. Set<Integer> supported for legacy
-            Type t = field.getGenericType();
-            if (t instanceof ParameterizedType) {
-                Class genericType = (Class)((ParameterizedType)t).getActualTypeArguments()[0];
-                if (!genericType.equals(String.class) && 
-                    !genericType.equals(Integer.class) && 
-                    !genericType.equals(Long.class)) {
-                    throw new IllegalArgumentException(field.getType().toString());
-                }
-            } else {
-                throw new IllegalArgumentException(field.getType().toString());
-            }
-        }
+        validateField(field);
         this.field = field;
         this.indexName = field.getAnnotation(RiakIndex.class).name();
+        
+        if (indexName.isEmpty())
+        {
+            throw new IllegalArgumentException("@RiakIndex must have 'name' parameter");
+        }
+        
         this.type = field.getType();
     }
 
@@ -84,5 +64,40 @@ public class RiakIndexField {
     
     public Class<?> getType() {
         return type;
+    }
+    
+    private void validateField(Field f) {
+        
+        Type t = f.getGenericType();
+        if (t instanceof ParameterizedType)
+        {
+            ParameterizedType pType = (ParameterizedType)t;
+            if (pType.getRawType().equals(Set.class))
+            {
+                Class<?> genericType = (Class<?>)pType.getActualTypeArguments()[0];
+                if (Integer.class.equals(genericType) ||
+                    String.class.equals(genericType) ||
+                    Long.class.equals(genericType))
+                {
+                    return;
+                }
+            }
+        }
+        else
+        {
+            t = f.getType();
+            
+            if (t.equals(Integer.class) ||
+                    t.equals(int.class) ||
+                    t.equals(String.class) ||
+                    t.equals(Long.class) ||
+                    t.equals(long.class))
+            {
+                return;
+            }
+        }
+        throw new IllegalArgumentException("@RiakIndex must be a single or Set<> of int/Integer, long/Long, String: " +
+                                            f);
+
     }
 }
