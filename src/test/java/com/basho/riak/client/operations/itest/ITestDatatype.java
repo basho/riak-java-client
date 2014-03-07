@@ -4,16 +4,14 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.*;
 import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.util.BinaryValue;
+import org.junit.Assume;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import org.junit.Assume;
+import static junit.framework.Assert.*;
 
 public class ITestDatatype extends ITestBase
 {
@@ -21,8 +19,8 @@ public class ITestDatatype extends ITestBase
 	@Test
 	public void simpleTest() throws ExecutionException, InterruptedException
 	{
-        Assume.assumeTrue(testCrdt);
-        
+		Assume.assumeTrue(testCrdt);
+
 		/**
 		 * Update some info about a user in a table of users
 		 */
@@ -77,11 +75,13 @@ public class ITestDatatype extends ITestBase
 			.update(username, userMapUpdate);
 
 		Location carts = new Location(bucketName).withType(mapBucketType);
-		UpdateDatatype<RiakMap> update = UpdateDatatype.update(carts, userEntryUpdate)
-			.withOption(DtUpdateOption.RETURN_BODY, true);
-	   	UpdateDatatype.Response<RiakMap> updateResponse = client.execute(update);
+		UpdateDatatype<RiakMap> update = new UpdateDatatype.Builder<RiakMap>(carts)
+			.withUpdate(userEntryUpdate)
+			.withOption(DtUpdateOption.RETURN_BODY, true)
+			.build();
+		UpdateDatatype.Response<RiakMap> updateResponse = client.execute(update);
 
-		FetchDatatype<RiakMap> fetch = FetchDatatype.fetchMap(updateResponse.getKey());
+		FetchMap fetch = new FetchMap.Builder(updateResponse.getKey()).build();
 		FetchDatatype.Response<RiakMap> fetchResponse = client.execute(fetch);
 
 		// users
