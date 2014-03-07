@@ -17,51 +17,48 @@ import com.basho.riak.client.query.functions.Function;
 
 /**
  * A reduce phase of a MapReduce job spec. Just a tag class.
- * 
+ *
  * @author russell
- * 
  */
-class ReducePhase extends MapPhase {
+class ReducePhase extends FunctionPhase
+{
 
-    /**
-     * Create a Reduce Phase
-     * @param phaseFunction
-     * @param arg
-     * @param keepResult
-     */
-    public ReducePhase(Function phaseFunction, Object arg, boolean keepResult) {
-        super(phaseFunction, arg, keepResult);
-    }
+	/**
+	 * Create a Reduce Phase
+	 *
+	 * @param phaseFunction
+	 * @param arg
+	 * @param keepResult
+	 */
+	public ReducePhase(Function phaseFunction, Object arg, Boolean keepResult)
+	{
+		super(PhaseType.REDUCE, phaseFunction, arg, keepResult);
+	}
 
-    /**
-     * @param phaseFunction
-     * @param arg
-     */
-    public ReducePhase(Function phaseFunction, Object arg) {
-        super(phaseFunction, arg);
-    }
+	/**
+	 * @param phaseFunction
+	 * @param arg
+	 */
+	public ReducePhase(Function phaseFunction, Object arg)
+	{
+		this(phaseFunction, arg, null);
+	}
 
-    /**
-     * @param phaseFunction
-     * @param keep
-     */
-    public ReducePhase(Function phaseFunction, boolean keep) {
-        super(phaseFunction, keep);
-    }
+	/**
+	 * @param phaseFunction
+	 * @param keep
+	 */
+	public ReducePhase(Function phaseFunction, boolean keep)
+	{
+		this(phaseFunction, null, keep);
+	}
 
-    /**
-     * @param phaseFunction
-     */
-    public ReducePhase(Function phaseFunction) {
-        super(phaseFunction);
-    }
+	/**
+	 * @param phaseFunction
+	 */
+	public ReducePhase(Function phaseFunction)
+	{
+		this(phaseFunction, null, null);
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.newapi.query.MapPhase#getType()
-     */
-    @Override public PhaseType getType() {
-        return PhaseType.REDUCE;
-    }
 }

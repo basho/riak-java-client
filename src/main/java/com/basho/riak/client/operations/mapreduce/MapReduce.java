@@ -48,7 +48,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 	}
 
 	@Override
-    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		try
 		{
@@ -77,7 +77,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 	 * @return a String of JSON
 	 * @throws RiakException if, for some reason, we can't create a JSON string.
 	 */
-	private String writeSpec() throws RiakException
+	String writeSpec() throws RiakException
 	{
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -113,20 +113,16 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		}
 	}
 
-	/**
-	 * Write the collection of phases to the json output generator
-	 *
-	 * @param jg a {@link JsonGenerator}
-	 */
-	private void writePhases(JsonGenerator jg) throws IOException
+	void writeFunctionPhase(FunctionPhase phase, JsonGenerator jg) throws IOException
 	{
-		writeMapReducePhases(jg);
+		writeFunction(phase.getPhaseFunction(), jg);
+		if (phase.getArg() != null)
+		{
+			jg.writeObjectField("arg", phase.getArg());
+		}
 	}
 
-	/**
-	 * @param jg
-	 */
-	private void writeMapReducePhases(JsonGenerator jg) throws IOException
+	void writePhases(JsonGenerator jg) throws IOException
 	{
 		int cnt = 0;
 		synchronized (phases)
@@ -143,12 +139,8 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 				{
 					case MAP:
 					case REDUCE:
-						MapPhase mapPhase = (MapPhase) phase;
-						writeFunction(mapPhase.getPhaseFunction(), jg);
-						if (mapPhase.getArg() != null)
-						{
-							jg.writeObjectField("arg", mapPhase.getArg());
-						}
+						FunctionPhase fphase = (FunctionPhase) phase;
+						writeFunctionPhase(fphase, jg);
 						break;
 					case LINK:
 						jg.writeStringField("bucket", ((LinkPhase) phase).getBucket());
@@ -171,7 +163,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		}
 	}
 
-	private void writeFunction(Function function, JsonGenerator jg) throws IOException
+	void writeFunction(Function function, JsonGenerator jg) throws IOException
 	{
 
 		jg.writeStringField("language", function.isJavascript() ? "javascript" : "erlang");
@@ -181,22 +173,18 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 			if (function.isNamed())
 			{
 				jg.writeStringField("name", function.getName());
-			}
-			else if (function.isStored())
+			} else if (function.isStored())
 			{
 				jg.writeStringField("bucket", function.getBucket());
 				jg.writeStringField("key", function.getKey());
-			}
-			else if (function.isAnonymous())
+			} else if (function.isAnonymous())
 			{
 				jg.writeStringField("source", function.getSource());
-			}
-			else
+			} else
 			{
 				throw new IllegalStateException("Cannot determine function type");
 			}
-		}
-		else if (!function.isJavascript())
+		} else if (!function.isJavascript())
 		{
 			jg.writeStringField("module", function.getModule());
 			jg.writeStringField("function", function.getFunction());
@@ -212,7 +200,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 	 * @return <code>phaseKeepValue</code> if not null, otherwise <code>true</code> if <code>isLastPhase</code> is true,
 	 * false otherwise.
 	 */
-	private boolean isKeepResult(boolean isLastPhase, Boolean phaseKeepValue)
+	boolean isKeepResult(boolean isLastPhase, Boolean phaseKeepValue)
 	{
 		if (phaseKeepValue != null)
 		{

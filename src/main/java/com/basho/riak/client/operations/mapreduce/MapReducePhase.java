@@ -15,37 +15,53 @@ package com.basho.riak.client.operations.mapreduce;
 
 /**
  * Shared common interface for Map/Reduce phase definitions.
+ *
  * @author russell
- * 
  */
-interface MapReducePhase {
+abstract class MapReducePhase
+{
 
-    /**
-     * Possible phase typess.
-     */
-    public enum PhaseType {
-        LINK("link"), MAP("map"), REDUCE("reduce");
+	/**
+	 * Possible phase typess.
+	 */
+	public enum PhaseType
+	{
+		LINK("link"), MAP("map"), REDUCE("reduce");
 
-        private final String phaseName;
+		private final String phaseName;
 
-        private PhaseType(String phaseName) {
-            this.phaseName = phaseName;
-        }
+		private PhaseType(String phaseName)
+		{
+			this.phaseName = phaseName;
+		}
 
-        public String toString() {
-            return this.phaseName;
-        }
-    };
+		public String toString()
+		{
+			return this.phaseName;
+		}
+	}
 
-    /**
-     * Is this phase's output to be returned or only passed as input to the next phase.
-     * @return true if the results are returned, false otherwise.
-     */
-    Boolean isKeep();
+	private final PhaseType type;
 
-    /**
-     * The PhaseType of this {@link MapReducePhase} implementation.
-     * @return a PhaseType.
-     */
-    PhaseType getType();
+	protected MapReducePhase(PhaseType type)
+	{
+		this.type = type;
+	}
+
+	/**
+	 * Is this phase's output to be returned or only passed as input to the next phase.
+	 *
+	 * @return true if the results are returned, false otherwise.
+	 */
+	abstract Boolean isKeep();
+
+	/**
+	 * The PhaseType of this {@link MapReducePhase} implementation.
+	 *
+	 * @return a PhaseType.
+	 */
+	PhaseType getType()
+	{
+		return type;
+	}
 }

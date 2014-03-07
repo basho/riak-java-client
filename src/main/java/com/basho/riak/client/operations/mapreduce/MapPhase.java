@@ -17,108 +17,58 @@ import com.basho.riak.client.query.functions.Function;
 
 /**
  * A Map Phase of a Map/Reduce job spec.
- * 
+ *
  * @author russell
- * 
  */
- class MapPhase implements MapReducePhase {
+class MapPhase extends FunctionPhase
+{
 
-    private final Function phaseFunction;
-    private final Boolean keep;
-    private final Object arg; // TODO object? you sure?
+	/**
+	 * Create a MapPhase
+	 *
+	 * @param phaseFunction the {@link Function}
+	 * @param arg           an argument that will be passed to the phase verbatim
+	 *                      (Object#toString)
+	 * @param keepResult    if the result should be returned or merely provide input for
+	 *                      the next phase.
+	 */
+	public MapPhase(Function phaseFunction, Object arg, Boolean keepResult)
+	{
+		super(PhaseType.MAP, phaseFunction, arg, keepResult);
+	}
 
-    /**
-     * Create a MapPhase
-     * 
-     * @param phaseFunction
-     *            the {@link Function}
-     * @param arg
-     *            an argument that will be passed to the phase verbatim
-     *            (Object#toString)
-     * @param keepResult
-     *            if the result should be returned or merely provide input for
-     *            the next phase.
-     * 
-     */
-    public MapPhase(Function phaseFunction, Object arg, boolean keepResult) {
-        this.phaseFunction = phaseFunction;
-        this.arg = arg;
-        this.keep = keepResult;
-    }
+	/**
+	 * Create a MapPhase
+	 *
+	 * @param phaseFunction the {@link Function}
+	 * @param arg           an argument that will be passed to the phase verbatim
+	 *                      (Object#toString)
+	 */
+	public MapPhase(Function phaseFunction, Object arg)
+	{
+		this(phaseFunction, arg, null);
+	}
 
-    /**
-     * Create a MapPhase
-     * 
-     * @param phaseFunction
-     *            the {@link Function}
-     * @param arg
-     *            an argument that will be passed to the phase verbatim
-     *            (Object#toString)
-     */
-    public MapPhase(Function phaseFunction, Object arg) {
-        this.phaseFunction = phaseFunction;
-        this.arg = arg;
-        this.keep = null;
-    }
-    
-    /**
-     * Create a MapPhase
-     * 
-     * @param phaseFunction
-     *            the {@link Function}
-     * 
-     */
-    public MapPhase(Function phaseFunction) {
-        this.phaseFunction = phaseFunction;
-        this.arg = null;
-        this.keep = null;
-    }
-    
-    /**
-     * Create a MapPhase
-     * 
-     * @param phaseFunction
-     *            the {@link Function}
-     * @param keep
-     *            if the result should be returned or merely provide input for
-     *            the next phase.
-     * 
-     */
-    public MapPhase(Function phaseFunction, boolean keep) {
-        this.phaseFunction = phaseFunction;
-        this.arg = null;
-        this.keep = keep;
-    }
+	/**
+	 * Create a MapPhase
+	 *
+	 * @param phaseFunction the {@link Function}
+	 */
+	public MapPhase(Function phaseFunction)
+	{
+		this(phaseFunction, null, null);
+	}
 
-    /**
-     * @return the phaseFunction
-     */
-    public Function getPhaseFunction() {
-        return phaseFunction;
-    }
+	/**
+	 * Create a MapPhase
+	 *
+	 * @param phaseFunction the {@link Function}
+	 * @param keep          if the result should be returned or merely provide input for
+	 *                      the next phase.
+	 */
+	public MapPhase(Function phaseFunction, boolean keep)
+	{
+		this(phaseFunction, null, keep);
+	}
 
-    /**
-     * @return the keep
-     */
-    public Boolean isKeep() {
-        return keep;
-    }
-
-    /**
-     * @return the arg
-     */
-    public Object getArg() {
-        return arg;
-    }
-    
-    public static MapPhase map(Function function, Object arg, boolean keep) {
-        return new MapPhase(function, arg, keep);
-    }
-
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.MapReducePhase#getType()
-     */
-    public PhaseType getType() {
-        return PhaseType.MAP;
-    }
 }
