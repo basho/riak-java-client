@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -269,8 +270,10 @@ public class ITestDtUpdateOperation extends ITestBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(1, map.view().size());
-        assertTrue(map.view().get(mapKey).isSet());
-        RiakSet set = map.view().get(mapKey).getAsSet();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(map.view().get(mapKey).get(0).isSet());
+        RiakSet set = map.view().get(mapKey).get(0).getAsSet();
         assertTrue(set.viewAsSet().contains(setValue));
 
 
@@ -291,8 +294,10 @@ public class ITestDtUpdateOperation extends ITestBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(2, map.view().size());
-        assertTrue(map.view().get(mapKey).isCounter());
-        RiakCounter counter = map.view().get(mapKey).getAsCounter();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(map.view().get(mapKey).get(0).isCounter());
+        RiakCounter counter = map.view().get(mapKey).get(0).getAsCounter();
         assertEquals((Long) 1L, counter.view());
 
 
@@ -316,8 +321,10 @@ public class ITestDtUpdateOperation extends ITestBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(3, map.view().size());
-        assertTrue(map.view().get(mapKey).isFlag());
-        RiakFlag flag = map.view().get(mapKey).getAsFlag();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(map.view().get(mapKey).get(0).isFlag());
+        RiakFlag flag = map.view().get(mapKey).get(0).getAsFlag();
         assertTrue(flag.getEnabled());
 
 
@@ -338,7 +345,9 @@ public class ITestDtUpdateOperation extends ITestBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(4, map.view().size());
-        RiakRegister register = map.view().get(mapKey).getAsRegister();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        RiakRegister register = map.view().get(mapKey).get(0).getAsRegister();
         assertEquals(mapKey, register.getValue());
 
 
@@ -359,18 +368,22 @@ public class ITestDtUpdateOperation extends ITestBase
         add.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        Map<BinaryValue, RiakDatatype> mapView = map.view();
+        Map<BinaryValue, List<RiakDatatype>> mapView = map.view();
         assertEquals(5, mapView.size());
 
         assertTrue(mapView.containsKey(mapKey));
-        assertTrue(mapView.get(mapKey).isMap());
-        RiakMap nestedMap = mapView.get(mapKey).getAsMap();
-        Map<BinaryValue, RiakDatatype> nestedMapView = nestedMap.view();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(mapView.get(mapKey).get(0).isMap());
+        RiakMap nestedMap = mapView.get(mapKey).get(0).getAsMap();
+        Map<BinaryValue, List<RiakDatatype>> nestedMapView = nestedMap.view();
         assertEquals(1, nestedMapView.size());
 
         assertTrue(nestedMapView.containsKey(mapKey));
-        assertTrue(nestedMapView.get(mapKey).isFlag());
-        RiakFlag nestedFlag = nestedMapView.get(mapKey).getAsFlag();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(nestedMapView.get(mapKey).get(0).isFlag());
+        RiakFlag nestedFlag = nestedMapView.get(mapKey).get(0).getAsFlag();
         assertFalse(nestedFlag.getEnabled());
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));

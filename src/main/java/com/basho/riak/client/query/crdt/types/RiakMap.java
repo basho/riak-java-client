@@ -18,6 +18,7 @@ package com.basho.riak.client.query.crdt.types;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,25 +27,38 @@ import static java.util.Collections.unmodifiableMap;
 public class RiakMap extends RiakDatatype
 {
 
-    private final Map<BinaryValue, RiakDatatype> entries =
-        new HashMap<BinaryValue, RiakDatatype>();
+    private final Map<BinaryValue, List<RiakDatatype>> entries =
+        new HashMap<BinaryValue, List<RiakDatatype>>();
 
-    public RiakMap(List<MapEntry> entries)
+    public RiakMap(List<MapEntry> mapEntries)
     {
-        for (MapEntry entry : entries)
+
+        for (MapEntry entry : mapEntries)
         {
-            this.entries.put(entry.field, entry.element);
+	        List<RiakDatatype> datatypes;
+            if ((datatypes = entries.get(entry.field)) == null)
+            {
+	            datatypes = new LinkedList<RiakDatatype>();
+	            entries.put(entry.field, datatypes);
+            }
+	        datatypes.add(entry.element);
         }
     }
 
-    public RiakDatatype get(BinaryValue key)
+    public List<RiakDatatype> get(BinaryValue key)
     {
         return entries.get(key);
     }
 
 	public RiakMap getMap(BinaryValue key)
 	{
-		return entries.get(key).getAsMap();
+		for (RiakDatatype dt : entries.get(key))
+		{
+			if (dt.isMap()) {
+				return dt.getAsMap();
+			}
+		}
+		return null;
 	}
 
 	public RiakMap getMap(String key)
@@ -54,7 +68,13 @@ public class RiakMap extends RiakDatatype
 
 	public RiakSet getSet(BinaryValue key)
 	{
-		return entries.get(key).getAsSet();
+		for (RiakDatatype dt : entries.get(key))
+		{
+			if (dt.isSet()) {
+				return dt.getAsSet();
+			}
+		}
+		return null;
 	}
 
 	public RiakSet getSet(String key)
@@ -64,7 +84,13 @@ public class RiakMap extends RiakDatatype
 
 	public RiakCounter getCounter(BinaryValue key)
 	{
-		return entries.get(key).getAsCounter();
+		for (RiakDatatype dt : entries.get(key))
+		{
+			if (dt.isCounter()) {
+				return dt.getAsCounter();
+			}
+		}
+		return null;
 	}
 
 	public RiakCounter getCounter(String key)
@@ -74,7 +100,13 @@ public class RiakMap extends RiakDatatype
 
 	public RiakFlag getFlag(BinaryValue key)
 	{
-		return entries.get(key).getAsFlag();
+		for (RiakDatatype dt : entries.get(key))
+		{
+			if (dt.isFlag()) {
+				return dt.getAsFlag();
+			}
+		}
+		return null;
 	}
 
 	public RiakFlag getFlag(String key)
@@ -84,7 +116,13 @@ public class RiakMap extends RiakDatatype
 
 	public RiakRegister getRegister(BinaryValue key)
 	{
-		return entries.get(key).getAsRegister();
+		for (RiakDatatype dt : entries.get(key))
+		{
+			if (dt.isRegister()) {
+				return dt.getAsRegister();
+			}
+		}
+		return null;
 	}
 
 	public RiakRegister getRegister(String key)
@@ -97,7 +135,7 @@ public class RiakMap extends RiakDatatype
      *
      * @return a read-only view of the asMap
      */
-    public Map<BinaryValue, RiakDatatype> view()
+    public Map<BinaryValue, List<RiakDatatype>> view()
     {
         return unmodifiableMap(entries);
     }
