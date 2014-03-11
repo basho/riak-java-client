@@ -15,20 +15,24 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.BinaryValue;
-
-public class CrdtRegister extends CrdtElement
+public class RiakFlag extends RiakDatatype<Boolean>
 {
-    private BinaryValue value;
 
-    public CrdtRegister(BinaryValue value)
+    private boolean enabled = false;
+
+    public RiakFlag(boolean enabled)
     {
-        this.value = value;
+        this.enabled = enabled;
     }
 
-    public BinaryValue getValue()
+    public boolean getEnabled()
     {
-        return value;
+        return enabled;
     }
 
+	@Override
+	public Boolean view()
+	{
+		return enabled;
+	}
 }

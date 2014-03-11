@@ -13,35 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.datatypes;
+package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.query.crdt.types.CrdtSet;
 import com.basho.riak.client.util.BinaryValue;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public class RiakSet extends RiakDatatype<Set<byte[]>>
+public class RiakSet extends RiakDatatype<Set<BinaryValue>>
 {
+    private final Set<BinaryValue> elements =
+        new HashSet<BinaryValue>();
 
-    private final CrdtSet set;
-
-    public RiakSet(CrdtSet set)
+    public RiakSet(List<BinaryValue> elements)
     {
-        this.set = set;
+        this.elements.addAll(elements);
     }
 
-    @Override
-    public Set<byte[]> view()
+    public Set<BinaryValue> viewAsSet()
     {
-        Set<byte[]> rset = new HashSet<byte[]>();
-        for (BinaryValue entry : set.viewAsSet())
-        {
-            rset.add(entry.getValue());
-        }
-        return Collections.unmodifiableSet(rset);
+        return Collections.unmodifiableSet(elements);
     }
 
+    public boolean contains(BinaryValue element)
+    {
+        return elements.contains(element);
+    }
+
+	@Override
+	public Set<BinaryValue> view()
+	{
+		return Collections.unmodifiableSet(elements);
+	}
 }

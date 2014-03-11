@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.datatypes;
+package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.query.crdt.types.CrdtFlag;
-
-public class RiakFlag extends RiakDatatype<Boolean>
+public class RiakCounter extends RiakDatatype<Long>
 {
 
-    private final CrdtFlag flag;
+    private long value = 0;
 
-    public RiakFlag(CrdtFlag flag)
+    public RiakCounter(long value)
     {
-        this.flag = flag;
+        this.value = value;
     }
 
-    @Override
-    public Boolean view()
+	@Override
+    public Long view()
     {
-        return flag.getEnabled();
+        return value;
     }
 
 }

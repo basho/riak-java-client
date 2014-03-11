@@ -4,6 +4,7 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.*;
 import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
@@ -98,7 +99,7 @@ public class ITestDatatype extends ITestBase
 
 		// last-login - register
 		RiakRegister lastLoginTimeRegister = usernameMap.getRegister(lastLoginTime);
-		assertTrue(Arrays.equals(now, lastLoginTimeRegister.view()));
+		assertTrue(Arrays.equals(now, lastLoginTimeRegister.view().getValue()));
 
 		// logged-in - flag
 		RiakFlag loggedInFlag = usernameMap.getFlag(loggedIn);

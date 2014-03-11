@@ -15,21 +15,24 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakCounter;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.query.crdt.types.RiakMap;
+import com.basho.riak.client.query.crdt.types.RiakSet;
 
 public abstract class DatatypeConverter<T extends RiakDatatype>
 {
 
-    public abstract T convert(CrdtElement element);
+    public abstract T convert(RiakDatatype element);
 
     public static DatatypeConverter<RiakCounter> asCounter()
     {
         return new DatatypeConverter<RiakCounter>()
         {
             @Override
-            public RiakCounter convert(CrdtElement element)
+            public RiakCounter convert(RiakDatatype element)
             {
-                return new RiakCounter(element.getAsCounter());
+                return element.getAsCounter();
             }
         };
     }
@@ -39,9 +42,9 @@ public abstract class DatatypeConverter<T extends RiakDatatype>
         return new DatatypeConverter<RiakMap>()
         {
             @Override
-            public RiakMap convert(CrdtElement element)
+            public RiakMap convert(RiakDatatype element)
             {
-                return new RiakMap(element.getAsMap());
+                return element.getAsMap();
             }
         };
     }
@@ -51,9 +54,9 @@ public abstract class DatatypeConverter<T extends RiakDatatype>
         return new DatatypeConverter<RiakSet>()
         {
             @Override
-            public RiakSet convert(CrdtElement element)
+            public RiakSet convert(RiakDatatype element)
             {
-                return new RiakSet(element.getAsSet());
+                return element.getAsSet();
             }
         };
     }

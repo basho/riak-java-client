@@ -23,13 +23,13 @@ import java.util.Map;
 
 import static java.util.Collections.unmodifiableMap;
 
-public class CrdtMap extends CrdtElement
+public class RiakMap extends RiakDatatype
 {
 
-    private final Map<BinaryValue, CrdtElement> entries =
-        new HashMap<BinaryValue, CrdtElement>();
+    private final Map<BinaryValue, RiakDatatype> entries =
+        new HashMap<BinaryValue, RiakDatatype>();
 
-    public CrdtMap(List<MapEntry> entries)
+    public RiakMap(List<MapEntry> entries)
     {
         for (MapEntry entry : entries)
         {
@@ -37,17 +37,67 @@ public class CrdtMap extends CrdtElement
         }
     }
 
-    public CrdtElement get(BinaryValue key)
+    public RiakDatatype get(BinaryValue key)
     {
         return entries.get(key);
     }
+
+	public RiakMap getMap(BinaryValue key)
+	{
+		return entries.get(key).getAsMap();
+	}
+
+	public RiakMap getMap(String key)
+	{
+		return getMap(BinaryValue.create(key));
+	}
+
+	public RiakSet getSet(BinaryValue key)
+	{
+		return entries.get(key).getAsSet();
+	}
+
+	public RiakSet getSet(String key)
+	{
+		return getSet(BinaryValue.create(key));
+	}
+
+	public RiakCounter getCounter(BinaryValue key)
+	{
+		return entries.get(key).getAsCounter();
+	}
+
+	public RiakCounter getCounter(String key)
+	{
+		return getCounter(BinaryValue.create(key));
+	}
+
+	public RiakFlag getFlag(BinaryValue key)
+	{
+		return entries.get(key).getAsFlag();
+	}
+
+	public RiakFlag getFlag(String key)
+	{
+		return getFlag(BinaryValue.create(key));
+	}
+
+	public RiakRegister getRegister(BinaryValue key)
+	{
+		return entries.get(key).getAsRegister();
+	}
+
+	public RiakRegister getRegister(String key)
+	{
+		return getRegister(BinaryValue.create(key));
+	}
 
     /**
      * Get this CrdtMap as a {@link Map}. The returned asMap  is unmodifiable.
      *
      * @return a read-only view of the asMap
      */
-    public Map<BinaryValue, CrdtElement> viewAsMap()
+    public Map<BinaryValue, RiakDatatype> view()
     {
         return unmodifiableMap(entries);
     }
@@ -56,9 +106,9 @@ public class CrdtMap extends CrdtElement
     {
 
         private final BinaryValue field;
-        private final CrdtElement element;
+        private final RiakDatatype element;
 
-        public MapEntry(BinaryValue field, CrdtElement element)
+        public MapEntry(BinaryValue field, RiakDatatype element)
         {
             this.field = field;
             this.element = element;
@@ -69,7 +119,7 @@ public class CrdtMap extends CrdtElement
             return field;
         }
 
-        public CrdtElement getElement()
+        public RiakDatatype getElement()
         {
             return element;
         }

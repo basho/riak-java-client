@@ -15,96 +15,79 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.BinaryValue;
-
-public abstract class CrdtElement
+public abstract class RiakDatatype<T>
 {
 
-    private BinaryValue context = null;
-
-    public void setContext(BinaryValue context)
-    {
-        this.context = context;
-    }
-
-    public boolean hasContext()
-    {
-        return context != null;
-    }
-
-    public BinaryValue getContext()
-    {
-        return context;
-    }
+	public abstract T view();
 
     public boolean isMap()
     {
-        return this instanceof CrdtMap;
+        return this instanceof RiakMap;
     }
 
     public boolean isSet()
     {
-        return this instanceof CrdtSet;
+        return this instanceof RiakSet;
     }
 
     public boolean isCounter()
     {
-        return this instanceof CrdtCounter;
+        return this instanceof RiakCounter;
     }
 
     public boolean isRegister()
     {
-        return this instanceof CrdtRegister;
+        return this instanceof RiakRegister;
     }
 
     public boolean isFlag()
     {
-        return this instanceof CrdtFlag;
+        return this instanceof RiakFlag;
     }
 
-    public CrdtMap getAsMap()
+    public RiakMap getAsMap()
     {
         if (!isMap())
         {
             throw new IllegalStateException("This is not an instance of a CrdtMap");
         }
-        return (CrdtMap) this;
+        return (RiakMap) this;
     }
 
-    public CrdtSet getAsSet()
+    public RiakSet getAsSet()
     {
         if (!isSet())
         {
             throw new IllegalStateException("This is not an instance of a CrdtSet");
         }
-        return (CrdtSet) this;
+        return (RiakSet) this;
     }
 
-    public CrdtCounter getAsCounter()
+    public RiakCounter getAsCounter()
     {
         if (!isCounter())
         {
             throw new IllegalStateException("This is not an instance of a CrdtCounter");
         }
-        return (CrdtCounter) this;
+        return (RiakCounter) this;
     }
 
-    public CrdtRegister getAsRegister()
+    public RiakRegister getAsRegister()
     {
         if (!isRegister())
         {
             throw new IllegalStateException("This is not an instance of a CrdtRegister");
         }
-        return (CrdtRegister) this;
+        return (RiakRegister) this;
     }
 
-    public CrdtFlag getAsFlag()
+    public RiakFlag getAsFlag()
     {
         if (!isFlag())
         {
             throw new IllegalStateException("This is not an instance of a CrdtFlag");
         }
-        return (CrdtFlag) this;
+        return (RiakFlag) this;
     }
 
 

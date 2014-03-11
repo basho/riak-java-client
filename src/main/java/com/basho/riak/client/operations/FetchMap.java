@@ -1,8 +1,8 @@
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.query.crdt.types.RiakMap;
 
 public class FetchMap extends FetchDatatype<RiakMap>
 {
@@ -12,9 +12,9 @@ public class FetchMap extends FetchDatatype<RiakMap>
 	}
 
 	@Override
-	public RiakMap extractDatatype(CrdtElement element)
+	public RiakMap extractDatatype(RiakDatatype element)
 	{
-		return new RiakMap(element.getAsMap());
+		return element.getAsMap();
 	}
 
 	public static class Builder extends FetchDatatype.Builder<Builder>
