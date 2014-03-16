@@ -2,6 +2,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
 
 import java.util.concurrent.ExecutionException;
@@ -66,13 +67,10 @@ public class StoreBucketProperties extends RiakCommand<Boolean>
 	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
-		StoreBucketPropsOperation.Builder builder = new StoreBucketPropsOperation.Builder(location.getBucket());
-
-		if (location.hasType())
-		{
-			builder.withBucketType(location.getType());
-		}
-
+		StoreBucketPropsOperation.Builder builder = 
+            new StoreBucketPropsOperation.Builder(location.getBucketName())
+                .withBucketType(location.getBucketType());
+		
 		if (allowMulti != null)
 		{
 			builder.withAllowMulti(allowMulti);

@@ -22,6 +22,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
@@ -43,7 +44,7 @@ public class FetchValueTest
     @Mock RiakFuture mockFuture;
     @Mock FetchOperation.Response mockResponse;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-	Location key = new Location("bucket", "key").withType("type");
+	Location key = new Location("bucket").setKey("key").setBucketType("type");
     RiakClient client;
 
     @Before

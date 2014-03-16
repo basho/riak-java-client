@@ -19,6 +19,7 @@ import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.BucketProperties;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
@@ -41,9 +42,9 @@ public class ITestStoreOperation extends ITestBase
         
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
         
+        Location location = new Location(bucketName).setKey(key);
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         
@@ -51,7 +52,7 @@ public class ITestStoreOperation extends ITestBase
         storeOp.get();
         
         FetchOperation fetchOp = 
-                new FetchOperation.Builder(bucketName, key).build();
+                new FetchOperation.Builder(location).build();
                 
         cluster.execute(fetchOp);
         RiakObject obj2 = fetchOp.get().getObjectList().get(0);
@@ -76,10 +77,10 @@ public class ITestStoreOperation extends ITestBase
         op.get();
         
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
-        
+        Location location = new Location(bName).setKey(key);
+       
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .withReturnBody(true)
                 .build();
@@ -91,8 +92,9 @@ public class ITestStoreOperation extends ITestBase
         assertTrue(response.hasVClock());
         
         obj.setValue(BinaryValue.create("changed"));
-        storeOp = new StoreOperation.Builder(bName)
-                .withKey(key)
+        location = new Location(bName).setKey(key);
+
+        storeOp = new StoreOperation.Builder(location)
                 .withContent(obj)
                 .withVClock(response.getVClock())
                 .withReturnBody(true)

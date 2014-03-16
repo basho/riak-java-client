@@ -23,6 +23,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Before;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.*;
 public class UpdateValueTest
 {
 	@Mock RiakCluster mockCluster;
-	Location key = new Location("bucket", "key").withType("type");
+	Location key = new Location("bucket").setKey("key").setBucketType("type");
 	RiakClient client;
 	RiakObject riakObject;
 

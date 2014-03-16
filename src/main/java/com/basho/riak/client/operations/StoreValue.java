@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.convert.Converters.convert;
+import com.basho.riak.client.query.Location;
 
 public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 {
@@ -52,18 +53,8 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
     public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        StoreOperation.Builder builder = new StoreOperation.Builder(location.getBucket());
-
-        if (location.hasType())
-        {
-            builder.withBucketType(location.getType());
-        }
-
-        if (location.hasKey())
-        {
-            builder.withKey(location.getKey());
-        }
-
+        StoreOperation.Builder builder = new StoreOperation.Builder(location);
+        
         builder.withContent(converter.fromDomain(value));
 
         if (vClock != null)
@@ -132,12 +123,10 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 		    ? response.getGeneratedKey()
 		    : location.getKey();
 
-        Location k = new Location(location.getBucket(), returnedKey);
-	    if (location.hasType())
-	    {
-			k.withType(location.getType());
-	    }
-
+        Location k = 
+            new Location(location.getBucketName()).setKey(returnedKey)
+                .setBucketType(location.getBucketType());
+	    
         VClock clock = response.getVClock();
 
         return new Response<V>(converted, clock, k);
@@ -178,7 +167,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
             return value;
         }
 
-        public Location getKey()
+        public Location getLocation()
         {
             return key;
         }

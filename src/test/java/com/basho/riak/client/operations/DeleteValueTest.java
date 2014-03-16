@@ -22,6 +22,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class DeleteValueTest
@@ -43,7 +43,7 @@ public class DeleteValueTest
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-    Location key = new Location("bucket", "key").withType("type");
+    Location key = new Location("bucket").setKey("key").setBucketType("type");
     RiakClient client;
 
     @Before

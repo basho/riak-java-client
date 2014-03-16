@@ -1,6 +1,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.operations.datatypes.RiakSet;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 
 public class FetchSet extends FetchDatatype<RiakSet>

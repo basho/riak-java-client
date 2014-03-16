@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DeleteOperation;
+import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,17 +47,15 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        DeleteOperation.Builder builder = new DeleteOperation.Builder(location.getBucket(), location.getKey());
+        DeleteOperation.Builder builder = new DeleteOperation.Builder(location.getBucketName(), location.getKey());
 
         if (vClock != null)
         {
             builder.withVclock(vClock);
         }
 
-        if (location.hasType())
-        {
-            builder.withBucketType(location.getType());
-        }
+        builder.withBucketType(location.getBucketType());
+        
 
         for (Map.Entry<DeleteOption<?>, Object> optPair : options.entrySet())
         {

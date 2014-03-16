@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.*;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -46,7 +47,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
     @SuppressWarnings("unchecked")
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc.getBucket(), loc.getType());
+        DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc.getBucketName(), loc.getBucketType());
 
         if (loc.hasKey())
         {
@@ -114,7 +115,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
 		    ? crdtResponse.getGeneratedKey()
 		    : loc.getKey();
 
-        Location key = new Location(loc.getBucket(), returnedKey).withType(loc.getType());
+        Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
         Context returnedCtx = new Context(crdtResponse.getContext().getValue());
 
         return new Response<T>(key, returnedCtx, riakDatatype);

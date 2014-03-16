@@ -18,6 +18,8 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
@@ -37,8 +39,9 @@ public class ITestFetchOperation extends ITestBase
     {
         final BinaryValue key = BinaryValue.unsafeCreate("my_key_1".getBytes());
         final String value = "{\"value\":\"value\"}";
+        Location location = new Location(bucketName).setKey(key);
         FetchOperation fetchOp = 
-            new FetchOperation.Builder(bucketName, key).build();
+            new FetchOperation.Builder(location).build();
                 
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();
@@ -54,10 +57,9 @@ public class ITestFetchOperation extends ITestBase
         final String value = "{\"value\":\"value\"}";
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        
+        Location location = new Location(bucketName).setKey(key);
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build(); 
         
@@ -65,7 +67,7 @@ public class ITestFetchOperation extends ITestBase
         storeOp.get();
         
         FetchOperation fetchOp = 
-            new FetchOperation.Builder(bucketName, key).build();
+            new FetchOperation.Builder(location).build();
         
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();
@@ -91,10 +93,9 @@ public class ITestFetchOperation extends ITestBase
         op.get();
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        
+        Location location = new Location(bucketName).setKey(key);
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build();
         
@@ -102,8 +103,7 @@ public class ITestFetchOperation extends ITestBase
         storeOp.get();
         
         storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build(); 
         
@@ -111,7 +111,7 @@ public class ITestFetchOperation extends ITestBase
         storeOp.get();
         
         FetchOperation fetchOp = 
-            new FetchOperation.Builder(bucketName, key).build();
+            new FetchOperation.Builder(location).build();
                 
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();

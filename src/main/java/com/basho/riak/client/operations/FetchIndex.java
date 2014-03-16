@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
@@ -48,9 +49,8 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         BinaryValue indexName = BinaryValue.create(index.getFullName());
 
         SecondaryIndexQueryOperation.Builder builder =
-            new SecondaryIndexQueryOperation.Builder(bucket.getBucket(), indexName);
-
-        builder.withBucketType(bucket.getType());
+            new SecondaryIndexQueryOperation.Builder(bucket.getBucketName(), indexName)
+                .withBucketType(bucket.getBucketType());
 
         for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
         {
@@ -80,7 +80,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
         for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
         {
-            Location key = new Location(bucket.getBucket(), entry.getIndexKey()).withType(bucket.getType());
+            Location key = new Location(bucket.getBucketName()).setKey(entry.getIndexKey()).setBucketType(bucket.getBucketType());
             T objectKey = index.convert(entry.getObjectKey());
             IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
             indexEntries.add(indexEntry);

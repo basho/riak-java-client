@@ -18,6 +18,7 @@ package com.basho.riak.client.core;
 import com.basho.riak.client.core.RiakNode.State;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import io.netty.channel.Channel;
 import org.junit.Test;
@@ -176,9 +177,11 @@ public class RiakNodeFixtureTest extends FixtureTest
                         .build();
         
         node.start();
+        
+        Location location = new Location("test_bucket").setKey("test_key2");
+        
         FetchOperation operation = 
-            new FetchOperation.Builder(BinaryValue.unsafeCreate("test_bucket".getBytes()), 
-                                            BinaryValue.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation.Builder(location)
                     .build();
         
         boolean accepted = node.execute(operation);
@@ -197,9 +200,10 @@ public class RiakNodeFixtureTest extends FixtureTest
                         .withRemotePort(startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                         .build();
         node.start();
+        
+        Location location = new Location("test_bucket").setKey("test_key2");
         FetchOperation operation = 
-            new FetchOperation.Builder(BinaryValue.unsafeCreate("test_bucket".getBytes()), 
-                                            BinaryValue.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation.Builder(location)
                     .build();
         
         boolean accepted = node.execute(operation);

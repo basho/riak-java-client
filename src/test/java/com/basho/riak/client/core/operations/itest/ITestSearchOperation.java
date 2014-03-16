@@ -22,6 +22,7 @@ import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.BinaryValue;
@@ -112,10 +113,10 @@ public class ITestSearchOperation extends ITestBase
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'"));
-        
+
+        Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p1".getBytes()));
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(BinaryValue.unsafeCreate("p1".getBytes()))
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         
@@ -129,10 +130,9 @@ public class ITestSearchOperation extends ITestBase
                     "close by her."));
         
         obj.setContentType("text/plain");
-        
+        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p2".getBytes()));
         storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(BinaryValue.unsafeCreate("p2".getBytes()))
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         
@@ -145,10 +145,9 @@ public class ITestSearchOperation extends ITestBase
                     "well."));
         
         obj.setContentType("text/plain");
-        
+        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p3".getBytes()));
         storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(BinaryValue.unsafeCreate("p3".getBytes()))
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         

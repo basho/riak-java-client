@@ -16,6 +16,7 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
@@ -56,9 +57,9 @@ public class StoreOperationTest
 
         ro.setValue(BinaryValue.unsafeCreate(expectedValue));
 
+        Location location = new Location(bucket).setKey(key);
         StoreOperation operation =
-            new StoreOperation.Builder(bucket)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(ro)
                 .build();
 

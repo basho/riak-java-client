@@ -20,8 +20,8 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -41,12 +41,14 @@ import org.slf4j.LoggerFactory;
 public class FetchOperation extends FutureOperation<FetchOperation.Response, RiakKvPB.RpbGetResp>
 {
     private final RiakKvPB.RpbGetReq.Builder reqBuilder;
+    Location location;
     
     private final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
 
     private FetchOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
@@ -83,8 +85,8 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         
         RiakKvPB.RpbGetResp response = responses.get(0);
         
-        FetchOperation.Response.Builder responseBuilder =
-                new FetchOperation.Response.Builder();
+        FetchOperation.Response.Builder responseBuilder = 
+                new FetchOperation.Response.Builder().withLocation(location);
         
         // If the response is null ... it means not found. Riak only sends 
         // a message code and zero bytes when that's the case. (See: decode() )
@@ -93,7 +95,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         {
             responseBuilder.withNotFound(true);
         }
-        else
+        else 
         {
             // To unify the behavior of having just a tombstone vs. siblings
             // that include a tombstone, we create an empty object and mark
@@ -106,11 +108,11 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             {
                 responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList()));
             }
-            
-            responseBuilder.withVClock(new BasicVClock(response.getVclock().toByteArray()))
-                           .withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
-            
-        }
+
+                responseBuilder.withVClock(new BasicVClock(response.getVclock().toByteArray()))
+                       .withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
+
+            }
         
         return responseBuilder.build();
     }
@@ -126,47 +128,28 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     {
         private final RiakKvPB.RpbGetReq.Builder reqBuilder = 
             RiakKvPB.RpbGetReq.newBuilder();
-        private final BinaryValue key;
-        private final BinaryValue bucketName;
-        private BinaryValue bucketType;
+        private final Location location;
         
         /**
-         * Constructs a builder for a FetchOperation.
-         * @param bucketName The name of the bucket for the operation.
-         * @param key The key for the operation.
+         * Construct a FetchOperation that will retrieve an object from Riak stored
+         * at the provided Location.
+         * @param location the location of the object in Riak to fetch.
          */
-        public Builder(BinaryValue bucketName, BinaryValue key)
+        public Builder(Location location)
         {
-            if (null == key || key.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Key cannot be null or zero length");
+                throw new IllegalArgumentException("Location can not be null.");
             }
-            reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-            this.key = key;
+            else if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
+            }
+            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
             
-            if (null == bucketName || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-            this.bucketName = bucketName;
-        }
-        
-        /**
-         * Set the bucket type for the FetchOperation.
-         * If not asSet, "default" is used.
-         * @param bucketType the bucket type
-         * @return a reference to this object.
-         */
-        public Builder withBucketType(BinaryValue bucketType)
-        {
-            if (null == bucketType || bucketType.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
-            }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            this.bucketType = bucketType;
-            return this;
         }
         
         /**
@@ -315,11 +298,13 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     {
         private final List<RiakObject> objectList;
         private final VClock vclock;
+        private final Location location;
         
         protected ResponseBase(Init<?> builder)
         {
             this.objectList = builder.objectList;
             this.vclock = builder.vclock;
+            this.location = builder.location;
         }
         
         public List<RiakObject> getObjectList()
@@ -337,11 +322,17 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return vclock;
         }
         
+        public Location getLocation()
+        {
+            return location;
+        }
+        
         protected static abstract class Init<T extends Init<T>>
         {
             private final List<RiakObject> objectList =
                 new LinkedList<RiakObject>();
             private VClock vclock;
+            private Location location;
             
             protected abstract T self();
             abstract ResponseBase build();
@@ -361,6 +352,12 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             T withVClock(VClock vclock)
             {
                 this.vclock = vclock;
+                return self();
+            }
+            
+            T withLocation(Location location)
+            {
+                this.location = location;
                 return self();
             }
         }

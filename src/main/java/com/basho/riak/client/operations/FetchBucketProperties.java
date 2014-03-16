@@ -3,6 +3,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.query.BucketProperties;
+import com.basho.riak.client.query.Location;
 
 import java.util.concurrent.ExecutionException;
 
@@ -19,14 +20,11 @@ public class FetchBucketProperties extends RiakCommand<BucketProperties>
 	@Override
 	BucketProperties execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		FetchBucketPropsOperation.Builder operation = new FetchBucketPropsOperation.Builder(location.getBucket());
-
-		if (location.hasType())
-		{
-			operation.withBucketType(location.getType());
-		}
-
-		return cluster.execute(operation.build()).get();
+		FetchBucketPropsOperation.Builder operation = 
+            new FetchBucketPropsOperation.Builder(location.getBucketName())
+                .withBucketType(location.getBucketType());
+		
+        return cluster.execute(operation.build()).get();
 	}
 
 	public static class Builder

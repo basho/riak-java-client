@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
@@ -38,9 +39,9 @@ public class ITestDeleteOperation extends ITestBase
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.unsafeCreate(value.getBytes()));
         
+        Location location = new Location(bucketName).setKey(key);
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build(); 
         
@@ -48,7 +49,7 @@ public class ITestDeleteOperation extends ITestBase
         storeOp.get();
         
         FetchOperation fetchOp = 
-            new FetchOperation.Builder(bucketName, key).build();
+            new FetchOperation.Builder(location).build();
                 
         
         cluster.execute(fetchOp);
@@ -64,7 +65,7 @@ public class ITestDeleteOperation extends ITestBase
         delOp.get();
         
         fetchOp = 
-            new FetchOperation.Builder(bucketName, key).build();
+            new FetchOperation.Builder(location).build();
         
         cluster.execute(fetchOp);
         response = fetchOp.get();

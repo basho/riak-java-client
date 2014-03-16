@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.StringBinIndex;
@@ -87,9 +88,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(5L);
 
+            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =
-                new StoreOperation.Builder(bucketName)
-                    .withKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()))
+                new StoreOperation.Builder(location)
                     .withContent(obj)
                     .build();
 
@@ -282,9 +283,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(new StringBinIndex.Name(indexName)).add("foo" + String.format("%02d", i));
 
+            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate(Long.toString(i).getBytes()));
             StoreOperation storeOp =
-                    new StoreOperation.Builder(bucketName)
-                            .withKey(BinaryValue.unsafeCreate(Long.toString(i).getBytes()))
+                    new StoreOperation.Builder(location)
                             .withContent(obj)
                             .build();
 
@@ -339,9 +340,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
 
+            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =
-                    new StoreOperation.Builder(bucketName)
-                            .withKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()))
+                    new StoreOperation.Builder(location)
                             .withContent(obj)
                             .build();
 
