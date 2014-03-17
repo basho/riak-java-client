@@ -2,11 +2,10 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
-import com.basho.riak.client.query.search.YokozunaIndex;
 
 import java.util.concurrent.ExecutionException;
 
-public class FetchSearchIndex extends RiakCommand<YokozunaIndex>
+public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response>
 {
 	private final String index;
 
@@ -16,12 +15,12 @@ public class FetchSearchIndex extends RiakCommand<YokozunaIndex>
 	}
 
 	@Override
-	YokozunaIndex execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	YzFetchIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
 	    builder.withIndexName(index);
 	    YzFetchIndexOperation operation = builder.build();
-	    return cluster.execute(operation).get().get(1);
+	    return cluster.execute(operation).get();
 	}
 
 	public static class Builder

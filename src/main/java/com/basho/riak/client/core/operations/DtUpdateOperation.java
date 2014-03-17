@@ -32,12 +32,13 @@ import java.util.concurrent.ExecutionException;
 
 public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Response, RiakDtPB.DtUpdateResp>
 {
-
+    private final Location location;
     private final RiakDtPB.DtUpdateReq.Builder reqBuilder;
 
     private DtUpdateOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
@@ -53,7 +54,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         CrdtElement element = converter.convert(response);
         
         Response.Builder responseBuilder = 
-            new Response.Builder().withCrdtElement(element);
+            new Response.Builder().withCrdtElement(element).withLocation(location);
 
         if (response.hasKey())
         {

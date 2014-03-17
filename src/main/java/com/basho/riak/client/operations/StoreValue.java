@@ -119,9 +119,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation.Response response = cluster.execute(operation).get();
         List<V> converted = convert(converter, response.getObjectList());
 
-	    BinaryValue returnedKey = response.hasGeneratedKey()
-		    ? response.getGeneratedKey()
-		    : location.getKey();
+	    BinaryValue returnedKey = response.getLocation().getKey();
 
         Location k = 
             new Location(location.getBucketName()).setKey(returnedKey)

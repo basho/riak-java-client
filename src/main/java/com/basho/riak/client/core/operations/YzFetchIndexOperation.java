@@ -29,17 +29,19 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, RiakYokozunaPB.RpbYokozunaIndexGetResp>
+public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation.Response, RiakYokozunaPB.RpbYokozunaIndexGetResp>
 {    
     private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder;
+    private final String indexName;
     
     private YzFetchIndexOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.indexName = builder.indexName;
     }
     
     @Override
-    protected List<YokozunaIndex> convert(List<RiakYokozunaPB.RpbYokozunaIndexGetResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakYokozunaPB.RpbYokozunaIndexGetResp> rawResponse) throws ExecutionException
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaIndexGetResp response = rawResponse.get(0);
@@ -51,7 +53,7 @@ public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, 
                                             pbIndex.getSchema().toStringUtf8()));
         }
         
-        return indexList;
+        return new Response(indexName, indexList);
     }
 
     @Override
@@ -79,13 +81,12 @@ public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, 
     
     public static class Builder
     {
-        RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder =  
+        private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder =  
             RiakYokozunaPB.RpbYokozunaIndexGetReq.newBuilder();
+        private String indexName = "All Indexes";
         
         public Builder()
-        {
-            
-        }
+        {}
         
         public Builder withIndexName(String indexName) 
         {
@@ -94,12 +95,35 @@ public class YzFetchIndexOperation extends FutureOperation<List<YokozunaIndex>, 
                 throw new IllegalArgumentException("Index name cannot be null or zero length");
             }
             reqBuilder.setName(ByteString.copyFromUtf8(indexName));
+            this.indexName = indexName;
             return this;
         }
         
         public YzFetchIndexOperation build()
         {
             return new YzFetchIndexOperation(this);
+        }
+    }
+    
+    public static class Response
+    {
+        private final List<YokozunaIndex> indexList;
+        private final String indexName;
+        
+        Response(String indexName, List<YokozunaIndex> indexList)
+        {
+            this.indexName = indexName;
+            this.indexList = indexList;
+        }
+        
+        public String getIndexName()
+        {
+            return indexName;
+        }
+        
+        public List<YokozunaIndex> getIndexes()
+        {
+            return this.indexList;
         }
     }
 }

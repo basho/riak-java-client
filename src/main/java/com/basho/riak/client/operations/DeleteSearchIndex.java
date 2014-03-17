@@ -5,7 +5,7 @@ import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
 import java.util.concurrent.ExecutionException;
 
-public class DeleteSearchIndex extends RiakCommand<Boolean>
+public class DeleteSearchIndex extends RiakCommand<YzDeleteIndexOperation.Response>
 {
 	private final String index;
 
@@ -15,7 +15,7 @@ public class DeleteSearchIndex extends RiakCommand<Boolean>
 	}
 
 	@Override
-	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	YzDeleteIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		YzDeleteIndexOperation operation = new YzDeleteIndexOperation.Builder(index).build();
 		return cluster.execute(operation).get();

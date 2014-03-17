@@ -41,7 +41,7 @@ public class App implements RiakFutureListener<RiakObject>
                 .build();
                                
         cluster.execute(bpOp);
-        BucketProperties props = bpOp.get();
+        BucketProperties props = bpOp.get().getBucketProperties();
         System.out.println(props);
         
         

@@ -28,19 +28,21 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutSchemaOperation extends FutureOperation<Boolean, Void>
+public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.Response, Void>
 {
     private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder;
+    private final YokozunaSchema schema;
     
     private YzPutSchemaOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.schema = builder.schema;
     }
     
     @Override
-    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
+    protected YzPutSchemaOperation.Response convert(List<Void> rawResponse) throws ExecutionException
     {
-        return true;
+        return new Response(schema);
     }
 
     @Override
@@ -61,6 +63,7 @@ public class YzPutSchemaOperation extends FutureOperation<Boolean, Void>
     {
         private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaSchemaPutReq.newBuilder();
+        private final YokozunaSchema schema;
         
         public Builder(YokozunaSchema schema)
         {
@@ -70,11 +73,27 @@ public class YzPutSchemaOperation extends FutureOperation<Boolean, Void>
             schemaBuilder.setName(ByteString.copyFromUtf8(schema.getName()));
             schemaBuilder.setContent(ByteString.copyFromUtf8(schema.getContent()));
             reqBuilder.setSchema(schemaBuilder);
+            this.schema = schema;
         }
         
         public YzPutSchemaOperation build()
         {
             return new YzPutSchemaOperation(this);
+        }
+    }
+    
+    public static class Response
+    {
+        private final YokozunaSchema schema;
+        
+        Response(YokozunaSchema schema)
+        {
+            this.schema = schema;
+        }
+        
+        public YokozunaSchema getScema()
+        {
+            return schema;
         }
     }
 }

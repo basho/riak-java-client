@@ -318,36 +318,18 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         
     }
     
-    public static class Response extends FetchOperation.ResponseBase
+    /**
+     * Response returned from a StoreOperation
+     */
+    public static class Response extends FetchOperation.KvResponseBase
     {
-        private final BinaryValue generatedKey;
-        
         private Response(Init<?> builder)
         {
             super(builder);
-            this.generatedKey = builder.generatedKey;
-}
-        
-        public boolean hasGeneratedKey()
-        {
-            return generatedKey != null;
         }
         
-        public BinaryValue getGeneratedKey()
+        protected static abstract class Init<T extends Init<T>> extends FetchOperation.KvResponseBase.Init<T>
         {
-            return generatedKey;
-        }
-        
-        protected static abstract class Init<T extends Init<T>> extends FetchOperation.ResponseBase.Init<T>
-        {
-            private BinaryValue generatedKey;
-            
-            T withGeneratedKey(BinaryValue generatedKey)
-            {
-                this.generatedKey = generatedKey;
-                return self();
-            }
-            
             @Override
             Response build()
             {
@@ -358,7 +340,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         static class Builder extends Init<Builder>
         {
             @Override
-            protected Builder self()
+            public Builder self()
             {
                 return this;
             }

@@ -28,19 +28,21 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutIndexOperation extends FutureOperation<Boolean, Void>
+public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Response, Void>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder;
+    private final YokozunaIndex index;
     
     private YzPutIndexOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.index = builder.index;
     }
     
     @Override
-    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
+    protected YzPutIndexOperation.Response convert(List<Void> rawResponse) throws ExecutionException
     {
-        return true;
+        return new Response(index);
     }
 
     @Override
@@ -62,6 +64,7 @@ public class YzPutIndexOperation extends FutureOperation<Boolean, Void>
     {
         private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaIndexPutReq.newBuilder();
+        private final YokozunaIndex index;
         
         public Builder(YokozunaIndex index)
         {
@@ -81,12 +84,27 @@ public class YzPutIndexOperation extends FutureOperation<Boolean, Void>
             }
             
             reqBuilder.setIndex(indexBuilder);
+            this.index = index;
         }
         
         public YzPutIndexOperation build()
         {
             return new YzPutIndexOperation(this);
         }
+    }
+    
+    public static class Response
+    {
+        private final YokozunaIndex index;
         
+        Response(YokozunaIndex index)
+        {
+            this.index = index;
+        }
+        
+        public YokozunaIndex getIndex()
+        {
+            return index;
+        }
     }
 }

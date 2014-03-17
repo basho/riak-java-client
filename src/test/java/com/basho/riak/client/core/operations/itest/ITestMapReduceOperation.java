@@ -100,7 +100,7 @@ public class ITestMapReduceOperation extends ITestBase
                 .build();
         
         cluster.execute(mrOp);
-        List<BinaryValue> resultList = mrOp.get();
+        List<BinaryValue> resultList = mrOp.get().getResults();
         
         // The query should return one result which is a JSON array containing a 
         // single JSON object that is a asSet of word counts.

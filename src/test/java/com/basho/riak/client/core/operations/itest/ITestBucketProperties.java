@@ -162,7 +162,7 @@ public class ITestBucketProperties extends ITestBase
         FetchBucketPropsOperation.Builder builder = new FetchBucketPropsOperation.Builder(location);
         FetchBucketPropsOperation op = builder.build();
         cluster.execute(op);
-        return op.get();
+        return op.get().getBucketProperties();
     }
     
     private void storeBucketProps(StoreBucketPropsOperation.Builder builder) throws InterruptedException, ExecutionException

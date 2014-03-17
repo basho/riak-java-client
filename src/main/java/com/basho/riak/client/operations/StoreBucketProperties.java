@@ -7,7 +7,7 @@ import com.basho.riak.client.query.functions.Function;
 
 import java.util.concurrent.ExecutionException;
 
-public class StoreBucketProperties extends RiakCommand<Boolean>
+public class StoreBucketProperties extends RiakCommand<StoreBucketPropsOperation.Response>
 {
 
 	private final Location location;
@@ -64,7 +64,7 @@ public class StoreBucketProperties extends RiakCommand<Boolean>
 	}
 
 	@Override
-	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	StoreBucketPropsOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		StoreBucketPropsOperation.Builder builder = 

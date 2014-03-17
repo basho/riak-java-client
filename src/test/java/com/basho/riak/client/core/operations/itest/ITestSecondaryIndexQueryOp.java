@@ -38,7 +38,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSingleQuerySingleResponse() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(test2i);
+        //Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";
@@ -47,9 +47,13 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SetupIndexTestData(indexName, keyBase, value);
 
         Location location = new Location(bucketName);
-        SecondaryIndexQueryOperation queryOp = 
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+        SecondaryIndexQueryOperation.Query query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                .build();
+        
+        SecondaryIndexQueryOperation queryOp = 
+            new SecondaryIndexQueryOperation.Builder(location, query)
                 .build();
         
         cluster.execute(queryOp);
@@ -59,10 +63,13 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertFalse(response.getEntryList().get(0).hasIndexKey());
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
-        queryOp = 
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+        query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withReturnKeyAndIndex(true)
+                .build();
+        queryOp = 
+            new SecondaryIndexQueryOperation.Builder(location, query)
                 .build();
         
         cluster.execute(queryOp);
@@ -100,10 +107,15 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         }
         
         Location location = new Location(bucketName);
-        SecondaryIndexQueryOperation queryOp = 
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+        
+        SecondaryIndexQueryOperation.Query query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withPaginationSort(true)
+                .build();
+        
+        SecondaryIndexQueryOperation queryOp = 
+            new SecondaryIndexQueryOperation.Builder(location, query)
                 .build();
         
         cluster.execute(queryOp);
@@ -113,11 +125,15 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertFalse(response.getEntryList().get(0).hasIndexKey());
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "0");
         
-        queryOp = 
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+        query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                .withReturnKeyAndIndex(true)
                 .withPaginationSort(true)
+                .withReturnKeyAndIndex(true)
+                .build();
+        
+        queryOp = 
+            new SecondaryIndexQueryOperation.Builder(location, query)
                 .build();
         
         cluster.execute(queryOp);
@@ -142,11 +158,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SetupIndexTestData(indexName, keyBase, value);
 
         Location location = new Location(bucketName);
+        
+        SecondaryIndexQueryOperation.Query query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
+                .withPaginationSort(true)
+                .build();
+        
         SecondaryIndexQueryOperation queryOp = 
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
-                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
-                    .withPaginationSort(true)
+            new SecondaryIndexQueryOperation.Builder(location, query)
                     .build();
         
         cluster.execute(queryOp);
@@ -156,12 +177,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertFalse(response.getEntryList().get(0).hasIndexKey());
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
-        queryOp = 
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
-                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+        query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
                     .withReturnKeyAndIndex(true)
                     .withPaginationSort(true)
+                    .build();
+        
+        queryOp = 
+            new SecondaryIndexQueryOperation.Builder(location, query)
                     .build();
         
         cluster.execute(queryOp);
@@ -183,11 +208,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SetupIndexTestData(indexName, "", value);
 
         Location location = new Location(bucketName);
+        
+        SecondaryIndexQueryOperation.Query query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                .withPaginationSort(false)
+                .build();
+        
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
-                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                        .withPaginationSort(false)
+                new SecondaryIndexQueryOperation.Builder(location, query)
                         .build();
 
         cluster.execute(queryOp);
@@ -207,11 +237,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SetupIndexTestData(indexName, "", value);
 
         Location location = new Location(bucketName);
+        
+        SecondaryIndexQueryOperation.Query query =
+            new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                .withPaginationSort(true)
+                .build();
+        
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
-                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                        .withPaginationSort(true)
+                new SecondaryIndexQueryOperation.Builder(location, query)
                         .build();
 
         cluster.execute(queryOp);
@@ -234,12 +269,17 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         try {
             Location location = new Location(bucketName);
+            
+            SecondaryIndexQueryOperation.Query query =
+                new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                    .withPaginationSort(false)
+                    .withMaxResults(20)
+                    .build();
+            
             SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
-                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                        .withPaginationSort(false)
-                        .withMaxResults(20)
+                new SecondaryIndexQueryOperation.Builder(location, query)
                         .build();
 
             fail("Didn't throw IllegalArgumentException");
@@ -260,12 +300,17 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SetupIndexTestData(indexName, "", value);
 
         Location location = new Location(bucketName);
+        
+        SecondaryIndexQueryOperation.Query query =
+                new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                    .withPaginationSort(true)
+                    .withMaxResults(20)
+                    .build();
+        
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
-                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                        .withPaginationSort(true)
-                        .withMaxResults(20)
+                new SecondaryIndexQueryOperation.Builder(location, query)
                         .build();
 
         cluster.execute(queryOp);
@@ -301,13 +346,18 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         }
 
         Location location = new Location(bucketName);
+        
+        SecondaryIndexQueryOperation.Query query =
+                new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate((indexName + "_bin").getBytes()))
+                    .withRangeStart(BinaryValue.unsafeCreate("foo00".getBytes()))
+                    .withRangeEnd(BinaryValue.unsafeCreate("foo19".getBytes()))
+                    .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
+                    .withReturnKeyAndIndex(true)
+                    .withPaginationSort(true)
+                    .build();
+        
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_bin").getBytes()))
-                        .withRangeStart(BinaryValue.unsafeCreate("foo00".getBytes()))
-                        .withRangeEnd(BinaryValue.unsafeCreate("foo19".getBytes()))
-                        .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
-                        .withReturnKeyAndIndex(true)
-                        .withPaginationSort(true)
+                new SecondaryIndexQueryOperation.Builder(location, query)
                         .build();
 
         cluster.execute(queryOp);
@@ -327,10 +377,15 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         
         try {
             Location location = new Location(bucketName);
-            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate(("foo_int").getBytes()))
+            
+            SecondaryIndexQueryOperation.Query query =
+                new SecondaryIndexQueryOperation.Query.Builder(BinaryValue.unsafeCreate(("foo_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate("0".getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate("100".getBytes()))
                     .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
+                    .build();
+            
+            new SecondaryIndexQueryOperation.Builder(location, query)
                     .build();
 
             fail("Didn't throw IllegalArgumentException");

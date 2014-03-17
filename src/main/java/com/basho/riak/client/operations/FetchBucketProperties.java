@@ -2,12 +2,11 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
-import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.Location;
 
 import java.util.concurrent.ExecutionException;
 
-public class FetchBucketProperties extends RiakCommand<BucketProperties>
+public class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response>
 {
 
 	private final Location location;
@@ -18,7 +17,7 @@ public class FetchBucketProperties extends RiakCommand<BucketProperties>
 	}
 
 	@Override
-	BucketProperties execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	FetchBucketPropsOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		FetchBucketPropsOperation.Builder operation = 
             new FetchBucketPropsOperation.Builder(location);

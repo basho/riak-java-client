@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbListKeysResp>
+public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp>
 {
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
@@ -38,17 +38,17 @@ public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKv
     }
 
     @Override
-    protected List<BinaryValue> convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
     {
-        List<BinaryValue> keys = new ArrayList<BinaryValue>(rawResponse.size());
+        Response.Builder builder = new Response.Builder();
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
         {
             for (ByteString bucket : resp.getKeysList())
             {
-                keys.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
+                builder.addKey(BinaryValue.unsafeCreate(bucket.toByteArray()));
             }
         }
-        return keys;
+        return builder.build();
     }
 
     @Override
@@ -112,10 +112,55 @@ public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKv
         {
             return new ListKeysOperation(this);
         }
-        
-        
-        
-        
     }
     
+    public static class Response extends ResponseWithLocation
+    {
+        private final List<BinaryValue> keys;
+        public Response(Init<?> builder)
+        {
+            super(builder);
+            this.keys = builder.keys;
+        }
+        
+        public List<BinaryValue> getKeys()
+        {
+            return keys;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            private List<BinaryValue> keys = new ArrayList<BinaryValue>();
+            
+            T addKeys(List<BinaryValue> keys)
+            {
+                this.keys.addAll(keys);
+                return self();
+            }
+            
+            T addKey(BinaryValue key) 
+            {
+                this.keys.add(key);
+                return self();
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+            
+        }
+
+    }
 }

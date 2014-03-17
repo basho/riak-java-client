@@ -32,21 +32,26 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchBucketPropsOperation extends FutureOperation<BucketProperties, RiakPB.RpbGetBucketResp>
+public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsOperation.Response, RiakPB.RpbGetBucketResp>
 {
     private final RiakPB.RpbGetBucketReq.Builder reqBuilder;
+    private final Location location;
     
     public FetchBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
     
     @Override
-    protected BucketProperties convert(List<RiakPB.RpbGetBucketResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakPB.RpbGetBucketResp> rawResponse) throws ExecutionException
     {
         // This isn't streaming, there will only be one response. 
         RiakPB.RpbBucketProps pbProps = rawResponse.get(0).getProps();
-        return BucketPropertiesConverter.convert(pbProps);
+        return new Response.Builder()
+                    .withLocation(location)
+                    .withBucketProperties(BucketPropertiesConverter.convert(pbProps))
+                    .build();
     }
 
     @Override
@@ -97,4 +102,44 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
         }
     }
     
+    public static class Response extends ResponseWithLocation
+    {
+        private final BucketProperties props;
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.props = builder.props;
+        }
+        
+        public BucketProperties getBucketProperties()
+        {
+            return props;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            private BucketProperties props;
+            
+            T withBucketProperties(BucketProperties props)
+            {
+                this.props = props;
+                return self();
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            public Builder self()
+            {
+                return this;
+            }
+            
+            @Override
+            public Response build()
+            {
+                return new Response(this);
+            }
+        }
+    }
 }

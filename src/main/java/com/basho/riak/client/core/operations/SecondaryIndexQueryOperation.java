@@ -37,11 +37,15 @@ import java.util.concurrent.ExecutionException;
 public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp>
 {
     private final RiakKvPB.RpbIndexReq pbReq;
+    private final Query query;
+    private final Location location;
     
     private SecondaryIndexQueryOperation(Builder builder)
     {
         // Yo dawg, we don't ever not want to use streaming.
         builder.pbReqBuilder.setStream(true);
+        this.location = builder.location;
+        this.query = builder.query;
         this.pbReq = builder.pbReqBuilder.build();
     }
 
@@ -49,7 +53,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse) throws ExecutionException
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder = 
-            new SecondaryIndexQueryOperation.Response.Builder();
+            new SecondaryIndexQueryOperation.Response.Builder()
+                .withLocation(location)
+                .withQuery(query);
         
         for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
         {
@@ -127,195 +133,369 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     
     
     /**
-     * Builder that constructs a SecondaryIndexQueryOperation.
+     * Builder that constructs a QueryOperation.
      */
     public static class Builder
     {
         private final RiakKvPB.RpbIndexReq.Builder pbReqBuilder = RiakKvPB.RpbIndexReq.newBuilder();
         private final Location location;
+        private final Query query;
         
         /**
-         * Constructs a builder for a SecondaryIndexQueryOperation. 
+         * Constructs a builder for a QueryOperation. 
          * The index name must be the complete name with the _int or _bin suffix.
          * @param location the location of the index in Riak.
-         * @param indexName the name of the index (including suffix).
+         * @param query A 2i query.
          */
-        public Builder(Location location, 
-                        BinaryValue indexName)
+        public Builder(Location location, Query query)
         {
             if (location == null)
             {
                 throw new IllegalArgumentException("Location cannot be null");
             }
-            else if (null == indexName || indexName.length() == 0)
+            else if (query == null)
             {
-                throw new IllegalArgumentException("Index name cannot be null or zero length");
+                throw new IllegalArgumentException("Query cannot be null.");
             }
 
-
+            this.query = query;
+            this.location = location;
+            
             pbReqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()))
                         .setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()))
-                        .setIndex(ByteString.copyFrom(indexName.unsafeGetValue()));
-            this.location = location;
-        }
-        
-        /**
-         * Set a single secondary index key to use for query.
-         * If querying a _int index the bytes must be the UTF-8 text
-         * representation of an integer (Yes, really). 
-         * @param key the secondary index key.
-         * @return a reference to this object.
-         */
-        public Builder withIndexKey(BinaryValue key)
-        {
-            pbReqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-            return this;
-        }
-        
-        /**
-         * Set the start value for a range query.
-         * If querying a _int index the bytes must be the UTF-8 text
-         * representation of an integer (Yes, really). 
-         * @param startingIndex the starting index for a range query.
-         * @return a reference to this object.
-         */
-        public Builder withRangeStart(BinaryValue startingIndex)
-        {
-            pbReqBuilder.setRangeMin(ByteString.copyFrom(startingIndex.unsafeGetValue()));
-            return this;
-        }
-        
-        /**
-         * Set the ending value for a range query.
-         * If querying a _int index the bytes must be the UTF-8 text
-         * representation of an integer (Yes, really). 
-         * @param endIndex the ending index for a range query.
-         * @return a reference to this object.
-         */
-        public Builder withRangeEnd(BinaryValue endIndex) 
-        {
-            pbReqBuilder.setRangeMax(ByteString.copyFrom(endIndex.unsafeGetValue()));
-            return this;
-        }
-        
-        /**
-         * Set whether to return the index keys with the Riak object keys.
-         * Setting this to true will return both the index key and the Riak
-         * object's key. The default is false (only to return the Riak object keys).
-         * @param returnBoth true to return both index and object keys, false to return only object keys.
-         * @return a reference to this object.
-         */
-        public Builder withReturnKeyAndIndex(boolean returnBoth)
-        {
-            pbReqBuilder.setReturnTerms(returnBoth);
-            return this;
-        }
-        
-        /**
-         * Set the maximum number of results returned by the query.
-         * @param maxResults the number of results.
-         * @return a reference to this object.
-         */
-        public Builder withMaxResults(int maxResults)
-        {
-            pbReqBuilder.setMaxResults(maxResults);
-            return this;
-        }
-        
-        /**
-         * Set the continuation for this query.
-         * @param continuation the continuation.
-         * @return a reference to this object.
-         */
-        public Builder withContinuation(BinaryValue continuation)
-        {
-            pbReqBuilder.setContinuation(ByteString.copyFrom(continuation.unsafeGetValue()));
-            return this;
-        }
-
-        /**
-         * Set whether to sort the results of a non-paginated 2i query.
-         * <p>
-         * Setting this to true will sort the results in Riak before returning them.
-         * </p>
-         * <p>
-         * Note that this is not recommended for queries that could return a large
-         * result set; the overhead in Riak is substantial. 
-         * </p>
-         * 
-         * @param orderByKey true to sort the results, false to return as-is.
-         * @return a reference to this object.
-         */
-        public Builder withPaginationSort(boolean orderByKey)
-        {
-            pbReqBuilder.setPaginationSort(orderByKey);
-            return this;
-        }
-
-        /**
-         * Set the regex to filter result terms by for this query.
-         * @param filter the regex to filter terms by.
-         * @return a reference to this object.
-         */
-        public Builder withRegexTermFilter(BinaryValue filter)
-        {
-            pbReqBuilder.setTermRegex(ByteString.copyFrom(filter.unsafeGetValue()));
-            return this;
-        }
-        
-        /**
-         * Construct a new SecondaryIndexQueryOperation.
-         * @return a SecondaryIndexQueryOperation
-         */
-        public SecondaryIndexQueryOperation build()
-        {
-            // sanity checks
-            if ( !pbReqBuilder.hasRangeMin() && !pbReqBuilder.hasRangeMax() && !pbReqBuilder.hasKey())
+                        .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
+                        .setReturnTerms(query.returnKeyAndIndex);
+            
+            if (query.indexKey != null)
             {
-                throw new IllegalArgumentException("An index key or range must be supplied");
-            }
-            else if ( (pbReqBuilder.hasRangeMin() && !pbReqBuilder.hasRangeMax()) ||
-                 (pbReqBuilder.hasRangeMax() && !pbReqBuilder.hasRangeMin()) )
-            {
-                throw new IllegalArgumentException("When specifying ranges both start and end must be asSet");
-            }
-            else if (pbReqBuilder.hasRangeMin() && pbReqBuilder.hasKey())
-            {
-                throw new IllegalArgumentException("Cannot specify single index key and range");
-            }
-            else if (pbReqBuilder.hasMaxResults() && pbReqBuilder.hasPaginationSort()
-                                                  && !pbReqBuilder.getPaginationSort())
-            {
-                throw new IllegalArgumentException("Cannot set paginationSort=false while setting maxResults");
-            }
-            else if (pbReqBuilder.hasTermRegex() && pbReqBuilder.getIndex().toStringUtf8().endsWith("_int"))
-            {
-                throw new IllegalArgumentException("Cannot use term regular expression in integer query");
-            }
-
-            if (pbReqBuilder.hasKey())
-            {
-                pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
+                pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
+                            .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
             else
             {
-                pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
+                pbReqBuilder.setRangeMin(ByteString.copyFrom(query.rangeStart.unsafeGetValue()))
+                            .setRangeMax(ByteString.copyFrom(query.rangeEnd.unsafeGetValue()))
+                            .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
+            }
+
+            if (query.maxResults != null)
+            {
+                pbReqBuilder.setMaxResults(query.maxResults);
+            }
+
+            if (query.continuation != null)
+            {
+                pbReqBuilder.setContinuation(ByteString.copyFrom(query.continuation.unsafeGetValue()));
+            }
+
+            if (query.paginationSort != null)
+            {
+                pbReqBuilder.setPaginationSort(query.paginationSort);
+            }
+
+            if (query.termFilter != null)
+            {
+                pbReqBuilder.setTermRegex(ByteString.copyFrom(query.termFilter.unsafeGetValue()));
+            }
+        }
+        
+        /**
+         * Construct a new QueryOperation.
+         * @return a QueryOperation
+         */
+        public SecondaryIndexQueryOperation build()
+        {
+            return new SecondaryIndexQueryOperation(this);
+        }
+    }
+    
+    public static class Query
+    {
+        private final BinaryValue indexName;
+        private final BinaryValue indexKey;
+        private final BinaryValue rangeStart;
+        private final BinaryValue rangeEnd;
+        private final boolean returnKeyAndIndex;
+        private final Integer maxResults;
+        private final BinaryValue continuation;
+        private final Boolean paginationSort;
+        private final BinaryValue termFilter;
+        
+        private Query(Builder builder)
+        {
+            this.indexName = builder.indexName;
+            this.indexKey = builder.indexKey;
+            this.rangeStart = builder.rangeStart;
+            this.rangeEnd = builder.rangeEnd;
+            this.returnKeyAndIndex = builder.returnKeyAndIndex;
+            this.maxResults = builder.maxResults;
+            this.continuation = builder.continuation;
+            this.paginationSort = builder.paginationSort;
+            this.termFilter = builder.termFilter;
+        }
+
+        /**
+         * @return the indexName
+         */
+        public BinaryValue getIndexName()
+        {
+            return indexName;
+        }
+
+        /**
+         * @return the indexKey
+         */
+        public BinaryValue getIndexKey()
+        {
+            return indexKey;
+        }
+
+        /**
+         * @return the rangeStart
+         */
+        public BinaryValue getRangeStart()
+        {
+            return rangeStart;
+        }
+
+        /**
+         * @return the rangeEnd
+         */
+        public BinaryValue getRangeEnd()
+        {
+            return rangeEnd;
+        }
+
+        /**
+         * @return the returnKeyAndIndex
+         */
+        public boolean isReturnKeyAndIndex()
+        {
+            return returnKeyAndIndex;
+        }
+
+        /**
+         * @return the maxResults
+         */
+        public int getMaxResults()
+        {
+            return maxResults;
+        }
+
+        /**
+         * @return the continuation
+         */
+        public BinaryValue getContinuation()
+        {
+            return continuation;
+        }
+
+        /**
+         * @return the paginationSort
+         */
+        public boolean isPaginationSort()
+        {
+            return paginationSort;
+        }
+
+        /**
+         * @return the termFilter
+         */
+        public BinaryValue getTermFilter()
+        {
+            return termFilter;
+        }
+        
+        
+        
+        public static class Builder
+        {
+            private final BinaryValue indexName;
+            private BinaryValue indexKey;
+            private BinaryValue rangeStart;
+            private BinaryValue rangeEnd;
+            private boolean returnKeyAndIndex;
+            private Integer maxResults;
+            private BinaryValue continuation;
+            private Boolean paginationSort;
+            private BinaryValue termFilter;
+            
+            /**
+            * Constructs a builder for a (2i) Query. 
+            * The index name must be the complete name with the _int or _bin suffix.
+            * @param indexName the name of the index (including suffix).
+            */
+            public Builder(BinaryValue indexName)
+            {
+                if (null == indexName || indexName.length() == 0)
+                {
+                    throw new IllegalArgumentException("Index name cannot be null or zero length");
+                }
+                this.indexName = indexName;
             }
             
-            return new SecondaryIndexQueryOperation(this);
+            /**
+            * Set a single secondary index key to use for query.
+            * If querying a _int index the bytes must be the UTF-8 text
+            * representation of an integer (Yes, really). 
+            * @param key the secondary index key.
+            * @return a reference to this object.
+            */
+           public Builder withIndexKey(BinaryValue key)
+           {
+               this.indexKey = key;
+               return this;
+           }
+           
+           /**
+            * Set the start value for a range query.
+            * If querying a _int index the bytes must be the UTF-8 text
+            * representation of an integer (Yes, really). 
+            * @param startingIndex the starting index for a range query.
+            * @return a reference to this object.
+            */
+           public Builder withRangeStart(BinaryValue startingIndex)
+           {
+               this.rangeStart = startingIndex;
+               return this;
+           }
+            
+           /**
+            * Set the ending value for a range query.
+            * If querying a _int index the bytes must be the UTF-8 text
+            * representation of an integer (Yes, really). 
+            * @param endIndex the ending index for a range query.
+            * @return a reference to this object.
+            */
+           public Builder withRangeEnd(BinaryValue endIndex) 
+           {
+               this.rangeEnd = endIndex;
+               return this;
+           }
+            
+           /**
+            * Set whether to return the index keys with the Riak object keys.
+            * Setting this to true will return both the index key and the Riak
+            * object's key. The default is false (only to return the Riak object keys).
+            * @param returnBoth true to return both index and object keys, false to return only object keys.
+            * @return a reference to this object.
+            */
+           public Builder withReturnKeyAndIndex(boolean returnBoth)
+           {
+               this.returnKeyAndIndex = returnBoth;
+               return this;
+           }
+           
+           /**
+            * Set the maximum number of results returned by the query.
+            * @param maxResults the number of results.
+            * @return a reference to this object.
+            */
+           public Builder withMaxResults(int maxResults)
+           {
+               this.maxResults = maxResults;
+               return this;
+           }
+
+           /**
+            * Set the continuation for this query.
+            * @param continuation the continuation.
+            * @return a reference to this object.
+            */
+           public Builder withContinuation(BinaryValue continuation)
+           {
+               this.continuation = continuation;
+               return this;
+           }
+           
+           /**
+            * Set whether to sort the results of a non-paginated 2i query.
+            * <p>
+            * Setting this to true will sort the results in Riak before returning them.
+            * </p>
+            * <p>
+            * Note that this is not recommended for queries that could return a large
+            * result set; the overhead in Riak is substantial. 
+            * </p>
+            * 
+            * @param orderByKey true to sort the results, false to return as-is.
+            * @return a reference to this object.
+            */
+           public Builder withPaginationSort(boolean orderByKey)
+           {
+               this.paginationSort = orderByKey;
+               return this;
+           }
+
+           /**
+            * Set the regex to filter result terms by for this query.
+            * @param filter the regex to filter terms by.
+            * @return a reference to this object.
+            */
+           public Builder withRegexTermFilter(BinaryValue filter)
+           {
+               this.termFilter = filter;
+               return this;
+           }
+           
+           public Query build()
+            {
+                // sanity checks
+                if ( rangeStart == null && rangeEnd == null && indexKey == null)
+                {
+                    throw new IllegalArgumentException("An index key or range must be supplied");
+                }
+                else if ( (rangeStart != null && rangeEnd == null) ||
+                     (rangeEnd != null && rangeStart == null ) )
+                {
+                    throw new IllegalArgumentException("When specifying ranges both start and end must be Set");
+                }
+                else if (rangeStart != null && indexKey != null)
+                {
+                    throw new IllegalArgumentException("Cannot specify single index key and range");
+                }
+                else if (maxResults != null && (paginationSort != null && !paginationSort))
+                {
+                    throw new IllegalArgumentException("Cannot set paginationSort=false while setting maxResults");
+                }
+                else if (termFilter != null && indexName.toStringUtf8().endsWith("_int"))
+                {
+                    throw new IllegalArgumentException("Cannot use term regular expression in integer query");
+                }
+
+//                if (indexKey != null)
+//                {
+//                    pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
+//                }
+//                else
+//                {
+//                    pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
+//                }
+
+                return new Query(this);
+
+            }
             
         }
     }
     
-    public static class Response 
+    public static class Response extends ResponseWithLocation
     {
+        private final Query query;
         private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
 
-        Response(Builder builder)
+        Response(Init<?> builder)
         {
+            super(builder);
             this.continuation = builder.continuation;
             this.entryList = builder.entryList;
+            this.query = builder.query;
+        }
+        
+        public Query getQuery()
+        {
+            return query;
         }
         
         public boolean hasContinuation()
@@ -365,27 +545,42 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             }
         }
         
-        static class Builder
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
         {
+            private Query query;
             private BinaryValue continuation;
             private List<Response.Entry> entryList = 
                 new ArrayList<Response.Entry>();
             
-            Builder()
-            {}
-            
-            Builder withContinuation(BinaryValue continuation)
+            T withContinuation(BinaryValue continuation)
             {
                 this.continuation = continuation;
-                return this;
+                return self();
             }
             
-            Builder addEntry(Response.Entry entry)
+            T addEntry(Response.Entry entry)
             {
                 entryList.add(entry);
+                return self();
+            }
+            
+            T withQuery(Query query)
+            {
+                this.query = query;
+                return self();
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            
+            @Override
+            protected Builder self()
+            {
                 return this;
             }
             
+            @Override
             Response build()
             {
                 return new Response(this);

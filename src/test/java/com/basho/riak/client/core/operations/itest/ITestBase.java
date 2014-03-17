@@ -110,17 +110,17 @@ public abstract class ITestBase
         
         ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
-        List<BinaryValue> keyList = keysOp.get();
+        List<BinaryValue> keyList = keysOp.get().getKeys();
         final int totalKeys = keyList.size();
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<Boolean> listener = new RiakFutureListener<Boolean>() {
+        RiakFutureListener<DeleteOperation.Response> listener = new RiakFutureListener<DeleteOperation.Response>() {
 
             private final AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<Boolean> f)
+            public void handle(RiakFuture<DeleteOperation.Response> f)
             {
                 try
                 {

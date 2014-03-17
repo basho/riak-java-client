@@ -47,7 +47,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         }
         ListBucketsOperation operation = builder.build();
         cluster.execute(operation);
-        return new Response(type, operation.get());
+        return new Response(type, operation.get().getBuckets());
     }
 
     public static class Response implements Iterable<Location> {

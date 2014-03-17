@@ -294,17 +294,16 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         
     }
     
-    public static abstract class ResponseBase
+    protected static abstract class KvResponseBase extends ResponseWithLocation
     {
         private final List<RiakObject> objectList;
         private final VClock vclock;
-        private final Location location;
         
-        protected ResponseBase(Init<?> builder)
+        protected KvResponseBase(Init<?> builder)
         {
+            super(builder);
             this.objectList = builder.objectList;
             this.vclock = builder.vclock;
-            this.location = builder.location;
         }
         
         public List<RiakObject> getObjectList()
@@ -322,20 +321,11 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return vclock;
         }
         
-        public Location getLocation()
-        {
-            return location;
-        }
-        
-        protected static abstract class Init<T extends Init<T>>
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
         {
             private final List<RiakObject> objectList =
                 new LinkedList<RiakObject>();
             private VClock vclock;
-            private Location location;
-            
-            protected abstract T self();
-            abstract ResponseBase build();
             
             T addObject(RiakObject object)
             {
@@ -354,17 +344,11 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
                 this.vclock = vclock;
                 return self();
             }
-            
-            T withLocation(Location location)
-            {
-                this.location = location;
-                return self();
-            }
         }
     }
     
     
-    public static class Response extends ResponseBase
+    public static class Response extends KvResponseBase
     {
         private final boolean notFound;
         private final boolean unchanged;
@@ -386,7 +370,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return unchanged;
         }
         
-        protected static abstract class Init<T extends Init<T>> extends ResponseBase.Init<T>
+        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private boolean notFound;
             private boolean unchanged;
@@ -402,12 +386,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
                 this.unchanged = unchanged;
                 return self();
             }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
         }
         
         static class Builder extends Init<Builder>
@@ -417,7 +395,12 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             {
                 return this;
             }
+
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
         }
     }
-    
 }

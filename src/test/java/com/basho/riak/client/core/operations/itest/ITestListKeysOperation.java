@@ -46,7 +46,7 @@ public class ITestListKeysOperation extends ITestBase
         Location location = new Location(bName);
         ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
         cluster.execute(klistOp);
-        List<BinaryValue> kList = klistOp.get();
+        List<BinaryValue> kList = klistOp.get().getKeys();
         assertTrue(kList.isEmpty());
         resetAndEmptyBucket(bName);
 
@@ -72,7 +72,7 @@ public class ITestListKeysOperation extends ITestBase
         location = new Location(bName);
         ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
         cluster.execute(klistOp);
-        List<BinaryValue> kList = klistOp.get();
+        List<BinaryValue> kList = klistOp.get().getKeys();
         
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), key);
@@ -110,7 +110,7 @@ public class ITestListKeysOperation extends ITestBase
                         ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
                         cluster.execute(klistOp);
                         List<BinaryValue> kList;
-                        kList = klistOp.get();
+                        kList = klistOp.get().getKeys();
                         assertEquals(kList.size(), 1000);
                         latch.countDown();
                     }

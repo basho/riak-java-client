@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -27,13 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbListBucketsResp>
+public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.Response, RiakKvPB.RpbListBucketsResp>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
+    private final BinaryValue bucketType;
     
     private ListBucketsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.bucketType = builder.bucketType;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, Ria
     }
 
     @Override
-    protected List<BinaryValue> convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) throws ExecutionException
+    protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) throws ExecutionException
     {
         List<BinaryValue> buckets = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
@@ -53,7 +56,7 @@ public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, Ria
                 buckets.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
             }
         }
-        return buckets;
+        return new Response(bucketType, buckets);
     }
 
     @Override
@@ -79,8 +82,9 @@ public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, Ria
     
     public static class Builder
     {
-        RiakKvPB.RpbListBucketsReq.Builder reqBuilder = 
+        private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = 
             RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
+        private BinaryValue bucketType = Location.DEFAULT_BUCKET_TYPE;
         
         /**
          * Create a Builder for a ListBucketsOperation.
@@ -116,6 +120,7 @@ public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, Ria
                 throw new IllegalArgumentException("Bucket type can not be null or zero length");
             }
             reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
+            this.bucketType = bucketType;
             return this;
         }
         
@@ -124,6 +129,28 @@ public class ListBucketsOperation extends FutureOperation<List<BinaryValue>, Ria
             return new ListBucketsOperation(this);
         }
         
+    }
+    
+    public static class Response
+    {
+        private final BinaryValue bucketType;
+        private final List<BinaryValue> buckets;
+        
+        Response(BinaryValue bucketType, List<BinaryValue> buckets)
+        {
+            this.bucketType = bucketType;
+            this.buckets = buckets;
+        }
+        
+        public BinaryValue getBucketType()
+        {
+            return bucketType;
+        }
+        
+        public List<BinaryValue> getBuckets()
+        {
+            return buckets;
+        }
     }
     
 }

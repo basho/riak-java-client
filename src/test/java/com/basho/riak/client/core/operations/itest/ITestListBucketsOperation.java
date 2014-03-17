@@ -56,7 +56,7 @@ public class ITestListBucketsOperation extends ITestBase
         
         ListBucketsOperation listOp = new ListBucketsOperation.Builder().build();
         cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get();
+        List<BinaryValue> bucketList = listOp.get().getBuckets();
         assertTrue(bucketList.size() > 0);
         
         boolean found = false;
@@ -127,7 +127,7 @@ public class ITestListBucketsOperation extends ITestBase
         
         ListBucketsOperation listOp = new ListBucketsOperation.Builder().build();
         cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get();
+        List<BinaryValue> bucketList = listOp.get().getBuckets();
         assertTrue(bucketList.size() >= 1000);
         
         for (int i = 0; i < 1000; i++)

@@ -31,12 +31,13 @@ import java.util.concurrent.ExecutionException;
 
 public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response, RiakDtPB.DtFetchResp>
 {
-
+    private final Location location;
     private final RiakDtPB.DtFetchReq.Builder reqBuilder;
 
     private DtFetchOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
@@ -53,7 +54,8 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         CrdtElement element = converter.convert(response);
 
         Response.Builder responseBuilder = new Response.Builder()
-            .withCrdtElement(element);
+            .withCrdtElement(element)
+            .withLocation(location);
 
         if (response.hasContext())
         {
@@ -236,13 +238,14 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
     }
     
-    public static class Response
+    public static class Response extends ResponseWithLocation
     {
         private final BinaryValue context;
         private final CrdtElement crdtElement;
 
         protected Response(Init<?> builder)
         {
+            super(builder);
             this.context = builder.context;
             this.crdtElement = builder.crdtElement;
         }
@@ -267,7 +270,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             return crdtElement;
         }
 
-        protected static abstract class Init<T extends Init<T>>
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
         {
             private BinaryValue context;
             private CrdtElement crdtElement;
@@ -296,6 +299,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
                 return self();
             }
             
+            @Override
             Response build()
             {
                 return new Response(this);

@@ -47,29 +47,32 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     {
 
         BinaryValue indexName = BinaryValue.create(index.getFullName());
-
-        SecondaryIndexQueryOperation.Builder builder =
-            new SecondaryIndexQueryOperation.Builder(location, indexName);
+        
+        SecondaryIndexQueryOperation.Query.Builder queryBuilder =
+            new SecondaryIndexQueryOperation.Query.Builder(indexName);
 
         for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
         {
             if (option.getKey() == IndexOption.MAX_RESULTS)
             {
-                builder.withMaxResults((Integer) option.getValue());
+                queryBuilder.withMaxResults((Integer) option.getValue());
             }
             else if (option.getKey() == IndexOption.RETURN_TERMS)
             {
-                builder.withReturnKeyAndIndex((Boolean) option.getValue());
+                queryBuilder.withReturnKeyAndIndex((Boolean) option.getValue());
             }
         }
 
-        op.configure(builder);
+        op.configure(queryBuilder);
 
         if (continuation != null)
         {
-            builder.withContinuation(continuation);
+            queryBuilder.withContinuation(continuation);
         }
 
+        SecondaryIndexQueryOperation.Builder builder =
+            new SecondaryIndexQueryOperation.Builder(location, queryBuilder.build());
+        
         SecondaryIndexQueryOperation operation = builder.build();
         cluster.execute(operation);
 
@@ -116,7 +119,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
     public static abstract class Criteria
     {
-        abstract void configure(SecondaryIndexQueryOperation.Builder op);
+        abstract void configure(SecondaryIndexQueryOperation.Query.Builder op);
     }
 
     private static class MatchCriteria extends Criteria
@@ -139,7 +142,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         }
 
         @Override
-        void configure(SecondaryIndexQueryOperation.Builder op)
+        void configure(SecondaryIndexQueryOperation.Query.Builder op)
         {
             op.withIndexKey(match);
         }
@@ -157,7 +160,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         }
 
         @Override
-        void configure(SecondaryIndexQueryOperation.Builder op)
+        void configure(SecondaryIndexQueryOperation.Query.Builder op)
         {
             op.withRangeStart(BinaryValue.create(Integer.toString(start)));
             op.withRangeEnd(BinaryValue.create(Integer.toString(stop)));

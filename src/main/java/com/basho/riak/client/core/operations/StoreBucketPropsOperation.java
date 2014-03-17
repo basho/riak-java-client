@@ -19,7 +19,6 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
-import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -32,20 +31,21 @@ import java.util.concurrent.ExecutionException;
  * @since 2.0
  */
 //TODO: return some sort of "success" instead of Void
-public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
+public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsOperation.Response, Void>
 {
-
+    private final Location location;
     private final RiakPB.RpbSetBucketReq.Builder reqBuilder;
 
     private StoreBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
-    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) throws ExecutionException
     {
-        return true;
+        return new Response.Builder().withLocation(location).build();
     }
 
     @Override
@@ -459,6 +459,31 @@ public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
             reqBuilder.setProps(propsBuilder);
             return new StoreBucketPropsOperation(this);
         }
+    }
+    
+    public static class Response extends ResponseWithLocation
+    {
+        private Response(Init<?> builder)
+        {
+            super(builder);
+        }
         
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            public Builder self()
+            {
+                return this;
+            }
+        }
     }
 }

@@ -49,7 +49,7 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 		ListKeysOperation operation = builder.build();
 		cluster.execute(operation);
 
-		return new Response(location.getBucketName(), operation.get());
+		return new Response(location.getBucketName(), operation.get().getKeys());
 	}
 
 	public static class Response implements Iterable<Location>

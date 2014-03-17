@@ -75,7 +75,7 @@ public class ITestYzAdminOperations extends ITestBase
             new YzGetSchemaOperation.Builder("test_schema").build();
         
         cluster.execute(getOp);
-        YokozunaSchema yzSchema2 = getOp.get();
+        YokozunaSchema yzSchema2 = getOp.get().getSchema();
         
         assertEquals(yzSchema.getContent(), yzSchema2.getContent());
         
@@ -90,7 +90,7 @@ public class ITestYzAdminOperations extends ITestBase
             new YzGetSchemaOperation.Builder("_yz_default").build();
         
         cluster.execute(getOp);
-        YokozunaSchema yzSchema = getOp.get();
+        YokozunaSchema yzSchema = getOp.get().getSchema();
         
         assertNotNull(yzSchema.getName());
         assertNotNull(yzSchema.getContent());
@@ -119,7 +119,7 @@ public class ITestYzAdminOperations extends ITestBase
                 .build();
         
         cluster.execute(fetchOp);
-        List<YokozunaIndex> indexList = fetchOp.get();
+        List<YokozunaIndex> indexList = fetchOp.get().getIndexes();
         
         assertFalse(indexList.isEmpty());
         index = indexList.get(0);
