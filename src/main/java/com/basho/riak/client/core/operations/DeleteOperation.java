@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import com.basho.riak.client.query.Location;
 
 /**
  * An operation to delete a riak object
@@ -65,35 +65,29 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
 
     public static class Builder
     {
-
+        private final Location location;
         private final RiakKvPB.RpbDelReq.Builder reqBuilder = RiakKvPB.RpbDelReq.newBuilder();
 
-        public Builder(BinaryValue bucket, BinaryValue key)
+        /**
+         * Construct a builder for a DeleteOperation.
+         * @param location Location of the object in Riak to delete
+         */
+        public Builder(Location location)
         {
-            if ((null == bucket) || bucket.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket can not be null or empty");
+                throw new IllegalArgumentException("Location can not be null");
+            }
+            else if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
             }
 
-            if ((null == key) || key.length() == 0)
-            {
-                throw new IllegalArgumentException("key can not be null or empty");
-            }
-
-            reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-            reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
-
-        public Builder withBucketType(BinaryValue bucketType)
-        {
-            if (null == bucketType || bucketType.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
-            }
-            this.reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
-        }
-
 
         /**
          * Set the R value for this FetchOperation.

@@ -69,15 +69,16 @@ public class ITestStoreOperation extends ITestBase
         BinaryValue bName = 
             BinaryValue.unsafeCreate((bucketName.toString() + "_1").getBytes());
         
+        Location location = new Location(bName);
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(bName)
+            new StoreBucketPropsOperation.Builder(location)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
         
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(bName).setKey(key);
+        location.setKey(key);
        
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
@@ -92,7 +93,6 @@ public class ITestStoreOperation extends ITestBase
         assertTrue(response.hasVClock());
         
         obj.setValue(BinaryValue.create("changed"));
-        location = new Location(bName).setKey(key);
 
         storeOp = new StoreOperation.Builder(location)
                 .withContent(obj)

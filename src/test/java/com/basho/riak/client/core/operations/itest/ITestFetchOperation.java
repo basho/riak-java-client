@@ -85,15 +85,16 @@ public class ITestFetchOperation extends ITestBase
         final BinaryValue key = BinaryValue.unsafeCreate("my_key_3".getBytes());
         final String value = "{\"value\":\"value\"}";
         
+        Location location = new Location(bucketName);
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(bucketName)
+            new StoreBucketPropsOperation.Builder(location)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(bucketName).setKey(key);
+        location = new Location(bucketName).setKey(key);
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(rObj)

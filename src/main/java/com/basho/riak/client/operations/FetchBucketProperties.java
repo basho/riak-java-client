@@ -21,8 +21,7 @@ public class FetchBucketProperties extends RiakCommand<BucketProperties>
 	BucketProperties execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		FetchBucketPropsOperation.Builder operation = 
-            new FetchBucketPropsOperation.Builder(location.getBucketName())
-                .withBucketType(location.getBucketType());
+            new FetchBucketPropsOperation.Builder(location);
 		
         return cluster.execute(operation.build()).get();
 	}
@@ -34,7 +33,11 @@ public class FetchBucketProperties extends RiakCommand<BucketProperties>
 
 		public Builder(Location location)
 		{
-			this.location = location;
+			if (location == null)
+            {
+                throw new IllegalArgumentException("Location cannot be null");
+            }
+            this.location = location;
 		}
 
 		public FetchBucketProperties build()

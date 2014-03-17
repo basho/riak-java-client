@@ -38,11 +38,11 @@ import java.nio.charset.Charset;
  */
 public final class Location
 {
-    private static final BinaryValue DEFAULT_TYPE = 
+    public static final BinaryValue DEFAULT_BUCKET_TYPE = 
         BinaryValue.create("default", Charset.forName("UTF-8"));
 
 	private final BinaryValue bucketName;
-    private volatile BinaryValue bucketType = DEFAULT_TYPE;
+    private volatile BinaryValue bucketType = DEFAULT_BUCKET_TYPE;
 	private volatile BinaryValue key;
     
     /**

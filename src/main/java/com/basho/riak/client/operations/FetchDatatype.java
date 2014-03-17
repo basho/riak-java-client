@@ -52,8 +52,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         DtFetchOperation.Builder builder = 
-            new DtFetchOperation.Builder(location.getBucketName(), location.getKey())
-                .withBucketType(location.getBucketType());
+            new DtFetchOperation.Builder(location);
         
         for (Map.Entry<DtFetchOption<?>, Object> entry : options.entrySet())
         {
@@ -111,7 +110,11 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 
 		protected Builder(Location location)
 		{
-			this.location = location;
+			if (location == null)
+            {
+                throw new IllegalArgumentException("Location cannot be null");
+            }
+            this.location = location;
 		}
 
 		public <U> T withOption(DtFetchOption<U> option, U value)

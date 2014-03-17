@@ -43,7 +43,8 @@ public class ITestListKeysOperation extends ITestBase
     public void testListNoKeys() throws InterruptedException, ExecutionException
     {
         final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_1").getBytes());
-        ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
+        Location location = new Location(bName);
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
         cluster.execute(klistOp);
         List<BinaryValue> kList = klistOp.get();
         assertTrue(kList.isEmpty());
@@ -68,7 +69,8 @@ public class ITestListKeysOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
+        location = new Location(bName);
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
         cluster.execute(klistOp);
         List<BinaryValue> kList = klistOp.get();
         
@@ -104,7 +106,8 @@ public class ITestListKeysOperation extends ITestBase
 
                     if (expected == received.intValue())
                     {
-                        ListKeysOperation klistOp = new ListKeysOperation.Builder(bName).build();
+                        Location location = new Location(bName);
+                        ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
                         cluster.execute(klistOp);
                         List<BinaryValue> kList;
                         kList = klistOp.get();

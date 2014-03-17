@@ -47,15 +47,12 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        DeleteOperation.Builder builder = new DeleteOperation.Builder(location.getBucketName(), location.getKey());
+        DeleteOperation.Builder builder = new DeleteOperation.Builder(location);
 
         if (vClock != null)
         {
             builder.withVclock(vClock);
         }
-
-        builder.withBucketType(location.getBucketType());
-        
 
         for (Map.Entry<DeleteOption<?>, Object> optPair : options.entrySet())
         {
@@ -137,7 +134,11 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
 
 		public Builder(Location location)
 		{
-			this.location = location;
+			if (location == null)
+            {
+                throw new IllegalArgumentException("Location cannot be null");
+            }
+            this.location = location;
 		}
 
 		/**

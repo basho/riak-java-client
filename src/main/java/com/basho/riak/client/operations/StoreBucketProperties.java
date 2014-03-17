@@ -68,8 +68,7 @@ public class StoreBucketProperties extends RiakCommand<Boolean>
 	{
 
 		StoreBucketPropsOperation.Builder builder = 
-            new StoreBucketPropsOperation.Builder(location.getBucketName())
-                .withBucketType(location.getBucketType());
+            new StoreBucketPropsOperation.Builder(location);
 		
 		if (allowMulti != null)
 		{

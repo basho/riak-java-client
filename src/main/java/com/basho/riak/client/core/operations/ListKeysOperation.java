@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -78,32 +79,23 @@ public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKv
     
     public static class Builder
     {
-        RiakKvPB.RpbListKeysReq.Builder reqBuilder =
+        private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
-        
-        public Builder(BinaryValue bucketName)
-        {
-            if ((null == bucketName) || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name can not be null or empty");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        }
+        private final Location location;
         
         /**
-        * Set the bucket type.
-        * If unset "default" is used. 
-        * @param bucketType the bucket type to use
-        * @return A reference to this object.
-        */
-        public Builder withBucketType(BinaryValue bucketType)
+         * Construct a builder for a ListKeysOperaiton.
+         * @param location The location in Riak.
+         */
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
         
         public Builder withTimeout(int timeout)

@@ -59,7 +59,7 @@ public class ITestDeleteOperation extends ITestBase
         assertEquals(rObj.getValue(), rObj2.getValue());
         
         DeleteOperation delOp =
-            new DeleteOperation.Builder(bucketName, key)
+            new DeleteOperation.Builder(location)
                 .withVclock(response.getVClock()).build();
         cluster.execute(delOp);
         delOp.get();

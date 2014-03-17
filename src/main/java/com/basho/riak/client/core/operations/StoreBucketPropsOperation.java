@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -430,30 +431,21 @@ public class StoreBucketPropsOperation extends FutureOperation<Boolean, Void>
     {
         private final RiakPB.RpbSetBucketReq.Builder reqBuilder
             = RiakPB.RpbSetBucketReq.newBuilder();
-        
-        public Builder(BinaryValue bucketName)
-        {
-            if (null == bucketName || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name can not be null or zero length");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        }
+        private final Location location;
         
         /**
-         * Set the bucket type. If unset "default" is used.
-         *
-         * @param bucketType the bucket type to use
-         * @return A reference to this object.
+         * Constructs a builder for a StoreBucketPropsOperation.
+         * @param location The location of the bucket in Riak.
          */
-        public Builder withBucketType(BinaryValue bucketType)
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
         
         @Override

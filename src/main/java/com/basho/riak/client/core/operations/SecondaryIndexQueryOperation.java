@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -131,44 +132,31 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     public static class Builder
     {
         private final RiakKvPB.RpbIndexReq.Builder pbReqBuilder = RiakKvPB.RpbIndexReq.newBuilder();
+        private final Location location;
         
         /**
-         * Constructs a builder using the supplied bucket name and index name. 
+         * Constructs a builder for a SecondaryIndexQueryOperation. 
          * The index name must be the complete name with the _int or _bin suffix.
-         * @param bucketName the name of the bucket.
+         * @param location the location of the index in Riak.
          * @param indexName the name of the index (including suffix).
          */
-        public Builder(BinaryValue bucketName, 
+        public Builder(Location location, 
                         BinaryValue indexName)
         {
-            if (null == bucketName || bucketName.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            if (null == indexName || indexName.length() == 0)
+            else if (null == indexName || indexName.length() == 0)
             {
                 throw new IllegalArgumentException("Index name cannot be null or zero length");
             }
 
 
-            pbReqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()))
+            pbReqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()))
+                        .setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()))
                         .setIndex(ByteString.copyFrom(indexName.unsafeGetValue()));
-        }
-        
-        /**
-         * Set the Bucket Type for the query.
-         * If not asSet the default type is used.
-         * @param bucketType the bucket type.
-         * @return a reference to this object.
-         */
-        public Builder withBucketType(BinaryValue bucketType)
-        {
-            if (null == bucketType || bucketType.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket type cannot be null or zero length");
-            }
-            pbReqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            this.location = location;
         }
         
         /**

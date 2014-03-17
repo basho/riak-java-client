@@ -28,7 +28,7 @@ public class ITestDatatype extends ITestBase
 
 		RiakClient client = new RiakClient(cluster);
 
-		resetAndEmptyBucket(bucketName, mapBucketType);
+		resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
 
 		// BinaryValues make it look messy, so define them all here.
 		final String numLogins = "logins";

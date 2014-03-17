@@ -28,7 +28,7 @@ import static java.util.Collections.unmodifiableList;
 public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 {
 
-    private final Location bucket;
+    private final Location location;
     private final Criteria op;
     private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
     private final Index<T> index;
@@ -36,7 +36,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
     FetchIndex(Builder<T> builder)
     {
-        this.bucket = builder.bucket;
+        this.location = builder.location;
         this.op = builder.op;
         this.index = builder.index;
         this.continuation = builder.continuation;
@@ -49,8 +49,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         BinaryValue indexName = BinaryValue.create(index.getFullName());
 
         SecondaryIndexQueryOperation.Builder builder =
-            new SecondaryIndexQueryOperation.Builder(bucket.getBucketName(), indexName)
-                .withBucketType(bucket.getBucketType());
+            new SecondaryIndexQueryOperation.Builder(location, indexName);
 
         for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
         {
@@ -80,7 +79,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
         for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
         {
-            Location key = new Location(bucket.getBucketName()).setKey(entry.getIndexKey()).setBucketType(bucket.getBucketType());
+            Location key = new Location(location.getBucketName()).setKey(entry.getIndexKey()).setBucketType(location.getBucketType());
             T objectKey = index.convert(entry.getObjectKey());
             IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
             indexEntries.add(indexEntry);
@@ -224,15 +223,15 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 	public static class Builder<T>
 	{
 
-		private final Location bucket;
+		private final Location location;
 		private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
 		private final Index<T> index;
 		private Criteria op;
 		private BinaryValue continuation;
 
-		public Builder(Location bucket, Index<T> index)
+		public Builder(Location location, Index<T> index)
 		{
-			this.bucket = bucket;
+			this.location = location;
 			this.index = index;
 		}
 

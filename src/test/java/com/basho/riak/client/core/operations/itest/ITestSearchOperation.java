@@ -43,8 +43,9 @@ public class ITestSearchOperation extends ITestBase
     {
         Assume.assumeTrue(legacyRiakSearch);
         
+        Location location = new Location(bucketName);
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(bucketName)
+            new StoreBucketPropsOperation.Builder(location)
                 .withLegacyRiakSearchEnabled(true)
                 .build();
         
@@ -77,8 +78,9 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(putOp);
         putOp.get();
         
+        Location location = new Location(bucketName);
         StoreBucketPropsOperation propsOp = 
-            new StoreBucketPropsOperation.Builder(bucketName)
+            new StoreBucketPropsOperation.Builder(location)
                 .withSearchIndex("test_index")
                 .build();
         cluster.execute(propsOp);
