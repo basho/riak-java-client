@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.StringBinIndex;
@@ -45,8 +46,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         SetupIndexTestData(indexName, keyBase, value);
 
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp = 
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .build();
         
@@ -58,7 +60,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
         queryOp = 
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withReturnKeyAndIndex(true)
                 .build();
@@ -87,9 +89,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(5L);
 
+            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =
-                new StoreOperation.Builder(bucketName)
-                    .withKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()))
+                new StoreOperation.Builder(location)
                     .withContent(obj)
                     .build();
 
@@ -97,8 +99,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             storeOp.get();
         }
         
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp = 
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withPaginationSort(true)
                 .build();
@@ -111,7 +114,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "0");
         
         queryOp = 
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withReturnKeyAndIndex(true)
                 .withPaginationSort(true)
@@ -138,8 +141,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         SetupIndexTestData(indexName, keyBase, value);
 
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp = 
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
                     .withPaginationSort(true)
@@ -153,7 +157,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
         queryOp = 
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
                     .withReturnKeyAndIndex(true)
@@ -178,8 +182,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         SetupIndexTestData(indexName, "", value);
 
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                         .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                         .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                         .withPaginationSort(false)
@@ -201,8 +206,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         SetupIndexTestData(indexName, "", value);
 
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                         .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                         .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                         .withPaginationSort(true)
@@ -227,8 +233,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SetupIndexTestData(indexName, "", value);
 
         try {
+            Location location = new Location(bucketName);
             SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                         .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                         .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                         .withPaginationSort(false)
@@ -252,8 +259,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         SetupIndexTestData(indexName, "", value);
 
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                         .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                         .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                         .withPaginationSort(true)
@@ -282,9 +290,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(new StringBinIndex.Name(indexName)).add("foo" + String.format("%02d", i));
 
+            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate(Long.toString(i).getBytes()));
             StoreOperation storeOp =
-                    new StoreOperation.Builder(bucketName)
-                            .withKey(BinaryValue.unsafeCreate(Long.toString(i).getBytes()))
+                    new StoreOperation.Builder(location)
                             .withContent(obj)
                             .build();
 
@@ -292,8 +300,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             storeOp.get();
         }
 
+        Location location = new Location(bucketName);
         SecondaryIndexQueryOperation queryOp =
-                new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate((indexName + "_bin").getBytes()))
+                new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate((indexName + "_bin").getBytes()))
                         .withRangeStart(BinaryValue.unsafeCreate("foo00".getBytes()))
                         .withRangeEnd(BinaryValue.unsafeCreate("foo19".getBytes()))
                         .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
@@ -317,7 +326,8 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         Assume.assumeTrue(test2i);
         
         try {
-            new SecondaryIndexQueryOperation.Builder(bucketName, BinaryValue.unsafeCreate(("foo_int").getBytes()))
+            Location location = new Location(bucketName);
+            new SecondaryIndexQueryOperation.Builder(location, BinaryValue.unsafeCreate(("foo_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate("0".getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate("100".getBytes()))
                     .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
@@ -339,9 +349,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
 
+            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =
-                    new StoreOperation.Builder(bucketName)
-                            .withKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()))
+                    new StoreOperation.Builder(location)
                             .withContent(obj)
                             .build();
 

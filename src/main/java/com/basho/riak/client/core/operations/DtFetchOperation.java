@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -87,39 +88,27 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     public static class Builder
     {
         private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();
-
-        public Builder(BinaryValue bucket, BinaryValue key)
-        {
-
-            if ((null == bucket) || bucket.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket can not be null or empty");
-            }
-
-            if ((null == key) || key.length() == 0)
-            {
-                throw new IllegalArgumentException("key can not be null or empty");
-            }
-
-            reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-            reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-        }
-
+        private final Location location;
+        
         /**
-         * Set the bucket type for the FetchOperation.
-         * If not asSet, "default" is used.
-         *
-         * @param bucketType the bucket type
-         * @return a reference to this object.
+         * Construct a Builder for a DtFetchOperaiton
+         * @param location the location of the object in Riak.
          */
-        public Builder withBucketType(BinaryValue bucketType)
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location can not be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            else if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
+            }
+
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
 
         /**

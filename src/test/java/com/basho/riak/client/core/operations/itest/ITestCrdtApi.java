@@ -17,7 +17,9 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
+import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.operations.datatypes.*;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Test;
@@ -40,7 +42,7 @@ public class ITestCrdtApi extends ITestBase
          * Update some info about a user in a table of users
          */
 
-        resetAndEmptyBucket(bucketName, mapBucketType);
+        resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
 
         // BinaryValues make it look messy, so define them all here.
         final String numLogins = "logins";
@@ -87,17 +89,17 @@ public class ITestCrdtApi extends ITestBase
         MapUpdate userEntryUpdate = new MapUpdate()
             .update(username, userMapUpdate);
 
+        Location location = new Location(bucketName).setBucketType(mapBucketType).setKey(key);
         DtUpdateOperation update =
-            new DtUpdateOperation.Builder(bucketName, mapBucketType)
+            new DtUpdateOperation.Builder(location)
                 .withOp(userEntryUpdate.getOp())
-                .withKey(key)
                 .build();
 
         cluster.execute(update);
         update.get();
 
-        DtFetchOperation fetch = new DtFetchOperation.Builder(bucketName, key)
-            .withBucketType(mapBucketType)
+        
+        DtFetchOperation fetch = new DtFetchOperation.Builder(location)
             .build();
         cluster.execute(fetch);
 

@@ -18,18 +18,20 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
+import static com.basho.riak.client.convert.Converters.convert;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.convert.Converters.convert;
 
 /**
  * Command used to fetch a value from Riak, referenced by it's key.
+ * @param <T> type for returned objects
  */
 public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 {
@@ -37,7 +39,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 	private final Location location;
 	private final Map<FetchOption<?>, Object> options =
 		new HashMap<FetchOption<?>, Object>();
-	private Converter<T> converter;
+	private final Converter<T> converter;
 
 	FetchValue(Builder<T> builder)
 	{
@@ -50,12 +52,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 	Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
-		FetchOperation.Builder builder = new FetchOperation.Builder(location.getBucket(), location.getKey());
-
-		if (location.hasType())
-		{
-			builder.withBucketType(location.getType());
-		}
+		FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
 		for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
 		{
@@ -101,7 +98,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 
 		FetchOperation.Response response = cluster.execute(operation).get();
 		List<T> converted = convert(converter, response.getObjectList());
-
+		
 		return new Response<T>(response.isNotFound(), response.isUnchanged(), converted, response.getVClock());
 
 	}

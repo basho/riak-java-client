@@ -19,7 +19,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.BucketPropertiesConverter;
 import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -74,30 +74,21 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
     {
         private final RiakPB.RpbGetBucketReq.Builder reqBuilder = 
             RiakPB.RpbGetBucketReq.newBuilder();
-        
-        public Builder(BinaryValue bucketName)
-        {
-            if (null == bucketName || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name can not be null or zero length");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        }
+        private final Location location;
         
         /**
-        * Set the bucket type.
-        * If unset "default" is used. 
-        * @param bucketType the bucket type to use
-        * @return A reference to this object.
-        */
-        public Builder withBucketType(BinaryValue bucketType)
+         * Construct a builder for a FetchBucketPropsOperation.
+         * @param location The location of the bucket.
+         */
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
         
         public FetchBucketPropsOperation build()

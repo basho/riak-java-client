@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.ListKeysOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
@@ -26,34 +27,29 @@ import java.util.concurrent.ExecutionException;
 public class ListKeys extends RiakCommand<ListKeys.Response>
 {
 
-	private final Location bucket;
+	private final Location location;
 	private final int timeout;
 
 	ListKeys(Builder builder)
 	{
-		this.bucket = builder.bucket;
+		this.location = builder.location;
 		this.timeout = builder.timeout;
 	}
 
 	@Override
 	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		ListKeysOperation.Builder builder = new ListKeysOperation.Builder(bucket.getBucket());
+		ListKeysOperation.Builder builder = new ListKeysOperation.Builder(location);
 
 		if (timeout > 0)
 		{
 			builder.withTimeout(timeout);
 		}
 
-		if (bucket.hasType())
-		{
-			builder.withBucketType(bucket.getType());
-		}
-
 		ListKeysOperation operation = builder.build();
 		cluster.execute(operation);
 
-		return new Response(bucket.getBucket(), operation.get());
+		return new Response(location.getBucketName(), operation.get());
 	}
 
 	public static class Response implements Iterable<Location>
@@ -96,7 +92,7 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 		public Location next()
 		{
 			BinaryValue key = iterator.next();
-			return new Location(bucket, key);
+			return new Location(bucket).setKey(key);
 		}
 
 		@Override
@@ -108,12 +104,12 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 
 	public static class Builder
 	{
-		private final Location bucket;
+		private final Location location;
 		private int timeout;
 
-		public Builder(Location bucket)
+		public Builder(Location location)
 		{
-			this.bucket = bucket;
+			this.location = location;
 		}
 
 		public Builder withTimeout(int timeout)

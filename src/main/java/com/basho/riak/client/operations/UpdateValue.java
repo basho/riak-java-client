@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
 import java.util.List;

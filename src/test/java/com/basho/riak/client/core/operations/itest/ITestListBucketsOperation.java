@@ -19,6 +19,8 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
@@ -43,10 +45,9 @@ public class ITestListBucketsOperation extends ITestBase
         final String value = "{\"value\":\"value\"}";
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        
+        Location location = new Location(bucketName).setKey(key);
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(key)
+            new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build();
         
@@ -112,9 +113,9 @@ public class ITestListBucketsOperation extends ITestBase
         {
             BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + i).getBytes());
             RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
+            Location location = new Location(bName).setKey(key);
             StoreOperation storeOp = 
-                new StoreOperation.Builder(bName)
-                    .withKey(key)
+                new StoreOperation.Builder(location)
                     .withContent(rObj)
                     .build();
             storeOp.addListener(listener);

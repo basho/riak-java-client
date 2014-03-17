@@ -7,6 +7,7 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.BucketProperties;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
@@ -34,9 +35,9 @@ public class App implements RiakFutureListener<RiakObject>
     
     public void doIt() throws InterruptedException, ExecutionException
     {
+        Location location = new Location("test_bucket3").setBucketType("test_type2");
         FetchBucketPropsOperation bpOp =
-            new FetchBucketPropsOperation.Builder(BinaryValue.unsafeCreate("test_bucket3)".getBytes()))
-                .withBucketType(BinaryValue.unsafeCreate("test_type2".getBytes()))
+            new FetchBucketPropsOperation.Builder(location)
                 .build();
                                
         cluster.execute(bpOp);
@@ -44,8 +45,10 @@ public class App implements RiakFutureListener<RiakObject>
         System.out.println(props);
         
         
+        location = new Location("test_bucket2").setKey("test_key2");
+        
         FetchOperation fetchOp =
-            new FetchOperation.Builder(BinaryValue.unsafeCreate("test_bucket2".getBytes()), BinaryValue.unsafeCreate("test_key2".getBytes()))
+            new FetchOperation.Builder(location)
                 .build();
                     
         

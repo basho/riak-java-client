@@ -22,6 +22,7 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -99,18 +100,14 @@ public abstract class ITestBase
     
     public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
     {
-        resetAndEmptyBucket(name, null);
+        resetAndEmptyBucket(new Location(name));
 
     }
 
-    protected static void resetAndEmptyBucket(BinaryValue name, BinaryValue type) throws InterruptedException, ExecutionException
+    protected static void resetAndEmptyBucket(Location location) throws InterruptedException, ExecutionException
     {
-        ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(name);
-        if (type != null)
-        {
-            keysOpBuilder.withBucketType(type);
-        }
-
+       ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(location);
+        
         ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
         List<BinaryValue> keyList = keysOp.get();
@@ -149,11 +146,8 @@ public abstract class ITestBase
         
         for (BinaryValue k : keyList)
         {
-            DeleteOperation.Builder delOpBuilder = new DeleteOperation.Builder(name, k);
-            if (type != null)
-            {
-                delOpBuilder.withBucketType(type);
-            }
+            location.setKey(k);
+            DeleteOperation.Builder delOpBuilder = new DeleteOperation.Builder(location);
             DeleteOperation delOp = delOpBuilder.build();
             delOp.addListener(listener);
             semaphore.acquire();
@@ -166,12 +160,8 @@ public abstract class ITestBase
         }
         
         ResetBucketPropsOperation.Builder resetOpBuilder = 
-            new ResetBucketPropsOperation.Builder(name);
-        if (type != null)
-        {
-            resetOpBuilder.withBucketType(type);
-        }
-
+            new ResetBucketPropsOperation.Builder(location);
+        
         ResetBucketPropsOperation resetOp = resetOpBuilder.build();
         cluster.execute(resetOp);
         resetOp.get();

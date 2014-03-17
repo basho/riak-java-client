@@ -20,6 +20,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtMap;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -45,7 +46,7 @@ public class FetchDatatypeTest
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     @Mock DtFetchOperation.Response mockResponse;
-	Location key = new Location("bucket", "key").withType("type");
+	Location key = new Location("bucket").setKey("key").setBucketType("type");
     RiakClient client;
 
     @Before
