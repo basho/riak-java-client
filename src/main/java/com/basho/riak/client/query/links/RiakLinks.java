@@ -15,9 +15,10 @@
  */
 package com.basho.riak.client.query.links;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -64,10 +65,10 @@ public class RiakLinks implements Iterable<RiakLink>
     /**
      * Add {@link RiakLink}s 
      * 
-     * @param links a List of RiakLink objects to add
+     * @param links a Collection of RiakLink objects to add
      * @return a reference to this object
      */
-    public RiakLinks addLinks(List<RiakLink> links)
+    public RiakLinks addLinks(Collection<RiakLink> links)
     {
         this.links.addAll(links);
         return this;
@@ -100,6 +101,18 @@ public class RiakLinks implements Iterable<RiakLink>
     public void removeAllLinks()
     {
         links.clear();
+    }
+    
+    /**
+     * Return all the links.
+     * <p>
+     * Changes to the returned set do not modify this container.
+     * </p>
+     * @return 
+     */
+    public Set<RiakLink> getLinks()
+    {
+        return new HashSet<RiakLink>(links);
     }
     
     /**

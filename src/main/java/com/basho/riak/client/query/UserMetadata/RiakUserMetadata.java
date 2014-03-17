@@ -188,6 +188,34 @@ public class RiakUserMetadata
         meta.put(key, value);
     }
     
+    public void remove(BinaryValue key)
+    {
+        meta.remove(key);
+    }
+    
+    public void remove(String key, Charset charset)
+    {
+        BinaryValue wrappedKey = BinaryValue.unsafeCreate(key.getBytes(charset));
+        remove(wrappedKey);
+    }
+    
+    public void remove (String key)
+    {
+        remove(key, Charset.defaultCharset());
+    }
+    
+    // TODO: deal with charset. Should add to annotation
+    public RiakUserMetadata put(Map<String,String> metaMap)
+    {
+        for (Map.Entry<String,String> e : metaMap.entrySet())
+        {
+            BinaryValue wrappedKey = BinaryValue.unsafeCreate(e.getKey().getBytes());
+            BinaryValue wrappedValue = BinaryValue.unsafeCreate(e.getValue().getBytes());
+            meta.put(wrappedKey, wrappedValue);
+        }
+        return this;
+    }
+    
     /**
      * Clear all user metadata entries.
      */

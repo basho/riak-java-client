@@ -18,10 +18,11 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
-import static com.basho.riak.client.convert.Converters.convert;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.RiakObject;
+import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +98,12 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		FetchOperation operation = builder.build();
 
 		FetchOperation.Response response = cluster.execute(operation).get();
-		List<T> converted = convert(converter, response.getObjectList());
+		List<T> converted = new ArrayList<T>();
+        
+        for (RiakObject ro : response.getObjectList())
+        {
+            converted.add(converter.toDomain(ro, response.getLocation(), response.getVClock()));
+        }
 		
 		return new Response<T>(response.isNotFound(), response.isUnchanged(), converted, response.getVClock());
 
