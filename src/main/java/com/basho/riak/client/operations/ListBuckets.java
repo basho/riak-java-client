@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
@@ -46,7 +47,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         }
         ListBucketsOperation operation = builder.build();
         cluster.execute(operation);
-        return new Response(type, operation.get());
+        return new Response(type, operation.get().getBuckets());
     }
 
     public static class Response implements Iterable<Location> {
@@ -88,7 +89,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
         public Location next()
         {
             BinaryValue bucket = iterator.next();
-            return new Location(type).withType(bucket.toStringUtf8());
+            return new Location(type).setBucketType(bucket);
         }
 
         @Override

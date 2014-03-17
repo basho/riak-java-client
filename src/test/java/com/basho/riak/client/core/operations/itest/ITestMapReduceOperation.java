@@ -17,6 +17,8 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,10 +49,9 @@ public class ITestMapReduceOperation extends ITestBase
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'"));
-        
+        Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p1".getBytes()));
         StoreOperation storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(BinaryValue.unsafeCreate("p1".getBytes()))
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         
@@ -63,9 +64,9 @@ public class ITestMapReduceOperation extends ITestBase
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
                     "close by her."));
         
+        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p2".getBytes()));
         storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(BinaryValue.unsafeCreate("p2".getBytes()))
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         
@@ -76,10 +77,9 @@ public class ITestMapReduceOperation extends ITestBase
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
                     "well."));
-        
+        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p3".getBytes()));
         storeOp = 
-            new StoreOperation.Builder(bucketName)
-                .withKey(BinaryValue.unsafeCreate("p3".getBytes()))
+            new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
         
@@ -100,7 +100,7 @@ public class ITestMapReduceOperation extends ITestBase
                 .build();
         
         cluster.execute(mrOp);
-        List<BinaryValue> resultList = mrOp.get();
+        List<BinaryValue> resultList = mrOp.get().getResults();
         
         // The query should return one result which is a JSON array containing a 
         // single JSON object that is a asSet of word counts.

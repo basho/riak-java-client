@@ -29,23 +29,26 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYokozunaPB.RpbYokozunaSchemaGetResp>
+public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.Response, RiakYokozunaPB.RpbYokozunaSchemaGetResp>
 {
     private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder;
+    private final String schemaName;
 
     private YzGetSchemaOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.schemaName = builder.schemaName;
     }
     
     @Override
-    protected YokozunaSchema convert(List<RiakYokozunaPB.RpbYokozunaSchemaGetResp> rawResponse) throws ExecutionException
+    protected YzGetSchemaOperation.Response convert(List<RiakYokozunaPB.RpbYokozunaSchemaGetResp> rawResponse) throws ExecutionException
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaSchemaGetResp response = rawResponse.get(0);
         
-        return new YokozunaSchema(response.getSchema().getName().toStringUtf8(),
-                                    response.getSchema().getContent().toStringUtf8());
+        return new Response(schemaName, 
+                            new YokozunaSchema(response.getSchema().getName().toStringUtf8(),
+                                    response.getSchema().getContent().toStringUtf8()));
         
     }
 
@@ -76,6 +79,7 @@ public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYo
     {
         private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder = 
             RiakYokozunaPB.RpbYokozunaSchemaGetReq.newBuilder();
+        private final String schemaName;
         
         public Builder(String schemaName)
         {
@@ -84,6 +88,7 @@ public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYo
                 throw new IllegalArgumentException("Schema name cannot be null or zero length");
             }
             reqBuilder.setName(ByteString.copyFromUtf8(schemaName));
+            this.schemaName = schemaName;
         }
         
         public YzGetSchemaOperation build()
@@ -92,4 +97,25 @@ public class YzGetSchemaOperation extends FutureOperation<YokozunaSchema, RiakYo
         }
     }
     
+    public static class Response
+    {
+        private final YokozunaSchema schema;
+        private final String schemaName;
+        
+        Response(String schemaName, YokozunaSchema schema)
+        {
+            this.schemaName = schemaName;
+            this.schema = schema;
+        }
+        
+        public String getSchemaName()
+        {
+            return schemaName;
+        }
+        
+        public YokozunaSchema getSchema()
+        {
+            return schema;
+        }
+    }
 }

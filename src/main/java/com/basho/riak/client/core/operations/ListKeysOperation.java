@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbListKeysResp>
+public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp>
 {
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
@@ -37,17 +38,17 @@ public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKv
     }
 
     @Override
-    protected List<BinaryValue> convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
     {
-        List<BinaryValue> keys = new ArrayList<BinaryValue>(rawResponse.size());
+        Response.Builder builder = new Response.Builder();
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
         {
             for (ByteString bucket : resp.getKeysList())
             {
-                keys.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
+                builder.addKey(BinaryValue.unsafeCreate(bucket.toByteArray()));
             }
         }
-        return keys;
+        return builder.build();
     }
 
     @Override
@@ -78,32 +79,23 @@ public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKv
     
     public static class Builder
     {
-        RiakKvPB.RpbListKeysReq.Builder reqBuilder =
+        private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
-        
-        public Builder(BinaryValue bucketName)
-        {
-            if ((null == bucketName) || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name can not be null or empty");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        }
+        private final Location location;
         
         /**
-        * Set the bucket type.
-        * If unset "default" is used. 
-        * @param bucketType the bucket type to use
-        * @return A reference to this object.
-        */
-        public Builder withBucketType(BinaryValue bucketType)
+         * Construct a builder for a ListKeysOperaiton.
+         * @param location The location in Riak.
+         */
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
         
         public Builder withTimeout(int timeout)
@@ -120,10 +112,55 @@ public class ListKeysOperation extends FutureOperation<List<BinaryValue>, RiakKv
         {
             return new ListKeysOperation(this);
         }
-        
-        
-        
-        
     }
     
+    public static class Response extends ResponseWithLocation
+    {
+        private final List<BinaryValue> keys;
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.keys = builder.keys;
+        }
+        
+        public List<BinaryValue> getKeys()
+        {
+            return keys;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            private List<BinaryValue> keys = new ArrayList<BinaryValue>();
+            
+            T addKeys(List<BinaryValue> keys)
+            {
+                this.keys.addAll(keys);
+                return self();
+            }
+            
+            T addKey(BinaryValue key) 
+            {
+                this.keys.add(key);
+                return self();
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+            
+        }
+
+    }
 }

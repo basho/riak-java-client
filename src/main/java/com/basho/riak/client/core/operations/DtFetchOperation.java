@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
@@ -30,12 +31,13 @@ import java.util.concurrent.ExecutionException;
 
 public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response, RiakDtPB.DtFetchResp>
 {
-
+    private final Location location;
     private final RiakDtPB.DtFetchReq.Builder reqBuilder;
 
     private DtFetchOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
@@ -52,7 +54,8 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         CrdtElement element = converter.convert(response);
 
         Response.Builder responseBuilder = new Response.Builder()
-            .withCrdtElement(element);
+            .withCrdtElement(element)
+            .withLocation(location);
 
         if (response.hasContext())
         {
@@ -87,39 +90,27 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     public static class Builder
     {
         private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();
-
-        public Builder(BinaryValue bucket, BinaryValue key)
-        {
-
-            if ((null == bucket) || bucket.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket can not be null or empty");
-            }
-
-            if ((null == key) || key.length() == 0)
-            {
-                throw new IllegalArgumentException("key can not be null or empty");
-            }
-
-            reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-            reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
-        }
-
+        private final Location location;
+        
         /**
-         * Set the bucket type for the FetchOperation.
-         * If not asSet, "default" is used.
-         *
-         * @param bucketType the bucket type
-         * @return a reference to this object.
+         * Construct a Builder for a DtFetchOperaiton
+         * @param location the location of the object in Riak.
          */
-        public Builder withBucketType(BinaryValue bucketType)
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location can not be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            else if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
+            }
+
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
 
         /**
@@ -247,13 +238,14 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
     }
     
-    public static class Response
+    public static class Response extends ResponseWithLocation
     {
         private final BinaryValue context;
         private final CrdtElement crdtElement;
 
         protected Response(Init<?> builder)
         {
+            super(builder);
             this.context = builder.context;
             this.crdtElement = builder.crdtElement;
         }
@@ -278,13 +270,11 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             return crdtElement;
         }
 
-        protected static abstract class Init<T extends Init<T>>
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
         {
             private BinaryValue context;
             private CrdtElement crdtElement;
-            
-            protected abstract T self();
-            
+                        
             T withContext(BinaryValue context)
             {
                 if (context != null)
@@ -306,11 +296,6 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
                 this.crdtElement = crdtElement;
                 return self();
             }
-            
-            Response build()
-            {
-                return new Response(this);
-            }
         }
         
         
@@ -320,6 +305,12 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             protected Builder self()
             {
                 return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
             }
         }
     }

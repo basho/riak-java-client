@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
@@ -27,7 +28,7 @@ import static java.util.Collections.unmodifiableList;
 public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 {
 
-    private final Location bucket;
+    private final Location location;
     private final Criteria op;
     private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
     private final Index<T> index;
@@ -35,7 +36,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
     FetchIndex(Builder<T> builder)
     {
-        this.bucket = builder.bucket;
+        this.location = builder.location;
         this.op = builder.op;
         this.index = builder.index;
         this.continuation = builder.continuation;
@@ -46,31 +47,32 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     {
 
         BinaryValue indexName = BinaryValue.create(index.getFullName());
-
-        SecondaryIndexQueryOperation.Builder builder =
-            new SecondaryIndexQueryOperation.Builder(bucket.getBucket(), indexName);
-
-        builder.withBucketType(bucket.getType());
+        
+        SecondaryIndexQueryOperation.Query.Builder queryBuilder =
+            new SecondaryIndexQueryOperation.Query.Builder(indexName);
 
         for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
         {
             if (option.getKey() == IndexOption.MAX_RESULTS)
             {
-                builder.withMaxResults((Integer) option.getValue());
+                queryBuilder.withMaxResults((Integer) option.getValue());
             }
             else if (option.getKey() == IndexOption.RETURN_TERMS)
             {
-                builder.withReturnKeyAndIndex((Boolean) option.getValue());
+                queryBuilder.withReturnKeyAndIndex((Boolean) option.getValue());
             }
         }
 
-        op.configure(builder);
+        op.configure(queryBuilder);
 
         if (continuation != null)
         {
-            builder.withContinuation(continuation);
+            queryBuilder.withContinuation(continuation);
         }
 
+        SecondaryIndexQueryOperation.Builder builder =
+            new SecondaryIndexQueryOperation.Builder(location, queryBuilder.build());
+        
         SecondaryIndexQueryOperation operation = builder.build();
         cluster.execute(operation);
 
@@ -80,7 +82,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
         for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
         {
-            Location key = new Location(bucket.getBucket(), entry.getIndexKey()).withType(bucket.getType());
+            Location key = new Location(location.getBucketName()).setKey(entry.getIndexKey()).setBucketType(location.getBucketType());
             T objectKey = index.convert(entry.getObjectKey());
             IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
             indexEntries.add(indexEntry);
@@ -117,7 +119,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 
     public static abstract class Criteria
     {
-        abstract void configure(SecondaryIndexQueryOperation.Builder op);
+        abstract void configure(SecondaryIndexQueryOperation.Query.Builder op);
     }
 
     private static class MatchCriteria extends Criteria
@@ -140,7 +142,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         }
 
         @Override
-        void configure(SecondaryIndexQueryOperation.Builder op)
+        void configure(SecondaryIndexQueryOperation.Query.Builder op)
         {
             op.withIndexKey(match);
         }
@@ -158,7 +160,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         }
 
         @Override
-        void configure(SecondaryIndexQueryOperation.Builder op)
+        void configure(SecondaryIndexQueryOperation.Query.Builder op)
         {
             op.withRangeStart(BinaryValue.create(Integer.toString(start)));
             op.withRangeEnd(BinaryValue.create(Integer.toString(stop)));
@@ -224,15 +226,15 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 	public static class Builder<T>
 	{
 
-		private final Location bucket;
+		private final Location location;
 		private final Map<IndexOption<?>, Object> options = new HashMap<IndexOption<?>, Object>();
 		private final Index<T> index;
 		private Criteria op;
 		private BinaryValue continuation;
 
-		public Builder(Location bucket, Index<T> index)
+		public Builder(Location location, Index<T> index)
 		{
-			this.bucket = bucket;
+			this.location = location;
 			this.index = index;
 		}
 

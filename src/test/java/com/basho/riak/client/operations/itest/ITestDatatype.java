@@ -3,6 +3,7 @@ package com.basho.riak.client.operations.itest;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.*;
 import com.basho.riak.client.operations.datatypes.*;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class ITestDatatype extends ITestBase
 
 		RiakClient client = new RiakClient(cluster);
 
-		resetAndEmptyBucket(bucketName, mapBucketType);
+		resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
 
 		// BinaryValues make it look messy, so define them all here.
 		final String numLogins = "logins";
@@ -74,7 +75,7 @@ public class ITestDatatype extends ITestBase
 		MapUpdate userEntryUpdate = new MapUpdate()
 			.update(username, userMapUpdate);
 
-		Location carts = new Location(bucketName).withType(mapBucketType);
+		Location carts = new Location(bucketName).setBucketType(mapBucketType);
 		UpdateDatatype<RiakMap> update = new UpdateDatatype.Builder<RiakMap>(carts)
 			.withUpdate(userEntryUpdate)
 			.withOption(DtUpdateOption.RETURN_BODY, true)

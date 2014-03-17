@@ -27,19 +27,21 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzDeleteIndexOperation extends FutureOperation<Boolean, Void>
+public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperation.Response, Void>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder;
+    private final String indexName;
     
     private YzDeleteIndexOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.indexName = builder.indexName;
     }
     
     @Override
-    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
+    protected YzDeleteIndexOperation.Response convert(List<Void> rawResponse) throws ExecutionException
     {
-        return true;
+        return new Response(indexName);
     }
 
     @Override
@@ -61,6 +63,7 @@ public class YzDeleteIndexOperation extends FutureOperation<Boolean, Void>
     {
         private RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaIndexDeleteReq.newBuilder();
+        private final String indexName;
         
         public Builder(String indexName)
         {
@@ -69,11 +72,27 @@ public class YzDeleteIndexOperation extends FutureOperation<Boolean, Void>
                 throw new IllegalArgumentException("Index name cannot be null or zero length");
             }
             reqBuilder.setName(ByteString.copyFromUtf8(indexName));
+            this.indexName = indexName;
         }
         
         public YzDeleteIndexOperation build()
         {
             return new YzDeleteIndexOperation(this);
+        }
+    }
+    
+    public static class Response
+    {
+        private final String indexName;
+        
+        Response(String indexName)
+        {
+            this.indexName = indexName;
+        }
+        
+        public String getIndexName()
+        {
+            return indexName;
         }
     }
     

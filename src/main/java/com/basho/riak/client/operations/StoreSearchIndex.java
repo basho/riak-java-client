@@ -6,7 +6,7 @@ import com.basho.riak.client.query.search.YokozunaIndex;
 
 import java.util.concurrent.ExecutionException;
 
-public class StoreSearchIndex extends RiakCommand<Boolean>
+public class StoreSearchIndex extends RiakCommand<YzPutIndexOperation.Response>
 {
 	private final YokozunaIndex index;
 
@@ -16,7 +16,7 @@ public class StoreSearchIndex extends RiakCommand<Boolean>
 	}
 
 	@Override
-	Boolean execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	YzPutIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutIndexOperation operation = new YzPutIndexOperation.Builder(index).build();
 	    return cluster.execute(operation).get();

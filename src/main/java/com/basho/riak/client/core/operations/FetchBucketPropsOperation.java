@@ -19,7 +19,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.BucketPropertiesConverter;
 import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -32,21 +32,26 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchBucketPropsOperation extends FutureOperation<BucketProperties, RiakPB.RpbGetBucketResp>
+public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsOperation.Response, RiakPB.RpbGetBucketResp>
 {
     private final RiakPB.RpbGetBucketReq.Builder reqBuilder;
+    private final Location location;
     
     public FetchBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
     
     @Override
-    protected BucketProperties convert(List<RiakPB.RpbGetBucketResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakPB.RpbGetBucketResp> rawResponse) throws ExecutionException
     {
         // This isn't streaming, there will only be one response. 
         RiakPB.RpbBucketProps pbProps = rawResponse.get(0).getProps();
-        return BucketPropertiesConverter.convert(pbProps);
+        return new Response.Builder()
+                    .withLocation(location)
+                    .withBucketProperties(BucketPropertiesConverter.convert(pbProps))
+                    .build();
     }
 
     @Override
@@ -74,30 +79,21 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
     {
         private final RiakPB.RpbGetBucketReq.Builder reqBuilder = 
             RiakPB.RpbGetBucketReq.newBuilder();
-        
-        public Builder(BinaryValue bucketName)
-        {
-            if (null == bucketName || bucketName.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket name can not be null or zero length");
-            }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        }
+        private final Location location;
         
         /**
-        * Set the bucket type.
-        * If unset "default" is used. 
-        * @param bucketType the bucket type to use
-        * @return A reference to this object.
-        */
-        public Builder withBucketType(BinaryValue bucketType)
+         * Construct a builder for a FetchBucketPropsOperation.
+         * @param location The location of the bucket.
+         */
+        public Builder(Location location)
         {
-            if (null == bucketType || bucketType.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
         
         public FetchBucketPropsOperation build()
@@ -106,4 +102,44 @@ public class FetchBucketPropsOperation extends FutureOperation<BucketProperties,
         }
     }
     
+    public static class Response extends ResponseWithLocation
+    {
+        private final BucketProperties props;
+        private Response(Init<?> builder)
+        {
+            super(builder);
+            this.props = builder.props;
+        }
+        
+        public BucketProperties getBucketProperties()
+        {
+            return props;
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            private BucketProperties props;
+            
+            T withBucketProperties(BucketProperties props)
+            {
+                this.props = props;
+                return self();
+            }
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+    }
 }

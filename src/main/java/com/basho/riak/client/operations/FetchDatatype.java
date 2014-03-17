@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -50,13 +51,9 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
     @Override
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        DtFetchOperation.Builder builder = new DtFetchOperation.Builder(location.getBucket(), location.getKey());
-
-        if (location.hasType())
-        {
-            builder.withBucketType(location.getType());
-        }
-
+        DtFetchOperation.Builder builder = 
+            new DtFetchOperation.Builder(location);
+        
         for (Map.Entry<DtFetchOption<?>, Object> entry : options.entrySet())
         {
             if (entry.getKey() == DtFetchOption.R)
@@ -113,7 +110,11 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 
 		protected Builder(Location location)
 		{
-			this.location = location;
+			if (location == null)
+            {
+                throw new IllegalArgumentException("Location cannot be null");
+            }
+            this.location = location;
 		}
 
 		public <U> T withOption(DtFetchOption<U> option, U value)

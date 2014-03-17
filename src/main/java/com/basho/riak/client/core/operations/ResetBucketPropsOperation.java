@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -29,19 +29,21 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ResetBucketPropsOperation extends FutureOperation<Boolean, Void>
+public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsOperation.Response, Void>
 {
     private final RiakPB.RpbResetBucketReq.Builder reqBuilder;
+    private final Location location;
     
     private ResetBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
     
     @Override
-    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) throws ExecutionException
     {
-        return true;
+        return new Response.Builder().withLocation(location).build();
     }
 
     @Override
@@ -62,41 +64,56 @@ public class ResetBucketPropsOperation extends FutureOperation<Boolean, Void>
     
     public static class Builder
     {
-        RiakPB.RpbResetBucketReq.Builder reqBuilder = 
+        private final RiakPB.RpbResetBucketReq.Builder reqBuilder = 
             RiakPB.RpbResetBucketReq.newBuilder();
+        private final Location location;
         
         /**
-         * Construct a Builder.
-         * @param bucketName the bucket name for the operation. 
+         * Construct a builder for a ResetBucketPropsOperation. 
+         * @param location The location of the bucket in Riak.
          */
-        public Builder(BinaryValue bucketName)
+        public Builder(Location location)
         {
-            if (null == bucketName || bucketName.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+                throw new IllegalArgumentException("Location cannot be null");
             }
-            reqBuilder.setBucket(ByteString.copyFrom(bucketName.unsafeGetValue()));
-        }
-        
-        /**
-        * Set the bucket type.
-        * If unset "default" is used. 
-        * @param bucketType the bucket type to use
-        * @return A reference to this object.
-        */
-        public Builder withBucketType(BinaryValue bucketType)
-        {
-            if (null == bucketType || bucketType.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
-            }
-            reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
         
         public ResetBucketPropsOperation build()
         {
             return new ResetBucketPropsOperation(this);
+        }
+    }
+    
+    public static class Response extends ResponseWithLocation
+    {
+        private Response(Init<?> builder)
+        {
+            super(builder);
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
         }
     }
     

@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import com.basho.riak.client.query.Location;
 
 /**
  * An operation to delete a riak object
@@ -34,20 +34,22 @@ import static com.basho.riak.client.core.operations.Operations.checkMessageType;
  * @author David Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class DeleteOperation extends FutureOperation<Boolean, Void>
+public class DeleteOperation extends FutureOperation<DeleteOperation.Response, Void>
 {
 
     private final RiakKvPB.RpbDelReq.Builder reqBuilder;
+    private final Location location;
 
     private DeleteOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
-    protected Boolean convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) throws ExecutionException
     {
-        return true;
+        return new Response.Builder().withLocation(location).build();
     }
 
     @Override
@@ -65,35 +67,29 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
 
     public static class Builder
     {
-
+        private final Location location;
         private final RiakKvPB.RpbDelReq.Builder reqBuilder = RiakKvPB.RpbDelReq.newBuilder();
 
-        public Builder(BinaryValue bucket, BinaryValue key)
+        /**
+         * Construct a builder for a DeleteOperation.
+         * @param location Location of the object in Riak to delete
+         */
+        public Builder(Location location)
         {
-            if ((null == bucket) || bucket.length() == 0)
+            if (location == null)
             {
-                throw new IllegalArgumentException("Bucket can not be null or empty");
+                throw new IllegalArgumentException("Location can not be null");
+            }
+            else if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
             }
 
-            if ((null == key) || key.length() == 0)
-            {
-                throw new IllegalArgumentException("key can not be null or empty");
-            }
-
-            reqBuilder.setBucket(ByteString.copyFrom(bucket.unsafeGetValue()));
-            reqBuilder.setKey(ByteString.copyFrom(key.unsafeGetValue()));
+            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            this.location = location;
         }
-
-        public Builder withBucketType(BinaryValue bucketType)
-        {
-            if (null == bucketType || bucketType.length() == 0)
-            {
-                throw new IllegalArgumentException("Bucket type can not be null or zero length");
-            }
-            this.reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
-            return this;
-        }
-
 
         /**
          * Set the R value for this FetchOperation.
@@ -233,6 +229,34 @@ public class DeleteOperation extends FutureOperation<Boolean, Void>
             return new DeleteOperation(this);
         }
 
+    }
+    
+    public static class Response extends ResponseWithLocation
+    {
+        private Response(Init<?> builder)
+        {
+            super(builder);
+        }
+        
+        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        {
+            
+        }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
     }
 
 }

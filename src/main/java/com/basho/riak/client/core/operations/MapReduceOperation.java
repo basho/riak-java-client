@@ -31,17 +31,19 @@ import java.util.concurrent.ExecutionException;
  * A Map/Reduce Operation on Riak. No error checking is done on the content type of the content itself
  * with the exception to making sure they are provided.
  */
-public class MapReduceOperation extends FutureOperation<List<BinaryValue>, RiakKvPB.RpbMapRedResp>
+public class MapReduceOperation extends FutureOperation<MapReduceOperation.Response, RiakKvPB.RpbMapRedResp>
 {
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
+    private final BinaryValue mapReduce;
     
     private MapReduceOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.mapReduce = builder.mapReduce;
     }
 
     @Override
-    protected List<BinaryValue> convert(List<RiakKvPB.RpbMapRedResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbMapRedResp> rawResponse) throws ExecutionException
     {
         List<BinaryValue> results = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbMapRedResp response : rawResponse)
@@ -51,7 +53,7 @@ public class MapReduceOperation extends FutureOperation<List<BinaryValue>, RiakK
                 results.add(BinaryValue.create(response.getResponse().toByteArray()));
             }
         }
-        return results;
+        return new Response(mapReduce, results);
     }
 
     @Override
@@ -85,28 +87,28 @@ public class MapReduceOperation extends FutureOperation<List<BinaryValue>, RiakK
     {
         private final RiakKvPB.RpbMapRedReq.Builder reqBuilder =
             RiakKvPB.RpbMapRedReq.newBuilder();
+        private final BinaryValue mapReduce;
         
         /**
-     * Create a MapReduce operation builder with the given function.
-     *
-     * @param function    a binary blob of type {@code contentType}
-     * @param contentType a http-style content encoding type (typically application/json)
-     */
-        public Builder(BinaryValue function, String contentType)
+         * Create a MapReduce operation builder with the given function.
+         *
+         * @param mapReduce a mapReduce query.
+         * @param contentType a http-style content encoding type (typically application/json)
+         */
+        public Builder(BinaryValue mapReduce, String contentType)
         {
-
-            if ((null == function) || function.length() == 0)
+            if ((null == mapReduce) || mapReduce.length() == 0)
             {
-                throw new IllegalArgumentException("Function can not be null or empty");
+                throw new IllegalArgumentException("MapReduce can not be null or empty.");
             }
-
-            if ((null == contentType) || contentType.length() == 0)
+            else if ((null == contentType) || contentType.length() == 0)
             {
-                throw new IllegalArgumentException("contentType can not be null or empty");
+                throw new IllegalArgumentException("ContentType can not be null or empty.");
             }
             
-            reqBuilder.setRequest(ByteString.copyFrom(function.unsafeGetValue()))
+            reqBuilder.setRequest(ByteString.copyFrom(mapReduce.unsafeGetValue()))
                         .setContentType(ByteString.copyFromUtf8(contentType));
+            this.mapReduce = mapReduce;
         
         }
         
@@ -116,4 +118,26 @@ public class MapReduceOperation extends FutureOperation<List<BinaryValue>, RiakK
         }
     }
     
+    public static class Response
+    {
+        private final BinaryValue mapReduce;
+        private final List<BinaryValue> results;
+        
+        Response(BinaryValue mapReduce, List<BinaryValue> results)
+        {
+            this.mapReduce = mapReduce;
+            this.results = results;
+        }
+        
+        public BinaryValue getMapReduceQuery()
+        {
+            return mapReduce;
+        }
+        
+        public List<BinaryValue> getResults()
+        {
+            return results;
+        }
+        
+    }
 }

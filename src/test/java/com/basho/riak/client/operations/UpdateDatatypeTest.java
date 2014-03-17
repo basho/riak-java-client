@@ -23,6 +23,7 @@ import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.MapUpdate;
 import com.basho.riak.client.operations.datatypes.RiakMap;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtMap;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -50,7 +51,7 @@ public class UpdateDatatypeTest
     @Mock DtUpdateOperation.Response mockResponse;
     @Mock Context context;
     RiakClient client;
-	Location key = new Location("bucket", "key").withType("type");
+	Location key = new Location("bucket").setKey("key").setBucketType("type");
 
     @Before
     @SuppressWarnings("unchecked")
