@@ -130,13 +130,13 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
         static class Builder extends Init<Builder>
         {
             @Override
-            public Builder self()
+            protected Builder self()
             {
                 return this;
             }
             
             @Override
-            public Response build()
+            Response build()
             {
                 return new Response(this);
             }

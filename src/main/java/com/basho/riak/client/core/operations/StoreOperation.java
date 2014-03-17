@@ -330,19 +330,21 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         
         protected static abstract class Init<T extends Init<T>> extends FetchOperation.KvResponseBase.Init<T>
         {
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
+            
         }
         
         static class Builder extends Init<Builder>
         {
             @Override
-            public Builder self()
+            protected Builder self()
             {
                 return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
             }
         }
     }

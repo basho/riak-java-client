@@ -485,7 +485,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
 
-        Response(Init<?> builder)
+        private Response(Init<?> builder)
         {
             super(builder);
             this.continuation = builder.continuation;

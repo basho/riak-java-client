@@ -240,19 +240,21 @@ public class DeleteOperation extends FutureOperation<DeleteOperation.Response, V
         
         protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
         {
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
+            
         }
         
         static class Builder extends Init<Builder>
         {
             @Override
-            public Builder self()
+            protected Builder self()
             {
                 return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
             }
         }
     }

@@ -274,9 +274,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         {
             private BinaryValue context;
             private CrdtElement crdtElement;
-            
-            protected abstract T self();
-            
+                        
             T withContext(BinaryValue context)
             {
                 if (context != null)
@@ -298,12 +296,6 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
                 this.crdtElement = crdtElement;
                 return self();
             }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
         }
         
         
@@ -313,6 +305,12 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             protected Builder self()
             {
                 return this;
+            }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
             }
         }
     }

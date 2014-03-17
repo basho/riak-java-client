@@ -445,13 +445,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
                 this.generatedKey = generatedKey;
                 return self();
             }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
-            
         }
         
         static class Builder extends Init<Builder>
@@ -461,6 +454,13 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 return this;
             }
+            
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+            
         }
     }
     

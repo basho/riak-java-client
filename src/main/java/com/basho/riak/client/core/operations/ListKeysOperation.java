@@ -117,7 +117,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     public static class Response extends ResponseWithLocation
     {
         private final List<BinaryValue> keys;
-        public Response(Init<?> builder)
+        private Response(Init<?> builder)
         {
             super(builder);
             this.keys = builder.keys;
