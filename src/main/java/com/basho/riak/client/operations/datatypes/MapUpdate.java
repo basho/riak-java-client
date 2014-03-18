@@ -21,7 +21,7 @@ import com.basho.riak.client.util.BinaryValue;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MapUpdate extends DatatypeUpdate<RiakMap>
+public class MapUpdate extends DatatypeUpdate
 {
 
     private final Set<MapOp.MapField> adds = new HashSet<MapOp.MapField>();

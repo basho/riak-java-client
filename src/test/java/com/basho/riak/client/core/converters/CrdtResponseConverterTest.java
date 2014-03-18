@@ -40,10 +40,10 @@ public class CrdtResponseConverterTest
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
 
-        CrdtElement element = converter.convert(resp);
+        RiakDatatype element = converter.convert(resp);
 
         assertTrue(element.isCounter());
-        assertEquals(1, element.getAsCounter().getValue());
+        assertEquals((Long) 1L, element.getAsCounter().view());
 
     }
 
@@ -67,7 +67,7 @@ public class CrdtResponseConverterTest
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
 
-        CrdtElement element = converter.convert(resp);
+        RiakDatatype element = converter.convert(resp);
 
         assertTrue(element.isSet());
         assertEquals(wrappedValues, element.getAsSet().viewAsSet());
@@ -129,30 +129,30 @@ public class CrdtResponseConverterTest
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
 
-        CrdtElement element = converter.convert(resp);
+        RiakDatatype element = converter.convert(resp);
 
         assertTrue(element.isMap());
 
-        CrdtMap crdtMap = element.getAsMap();
+        RiakMap crdtMap = element.getAsMap();
 
-        assertTrue(crdtMap.get(counterKey).isCounter());
-        assertTrue(crdtMap.get(setKey).isSet());
-        assertTrue(crdtMap.get(mapKey).isMap());
-        assertTrue(crdtMap.get(registerKey).isRegister());
-        assertTrue(crdtMap.get(flagKey).isFlag());
+        assertTrue(crdtMap.get(counterKey).get(0).isCounter());
+        assertTrue(crdtMap.get(setKey).get(0).isSet());
+        assertTrue(crdtMap.get(mapKey).get(0).isMap());
+        assertTrue(crdtMap.get(registerKey).get(0).isRegister());
+        assertTrue(crdtMap.get(flagKey).get(0).isFlag());
 
-        CrdtCounter crdtCounter = crdtMap.get(counterKey).getAsCounter();
-        assertEquals(counterValue, crdtCounter.getValue());
+        RiakCounter riakCounter = crdtMap.get(counterKey).get(0).getAsCounter();
+        assertEquals((Long) counterValue, riakCounter.view());
 
-        CrdtSet crdtSet = crdtMap.get(setKey).getAsSet();
+        RiakSet crdtSet = crdtMap.get(setKey).get(0).getAsSet();
         assertEquals(wrappedSetValues, crdtSet.viewAsSet());
 
         // the asMap doesn't have any values
 
-        CrdtRegister crdtRegister = crdtMap.get(registerKey).getAsRegister();
+        RiakRegister crdtRegister = crdtMap.get(registerKey).get(0).getAsRegister();
         assertEquals(registerValue, crdtRegister.getValue());
 
-        CrdtFlag crdtFlag = crdtMap.get(flagKey).getAsFlag();
+        RiakFlag crdtFlag = crdtMap.get(flagKey).get(0).getAsFlag();
         assertEquals(flagValue, crdtFlag.getEnabled());
     }
 
@@ -178,15 +178,15 @@ public class CrdtResponseConverterTest
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
 
-        CrdtElement element = converter.convert(resp);
+        RiakDatatype element = converter.convert(resp);
 
         assertTrue(element.isMap());
-        CrdtMap map = element.getAsMap();
-        assertTrue(map.get(mapKey).isMap());
-        map = map.get(mapKey).getAsMap();
-        assertTrue(map.get(mapKey).isMap());
-        map = map.get(mapKey).getAsMap();
-        assertTrue(map.get(mapKey).isMap());
+        RiakMap map = element.getAsMap();
+        assertTrue(map.get(mapKey).get(0).isMap());
+        map = map.get(mapKey).get(0).getAsMap();
+        assertTrue(map.get(mapKey).get(0).isMap());
+        map = map.get(mapKey).get(0).getAsMap();
+        assertTrue(map.get(mapKey).get(0).isMap());
 
 
     }

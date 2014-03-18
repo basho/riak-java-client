@@ -44,7 +44,7 @@ import static java.util.Collections.unmodifiableList;
  *     try
  *     {
  *          FetchValue.Response<MyPojo> response = f.get();
- *          myResults.add(response.getValue().get(0));
+ *          myResults.add(response.view().get(0));
  *     }
  *     catch (ExecutionException e)
  *     {

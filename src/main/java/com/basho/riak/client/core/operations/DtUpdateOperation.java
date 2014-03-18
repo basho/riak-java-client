@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.ops.*;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -51,7 +51,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
 
         RiakDtPB.DtUpdateResp response = rawResponse.iterator().next();
         CrdtResponseConverter converter = new CrdtResponseConverter();
-        CrdtElement element = converter.convert(response);
+        RiakDatatype element = converter.convert(response);
         
         Response.Builder responseBuilder = 
             new Response.Builder().withCrdtElement(element).withLocation(location);
