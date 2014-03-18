@@ -56,9 +56,9 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 
 			MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
 
-			List<BinaryValue> output = cluster.execute(operation).get();
+			MapReduceOperation.Response output = cluster.execute(operation).get();
 
-			return new Response(output);
+			return new Response(output.getResults());
 
 		} catch (RiakException e)
 		{

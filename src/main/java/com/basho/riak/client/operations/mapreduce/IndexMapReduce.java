@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.operations.Location;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -25,7 +25,7 @@ public class IndexMapReduce extends MapReduce
 	{
 
 		jg.writeStartObject();
-		jg.writeStringField("bucket", bucket.getBucket().toString());
+		jg.writeStringField("bucket", bucket.getBucketNameAsString());
 		jg.writeStringField("index", index);
 		criteria.writeFields(jg);
 		jg.writeEndObject();

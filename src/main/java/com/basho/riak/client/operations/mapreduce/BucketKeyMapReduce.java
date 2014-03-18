@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.operations.Location;
+import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import java.io.IOException;
@@ -24,16 +24,13 @@ public class BucketKeyMapReduce extends MapReduce
 		String keyData = i.keyData;
 
 		jg.writeStartArray();
-		jg.writeString(location.getBucket().toString());
+		jg.writeString(location.getBucketNameAsString());
 		jg.writeString(location.getKey().toString());
-		if (i.hasKeyData() || location.hasType())
+		if (i.hasKeyData())
 		{
 			jg.writeString(keyData);
 		}
-		if (location.hasType())
-		{
-			jg.writeString(location.getType().toString());
-		}
+		jg.writeString(location.getBucketTypeAsString());
 		jg.writeEndArray();
 	}
 

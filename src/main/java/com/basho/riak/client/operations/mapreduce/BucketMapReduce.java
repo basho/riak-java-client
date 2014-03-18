@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.operations.Location;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.filter.KeyFilter;
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -35,7 +35,7 @@ public class BucketMapReduce extends MapReduce
 	protected void writeInput(JsonGenerator jg) throws IOException
 	{
 		jg.writeStartObject();
-		jg.writeStringField("bucket", bucket.getBucket().toString());
+		jg.writeStringField("bucket", bucket.getBucketNameAsString());
 
 		jg.writeArrayFieldStart("key_filters");
 		for (KeyFilter filter : filters)
