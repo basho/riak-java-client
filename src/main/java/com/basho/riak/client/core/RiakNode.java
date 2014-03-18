@@ -17,6 +17,7 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.RiakChannelInitializer;
 import com.basho.riak.client.core.netty.RiakResponseException;
+import com.basho.riak.client.core.netty.RiakSecurityDecoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -24,13 +25,18 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.DefaultPromise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.*;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -57,6 +63,9 @@ public class RiakNode implements RiakResponseListener
     private final Sync permits;
     private final String remoteAddress;
     private final int port;
+    private final String username;
+    private final String password;
+    private final KeyStore trustStore; 
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
     private volatile ScheduledExecutorService executor;
@@ -160,7 +169,10 @@ public class RiakNode implements RiakResponseListener
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
         this.blockOnMaxConnections = builder.blockOnMaxConnections;
-
+        this.username = builder.username;
+        this.password = builder.password;
+        this.trustStore = builder.trustStore;
+        
         if (builder.bootstrap != null)
         {
             this.bootstrap = builder.bootstrap.clone();
@@ -656,8 +668,78 @@ public class RiakNode implements RiakResponseListener
                 remoteAddress, port, f.cause());
             throw new ConnectionFailedException(f.cause());
         }
+        
+        Channel c = f.channel();
+        
+        if (trustStore != null) 
+        {
+            SSLContext context;
+            try 
+            {
+                context = SSLContext.getInstance("TLS");
+                TrustManagerFactory tmf =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(trustStore);
 
-        return f.channel();
+                context.init(null, tmf.getTrustManagers(), null);
+                
+            }
+            catch (Exception ex) 
+            {
+                c.close();
+                logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
+                throw new ConnectionFailedException(ex);
+            }
+             
+            SSLEngine engine = context.createSSLEngine();
+
+            Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
+
+            if (protocols.contains("TLSv1.2"))
+            {
+                engine.setEnabledProtocols(new String[] {"TLSv1.2"});
+                logger.debug("Using TLSv1.2");
+            }
+            else if (protocols.contains("TLSv1.1"))
+            {
+                engine.setEnabledProtocols(new String[] {"TLSv1.1"});
+                logger.debug("Using TLSv1.1");
+            }
+
+            engine.setUseClientMode(true);
+            RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
+            c.pipeline().addFirst(decoder);
+                
+            try
+            {
+                DefaultPromise<Void> promise = decoder.getPromise();
+                promise.await();
+                
+                if (promise.isSuccess())
+                {
+                    logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
+                }
+                else
+                {
+                    c.close();
+                    logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
+                    throw new ConnectionFailedException(promise.cause());
+                }
+                
+            
+            }
+            catch (InterruptedException e)
+            {
+                c.close();
+                logger.error("Thread interrupted during Auth; {}:{}",
+                    remoteAddress, port);
+                Thread.currentThread().interrupt();
+                throw new ConnectionFailedException(e);
+            }
+            
+        }
+        
+        return c;
 
     }
 
@@ -1062,6 +1144,9 @@ public class RiakNode implements RiakResponseListener
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
         private boolean blockOnMaxConnections;
+        private String username;
+        private String password;
+        private KeyStore trustStore;
 
 
         /**
@@ -1217,6 +1302,30 @@ public class RiakNode implements RiakResponseListener
             this.blockOnMaxConnections = block;
             return this;
         }
+        
+        /**
+         * Set the credentials for Riak security and authentication. 
+         * <p>
+         * Riak supports authentication and authorization features. 
+         * These credentials will be used for all connections.
+         * </p>
+         * <p>
+         * Note this requires Riak to have been configured with security enabled.
+         * </p>
+         * 
+         * @param username the riak user name.
+         * @param password the password for this user.
+         * @param trustStore A Java KeyStore loaded with the CA certificate required for TLS/SSL
+         * @return a reference to this object.
+         */
+        public Builder withAuth(String username, String password, KeyStore trustStore)
+        {
+            this.username = username;
+            this.password = password;
+            this.trustStore = trustStore;
+            return this;
+        }
+        
         
         /**
          * Builds a RiakNode.
