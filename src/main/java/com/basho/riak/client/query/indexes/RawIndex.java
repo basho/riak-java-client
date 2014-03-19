@@ -41,6 +41,11 @@ public class RawIndex extends RiakIndex<BinaryValue>
         return value;
     }
 
+    public static Name named(String name, IndexType type)
+    {
+        return new Name(name, type);
+    }
+    
     /**
      * Encapsulates the name and {@code IndexType} for a {@code RawIndex}
      */
@@ -51,7 +56,7 @@ public class RawIndex extends RiakIndex<BinaryValue>
          * @param name The name of this index.
          * @param type The IndexType of this index
          */
-        public Name(String name, IndexType type)
+        Name(String name, IndexType type)
         {
             super(name, type);
         }

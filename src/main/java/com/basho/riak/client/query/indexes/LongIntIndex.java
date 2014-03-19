@@ -55,6 +55,11 @@ public class LongIntIndex extends RiakIndex<Long>
         return Long.valueOf(value.toString(Charset.forName("UTF-8")));
     }
     
+    public static Name named(String name)
+    {
+        return new Name(name);
+    }
+    
     /**
      * Encapsulates the name and {@code IndexType} for a {@code LongIntIndex} 
      */
@@ -64,7 +69,7 @@ public class LongIntIndex extends RiakIndex<Long>
          * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
          * @param name The name of this index.
          */
-        public Name(String name)
+        Name(String name)
         {
             super(name, IndexType.INT);
         }

@@ -75,7 +75,7 @@ public class UsermetaField {
     
     private FieldType validateAndGetType(Field f)
     {
-        if (field != null)
+        if (f != null)
         {
             Type t = f.getGenericType();
             if (t instanceof ParameterizedType)
@@ -83,7 +83,7 @@ public class UsermetaField {
                 ParameterizedType pType = (ParameterizedType)t;
                 if (pType.getRawType().equals(Map.class))
                 {
-                    Class<?> genericTypes[] = (Class<?>[])pType.getActualTypeArguments();
+                    Type genericTypes[] = pType.getActualTypeArguments();
                     if (String.class.equals(genericTypes[0]) && String.class.equals(genericTypes[1]))
                     {
                         return FieldType.MAP;

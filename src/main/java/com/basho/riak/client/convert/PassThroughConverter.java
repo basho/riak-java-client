@@ -55,7 +55,7 @@ public final class PassThroughConverter extends Converter<RiakObject>
     }
 
     @Override
-    public BinaryValue fromDomain(RiakObject domainObject)
+    public BinaryValue fromDomain(RiakObject domainObject, String contentType)
     {
         throw new UnsupportedOperationException("Not supported"); 
     }

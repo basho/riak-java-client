@@ -40,7 +40,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 
 /**
- * Class that contains the Riak annotated fields for an annotated class
+ * Class that containsKeyKey the Riak annotated fields for an annotated class
  *
  * @author russell
  *
@@ -130,22 +130,38 @@ public class AnnotationInfo
         {
             if (riakKeyField.getType().equals(String.class))
             {
-                key = BinaryValue.create((String) getFieldValue(riakKeyField, obj));
+                Object o = getFieldValue(riakKeyField, obj);
+                if (o != null)
+                {
+                    key = BinaryValue.create((String) o);
+                }
             }
             else
             {
-                key = BinaryValue.create((byte[]) getFieldValue(riakKeyField, obj));
+                Object o = getFieldValue(riakKeyField, obj);
+                if (o != null)
+                {
+                    key = BinaryValue.create((byte[]) o);
+                }
             }
         }
         else if (riakKeyGetter != null)
         {
             if (riakKeyGetter.getReturnType().isArray())
             {
-                key = BinaryValue.create((byte[]) getMethodValue(riakKeyGetter, obj));
+                Object o = getMethodValue(riakKeyGetter, obj);
+                if (o != null)
+                {
+                    key = BinaryValue.create((byte[]) o);
+                }
             }
             else
             {
-                key = BinaryValue.create((String) getMethodValue(riakKeyGetter, obj));
+                Object o = getMethodValue(riakKeyGetter, obj);
+                if (o != null)
+                {
+                    key = BinaryValue.create((String) o);
+                }
             }
         }
         return key;
@@ -187,22 +203,38 @@ public class AnnotationInfo
         {
             if (riakBucketNameField.getType().equals(String.class))
             {
-                bucketName = BinaryValue.create((String) getFieldValue(riakBucketNameField, obj));
+                Object o = getFieldValue(riakBucketNameField, obj);
+                if (o != null)
+                {
+                    bucketName = BinaryValue.create((String) o);
+                }
             }
             else
             {
-                bucketName = BinaryValue.create((byte[]) getFieldValue(riakBucketNameField, obj));
+                Object o = getFieldValue(riakBucketNameField, obj);
+                if (o != null)
+                {
+                    bucketName = BinaryValue.create((byte[]) o);
+                }
             }
         }
         else if (riakBucketNameGetter != null)
         {
             if (riakBucketNameGetter.getReturnType().isArray())
             {
-                bucketName = BinaryValue.create((byte[]) getMethodValue(riakBucketNameGetter, obj));
+                Object o = getMethodValue(riakBucketNameGetter, obj);
+                if (o != null)
+                {
+                    bucketName = BinaryValue.create((byte[]) o);
+                }
             }
             else
             {
-                bucketName = BinaryValue.create((String) getMethodValue(riakBucketNameGetter, obj));
+                Object o = getMethodValue(riakBucketNameGetter, obj);
+                if (o != null)
+                {
+                    bucketName = BinaryValue.create((String) o);
+                }
             }
         }
         return bucketName;
@@ -244,22 +276,38 @@ public class AnnotationInfo
         {
             if (riakBucketTypeField.getType().equals(String.class))
             {
-                bucketType = BinaryValue.create((String) getFieldValue(riakBucketTypeField, obj));
+                Object o = getFieldValue(riakBucketTypeField, obj);
+                if (o != null)
+                {
+                    bucketType = BinaryValue.create((String) o);
+                }
             }
             else
             {
-                bucketType = BinaryValue.create((byte[]) getFieldValue(riakBucketTypeField, obj));
+                Object o = getFieldValue(riakBucketTypeField, obj);
+                if (o != null)
+                {
+                    bucketType = BinaryValue.create((byte[]) o);
+                }
             }
         }
         else if (riakBucketTypeGetter != null)
         {
             if (riakBucketTypeGetter.getReturnType().isArray())
             {
-                bucketType = BinaryValue.create((byte[]) getMethodValue(riakBucketTypeGetter, obj));
+                Object o = getMethodValue(riakBucketTypeGetter, obj);
+                if (o != null)
+                {
+                    bucketType = BinaryValue.create((byte[]) o);
+                }
             }
             else
             {
-                bucketType = BinaryValue.create((String) getMethodValue(riakBucketTypeGetter, obj));
+                Object o = getMethodValue(riakBucketTypeGetter, obj);
+                if (o != null)
+                {
+                    bucketType = BinaryValue.create((String) o);
+                }
             }
         }
         return bucketType;
@@ -356,9 +404,9 @@ public class AnnotationInfo
         }
     }
 
-    public <T> boolean getRiakTombstone(T obj)
+    public <T> Boolean getRiakTombstone(T obj)
     {
-        boolean tombstone = false;
+        Boolean tombstone = null;
         if (riakTombstoneField != null)
         {
             tombstone = (Boolean) getFieldValue(riakTombstoneField, obj);
@@ -506,7 +554,7 @@ public class AnnotationInfo
             switch(uf.getFieldType())
             {
                 case STRING:
-                    if (userMetadata.contains(uf.getUsermetaDataKey()))
+                    if (userMetadata.containsKey(uf.getUsermetaDataKey()))
                     {
                         setFieldValue(uf.getField(), obj, userMetadata.get(uf.getUsermetaDataKey()));
                         userMetadata.remove(uf.getUsermetaDataKey());
@@ -526,7 +574,7 @@ public class AnnotationInfo
             switch(um.getMethodType())
             {
                 case STRING_SETTER:
-                    if (userMetadata.contains(um.getUsermetaDataKey()))
+                    if (userMetadata.containsKey(um.getUsermetaDataKey()))
                     {
                         setMethodValue(um.getMethod(), obj, userMetadata.get(um.getUsermetaDataKey()));
                         userMetadata.remove(um.getUsermetaDataKey());
@@ -573,39 +621,85 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             final Object val = getFieldValue(f.getField(), obj);
-            
             switch(f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
-                    LongIntIndex longIndex = container.getIndex(new LongIntIndex.Name(f.getIndexName()));
-                    longIndex.add((Set<Long>) val);
+                    // We want to create the index regardless
+                    LongIntIndex longIndex = container.getIndex(LongIntIndex.named(f.getIndexName()));
+                    if (val != null)
+                    {
+                        if (f.getFieldType() == RiakIndexField.FieldType.SET_LONG)
+                        {
+                            longIndex.add((Set<Long>) val);
+                        }
+                        else
+                        {
+                            longIndex.add((Long) val);
+                        }
+                    }
                     break;
                 case SET_STRING:
                 case STRING:
-                    StringBinIndex stringBinIndex = container.getIndex(new StringBinIndex.Name(f.getIndexName()));
-                    stringBinIndex.add((Set<String>) val);
+                    // We want to create the index regardless
+                    StringBinIndex stringBinIndex = container.getIndex(StringBinIndex.named(f.getIndexName()));
+                    if (val != null)
+                    {
+                        if (f.getFieldType() == RiakIndexField.FieldType.SET_STRING)
+                        {
+                            stringBinIndex.add((Set<String>) val);
+                        }
+                        else
+                        {
+                            stringBinIndex.add((String) val);
+                        }
+                    }
                     break;
                 default:
                     break;
             }
+            
         }
 
         for (RiakIndexMethod m : indexMethods)
         {
-            final Object val = getMethodValue(m.getMethod(), obj);
+            Object val;
             
             switch (m.getMethodType())
             {
                 case SET_LONG_GETTER:
                 case LONG_GETTER:
-                    LongIntIndex index = container.getIndex(new LongIntIndex.Name(m.getIndexName()));
-                    index.add((Set<Long>) val);
+                    val = getMethodValue(m.getMethod(), obj);
+                    // We want to create the index regardless
+                    LongIntIndex index = container.getIndex(LongIntIndex.named(m.getIndexName()));
+                    if (val != null)
+                    {
+                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_LONG_GETTER)
+                        {
+                            index.add((Set<Long>) val);
+                        }
+                        else
+                        {
+                            index.add((Long) val);
+                        }
+                    }
                     break;
                 case SET_STRING_GETTER:
                 case STRING_GETTER:
-                    StringBinIndex stringBinIndex = container.getIndex(new StringBinIndex.Name(m.getIndexName()));
-                    stringBinIndex.add((Set<String>) val);
+                    val = getMethodValue(m.getMethod(), obj);
+                    // We want to create the index regardless
+                    StringBinIndex stringBinIndex = container.getIndex(StringBinIndex.named(m.getIndexName()));
+                    if (val != null)
+                    {
+                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_STRING_GETTER)
+                        {
+                            stringBinIndex.add((Set<String>) val);
+                        }
+                        else
+                        {
+                            stringBinIndex.add((String) val);
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -630,12 +724,12 @@ public class AnnotationInfo
             {
                 case SET_LONG:
                 case LONG:
-                    LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name(f.getIndexName()));
+                    LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named(f.getIndexName()));
                     val = longIndex.values();
                     break;
                 case SET_STRING:
                 case STRING:
-                    StringBinIndex stringIndex = indexes.getIndex(new StringBinIndex.Name(f.getIndexName()));
+                    StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(f.getIndexName()));
                     val = stringIndex.values();
                     break;
                 default:
@@ -644,11 +738,13 @@ public class AnnotationInfo
             
             if (val != null)
             {
-                if ((f.getFieldType() == RiakIndexField.FieldType.LONG || 
-                      f.getFieldType() == RiakIndexField.FieldType.STRING) &&
-                    !val.isEmpty())
+                if (f.getFieldType() == RiakIndexField.FieldType.LONG || 
+                      f.getFieldType() == RiakIndexField.FieldType.STRING) 
                 {
-                    setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+                    if (!val.isEmpty())
+                    {
+                        setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
+                    } 
                 }
                 else
                 {
@@ -665,12 +761,12 @@ public class AnnotationInfo
             {
                 case SET_LONG_SETTER:
                 case LONG_SETTER:
-                    LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name(m.getIndexName()));
+                    LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named(m.getIndexName()));
                     val = longIndex.values();
                     break;
                 case SET_STRING_SETTER:
                 case STRING_SETTER:
-                    StringBinIndex stringIndex = indexes.getIndex(new StringBinIndex.Name(m.getIndexName()));
+                    StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(m.getIndexName()));
                     val = stringIndex.values();
                     break;
                 default:
@@ -679,11 +775,13 @@ public class AnnotationInfo
             
             if (val != null)
             {
-                if ((m.getMethodType() == RiakIndexMethod.MethodType.LONG_SETTER ||
-                      m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER) &&
-                    !val.isEmpty())
+                if (m.getMethodType() == RiakIndexMethod.MethodType.LONG_SETTER ||
+                      m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER) 
                 {
-                    setMethodValue(m.getMethod(), obj, val.iterator().next()); // take the first value
+                    if (!val.isEmpty())
+                    {
+                        setMethodValue(m.getMethod(), obj, val.iterator().next()); // take the first value
+                    } 
                 }
                 else
                 {
@@ -1268,10 +1366,12 @@ public class AnnotationInfo
             {
                 throw new IllegalArgumentException("@RiakContentType annotated field already set");
             }
-            else if (m.getReturnType().equals(Void.TYPE) && 
-                !String.class.equals(m.getParameterTypes()[0]))
-            {
-                throw new IllegalArgumentException("@RiakContentType setter must take a String.");
+            else if (m.getReturnType().equals(Void.TYPE))
+            { 
+                if (!String.class.equals(m.getParameterTypes()[0]))
+                {
+                    throw new IllegalArgumentException("@RiakContentType setter must take a String.");
+                }
             }
             else
             {

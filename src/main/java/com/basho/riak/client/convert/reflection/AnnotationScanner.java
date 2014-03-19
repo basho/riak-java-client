@@ -206,12 +206,20 @@ public class AnnotationScanner implements Callable<AnnotationInfo>
                     {
                         builder.withRiakVTagSetter(method);
                     }
+                    else
+                    {
+                        throw new IllegalArgumentException("@RiakVTag annotated getter not supported");
+                    }
                 }
                 else if (method.isAnnotationPresent(RiakLastModified.class))
                 {
                     if (isSetter(method))
                     {
                         builder.withRiakLastModifiedSetter(method);
+                    }
+                    else
+                    {
+                        throw new IllegalArgumentException("@RiakLastModified annotated getter not supported");
                     }
                 }
                 else if (method.isAnnotationPresent(RiakIndex.class))

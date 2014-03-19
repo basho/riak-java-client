@@ -84,7 +84,7 @@ public class JSONConverter<T> extends Converter<T> {
     }
 
     @Override
-    public BinaryValue fromDomain(T domainObject)
+    public BinaryValue fromDomain(T domainObject, String contentType)
     {
         try    
         {

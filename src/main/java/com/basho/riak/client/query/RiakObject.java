@@ -281,7 +281,7 @@ public final class RiakObject
     
     // Links
     /**
-     * Returns whether this RiakObject contains links
+     * Returns whether this RiakObject containsKeyKey links
      * @return {@code true} if links are present, {@code false} otherwise
      */
     public boolean hasLinks()
@@ -323,7 +323,7 @@ public final class RiakObject
      * @riak.threadsafety The returned <code>RiakUserMetadata}</code> encapsulates any/all 
      * user meta entries for this <code>RaikObject</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RaikObject</code>.
-     * @return the {@code RiakUserMetadata} that contains any/all User Meta entries for this {@code RiakObject}
+     * @return the {@code RiakUserMetadata} that containsKeyKey any/all User Meta entries for this {@code RiakObject}
      */
     public synchronized RiakUserMetadata getUserMeta()
     {

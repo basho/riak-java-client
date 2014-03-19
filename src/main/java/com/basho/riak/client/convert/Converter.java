@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.convert.reflection.AnnotationUtil;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
@@ -76,6 +77,8 @@ public abstract class Converter<T>
 
             AnnotationUtil.setVClock(domainObject, vclock);
             AnnotationUtil.setTombstone(domainObject, obj.isDeleted());
+            AnnotationUtil.setLastModified(domainObject, obj.getLastModified());
+            
             return domainObject;
         }
         catch (InstantiationException ex)
@@ -115,12 +118,17 @@ public abstract class Converter<T>
      */
     public OrmExtracted fromDomain(T domainObject, Location location, VClock vclock)
     {
-        BinaryValue key = AnnotationUtil.getKey(domainObject, location.getKey());
-        BinaryValue bucketName = AnnotationUtil.getBucketName(domainObject, location.getBucketName());
-        BinaryValue bucketType = AnnotationUtil.getBucketType(domainObject, location.getBucketType());
+        BinaryValue key = location != null ? location.getKey() : null;
+        BinaryValue bucketName = location != null ? location.getBucketName() : null;
+        BinaryValue bucketType = location != null ? location.getBucketType() : null;
+        
+        key = AnnotationUtil.getKey(domainObject, key);
+        bucketName = AnnotationUtil.getBucketName(domainObject, bucketName);
+        bucketType = AnnotationUtil.getBucketType(domainObject, bucketType);
         
         vclock = AnnotationUtil.getVClock(domainObject, vclock);
-        String contentType = AnnotationUtil.getContentType(domainObject);
+        String contentType = 
+            AnnotationUtil.getContentType(domainObject, RiakObject.DEFAULT_CONTENT_TYPE);
         
         RiakObject riakObject = new RiakObject();
         
@@ -128,7 +136,7 @@ public abstract class Converter<T>
         AnnotationUtil.getIndexes(riakObject.getIndexes(), domainObject);
         AnnotationUtil.getLinks(riakObject.getLinks(), domainObject);
         
-        BinaryValue value = fromDomain(domainObject);
+        BinaryValue value = fromDomain(domainObject, contentType);
         
         riakObject.setContentType(contentType)
                     .setValue(value);
@@ -148,7 +156,7 @@ public abstract class Converter<T>
      * @param domainObject the domain object.
      * @return A BinaryValue to be stored in Riak
      */
-    public abstract BinaryValue fromDomain(T domainObject) throws ConversionException;
+    public abstract BinaryValue fromDomain(T domainObject, String contentType) throws ConversionException;
     
     /**
      * Encapsulation of ORM data extracted from a domain object.

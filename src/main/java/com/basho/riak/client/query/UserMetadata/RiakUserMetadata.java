@@ -61,9 +61,9 @@ public class RiakUserMetadata
      * @param key the metadata key 
      * @return {@code true} if the entry is present, {@code false} otherwise.
      */
-    public boolean contains(String key)
+    public boolean containsKey(String key)
     {
-        return contains(key, Charset.defaultCharset());
+        return containsKey(key, Charset.defaultCharset());
     }
     
     /**
@@ -74,9 +74,9 @@ public class RiakUserMetadata
      * @param key the metadata key 
      * @return {@code true} if the entry is present, {@code false} otherwise.
      */
-    public boolean contains(String key, Charset charset)
+    public boolean containsKey(String key, Charset charset)
     {
-        return meta.contains(BinaryValue.unsafeCreate(key.getBytes()));
+        return meta.containsKey(BinaryValue.unsafeCreate(key.getBytes()));
     }
     
     /**

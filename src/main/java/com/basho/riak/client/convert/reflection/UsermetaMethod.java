@@ -75,7 +75,7 @@ public class UsermetaMethod
     
     private MethodType validateAndGetReturnType(Method m)
     {
-        if (method != null)
+        if (m != null)
         {
             if (m.getReturnType().equals(Void.TYPE)) // it's a setter
             {
@@ -86,7 +86,7 @@ public class UsermetaMethod
                     ParameterizedType pType = (ParameterizedType)t;
                     if (pType.getRawType().equals(Map.class))
                     {
-                        Class<?> genericTypes[] = (Class<?>[])pType.getActualTypeArguments();
+                        Type genericTypes[] = pType.getActualTypeArguments();
                         if (String.class.equals(genericTypes[0]) && String.class.equals(genericTypes[1]))
                         {
                             return MethodType.MAP_SETTER;
@@ -111,10 +111,10 @@ public class UsermetaMethod
                     ParameterizedType pType = (ParameterizedType)t;
                     if (pType.getRawType().equals(Map.class))
                     {
-                        Class<?> genericTypes[] = (Class<?>[])pType.getActualTypeArguments();
+                        Type genericTypes[] = pType.getActualTypeArguments();
                         if (String.class.equals(genericTypes[0]) && String.class.equals(genericTypes[1]))
                         {
-                            return MethodType.MAP_SETTER;
+                            return MethodType.MAP_GETTER;
                         }
                     }
                 
@@ -123,7 +123,7 @@ public class UsermetaMethod
                 {
                     if (m.getReturnType().equals(String.class))
                     {
-                        return MethodType.STRING_SETTER;
+                        return MethodType.STRING_GETTER;
                     }
                 }
                 

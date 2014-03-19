@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.convert;
+package com.basho.riak.client.convert.reflection;
 
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.reflection.AnnotationHelper;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.RiakIndexes;
@@ -275,6 +276,12 @@ public class AnnotationUtil
         return AnnotationHelper.getInstance().setUsermetaData(usermetaData, domainObject);
     }
     
+    public static <T> String getContentType(T domainObject, String defaultContentType)
+    {
+        String type = getContentType(domainObject);
+        return type != null ? type : defaultContentType;
+    }
+    
     public static <T> String getContentType(T domainObject)
     {
         return AnnotationHelper.getInstance().getRiakContentType(domainObject);
@@ -288,6 +295,11 @@ public class AnnotationUtil
     public static <T> T setVTag(T domainObject, String vtag)
     {
         return AnnotationHelper.getInstance().setRiakVTag(domainObject, vtag);
+    }
+    
+    public static <T> T setLastModified(T domainObject, Long lastModified)
+    {
+        return AnnotationHelper.getInstance().setRiakLastModified(domainObject, lastModified);
     }
     
 }

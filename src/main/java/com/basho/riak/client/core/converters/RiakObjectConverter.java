@@ -106,7 +106,7 @@ public class RiakObjectConverter
                     try
                     {
                         IndexType type = IndexType.typeFromFullname(name);
-                        indexes.getIndex(new RawIndex.Name(name, type))
+                        indexes.getIndex(RawIndex.named(name, type))
                             .add(BinaryValue.unsafeCreate(p.getValue().toByteArray()));
                     }
                     catch (IllegalArgumentException e)
