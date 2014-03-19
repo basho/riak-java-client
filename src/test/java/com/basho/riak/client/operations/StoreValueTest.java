@@ -83,7 +83,6 @@ public class StoreValueTest
 
 		StoreValue.Builder<RiakObject> store =
 			new StoreValue.Builder<RiakObject>(key, riakObject)
-				.withConverter(new PassThroughConverter())
 				.withVectorClock(vClock)
 				.withOption(StoreOption.ASIS, true)
 				.withOption(StoreOption.DW, new Quorum(1))
