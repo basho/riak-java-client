@@ -11,31 +11,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
- * A filter that matches keys whose name ends with the configured String argument
+ * Filter in keys that equal the configured value
  * @author russell
  *
  */
-public class EndsWithFilter implements KeyFilter {
+public class EqualToFilter<T> extends KeyFilter
+{
 
-    private static final String NAME = "ends_with";
-    private final String[] filter;
-    
+    private final static String NAME = "eq";
+    private final T value;
+
     /**
-     * Filter in keys that end with <code>endsWith</code>
-     * @param endsWith
+     * Filter in keys whose name is <code>equalTo</code>
+     * @param value
      */
-    public EndsWithFilter(String endsWith) {
-        filter = new String[] {NAME, endsWith};
+    public EqualToFilter(T value) {
+	    super(NAME);
+	    this.value = value;
     }
-    
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
-     */
-    public String[] asArray() {
-        return filter.clone();
-    }
+
 }

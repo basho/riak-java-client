@@ -11,28 +11,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
- * Filter in keys that aren't caught by the group
- * @author russell
+ * Filter in keys that =< than the configured value.
  *
+ * @author russell
  */
-public class LogicalNotFilter extends AbstractLogicalFilter {
-    private static final String NAME = "not";
+public class LessThanOrEqualFilter<T> extends KeyFilter
+{
+	private static final String NAME = "less_than_eq";
+	private final T value;
 
-    /**
-     * @param filters
-     */
-    public LogicalNotFilter(KeyFilter... filters) {
-        super(filters);
-    }
+	/**
+	 * @param value
+	 */
+	public LessThanOrEqualFilter(T value)
+	{
+		super(NAME);
+		this.value = value;
+	}
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.AbstractLogicalFilter#getName()
-     */
-    @Override protected String getName() {
-        return NAME;
-    }
+	public T getValue()
+	{
+		return value;
+	}
 }

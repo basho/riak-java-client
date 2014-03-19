@@ -11,21 +11,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
-
-
 /**
- * Transform the key from a string to a float
- * @author russell
+ * The set of key filters that can be used in a {@link com.basho.riak.client.operations.mapreduce.MapReduce}
  *
- */
-public class StringToFloatFilter extends AbstractKeyFilter {
-    private static final String NAME = "string_to_float";
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.AbstractKeyFilter#getFilter()
-     */
-    @Override public String getFilter() {
-        return NAME;
-    }
-}
+ * <p>
+ * Please see the basho wiki on 
+ * <a href="http://wiki.basho.com/MapReduce.html">Map/Reduce</a> and 
+ * <a href="http://wiki.basho.com/Key-Filters.html">key Filters</a> for more details.
+ * </p>
+ * 
+ */
+package com.basho.riak.client.query.filters;

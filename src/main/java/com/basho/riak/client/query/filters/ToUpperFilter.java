@@ -11,22 +11,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
- * Transform the key from a String to an int
- * @author russell
+ * Transform filter that uppercases the key
  *
+ * @author russell
  */
-public class StringToIntFilter extends AbstractKeyFilter {
-    
-    private static final String NAME = "string_to_int";
+public class ToUpperFilter extends KeyFilter
+{
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.AbstractKeyFilter#getFilter()
-     */
-    @Override public String getFilter() {
-        return NAME;
-    }
+	private static final String NAME = "to_upper";
+
+	public ToUpperFilter()
+	{
+		super(NAME);
+	}
 }

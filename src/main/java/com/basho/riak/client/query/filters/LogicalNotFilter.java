@@ -11,19 +11,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
- * Top level interface for Key Filters.
- * 
+ * Filter in keys that aren't caught by the group
+ *
  * @author russell
- * 
  */
-public interface KeyFilter {
-    /**
-     * A view of the key filter as an Object array.
-     * @return an Object[]
-     */
-    Object[] asArray();
+public class LogicalNotFilter extends LogicalFilter
+{
+	private static final String NAME = "not";
+
+	/**
+	 * @param filters
+	 */
+	public LogicalNotFilter(KeyFilter... filters)
+	{
+		super(NAME, filters);
+	}
+
 }

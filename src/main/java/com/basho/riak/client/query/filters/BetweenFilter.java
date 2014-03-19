@@ -11,22 +11,38 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
-
+package com.basho.riak.client.query.filters;
 
 /**
- * Transform filter that lower cases the key.
+ * Key filter that matches keys in a range delimited by <code>from</code> -
+ * <code>to</code>
+ * 
  * @author russell
- *
+ * 
  */
-public class ToLowerFilter extends AbstractKeyFilter {
-    
-    private static final String FILTER = "to_lower";
+public class BetweenFilter<T> extends KeyFilter
+{
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.AbstractKeyFilter#getFilter()
-     */
-    @Override public String getFilter() {
-        return FILTER;
-    }
+	private static final String NAME = "between";
+
+	private final T from;
+	private final T to;
+
+	public BetweenFilter(T from, T to)
+	{
+		super(NAME);
+		this.from = from;
+		this.to = to;
+	}
+
+	public T getFrom()
+	{
+		return from;
+	}
+
+	public T getTo()
+	{
+		return to;
+	}
+
 }

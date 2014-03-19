@@ -11,22 +11,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
+
 
 /**
- * Abstract implementation that provides a skeletal getFilter implementation.
- * @author russell
+ * Transform filter that lower cases the key.
  *
+ * @author russell
  */
-public abstract class AbstractKeyFilter implements KeyFilter {
+public class ToLowerFilter extends KeyFilter
+{
 
-    
-    public abstract String getFilter();
-    
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.KeyFilter#asArray()
-     */
-    public String[] asArray() {
-        return new String[] { getFilter() };
-    }
+	private static final String NAME = "to_lower";
+
+	public ToLowerFilter()
+	{
+		super(NAME);
+	}
 }

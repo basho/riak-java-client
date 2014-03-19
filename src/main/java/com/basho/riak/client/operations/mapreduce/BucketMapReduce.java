@@ -1,7 +1,7 @@
 package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.filter.KeyFilter;
+import com.basho.riak.client.query.filters.KeyFilter;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import java.io.IOException;
@@ -21,16 +21,6 @@ public class BucketMapReduce extends MapReduce
 		this.bucket = builder.bucket;
 	}
 
-	private void writeKeyFilter(JsonGenerator jg, KeyFilter filter) throws IOException
-	{
-		jg.writeStartArray();
-		for (Object field : filter.asArray())
-		{
-			jg.writeString(field.toString());
-		}
-		jg.writeEndArray();
-	}
-
 	@Override
 	protected void writeInput(JsonGenerator jg) throws IOException
 	{
@@ -40,7 +30,7 @@ public class BucketMapReduce extends MapReduce
 		jg.writeArrayFieldStart("key_filters");
 		for (KeyFilter filter : filters)
 		{
-			writeKeyFilter(jg, filter);
+			jg.writeObject(filter);
 		}
 		jg.writeEndArray();
 

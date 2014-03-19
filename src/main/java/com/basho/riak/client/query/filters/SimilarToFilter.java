@@ -11,31 +11,38 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
  * Filter in keys that are within a specified Levenshtein edit distance of the provided string
- * 
- * @author russell
  *
+ * @author russell
  */
-public class SimilarToFilter implements KeyFilter {
-    private static final String NAME = "similar_to";
-    private final Object[] filter;
+public class SimilarToFilter extends KeyFilter
+{
+	private static final String NAME = "similar_to";
+	private final String value;
+	private final int distance;
 
-    /**
-     * @param similarTo the string to compare to
-     * @param maxEditDistance
-     */
-    public SimilarToFilter(String similarTo, int maxEditDistance) {
-        filter = new Object[] { NAME, similarTo, maxEditDistance };
-    }
+	/**
+	 * @param value           the string to compare to
+	 * @param maxEditDistance
+	 */
+	public SimilarToFilter(String value, int maxEditDistance)
+	{
+		super(NAME);
+		this.value = value;
+		this.distance = maxEditDistance;
+	}
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.client.query.filter.KeyFilter#asArray()
-     */
-    public Object[] asArray() {
-        return filter.clone();
-    }
+	public String getValue()
+	{
+		return value;
+	}
+
+	public int getDistance()
+	{
+		return distance;
+	}
 }

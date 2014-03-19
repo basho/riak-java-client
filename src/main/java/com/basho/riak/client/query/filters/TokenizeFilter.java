@@ -11,28 +11,40 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
  * Filter in keys that match the <code>tokenNum</code> token of the key when tokenized by <code>separator</code>
- * @author russell
  *
+ * @author russell
  */
-public class TokenizeFilter implements KeyTransformFilter {
+public class TokenizeFilter extends KeyFilter implements KeyTransformFilter
+{
 
-    private static final String NAME = "tokenize";
-    private final Object[] filter;
-    
-    /**
-     * @param separator
-     * @param tokenNum
-     */
-    public TokenizeFilter(String separator, int tokenNum) {
-        filter = new Object[] {NAME, separator, tokenNum};
-    }
-    
-    public Object[] asArray() {
-        return filter.clone();
-    }
+	private static final String NAME = "tokenize";
+	private final String separator;
+	private final int tokens;
+
+	/**
+	 * @param separator
+	 * @param tokens
+	 */
+	public TokenizeFilter(String separator, int tokens)
+	{
+		super(NAME);
+		this.separator = separator;
+		this.tokens = tokens;
+	}
+
+	public String getSeparator()
+	{
+		return separator;
+	}
+
+	public int getTokens()
+	{
+		return tokens;
+	}
+
 }

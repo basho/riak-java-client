@@ -11,13 +11,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
+
 
 /**
- * Marker interface for the type of filter that, uh, transforms a key from one thing to, uh, another
+ * A filter that matches keys whose name ends with the configured String argument
  * @author russell
  *
  */
-public interface KeyTransformFilter extends KeyFilter {
+public class EndsWithFilter extends KeyFilter
+{
 
+    private static final String NAME = "ends_with";
+    private final String pattern;
+    
+    /**
+     * Filter in keys that end with <code>endsWith</code>
+     * @param pattern
+     */
+    public EndsWithFilter(String pattern) {
+        super(NAME);
+	    this.pattern = pattern;
+    }
+
+	public String getPattern()
+	{
+		return pattern;
+	}
 }

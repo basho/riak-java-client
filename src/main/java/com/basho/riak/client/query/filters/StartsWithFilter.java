@@ -11,13 +11,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
+
 
 /**
- * marker interface for the logical filters
- * @author russell
+ * Filter in keys that start with the provided argument
  *
+ * @author russell
  */
-public interface LogicalFilter extends KeyFilter {
+public class StartsWithFilter extends KeyFilter
+{
 
+	private static final String NAME = "starts_with";
+	private final String value;
+
+	/**
+	 * @param value
+	 */
+	public StartsWithFilter(String value)
+	{
+		super(NAME);
+		this.value = value;
+	}
+
+	public String getValue()
+	{
+		return value;
+	}
 }

@@ -11,21 +11,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
+
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
- * Transform filter that urldecodes the key
- * @author russell
+ * Top level interface for Key Filters.
  *
+ * @author russell
  */
-public class UrlDecodeFilter implements KeyTransformFilter {
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+public abstract class KeyFilter
+{
+	private final String name;
 
-    private static final String[] filter = new String[] { "urldecode" };
+	protected KeyFilter(String name)
+	{
+		this.name = name;
+	}
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.KeyFilter#asArray()
-     */
-    public String[] asArray() {
-        return filter.clone();
-    }
+	public String getName()
+	{
+		return name;
+	}
 }

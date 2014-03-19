@@ -11,23 +11,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
-
-
+package com.basho.riak.client.query.filters;
 
 /**
- * Transform filter that uppercases the key
- * @author russell
+ * Filter in keys that are >= to the configured value
  *
+ * @author russell
  */
-public class ToUpperFilter extends AbstractKeyFilter {
-    
-    private static final String FILTER = "to_upper";
+public class GreaterThanOrEqualFilter<T> extends KeyFilter
+{
+	private static final String NAME = "greater_than_or_eq";
+	private final T value;
 
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.AbstractKeyFilter#getFilter()
-     */
-    @Override public String getFilter() {
-        return FILTER;
-    }
+	/**
+	 * @param value
+	 */
+	public GreaterThanOrEqualFilter(T value)
+	{
+		super(NAME);
+		this.value = value;
+	}
+
+	public T getValue()
+	{
+		return value;
+	}
 }

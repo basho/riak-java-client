@@ -11,27 +11,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
-
+package com.basho.riak.client.query.filters;
 
 /**
- * Filter in keys that match the regular expression argument
- * @author russell
+ * Filters in keys that are greater than the configured value.
  *
+ * @author russell
  */
-public class MatchFilter implements KeyFilter {
+public class GreaterThanFilter<T> extends KeyFilter
+{
 
-    private static final String NAME = "matches";
-    private final String[] filter;
+	private static final String NAME = "greater_than";
+	private final T value;
 
-    /**
-     * @param matchFilter a Reg Exp
-     */
-    public MatchFilter(String matchFilter) {
-        filter = new String[] { NAME, matchFilter };
-    }
+	/**
+	 * @param value
+	 */
+	public GreaterThanFilter(T value)
+	{
+		super(NAME);
+		this.value = value;
 
-    public String[] asArray() {
-        return filter.clone();
-    }
+
+	}
+
+	public T getValue()
+	{
+		return value;
+	}
 }

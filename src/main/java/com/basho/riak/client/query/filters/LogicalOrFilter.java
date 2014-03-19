@@ -11,24 +11,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
-
+package com.basho.riak.client.query.filters;
 
 /**
- * Transforms a key from an int to a string.
- * @author russell
+ * Filter in keys that match any of the filters specified
  *
+ * @author russell
  */
-public class IntToStringFilter extends AbstractKeyFilter {
+public class LogicalOrFilter extends LogicalFilter
+{
 
-    private static final String NAME = "int_to_string";
+	private static final String NAME = "or";
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.newapi.query.filter.AbstractKeyFilter#getFilter()
-     */
-    @Override public String getFilter() {
-        return NAME;
-    }
+	/**
+	 * @param filters
+	 */
+	public LogicalOrFilter(KeyFilter... filters)
+	{
+		super(NAME, filters);
+	}
+
 }

@@ -11,31 +11,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
-
+package com.basho.riak.client.query.filters;
 
 /**
- * Group a bunch of filters together and filter in keys that match all
+ * Marker interface for the type of filter that, uh, transforms a key from one thing to, uh, another
  * @author russell
  *
  */
-public class LogicalAndFilter extends AbstractLogicalFilter {
+public interface KeyTransformFilter {
 
-    private static final String NAME = "and";
-
-   
-    /**
-     * @param filters
-     */
-    public LogicalAndFilter(KeyFilter... filters) {
-        super(filters);
-    }
-
-
-    /* (non-Javadoc)
-     * @see com.basho.riak.newapi.query.filter.AbstractLogicalFilter#getName()
-     */
-    @Override protected String getName() {
-        return NAME;
-    }
 }

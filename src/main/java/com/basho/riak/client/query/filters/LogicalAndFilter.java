@@ -11,27 +11,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
 
 
 /**
- * Filter in keys that start with the provided argument
- * @author russell
+ * Group a bunch of filters together and filter in keys that match all
  *
+ * @author russell
  */
-public class StartsWithFilter implements KeyFilter {
-    
-    private static final String NAME = "starts_with";
-    private final String[] filter;
+public class LogicalAndFilter extends LogicalFilter
+{
 
-    /**
-     * @param startsWithFilter
-     */
-    public StartsWithFilter(String startsWithFilter) {
-        filter = new String[] { NAME, startsWithFilter };
-    }
+	private static final String NAME = "and";
 
-    public String[] asArray() {
-        return filter.clone();
-    }
+	/**
+	 * @param filters
+	 */
+	public LogicalAndFilter(KeyFilter... filters)
+	{
+		super(NAME, filters);
+	}
+
 }

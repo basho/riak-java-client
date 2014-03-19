@@ -11,23 +11,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.basho.riak.client.query.filter;
+package com.basho.riak.client.query.filters;
+
 
 /**
- * Transforms the input key from a float to a string.
- * @author russell
+ * Filetr in keys that don't equal the configured argument
  *
+ * @author russell
  */
-public class FloatToStringFilter extends AbstractKeyFilter {
+public class NotEqualToFilter<T> extends KeyFilter
+{
+	private final static String NAME = "neq";
+	private final T value;
 
-    private static final String NAME = "float_to_string";
+	/**
+	 * @param value
+	 */
+	public NotEqualToFilter(T value)
+	{
+		super(NAME);
+		this.value = value;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.basho.riak.newapi.query.filter.AbstractKeyFilter#getFilter()
-     */
-    @Override public String getFilter() {
-        return NAME;
-    }
+	public T getValue()
+	{
+		return value;
+	}
 }
