@@ -20,7 +20,7 @@ package com.basho.riak.client.query.filters;
  */
 public class GreaterThanOrEqualFilter<T> extends KeyFilter
 {
-	private static final String NAME = "greater_than_or_eq";
+	private static final String NAME = "greater_than_eq";
 	private final T value;
 
 	/**

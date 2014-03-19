@@ -34,4 +34,8 @@ public class EqualToFilter<T> extends KeyFilter
 	    this.value = value;
     }
 
+	public T getValue()
+	{
+		return value;
+	}
 }
