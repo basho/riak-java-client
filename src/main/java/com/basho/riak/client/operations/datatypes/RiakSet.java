@@ -15,15 +15,13 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.query.crdt.types.CrdtSet;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
-public class RiakSet extends RiakDatatype<Set<byte[]>>
+public class RiakSet extends RiakDatatype<Set<BinaryValue>>
 {
 
     private final CrdtSet set;
@@ -34,14 +32,9 @@ public class RiakSet extends RiakDatatype<Set<byte[]>>
     }
 
     @Override
-    public Set<byte[]> view()
+    public Set<BinaryValue> view()
     {
-        Set<byte[]> rset = new HashSet<byte[]>();
-        for (BinaryValue entry : set.viewAsSet())
-        {
-            rset.add(entry.getValue());
-        }
-        return Collections.unmodifiableSet(rset);
+	    return Collections.unmodifiableSet(set.viewAsSet());
     }
 
 }
