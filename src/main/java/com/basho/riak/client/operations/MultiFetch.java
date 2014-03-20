@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.query.Location;
 

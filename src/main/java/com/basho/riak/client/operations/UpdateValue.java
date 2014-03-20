@@ -16,8 +16,8 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.query.Location;
 
@@ -36,7 +36,6 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     private final Class<T> convertTo;
     private final Location location;
     private final Update<T> update;
-    private final ConflictResolver<T> resolver;
     private final Map<FetchOption<?>, Object> fetchOptions =
 	    new HashMap<FetchOption<?>, Object>();
     private final Map<StoreOption<?>, Object> storeOptions =
@@ -45,7 +44,6 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     UpdateValue(Builder<T> builder)
     {
         this.location = builder.location;
-        this.resolver = builder.resolver;
         this.update = builder.update;
 	    this.fetchOptions.putAll(builder.fetchOptions);
 	    this.storeOptions.putAll(builder.storeOptions);
@@ -66,6 +64,8 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
         FetchValue.Response<T> fetchResponse = fetchBuilder.build().execute(cluster);
 
         List<T> value = fetchResponse.getValue();
+        ConflictResolver<T> resolver = 
+            ConflictResolverFactory.getInstance().getConflictResolverForClass(convertTo);
         T resolved = resolver.resolve(value);
         T updated = update.apply(resolved);
 
@@ -175,7 +175,6 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 		private final Location location;
         private final Class<T> convertTo;
 		private Update<T> update;
-		private ConflictResolver<T> resolver;
 		private final Map<FetchOption<?>, Object> fetchOptions =
 			new HashMap<FetchOption<?>, Object>();
 		private final Map<StoreOption<?>, Object> storeOptions =
@@ -215,13 +214,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 			return this;
 		}
 
-		public Builder<T> withResolver(ConflictResolver<T> resolver)
-		{
-			this.resolver = resolver;
-			return this;
-		}
-
-		public Builder<T> withUpdate(Update<T> update)
+        public Builder<T> withUpdate(Update<T> update)
 		{
 			this.update = update;
 			return this;
