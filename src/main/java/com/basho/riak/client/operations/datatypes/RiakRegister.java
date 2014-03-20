@@ -15,11 +15,10 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.query.crdt.types.CrdtRegister;
 import com.basho.riak.client.util.BinaryValue;
 
-public class RiakRegister extends RiakDatatype<byte[]>
+public class RiakRegister extends RiakDatatype<BinaryValue>
 {
 
     private final CrdtRegister register;
@@ -30,9 +29,9 @@ public class RiakRegister extends RiakDatatype<byte[]>
     }
 
     @Override
-    public byte[] view()
+    public BinaryValue view()
     {
-        return register.getValue().getValue();
+        return register.getValue();
     }
 
 }

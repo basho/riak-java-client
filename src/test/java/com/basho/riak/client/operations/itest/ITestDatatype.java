@@ -9,10 +9,10 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 public class ITestDatatype extends ITestBase
 {
@@ -98,7 +98,7 @@ public class ITestDatatype extends ITestBase
 
 		// last-login - register
 		RiakRegister lastLoginTimeRegister = usernameMap.getRegister(lastLoginTime);
-		assertTrue(Arrays.equals(now, lastLoginTimeRegister.view()));
+		assertEquals(BinaryValue.create(now), lastLoginTimeRegister.view());
 
 		// logged-in - flag
 		RiakFlag loggedInFlag = usernameMap.getFlag(loggedIn);
