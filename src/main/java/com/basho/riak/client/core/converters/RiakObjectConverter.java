@@ -73,7 +73,7 @@ public class RiakObjectConverter
                 ro.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
             }
             
-            if (content.hasValue())
+            if (content.hasValue() && !content.getValue().isEmpty())
             {
                 ro.setValue(BinaryValue.unsafeCreate(content.getValue().toByteArray()));
             }

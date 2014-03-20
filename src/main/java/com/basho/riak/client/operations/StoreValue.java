@@ -15,7 +15,10 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.Converter.OrmExtracted;
@@ -33,34 +36,37 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import java.util.ArrayList;
 
-public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
+public class StoreValue extends RiakCommand<StoreValue.Response>
 {
-    private final Class<V> convertTo;
     private final Location location;
     private final Map<StoreOption<?>, Object> options =
 	    new HashMap<StoreOption<?>, Object>();
-    private final V value;
+    private final Object value;
     private final VClock vClock;
 
-    StoreValue(Builder<V> builder)
+    StoreValue(Builder builder)
     {
         this.options.putAll(builder.options);
         this.location = builder.location;
         this.value = builder.value;
-        this.convertTo = builder.convertTo;
 	    this.vClock = builder.vClock;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        Converter<V> converter = ConverterFactory.getInstance().getConverterForClass(convertTo);
+        Converter converter = ConverterFactory.getInstance().getConverterForClass(value.getClass());
         OrmExtracted orm = converter.fromDomain(value, location, vClock);
         
         StoreOperation.Builder builder = 
             new StoreOperation.Builder(orm.getLocation())
-                .withContent(orm.getRiakObject())
-                .withVClock(orm.getVclock());
+                .withContent(orm.getRiakObject());
+        
+        if (orm.getVclock() != null)
+        {
+            builder.withVClock(orm.getVclock());
+        }
 
         for (Map.Entry<StoreOption<?>, Object> opPair : options.entrySet())
         {
@@ -117,13 +123,7 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation operation = builder.build();
 
         StoreOperation.Response response = cluster.execute(operation).get();
-        List<V> converted = new ArrayList<V>();
         
-        for (RiakObject ro : response.getObjectList())
-        {
-            converted.add(converter.toDomain(ro, response.getLocation(), response.getVClock()));
-        }
-
         BinaryValue returnedKey = response.getLocation().getKey();
 
         Location k = 
@@ -132,22 +132,27 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 	    
         VClock clock = response.getVClock();
 
-        return new Response<V>(converted, clock, k);
+        return new Response(response.getObjectList(), clock, k);
 
     }
 
-    public static class Response<T>
+    private <V> Converter<V> getConverter(Class<V> clazz)
+    {
+        return ConverterFactory.getInstance().getConverterForClass(clazz);
+    }
+    
+    public static class Response
     {
 
-        private final Location key;
+        private final Location location;
         private final VClock vClock;
-        private final List<T> value;
+        private final List<RiakObject> values;
 
-        Response(List<T> value, VClock vClock, Location key)
+        Response(List<RiakObject> values, VClock vClock, Location location)
         {
-            this.value = value;
+            this.values = values;
             this.vClock = vClock;
-            this.key = key;
+            this.location = location;
         }
 
         public boolean hasvClock()
@@ -162,53 +167,72 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 
         public boolean hasValue()
         {
-            return value != null;
+            return values != null;
         }
 
-        public List<T> getValue()
+        public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
         {
-            return value;
+            List<T> converted = convertValues(clazz);
+            ConflictResolver<T> resolver = 
+                ConflictResolverFactory.getInstance().getConflictResolverForClass(clazz);
+            
+            return resolver.resolve(converted);
+        }
+        
+        public <V> List<V> getValues(Class<V> clazz)
+        {
+            return convertValues(clazz);
         }
 
         public Location getLocation()
         {
-            return key;
+            return location;
         }
 
+        private <T> List<T> convertValues(Class<T> clazz)
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverterForClass(clazz);
+            
+            List<T> convertedValues = new ArrayList<T>(values.size());
+            for (RiakObject ro : values)
+            {
+                convertedValues.add(converter.toDomain(ro, location, vClock));
+            }
+            
+            return convertedValues;
+        }
     }
 
-	public static class Builder<V>
+	public static class Builder
 	{
 
 		private final Location location;
-        private final Class<V> convertTo;
 		private final Map<StoreOption<?>, Object> options =
 			new HashMap<StoreOption<?>, Object>();
-		private final V value;
+		private final Object value;
 		private VClock vClock;
 
-		public Builder(Location location, V value)
+		public Builder(Location location, Object value)
 		{
 			this.location = location;
 			this.value = value;
-            this.convertTo = (Class<V>) value.getClass();
 		}
 
-		public Builder<V> withVectorClock(VClock vClock)
+		public Builder withVectorClock(VClock vClock)
 		{
 			this.vClock = vClock;
 			return this;
 		}
 
-		public <T> Builder<V> withOption(StoreOption<T> option, T value)
+		public <T> Builder withOption(StoreOption<T> option, T value)
 		{
 			options.put(option, value);
 			return this;
 		}
 
-		public StoreValue<V> build()
+		public StoreValue build()
 		{
-			return new StoreValue<V>(this);
+			return new StoreValue(this);
 		}
 	}
 }

@@ -117,7 +117,7 @@ public abstract class Converter<T>
      * @return a {@code RiakObject} to be stored in Riak.
      */
     public OrmExtracted fromDomain(T domainObject, Location location, VClock vclock)
-    {
+    {        
         BinaryValue key = location != null ? location.getKey() : null;
         BinaryValue bucketName = location != null ? location.getBucketName() : null;
         BinaryValue bucketType = location != null ? location.getBucketType() : null;
