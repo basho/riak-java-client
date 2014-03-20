@@ -35,7 +35,6 @@ import java.util.concurrent.ExecutionException;
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
  *
- * @param <T> the datatype that is being operated on
  */
 public class UpdateValue extends RiakCommand<UpdateValue.Response>
 {

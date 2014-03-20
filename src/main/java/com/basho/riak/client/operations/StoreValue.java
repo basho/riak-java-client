@@ -127,8 +127,9 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
         BinaryValue returnedKey = response.getLocation().getKey();
 
         Location k = 
-            new Location(location.getBucketName()).setKey(returnedKey)
-                .setBucketType(location.getBucketType());
+            new Location(orm.getLocation().getBucketName())
+                .setKey(returnedKey)
+                .setBucketType(orm.getLocation().getBucketType());
 	    
         VClock clock = response.getVClock();
 
@@ -206,12 +207,18 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
 	public static class Builder
 	{
 
-		private final Location location;
 		private final Map<StoreOption<?>, Object> options =
 			new HashMap<StoreOption<?>, Object>();
 		private final Object value;
 		private VClock vClock;
+        private Location location;
 
+
+        public Builder(Object value)
+        {
+            this.value = value;
+        }
+        
 		public Builder(Location location, Object value)
 		{
 			this.location = location;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Brian Roach <roach at basho dot com>.
+ * Copyright 2014 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 
 package com.basho.riak.client.operations.itest;
 
+import com.basho.riak.client.annotations.RiakBucketName;
+import com.basho.riak.client.annotations.RiakKey;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.operations.FetchOption;
 import com.basho.riak.client.operations.FetchValue;
 import com.basho.riak.client.operations.RiakClient;
 import com.basho.riak.client.operations.StoreOption;
 import com.basho.riak.client.operations.StoreValue;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -56,7 +55,6 @@ public class ITestStoreValue extends ITestBase
         assertEquals(pojo.value, pojo2.value);
         
         FetchValue fv = new FetchValue.Builder(loc)
-                            .withOption(FetchOption.DELETED_VCLOCK, false)
                             .build(); 
         
         FetchValue.Response fResp = client.execute(fv);
@@ -65,12 +63,46 @@ public class ITestStoreValue extends ITestBase
         
     }
     
+    @Test
+    public void storeAnnotatedPojo() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        AnnotatedPojo pojo = new AnnotatedPojo();
+        pojo.key = "test_store_key_2";
+        pojo.bucketName = bucketName.toString();
+        pojo.value = "test store value";
+        
+        StoreValue sv = 
+            new StoreValue.Builder(pojo).build();
+        
+        client.execute(sv);
+        
+        Location loc = new Location(bucketName).setKey("test_store_key_2");
+        FetchValue fv = new FetchValue.Builder(loc).build();
+        
+        FetchValue.Response fResp = client.execute(fv);
+        AnnotatedPojo pojo2 = fResp.getValue(AnnotatedPojo.class);
+        
+        assertEquals(pojo.key, pojo2.key);
+        assertEquals(pojo.bucketName, pojo2.bucketName);
+        assertEquals(pojo.value, pojo2.value);
+    }
     
     
     public static class Pojo
     {
         @JsonProperty
         String value;
+    }
+    
+    public static class AnnotatedPojo extends Pojo
+    {
+        @RiakKey
+        String key;
+        
+        @RiakBucketName
+        String bucketName;
+            
     }
     
 }

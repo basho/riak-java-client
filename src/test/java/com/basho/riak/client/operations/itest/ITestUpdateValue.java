@@ -16,16 +16,13 @@
 
 package com.basho.riak.client.operations.itest;
 
-import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.operations.FetchOption;
 import com.basho.riak.client.operations.RiakClient;
 import com.basho.riak.client.operations.StoreOption;
 import com.basho.riak.client.operations.UpdateValue;
 import com.basho.riak.client.operations.UpdateValue.Update;
 import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -41,10 +38,9 @@ public class ITestUpdateValue extends ITestBase
     {
         RiakClient client = new RiakClient(cluster);
         
-        Location loc = new Location(bucketName).setKey("test_update_key");
+        Location loc = new Location(bucketName).setKey("test_update_key1");
         UpdateValue uv = new UpdateValue.Builder(loc)
                             .withStoreOption(StoreOption.RETURN_BODY, true)
-                            .withFetchOption(FetchOption.DELETED_VCLOCK, false)
                             .withUpdate(new UpdatePojo())
                             .build();
         

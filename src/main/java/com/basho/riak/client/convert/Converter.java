@@ -141,7 +141,12 @@ public abstract class Converter<T>
         riakObject.setContentType(contentType)
                     .setValue(value);
         
-        location = new Location(bucketName).setKey(key).setBucketType(bucketType);
+        location = new Location(bucketName).setKey(key);
+        
+        if (bucketType != null)
+        {
+            location.setBucketType(bucketType);
+        }
         
         OrmExtracted extracted = new OrmExtracted(riakObject, location, vclock);
         return extracted;
