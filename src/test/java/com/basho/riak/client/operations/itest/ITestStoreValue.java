@@ -63,46 +63,54 @@ public class ITestStoreValue extends ITestBase
         
     }
     
+    
+    
     @Test
     public void storeAnnotatedPojo() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        AnnotatedPojo pojo = new AnnotatedPojo();
-        pojo.key = "test_store_key_2";
+        
+        RiakAnnotatedPojo pojo = new RiakAnnotatedPojo();
+        
+        pojo.bucketType = "default";
         pojo.bucketName = bucketName.toString();
-        pojo.value = "test store value";
+        pojo.key = "test_store_key_3";
+        pojo.contentType = null; // converter will set
+        pojo.value = "my value";
         
-        StoreValue sv = 
-            new StoreValue.Builder(pojo).build();
+         StoreValue sv = 
+            new StoreValue.Builder(pojo)
+                .withOption(StoreOption.RETURN_BODY, true)
+                .build();
         
-        client.execute(sv);
+        StoreValue.Response resp = client.execute(sv);
         
-        Location loc = new Location(bucketName).setKey("test_store_key_2");
-        FetchValue fv = new FetchValue.Builder(loc).build();
+        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
         
-        FetchValue.Response fResp = client.execute(fv);
-        AnnotatedPojo pojo2 = fResp.getValue(AnnotatedPojo.class);
+        assertNotNull(rap.bucketName);
+        assertEquals(pojo.bucketName, rap.bucketName);
+        assertNotNull(rap.key);
+        assertEquals(pojo.key, rap.key);
+        assertNotNull(rap.bucketType);
+        assertEquals(pojo.bucketType, rap.bucketType);
+        assertNotNull(rap.contentType);
+        assertEquals("application/json", rap.contentType);
+        assertNotNull(rap.vclock);
+        assertNotNull(rap.vtag);
+        assertNotNull(rap.lastModified);
+        assertNotNull(rap.value);
+        assertFalse(rap.deleted);
+        assertNotNull(rap.value);
+        assertEquals(pojo.value, rap.value);
+         
+         
         
-        assertEquals(pojo.key, pojo2.key);
-        assertEquals(pojo.bucketName, pojo2.bucketName);
-        assertEquals(pojo.value, pojo2.value);
     }
-    
     
     public static class Pojo
     {
         @JsonProperty
         String value;
-    }
-    
-    public static class AnnotatedPojo extends Pojo
-    {
-        @RiakKey
-        String key;
-        
-        @RiakBucketName
-        String bucketName;
-            
     }
     
 }

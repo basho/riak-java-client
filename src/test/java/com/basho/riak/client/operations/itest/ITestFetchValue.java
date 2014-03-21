@@ -26,6 +26,7 @@ import com.basho.riak.client.operations.RiakClient;
 import com.basho.riak.client.operations.StoreValue;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -146,6 +147,43 @@ public class ITestFetchValue extends ITestBase
         assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
 
         
+    }
+    
+    @Test
+    public void fetchAnnotatedPojo() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        Location loc = new Location(bucketName).setKey("test_fetch_key5");
+        
+        String jsonValue = "{\"value\":\"my value\"}";
+        
+        RiakObject ro = new RiakObject()
+                        .setValue(BinaryValue.create(jsonValue))
+                        .setContentType("application/json");
+        
+        StoreValue sv = new StoreValue.Builder(ro).withLocation(loc).build();
+        client.execute(sv);
+        
+        FetchValue fv = new FetchValue.Builder(loc).build(); 
+        FetchValue.Response resp = client.execute(fv);
+        
+        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
+        
+        assertNotNull(rap.bucketName);
+        assertEquals(loc.getBucketNameAsString(), rap.bucketName);
+        assertNotNull(rap.key);
+        assertEquals(loc.getKeyAsString(), rap.key);
+        assertNotNull(rap.bucketType);
+        assertEquals(loc.getBucketTypeAsString(), rap.bucketType);
+        assertNotNull(rap.contentType);
+        assertEquals(ro.getContentType(), rap.contentType);
+        assertNotNull(rap.vclock);
+        assertNotNull(rap.vtag);
+        assertNotNull(rap.lastModified);
+        assertNotNull(rap.value);
+        assertFalse(rap.deleted);
+        assertNotNull(rap.value);
+        assertEquals("my value", rap.value);
     }
     
     public static class Pojo

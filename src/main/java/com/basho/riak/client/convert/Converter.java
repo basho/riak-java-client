@@ -146,10 +146,11 @@ public abstract class Converter<T>
         AnnotationUtil.getIndexes(riakObject.getIndexes(), domainObject);
         AnnotationUtil.getLinks(riakObject.getLinks(), domainObject);
         
-        BinaryValue value = fromDomain(domainObject, contentType);
+        ContentAndType cAndT = fromDomain(domainObject);
+        contentType = cAndT.contentType != null ? cAndT.contentType : contentType;
         
         riakObject.setContentType(contentType)
-                    .setValue(value);
+                    .setValue(cAndT.content);
         
         location = new Location(bucketName).setKey(key);
         
@@ -171,7 +172,7 @@ public abstract class Converter<T>
      * @param domainObject the domain object.
      * @return A BinaryValue to be stored in Riak
      */
-    public abstract BinaryValue fromDomain(T domainObject, String contentType) throws ConversionException;
+    public abstract ContentAndType fromDomain(T domainObject) throws ConversionException;
     
     /**
      * Encapsulation of ORM data extracted from a domain object.
@@ -217,9 +218,17 @@ public abstract class Converter<T>
         {
             return vclock;
         }
-        
-        
-        
     }
-    
+
+    protected class ContentAndType
+    {
+        private final BinaryValue content;
+        private final String contentType;
+        
+        public ContentAndType(BinaryValue content, String contentType)
+        {
+            this.content = content;
+            this.contentType = contentType;
+        }
+    }
 }

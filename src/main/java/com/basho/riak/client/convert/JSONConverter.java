@@ -108,11 +108,12 @@ public class JSONConverter<T> extends Converter<T> {
     }
 
     @Override
-    public BinaryValue fromDomain(T domainObject, String contentType)
+    public ContentAndType fromDomain(T domainObject)
     {
         try    
         {
-            return BinaryValue.unsafeCreate(OBJECT_MAPPER.writeValueAsBytes(domainObject));
+            return new ContentAndType(BinaryValue.unsafeCreate(OBJECT_MAPPER.writeValueAsBytes(domainObject)),
+                                        "application/json");
         }
         catch (JsonProcessingException ex)
         {

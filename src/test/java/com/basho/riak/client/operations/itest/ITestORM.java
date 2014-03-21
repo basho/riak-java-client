@@ -453,9 +453,9 @@ public class ITestORM extends ITestBase
         }
 
         @Override
-        public BinaryValue fromDomain(GenericPojo<Integer> domainObject, String contentType) throws ConversionException
+        public ContentAndType fromDomain(GenericPojo<Integer> domainObject) throws ConversionException
         {
-            return BinaryValue.create(String.valueOf(domainObject.value));
+            return new ContentAndType(BinaryValue.create(String.valueOf(domainObject.value)), "text/plain");
         }
         
     }
@@ -523,9 +523,9 @@ public class ITestORM extends ITestBase
         }
 
         @Override
-        public BinaryValue fromDomain(Foo domainObject, String contentType) throws ConversionException
+        public ContentAndType fromDomain(Foo domainObject) throws ConversionException
         {
-            return BinaryValue.create(domainObject.fooValue);
+            return new ContentAndType(BinaryValue.create(domainObject.fooValue), "text/plain");
         }
         
     }

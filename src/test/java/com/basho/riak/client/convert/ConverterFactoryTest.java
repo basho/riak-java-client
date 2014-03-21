@@ -130,7 +130,7 @@ public class ConverterFactoryTest
         }
 
         @Override
-        public BinaryValue fromDomain(Pojo domainObject, String contentType) throws ConversionException
+        public ContentAndType fromDomain(Pojo domainObject) throws ConversionException
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }

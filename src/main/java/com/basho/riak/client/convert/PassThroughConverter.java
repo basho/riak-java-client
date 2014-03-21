@@ -19,7 +19,6 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 
 /**
@@ -56,7 +55,7 @@ public final class PassThroughConverter extends Converter<RiakObject>
     }
 
     @Override
-    public BinaryValue fromDomain(RiakObject domainObject, String contentType)
+    public ContentAndType fromDomain(RiakObject domainObject)
     {
         throw new UnsupportedOperationException("Not supported"); 
     }

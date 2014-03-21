@@ -55,6 +55,39 @@ public class ITestUpdateValue extends ITestBase
         
     }
     
+    @Test
+    public void updateAnnotatedPojo() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        
+        Location loc = new Location(bucketName).setKey("test_update_key2");
+        UpdateValue uv = new UpdateValue.Builder(loc)
+                            .withStoreOption(StoreOption.RETURN_BODY, true)
+                            .withUpdate(new UpdateAnnotatedPojo())
+                            .build();
+        
+        UpdateValue.Response resp = client.execute(uv);
+        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
+        
+        assertNotNull(rap.bucketName);
+        assertEquals(loc.getBucketNameAsString(), rap.bucketName);
+        assertNotNull(rap.key);
+        assertEquals(loc.getKeyAsString(), rap.key);
+        assertNotNull(rap.bucketType);
+        assertEquals(loc.getBucketTypeAsString(), rap.bucketType);
+        assertNotNull(rap.contentType);
+        assertEquals("application/json", rap.contentType);
+        assertNotNull(rap.vclock);
+        assertNotNull(rap.vtag);
+        assertNotNull(rap.lastModified);
+        assertNotNull(rap.value);
+        assertFalse(rap.deleted);
+        assertNotNull(rap.value);
+        assertEquals("updated value", rap.value);
+        
+        
+    }
+    
     public static class UpdatePojo extends Update<Pojo>
     {
 
@@ -76,5 +109,21 @@ public class ITestUpdateValue extends ITestBase
     {
         @JsonProperty
         int value;
+    }
+    
+    public static class UpdateAnnotatedPojo extends Update<RiakAnnotatedPojo>
+    {
+
+        @Override
+        public RiakAnnotatedPojo apply(RiakAnnotatedPojo original)
+        {
+            if (original == null)
+            {
+                original = new RiakAnnotatedPojo();
+                original.value = "updated value";
+            }
+            return original;
+        }
+        
     }
 }
