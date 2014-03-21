@@ -46,6 +46,7 @@ public abstract class Converter<T>
         this.type = type;
     }
     
+    @SuppressWarnings("unchecked")
     protected final T newDomainInstance()
     {
         try

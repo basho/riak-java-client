@@ -81,6 +81,7 @@ public class JSONConverter<T> extends Converter<T> {
         OBJECT_MAPPER.registerModule(jacksonModule);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T toDomain(BinaryValue value, String contentType)
     {
@@ -95,7 +96,8 @@ public class JSONConverter<T> extends Converter<T> {
                 Class<?> rawType = type instanceof Class<?>
                     ? (Class<?>) type
                     : (Class<?>) ((ParameterizedType) type).getRawType();
-                return OBJECT_MAPPER.readValue(value.unsafeGetValue(), (Class<T>) rawType);
+               return OBJECT_MAPPER.readValue(value.unsafeGetValue(), (Class<T>) rawType);
+                
             }
             
         }

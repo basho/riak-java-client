@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Brian Roach <roach at basho dot com>.
+ * Copyright 2014 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,7 +261,108 @@ public class ITestORM extends ITestBase
     }
     
     
+    @Test
+    public void updateAndResolveRawTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
+    {
+        RiakClient client = new RiakClient(cluster);
+        Location loc = new Location(bucketName).setKey("test_ORM_key6");
+        ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
+        MyFooUpdate update = new MyFooUpdate();
+        
+        UpdateValue uv = new UpdateValue.Builder(loc)
+                        .withUpdate(update)
+                        .build();
+        
+        client.execute(uv);
+        
+        // Create a sibling 
+        Foo f = update.apply(null);
+        StoreValue sv = 
+            new StoreValue.Builder(f)
+                .withLocation(loc)
+                .build();
+        
+        client.execute(sv);
+        
+        uv = new UpdateValue.Builder(loc)
+                        .withUpdate(update)
+                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .build();
+        
+        UpdateValue.Response uvResp = client.execute(uv);
+        
+        f = uvResp.getValue(Foo.class);
+        assertNotNull(f);
+        assertEquals("Little bunny", f.fooValue);
+        
+        uv = new UpdateValue.Builder(loc)
+                        .withUpdate(update)
+                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .build();
+        
+        uvResp = client.execute(uv);
+        
+        f = uvResp.getValue(Foo.class);
+        assertNotNull(f);
+        assertEquals("Little bunny foo foo.", f.fooValue);
+        
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(f);
+        RiakObject ro = uvResp.getValue(RiakObject.class);
+        assertEquals(json, ro.getValue().toString());
+        
+    }
     
+    @Test
+    public void updateAndResolveRawTypeCustom() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        Location loc = new Location(bucketName).setKey("test_ORM_key6");
+        
+        ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
+        ConverterFactory.getInstance().registerConverterForClass(Foo.class, new MyFooConverter());
+        MyFooUpdate update = new MyFooUpdate();
+        
+        UpdateValue uv = new UpdateValue.Builder(loc)
+                        .withUpdate(update)
+                        .build();
+        
+        client.execute(uv);
+        
+        // Create a sibling 
+        Foo f = update.apply(null);
+        StoreValue sv = 
+            new StoreValue.Builder(f)
+                .withLocation(loc)
+                .build();
+        
+        client.execute(sv);
+        
+        uv = new UpdateValue.Builder(loc)
+                        .withUpdate(update)
+                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .build();
+        
+        UpdateValue.Response uvResp = client.execute(uv);
+        
+        f = uvResp.getValue(Foo.class);
+        assertNotNull(f);
+        assertEquals("Little bunny", f.fooValue);
+        
+        uv = new UpdateValue.Builder(loc)
+                        .withUpdate(update)
+                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .build();
+        
+        uvResp = client.execute(uv);
+        
+        f = uvResp.getValue(Foo.class);
+        assertNotNull(f);
+        assertEquals("Little bunny foo foo.", f.fooValue);
+        
+        RiakObject ro = uvResp.getValue(RiakObject.class);
+        assertEquals("Little bunny foo foo.", ro.getValue().toString());
+    }
     
     public static class GenericPojo<T>
     {
@@ -358,4 +459,75 @@ public class ITestORM extends ITestBase
         }
         
     }
+    
+    public class MyFooUpdate extends Update<Foo>
+    {
+
+        @Override
+        public Foo apply(Foo original)
+        {
+            if (original == null)
+            {
+                original = new Foo("Little");
+            }
+            else
+            {
+                if (original.fooValue.endsWith("Little"))
+                {
+                    original.fooValue = original.fooValue + " bunny";
+                }
+                else if (original.fooValue.endsWith("bunny"))
+                {
+                    original.fooValue = original.fooValue + " foo foo.";
+                }
+            }
+            return original;
+        }
+    }
+    
+    public class MyFooResolver implements ConflictResolver<Foo>
+    {
+
+        @Override
+        public Foo resolve(List<Foo> objectList) throws UnresolvedConflictException
+        {
+            if (objectList.isEmpty())
+            {
+                return null;
+            }
+            else
+            {
+                int longest = 0;
+                for (int i = 0; i < objectList.size(); i++)
+                {
+                    if (objectList.get(i).fooValue.length() > longest)
+                    {
+                        longest = i;
+                    }
+                }
+                return objectList.get(longest);
+            }
+        }
+    }
+    
+    public static class MyFooConverter extends Converter<Foo>
+    {
+        public MyFooConverter()
+        {
+            super(Foo.class);
+        }
+        @Override
+        public Foo toDomain(BinaryValue value, String contentType) throws ConversionException
+        {
+            return new Foo(value.toString());
+        }
+
+        @Override
+        public BinaryValue fromDomain(Foo domainObject, String contentType) throws ConversionException
+        {
+            return BinaryValue.create(domainObject.fooValue);
+        }
+        
+    }
+    
 }
