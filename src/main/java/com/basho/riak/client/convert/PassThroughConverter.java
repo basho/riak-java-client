@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 
 /**

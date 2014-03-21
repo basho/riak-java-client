@@ -26,6 +26,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -161,23 +162,40 @@ public class FetchValue extends RiakCommand<FetchValue.Response>
 
 		public <T> List<T> getValues(Class<T> clazz)
 		{
-			return convertValues(clazz);
+			Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            return convertValues(converter);
 		}
 
         public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
         {
-            List<T> convertedValues = convertValues(clazz);
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            List<T> convertedValues = convertValues(converter);
             
             ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolverForClass(clazz);
+                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
             
             return resolver.resolve(convertedValues);
         }
         
-        private <T> List<T> convertValues(Class<T> clazz)
+        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
         {
-            Converter<T> converter = ConverterFactory.getInstance().getConverterForClass(clazz);
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            List<T> convertedValues = convertValues(converter);
             
+            ConflictResolver<T> resolver = 
+                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
+            
+            return resolver.resolve(convertedValues);
+        }
+        
+        public <T> List<T> getValues(TypeReference<T> typeReference)
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            return convertValues(converter);
+        }
+        
+        private <T> List<T> convertValues(Converter<T> converter)
+        {
             List<T> convertedValues = new ArrayList<T>(values.size());
             for (RiakObject ro : values)
             {

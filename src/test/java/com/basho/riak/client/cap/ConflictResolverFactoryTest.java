@@ -32,14 +32,14 @@ public class ConflictResolverFactoryTest
     public void setUp()
     {
         ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
-        factory.unregisterConflictResolverForClass(Pojo.class);
+        factory.unregisterConflictResolver(Pojo.class);
     }
     
     @Test
     public void getDefaultResolver() throws UnresolvedConflictException
     {
         ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
-        ConflictResolver<Pojo> resolver = factory.getConflictResolverForClass(Pojo.class);
+        ConflictResolver<Pojo> resolver = factory.getConflictResolver(Pojo.class);
         
         assertTrue(resolver instanceof DefaultResolver);
         
@@ -51,9 +51,9 @@ public class ConflictResolverFactoryTest
     {
         ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
         MyResolver resolver = new MyResolver();
-        factory.registerConflictResolverForClass(Pojo.class, resolver);
+        factory.registerConflictResolver(Pojo.class, resolver);
         
-        ConflictResolver<Pojo> resolver2 = factory.getConflictResolverForClass(Pojo.class);
+        ConflictResolver<Pojo> resolver2 = factory.getConflictResolver(Pojo.class);
         
         assertTrue(resolver2 instanceof MyResolver);
         assertEquals(resolver, resolver2);

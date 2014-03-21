@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.ArrayList;
 
 public class StoreValue extends RiakCommand<StoreValue.Response>
@@ -43,6 +44,7 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
 	    new HashMap<StoreOption<?>, Object>();
     private final Object value;
     private final VClock vClock;
+    private final TypeReference<?> typeReference;
 
     StoreValue(Builder builder)
     {
@@ -50,13 +52,24 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
         this.location = builder.location;
         this.value = builder.value;
 	    this.vClock = builder.vClock;
+        this.typeReference = builder.typeReference;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        Converter converter = ConverterFactory.getInstance().getConverterForClass(value.getClass());
+        Converter converter;
+        
+        if (typeReference == null)
+        {
+            converter = ConverterFactory.getInstance().getConverter(value.getClass());
+        }
+        else
+        {
+            converter = ConverterFactory.getInstance().getConverter(typeReference);
+        }
+        
         OrmExtracted orm = converter.fromDomain(value, location, vClock);
         
         StoreOperation.Builder builder = 
@@ -137,10 +150,6 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
 
     }
 
-    private <V> Converter<V> getConverter(Class<V> clazz)
-    {
-        return ConverterFactory.getInstance().getConverterForClass(clazz);
-    }
     
     public static class Response
     {
@@ -173,26 +182,44 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
 
         public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
         {
-            List<T> converted = convertValues(clazz);
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            List<T> converted = convertValues(converter);
             ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolverForClass(clazz);
+                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
             
             return resolver.resolve(converted);
         }
         
-        public <V> List<V> getValues(Class<V> clazz)
+        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
         {
-            return convertValues(clazz);
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            List<T> converted = convertValues(converter);
+            ConflictResolver<T> resolver = 
+                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
+            
+            return resolver.resolve(converted);
+        }
+        
+        public <T> List<T> getValues(Class<T> clazz)
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            return convertValues(converter);
         }
 
+        public <T> List<T> getValues(TypeReference<T> typeReference)
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            return convertValues(converter);
+        }
+        
         public Location getLocation()
         {
             return location;
         }
 
-        private <T> List<T> convertValues(Class<T> clazz)
+        private <T> List<T> convertValues(Converter<T> converter)
         {
-            Converter<T> converter = ConverterFactory.getInstance().getConverterForClass(clazz);
+            
             
             List<T> convertedValues = new ArrayList<T>(values.size());
             for (RiakObject ro : values)
@@ -212,6 +239,7 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
 		private final Object value;
 		private VClock vClock;
         private Location location;
+        private TypeReference<?> typeReference;
 
 
         public Builder(Object value)
@@ -219,12 +247,18 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
             this.value = value;
         }
         
-		public Builder(Location location, Object value)
-		{
-			this.location = location;
-			this.value = value;
-		}
-
+        public Builder(Object value, TypeReference<?> typeReference)
+        {
+            this.value = value;
+            this.typeReference = typeReference;
+        }
+        
+		public Builder withLocation(Location location)
+        {
+            this.location = location;
+            return this;
+        }
+        
 		public Builder withVectorClock(VClock vClock)
 		{
 			this.vClock = vClock;

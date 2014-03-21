@@ -13,12 +13,17 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.annotations.RiakBucketName;
+import com.basho.riak.client.annotations.RiakBucketType;
+import com.basho.riak.client.annotations.RiakContentType;
 import com.basho.riak.client.annotations.RiakKey;
 import com.basho.riak.client.annotations.RiakLinks;
 import com.basho.riak.client.annotations.RiakUsermeta;
 import com.basho.riak.client.annotations.RiakVClock;
 import com.basho.riak.client.annotations.RiakIndex;
+import com.basho.riak.client.annotations.RiakLastModified;
 import com.basho.riak.client.annotations.RiakTombstone;
+import com.basho.riak.client.annotations.RiakVTag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -84,6 +89,11 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier
     static
     {
         RIAK_ANNOTATIONS.add(RiakKey.class);
+        RIAK_ANNOTATIONS.add(RiakBucketName.class);
+        RIAK_ANNOTATIONS.add(RiakBucketType.class);
+        RIAK_ANNOTATIONS.add(RiakContentType.class);
+        RIAK_ANNOTATIONS.add(RiakVTag.class);
+        RIAK_ANNOTATIONS.add(RiakLastModified.class);
         RIAK_ANNOTATIONS.add(RiakUsermeta.class);
         RIAK_ANNOTATIONS.add(RiakLinks.class);
         RIAK_ANNOTATIONS.add(RiakIndex.class);

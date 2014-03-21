@@ -44,7 +44,7 @@ public class ITestStoreValue extends ITestBase
         Pojo pojo = new Pojo();
         pojo.value = "test store value";
         StoreValue sv = 
-            new StoreValue.Builder(loc, pojo)
+            new StoreValue.Builder(pojo).withLocation(loc)
                 .withOption(StoreOption.RETURN_BODY, true)
                 .build();
         

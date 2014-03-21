@@ -17,7 +17,9 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,14 +32,13 @@ public enum ConverterFactory
 {
     INSTANCE;
     
-    private final Map<Class<?>, Class<? extends Converter>> converterClasses =
-        new ConcurrentHashMap<Class<?>, Class<? extends Converter>>();
+    private final Map<Type, Converter<?>> converterInstances =
+        new ConcurrentHashMap<Type, Converter<?>>(){{
+          put(new TypeReference<RiakObject>(){}.getType(), new PassThroughConverter());  
+          put((Type)RiakObject.class, new PassThroughConverter());
+        }};
     
-    private final Map<Class<?>, Converter<?>> converterInstances =
-        new ConcurrentHashMap<Class<?>, Converter<?>>();
     
-    private final PassThroughConverter passThroughConverter = new PassThroughConverter();
-    private volatile Class<? extends Converter> defaultConverter = JSONConverter.class;
     
     /**
      * Get the instance of the ConverterFactory;
@@ -54,49 +55,45 @@ public enum ConverterFactory
      * If no converter is registered, the default converter is returned.
      * </p>
      * @param <T> The type for the converter
-     * @param clazz the class registered with the factory
+     * @param type The type used to look up the converter
      * @return an instance of the converter for this class
      * @see #setDefaultConverter(java.lang.Class) 
      */
-    @SuppressWarnings("unchecked")
-    public <T> Converter<T> getConverterForClass(Class<T> clazz) 
+    public <T> Converter<T> getConverter(Type type)
     {
-        if (clazz == null)
-        {
-            throw new IllegalArgumentException("clazz can not be null");
-        }
-        else if (clazz.equals(RiakObject.class))
-        {
-            Converter<T> converter = (Converter<T>) passThroughConverter;
-            return converter;
-        }
-        else
-        {
-            Converter<T> converter = (Converter<T>) converterInstances.get(clazz);
-            if (converter == null)
-            {
-                try
-                {
-                    Class<? extends Converter> converterClass =
-                        converterClasses.get(clazz);
-                    
-                    if (converterClass == null)
-                    {
-                        converterClass = defaultConverter;
-                    }
-                                        
-                    Constructor<?> cons = converterClass.getConstructor(Class.class);
-                    converter = (Converter<T>) cons.newInstance(clazz);
-                }
-                catch (Exception ex)
-                {
-                    throw new ConversionException("Can not instantiate converter", ex);
-                }
-            }
-            
-            return converter;
-        }
+        return getConverter(type, null);
     }
+    
+    public <T> Converter<T> getConverter(TypeReference<T> typeReference)
+    {
+        return getConverter(null, typeReference);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T> Converter<T> getConverter(Type type, TypeReference<T> typeReference) 
+    {
+        type = type != null ? type : typeReference.getType();
+        
+        Converter<T> converter;
+        
+        converter = (Converter<T>) converterInstances.get(type);
+        if (converter == null)
+        {
+            if (typeReference != null)
+            {
+                // Should we cache this?
+                converter = new JSONConverter<T>(typeReference);
+            }
+            else
+            {
+                converter = new JSONConverter<T>(type);
+            }
+        }
+
+        return converter;
+        
+    }
+    
     
     /**
      * Register a converter for the supplied class.
@@ -104,12 +101,18 @@ public enum ConverterFactory
      * This instance be re-used for every conversion.
      * </p>
      * @param <T> The type being converted
-     * @param clazz the class being converted
+     * @param clazz the class for this converter.
      * @param converter an instance of Converter<T>
      */
     public <T> void registerConverterForClass(Class<T> clazz, Converter<T> converter)
     {
-        converterInstances.put(clazz, converter);
+        converterInstances.put((Type)clazz, converter);
+    }
+    
+    public <T> void registerConverterForClass(TypeReference<T> typeReference, Converter<T> converter)
+    {
+        Type t = typeReference.getType();
+        converterInstances.put(t, converter);
     }
     
     /**
@@ -119,52 +122,12 @@ public enum ConverterFactory
      */
     public <T> void unregisterConverterForClass(Class<T> clazz)
     {
-        converterInstances.remove(clazz);
-        converterClasses.remove(clazz);
+        converterInstances.remove((Type)clazz);
     }
     
-    /**
-     * Register a Converter class for the supplied class.
-     * <p>
-     * A new instance of the supplied Converter<T> class will be created for every
-     * conversion.
-     * </p>
-     * @param clazz the class being converted
-     * @param converter the class for the converter
-     */
-    public void registerConverterForClass(Class<?> clazz, Class<? extends Converter> converter)
+    public <T> void unregisterConverterForClass(TypeReference<T> typeReference)
     {
-        validateConverterClass(converter);
-        converterClasses.put(clazz, converter);
+        Type t = typeReference.getType();
+        converterInstances.remove(t);
     }
-    
-    /**
-     * Set the default converter.
-     * <p>
-     * If a converter hasn't been registered for a class, the converter provided 
-     * here will be used. 
-     * </p>
-     * <p>
-     * By default, this is the {@link com.basho.riak.client.convert.JSONConverter}
-     * </p>
-     * @param converter the default converter.
-     */
-    public void setDefaultConverter(Class<? extends Converter> converter)
-    {
-        validateConverterClass(converter);
-        defaultConverter = converter;
-    }
-    
-    private void validateConverterClass(Class<? extends Converter> converterClass) 
-    {
-        try
-        {
-            Constructor<?> cons = converterClass.getConstructor(Class.class);
-        }
-        catch (Exception ex)
-        {
-            throw new ConversionException("Converter is invalid; no constructor that takes a Class", ex);
-        }
-    }
-    
 }

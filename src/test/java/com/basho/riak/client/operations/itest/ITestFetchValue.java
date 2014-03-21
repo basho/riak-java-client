@@ -29,6 +29,8 @@ import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -39,27 +41,38 @@ import org.junit.Test;
 public class ITestFetchValue extends ITestBase
 {
     @Test
-    public void simpleTest() throws ExecutionException, InterruptedException
+    public void simpleTest() 
     {
-        RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key1");
-        
-        ITestStoreValue.Pojo pojo = new ITestStoreValue.Pojo();
-        pojo.value = "test value";
-        StoreValue sv = 
-            new StoreValue.Builder(loc, pojo).build();
-        
-        StoreValue.Response resp = client.execute(sv);
-        
-        
-        FetchValue fv = new FetchValue.Builder(loc).build();
-        FetchValue.Response fResp = client.execute(fv);
-        
-        assertEquals(pojo.value, fResp.getValue(ITestStoreValue.Pojo.class).value);
-        
-        RiakObject ro = fResp.getValue(RiakObject.class);
-        assertNotNull(ro.getValue());
-        assertEquals("{\"value\":\"test value\"}", ro.getValue().toString());
+        try
+        {
+            RiakClient client = new RiakClient(cluster);
+            Location loc = new Location(bucketName).setKey("test_fetch_key1");
+            
+            Pojo pojo = new Pojo();
+            pojo.value = "test value";
+            StoreValue sv =
+                new StoreValue.Builder(pojo).withLocation(loc).build();
+            
+            StoreValue.Response resp = client.execute(sv);
+            
+            
+            FetchValue fv = new FetchValue.Builder(loc).build();
+            FetchValue.Response fResp = client.execute(fv);
+            
+            assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
+            
+            RiakObject ro = fResp.getValue(RiakObject.class);
+            assertNotNull(ro.getValue());
+            assertEquals("{\"value\":\"test value\"}", ro.getValue().toString());
+        }
+        catch (ExecutionException ex)
+        {
+            System.out.println(ex.getCause().getCause());
+        }
+        catch (InterruptedException ex)
+        {
+            Logger.getLogger(ITestFetchValue.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
     
@@ -73,7 +86,7 @@ public class ITestFetchValue extends ITestBase
         
         assertFalse(fResp.hasValues());
         assertTrue(fResp.isNotFound());
-        assertNull(fResp.getValue(ITestStoreValue.Pojo.class));
+        assertNull(fResp.getValue(Pojo.class));
         RiakObject ro = fResp.getValue(RiakObject.class);
     }
     
@@ -83,10 +96,10 @@ public class ITestFetchValue extends ITestBase
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(bucketName).setKey("test_fetch_key3");
         
-        ITestStoreValue.Pojo pojo = new ITestStoreValue.Pojo();
+        Pojo pojo = new Pojo();
         pojo.value = "test value";
         StoreValue sv = 
-            new StoreValue.Builder(loc, pojo).build();
+            new StoreValue.Builder(pojo).withLocation(loc).build();
         
         client.execute(sv);
         
@@ -110,21 +123,21 @@ public class ITestFetchValue extends ITestBase
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(bucketName).setKey("test_fetch_key4");
         
-        ITestStoreValue.Pojo pojo = new ITestStoreValue.Pojo();
+        Pojo pojo = new Pojo();
         pojo.value = "test value";
         StoreValue sv = 
-            new StoreValue.Builder(loc, pojo).build();
+            new StoreValue.Builder(pojo).withLocation(loc).build();
         
         client.execute(sv);
         
         pojo.value = "Pick me!";
         
-        sv = new StoreValue.Builder(loc, pojo).build();
+        sv = new StoreValue.Builder(pojo).withLocation(loc).build();
         
         client.execute(sv);
         
         ConflictResolverFactory.getInstance()
-            .registerConflictResolverForClass(Pojo.class, new MyResolver());
+            .registerConflictResolver(Pojo.class, new MyResolver());
         
         FetchValue fv = new FetchValue.Builder(loc).build(); 
         

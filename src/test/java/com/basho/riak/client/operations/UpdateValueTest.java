@@ -81,7 +81,7 @@ public class UpdateValueTest
 	{
 		UpdateValue.Update spiedUpdate = spy(new NoopUpdate());
 		ConflictResolver<RiakObject> spiedResolver = 
-            spy(ConflictResolverFactory.getInstance().getConflictResolverForClass(RiakObject.class));
+            spy(ConflictResolverFactory.getInstance().getConflictResolver(RiakObject.class));
 		
         Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
 

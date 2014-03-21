@@ -24,6 +24,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import com.basho.riak.client.util.BinaryValue;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * Converts a RiakObject's value to an instance of T. T must have a field
@@ -37,22 +40,30 @@ public class JSONConverter<T> extends Converter<T> {
 
     // Object mapper per domain class is expensive, a singleton (and ThreadSafe) will do.
     private static final ObjectMapper OBJECT_MAPPER= new ObjectMapper();
+    private final TypeReference<T> typeReference;
     static {
         OBJECT_MAPPER.registerModule(new RiakJacksonModule());
         OBJECT_MAPPER.registerModule(new JodaModule());
     }
     
     /**
-     * Create a JSONConverter for creating instances of <code>clazz</code> from
+     * Create a JSONConverter for creating instances of <code>type</code> from
      * JSON and instances of {@link IRiakObject} with a JSON payload from
      * instances of <code>clazz</code>
      * 
-     * @param clazz the type to convert to/from
+     * @param type
      */
-    public JSONConverter(Class<T> clazz) {
-        super(clazz);
+    public JSONConverter(Type type) {
+        super(type);
+        typeReference = null;
     }
 
+    public JSONConverter(TypeReference<T> typeReference)
+    {
+        super(typeReference.getType());
+        this.typeReference = typeReference;
+    }
+    
     /**
      * Returns the {@link ObjectMapper} being used.
      * This is a convenience method to allow changing its behavior.
@@ -75,7 +86,18 @@ public class JSONConverter<T> extends Converter<T> {
     {
         try
         {
-            return OBJECT_MAPPER.readValue(value.unsafeGetValue(), clazz);
+            if (typeReference != null)
+            {
+                return OBJECT_MAPPER.readValue(value.unsafeGetValue(), typeReference);
+            }
+            else
+            {
+                Class<?> rawType = type instanceof Class<?>
+                    ? (Class<?>) type
+                    : (Class<?>) ((ParameterizedType) type).getRawType();
+                return OBJECT_MAPPER.readValue(value.unsafeGetValue(), (Class<T>) rawType);
+            }
+            
         }
         catch (IOException ex)
         {

@@ -24,7 +24,9 @@ import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -40,6 +42,7 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
 {
     private final Location location;
     private final Update<?> update;
+    private final TypeReference<?> typeReference;
     private final Map<FetchOption<?>, Object> fetchOptions =
 	    new HashMap<FetchOption<?>, Object>();
     private final Map<StoreOption<?>, Object> storeOptions =
@@ -49,6 +52,7 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
     {
         this.location = builder.location;
         this.update = builder.update;
+        this.typeReference = builder.typeReference;
 	    this.fetchOptions.putAll(builder.fetchOptions);
 	    this.storeOptions.putAll(builder.storeOptions);
     }
@@ -66,18 +70,32 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
 
         FetchValue.Response fetchResponse = fetchBuilder.build().execute(cluster);
 
-        // Steal the type from the Update. Yes, Really.
-        Class<?> clazz = 
-            (Class<?>)((ParameterizedType)update.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        Object resolved;
+        if (typeReference == null)
+        {
+            // Steal the type from the Update. Yes, Really.
+            ParameterizedType pType = (ParameterizedType)update.getClass().getGenericSuperclass();
+            Type t = pType.getActualTypeArguments()[0];
+            if (t instanceof ParameterizedType)
+            {
+                t = ((ParameterizedType)t).getRawType();
+            }
         
-        Object resolved = fetchResponse.getValue(clazz);
+            resolved = fetchResponse.getValue((Class<?>) t);
+        }
+        else
+        {
+            resolved = fetchResponse.getValue(typeReference);
+        }
+        
         Object updated = ((Update<Object>)update).apply(resolved);
 
         if (update.isModified())
         {
 
             StoreValue.Builder store = 
-                new StoreValue.Builder(location, updated)
+                new StoreValue.Builder(updated, typeReference)
+                    .withLocation(location)
                     .withVectorClock(fetchResponse.getvClock());
             
             for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
@@ -121,16 +139,34 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
 
         public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
         {
-            List<T> converted = convertValues(clazz);
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            List<T> converted = convertValues(converter);
             ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolverForClass(clazz);
+                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
+            
+            return resolver.resolve(converted);
+        }
+        
+        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            List<T> converted = convertValues(converter);
+            ConflictResolver<T> resolver = 
+                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
             
             return resolver.resolve(converted);
         }
         
         public <T> List<T> getValues(Class<T> clazz)
         {
-            return convertValues(clazz);
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            return convertValues(converter);
+        }
+        
+        public <T> List<T> getValues(TypeReference<T> typeReference)
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            return convertValues(converter);
         }
         
         public Location getLocation()
@@ -138,9 +174,8 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
             return location;
         }
         
-        private <T> List<T> convertValues(Class<T> clazz)
+        private <T> List<T> convertValues(Converter<T> converter)
         {
-            Converter<T> converter = ConverterFactory.getInstance().getConverterForClass(clazz);
             
             List<T> convertedValues = new ArrayList<T>(values.size());
             for (RiakObject ro : values)
@@ -210,6 +245,7 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
 	{
 		private final Location location;
 		private Update<?> update;
+        private TypeReference<?> typeReference;
 		private final Map<FetchOption<?>, Object> fetchOptions =
 			new HashMap<FetchOption<?>, Object>();
 		private final Map<StoreOption<?>, Object> storeOptions =
@@ -254,6 +290,13 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
 			return this;
 		}
 
+        public <T> Builder withUpdate(Update<T> update, TypeReference<T> typeReference)
+        {
+            this.update = update;
+            this.typeReference = typeReference;
+            return this;
+        }
+        
 		public UpdateValue build()
 		{
 			return new UpdateValue(this);

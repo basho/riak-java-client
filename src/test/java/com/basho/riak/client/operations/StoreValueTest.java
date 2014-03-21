@@ -81,7 +81,7 @@ public class StoreValueTest
 	{
 
 		StoreValue.Builder store =
-			new StoreValue.Builder(key, riakObject)
+			new StoreValue.Builder(riakObject).withLocation(key)
 				.withVectorClock(vClock)
 				.withOption(StoreOption.ASIS, true)
 				.withOption(StoreOption.DW, new Quorum(1))
