@@ -19,6 +19,7 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtFetchOperation;
+import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
@@ -154,9 +155,9 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             return context != null;
         }
 
-        public byte[] getContext()
+        public Context getContext()
         {
-            return context;
+            return new Context(context);
         }
     }
 
