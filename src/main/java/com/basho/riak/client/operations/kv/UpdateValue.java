@@ -15,12 +15,6 @@
  */
 package com.basho.riak.client.operations.kv;
 
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.ConflictResolverFactory;
-import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.query.Location;
@@ -28,10 +22,8 @@ import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -98,7 +90,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response>
             StoreValue.Builder store = 
                 new StoreValue.Builder(updated, typeReference)
                     .withLocation(location)
-                    .withVectorClock(fetchResponse.getvClock());
+                    .withVectorClock(fetchResponse.getVClock());
             
             for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
             {
@@ -106,88 +98,76 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response>
             }
             StoreValue.Response storeResponse = store.build().doExecute(cluster);
 
-            List<RiakObject> values = storeResponse.getValues(RiakObject.class);
-            VClock clock = storeResponse.getvClock();
-
-            return new Response(values, storeResponse.getLocation(), clock);
-
+            return new Response.Builder()
+                        .withValues(storeResponse.getValues(RiakObject.class))
+                        .withLocation(storeResponse.getLocation())
+                        .withVClock(storeResponse.getVClock())
+                        .withUpdated(true)
+                        .build();
         }
 
-        return new Response(fetchResponse.getValues(RiakObject.class), 
-                                fetchResponse.getLocation(), 
-                                fetchResponse.getvClock());
+        return new Response.Builder()
+                .withValues(fetchResponse.getValues(RiakObject.class))
+                .withLocation(fetchResponse.getLocation())
+                .withVClock(fetchResponse.getVClock())
+                .withUpdated(false)
+                .build();
     }
 
     /**
      *
      */
-    public static class Response
+    public static class Response extends KvResponseBase
     {
-        private final Location location;
-        private final VClock vClock;
-        private final List<RiakObject> values;
+        private final boolean wasUpdated;
 
-        Response(List<RiakObject> values, Location location, VClock vClock)
+        Response(Init<?> builder)
         {
-            this.values = values;
-            this.vClock = vClock;
-            this.location = location;
+            super(builder);
+            this.wasUpdated = builder.wasUpdated;
         }
 
-        public VClock getvClock()
+        /**
+         * Determine if an update occurred.
+         * <p>
+         * The supplied {@code Update} indicates if a modification was made. If
+         * no modification was made, no store operation is performed and this 
+         * will return false.
+         * <p>
+         * @return true if the supplied {@code Update} modified the retrieved object,
+         * false otherwise.
+         */
+        public boolean wasUpdated()
         {
-            return vClock;
+            return wasUpdated;
         }
 
-        public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
+        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
-            List<T> converted = convertValues(converter);
-            ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
+            private boolean wasUpdated;
             
-            return resolver.resolve(converted);
-        }
-        
-        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
-            List<T> converted = convertValues(converter);
-            ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
-            
-            return resolver.resolve(converted);
-        }
-        
-        public <T> List<T> getValues(Class<T> clazz)
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
-            return convertValues(converter);
-        }
-        
-        public <T> List<T> getValues(TypeReference<T> typeReference)
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
-            return convertValues(converter);
-        }
-        
-        public Location getLocation()
-        {
-            return location;
-        }
-        
-        private <T> List<T> convertValues(Converter<T> converter)
-        {
-            
-            List<T> convertedValues = new ArrayList<T>(values.size());
-            for (RiakObject ro : values)
+            T withUpdated(boolean updated)
             {
-                convertedValues.add(converter.toDomain(ro, location, vClock));
+                this.wasUpdated = updated;
+                return self();
             }
-            
-            return convertedValues;
         }
+        
+        static class Builder extends Init<Builder>
+        {
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
 
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+        }
+        
     }
 
     /**
@@ -230,6 +210,15 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response>
             return modified;
         }
 
+        /**
+         * Returns a no-op Update instance.
+         * <p>
+         * This can be used to simply resolve siblings that exist 
+         * in Riak without modifying the resolved object.
+         * <p>
+         * 
+         * @return An {@code Update} instance the does not modify anything.
+         */
         public static <T> Update<T> noopUpdate()
         {
             return new Update<T>()
@@ -286,12 +275,48 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response>
 			return this;
 		}
 
+        /**
+         * Supply the Update.
+         * <p>
+         * During the update operation, the fetched value needs to be converted 
+         * before being passed to the {@code ConflictResolver} and the {@code Update}
+         * method. 
+         * <p>
+         * <p>
+         * Supplying only an {@code Update<T>} means the raw type of {@code T} 
+         * will be used to retrieve the {@code Converter} and {@code ConflictResolver}
+         * to be used.
+         * </p>
+         * @param update The {@code Update} instance
+         * @return a reference to this object.
+         * @see com.basho.riak.client.convert.Converter
+         * @see com.basho.riak.client.convert.ConverterFactory
+         * @see com.basho.riak.client.cap.ConflictResolver
+         * @see com.basho.riak.client.cap.ConflictResolverFactory
+         */
         public Builder withUpdate(Update<?> update)
 		{
 			this.update = update;
 			return this;
 		}
 
+        /**
+         * Supply the Update with a TypeReference.
+         * <p>
+         * During the update operation, the fetched value needs to be converted 
+         * before being passed to the {@code ConflictResolver} and the {@code Update}
+         * method. If your domain object is a parameterized type you will need to supply 
+         * a {@code TypeReference} so the appropriate {@code ConflictResolver} 
+         * and {@code Converter} can be found.
+         * <p>
+         * @param update The {@code Update} instance
+         * @param typeReference the {@code TypeReference} for the class used for conversion.
+         * @return a reference to this object.
+         * @see com.basho.riak.client.convert.Converter
+         * @see com.basho.riak.client.convert.ConverterFactory
+         * @see com.basho.riak.client.cap.ConflictResolver
+         * @see com.basho.riak.client.cap.ConflictResolverFactory
+         */
         public <T> Builder withUpdate(Update<T> update, TypeReference<T> typeReference)
         {
             this.update = update;
