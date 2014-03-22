@@ -192,7 +192,7 @@ public class ITestFetchValue extends ITestBase
     public void fetchAnnotatedPojoWIthIndexes() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key5");
+        Location loc = new Location(bucketName).setKey("test_fetch_key6");
         
         String jsonValue = "{\"value\":\"my value\"}";
         
