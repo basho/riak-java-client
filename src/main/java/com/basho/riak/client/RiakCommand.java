@@ -28,7 +28,7 @@ public abstract class RiakCommand<T>
 {
     final T execute(RiakCluster cluster) throws ExecutionException, InterruptedException 
     {
-        return execute(cluster);
+        return doExecute(cluster);
     }
     protected abstract T doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException;
 } 
