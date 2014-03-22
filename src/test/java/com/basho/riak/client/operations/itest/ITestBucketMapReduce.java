@@ -24,7 +24,14 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -84,7 +91,7 @@ public class ITestBucketMapReduce extends ITestBase
     }
     
     @Test
-    public void simpleTest() throws ExecutionException, InterruptedException
+    public void simpleTest() throws ExecutionException, InterruptedException, IOException
     {
         RiakClient client = new RiakClient(cluster);
         
@@ -108,8 +115,15 @@ public class ITestBucketMapReduce extends ITestBase
         
         BucketKeyMapReduce.Response resp = client.execute(bkmr);
            
-        System.out.println(resp.getOutput());
+        List<BinaryValue> resultList = resp.getOutput();
+        String json = resultList.get(0).toString();
+        ObjectMapper oMapper = new ObjectMapper(); 
+        @SuppressWarnings("unchecked")
+        List<Map<String, Integer>> jsonList = oMapper.readValue(json, List.class);
+        Map<String, Integer> resultMap = jsonList.get(0);
         
+        assertTrue(resultMap.containsKey("the"));
+        assertEquals(resultMap.get("the"), Integer.valueOf(8));
     }
     
 }

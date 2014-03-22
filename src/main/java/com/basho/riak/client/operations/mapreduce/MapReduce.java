@@ -53,8 +53,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		try
 		{
 			BinaryValue jobSpec = BinaryValue.create(writeSpec());
-
-            System.out.println(jobSpec);
             
 			MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
 
