@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -36,14 +37,14 @@ import static org.junit.Assume.assumeTrue;
 public class ITestDtUpdateOperation extends ITestBase
 {
 
-    private CrdtCounter fetchCounter(BinaryValue type, BinaryValue bucket, BinaryValue key)
+    private RiakCounter fetchCounter(BinaryValue type, BinaryValue bucket, BinaryValue key)
         throws ExecutionException, InterruptedException
     {
         Location location = new Location(bucket).setBucketType(type).setKey(key);
         DtFetchOperation fetch = new DtFetchOperation.Builder(location).build();
         cluster.execute(fetch);
         DtFetchOperation.Response response = fetch.get();
-        CrdtElement element = response.getCrdtElement();
+        RiakDatatype element = response.getCrdtElement();
 
         assertNotNull(element);
         assertTrue(element.isCounter());
@@ -51,7 +52,7 @@ public class ITestDtUpdateOperation extends ITestBase
         return element.getAsCounter();
     }
 
-    private CrdtSet fetchSet(BinaryValue type, BinaryValue bucket, BinaryValue key)
+    private RiakSet fetchSet(BinaryValue type, BinaryValue bucket, BinaryValue key)
         throws ExecutionException, InterruptedException
     {
         Location location = new Location(bucket).setBucketType(type).setKey(key);
@@ -59,7 +60,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         cluster.execute(fetch);
         DtFetchOperation.Response response = fetch.get();
-        CrdtElement element = response.getCrdtElement();
+        RiakDatatype element = response.getCrdtElement();
 
         assertNotNull(element);
         assertTrue(element.isSet());
@@ -67,7 +68,7 @@ public class ITestDtUpdateOperation extends ITestBase
         return element.getAsSet();
     }
 
-    private CrdtMap fetchMap(BinaryValue type, BinaryValue bucket, BinaryValue key)
+    private RiakMap fetchMap(BinaryValue type, BinaryValue bucket, BinaryValue key)
         throws ExecutionException, InterruptedException
     {
         Location location = new Location(bucket).setBucketType(type).setKey(key);
@@ -75,7 +76,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         cluster.execute(fetch);
         DtFetchOperation.Response response = fetch.get();
-        CrdtElement element = response.getCrdtElement();
+        RiakDatatype element = response.getCrdtElement();
 
         assertNotNull(element);
         assertTrue(element.isMap());
@@ -89,14 +90,14 @@ public class ITestDtUpdateOperation extends ITestBase
 
         assumeTrue(testCrdt);
 
-        final int iterations = 1;
+        final long iterations = 1;
 
         BinaryValue key = BinaryValue.create("key");
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(counterBucketType));
 
-        CrdtCounter counter = fetchCounter(counterBucketType, bucketName, key);
-        assertEquals(0, counter.getValue());
+        RiakCounter counter = fetchCounter(counterBucketType, bucketName, key);
+        assertEquals((Long) 0L, counter.view());
 
         Location location = new Location(bucketName).setBucketType(counterBucketType).setKey(key);
         for (int i = 0; i < iterations; ++i)
@@ -111,7 +112,7 @@ public class ITestDtUpdateOperation extends ITestBase
         }
 
         counter = fetchCounter(counterBucketType, bucketName, key);
-        assertEquals(iterations, counter.getValue());
+        assertEquals((Long) iterations, counter.view());
 
         for (int i = 0; i < iterations; ++i)
         {
@@ -125,7 +126,7 @@ public class ITestDtUpdateOperation extends ITestBase
         }
 
         counter = fetchCounter(counterBucketType, bucketName, key);
-        assertEquals(0, counter.getValue());
+        assertEquals((Long) 0L, counter.view());
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(counterBucketType));
 
@@ -143,7 +144,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(setBucketType));
 
-        CrdtSet set = fetchSet(setBucketType, bucketName, key);
+        RiakSet set = fetchSet(setBucketType, bucketName, key);
         assertTrue(set.viewAsSet().isEmpty());
 
         Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
@@ -199,7 +200,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(setBucketType));
 
-        CrdtSet set = fetchSet(setBucketType, bucketName, key);
+        RiakSet set = fetchSet(setBucketType, bucketName, key);
         assertTrue(set.viewAsSet().isEmpty());
 
         Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
@@ -244,9 +245,9 @@ public class ITestDtUpdateOperation extends ITestBase
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
 
-        CrdtMap map = fetchMap(mapBucketType, bucketName, key);
+        RiakMap map = fetchMap(mapBucketType, bucketName, key);
 
-        assertTrue(map.viewAsMap().isEmpty());
+        assertTrue(map.view().isEmpty());
 
         Location location = new Location(bucketName).setBucketType(mapBucketType).setKey(key);
         BinaryValue setValue = BinaryValue.create("value");
@@ -268,9 +269,11 @@ public class ITestDtUpdateOperation extends ITestBase
         update.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        assertEquals(1, map.viewAsMap().size());
-        assertTrue(map.viewAsMap().get(mapKey).isSet());
-        CrdtSet set = map.viewAsMap().get(mapKey).getAsSet();
+        assertEquals(1, map.view().size());
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(map.view().get(mapKey).get(0).isSet());
+        RiakSet set = map.view().get(mapKey).get(0).getAsSet();
         assertTrue(set.viewAsSet().contains(setValue));
 
 
@@ -290,10 +293,12 @@ public class ITestDtUpdateOperation extends ITestBase
         update.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        assertEquals(2, map.viewAsMap().size());
-        assertTrue(map.viewAsMap().get(mapKey).isCounter());
-        CrdtCounter counter = map.viewAsMap().get(mapKey).getAsCounter();
-        assertEquals(1, counter.getValue());
+        assertEquals(2, map.view().size());
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(map.view().get(mapKey).get(0).isCounter());
+        RiakCounter counter = map.view().get(mapKey).get(0).getAsCounter();
+        assertEquals((Long) 1L, counter.view());
 
 
         mapKey = BinaryValue.create("flag");
@@ -315,9 +320,11 @@ public class ITestDtUpdateOperation extends ITestBase
         add.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        assertEquals(3, map.viewAsMap().size());
-        assertTrue(map.viewAsMap().get(mapKey).isFlag());
-        CrdtFlag flag = map.viewAsMap().get(mapKey).getAsFlag();
+        assertEquals(3, map.view().size());
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(map.view().get(mapKey).get(0).isFlag());
+        RiakFlag flag = map.view().get(mapKey).get(0).getAsFlag();
         assertTrue(flag.getEnabled());
 
 
@@ -337,8 +344,10 @@ public class ITestDtUpdateOperation extends ITestBase
         add.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        assertEquals(4, map.viewAsMap().size());
-        CrdtRegister register = map.viewAsMap().get(mapKey).getAsRegister();
+        assertEquals(4, map.view().size());
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        RiakRegister register = map.view().get(mapKey).get(0).getAsRegister();
         assertEquals(mapKey, register.getValue());
 
 
@@ -359,18 +368,22 @@ public class ITestDtUpdateOperation extends ITestBase
         add.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
-        Map<BinaryValue, CrdtElement> mapView = map.viewAsMap();
+        Map<BinaryValue, List<RiakDatatype>> mapView = map.view();
         assertEquals(5, mapView.size());
 
         assertTrue(mapView.containsKey(mapKey));
-        assertTrue(mapView.get(mapKey).isMap());
-        CrdtMap nestedMap = mapView.get(mapKey).getAsMap();
-        Map<BinaryValue, CrdtElement> nestedMapView = nestedMap.viewAsMap();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(mapView.get(mapKey).get(0).isMap());
+        RiakMap nestedMap = mapView.get(mapKey).get(0).getAsMap();
+        Map<BinaryValue, List<RiakDatatype>> nestedMapView = nestedMap.view();
         assertEquals(1, nestedMapView.size());
 
         assertTrue(nestedMapView.containsKey(mapKey));
-        assertTrue(nestedMapView.get(mapKey).isFlag());
-        CrdtFlag nestedFlag = nestedMapView.get(mapKey).getAsFlag();
+	    assertNotNull(map.view().get(mapKey));
+	    assertEquals(1, map.view().get(mapKey).size());
+        assertTrue(nestedMapView.get(mapKey).get(0).isFlag());
+        RiakFlag nestedFlag = nestedMapView.get(mapKey).get(0).getAsFlag();
         assertFalse(nestedFlag.getEnabled());
 
         resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));

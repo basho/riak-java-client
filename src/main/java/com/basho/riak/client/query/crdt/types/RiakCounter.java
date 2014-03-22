@@ -15,18 +15,18 @@
  */
 package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.util.BinaryValue;
-
-public class CrdtRegister extends CrdtElement
+public class RiakCounter extends RiakDatatype<Long>
 {
-    private BinaryValue value;
 
-    public CrdtRegister(BinaryValue value)
+    private long value = 0;
+
+    public RiakCounter(long value)
     {
         this.value = value;
     }
 
-    public BinaryValue getValue()
+	@Override
+    public Long view()
     {
         return value;
     }

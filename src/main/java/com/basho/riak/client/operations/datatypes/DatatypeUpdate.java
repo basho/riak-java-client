@@ -17,7 +17,7 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.CrdtOp;
 
-public abstract class DatatypeUpdate<T extends RiakDatatype>
+public abstract class DatatypeUpdate
 {
     public abstract CrdtOp getOp();
 

@@ -13,28 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.datatypes;
+package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.query.crdt.types.CrdtSet;
-import com.basho.riak.client.util.BinaryValue;
-
-import java.util.Collections;
-import java.util.Set;
-
-public class RiakSet extends RiakDatatype<Set<BinaryValue>>
+public class RiakFlag extends RiakDatatype<Boolean>
 {
 
-    private final CrdtSet set;
+    private boolean enabled = false;
 
-    public RiakSet(CrdtSet set)
+    public RiakFlag(boolean enabled)
     {
-        this.set = set;
+        this.enabled = enabled;
     }
 
-    @Override
-    public Set<BinaryValue> view()
+    public boolean getEnabled()
     {
-	    return Collections.unmodifiableSet(set.viewAsSet());
+        return enabled;
     }
 
+	@Override
+	public Boolean view()
+	{
+		return enabled;
+	}
 }
