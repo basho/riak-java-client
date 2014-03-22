@@ -17,6 +17,10 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.CounterOp;
 
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public class CounterUpdate extends DatatypeUpdate<RiakCounter>
 {
 

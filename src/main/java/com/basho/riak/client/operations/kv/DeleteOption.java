@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.operations.RiakOption;
 
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public class DeleteOption<T> extends RiakOption<T>
 {
 

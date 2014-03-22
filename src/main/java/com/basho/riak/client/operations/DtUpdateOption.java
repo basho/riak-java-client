@@ -17,7 +17,11 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.Quorum;
 
-public class DtUpdateOption<T> extends RiakOption<T>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class DtUpdateOption<T> extends RiakOption<T>
 {
 
     public static final DtUpdateOption<Quorum> DW = new DtUpdateOption<Quorum>("DW");

@@ -17,10 +17,10 @@
 package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.operations.RiakClient;
-import com.basho.riak.client.operations.StoreOption;
-import com.basho.riak.client.operations.UpdateValue;
-import com.basho.riak.client.operations.UpdateValue.Update;
+import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.operations.kv.UpdateValue;
+import com.basho.riak.client.operations.kv.UpdateValue.Update;
 import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.concurrent.ExecutionException;

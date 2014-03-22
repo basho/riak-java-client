@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.query.Location;
 
 import java.util.*;
@@ -72,9 +73,10 @@ import static java.util.Collections.unmodifiableList;
  * </p>
  *
  * @param <T>
- * @author Dave Rusek <drusek@basho.com>
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
  */
-public class MultiFetch extends RiakCommand<MultiFetch.Response>
+public final class MultiFetch extends RiakCommand<MultiFetch.Response>
 {
 
     private final ArrayList<Location> keys = new ArrayList<Location>();
@@ -89,7 +91,7 @@ public class MultiFetch extends RiakCommand<MultiFetch.Response>
 	}
 
 	@Override
-	Response execute(final RiakCluster cluster) throws ExecutionException, InterruptedException
+	protected final Response doExecute(final RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		List<Future<FetchValue.Response>> values =
@@ -111,7 +113,7 @@ public class MultiFetch extends RiakCommand<MultiFetch.Response>
 					@Override
 					public FetchValue.Response call() throws Exception
 					{
-						return request.execute(cluster);
+						return request.doExecute(cluster);
 					}
 				});
 

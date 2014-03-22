@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
@@ -27,8 +28,10 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Command used to delete a value from Riak, referenced by it's key.
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
  */
-public class DeleteValue extends RiakCommand<DeleteValue.Response>
+public final class DeleteValue extends RiakCommand<DeleteValue.Response>
 {
 
     private final Location location;
@@ -44,7 +47,7 @@ public class DeleteValue extends RiakCommand<DeleteValue.Response>
     }
 
     @Override
-    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         DeleteOperation.Builder builder = new DeleteOperation.Builder(location);

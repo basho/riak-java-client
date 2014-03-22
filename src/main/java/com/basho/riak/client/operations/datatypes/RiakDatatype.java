@@ -15,9 +15,10 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.types.CrdtElement;
-import com.basho.riak.client.util.BinaryValue;
-
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public abstract class RiakDatatype<T>
 {
 

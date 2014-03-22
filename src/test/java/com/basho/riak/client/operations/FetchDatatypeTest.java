@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;

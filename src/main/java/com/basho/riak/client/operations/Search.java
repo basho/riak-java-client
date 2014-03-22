@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.util.BinaryValue;
@@ -22,7 +23,11 @@ import com.basho.riak.client.util.BinaryValue;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class Search extends RiakCommand<SearchOperation.Response>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class Search extends RiakCommand<SearchOperation.Response>
 {
 
     public static enum Presort
@@ -63,7 +68,7 @@ public class Search extends RiakCommand<SearchOperation.Response>
 
 
     @Override
-    SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final SearchOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);

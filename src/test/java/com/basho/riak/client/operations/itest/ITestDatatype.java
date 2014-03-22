@@ -1,8 +1,22 @@
 package com.basho.riak.client.operations.itest;
 
+import com.basho.riak.client.operations.datatypes.CounterUpdate;
+import com.basho.riak.client.operations.datatypes.RiakMap;
+import com.basho.riak.client.operations.datatypes.RiakFlag;
+import com.basho.riak.client.operations.datatypes.MapUpdate;
+import com.basho.riak.client.operations.datatypes.RiakRegister;
+import com.basho.riak.client.operations.datatypes.RiakSet;
+import com.basho.riak.client.operations.datatypes.RegisterUpdate;
+import com.basho.riak.client.operations.datatypes.FlagUpdate;
+import com.basho.riak.client.operations.datatypes.RiakCounter;
+import com.basho.riak.client.operations.datatypes.SetUpdate;
+import com.basho.riak.client.operations.UpdateDatatype;
+import com.basho.riak.client.operations.FetchMap;
+import com.basho.riak.client.operations.FetchDatatype;
+import com.basho.riak.client.operations.DtUpdateOption;
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.*;
-import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Assume;

@@ -15,7 +15,11 @@
  */
 package com.basho.riak.client.operations;
 
-public class IndexOption<T> extends RiakOption<T>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class IndexOption<T> extends RiakOption<T>
 {
 
     public static final IndexOption<Integer> MAX_RESULTS = new IndexOption<Integer>("MAX_RESULTS");

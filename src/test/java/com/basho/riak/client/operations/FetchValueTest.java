@@ -15,6 +15,9 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.operations.kv.FetchOption;
+import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;

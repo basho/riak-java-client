@@ -13,12 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.operations.datatypes.RiakDatatype;
+import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
+import com.basho.riak.client.operations.datatypes.Context;
+import com.basho.riak.client.operations.datatypes.RiakSet;
+import com.basho.riak.client.operations.datatypes.RiakCounter;
+import com.basho.riak.client.operations.datatypes.RiakMap;
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
 import com.basho.riak.client.util.BinaryValue;
@@ -27,7 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>>
 {
 
     private final Location loc;
@@ -45,7 +56,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
 
     @Override
     @SuppressWarnings("unchecked")
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc);
 

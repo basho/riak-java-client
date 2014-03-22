@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.operations.RiakOption;
 
-public class FetchOption<T> extends RiakOption<T>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class FetchOption<T> extends RiakOption<T>
 {
 
     public static final FetchOption<Quorum> R = new FetchOption<Quorum>("R");

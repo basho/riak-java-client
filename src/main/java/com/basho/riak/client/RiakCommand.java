@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+
+package com.basho.riak.client;
 
 import com.basho.riak.client.core.RiakCluster;
-
 import java.util.concurrent.ExecutionException;
 
+/**
+ *
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public abstract class RiakCommand<T>
 {
-    abstract T execute(RiakCluster cluster) throws ExecutionException, InterruptedException;
-}
+    final T execute(RiakCluster cluster) throws ExecutionException, InterruptedException 
+    {
+        return execute(cluster);
+    }
+    protected abstract T doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException;
+} 
+

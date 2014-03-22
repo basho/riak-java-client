@@ -1,11 +1,16 @@
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
 import java.util.concurrent.ExecutionException;
 
-public class DeleteSearchIndex extends RiakCommand<YzDeleteIndexOperation.Response>
+/**
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class DeleteSearchIndex extends RiakCommand<YzDeleteIndexOperation.Response>
 {
 	private final String index;
 
@@ -15,7 +20,7 @@ public class DeleteSearchIndex extends RiakCommand<YzDeleteIndexOperation.Respon
 	}
 
 	@Override
-	YzDeleteIndexOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	protected final YzDeleteIndexOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		YzDeleteIndexOperation operation = new YzDeleteIndexOperation.Builder(index).build();
 		return cluster.execute(operation).get();

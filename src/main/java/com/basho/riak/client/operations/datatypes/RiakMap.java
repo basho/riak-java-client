@@ -20,9 +20,12 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public class RiakMap extends RiakDatatype<Map<byte[], RiakDatatype<?>>>
 {
 

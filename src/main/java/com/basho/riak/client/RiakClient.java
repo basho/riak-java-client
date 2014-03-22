@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client;
 
 import com.basho.riak.client.core.RiakCluster;
 
@@ -23,6 +23,9 @@ import java.util.concurrent.Future;
 
 /**
  * The client used to perform operations on Riak.
+ * 
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
  */
 public class RiakClient
 {
@@ -65,5 +68,4 @@ public class RiakClient
 	{
 		return cluster.shutdown();
 	}
-
 }

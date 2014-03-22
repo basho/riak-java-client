@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.ConflictResolverFactory;
@@ -22,6 +22,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -36,9 +37,10 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
- *
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
  */
-public class UpdateValue extends RiakCommand<UpdateValue.Response>
+public final class UpdateValue extends RiakCommand<UpdateValue.Response>
 {
     private final Location location;
     private final Update<?> update;
@@ -59,7 +61,7 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
 
     @Override
     @SuppressWarnings("unchecked")
-    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         FetchValue.Builder fetchBuilder = new FetchValue.Builder(location);
@@ -68,7 +70,7 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
             fetchBuilder.withOption((FetchOption<Object>) optPair.getKey(), optPair.getValue());
         }
 
-        FetchValue.Response fetchResponse = fetchBuilder.build().execute(cluster);
+        FetchValue.Response fetchResponse = fetchBuilder.build().doExecute(cluster);
 
         Object resolved;
         if (typeReference == null)
@@ -102,7 +104,7 @@ public class UpdateValue extends RiakCommand<UpdateValue.Response>
             {
                 store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
             }
-            StoreValue.Response storeResponse = store.build().execute(cluster);
+            StoreValue.Response storeResponse = store.build().doExecute(cluster);
 
             List<RiakObject> values = storeResponse.getValues(RiakObject.class);
             VClock clock = storeResponse.getvClock();

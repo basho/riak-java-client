@@ -15,10 +15,14 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.operations.datatypes.CounterUpdate;
+import com.basho.riak.client.operations.datatypes.MapUpdate;
+import com.basho.riak.client.operations.datatypes.RegisterUpdate;
+import com.basho.riak.client.operations.datatypes.FlagUpdate;
+import com.basho.riak.client.operations.datatypes.SetUpdate;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
-import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.BinaryValue;

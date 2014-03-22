@@ -15,6 +15,9 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;

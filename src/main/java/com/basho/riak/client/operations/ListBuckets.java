@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.query.Location;
@@ -24,7 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListBuckets extends RiakCommand<ListBuckets.Response>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class ListBuckets extends RiakCommand<ListBuckets.Response>
 {
 	private static final String DEFAULT_BUCKET_TYPE = "default";
 
@@ -38,7 +43,7 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
     }
 
     @Override
-    Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
         if (timeout > 0)

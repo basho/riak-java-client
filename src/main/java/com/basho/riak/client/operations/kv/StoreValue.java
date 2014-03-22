@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.ConflictResolverFactory;
@@ -25,6 +25,8 @@ import com.basho.riak.client.convert.Converter.OrmExtracted;
 import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
@@ -37,7 +39,11 @@ import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.ArrayList;
 
-public class StoreValue extends RiakCommand<StoreValue.Response>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class StoreValue extends RiakCommand<StoreValue.Response>
 {
     private final Location location;
     private final Map<StoreOption<?>, Object> options =
@@ -57,7 +63,7 @@ public class StoreValue extends RiakCommand<StoreValue.Response>
 
     @SuppressWarnings("unchecked")
     @Override
-    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         Converter converter;
         

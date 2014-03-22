@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.query.Location;
@@ -24,7 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListKeys extends RiakCommand<ListKeys.Response>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class ListKeys extends RiakCommand<ListKeys.Response>
 {
 
 	private final Location location;
@@ -37,7 +42,7 @@ public class ListKeys extends RiakCommand<ListKeys.Response>
 	}
 
 	@Override
-	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		ListKeysOperation.Builder builder = new ListKeysOperation.Builder(location);
 

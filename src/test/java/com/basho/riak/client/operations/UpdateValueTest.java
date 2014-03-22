@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.VClock;

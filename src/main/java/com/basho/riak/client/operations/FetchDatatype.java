@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtFetchOperation;
@@ -27,6 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
 {
 
@@ -49,7 +54,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 	public abstract T extractDatatype(CrdtElement element);
 
     @Override
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
         DtFetchOperation.Builder builder = 
             new DtFetchOperation.Builder(location);

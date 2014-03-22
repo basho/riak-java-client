@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations;
+package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.ConflictResolverFactory;
@@ -24,6 +24,8 @@ import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,8 +39,10 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Command used to fetch a value from Riak, referenced by it's key.
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
  */
-public class FetchValue extends RiakCommand<FetchValue.Response>
+public final class FetchValue extends RiakCommand<FetchValue.Response>
 {
 
 	private final Location location;
@@ -52,7 +56,7 @@ public class FetchValue extends RiakCommand<FetchValue.Response>
 	}
 
 	@Override
-	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		FetchOperation.Builder builder = new FetchOperation.Builder(location);

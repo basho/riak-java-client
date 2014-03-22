@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.query.Location;
@@ -25,7 +26,11 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.Collections.unmodifiableList;
 
-public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
 {
 
     private final Location location;
@@ -43,7 +48,7 @@ public class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     }
 
     @Override
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
         BinaryValue indexName = BinaryValue.create(index.getFullName());

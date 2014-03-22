@@ -21,6 +21,10 @@ import com.basho.riak.client.util.BinaryValue;
 import java.util.HashSet;
 import java.util.Set;
 
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
 public class SetUpdate extends DatatypeUpdate<RiakSet>
 {
 

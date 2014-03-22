@@ -1,12 +1,17 @@
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.query.search.YokozunaSchema;
 
 import java.util.concurrent.ExecutionException;
 
-public class StoreSchema extends RiakCommand<YzPutSchemaOperation.Response>
+ /*
+ * @author Dave Rusek <drusuk at basho dot com>
+ * @since 2.0
+ */
+public final class StoreSchema extends RiakCommand<YzPutSchemaOperation.Response>
 {
 	private final YokozunaSchema schema;
 
@@ -16,7 +21,7 @@ public class StoreSchema extends RiakCommand<YzPutSchemaOperation.Response>
 	}
 
 	@Override
-	YzPutSchemaOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	protected final YzPutSchemaOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutSchemaOperation operation = new YzPutSchemaOperation.Builder(schema).build();
 	    return cluster.execute(operation).get();
