@@ -26,6 +26,8 @@ import com.basho.riak.client.operations.RiakClient;
 import com.basho.riak.client.operations.StoreValue;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.query.indexes.LongIntIndex;
+import com.basho.riak.client.query.indexes.StringBinIndex;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
@@ -184,6 +186,37 @@ public class ITestFetchValue extends ITestBase
         assertFalse(rap.deleted);
         assertNotNull(rap.value);
         assertEquals("my value", rap.value);
+    }
+    
+    @Test
+    public void fetchAnnotatedPojoWIthIndexes() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        Location loc = new Location(bucketName).setKey("test_fetch_key5");
+        
+        String jsonValue = "{\"value\":\"my value\"}";
+        
+        RiakObject ro = new RiakObject()
+                        .setValue(BinaryValue.create(jsonValue))
+                        .setContentType("application/json");
+        
+        ro.getIndexes().getIndex(StringBinIndex.named("email")).add("roach@basho.com");
+        ro.getIndexes().getIndex(LongIntIndex.named("user_id")).add(1L);
+        
+        StoreValue sv = new StoreValue.Builder(ro).withLocation(loc).build();
+        client.execute(sv);
+        
+        FetchValue fv = new FetchValue.Builder(loc).build(); 
+        FetchValue.Response resp = client.execute(fv);
+        
+        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
+        
+        assertNotNull(rap.emailIndx);
+        assertTrue(rap.emailIndx.contains("roach@basho.com"));
+        assertEquals(rap.userId.longValue(), 1L);
+        
+        
+        
     }
     
     public static class Pojo

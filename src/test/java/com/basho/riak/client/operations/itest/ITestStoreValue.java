@@ -25,8 +25,11 @@ import com.basho.riak.client.operations.StoreOption;
 import com.basho.riak.client.operations.StoreValue;
 import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
@@ -102,8 +105,41 @@ public class ITestStoreValue extends ITestBase
         assertFalse(rap.deleted);
         assertNotNull(rap.value);
         assertEquals(pojo.value, rap.value);
-         
-         
+    }
+    
+    @Test
+    public void storeAnnotatedPojoWithIndexes() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(test2i);
+        
+        RiakClient client = new RiakClient(cluster);
+        
+        RiakAnnotatedPojo pojo = new RiakAnnotatedPojo();
+        
+        pojo.bucketType = "default";
+        pojo.bucketName = bucketName.toString();
+        pojo.key = "test_store_key_3";
+        pojo.contentType = null; // converter will set
+        pojo.value = "my value";
+        
+        Set<String> emailAddys = new HashSet<String>();
+        emailAddys.add("roach@basho.com");
+        
+        pojo.emailIndx = emailAddys;
+        pojo.userId = 1L;
+        
+        StoreValue sv = 
+            new StoreValue.Builder(pojo)
+                .withOption(StoreOption.RETURN_BODY, true)
+                .build();
+        
+        StoreValue.Response resp = client.execute(sv);
+        
+        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
+        
+        assertTrue(rap.emailIndx.containsAll(emailAddys));
+        assertEquals(rap.userId, pojo.userId);
+        
         
     }
     

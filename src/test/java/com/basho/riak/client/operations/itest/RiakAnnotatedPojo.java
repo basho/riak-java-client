@@ -19,12 +19,14 @@ package com.basho.riak.client.operations.itest;
 import com.basho.riak.client.annotations.RiakBucketName;
 import com.basho.riak.client.annotations.RiakBucketType;
 import com.basho.riak.client.annotations.RiakContentType;
+import com.basho.riak.client.annotations.RiakIndex;
 import com.basho.riak.client.annotations.RiakKey;
 import com.basho.riak.client.annotations.RiakLastModified;
 import com.basho.riak.client.annotations.RiakTombstone;
 import com.basho.riak.client.annotations.RiakVClock;
 import com.basho.riak.client.annotations.RiakVTag;
 import com.basho.riak.client.cap.VClock;
+import java.util.Set;
 
 /**
  *
@@ -56,6 +58,14 @@ public class RiakAnnotatedPojo
     @RiakTombstone
     public boolean deleted;
     
+    @RiakIndex(name="email")
+    public Set<String> emailIndx;
+    
+    @RiakIndex(name="user_id")
+    public Long userId;
+    
     public String value;
+    
+    
 
 }
