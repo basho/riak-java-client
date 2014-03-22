@@ -19,7 +19,7 @@ class FunctionPhase extends MapReducePhase
 	 */
 	public FunctionPhase(PhaseType type, Function phaseFunction, Object arg, Boolean keepResult)
 	{
-		super(MapReducePhase.PhaseType.MAP);
+		super(type);
 		this.phaseFunction = phaseFunction;
 		this.arg = arg;
 		this.keep = keepResult;

@@ -54,6 +54,8 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 		{
 			BinaryValue jobSpec = BinaryValue.create(writeSpec());
 
+            System.out.println(jobSpec);
+            
 			MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
 
 			MapReduceOperation.Response output = cluster.execute(operation).get();
@@ -222,7 +224,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
-		protected Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+		protected final Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
 		protected Long timeout;
 
 		/**
