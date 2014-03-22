@@ -317,7 +317,7 @@ public class ITestORM extends ITestBase
     public void updateAndResolveRawTypeCustom() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key6");
+        Location loc = new Location(bucketName).setKey("test_ORM_key7");
         
         ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
         ConverterFactory.getInstance().registerConverterForClass(Foo.class, new MyFooConverter());
