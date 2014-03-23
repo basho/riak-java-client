@@ -20,13 +20,16 @@ import com.basho.riak.client.annotations.*;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
+import com.basho.riak.client.query.indexes.IndexType;
 import com.basho.riak.client.query.indexes.LongIntIndex;
+import com.basho.riak.client.query.indexes.RawIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.indexes.StringBinIndex;
 import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -846,6 +849,12 @@ public class AnnotationUtilTest
     {
         HashSet<String> langs = new HashSet<String>(Arrays.asList("c","erlang","java"));
         HashSet<Long> longs = new HashSet<Long>(Arrays.asList(4L,9L,12L));
+        HashSet<BinaryValue> bytes = new HashSet<BinaryValue>();
+        
+        for (Integer i = 0; i < 5; i++)
+        {
+            bytes.add(BinaryValue.create(i.toString().getBytes()));
+        }
         
         RiakIndexes rIndexes = new RiakIndexes();
         
@@ -854,6 +863,10 @@ public class AnnotationUtilTest
         rIndexes.getIndex(LongIntIndex.named("longs")).add(longs);
         rIndexes.getIndex(LongIntIndex.named("lucky_long")).add(longs);
         rIndexes.getIndex(LongIntIndex.named("lucky_longlong")).add(longs);
+        rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).add(bytes);
+        rIndexes.getIndex(RawIndex.named("set_raw", IndexType.INT)).add(bytes);
+        rIndexes.getIndex(RawIndex.named("raw", IndexType.BIN)).add(bytes);
+        rIndexes.getIndex(RawIndex.named("set_raw", IndexType.BIN)).add(bytes);
         
         PojoWithAnnotatedFields pojo = new PojoWithAnnotatedFields();
         
@@ -864,12 +877,18 @@ public class AnnotationUtilTest
         assertNotNull("Expected int index field (Set<Long> longs) to be populated", pojo.longs);
         assertTrue("Expected int index field (long luckyLong) to be populated", pojo.luckyLong != 0);
         assertNotNull("Expected int index field (Long luckyLongLong) to be populated", pojo.luckyLongLong);
+        assertNotNull("Expected int index field (byte[] rawInt) to be populated", pojo.rawInt);
+        assertNotNull("Expected bin index field (byte[] rawBin) to be populated", pojo.rawBin);
+        assertNotNull("Expected int index field (Set<byte[]> rawInts) to be populated", pojo.rawInts);
+        assertNotNull("Expected bin index field (Set<byte[]> rawBins) to be populated", pojo.rawBins);
         
         assertEquals(langs.size(), pojo.languages.size());
         assertEquals(langs.iterator().next(), pojo.luckyLanguage);
         assertEquals(longs.size(), pojo.longs.size());
         assertEquals(longs.iterator().next().longValue(), pojo.luckyLong);
         assertEquals(longs.iterator().next(), pojo.luckyLongLong);
+        assertEquals(bytes.size(), pojo.rawInts.size());
+        assertEquals(bytes.size(), pojo.rawBins.size());
     }
     
     @Test
@@ -882,6 +901,19 @@ public class AnnotationUtilTest
         pojo.luckyLong = pojo.longs.iterator().next();
         pojo.luckyLongLong = pojo.longs.iterator().next();
         
+        pojo.rawBins = new HashSet<byte[]>();
+        pojo.rawInts = new HashSet<byte[]>();
+        
+        for (Integer i = 0; i < 5; i++)
+        {
+            byte[] bytes = i.toString().getBytes();
+            pojo.rawBins.add(bytes);
+            pojo.rawInts.add(bytes);
+        }
+        
+        pojo.rawInt = pojo.rawInts.iterator().next();
+        pojo.rawBin = pojo.rawBins.iterator().next();
+        
         RiakIndexes rIndexes = new RiakIndexes();
         AnnotationUtil.getIndexes(rIndexes, pojo);
         
@@ -891,6 +923,13 @@ public class AnnotationUtilTest
         assertEquals("Expected RiakIndexes BinIndex (lucky_language) to be populated", 
                       rIndexes.getIndex(StringBinIndex.named("lucky_language")).size(), 
                       1);
+        assertEquals("Expected RiakIndexes BinIndex (set_raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("set_raw", IndexType.BIN)).size(),
+                      pojo.rawBins.size());
+        assertEquals("Expected RiakIndexes BinIndex (raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("raw", IndexType.BIN)).size(),
+                      1);
+        
         
         assertEquals("Expected RiakIndexes IntIndex (longs) to be populated", 
                       rIndexes.getIndex(LongIntIndex.named("longs")).size(), 
@@ -901,6 +940,13 @@ public class AnnotationUtilTest
         assertEquals("Expected RiakIndexes IntIndex (lucky_longlong) to be populated", 
                       rIndexes.getIndex(LongIntIndex.named("lucky_longlong")).size(), 
                       1);
+        assertEquals("Expected RiakIndexes IntIndex (set_raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("set_raw", IndexType.INT)).size(),
+                      pojo.rawInts.size());
+        assertEquals("Expected RiakIndexes IntIndex (raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).size(),
+                      1);
+        
         
         assertTrue(rIndexes.getIndex(StringBinIndex.named("favorite_languages")).values().containsAll(pojo.languages));
         assertEquals(rIndexes.getIndex(StringBinIndex.named("lucky_language")).iterator().next(), 
@@ -911,6 +957,8 @@ public class AnnotationUtilTest
                      pojo.longs.iterator().next());
         assertEquals(rIndexes.getIndex(LongIntIndex.named("lucky_longlong")).iterator().next(), 
                      pojo.longs.iterator().next());
+        assertArrayEquals(rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).iterator().next().getValue(),
+                     pojo.rawInt);
         
     }
     
@@ -919,6 +967,12 @@ public class AnnotationUtilTest
     {
         HashSet<String> strings = new HashSet<String>(Arrays.asList("c","erlang","java"));
         HashSet<Long> longs = new HashSet<Long>(Arrays.asList(4L,9L,12L));
+        HashSet<BinaryValue> bytes = new HashSet<BinaryValue>();
+        
+        for (Integer i = 0; i < 5; i++)
+        {
+            bytes.add(BinaryValue.create(i.toString().getBytes()));
+        }
         
         RiakIndexes rIndexes = new RiakIndexes();
         
@@ -927,6 +981,10 @@ public class AnnotationUtilTest
         rIndexes.getIndex(LongIntIndex.named("longs")).add(longs);
         rIndexes.getIndex(LongIntIndex.named("long")).add(longs);
         rIndexes.getIndex(LongIntIndex.named("longlong")).add(longs);
+        rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).add(bytes);
+        rIndexes.getIndex(RawIndex.named("set_raw", IndexType.INT)).add(bytes);
+        rIndexes.getIndex(RawIndex.named("raw", IndexType.BIN)).add(bytes);
+        rIndexes.getIndex(RawIndex.named("set_raw", IndexType.BIN)).add(bytes);
         
         PojoWithAnnotatedMethods pojo = new PojoWithAnnotatedMethods();
         
@@ -938,11 +996,18 @@ public class AnnotationUtilTest
         assertTrue("Expected int index field (long long) to be populated", pojo.getLong() != 0);
         assertNotNull("Expected int index field (Long longlong) to be populated", pojo.getLongLong());
         
+        assertNotNull("Expected bin index field (Set<byte> rawBins) to be populated", pojo.getRawBinsIndex());
+        assertNotNull("Expected int index field (Set<byte> rawInts) to be populated", pojo.getRawIntsIndex());
+        assertNotNull("Expected bin index field (byte[] rawBin) to be populated", pojo.getRawBinIndex());
+        assertNotNull("Expected int index field (byte[] rawInt) to be populated", pojo.getRawIntIndex());
+        
         assertEquals(strings.size(), pojo.getStrings().size());
         assertEquals(strings.iterator().next(), pojo.getString());
         assertEquals(longs.size(), pojo.getLongs().size());
         assertEquals(longs.iterator().next().longValue(), pojo.getLong());
         assertEquals(longs.iterator().next(), pojo.getLongLong());
+        assertEquals(bytes.size(), pojo.getRawBinsIndex().size() );
+        assertEquals(bytes.size(), pojo.getRawIntsIndex().size() );
     }
 
     @Test
@@ -955,6 +1020,19 @@ public class AnnotationUtilTest
         pojo.setLong(pojo.getLongs().iterator().next());
         pojo.setLongLong(pojo.longs.iterator().next());
         
+        pojo.rawBins = new HashSet<byte[]>();
+        pojo.rawInts = new HashSet<byte[]>();
+        
+        for (Integer i = 0; i < 5; i++)
+        {
+            byte[] bytes = i.toString().getBytes();
+            pojo.rawBins.add(bytes);
+            pojo.rawInts.add(bytes);
+        }
+        
+        pojo.rawInt = pojo.rawInts.iterator().next();
+        pojo.rawBin = pojo.rawBins.iterator().next();
+        
         RiakIndexes rIndexes = new RiakIndexes();
         AnnotationUtil.getIndexes(rIndexes, pojo);
         
@@ -963,6 +1041,12 @@ public class AnnotationUtilTest
                       pojo.getStrings().size());        
         assertEquals("Expected RiakIndexes BinIndex (string) to be populated", 
                       rIndexes.getIndex(StringBinIndex.named("string")).size(), 
+                      1);
+        assertEquals("Expected RiakIndexes BinIndex (set_raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("set_raw", IndexType.BIN)).size(),
+                      pojo.rawBins.size());
+        assertEquals("Expected RiakIndexes BinIndex (raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("raw", IndexType.BIN)).size(),
                       1);
         
         assertEquals("Expected RiakIndexes IntIndex (longs) to be populated", 
@@ -973,6 +1057,12 @@ public class AnnotationUtilTest
                       1);
         assertEquals("Expected RiakIndexes IntIndex (longlong) to be populated", 
                       rIndexes.getIndex(LongIntIndex.named("longlong")).size(), 
+                      1);
+        assertEquals("Expected RiakIndexes IntIndex (set_raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("set_raw", IndexType.INT)).size(),
+                      pojo.rawInts.size());
+        assertEquals("Expected RiakIndexes IntIndex (raw) to be pupulated",
+                      rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).size(),
                       1);
         
         assertTrue(rIndexes.getIndex(StringBinIndex.named("strings")).values().containsAll(pojo.getStrings()));
@@ -1189,6 +1279,53 @@ public class AnnotationUtilTest
     }
     
     @Test
+    public void rawIndexWithoutFullName()
+    {
+        final RiakIndexes rIndexes = new RiakIndexes();
+        
+        Object o = new Object()
+        {
+            @RiakIndex(name="raw")
+            public void setIndex(Set<byte[]> index)
+            {}
+            
+            @RiakIndex(name="raw_int")
+            public Set<byte[]> getIndex() 
+            {
+                return null;
+            }
+
+        };
+        
+        try
+        {
+            AnnotationUtil.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+        
+        o = new Object()
+        {
+            @RiakIndex(name="raw")
+            private byte[] index = null;
+
+        };
+        
+        try
+        {
+            AnnotationUtil.populateIndexes(rIndexes, o);
+            fail("Excepted IllegalArgumentException to be thrown");
+        }
+        catch (RuntimeException e)
+        {
+            assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
+    }
+    
+    @Test
     public void annotatedFieldNotInRiak()
     {
         PojoWithAnnotatedFields pojo = new PojoWithAnnotatedFields();
@@ -1251,7 +1388,7 @@ public class AnnotationUtilTest
         
         // The indexes should be created, but be empty
         assertFalse(rIndex.isEmpty());
-        assertEquals(5, rIndex.size());
+        assertEquals(9, rIndex.size());
         
         assertTrue(rIndex.hasIndex(StringBinIndex.named("favorite_languages")));
         assertTrue(rIndex.getIndex(StringBinIndex.named("favorite_languages")).isEmpty());
@@ -1277,7 +1414,7 @@ public class AnnotationUtilTest
         
         // The indexes should be created, but be empty
         assertFalse(rIndex.isEmpty());
-        assertEquals(5, rIndex.size());
+        assertEquals(9, rIndex.size());
 
         assertTrue(rIndex.hasIndex(StringBinIndex.named("strings")));
         assertTrue(rIndex.getIndex(StringBinIndex.named("strings")).isEmpty());
@@ -2141,6 +2278,18 @@ public class AnnotationUtilTest
         @RiakIndex(name = "longs")
         public Set<Long> longs;
         
+        @RiakIndex(name = "raw_int")
+        public byte[] rawInt;
+        
+        @RiakIndex(name = "raw_bin")
+        public byte[] rawBin;
+        
+        @RiakIndex(name = "set_raw_bin")
+        public Set<byte[]> rawBins;
+        
+        @RiakIndex(name = "set_raw_int")
+        public Set<byte[]> rawInts;
+        
         @RiakTombstone
         boolean tombstone;
         
@@ -2196,6 +2345,10 @@ public class AnnotationUtilTest
         private String contentType;
         private String vtag;
         private long lastModified;
+        private byte[] rawInt;
+        private byte[] rawBin;
+        private Set<byte[]> rawInts;
+        private Set<byte[]> rawBins;
         
         @RiakKey
         public String getKey()
@@ -2318,6 +2471,55 @@ public class AnnotationUtilTest
         public void setString(String s) {
             this.myString = s;
         }
+        
+        @RiakIndex(name ="raw_int")
+        public void setRawIntIndex(byte[] bytes)
+        {
+            this.rawInt = bytes;
+        }
+        
+        @RiakIndex(name ="raw_int")
+        public byte[] getRawIntIndex()
+        {
+            return rawInt;
+        }
+        
+        @RiakIndex(name ="set_raw_int")
+        public void setRawIntsIndex(Set<byte[]> bytes)
+        {
+            this.rawInts = bytes;
+        }
+        
+        @RiakIndex(name ="set_raw_int")
+        public Set<byte[]> getRawIntsIndex()
+        {
+            return rawInts;
+        }
+        
+        @RiakIndex(name ="raw_bin")
+        public void setRawBinIndex(byte[] bytes)
+        {
+            this.rawBin = bytes;
+        }
+        
+        @RiakIndex(name ="raw_bin")
+        public byte[] getRawBinIndex()
+        {
+            return rawBin;
+        }
+        
+        @RiakIndex(name ="set_raw_bin")
+        public void setRawBinssIndex(Set<byte[]> bytes)
+        {
+            this.rawBins = bytes;
+        }
+        
+        @RiakIndex(name ="set_raw_bin")
+        public Set<byte[]> getRawBinsIndex()
+        {
+            return rawBins;
+        }
+        
         
         @RiakTombstone
         public Boolean getTombstone() {

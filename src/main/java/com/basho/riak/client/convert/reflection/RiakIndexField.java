@@ -16,7 +16,6 @@ package com.basho.riak.client.convert.reflection;
 import java.lang.reflect.Field;
 
 import com.basho.riak.client.annotations.RiakIndex;
-import com.basho.riak.client.query.indexes.RiakIndexes;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
@@ -27,7 +26,7 @@ import java.util.Set;
  */
 public class RiakIndexField {
 
-    public enum FieldType { LONG, SET_LONG, STRING, SET_STRING }
+    public enum FieldType { LONG, SET_LONG, STRING, SET_STRING, RAW, SET_RAW }
     
     private final Field field;
     private final String indexName;
@@ -43,12 +42,15 @@ public class RiakIndexField {
         this.field = field;
         this.indexName = field.getAnnotation(RiakIndex.class).name();
         
-        if (!field.getType().equals(RiakIndexes.class) && indexName.isEmpty())
+        if (indexName.isEmpty())
         {
             throw new IllegalArgumentException("@RiakIndex must have 'name' parameter");
         }
-        
-        
+        else if ((type == FieldType.RAW || type == FieldType.SET_RAW) &&
+                 (!indexName.endsWith("_int") && !indexName.endsWith("_bin")))
+        {
+            throw new IllegalArgumentException("@RiakIndex annotated byte[] must declare full indexname");
+        }
     }
 
     /**
@@ -88,19 +90,27 @@ public class RiakIndexField {
                     {
                         return FieldType.SET_LONG;
                     }
+                    else if (genericType.isArray() && genericType.getComponentType().equals(byte.class))
+                    {
+                        return FieldType.SET_RAW;
+                    }
                 }
             }
             else
             {
-                t = f.getType();
+                Class<?> c = f.getType();
 
-                if (t.equals(String.class))
+                if (c.equals(String.class))
                 {
                     return FieldType.STRING;
                 }
-                else if (t.equals(Long.class) || t.equals(long.class))
+                else if (c.equals(Long.class) || c.equals(long.class))
                 {
                     return FieldType.LONG;
+                }
+                else if (c.isArray() && c.getComponentType().equals(byte.class))
+                {
+                    return FieldType.RAW;
                 }
             }
             throw new IllegalArgumentException("@RiakIndex must be a single or Set<> of long/Long or String: " +

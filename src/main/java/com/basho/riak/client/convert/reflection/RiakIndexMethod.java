@@ -27,7 +27,8 @@ import com.basho.riak.client.annotations.RiakIndex;
 public class RiakIndexMethod
 {
     public enum MethodType { LONG_SETTER, LONG_GETTER, SET_LONG_GETTER, SET_LONG_SETTER, 
-                            STRING_GETTER, STRING_SETTER, SET_STRING_GETTER, SET_STRING_SETTER }
+                            STRING_GETTER, STRING_SETTER, SET_STRING_GETTER, SET_STRING_SETTER,
+                            RAW_SETTER, RAW_GETTER, SET_RAW_SETTER, SET_RAW_GETTER }
     
     private final Method method;
     private final String indexName;
@@ -49,8 +50,12 @@ public class RiakIndexMethod
         {
             throw new IllegalArgumentException("@RiakIndex must have 'name' parameter");
         }
-        
-        
+        else if ( (methodType == MethodType.RAW_GETTER || methodType == MethodType.RAW_SETTER ||
+                   methodType == MethodType.SET_RAW_GETTER || methodType == MethodType.SET_RAW_SETTER)
+                 && (!indexName.endsWith("_bin") && !indexName.endsWith("_int")) )
+        {
+            throw new IllegalArgumentException("@RiakIndex annotated byte[] setter/getter must declare full indexname");
+        }
     }
 
     /**
@@ -100,21 +105,29 @@ public class RiakIndexMethod
                         {
                             return MethodType.SET_LONG_SETTER;
                         }
+                        else if (genericType.isArray() && genericType.getComponentType().equals(byte.class))
+                        {
+                            return MethodType.SET_RAW_SETTER;
+                        }
                     }
                 }
                 else 
                 {
-                    t = m.getParameterTypes()[0];
-                    if (t.equals(String.class))
+                    Class<?> c = m.getParameterTypes()[0];
+                    if (c.equals(String.class))
                     {
                         return MethodType.STRING_SETTER;
                     }
-                    else if (t.equals(Long.class) || t.equals(long.class))
+                    else if (c.equals(Long.class) || c.equals(long.class))
                     {
                         return MethodType.LONG_SETTER;
                     }
+                    else if (c.isArray() && c.getComponentType().equals(byte.class))
+                    {
+                        return MethodType.RAW_SETTER;
+                    }
                 }
-                throw new IllegalArgumentException("@RiakIndex setter must take a single or Set<> of String or Long: " + m);
+                throw new IllegalArgumentException("@RiakIndex setter must take a single or Set<> of String, Long, or byte[]: " + m);
             }
             else 
             {
@@ -134,21 +147,29 @@ public class RiakIndexMethod
                         {
                             return MethodType.SET_LONG_GETTER;
                         }
+                        else if (genericType.isArray() && genericType.getComponentType().equals(byte.class))
+                        {
+                            return MethodType.SET_RAW_GETTER;
+                        }
                     }
                 }
                 else
                 {
-                    t = m.getReturnType();
-                    if (t.equals(String.class))
+                    Class<?> c = m.getReturnType();
+                    if (c.equals(String.class))
                     {
                         return MethodType.STRING_GETTER;
                     }
-                    else if (t.equals(Long.class) || t.equals(long.class))
+                    else if (c.equals(Long.class) || c.equals(long.class))
                     {
                         return MethodType.LONG_GETTER;
                     }
+                    else if (c.isArray() && c.getComponentType().equals(byte.class))
+                    {
+                        return MethodType.RAW_GETTER;
+                    }
                 }
-                throw new IllegalArgumentException("@RiakIndex getter must return a single or Set<> of String or Long: " +m );
+                throw new IllegalArgumentException("@RiakIndex getter must return a single or Set<> of String, Long, or byte[]: " +m );
             }
         }
         throw new IllegalArgumentException("Method can not be null.");

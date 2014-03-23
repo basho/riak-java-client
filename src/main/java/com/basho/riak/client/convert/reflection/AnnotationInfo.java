@@ -31,12 +31,15 @@ import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
+import com.basho.riak.client.query.indexes.IndexType;
 import com.basho.riak.client.query.indexes.LongIntIndex;
+import com.basho.riak.client.query.indexes.RawIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.indexes.StringBinIndex;
 import com.basho.riak.client.query.links.RiakLinks;
 import com.basho.riak.client.util.BinaryValue;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -655,6 +658,27 @@ public class AnnotationInfo
                         }
                     }
                     break;
+                case SET_RAW:
+                case RAW:
+                {
+                    // We want to create the index regardless
+                    IndexType iType = IndexType.typeFromFullname(f.getIndexName());
+                    RawIndex rawIndex = container.getIndex(RawIndex.named(f.getIndexName(), iType));
+                    if (val != null)
+                    {
+                        if (f.getFieldType() == RiakIndexField.FieldType.SET_RAW)
+                        {
+                            for (byte[] bytes : (Set<byte[]>) val)
+                            {
+                                rawIndex.add(BinaryValue.create(bytes));
+                            }
+                        }
+                        else
+                        {
+                            rawIndex.add(BinaryValue.create((byte[])val));
+                        }
+                    }
+                }
                 default:
                     break;
             }
@@ -701,6 +725,25 @@ public class AnnotationInfo
                         }
                     }
                     break;
+                case SET_RAW_GETTER:
+                case RAW_GETTER:
+                    val = getMethodValue(m.getMethod(), obj);
+                    IndexType iType = IndexType.typeFromFullname(m.getIndexName());
+                    RawIndex rawIndex = container.getIndex(RawIndex.named(m.getIndexName(), iType));
+                    if (val != null)
+                    {
+                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_RAW_GETTER)
+                        {
+                            for (byte[] bytes : (Set<byte[]>) val)
+                            {
+                                rawIndex.add(BinaryValue.create(bytes));
+                            }
+                        }
+                        else
+                        {
+                            rawIndex.add(BinaryValue.create((byte[]) val));
+                        }
+                    }
                 default:
                     break;
             }
@@ -732,6 +775,18 @@ public class AnnotationInfo
                     StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(f.getIndexName()));
                     val = stringIndex.values();
                     break;
+                case SET_RAW:
+                case RAW:
+                    IndexType iType = IndexType.typeFromFullname(f.getIndexName());
+                    RawIndex rawIndex = indexes.getIndex((RawIndex.named(f.getIndexName(), iType)));
+                    // Convert from BinaryValue to bytes
+                    Set<byte[]> byteSet = new HashSet<byte[]>();
+                    for (BinaryValue bv : rawIndex.values())
+                    {
+                        byteSet.add(bv.unsafeGetValue());
+                    }
+                    val = byteSet;
+                    break;
                 default:
                     break;
             }
@@ -739,7 +794,8 @@ public class AnnotationInfo
             if (val != null)
             {
                 if (f.getFieldType() == RiakIndexField.FieldType.LONG || 
-                      f.getFieldType() == RiakIndexField.FieldType.STRING) 
+                      f.getFieldType() == RiakIndexField.FieldType.STRING ||
+                      f.getFieldType() == RiakIndexField.FieldType.RAW) 
                 {
                     if (!val.isEmpty())
                     {
@@ -769,6 +825,18 @@ public class AnnotationInfo
                     StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(m.getIndexName()));
                     val = stringIndex.values();
                     break;
+                case SET_RAW_SETTER:
+                case RAW_SETTER:
+                    IndexType iType = IndexType.typeFromFullname(m.getIndexName());
+                    RawIndex rawIndex = indexes.getIndex(RawIndex.named(m.getIndexName(), iType));
+                    // Convert from BinaryValue to bytes
+                    Set<byte[]> byteSet = new HashSet<byte[]>();
+                    for (BinaryValue bv : rawIndex.values())
+                    {
+                        byteSet.add(bv.unsafeGetValue());
+                    }
+                    val = byteSet;
+                    break;
                 default:
                     break;
             }
@@ -776,7 +844,8 @@ public class AnnotationInfo
             if (val != null)
             {
                 if (m.getMethodType() == RiakIndexMethod.MethodType.LONG_SETTER ||
-                      m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER) 
+                      m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER ||
+                      m.getMethodType() == RiakIndexMethod.MethodType.RAW_SETTER) 
                 {
                     if (!val.isEmpty())
                     {
