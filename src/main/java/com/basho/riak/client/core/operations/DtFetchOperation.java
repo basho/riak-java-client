@@ -27,9 +27,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response, RiakDtPB.DtFetchResp>
+public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response, RiakDtPB.DtFetchResp, Location>
 {
     private final Location location;
     private final RiakDtPB.DtFetchReq.Builder reqBuilder;
@@ -41,7 +40,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     }
 
     @Override
-    protected Response convert(List<RiakDtPB.DtFetchResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakDtPB.DtFetchResp> rawResponse) 
     {
         if (rawResponse.size() != 1)
         {
@@ -85,6 +84,12 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
 
     public static class Builder

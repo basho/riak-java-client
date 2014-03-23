@@ -25,14 +25,13 @@ import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsOperation.Response, RiakPB.RpbGetBucketResp>
+public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsOperation.Response, RiakPB.RpbGetBucketResp, Location>
 {
     private final RiakPB.RpbGetBucketReq.Builder reqBuilder;
     private final Location location;
@@ -44,7 +43,7 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
     }
     
     @Override
-    protected Response convert(List<RiakPB.RpbGetBucketResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakPB.RpbGetBucketResp> rawResponse) 
     {
         // This isn't streaming, there will only be one response. 
         RiakPB.RpbBucketProps pbProps = rawResponse.get(0).getProps();
@@ -73,6 +72,12 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
     
     public static class Builder

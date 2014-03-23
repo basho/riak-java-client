@@ -18,7 +18,6 @@ package com.basho.riak.client.core;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.util.BinaryValue;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -26,6 +25,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,7 +99,7 @@ public class RiakClusterFixtureTest
         
     }
     
-    @Test(expected=ExecutionException.class)
+    @Test
     public void operationFail() throws UnknownHostException, ExecutionException, InterruptedException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -126,6 +127,9 @@ public class RiakClusterFixtureTest
         try
         {
             FetchOperation.Response response = operation.get();
+            assertFalse(operation.isSuccess());
+            assertNotNull(operation.cause());
+            assertNotNull(operation.cause().getCause());
         }
         finally
         {

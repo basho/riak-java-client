@@ -22,13 +22,12 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Response, Void>
+public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Response, Void, YokozunaIndex>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder;
     private final YokozunaIndex index;
@@ -40,7 +39,7 @@ public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Res
     }
     
     @Override
-    protected YzPutIndexOperation.Response convert(List<Void> rawResponse) throws ExecutionException
+    protected YzPutIndexOperation.Response convert(List<Void> rawResponse)
     {
         return new Response(index);
     }
@@ -58,6 +57,12 @@ public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Res
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
+    }
+
+    @Override
+    protected YokozunaIndex getQueryInfo()
+    {
+        return index;
     }
     
     public static class Builder

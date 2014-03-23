@@ -28,7 +28,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
 import com.basho.riak.client.query.Location;
@@ -39,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An operation to store a riak object
  */
-public class StoreOperation extends FutureOperation<StoreOperation.Response, RiakKvPB.RpbPutResp>
+public class StoreOperation extends FutureOperation<StoreOperation.Response, RiakKvPB.RpbPutResp, Location>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
     private final RiakKvPB.RpbPutReq.Builder reqBuilder;
@@ -52,7 +51,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     }
 
     @Override
-    protected Response convert(List<RiakKvPB.RpbPutResp> responses) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbPutResp> responses) 
     {
         // There should only be one response message from Riak.
         if (responses.size() != 1)
@@ -105,6 +104,12 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     {
         RiakKvPB.RpbPutReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_PutReq, req.toByteArray());
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
 
     public static class Builder

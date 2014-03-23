@@ -19,7 +19,6 @@ import com.basho.riak.client.core.RiakNode.State;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.util.BinaryValue;
 import io.netty.channel.Channel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +35,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -191,7 +192,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         assertTrue(!response.isNotFound());
     }
     
-    @Test(expected=ExecutionException.class)
+    @Test
     public void operationFail() throws UnknownHostException, InterruptedException, ExecutionException
     {
         RiakNode node = 
@@ -207,7 +208,10 @@ public class RiakNodeFixtureTest extends FixtureTest
                     .build();
         
         boolean accepted = node.execute(operation);
-            FetchOperation.Response response = operation.get();
+        FetchOperation.Response response = operation.get();
+        assertFalse(operation.isSuccess());
+        assertNotNull(operation.cause());
+        assertNotNull(operation.cause().getCause());
     }
 
     @Test

@@ -25,6 +25,7 @@ import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.operations.kv.StoreOption;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.kv.UpdateValue;
@@ -173,6 +174,15 @@ public class ITestORM extends ITestBase
     @Test
     public void updateAndResolveParameterizedTypeJSON() throws ExecutionException, InterruptedException
     {
+        // We're back to allow_mult=false as default
+        Location location = new Location(bucketName);
+        StoreBucketPropsOperation op = 
+            new StoreBucketPropsOperation.Builder(location)
+                .withAllowMulti(true)
+                .build();
+        cluster.execute(op);
+        op.get();
+        
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(bucketName).setKey("test_ORM_key4");
         
@@ -215,6 +225,16 @@ public class ITestORM extends ITestBase
     @Test
     public void updateAndResolveParameterizedTypeCustom() throws ExecutionException, InterruptedException
     {
+        // We're back to allow_mult=false as default
+        Location location = new Location(bucketName);
+        StoreBucketPropsOperation op = 
+            new StoreBucketPropsOperation.Builder(location)
+                .withAllowMulti(true)
+                .build();
+        cluster.execute(op);
+        op.get();
+        
+        
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(bucketName).setKey("test_ORM_key5");
         

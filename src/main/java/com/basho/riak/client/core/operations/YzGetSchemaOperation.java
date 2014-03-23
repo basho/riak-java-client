@@ -23,13 +23,12 @@ import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.Response, RiakYokozunaPB.RpbYokozunaSchemaGetResp>
+public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.Response, RiakYokozunaPB.RpbYokozunaSchemaGetResp, String>
 {
     private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder;
     private final String schemaName;
@@ -41,7 +40,7 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     }
     
     @Override
-    protected YzGetSchemaOperation.Response convert(List<RiakYokozunaPB.RpbYokozunaSchemaGetResp> rawResponse) throws ExecutionException
+    protected YzGetSchemaOperation.Response convert(List<RiakYokozunaPB.RpbYokozunaSchemaGetResp> rawResponse)
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaSchemaGetResp response = rawResponse.get(0);
@@ -73,6 +72,12 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
             throw new IllegalArgumentException("Invalid message received", ex);
         }
         
+    }
+
+    @Override
+    protected String getQueryInfo()
+    {
+        return schemaName;
     }
     
     public static class Builder

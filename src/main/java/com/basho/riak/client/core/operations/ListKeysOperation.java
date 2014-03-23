@@ -26,9 +26,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp>
+public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Void>
 {
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
@@ -38,7 +37,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     }
 
     @Override
-    protected Response convert(List<RiakKvPB.RpbListKeysResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbListKeysResp> rawResponse) 
     {
         Response.Builder builder = new Response.Builder();
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
@@ -75,6 +74,12 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     protected boolean done(RiakKvPB.RpbListKeysResp message)
     {
         return message.getDone();
+    }
+
+    @Override
+    protected Void getQueryInfo()
+    {
+        return null;
     }
     
     public static class Builder

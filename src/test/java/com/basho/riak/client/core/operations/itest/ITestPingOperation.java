@@ -21,8 +21,8 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.PingOperation;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -54,15 +54,12 @@ public class ITestPingOperation extends ITestBase
         
         PingOperation ping = new PingOperation();
         cluster.execute(ping);
-        try
-        {
-            PingOperation.Response resp = ping.get();
-            fail("Didn't throw an exception");
-        }
-        catch (ExecutionException ex)
-        {
-            // no-op
-        }
+        PingOperation.Response resp = ping.get();
+        
+        assertFalse(ping.isSuccess());
+        assertNotNull(ping.cause());
+        assertNotNull(ping.cause().getCause());
+        
         
         cluster.shutdown();
         

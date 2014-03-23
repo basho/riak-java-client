@@ -22,13 +22,12 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.Response, Void>
+public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.Response, Void, YokozunaSchema>
 {
     private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder;
     private final YokozunaSchema schema;
@@ -40,7 +39,7 @@ public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.R
     }
     
     @Override
-    protected YzPutSchemaOperation.Response convert(List<Void> rawResponse) throws ExecutionException
+    protected YzPutSchemaOperation.Response convert(List<Void> rawResponse)
     {
         return new Response(schema);
     }
@@ -57,6 +56,12 @@ public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.R
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
+    }
+
+    @Override
+    protected YokozunaSchema getQueryInfo()
+    {
+        return schema;
     }
     
     public static class Builder

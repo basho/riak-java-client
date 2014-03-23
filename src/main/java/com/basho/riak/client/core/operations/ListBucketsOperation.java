@@ -26,9 +26,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.Response, RiakKvPB.RpbListBucketsResp>
+public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.Response, RiakKvPB.RpbListBucketsResp, BinaryValue>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
@@ -46,7 +45,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     }
 
     @Override
-    protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) throws ExecutionException
+    protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) 
     {
         List<BinaryValue> buckets = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
@@ -78,6 +77,12 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             throw new IllegalArgumentException("Invalid message received", e);
         }
 
+    }
+
+    @Override
+    protected BinaryValue getQueryInfo()
+    {
+        return bucketType;
     }
     
     public static class Builder

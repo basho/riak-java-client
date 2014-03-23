@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * A Riak Search or Yokozuna query operation.
@@ -44,7 +43,7 @@ import java.util.concurrent.ExecutionException;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class SearchOperation extends FutureOperation<SearchOperation.Response, RiakSearchPB.RpbSearchQueryResp>
+public class SearchOperation extends FutureOperation<SearchOperation.Response, RiakSearchPB.RpbSearchQueryResp, BinaryValue>
 {
     private final String queryString;
     private final BinaryValue indexName;
@@ -58,7 +57,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     }
 
     @Override
-    protected SearchOperation.Response convert(List<RiakSearchPB.RpbSearchQueryResp> rawResponse) throws ExecutionException
+    protected SearchOperation.Response convert(List<RiakSearchPB.RpbSearchQueryResp> rawResponse) 
     {
         // This isn't a streaming op, there will only be one protobuf
         RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);
@@ -96,6 +95,12 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
+    }
+
+    @Override
+    protected BinaryValue getQueryInfo()
+    {
+        return BinaryValue.create(indexName.toString() +": " +queryString);
     }
 
     public static class Builder

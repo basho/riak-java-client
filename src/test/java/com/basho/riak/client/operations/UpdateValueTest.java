@@ -69,8 +69,8 @@ public class UpdateValueTest
 		when(storeResponse.getObjectList()).thenReturn(objects);
 
 		when(mockCluster.execute(any(FutureOperation.class)))
-			.thenReturn(new ImmediateRiakFuture<FetchOperation.Response>(fetchResponse))
-			.thenReturn(new ImmediateRiakFuture<StoreOperation.Response>(storeResponse));
+			.thenReturn(new ImmediateRiakFuture<FetchOperation.Response, Location>(fetchResponse))
+			.thenReturn(new ImmediateRiakFuture<StoreOperation.Response, Location>(storeResponse));
 
 		client = new RiakClient(mockCluster);
 

@@ -98,8 +98,11 @@ public abstract class ITestBase
          * with the corresponding bucket properties.
          *
          * riak-admin bucket-type create maps '{"props":{"allow_mult":true, "datatype": "map"}}'
-         * riak-admin bucket type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
+         * riak-admin bucket-type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
          * riak-admin bucket-type create counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
+         * riak-admin bucket-type activate maps
+         * riak-admin bucket-type activate sets
+         * riak-admin bucket-type activate counters
          */
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
@@ -170,12 +173,12 @@ public abstract class ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<DeleteOperation.Response> listener = new RiakFutureListener<DeleteOperation.Response>() {
+        RiakFutureListener<DeleteOperation.Response, Location> listener = new RiakFutureListener<DeleteOperation.Response, Location>() {
 
             private final AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<DeleteOperation.Response> f)
+            public void handle(RiakFuture<DeleteOperation.Response, Location> f)
             {
                 try
                 {
@@ -185,10 +188,7 @@ public abstract class ITestBase
                 {
                     throw new RuntimeException(ex);
                 }
-                catch (ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
+                
                 semaphore.release();
                 received.incrementAndGet();
                 if (received.intValue() == totalKeys)

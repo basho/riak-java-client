@@ -23,6 +23,7 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchOption;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -93,9 +95,22 @@ public class ITestFetchValue extends ITestBase
         RiakObject ro = fResp.getValue(RiakObject.class);
     }
     
+    // Apparently this isn't happening anymore. or it only happens with leveldb 
+    // Leaving it here to investigate
+    @Ignore
     @Test
     public void ReproRiakTombstoneBehavior() throws ExecutionException, InterruptedException
     {
+        // We're back to allow_mult=false as default
+        Location location = new Location(bucketName);
+        StoreBucketPropsOperation op = 
+            new StoreBucketPropsOperation.Builder(location)
+                .withAllowMulti(true)
+                .build();
+        cluster.execute(op);
+        op.get();
+        
+        
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(bucketName).setKey("test_fetch_key3");
         

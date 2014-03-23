@@ -20,7 +20,6 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.util.RiakMessageCodes;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +27,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class PingOperation extends FutureOperation<PingOperation.Response, Void>
+public class PingOperation extends FutureOperation<PingOperation.Response, Void, Void>
 {
     private final Logger logger = LoggerFactory.getLogger(PingOperation.class);
 
     @Override
-    protected Response convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) 
     {
         return new Response(true);
     }
@@ -46,6 +45,12 @@ public class PingOperation extends FutureOperation<PingOperation.Response, Void>
 
     @Override
     protected Void decode(RiakMessage rawMessage)
+    {
+        return null;
+    }
+
+    @Override
+    protected Void getQueryInfo()
     {
         return null;
     }

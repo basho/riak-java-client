@@ -54,7 +54,7 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         BinaryValue indexName = BinaryValue.create(index.getFullName());
         
         SecondaryIndexQueryOperation.Query.Builder queryBuilder =
-            new SecondaryIndexQueryOperation.Query.Builder(indexName);
+            new SecondaryIndexQueryOperation.Query.Builder(location, indexName);
 
         for (Map.Entry<IndexOption<?>, Object> option : options.entrySet())
         {
@@ -76,7 +76,7 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         }
 
         SecondaryIndexQueryOperation.Builder builder =
-            new SecondaryIndexQueryOperation.Builder(location, queryBuilder.build());
+            new SecondaryIndexQueryOperation.Builder(queryBuilder.build());
         
         SecondaryIndexQueryOperation operation = builder.build();
         cluster.execute(operation);
