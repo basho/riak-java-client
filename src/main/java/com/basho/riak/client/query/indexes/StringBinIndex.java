@@ -64,6 +64,16 @@ public class StringBinIndex extends RiakIndex<String>
         return value.toString(charset);
     }
     
+    public static RiakIndex.Name<StringBinIndex> named(String name)
+    {
+        return named(name, Charset.defaultCharset());
+    }
+    
+    public static Name named(String name, Charset charset)
+    {
+        return new Name(name, charset);
+    }
+    
     /**
      * Encapsulates the name, character asSet, and {@code IndexType} for a {@code StringBinIndex}
      */
@@ -76,7 +86,7 @@ public class StringBinIndex extends RiakIndex<String>
          * The default character asSet is used for encoding the values.
          * @param name The name of this index.
          */
-        public Name(String name)
+        Name(String name)
         {
             this(name, Charset.defaultCharset());
         }
@@ -86,7 +96,7 @@ public class StringBinIndex extends RiakIndex<String>
          * @param name The name of this index.
          * @param charset The character asSet to use for encoding values
          */
-        public Name(String name, Charset charset)
+        Name(String name, Charset charset)
         {
             super(name, IndexType.BIN);
             this.charset = charset;

@@ -73,7 +73,7 @@ public class RiakObjectConverter
                 ro.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
             }
             
-            if (content.hasValue())
+            if (content.hasValue() && !content.getValue().isEmpty())
             {
                 ro.setValue(BinaryValue.unsafeCreate(content.getValue().toByteArray()));
             }
@@ -106,7 +106,7 @@ public class RiakObjectConverter
                     try
                     {
                         IndexType type = IndexType.typeFromFullname(name);
-                        indexes.getIndex(new RawIndex.Name(name, type))
+                        indexes.getIndex(RawIndex.named(name, type))
                             .add(BinaryValue.unsafeCreate(p.getValue().toByteArray()));
                     }
                     catch (IllegalArgumentException e)

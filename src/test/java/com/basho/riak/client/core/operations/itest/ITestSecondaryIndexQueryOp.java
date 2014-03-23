@@ -94,7 +94,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         {
             RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
 
-            obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(5L);
+            obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(5L);
 
             Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =
@@ -333,7 +333,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         {
             RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
 
-            obj.getIndexes().getIndex(new StringBinIndex.Name(indexName)).add("foo" + String.format("%02d", i));
+            obj.getIndexes().getIndex(StringBinIndex.named(indexName)).add("foo" + String.format("%02d", i));
 
             Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate(Long.toString(i).getBytes()));
             StoreOperation storeOp =
@@ -402,7 +402,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         {
             RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
 
-            obj.getIndexes().getIndex(new LongIntIndex.Name(indexName)).add(i);
+            obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(i);
 
             Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =

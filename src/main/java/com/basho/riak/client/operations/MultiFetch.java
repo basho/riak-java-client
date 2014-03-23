@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.query.Location;
 
@@ -75,45 +74,42 @@ import static java.util.Collections.unmodifiableList;
  * @param <T>
  * @author Dave Rusek <drusek@basho.com>
  */
-public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
+public class MultiFetch extends RiakCommand<MultiFetch.Response>
 {
 
-	private final Converter<T> converter;
-	private final ArrayList<Location> keys = new ArrayList<Location>();
+    private final ArrayList<Location> keys = new ArrayList<Location>();
 	private final Executor executor;
 	private final Map<FetchOption<?>, Object> options = new HashMap<FetchOption<?>, Object>();
 
 	private MultiFetch(Builder builder)
 	{
-		this.converter = builder.converter;
 		this.keys.addAll(builder.keys);
 		this.executor = builder.executor;
 		this.options.putAll(builder.options);
 	}
 
 	@Override
-	Response<T> execute(final RiakCluster cluster) throws ExecutionException, InterruptedException
+	Response execute(final RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
-		List<Future<FetchValue.Response<T>>> values =
-			new ArrayList<Future<FetchValue.Response<T>>>();
+		List<Future<FetchValue.Response>> values =
+			new ArrayList<Future<FetchValue.Response>>();
 
 		for (Location key : keys)
 		{
-			FetchValue.Builder<T> builder = new FetchValue.Builder<T>(key);
-			builder.withConverter(converter);
-
+			FetchValue.Builder builder = new FetchValue.Builder(key);
+			
 			for (FetchOption<?> option : options.keySet())
 			{
 				builder.withOption((FetchOption<Object>) option, options.get(option));
 			}
 
-			final FetchValue<T> request = builder.build();
-			FutureTask<FetchValue.Response<T>> task = new FutureTask<FetchValue.Response<T>>(
-				new Callable<FetchValue.Response<T>>()
+			final FetchValue request = builder.build();
+			FutureTask<FetchValue.Response> task = new FutureTask<FetchValue.Response>(
+				new Callable<FetchValue.Response>()
 				{
 					@Override
-					public FetchValue.Response<T> call() throws Exception
+					public FetchValue.Response call() throws Exception
 					{
 						return request.execute(cluster);
 					}
@@ -125,7 +121,7 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 		}
 
 
-		return new Response<T>(values);
+		return new Response(values);
 
 	}
 
@@ -135,7 +131,7 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 	 *
 	 * @param <T> the converted type of the returned objects
 	 */
-	public static class Builder<T>
+	public static class Builder
 	{
 
 		public static final int DEFAULT_POOL_MAX_SIZE = Runtime.getRuntime().availableProcessors() * 2;
@@ -149,24 +145,11 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 			threadPool.allowCoreThreadTimeOut(true);
 		}
 
-		private Converter<T> converter;
 		private ArrayList<Location> keys = new ArrayList<Location>();
 		private Executor executor;
 		private Map<FetchOption<?>, Object> options = new HashMap<FetchOption<?>, Object>();
-
-		/**
-		 * Use the given converter to perform conversion between domain objects and Riak native objects
-		 *
-		 * @param converter the converter to use
-		 * @return this
-		 */
-		public Builder withConverter(Converter<T> converter)
-		{
-			this.converter = converter;
-			return this;
-		}
-
-		/**
+        
+        /**
 		 * Add a key to the list of keys to retrieve as part of this multifetch operation
 		 *
 		 * @param key key
@@ -237,14 +220,14 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 		 *
 		 * @return an initialized {@see MultiFetch} operation
 		 */
-		public MultiFetch<T> build()
+		public MultiFetch build()
 		{
 			if (executor == null)
 			{
 				executor = threadPool;
 			}
 
-			return new MultiFetch<T>(this);
+			return new MultiFetch(this);
 		}
 
 	}
@@ -252,20 +235,19 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 	/**
 	 * A result of the execution of this operation, contains a list of individual results for each key
 	 *
-	 * @param <T> the converted datatype of the returned objects
 	 */
-	public static final class Response<T> implements Iterable<Future<FetchValue.Response<T>>>
+	public static final class Response implements Iterable<Future<FetchValue.Response>>
 	{
 
-		private final List<Future<FetchValue.Response<T>>> responses;
+		private final List<Future<FetchValue.Response>> responses;
 
-		Response(List<Future<FetchValue.Response<T>>> responses)
+		Response(List<Future<FetchValue.Response>> responses)
 		{
 			this.responses = responses;
 		}
 
 		@Override
-		public Iterator<Future<FetchValue.Response<T>>> iterator()
+		public Iterator<Future<FetchValue.Response>> iterator()
 		{
 			return unmodifiableList(responses).iterator();
 		}

@@ -14,39 +14,18 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.core.operations;
+package com.basho.riak.client.annotations;
 
-import com.basho.riak.client.query.Location;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-abstract class ResponseWithLocation
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakBucketName
 {
-    private final Location location;
-        
-    protected ResponseWithLocation(Init<?> builder)
-    {
-        this.location = builder.location;
-    }
-
-    public Location getLocation()
-    {
-        return location;
-    }
-
-    protected static abstract class Init<T extends Init<T>>
-    {
-        private Location location;
-
-        protected abstract T self();
-        abstract ResponseWithLocation build();
-
-        T withLocation(Location location)
-        {
-            this.location = location;
-            return self();
-        }
-    }
+    
 }
