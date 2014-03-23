@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
@@ -201,7 +202,19 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 			builder.withSearchIndex(searchIndex);
 		}
 
-		return cluster.execute(builder.build()).get();
+        RiakFuture<StoreBucketPropsOperation.Response, Location> future =
+            cluster.execute(builder.build());
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new IllegalArgumentException(future.cause().getCause());
+        }
 
 	}
 

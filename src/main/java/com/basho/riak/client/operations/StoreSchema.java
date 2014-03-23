@@ -2,6 +2,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.query.search.YokozunaSchema;
 
@@ -24,7 +25,18 @@ public final class StoreSchema extends RiakCommand<YzPutSchemaOperation.Response
 	protected final YzPutSchemaOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 	    YzPutSchemaOperation operation = new YzPutSchemaOperation.Builder(schema).build();
-	    return cluster.execute(operation).get();
+	    RiakFuture<YzPutSchemaOperation.Response, YokozunaSchema> future =
+            cluster.execute(operation);
+        
+        future.await();
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 	}
 
 	public static class Builder

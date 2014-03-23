@@ -25,6 +25,7 @@ import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.CrdtElement;
@@ -100,31 +101,45 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
         }
 
         DtUpdateOperation operation = builder.build();
-        DtUpdateOperation.Response crdtResponse = cluster.execute(operation).get();
-        CrdtElement element = crdtResponse.getCrdtElement();
-
-        T riakDatatype = null;
-        if (element.isMap())
+        
+        RiakFuture<DtUpdateOperation.Response, Location> future = 
+            cluster.execute(operation);
+            
+        future.await();
+        
+        if (future.isSuccess())
         {
-            riakDatatype = (T) new RiakMap(element.getAsMap());
+            DtUpdateOperation.Response crdtResponse = future.get();
+        
+            CrdtElement element = crdtResponse.getCrdtElement();
+
+            T riakDatatype = null;
+            if (element.isMap())
+            {
+                riakDatatype = (T) new RiakMap(element.getAsMap());
+            }
+            else if (element.isSet())
+            {
+                riakDatatype = (T) new RiakSet(element.getAsSet());
+            }
+            else if (element.isCounter())
+            {
+                riakDatatype = (T) new RiakCounter(element.getAsCounter());
+            }
+
+            BinaryValue returnedKey = crdtResponse.hasGeneratedKey()
+                ? crdtResponse.getGeneratedKey()
+                : loc.getKey();
+
+            Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
+            Context returnedCtx = new Context(crdtResponse.getContext().getValue());
+
+            return new Response<T>(key, returnedCtx, riakDatatype);
         }
-        else if (element.isSet())
+        else
         {
-            riakDatatype = (T) new RiakSet(element.getAsSet());
+            throw new ExecutionException(future.cause().getCause());
         }
-        else if (element.isCounter())
-        {
-            riakDatatype = (T) new RiakCounter(element.getAsCounter());
-        }
-
-	    BinaryValue returnedKey = crdtResponse.hasGeneratedKey()
-		    ? crdtResponse.getGeneratedKey()
-		    : loc.getKey();
-
-        Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
-        Context returnedCtx = new Context(crdtResponse.getContext().getValue());
-
-        return new Response<T>(key, returnedCtx, riakDatatype);
 
     }
 

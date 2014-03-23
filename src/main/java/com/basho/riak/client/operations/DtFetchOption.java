@@ -21,7 +21,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.operations.RiakOption;
 
 public final class DtFetchOption<T> extends RiakOption<T> {
 

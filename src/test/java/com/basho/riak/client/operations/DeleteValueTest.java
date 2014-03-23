@@ -58,6 +58,7 @@ public class DeleteValueTest
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(null);
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
+        when(mockFuture.isSuccess()).thenReturn(true);
         when(mockCluster.<DeleteOperation, Location>execute(any(FutureOperation.class))).thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
     }

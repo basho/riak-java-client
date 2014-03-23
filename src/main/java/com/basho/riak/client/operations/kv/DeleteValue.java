@@ -19,6 +19,7 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.query.Location;
 
@@ -101,9 +102,20 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response>
         }
 
         DeleteOperation operation = builder.build();
-        cluster.execute(operation).get();
+        
+        RiakFuture<DeleteOperation.Response, Location> future =
+            cluster.execute(operation);
 
-        return new Response(true);
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return new Response(true);
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 
     }
 

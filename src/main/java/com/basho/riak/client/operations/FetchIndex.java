@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
@@ -79,27 +80,40 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
             new SecondaryIndexQueryOperation.Builder(queryBuilder.build());
         
         SecondaryIndexQueryOperation operation = builder.build();
-        cluster.execute(operation);
+        
+        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
+            cluster.execute(operation);
 
-        SecondaryIndexQueryOperation.Response opResponse = operation.get();
-
-        ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(opResponse.getEntryList().size());
-
-        for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
+        future.await();
+        
+        if (future.isSuccess())
         {
-            Location key = new Location(location.getBucketName()).setKey(entry.getIndexKey()).setBucketType(location.getBucketType());
-            T objectKey = index.convert(entry.getObjectKey());
-            IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
-            indexEntries.add(indexEntry);
-        }
+            SecondaryIndexQueryOperation.Response opResponse = future.get();
+        
 
-        byte[] continuation = null;
-        if (opResponse.hasContinuation())
+            ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(opResponse.getEntryList().size());
+
+            for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
+            {
+                Location key = new Location(location.getBucketName()).setKey(entry.getIndexKey()).setBucketType(location.getBucketType());
+                T objectKey = index.convert(entry.getObjectKey());
+                IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
+                indexEntries.add(indexEntry);
+            }
+
+            // TODO: Look at this
+            byte[] continuation = null;
+            if (opResponse.hasContinuation())
+            {
+                continuation = opResponse.getContinuation().getValue();
+            }
+
+            return new Response<T>(continuation, indexEntries);
+        }
+        else
         {
-            continuation = opResponse.getContinuation().getValue();
+            throw new ExecutionException(future.cause().getCause());
         }
-
-        return new Response<T>(continuation, indexEntries);
     }
 
     public static Criteria range(int start, int end)

@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -119,7 +120,20 @@ public final class Search extends RiakCommand<SearchOperation.Response>
         }
 
         SearchOperation operation = builder.build();
-        return cluster.execute(operation).get();
+        
+        RiakFuture<SearchOperation.Response, BinaryValue> future =
+            cluster.execute(operation);
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 
     }
 

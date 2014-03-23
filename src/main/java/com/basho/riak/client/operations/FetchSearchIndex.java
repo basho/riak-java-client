@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 
 import java.util.concurrent.ExecutionException;
@@ -41,7 +42,18 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
 	    YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
 	    builder.withIndexName(index);
 	    YzFetchIndexOperation operation = builder.build();
-	    return cluster.execute(operation).get();
+	    RiakFuture<YzFetchIndexOperation.Response, String> future =
+            cluster.execute(operation);
+        
+        future.await();
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 	}
 
 	public static class Builder

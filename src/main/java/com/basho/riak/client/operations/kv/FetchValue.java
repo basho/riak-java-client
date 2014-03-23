@@ -20,6 +20,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.query.Location;
 
@@ -94,14 +95,27 @@ public final class FetchValue extends RiakCommand<FetchValue.Response>
 
 		FetchOperation operation = builder.build();
 
-		FetchOperation.Response response = cluster.execute(operation).get();
+        RiakFuture<FetchOperation.Response, Location> future = 
+            cluster.execute(operation);
+		
+        future.await();
         
-		return new Response.Builder().withNotFound(response.isNotFound()) 
-                                .withUnchanged(response.isUnchanged())
-                                .withLocation(response.getLocation())
-                                .withValues(response.getObjectList()) 
-                                .withVClock(response.getVClock())
-                                .build();
+        if (future.isSuccess())
+        {
+            FetchOperation.Response response = future.get();
+        
+        
+            return new Response.Builder().withNotFound(response.isNotFound()) 
+                                    .withUnchanged(response.isUnchanged())
+                                    .withLocation(response.getLocation())
+                                    .withValues(response.getObjectList()) 
+                                    .withVClock(response.getVClock())
+                                    .build();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 
 	}
 

@@ -2,6 +2,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
 import java.util.concurrent.ExecutionException;
@@ -23,7 +24,18 @@ public final class DeleteSearchIndex extends RiakCommand<YzDeleteIndexOperation.
 	protected final YzDeleteIndexOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		YzDeleteIndexOperation operation = new YzDeleteIndexOperation.Builder(index).build();
-		return cluster.execute(operation).get();
+		RiakFuture<YzDeleteIndexOperation.Response, String> future =
+            cluster.execute(operation);
+        
+        future.await();
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 	}
 
 	public static class Builder

@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.query.Location;
 
@@ -43,7 +44,18 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
 		FetchBucketPropsOperation.Builder operation = 
             new FetchBucketPropsOperation.Builder(location);
 		
-        return cluster.execute(operation.build()).get();
+        RiakFuture<FetchBucketPropsOperation.Response, Location> future =
+            cluster.execute(operation.build());
+        
+        future.await();
+        if(future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 	}
 
 	public static class Builder

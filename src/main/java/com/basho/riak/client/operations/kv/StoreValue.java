@@ -23,6 +23,7 @@ import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -134,23 +135,34 @@ public final class StoreValue extends RiakCommand<StoreValue.Response>
         }
 
         StoreOperation operation = builder.build();
-
-        StoreOperation.Response response = cluster.execute(operation).get();
+        RiakFuture<StoreOperation.Response, Location> future =
+            cluster.execute(operation);
         
-        BinaryValue returnedKey = response.getLocation().getKey();
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            StoreOperation.Response response = future.get();
+        
+            BinaryValue returnedKey = response.getLocation().getKey();
 
-        Location k = 
-            new Location(orm.getLocation().getBucketName())
-                .setKey(returnedKey)
-                .setBucketType(orm.getLocation().getBucketType());
-	    
-        VClock clock = response.getVClock();
+            Location k = 
+                new Location(orm.getLocation().getBucketName())
+                    .setKey(returnedKey)
+                    .setBucketType(orm.getLocation().getBucketType());
 
-        return new Response.Builder()
-            .withValues(response.getObjectList())
-            .withVClock(clock)
-            .withLocation(k)
-            .build();
+            VClock clock = response.getVClock();
+
+            return new Response.Builder()
+                .withValues(response.getObjectList())
+                .withVClock(clock)
+                .withLocation(k)
+                .build();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 
     }
 

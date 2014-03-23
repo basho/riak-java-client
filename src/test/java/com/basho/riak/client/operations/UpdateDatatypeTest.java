@@ -65,6 +65,7 @@ public class UpdateDatatypeTest
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
+        when(mockFuture.isSuccess()).thenReturn(true);
         when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
         when(context.getBytes()).thenReturn(new byte[] {'1'});
         client = new RiakClient(mockCluster);

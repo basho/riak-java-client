@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.RiakDatatype;
@@ -98,13 +99,25 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 
         DtFetchOperation operation = builder.build();
 
-        DtFetchOperation.Response response = cluster.execute(operation).get();
-        CrdtElement element = response.getCrdtElement();
-        BinaryValue context = response.getContext();
+        RiakFuture<DtFetchOperation.Response, Location> future =
+            cluster.execute(operation);
+            
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            DtFetchOperation.Response response = future.get();
+            CrdtElement element = response.getCrdtElement();
+            BinaryValue context = response.getContext();
 
-        T datatype = extractDatatype(element);
+            T datatype = extractDatatype(element);
 
-        return new Response<T>(datatype, context.getValue());
+            return new Response<T>(datatype, context.getValue());
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 
     }
 

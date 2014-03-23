@@ -17,6 +17,7 @@ package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
@@ -52,9 +53,17 @@ public final class ListKeys extends RiakCommand<ListKeys.Response>
 		}
 
 		ListKeysOperation operation = builder.build();
-		cluster.execute(operation);
+		RiakFuture<ListKeysOperation.Response, Void> future = cluster.execute(operation);
 
-		return new Response(location.getBucketName(), operation.get().getKeys());
+        future.await();
+        if (future.isSuccess())
+        {
+            return new Response(location.getBucketName(), future.get().getKeys());
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
 	}
 
 	public static class Response implements Iterable<Location>
