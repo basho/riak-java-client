@@ -67,7 +67,7 @@ public class RiakClient
      */
     public <T,S> RiakFuture<T,S> executeAsync(RiakCommand<T,S> command)
     {
-        return command.doExecuteAsync(cluster);
+        return command.executeAsync(cluster);
     }
     
 	/**
