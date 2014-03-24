@@ -16,6 +16,7 @@
 package com.basho.riak.client;
 
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -59,6 +60,16 @@ public class RiakClient
 		return command.execute(cluster);
 	}
 
+    /**
+     * Execute a command asynchronously against Riak.
+     * @param command The command to execute.
+     * @return a future for the operation.
+     */
+    public <T,S> RiakFuture<T,S> executeAsync(RiakCommand<T,S> command)
+    {
+        return command.doExecuteAsync(cluster);
+    }
+    
 	/**
 	 *  Shutdown the client and the underlying cluster.
 	 *
