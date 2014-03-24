@@ -16,6 +16,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
@@ -80,12 +81,13 @@ public class UpdateValueTest
 	public void testUpdateValue() throws ExecutionException, InterruptedException
 	{
 		UpdateValue.Update spiedUpdate = spy(new NoopUpdate());
-		ConflictResolver<RiakObject> spiedResolver = spy(new DefaultResolver<RiakObject>());
-		Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
+		ConflictResolver<RiakObject> spiedResolver = 
+            spy(ConflictResolverFactory.getInstance().getConflictResolverForClass(RiakObject.class));
+		
+        Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
 
 		UpdateValue.Builder update =
 			new UpdateValue.Builder<RiakObject>(key, RiakObject.class)
-				.withResolver(spiedResolver)
 				.withUpdate(spiedUpdate);
 
 		client.execute(update.build());

@@ -30,6 +30,7 @@ public class DefaultResolver<T> implements ConflictResolver<T>
     /**
      * Detects conflict but does not resolve it.
      *
+     * @param siblings the list of siblings returned from Riak
      * @return null or the single value in the collection
      * @throws UnresolvedConflictException if {@code siblings} has > 1 entry.
      */
