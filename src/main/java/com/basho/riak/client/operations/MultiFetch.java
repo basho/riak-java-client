@@ -78,17 +78,17 @@ import static java.util.Collections.unmodifiableList;
 public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 {
 
-	private final Converter<T> converter;
-	private final ArrayList<Location> keys = new ArrayList<Location>();
+    private final Class<T> convertTo;
+    private final ArrayList<Location> keys = new ArrayList<Location>();
 	private final Executor executor;
 	private final Map<FetchOption<?>, Object> options = new HashMap<FetchOption<?>, Object>();
 
-	private MultiFetch(Builder builder)
+	private MultiFetch(Builder<T> builder)
 	{
-		this.converter = builder.converter;
 		this.keys.addAll(builder.keys);
 		this.executor = builder.executor;
 		this.options.putAll(builder.options);
+        this.convertTo = builder.convertTo;
 	}
 
 	@Override
@@ -100,9 +100,8 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 
 		for (Location key : keys)
 		{
-			FetchValue.Builder<T> builder = new FetchValue.Builder<T>(key);
-			builder.withConverter(converter);
-
+			FetchValue.Builder<T> builder = new FetchValue.Builder<T>(key, convertTo);
+			
 			for (FetchOption<?> option : options.keySet())
 			{
 				builder.withOption((FetchOption<Object>) option, options.get(option));
@@ -149,24 +148,21 @@ public class MultiFetch<T> extends RiakCommand<MultiFetch.Response<T>>
 			threadPool.allowCoreThreadTimeOut(true);
 		}
 
-		private Converter<T> converter;
+		private final Class<T> convertTo;
 		private ArrayList<Location> keys = new ArrayList<Location>();
 		private Executor executor;
 		private Map<FetchOption<?>, Object> options = new HashMap<FetchOption<?>, Object>();
-
-		/**
-		 * Use the given converter to perform conversion between domain objects and Riak native objects
-		 *
-		 * @param converter the converter to use
-		 * @return this
-		 */
-		public Builder withConverter(Converter<T> converter)
-		{
-			this.converter = converter;
-			return this;
-		}
-
-		/**
+        
+        /**
+         * Construct a Builer for a MutiFetch operation.
+         * @param convertTo The class that replies will be converted to.
+         */
+		public Builder(Class<T> convertTo)
+        {
+            this.convertTo = convertTo;
+        }
+        
+        /**
 		 * Add a key to the list of keys to retrieve as part of this multifetch operation
 		 *
 		 * @param key key

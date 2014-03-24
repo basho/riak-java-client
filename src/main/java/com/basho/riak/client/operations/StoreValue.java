@@ -19,6 +19,7 @@ import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.Converter.OrmExtracted;
+import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.util.BinaryValue;
@@ -34,12 +35,11 @@ import java.util.ArrayList;
 
 public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 {
-
+    private final Class<V> convertTo;
     private final Location location;
     private final Map<StoreOption<?>, Object> options =
 	    new HashMap<StoreOption<?>, Object>();
     private final V value;
-    private final Converter<V> converter;
     private final VClock vClock;
 
     StoreValue(Builder<V> builder)
@@ -47,13 +47,14 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         this.options.putAll(builder.options);
         this.location = builder.location;
         this.value = builder.value;
-        this.converter = builder.converter;
+        this.convertTo = builder.convertTo;
 	    this.vClock = builder.vClock;
     }
 
     @Override
     public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
+        Converter<V> converter = ConverterFactory.getInstance().getConverterForClass(convertTo);
         OrmExtracted orm = converter.fromDomain(value, location, vClock);
         
         StoreOperation.Builder builder = 
@@ -180,16 +181,17 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 	{
 
 		private final Location location;
+        private final Class<V> convertTo;
 		private final Map<StoreOption<?>, Object> options =
 			new HashMap<StoreOption<?>, Object>();
 		private final V value;
-		private Converter<V> converter;
 		private VClock vClock;
 
 		public Builder(Location location, V value)
 		{
 			this.location = location;
 			this.value = value;
+            this.convertTo = (Class<V>) value.getClass();
 		}
 
 		public Builder<V> withVectorClock(VClock vClock)
@@ -201,12 +203,6 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 		public <T> Builder<V> withOption(StoreOption<T> option, T value)
 		{
 			options.put(option, value);
-			return this;
-		}
-
-		public Builder<V> withConverter(Converter<V> converter)
-		{
-			this.converter = converter;
 			return this;
 		}
 

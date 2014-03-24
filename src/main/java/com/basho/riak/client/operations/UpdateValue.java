@@ -33,9 +33,8 @@ import java.util.concurrent.ExecutionException;
  */
 public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 {
-
+    private final Class<T> convertTo;
     private final Location location;
-    private final Converter<T> converter;
     private final Update<T> update;
     private final ConflictResolver<T> resolver;
     private final Map<FetchOption<?>, Object> fetchOptions =
@@ -46,11 +45,11 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     UpdateValue(Builder<T> builder)
     {
         this.location = builder.location;
-        this.converter = builder.converter;
         this.resolver = builder.resolver;
         this.update = builder.update;
 	    this.fetchOptions.putAll(builder.fetchOptions);
 	    this.storeOptions.putAll(builder.storeOptions);
+        this.convertTo = builder.convertTo;
     }
 
     @Override
@@ -58,7 +57,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
     public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
 
-        FetchValue.Builder<T> fetchBuilder = new FetchValue.Builder<T>(location).withConverter(converter);
+        FetchValue.Builder<T> fetchBuilder = new FetchValue.Builder<T>(location, convertTo);
         for (Map.Entry<FetchOption<?>, Object> optPair : fetchOptions.entrySet())
         {
             fetchBuilder.withOption((FetchOption<Object>) optPair.getKey(), optPair.getValue());
@@ -73,8 +72,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
         if (update.isModified())
         {
 
-            StoreValue.Builder<T> store = new StoreValue.Builder<T>(location, updated)
-	            .withConverter(converter);
+            StoreValue.Builder<T> store = new StoreValue.Builder<T>(location, updated);
             for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
             {
                 store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
@@ -175,7 +173,7 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 	public static class Builder<T>
 	{
 		private final Location location;
-		private Converter<T> converter;
+        private final Class<T> convertTo;
 		private Update<T> update;
 		private ConflictResolver<T> resolver;
 		private final Map<FetchOption<?>, Object> fetchOptions =
@@ -183,9 +181,10 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 		private final Map<StoreOption<?>, Object> storeOptions =
 			new HashMap<StoreOption<?>, Object>();
 
-		public Builder(Location location)
+		public Builder(Location location, Class<T> convertTo)
 		{
 			this.location = location;
+            this.convertTo = convertTo;
 		}
 
 		/**
@@ -213,12 +212,6 @@ public class UpdateValue<T> extends RiakCommand<UpdateValue.Response<T>>
 		public <U> Builder<T> withStoreOption(StoreOption<U> option, U value)
 		{
 			storeOptions.put(option, value);
-			return this;
-		}
-
-		public Builder<T> withConverter(Converter<T> converter)
-		{
-			this.converter = converter;
 			return this;
 		}
 

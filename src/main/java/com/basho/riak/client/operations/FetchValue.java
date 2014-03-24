@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
@@ -40,13 +41,13 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 	private final Location location;
 	private final Map<FetchOption<?>, Object> options =
 		new HashMap<FetchOption<?>, Object>();
-	private final Converter<T> converter;
+    private final Class<T> convertTo;
 
 	FetchValue(Builder<T> builder)
 	{
 		this.location = builder.location;
 		this.options.putAll(builder.options);
-		this.converter = builder.converter;
+        this.convertTo = builder.convertTo;
 	}
 
 	@Override
@@ -99,6 +100,8 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 
 		FetchOperation.Response response = cluster.execute(operation).get();
 		List<T> converted = new ArrayList<T>();
+        
+        Converter<T> converter = ConverterFactory.getInstance().getConverterForClass(convertTo);
         
         for (RiakObject ro : response.getObjectList())
         {
@@ -168,23 +171,12 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		private final Location location;
 		private final Map<FetchOption<?>, Object> options =
 			new HashMap<FetchOption<?>, Object>();
-		private Converter<T> converter;
+        private Class<T> convertTo;
 
-		public Builder(Location location)
+		public Builder(Location location, Class<T> convertTo)
 		{
 			this.location = location;
-		}
-
-		/**
-		 * Add a domain converter to this command.
-		 *
-		 * @param converter a domain object converter
-		 * @return this
-		 */
-		public Builder<T> withConverter(Converter<T> converter)
-		{
-			this.converter = converter;
-			return this;
+            this.convertTo = convertTo;
 		}
 
 		/**
@@ -209,7 +201,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		 */
 		public FetchValue<T> build()
 		{
-			return new FetchValue<T>(this);
+            return new FetchValue<T>(this);
 		}
 	}
 }
