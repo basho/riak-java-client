@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.operations.datatypes;
+package com.basho.riak.client.query.crdt.types;
 
-import com.basho.riak.client.query.crdt.types.CrdtRegister;
 import com.basho.riak.client.util.BinaryValue;
 
- /*
- * @author Dave Rusek <drusuk at basho dot com>
- * @since 2.0
- */
 public class RiakRegister extends RiakDatatype<BinaryValue>
-
 {
+    private BinaryValue value;
 
-    private final CrdtRegister register;
-
-    public RiakRegister(CrdtRegister register)
+    public RiakRegister(BinaryValue value)
     {
-        this.register = register;
+        this.value = value;
     }
 
-    @Override
-    public BinaryValue view()
+    public BinaryValue getValue()
     {
-        return register.getValue();
+        return value;
     }
 
+	@Override
+	public BinaryValue view()
+	{
+		return value;
+	}
 }

@@ -16,18 +16,14 @@
 
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
 import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
 import com.basho.riak.client.operations.datatypes.Context;
-import com.basho.riak.client.operations.datatypes.RiakSet;
-import com.basho.riak.client.operations.datatypes.RiakCounter;
-import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
@@ -43,7 +39,7 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
 
     private final Location loc;
     private final Context ctx;
-    private final DatatypeUpdate<T> datatype;
+    private final DatatypeUpdate datatype;
     private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
     private UpdateDatatype(Builder<T> builder)
@@ -101,20 +97,20 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
 
         DtUpdateOperation operation = builder.build();
         DtUpdateOperation.Response crdtResponse = cluster.execute(operation).get();
-        CrdtElement element = crdtResponse.getCrdtElement();
+        RiakDatatype element = crdtResponse.getCrdtElement();
 
         T riakDatatype = null;
         if (element.isMap())
         {
-            riakDatatype = (T) new RiakMap(element.getAsMap());
+            riakDatatype = (T) element.getAsMap();
         }
         else if (element.isSet())
         {
-            riakDatatype = (T) new RiakSet(element.getAsSet());
+            riakDatatype = (T) element.getAsSet();
         }
         else if (element.isCounter())
         {
-            riakDatatype = (T) new RiakCounter(element.getAsCounter());
+            riakDatatype = (T) element.getAsCounter();
         }
 
 	    BinaryValue returnedKey = crdtResponse.hasGeneratedKey()
@@ -132,7 +128,7 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
 	{
 		private final Location loc;
 		private Context ctx;
-		private DatatypeUpdate<T> datatype;
+		private DatatypeUpdate datatype;
 		private Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
 		public Builder(Location loc)
@@ -152,7 +148,7 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
 			return this;
 		}
 
-		public Builder<T> withUpdate(DatatypeUpdate<T> update)
+		public Builder<T> withUpdate(DatatypeUpdate update)
 		{
 			this.datatype = update;
 			return this;

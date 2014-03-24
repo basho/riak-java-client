@@ -17,18 +17,31 @@ package com.basho.riak.client.query.crdt.types;
 
 import com.basho.riak.client.util.BinaryValue;
 
-public class CrdtRegister extends CrdtElement
+import java.util.*;
+
+public class RiakSet extends RiakDatatype<Set<BinaryValue>>
 {
-    private BinaryValue value;
+    private final Set<BinaryValue> elements =
+        new HashSet<BinaryValue>();
 
-    public CrdtRegister(BinaryValue value)
+    public RiakSet(List<BinaryValue> elements)
     {
-        this.value = value;
+        this.elements.addAll(elements);
     }
 
-    public BinaryValue getValue()
+    public Set<BinaryValue> viewAsSet()
     {
-        return value;
+        return Collections.unmodifiableSet(elements);
     }
 
+    public boolean contains(BinaryValue element)
+    {
+        return elements.contains(element);
+    }
+
+	@Override
+	public Set<BinaryValue> view()
+	{
+		return Collections.unmodifiableSet(elements);
+	}
 }
