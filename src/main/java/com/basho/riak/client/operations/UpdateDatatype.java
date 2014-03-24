@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>, Location>

@@ -18,7 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class DtUpdateOption<T> extends RiakOption<T>

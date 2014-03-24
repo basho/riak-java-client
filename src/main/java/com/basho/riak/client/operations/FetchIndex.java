@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import static java.util.Collections.unmodifiableList;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>,SecondaryIndexQueryOperation.Query>

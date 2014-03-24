@@ -10,7 +10,7 @@ import com.basho.riak.client.query.search.YokozunaSchema;
 import java.util.concurrent.ExecutionException;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class StoreSchema extends RiakCommand<YzPutSchemaOperation.Response, YokozunaSchema>

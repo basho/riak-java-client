@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 /**
  * The client used to perform operations on Riak.
  * 
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class RiakClient

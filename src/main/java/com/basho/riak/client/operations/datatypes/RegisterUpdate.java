@@ -19,7 +19,7 @@ import com.basho.riak.client.query.crdt.ops.RegisterOp;
 import com.basho.riak.client.util.BinaryValue;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class RegisterUpdate extends DatatypeUpdate

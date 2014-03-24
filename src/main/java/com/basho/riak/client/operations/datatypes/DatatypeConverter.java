@@ -21,7 +21,7 @@ import com.basho.riak.client.query.crdt.types.RiakMap;
 import com.basho.riak.client.query.crdt.types.RiakSet;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public abstract class DatatypeConverter<T extends RiakDatatype>

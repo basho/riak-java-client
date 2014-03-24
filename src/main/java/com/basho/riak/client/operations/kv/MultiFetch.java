@@ -87,7 +87,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * or worse they could time out.
  * </p>
  *
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Location>>
