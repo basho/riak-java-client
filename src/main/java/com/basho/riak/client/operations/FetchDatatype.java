@@ -17,6 +17,7 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
@@ -34,7 +35,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
+public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>, Location>
 {
 
     private final Location location;
@@ -57,6 +58,51 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 
     @Override
     protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    {
+        RiakFuture<Response<T>, Location> future = doExecuteAsync(cluster);
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+    
+    @Override
+    protected final RiakFuture<FetchDatatype.Response<T>, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<DtFetchOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<Response<T>, Location, DtFetchOperation.Response, Location> future =
+            new CoreFutureAdapter<Response<T>, Location, DtFetchOperation.Response, Location>(coreFuture) {
+
+            @Override
+            protected Response<T> convertResponse(DtFetchOperation.Response coreResponse)
+            {
+                CrdtElement element = coreResponse.getCrdtElement();
+                BinaryValue context = coreResponse.getContext();
+
+                T datatype = extractDatatype(element);
+
+                return new Response<T>(datatype, context.getValue());
+            }
+
+            @Override
+            protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+            {
+                return coreQueryInfo;
+            }
+        };
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private DtFetchOperation buildCoreOperation()
     {
         DtFetchOperation.Builder builder = 
             new DtFetchOperation.Builder(location);
@@ -97,30 +143,9 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             }
         }
 
-        DtFetchOperation operation = builder.build();
-
-        RiakFuture<DtFetchOperation.Response, Location> future =
-            cluster.execute(operation);
-            
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            DtFetchOperation.Response response = future.get();
-            CrdtElement element = response.getCrdtElement();
-            BinaryValue context = response.getContext();
-
-            T datatype = extractDatatype(element);
-
-            return new Response<T>(datatype, context.getValue());
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-
+        return builder.build();
     }
-
+    
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 

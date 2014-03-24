@@ -24,6 +24,7 @@ import com.basho.riak.client.operations.datatypes.RiakCounter;
 import com.basho.riak.client.operations.datatypes.RiakMap;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
@@ -39,7 +40,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>>
+public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>, Location>
 {
 
     private final Location loc;
@@ -56,8 +57,72 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    {
+        RiakFuture<Response<T>, Location> future = doExecuteAsync(cluster);
+            
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected RiakFuture<Response<T>, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<Response<T>, Location, DtUpdateOperation.Response, Location> future =
+            new CoreFutureAdapter<Response<T>, Location, DtUpdateOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected Response<T> convertResponse(DtUpdateOperation.Response coreResponse)
+                {
+                    CrdtElement element = coreResponse.getCrdtElement();
+
+                    T riakDatatype = null;
+                    if (element.isMap())
+                    {
+                        riakDatatype = (T) new RiakMap(element.getAsMap());
+                    }
+                    else if (element.isSet())
+                    {
+                        riakDatatype = (T) new RiakSet(element.getAsSet());
+                    }
+                    else if (element.isCounter())
+                    {
+                        riakDatatype = (T) new RiakCounter(element.getAsCounter());
+                    }
+
+                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
+                        ? coreResponse.getGeneratedKey()
+                        : loc.getKey();
+
+                    Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
+                    Context returnedCtx = new Context(coreResponse.getContext().getValue());
+
+                    return new Response<T>(key, returnedCtx, riakDatatype);
+                }
+
+                @Override
+                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private DtUpdateOperation buildCoreOperation()
     {
         DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc);
 
@@ -100,50 +165,10 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
             }
         }
 
-        DtUpdateOperation operation = builder.build();
-        
-        RiakFuture<DtUpdateOperation.Response, Location> future = 
-            cluster.execute(operation);
-            
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            DtUpdateOperation.Response crdtResponse = future.get();
-        
-            CrdtElement element = crdtResponse.getCrdtElement();
-
-            T riakDatatype = null;
-            if (element.isMap())
-            {
-                riakDatatype = (T) new RiakMap(element.getAsMap());
-            }
-            else if (element.isSet())
-            {
-                riakDatatype = (T) new RiakSet(element.getAsSet());
-            }
-            else if (element.isCounter())
-            {
-                riakDatatype = (T) new RiakCounter(element.getAsCounter());
-            }
-
-            BinaryValue returnedKey = crdtResponse.hasGeneratedKey()
-                ? crdtResponse.getGeneratedKey()
-                : loc.getKey();
-
-            Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
-            Context returnedCtx = new Context(crdtResponse.getContext().getValue());
-
-            return new Response<T>(key, returnedCtx, riakDatatype);
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-
+        return builder.build();
     }
 
-	public static class Builder<T extends RiakDatatype>
+    public static class Builder<T extends RiakDatatype>
 	{
 		private final Location loc;
 		private Context ctx;

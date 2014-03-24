@@ -16,6 +16,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
@@ -31,7 +32,7 @@ import static java.util.Collections.unmodifiableList;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
+public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>,SecondaryIndexQueryOperation.Query>
 {
 
     private final Location location;
@@ -51,7 +52,64 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
     @Override
     protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
+        RiakFuture<Response<T>,SecondaryIndexQueryOperation.Query> future =
+            doExecuteAsync(cluster);
 
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+    
+    @Override
+    protected final RiakFuture<Response<T>,SecondaryIndexQueryOperation.Query> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
+            cluster.execute(buildCoreOperation());
+    
+        CoreFutureAdapter<Response<T>, SecondaryIndexQueryOperation.Query,SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
+            new CoreFutureAdapter<Response<T>, SecondaryIndexQueryOperation.Query,SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>(coreFuture)
+            {
+                @Override
+                protected Response<T> convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+                {
+                    ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(coreResponse.getEntryList().size());
+
+                    for (SecondaryIndexQueryOperation.Response.Entry entry : coreResponse.getEntryList())
+                    {
+                        Location key = new Location(location.getBucketName()).setKey(entry.getIndexKey()).setBucketType(location.getBucketType());
+                        T objectKey = index.convert(entry.getObjectKey());
+                        IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
+                        indexEntries.add(indexEntry);
+                    }
+
+                    byte[] continuation = null;
+                    if (coreResponse.hasContinuation())
+                    {
+                        continuation = coreResponse.getContinuation().getValue();
+                    }
+
+                    return new Response<T>(continuation, indexEntries);
+                }
+
+                @Override
+                protected FailureInfo<SecondaryIndexQueryOperation.Query> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private SecondaryIndexQueryOperation buildCoreOperation()
+    {
         BinaryValue indexName = BinaryValue.create(index.getFullName());
         
         SecondaryIndexQueryOperation.Query.Builder queryBuilder =
@@ -79,43 +137,9 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>>
         SecondaryIndexQueryOperation.Builder builder =
             new SecondaryIndexQueryOperation.Builder(queryBuilder.build());
         
-        SecondaryIndexQueryOperation operation = builder.build();
-        
-        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
-            cluster.execute(operation);
-
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            SecondaryIndexQueryOperation.Response opResponse = future.get();
-        
-
-            ArrayList<IndexEntry<T>> indexEntries = new ArrayList<IndexEntry<T>>(opResponse.getEntryList().size());
-
-            for (SecondaryIndexQueryOperation.Response.Entry entry : opResponse.getEntryList())
-            {
-                Location key = new Location(location.getBucketName()).setKey(entry.getIndexKey()).setBucketType(location.getBucketType());
-                T objectKey = index.convert(entry.getObjectKey());
-                IndexEntry<T> indexEntry = new IndexEntry<T>(key, objectKey);
-                indexEntries.add(indexEntry);
-            }
-
-            // TODO: Look at this
-            byte[] continuation = null;
-            if (opResponse.hasContinuation())
-            {
-                continuation = opResponse.getContinuation().getValue();
-            }
-
-            return new Response<T>(continuation, indexEntries);
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
+        return builder.build();
     }
-
+    
     public static Criteria range(int start, int end)
     {
         return new RangeCriteria(start, end);

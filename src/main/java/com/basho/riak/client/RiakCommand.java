@@ -17,6 +17,7 @@
 package com.basho.riak.client;
 
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -24,12 +25,21 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public abstract class RiakCommand<T>
+public abstract class RiakCommand<T,S>
 {
     final T execute(RiakCluster cluster) throws ExecutionException, InterruptedException 
     {
         return doExecute(cluster);
     }
+    
     protected abstract T doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException;
+    
+    final RiakFuture<T,S> executeAsync(RiakCluster cluster)
+    {
+        return doExecuteAsync(cluster);
+    }
+    protected abstract RiakFuture<T,S> doExecuteAsync(RiakCluster cluster);
+    
+    
 } 
 

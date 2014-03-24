@@ -18,9 +18,11 @@ package com.basho.riak.client.operations.kv;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
+import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
@@ -32,13 +34,13 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class DeleteValue extends RiakCommand<DeleteValue.Response>
+public final class DeleteValue extends RiakCommand<DeleteValue.Response, Location>
 {
 
     private final Location location;
     private final Map<DeleteOption<?>, Object> options =
 	    new HashMap<DeleteOption<?>, Object>();
-    private VClock vClock;
+    private final VClock vClock;
 
     public DeleteValue(Builder builder)
     {
@@ -50,7 +52,47 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response>
     @Override
     protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
+        RiakFuture<Response, Location> future = doExecuteAsync(cluster);
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return new Response(true);
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
 
+    @Override
+    protected RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<DeleteOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<Response, Location, DeleteOperation.Response, Location> future =
+            new CoreFutureAdapter<Response, Location, DeleteOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected Response convertResponse(DeleteOperation.Response coreResponse)
+                {
+                    return new Response(true);
+                }
+
+                @Override
+                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private DeleteOperation buildCoreOperation()
+    {
         DeleteOperation.Builder builder = new DeleteOperation.Builder(location);
 
         if (vClock != null)
@@ -101,25 +143,8 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response>
             }
         }
 
-        DeleteOperation operation = builder.build();
-        
-        RiakFuture<DeleteOperation.Response, Location> future =
-            cluster.execute(operation);
-
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return new Response(true);
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-
+        return builder.build();
     }
-
-
 
     /**
      * The response from Riak

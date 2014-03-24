@@ -16,9 +16,11 @@
 package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
+import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends RiakCommand<ListKeys.Response>
+public final class ListKeys extends RiakCommand<ListKeys.Response, Void>
 {
 
 	private final Location location;
@@ -45,20 +47,13 @@ public final class ListKeys extends RiakCommand<ListKeys.Response>
 	@Override
 	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		ListKeysOperation.Builder builder = new ListKeysOperation.Builder(location);
-
-		if (timeout > 0)
-		{
-			builder.withTimeout(timeout);
-		}
-
-		ListKeysOperation operation = builder.build();
-		RiakFuture<ListKeysOperation.Response, Void> future = cluster.execute(operation);
-
+		RiakFuture<ListKeys.Response, Void> future =
+            doExecuteAsync(cluster);
+		
         future.await();
         if (future.isSuccess())
         {
-            return new Response(location.getBucketName(), future.get().getKeys());
+            return future.get();
         }
         else
         {
@@ -66,6 +61,43 @@ public final class ListKeys extends RiakCommand<ListKeys.Response>
         }
 	}
 
+    @Override 
+    protected final RiakFuture<ListKeys.Response, Void> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<ListKeysOperation.Response, Void> coreFuture = 
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<ListKeys.Response, Void, ListKeysOperation.Response, Void> future =
+            new CoreFutureAdapter<ListKeys.Response, Void, ListKeysOperation.Response, Void>(coreFuture)
+            {
+                @Override
+                protected Response convertResponse(ListKeysOperation.Response coreResponse)
+                {
+                    return new Response(location.getBucketName(), coreResponse.getKeys());
+                }
+
+                @Override
+                protected FailureInfo<Void> convertFailureInfo(FailureInfo<Void> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private ListKeysOperation buildCoreOperation()
+    {
+        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(location);
+
+		if (timeout > 0)
+		{
+			builder.withTimeout(timeout);
+		}
+
+		return builder.build(); 
+    }
+    
 	public static class Response implements Iterable<Location>
 	{
 

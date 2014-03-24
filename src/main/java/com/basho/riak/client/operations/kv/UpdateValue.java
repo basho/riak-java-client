@@ -17,6 +17,11 @@ package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.core.FailureInfo;
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakFutureListener;
+import com.basho.riak.client.operations.ListenableFuture;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -25,14 +30,18 @@ import java.lang.reflect.Type;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class UpdateValue extends RiakCommand<UpdateValue.Response>
+public final class UpdateValue extends RiakCommand<UpdateValue.Response, Location>
 {
     private final Location location;
     private final Update<?> update;
@@ -52,68 +61,117 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response>
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
+        RiakFuture<Response, Location> future = doExecuteAsync(cluster);
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected RiakFuture<Response, Location> doExecuteAsync(final RiakCluster cluster)
+    {
+        final UpdateValueFuture updateFuture = new UpdateValueFuture(location);
+        
         FetchValue.Builder fetchBuilder = new FetchValue.Builder(location);
         for (Map.Entry<FetchOption<?>, Object> optPair : fetchOptions.entrySet())
         {
             fetchBuilder.withOption((FetchOption<Object>) optPair.getKey(), optPair.getValue());
         }
 
-        FetchValue.Response fetchResponse = fetchBuilder.build().doExecute(cluster);
-
-        Object resolved;
-        if (typeReference == null)
-        {
-            // Steal the type from the Update. Yes, Really.
-            ParameterizedType pType = (ParameterizedType)update.getClass().getGenericSuperclass();
-            Type t = pType.getActualTypeArguments()[0];
-            if (t instanceof ParameterizedType)
-            {
-                t = ((ParameterizedType)t).getRawType();
-            }
+        RiakFuture<FetchValue.Response, Location> fetchFuture =
+            fetchBuilder.build().doExecuteAsync(cluster);
         
-            resolved = fetchResponse.getValue((Class<?>) t);
-        }
-        else
-        {
-            resolved = fetchResponse.getValue(typeReference);
-        }
-        
-        Object updated = ((Update<Object>)update).apply(resolved);
-
-        if (update.isModified())
-        {
-
-            StoreValue.Builder store = 
-                new StoreValue.Builder(updated, typeReference)
-                    .withLocation(location)
-                    .withVectorClock(fetchResponse.getVClock());
-            
-            for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
+        // Anonymous listener that will do the work
+        RiakFutureListener<FetchValue.Response, Location> fetchListener =
+            new RiakFutureListener<FetchValue.Response, Location>()
             {
-                store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
-            }
-            StoreValue.Response storeResponse = store.build().doExecute(cluster);
+                @Override
+                public void handle(RiakFuture<FetchValue.Response, Location> f)
+                {
+                    if (f.isSuccess())
+                    {
+                        FetchValue.Response fetchResponse;
+                        try 
+                        {
+                            fetchResponse = f.get();
+                            Object resolved;
+                            if (typeReference == null)
+                            {
+                                // Steal the type from the Update. Yes, Really.
+                                ParameterizedType pType = (ParameterizedType)update.getClass().getGenericSuperclass();
+                                Type t = pType.getActualTypeArguments()[0];
+                                if (t instanceof ParameterizedType)
+                                {
+                                    t = ((ParameterizedType)t).getRawType();
+                                }
 
-            return new Response.Builder()
-                        .withValues(storeResponse.getValues(RiakObject.class))
-                        .withLocation(storeResponse.getLocation())
-                        .withVClock(storeResponse.getVClock())
-                        .withUpdated(true)
-                        .build();
-        }
+                                resolved = fetchResponse.getValue((Class<?>) t);
+                            }
+                            else
+                            {
+                                resolved = fetchResponse.getValue(typeReference);
+                            }
 
-        return new Response.Builder()
-                .withValues(fetchResponse.getValues(RiakObject.class))
-                .withLocation(fetchResponse.getLocation())
-                .withVClock(fetchResponse.getVClock())
-                .withUpdated(false)
-                .build();
+                            Object updated = ((Update<Object>)update).apply(resolved);
+                            if (update.isModified())
+                            {
+
+                                StoreValue.Builder store = 
+                                    new StoreValue.Builder(updated, typeReference)
+                                        .withLocation(location)
+                                        .withVectorClock(fetchResponse.getVClock());
+
+                                for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
+                                {
+                                    store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
+                                }
+                                RiakFuture<StoreValue.Response, Location> storeFuture = 
+                                    store.build().doExecuteAsync(cluster);
+                                storeFuture.addListener(updateFuture);
+                            }
+                            else
+                            {
+                                Response updateResponse = new Response.Builder()
+                                    .withValues(fetchResponse.getValues(RiakObject.class))
+                                    .withLocation(fetchResponse.getLocation())
+                                    .withVClock(fetchResponse.getVClock())
+                                    .withUpdated(false)
+                                    .build();
+                                updateFuture.setResponse(updateResponse);
+                            }
+                            
+                        }
+                        catch (InterruptedException ex) 
+                        {
+                            updateFuture.setException(ex);
+                        }
+                        catch (UnresolvedConflictException ex)
+                        {
+                            updateFuture.setException(ex);
+                        }
+                    }
+                    else
+                    {
+                        updateFuture.setException(f.cause().getCause());
+                    }
+                }
+            };
+        
+        fetchFuture.addListener(fetchListener);
+        return updateFuture;
     }
-
+    
     /**
      *
      */
@@ -329,4 +387,124 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response>
 			return new UpdateValue(this);
 		}
 	}
+    
+    private class UpdateValueFuture extends ListenableFuture<UpdateValue.Response, Location>
+        implements RiakFutureListener<StoreValue.Response, Location>
+    {
+        private final Location location;
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private volatile Throwable exception;
+        private volatile Response updateResponse;
+        
+        private UpdateValueFuture(Location location)
+        {
+            this.location = location;
+        }
+        
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning)
+        {
+            return false;
+        }
+
+        @Override
+        public Response get() throws InterruptedException
+        {
+            latch.await();
+            return updateResponse;
+        }
+
+        @Override
+        public Response get(long timeout, TimeUnit unit) throws InterruptedException
+        {
+            latch.await(timeout, unit);
+            return updateResponse;
+        }
+
+        @Override
+        public boolean isCancelled()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isDone()
+        {
+            return latch.getCount() != 1;
+        }
+
+        @Override
+        public void await() throws InterruptedException
+        {
+            latch.await();
+        }
+
+        @Override
+        public void await(long timeout, TimeUnit unit) throws InterruptedException
+        {
+            latch.await(timeout, unit);
+        }
+
+        @Override
+        public boolean isSuccess()
+        {
+            return isDone() && exception == null;
+        }
+
+        @Override
+        public FailureInfo<Location> cause()
+        {
+            if (isSuccess())
+            {
+                return null;
+            }
+            else
+            {
+                return new FailureInfo<Location>(exception, location);
+            }
+        }
+
+        private void setResponse(Response response)
+        {
+            this.updateResponse = response;
+            latch.countDown();
+            notifyListeners();
+        }
+        
+        private void setException(Throwable t)
+        {
+            this.exception = t;
+            latch.countDown();
+            notifyListeners();
+        }
+
+        @Override
+        public void handle(RiakFuture<StoreValue.Response, Location> f)
+        {
+            if (f.isSuccess())
+            {
+                StoreValue.Response storeResponse;
+                try 
+                {
+                    storeResponse = f.get();
+                    Response response = new Response.Builder()
+                        .withValues(storeResponse.getValues(RiakObject.class))
+                        .withLocation(storeResponse.getLocation())
+                        .withVClock(storeResponse.getVClock())
+                        .withUpdated(true)
+                        .build();
+                    setResponse(response);
+                    
+                }
+                catch (InterruptedException ex) 
+                {
+                    setException(ex);
+                }
+            }
+            else
+            {
+                setException(f.cause().getCause());
+            }
+        }
+    }
 }

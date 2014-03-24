@@ -17,6 +17,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzGetSchemaOperation;
@@ -27,7 +28,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response>
+public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response, String>
 {
 	private final String schema;
 
@@ -39,9 +40,9 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
 	@Override
 	protected YzGetSchemaOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		YzGetSchemaOperation operation = new YzGetSchemaOperation.Builder(schema).build();
-		RiakFuture<YzGetSchemaOperation.Response, String> future =
-            cluster.execute(operation);
+		
+        RiakFuture<YzGetSchemaOperation.Response, String> future = 
+            doExecuteAsync(cluster);
         
         future.await();
         
@@ -54,6 +55,36 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
             throw new ExecutionException(future.cause().getCause());
         }
 	}
+    
+    @Override
+    protected RiakFuture<YzGetSchemaOperation.Response, String> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<YzGetSchemaOperation.Response, String> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String> future =
+            new CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String>(coreFuture)
+            {
+                @Override
+                protected YzGetSchemaOperation.Response convertResponse(YzGetSchemaOperation.Response coreResponse)
+                {
+                    return coreResponse;
+                }
+
+                @Override
+                protected FailureInfo<String> convertFailureInfo(FailureInfo<String> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private YzGetSchemaOperation buildCoreOperation()
+    {
+        return new YzGetSchemaOperation.Builder(schema).build();
+    }
 
 	public static class Builder
 	{

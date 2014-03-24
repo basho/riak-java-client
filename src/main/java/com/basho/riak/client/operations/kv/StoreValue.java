@@ -23,7 +23,9 @@ import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -38,7 +40,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class StoreValue extends RiakCommand<StoreValue.Response>
+public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 {
     private final Location location;
     private final Map<StoreOption<?>, Object> options =
@@ -56,11 +58,29 @@ public final class StoreValue extends RiakCommand<StoreValue.Response>
         this.typeReference = builder.typeReference;
     }
 
-    @SuppressWarnings("unchecked")
+    
     @Override
     protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        Converter converter;
+        RiakFuture<Response, Location> future = doExecuteAsync(cluster);
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
+    {
+       Converter converter;
         
         if (typeReference == null)
         {
@@ -71,8 +91,46 @@ public final class StoreValue extends RiakCommand<StoreValue.Response>
             converter = ConverterFactory.getInstance().getConverter(typeReference);
         }
         
-        OrmExtracted orm = converter.fromDomain(value, location, vClock);
+        final OrmExtracted orm = converter.fromDomain(value, location, vClock);
         
+        RiakFuture<StoreOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation(orm));
+        
+        CoreFutureAdapter<Response, Location, StoreOperation.Response, Location> future = 
+            new CoreFutureAdapter<Response, Location, StoreOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected Response convertResponse(StoreOperation.Response coreResponse)
+                {
+                    BinaryValue returnedKey = coreResponse.getLocation().getKey();
+
+                    Location k = 
+                        new Location(orm.getLocation().getBucketName())
+                            .setKey(returnedKey)
+                            .setBucketType(orm.getLocation().getBucketType());
+
+                    VClock clock = coreResponse.getVClock();
+
+                    return new Response.Builder()
+                        .withValues(coreResponse.getObjectList())
+                        .withVClock(clock)
+                        .withLocation(k)
+                        .build();
+                }
+
+                @Override
+                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+                
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private StoreOperation buildCoreOperation(OrmExtracted orm)
+    {
         StoreOperation.Builder builder = 
             new StoreOperation.Builder(orm.getLocation())
                 .withContent(orm.getRiakObject());
@@ -134,38 +192,8 @@ public final class StoreValue extends RiakCommand<StoreValue.Response>
 
         }
 
-        StoreOperation operation = builder.build();
-        RiakFuture<StoreOperation.Response, Location> future =
-            cluster.execute(operation);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            StoreOperation.Response response = future.get();
-        
-            BinaryValue returnedKey = response.getLocation().getKey();
-
-            Location k = 
-                new Location(orm.getLocation().getBucketName())
-                    .setKey(returnedKey)
-                    .setBucketType(orm.getLocation().getBucketType());
-
-            VClock clock = response.getVClock();
-
-            return new Response.Builder()
-                .withValues(response.getObjectList())
-                .withVClock(clock)
-                .withLocation(k)
-                .build();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-
+        return builder.build();
     }
-
     
     public static class Response extends KvResponseBase
     {

@@ -54,7 +54,7 @@ public class RiakClient
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public <T> T execute(RiakCommand<T> command) throws ExecutionException, InterruptedException
+	public <T,S> T execute(RiakCommand<T,S> command) throws ExecutionException, InterruptedException
 	{
 		return command.execute(cluster);
 	}

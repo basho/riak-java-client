@@ -17,6 +17,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
@@ -28,7 +29,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response>
+public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Location>
 {
 
 	private final Location location;
@@ -41,12 +42,9 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
 	@Override
 	protected final FetchBucketPropsOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		FetchBucketPropsOperation.Builder operation = 
-            new FetchBucketPropsOperation.Builder(location);
+		RiakFuture<FetchBucketPropsOperation.Response, Location> future =
+            doExecuteAsync(cluster);
 		
-        RiakFuture<FetchBucketPropsOperation.Response, Location> future =
-            cluster.execute(operation.build());
-        
         future.await();
         if(future.isSuccess())
         {
@@ -57,6 +55,36 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
             throw new ExecutionException(future.cause().getCause());
         }
 	}
+
+    @Override
+    protected final RiakFuture<FetchBucketPropsOperation.Response, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<FetchBucketPropsOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<FetchBucketPropsOperation.Response, Location, FetchBucketPropsOperation.Response, Location> future =
+            new CoreFutureAdapter<FetchBucketPropsOperation.Response, Location, FetchBucketPropsOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected FetchBucketPropsOperation.Response convertResponse(FetchBucketPropsOperation.Response coreResponse)
+                {
+                    return coreResponse;
+                }
+
+                @Override
+                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private FetchBucketPropsOperation buildCoreOperation()
+    {
+        return new FetchBucketPropsOperation.Builder(location).build();
+    }
 
 	public static class Builder
 	{

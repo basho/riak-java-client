@@ -17,6 +17,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
@@ -27,7 +28,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response>
+public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response, String>
 {
 	private final String index;
 
@@ -39,11 +40,8 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
 	@Override
 	protected final YzFetchIndexOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-	    YzFetchIndexOperation.Builder builder = new YzFetchIndexOperation.Builder();
-	    builder.withIndexName(index);
-	    YzFetchIndexOperation operation = builder.build();
 	    RiakFuture<YzFetchIndexOperation.Response, String> future =
-            cluster.execute(operation);
+            doExecuteAsync(cluster);
         
         future.await();
         if (future.isSuccess())
@@ -55,6 +53,36 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
             throw new ExecutionException(future.cause().getCause());
         }
 	}
+
+    @Override
+    protected final RiakFuture<YzFetchIndexOperation.Response, String> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<YzFetchIndexOperation.Response, String> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<YzFetchIndexOperation.Response, String, YzFetchIndexOperation.Response, String> future =
+            new CoreFutureAdapter<YzFetchIndexOperation.Response, String, YzFetchIndexOperation.Response, String>(coreFuture)
+            {
+                @Override
+                protected YzFetchIndexOperation.Response convertResponse(YzFetchIndexOperation.Response coreResponse)
+                {
+                    return coreResponse;
+                }
+
+                @Override
+                protected FailureInfo<String> convertFailureInfo(FailureInfo<String> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private YzFetchIndexOperation buildCoreOperation()
+    {
+        return new YzFetchIndexOperation.Builder().withIndexName(index).build();
+    }
 
 	public static class Builder
 	{

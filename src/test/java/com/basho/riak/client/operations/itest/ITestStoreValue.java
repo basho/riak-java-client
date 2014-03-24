@@ -16,8 +16,6 @@
 
 package com.basho.riak.client.operations.itest;
 
-import com.basho.riak.client.annotations.RiakBucketName;
-import com.basho.riak.client.annotations.RiakKey;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;

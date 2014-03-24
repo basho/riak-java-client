@@ -17,6 +17,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
@@ -29,7 +30,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusuk at basho dot com>
  * @since 2.0
  */
-public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOperation.Response>
+public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOperation.Response, Location>
 {
 
 	private final Location location;
@@ -88,8 +89,51 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 	@Override
 	protected final StoreBucketPropsOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
+        RiakFuture<StoreBucketPropsOperation.Response, Location> future =
+            doExecuteAsync(cluster);
+		
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new IllegalArgumentException(future.cause().getCause());
+        }
 
-		StoreBucketPropsOperation.Builder builder = 
+	}
+    
+    @Override
+    protected final RiakFuture<StoreBucketPropsOperation.Response, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<StoreBucketPropsOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation());
+    
+        CoreFutureAdapter<StoreBucketPropsOperation.Response, Location, StoreBucketPropsOperation.Response, Location> future =
+            new CoreFutureAdapter<StoreBucketPropsOperation.Response, Location, StoreBucketPropsOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected StoreBucketPropsOperation.Response convertResponse(StoreBucketPropsOperation.Response coreResponse)
+                {
+                    return coreResponse;
+                }
+
+                @Override
+                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    
+    private StoreBucketPropsOperation buildCoreOperation()
+    {
+        StoreBucketPropsOperation.Builder builder = 
             new StoreBucketPropsOperation.Builder(location);
 		
 		if (allowMulti != null)
@@ -202,21 +246,8 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 			builder.withSearchIndex(searchIndex);
 		}
 
-        RiakFuture<StoreBucketPropsOperation.Response, Location> future =
-            cluster.execute(builder.build());
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new IllegalArgumentException(future.cause().getCause());
-        }
-
-	}
+        return builder.build();
+    }
 
 	public static class Builder
 	{
