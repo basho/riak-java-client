@@ -15,24 +15,15 @@
  */
 package com.basho.riak.client.operations.kv;
 
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.RiakObject;
-import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.ArrayList;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -105,11 +96,12 @@ public final class FetchValue extends RiakCommand<FetchValue.Response>
 
 		FetchOperation.Response response = cluster.execute(operation).get();
         
-		return new Response(response.isNotFound(), 
-                                response.isUnchanged(),
-                                response.getLocation(),
-                                response.getObjectList(), 
-                                response.getVClock());
+		return new Response.Builder().withNotFound(response.isNotFound()) 
+                                .withUnchanged(response.isUnchanged())
+                                .withLocation(response.getLocation())
+                                .withValues(response.getObjectList()) 
+                                .withVClock(response.getVClock())
+                                .build();
 
 	}
 
@@ -117,98 +109,79 @@ public final class FetchValue extends RiakCommand<FetchValue.Response>
 	 * A response from Riak including the vector clock.
 	 *
 	 */
-	public static class Response
+	public static class Response extends KvResponseBase
 	{
-        private final Location location;
 		private final boolean notFound;
 		private final boolean unchanged;
-		private final VClock vClock;
-		private final List<RiakObject> values;
 
-		Response(boolean notFound, boolean unchanged, Location location, List<RiakObject> values, VClock vClock)
+		Response(Init<?> builder)
 		{
-			this.notFound = notFound;
-			this.unchanged = unchanged;
-			this.values = values;
-			this.vClock = vClock;
-            this.location = location;
+			super(builder);
+            this.notFound = builder.notFound;
+			this.unchanged = builder.unchanged;
 		}
 
-        public Location getLocation()
-        {
-            return location;
-        }
-        
-		public boolean isNotFound()
+        /**
+         * Determine if there was a value in Riak.
+         * <p>
+         * If there was no value present at the supplied {@code Location} in
+         * Riak, this will be true.
+         * </p>
+         * @return true if there was no value in Riak.
+         */
+        public boolean isNotFound()
 		{
 			return notFound;
 		}
 
+        /**
+         * Determine if the value is unchanged.
+         * <p>
+         * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
+         * this indicates if the value in Riak has been modified.
+         * <p>
+         * @return true if the vector clock for the object in Riak matched the 
+         * supplied vector clock, false otherwise. 
+         */
 		public boolean isUnchanged()
 		{
 			return unchanged;
 		}
 
-		public boolean hasvClock()
-		{
-			return vClock != null;
-		}
-
-		public VClock getvClock()
-		{
-			return vClock;
-		}
-
-		public boolean hasValues()
-		{
-			return !values.isEmpty();
-		}
-
-		public <T> List<T> getValues(Class<T> clazz)
-		{
-			Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
-            return convertValues(converter);
-		}
-
-        public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
+        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
-            List<T> convertedValues = convertValues(converter);
+            private boolean notFound;
+            private boolean unchanged;
             
-            ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
-            
-            return resolver.resolve(convertedValues);
-        }
-        
-        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
-            List<T> convertedValues = convertValues(converter);
-            
-            ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
-            
-            return resolver.resolve(convertedValues);
-        }
-        
-        public <T> List<T> getValues(TypeReference<T> typeReference)
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
-            return convertValues(converter);
-        }
-        
-        private <T> List<T> convertValues(Converter<T> converter)
-        {
-            List<T> convertedValues = new ArrayList<T>(values.size());
-            for (RiakObject ro : values)
+            T withUnchanged(boolean unchanged)
             {
-                convertedValues.add(converter.toDomain(ro, location, vClock));
+                this.unchanged = unchanged;
+                return self();
             }
             
-            return convertedValues;
+            T withNotFound(boolean notFound)
+            {
+                this.notFound = notFound;
+                return self();
+            }
         }
         
+        static class Builder extends Init<Builder>
+        {
+
+            @Override
+            protected Builder self()
+            {
+                return this;
+            }
+
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
+            
+        }
         
 	}
 

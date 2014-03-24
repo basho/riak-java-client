@@ -15,10 +15,7 @@
  */
 package com.basho.riak.client.operations.kv;
 
-import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.Converter.OrmExtracted;
@@ -30,14 +27,11 @@ import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.ArrayList;
 
  /*
  * @author Dave Rusek <drusuk at basho dot com>
@@ -152,88 +146,40 @@ public final class StoreValue extends RiakCommand<StoreValue.Response>
 	    
         VClock clock = response.getVClock();
 
-        return new Response(response.getObjectList(), clock, k);
+        return new Response.Builder()
+            .withValues(response.getObjectList())
+            .withVClock(clock)
+            .withLocation(k)
+            .build();
 
     }
 
     
-    public static class Response
+    public static class Response extends KvResponseBase
     {
 
-        private final Location location;
-        private final VClock vClock;
-        private final List<RiakObject> values;
-
-        Response(List<RiakObject> values, VClock vClock, Location location)
+        Response(Init<?> builder)
         {
-            this.values = values;
-            this.vClock = vClock;
-            this.location = location;
+            super(builder);
         }
 
-        public boolean hasvClock()
-        {
-            return vClock != null;
-        }
-
-        public VClock getvClock()
-        {
-            return vClock;
-        }
-
-        public boolean hasValue()
-        {
-            return values != null;
-        }
-
-        public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
-            List<T> converted = convertValues(converter);
-            ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
-            
-            return resolver.resolve(converted);
-        }
+        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
+        {}
         
-        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
+        static class Builder extends Init<Builder>
         {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
-            List<T> converted = convertValues(converter);
-            ConflictResolver<T> resolver = 
-                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
-            
-            return resolver.resolve(converted);
-        }
-        
-        public <T> List<T> getValues(Class<T> clazz)
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
-            return convertValues(converter);
-        }
 
-        public <T> List<T> getValues(TypeReference<T> typeReference)
-        {
-            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
-            return convertValues(converter);
-        }
-        
-        public Location getLocation()
-        {
-            return location;
-        }
-
-        private <T> List<T> convertValues(Converter<T> converter)
-        {
-            
-            
-            List<T> convertedValues = new ArrayList<T>(values.size());
-            for (RiakObject ro : values)
+            @Override
+            protected Builder self()
             {
-                convertedValues.add(converter.toDomain(ro, location, vClock));
+                return this;
             }
-            
-            return convertedValues;
+
+            @Override
+            Response build()
+            {
+                return new Response(this);
+            }
         }
     }
 
