@@ -17,7 +17,6 @@ package com.basho.riak.client.convert.reflection;
 
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
-import com.basho.riak.client.convert.reflection.AnnotationHelper;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLinks;

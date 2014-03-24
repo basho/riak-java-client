@@ -231,16 +231,19 @@ public class ITestFetchValue extends ITestBase
         @Override
         public Pojo resolve(List<Pojo> objectList) throws UnresolvedConflictException
         {
-            assertTrue(objectList.size() > 1);
-            for (Pojo p : objectList)
+            if (objectList.size() > 0)
             {
-                if (p.value.equals("Pick me!"))
+                for (Pojo p : objectList)
                 {
-                    return p;
+                    if (p.value.equals("Pick me!"))
+                    {
+                        return p;
+                    }
                 }
+
+                return objectList.get(0);
             }
-            
-            return objectList.get(0);
+            return null;
         }
 
     }
