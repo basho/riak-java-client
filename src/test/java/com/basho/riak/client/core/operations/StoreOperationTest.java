@@ -52,7 +52,7 @@ public class StoreOperationTest
         ro.getLinks().addLinks(links);
 
         RiakIndexes indexes = ro.getIndexes();
-        LongIntIndex longIndex = indexes.getIndex(new LongIntIndex.Name("dave"));
+        LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named("dave"));
         longIndex.add(42L);
 
         ro.setValue(BinaryValue.unsafeCreate(expectedValue));

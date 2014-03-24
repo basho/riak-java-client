@@ -21,14 +21,9 @@ import java.util.Arrays;
 /**
  * Lightweight utility class for byte arrays.
  * <p>
-<<<<<<< HEAD:src/main/java/com/basho/riak/client/util/BinaryValue.java
  * In almost all cases Riak is character asSet agnostic when it comes to data; buckets,
  * keys, values and metadata are all stored in Riak simply as bytes. 
-=======
- * In almost all cases Riak is character set agnostic when it comes to data; buckets,
- * keys, values and metadata are all stored in Riak simply as binary values. 
->>>>>>> origin/develop:src/main/java/com/basho/riak/client/util/BinaryValue.java
- * <p>
+ * </p>
  * <p>
  * This utility class is used throughout the client in order to encapsulate 
  * and allow access to those bytes by the user when the data is generally

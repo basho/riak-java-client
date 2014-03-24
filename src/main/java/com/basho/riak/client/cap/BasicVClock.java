@@ -72,4 +72,26 @@ public class BasicVClock implements VClock
         }
     }
     
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o != null)
+        {
+            if (o instanceof VClock)
+            {
+                VClock other = (VClock)o;
+                return Arrays.equals(other.getBytes(), value);
+            }
+        }
+            
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 67 * hash + Arrays.hashCode(this.value);
+        return hash;
+    }
 }

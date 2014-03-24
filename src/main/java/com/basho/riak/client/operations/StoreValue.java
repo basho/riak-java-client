@@ -18,6 +18,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
+import com.basho.riak.client.convert.Converter.OrmExtracted;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.util.BinaryValue;
@@ -27,8 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.basho.riak.client.convert.Converters.convert;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.RiakObject;
+import java.util.ArrayList;
 
 public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
 {
@@ -52,15 +54,12 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
     @Override
     public Response<V> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-
-        StoreOperation.Builder builder = new StoreOperation.Builder(location);
+        OrmExtracted orm = converter.fromDomain(value, location, vClock);
         
-        builder.withContent(converter.fromDomain(value));
-
-        if (vClock != null)
-        {
-            builder.withVClock(vClock);
-        }
+        StoreOperation.Builder builder = 
+            new StoreOperation.Builder(orm.getLocation())
+                .withContent(orm.getRiakObject())
+                .withVClock(orm.getVclock());
 
         for (Map.Entry<StoreOption<?>, Object> opPair : options.entrySet())
         {
@@ -117,9 +116,14 @@ public class StoreValue<V> extends RiakCommand<StoreValue.Response<V>>
         StoreOperation operation = builder.build();
 
         StoreOperation.Response response = cluster.execute(operation).get();
-        List<V> converted = convert(converter, response.getObjectList());
+        List<V> converted = new ArrayList<V>();
+        
+        for (RiakObject ro : response.getObjectList())
+        {
+            converted.add(converter.toDomain(ro, response.getLocation(), response.getVClock()));
+        }
 
-	    BinaryValue returnedKey = response.getLocation().getKey();
+        BinaryValue returnedKey = response.getLocation().getKey();
 
         Location k = 
             new Location(location.getBucketName()).setKey(returnedKey)
