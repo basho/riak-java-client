@@ -16,6 +16,8 @@
 
 package com.basho.riak.client.cap;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,11 +29,9 @@ public enum ConflictResolverFactory
 {
     INSTANCE;
     
-    private final Map<Class<?>, ConflictResolver<?>> resolverInstances =
-        new ConcurrentHashMap<Class<?>, ConflictResolver<?>>();
-    
-    private final Class<? extends ConflictResolver> defaultResolver = DefaultResolver.class;
-    
+    private final Map<Type, ConflictResolver<?>> resolverInstances =
+        new ConcurrentHashMap<Type, ConflictResolver<?>>();
+
     /**
      * Returns the instance of the ConflictResolverFactory.
      * @return The ConflictResolverFactory
@@ -40,6 +40,25 @@ public enum ConflictResolverFactory
     {
         return INSTANCE;
     }
+    
+    public <T> ConflictResolver<T> getConflictResolver(Class<T> clazz)
+    {
+        if (clazz == null)
+        {
+            throw new IllegalArgumentException("clazz cannot be null");
+        }
+        return getConflictResolver(clazz, null);
+    }
+    
+    public <T> ConflictResolver<T> getConflictResolver(TypeReference<T> typeReference)
+    {
+        if (typeReference == null)
+        {
+            throw new IllegalArgumentException("typeReference cannot be null");
+        }
+        return getConflictResolver(null, typeReference);
+    }
+    
     
     /**
      * Return the ConflictResolver for the given class.
@@ -53,30 +72,21 @@ public enum ConflictResolverFactory
      * @throws UnresolvedConflictException 
      */
     @SuppressWarnings("unchecked")
-    public <T> ConflictResolver<T> getConflictResolverForClass(Class<T> clazz) throws UnresolvedConflictException
+    private <T> ConflictResolver<T> getConflictResolver(Type type, TypeReference<T> typeReference) 
     {
-        if (clazz == null)
+        
+        type = type != null ? type : typeReference.getType();
+        
+        ConflictResolver<T> resolver = (ConflictResolver<T>) resolverInstances.get(type);
+        if (resolver == null)
         {
-            throw new IllegalArgumentException("clazz cannot be null");
+            // Cache this?
+            resolver = (ConflictResolver<T>) new DefaultResolver<T>();
         }
-        else
-        {
-            ConflictResolver<T> resolver = (ConflictResolver<T>) resolverInstances.get(clazz);
-            if (resolver == null)
-            {
-                try
-                {
-                    resolver = (ConflictResolver<T>) defaultResolver.newInstance();
-                }
-                catch(Exception ex)
-                {
-                    throw new UnresolvedConflictException(ex, "Could not instantiate resolver", null);
-                }
-            }
+
+        return resolver;
             
-            return resolver;
-            
-        }
+
     }
     
     /**
@@ -89,19 +99,29 @@ public enum ConflictResolverFactory
      * @param clazz the class of the type being resolved
      * @param resolver an instance of a class implementing ConflictResolver.
      */
-    public <T> void registerConflictResolverForClass(Class<T> clazz, ConflictResolver<T> resolver)
+    public <T> void registerConflictResolver(Class<T> clazz, ConflictResolver<T> resolver)
     {
         resolverInstances.put(clazz, resolver);
     }
+    
+    public <T> void registerConflictResolver(TypeReference<T> typeReference, ConflictResolver<T> resolver)
+    {
+        resolverInstances.put(typeReference.getType(), resolver);
+    }
+    
     
     /**
      * Unregister a ConflictResolver.
      * @param <T> The type being Resolved
      * @param clazz the class of the type being resolved.
      */
-    public <T> void unregisterConflictResolverForClass(Class<T> clazz)
+    public <T> void unregisterConflictResolver(Class<T> clazz)
     {
         resolverInstances.remove(clazz);
     }
-    
+ 
+    public <T> void unregisterConflictResolver(TypeReference<T> typeReference)
+    {
+        resolverInstances.remove(typeReference.getType());
+    }
 }

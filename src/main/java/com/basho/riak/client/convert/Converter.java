@@ -20,6 +20,9 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * The Converter acts as a bridge between the core and the user level API, specifically 
@@ -36,11 +39,28 @@ import com.basho.riak.client.util.BinaryValue;
  */
 public abstract class Converter<T>
 {
-    protected final Class<T> clazz;
+    protected final Type type;
     
-    public Converter(Class<T> clazz)
+    public Converter(Type type)
     {
-        this.clazz = clazz;
+        this.type = type;
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected final T newDomainInstance()
+    {
+        try
+        {
+            Class<?> rawType = type instanceof Class<?>
+                ? (Class<?>) type
+                : (Class<?>) ((ParameterizedType) type).getRawType();
+            Constructor<?> constructor = rawType.getConstructor();
+            return (T) constructor.newInstance();
+        }
+        catch (Exception ex)
+        {
+            throw new ConversionException(ex);
+        }
     }
     
     /**
@@ -53,42 +73,32 @@ public abstract class Converter<T>
      */
     public T toDomain(RiakObject obj, Location location, VClock vclock)
     {
-        try
+        T domainObject;
+        if (obj.isDeleted())
         {
-            T domainObject;
-            if (obj.isDeleted())
-            {
-                domainObject = clazz.newInstance();
-            }
-            else
-            {
-                domainObject = toDomain(obj.getValue(), obj.getContentType());
-
-                AnnotationUtil.populateIndexes(obj.getIndexes(), domainObject);
-                AnnotationUtil.populateLinks(obj.getLinks(), domainObject);
-                AnnotationUtil.populateUsermeta(obj.getUserMeta(), domainObject);
-                AnnotationUtil.setContentType(domainObject, obj.getContentType());
-                AnnotationUtil.setVTag(domainObject, obj.getVTag());
-            }
-
-            AnnotationUtil.setKey(domainObject, location.getKey());
-            AnnotationUtil.setBucketName(domainObject, location.getBucketName());
-            AnnotationUtil.setBucketType(domainObject, location.getBucketType());
-
-            AnnotationUtil.setVClock(domainObject, vclock);
-            AnnotationUtil.setTombstone(domainObject, obj.isDeleted());
-            AnnotationUtil.setLastModified(domainObject, obj.getLastModified());
-            
-            return domainObject;
+            domainObject = newDomainInstance();
         }
-        catch (InstantiationException ex)
+        else
         {
-            throw new ConversionException(ex);
+            domainObject = toDomain(obj.getValue(), obj.getContentType());
+
+            AnnotationUtil.populateIndexes(obj.getIndexes(), domainObject);
+            AnnotationUtil.populateLinks(obj.getLinks(), domainObject);
+            AnnotationUtil.populateUsermeta(obj.getUserMeta(), domainObject);
+            AnnotationUtil.setContentType(domainObject, obj.getContentType());
+            AnnotationUtil.setVTag(domainObject, obj.getVTag());
         }
-        catch (IllegalAccessException ex)
-        {
-            throw new ConversionException(ex);
-        }
+
+        AnnotationUtil.setKey(domainObject, location.getKey());
+        AnnotationUtil.setBucketName(domainObject, location.getBucketName());
+        AnnotationUtil.setBucketType(domainObject, location.getBucketType());
+
+        AnnotationUtil.setVClock(domainObject, vclock);
+        AnnotationUtil.setTombstone(domainObject, obj.isDeleted());
+        AnnotationUtil.setLastModified(domainObject, obj.getLastModified());
+
+        return domainObject;
+    
     }
     
     /**
@@ -117,7 +127,7 @@ public abstract class Converter<T>
      * @return a {@code RiakObject} to be stored in Riak.
      */
     public OrmExtracted fromDomain(T domainObject, Location location, VClock vclock)
-    {
+    {        
         BinaryValue key = location != null ? location.getKey() : null;
         BinaryValue bucketName = location != null ? location.getBucketName() : null;
         BinaryValue bucketType = location != null ? location.getBucketType() : null;
@@ -136,12 +146,18 @@ public abstract class Converter<T>
         AnnotationUtil.getIndexes(riakObject.getIndexes(), domainObject);
         AnnotationUtil.getLinks(riakObject.getLinks(), domainObject);
         
-        BinaryValue value = fromDomain(domainObject, contentType);
+        ContentAndType cAndT = fromDomain(domainObject);
+        contentType = cAndT.contentType != null ? cAndT.contentType : contentType;
         
         riakObject.setContentType(contentType)
-                    .setValue(value);
+                    .setValue(cAndT.content);
         
-        location = new Location(bucketName).setKey(key).setBucketType(bucketType);
+        location = new Location(bucketName).setKey(key);
+        
+        if (bucketType != null)
+        {
+            location.setBucketType(bucketType);
+        }
         
         OrmExtracted extracted = new OrmExtracted(riakObject, location, vclock);
         return extracted;
@@ -156,7 +172,7 @@ public abstract class Converter<T>
      * @param domainObject the domain object.
      * @return A BinaryValue to be stored in Riak
      */
-    public abstract BinaryValue fromDomain(T domainObject, String contentType) throws ConversionException;
+    public abstract ContentAndType fromDomain(T domainObject) throws ConversionException;
     
     /**
      * Encapsulation of ORM data extracted from a domain object.
@@ -202,9 +218,17 @@ public abstract class Converter<T>
         {
             return vclock;
         }
-        
-        
-        
     }
-    
+
+    protected class ContentAndType
+    {
+        private final BinaryValue content;
+        private final String contentType;
+        
+        public ContentAndType(BinaryValue content, String contentType)
+        {
+            this.content = content;
+            this.contentType = contentType;
+        }
+    }
 }

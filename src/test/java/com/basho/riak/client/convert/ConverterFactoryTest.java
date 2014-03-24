@@ -21,6 +21,7 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,14 +39,15 @@ public class ConverterFactoryTest
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         factory.unregisterConverterForClass(Pojo.class);
-        factory.setDefaultConverter(JSONConverter.class);
+        //factory.setDefaultConverter(JSONConverter.class);
     }
     
     @Test
     public void getDefaultConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
-        Converter<Pojo> converter = factory.getConverterForClass(Pojo.class);
+        //TypeReference tr = new TypeReference<Pojo>(){};
+        Converter<Pojo> converter = factory.getConverter(Pojo.class);
         
         assertTrue(converter instanceof JSONConverter);
     
@@ -70,7 +72,7 @@ public class ConverterFactoryTest
     public void riakObjectConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
-        Converter<RiakObject> converter = factory.getConverterForClass(RiakObject.class);
+        Converter<RiakObject> converter = factory.getConverter(RiakObject.class);
         
         assertTrue(converter instanceof PassThroughConverter);
         
@@ -89,9 +91,9 @@ public class ConverterFactoryTest
     public void registerConverterClass()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
-        factory.registerConverterForClass(Pojo.class, MyConverter.class);
+        factory.registerConverterForClass(Pojo.class, new MyConverter());
         
-        Converter<Pojo> converter = factory.getConverterForClass(Pojo.class);
+        Converter<Pojo> converter = factory.getConverter(Pojo.class);
         
         assertTrue(converter instanceof MyConverter);
         
@@ -101,42 +103,25 @@ public class ConverterFactoryTest
     public void registerConverterInstance()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
-        MyConverter converter = new MyConverter(Pojo.class);
+        MyConverter converter = new MyConverter();
         factory.registerConverterForClass(Pojo.class, converter);
         
-        Converter<Pojo> converter2 = factory.getConverterForClass(Pojo.class);
+        Converter<Pojo> converter2 = factory.getConverter(Pojo.class);
         assertTrue(converter2 instanceof MyConverter);
         assertEquals(converter, converter2);
         
         
     }
     
-    @Test
-    public void changeDefaultConverter()
-    {
-        ConverterFactory factory = ConverterFactory.getInstance();
-        factory.setDefaultConverter(MyConverter.class);
-
-        Converter<Pojo> converter = factory.getConverterForClass(Pojo.class);
-        
-        assertTrue(converter instanceof MyConverter);
-        
-    }
-    
-    @Test(expected=ConversionException.class)
-    public void illegalConverter()
-    {
-        ConverterFactory factory = ConverterFactory.getInstance();
-        factory.registerConverterForClass(Pojo.class, BrokenConverter.class);
-    }
-    
     public static class MyConverter extends Converter<Pojo>
     {
 
-        public MyConverter(Class<Pojo> clazz)
+        public MyConverter()
         {
-            super(clazz);
+            super(new TypeReference<Pojo>(){}.getType());
         }
+        
+        
         
         @Override
         public Pojo toDomain(BinaryValue value, String contentType) throws ConversionException
@@ -145,35 +130,12 @@ public class ConverterFactoryTest
         }
 
         @Override
-        public BinaryValue fromDomain(Pojo domainObject, String contentType) throws ConversionException
+        public ContentAndType fromDomain(Pojo domainObject) throws ConversionException
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
         
     }
-    
-    public static class BrokenConverter extends Converter<Pojo>
-    {
-
-        public BrokenConverter()
-        {
-            super(Pojo.class);
-        }
-
-        @Override
-        public Pojo toDomain(BinaryValue value, String contentType) throws ConversionException
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public BinaryValue fromDomain(Pojo domainObject, String contentType) throws ConversionException
-        {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-        
-    }
-    
     
     public static class Pojo
     {

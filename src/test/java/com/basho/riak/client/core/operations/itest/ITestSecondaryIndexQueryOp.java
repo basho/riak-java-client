@@ -38,7 +38,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     @Test
     public void testSingleQuerySingleResponse() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         String indexName = "test_index";
         String keyBase = "my_key";

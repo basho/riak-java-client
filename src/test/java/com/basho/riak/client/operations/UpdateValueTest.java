@@ -17,7 +17,6 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.ConflictResolverFactory;
-import com.basho.riak.client.cap.DefaultResolver;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
@@ -82,12 +81,12 @@ public class UpdateValueTest
 	{
 		UpdateValue.Update spiedUpdate = spy(new NoopUpdate());
 		ConflictResolver<RiakObject> spiedResolver = 
-            spy(ConflictResolverFactory.getInstance().getConflictResolverForClass(RiakObject.class));
+            spy(ConflictResolverFactory.getInstance().getConflictResolver(RiakObject.class));
 		
         Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
 
 		UpdateValue.Builder update =
-			new UpdateValue.Builder<RiakObject>(key, RiakObject.class)
+			new UpdateValue.Builder(key)
 				.withUpdate(spiedUpdate);
 
 		client.execute(update.build());

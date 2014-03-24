@@ -127,6 +127,10 @@ public final class Location
      */
     public Location setBucketType(BinaryValue bucketType)
     {
+        if (bucketType == null)
+        {
+            throw new IllegalArgumentException("BucketType can not be null");
+        }
         this.bucketType = bucketType;
         return this;
     }

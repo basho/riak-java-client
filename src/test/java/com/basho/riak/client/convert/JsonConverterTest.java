@@ -23,6 +23,7 @@ import com.basho.riak.client.convert.Converter.OrmExtracted;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.links.RiakLink;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class JsonConverterTest
         
         PojoWithRiakFields pojo = new PojoWithRiakFields();
         JSONConverter<PojoWithRiakFields> jc = 
-            new JSONConverter<PojoWithRiakFields>(PojoWithRiakFields.class);
+            new JSONConverter<PojoWithRiakFields>(new TypeReference<PojoWithRiakFields>(){});
         
         RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
         
@@ -76,7 +77,7 @@ public class JsonConverterTest
         
         PojoWithRiakFieldsIncluded pojo = new PojoWithRiakFieldsIncluded();
         JSONConverter<PojoWithRiakFieldsIncluded> jc = 
-            new JSONConverter<PojoWithRiakFieldsIncluded>(PojoWithRiakFieldsIncluded.class);
+            new JSONConverter<PojoWithRiakFieldsIncluded>(new TypeReference<PojoWithRiakFieldsIncluded>(){});
         RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
         
         String json = o.getValue().toString();
@@ -99,7 +100,7 @@ public class JsonConverterTest
     {
         PojoWithRiakMethods pojo = new PojoWithRiakMethods();
         JSONConverter<PojoWithRiakMethods> jc = 
-            new JSONConverter<PojoWithRiakMethods>(PojoWithRiakMethods.class);
+            new JSONConverter<PojoWithRiakMethods>(new TypeReference<PojoWithRiakMethods>(){});
         
         RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
         
@@ -122,7 +123,7 @@ public class JsonConverterTest
     {
         PojoWithRiakMethodsIncluded pojo = new PojoWithRiakMethodsIncluded();
         JSONConverter<PojoWithRiakMethodsIncluded> jc = 
-            new JSONConverter<PojoWithRiakMethodsIncluded>(PojoWithRiakMethodsIncluded.class);
+            new JSONConverter<PojoWithRiakMethodsIncluded>(new TypeReference<PojoWithRiakMethodsIncluded>(){});
         
         RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
         
@@ -158,7 +159,7 @@ public class JsonConverterTest
         pojo.contentType = RiakObject.DEFAULT_CONTENT_TYPE;
             
         JSONConverter<EmptyPojoWithRiakFields> jc = 
-            new JSONConverter<EmptyPojoWithRiakFields>(EmptyPojoWithRiakFields.class);
+            new JSONConverter<EmptyPojoWithRiakFields>(new TypeReference<EmptyPojoWithRiakFields>(){});
         OrmExtracted orm = jc.fromDomain(pojo, null, null);
         
         RiakObject riakObject = orm.getRiakObject();
@@ -198,45 +199,44 @@ public class JsonConverterTest
 class Pojo
 {
     public Pojo() {}
-    @JsonProperty
-    String value = "some_value";
+    public String value = "some_value";
 }
 
 class PojoWithRiakFields extends Pojo
 {
     @RiakKey
-    String key = "some_key";
+    public String key = "some_key";
     
     @RiakBucketName
-    String bucketName = "some_bucket";
+    public String bucketName = "some_bucket";
     
     @RiakBucketType
-    String bucketType = "some_type";
+    public String bucketType = "some_type";
         
     @RiakUsermeta
-    Map<String,String> metadata = 
+    public Map<String,String> metadata = 
         new HashMap<String,String>(){{ put("metaKey", "metaValue");}};
     
     @RiakIndex(name="email")
-    Set<String> index = new HashSet<String>(){{ add("bob@gmail.com");}};
+    public Set<String> index = new HashSet<String>(){{ add("bob@gmail.com");}};
     
     @RiakLinks
-    Collection<RiakLink> links = new LinkedList<RiakLink>(){{ add(new RiakLink("bucket","key","tag"));}};
+    public Collection<RiakLink> links = new LinkedList<RiakLink>(){{ add(new RiakLink("bucket","key","tag"));}};
     
     @RiakVClock
-    VClock vclock;
+    public VClock vclock;
     
     @RiakTombstone
-    boolean tombstone;
+    public boolean tombstone;
     
     @RiakContentType
-    String contentType;
+    public String contentType;
     
     @RiakLastModified
-    Long lastModified;
+    public Long lastModified;
     
     @RiakVTag
-    String vtag;
+    public String vtag;
 }
 
 class PojoWithRiakFieldsIncluded extends Pojo

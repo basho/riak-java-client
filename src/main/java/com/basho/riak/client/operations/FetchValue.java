@@ -15,7 +15,10 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.cap.ConflictResolver;
+import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.ConverterFactory;
@@ -23,6 +26,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -33,25 +37,22 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Command used to fetch a value from Riak, referenced by it's key.
- * @param <T> type for returned objects
  */
-public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
+public class FetchValue extends RiakCommand<FetchValue.Response>
 {
 
 	private final Location location;
 	private final Map<FetchOption<?>, Object> options =
 		new HashMap<FetchOption<?>, Object>();
-    private final Class<T> convertTo;
 
-	FetchValue(Builder<T> builder)
+	FetchValue(Builder builder)
 	{
 		this.location = builder.location;
 		this.options.putAll(builder.options);
-        this.convertTo = builder.convertTo;
 	}
 
 	@Override
-	Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 
 		FetchOperation.Builder builder = new FetchOperation.Builder(location);
@@ -99,40 +100,41 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		FetchOperation operation = builder.build();
 
 		FetchOperation.Response response = cluster.execute(operation).get();
-		List<T> converted = new ArrayList<T>();
         
-        Converter<T> converter = ConverterFactory.getInstance().getConverterForClass(convertTo);
-        
-        for (RiakObject ro : response.getObjectList())
-        {
-            converted.add(converter.toDomain(ro, response.getLocation(), response.getVClock()));
-        }
-		
-		return new Response<T>(response.isNotFound(), response.isUnchanged(), converted, response.getVClock());
+		return new Response(response.isNotFound(), 
+                                response.isUnchanged(),
+                                response.getLocation(),
+                                response.getObjectList(), 
+                                response.getVClock());
 
 	}
 
 	/**
 	 * A response from Riak including the vector clock.
 	 *
-	 * @param <T> the type of the returned object, if no converter given this will be RiakObject
 	 */
-	public static class Response<T>
+	public static class Response
 	{
-
+        private final Location location;
 		private final boolean notFound;
 		private final boolean unchanged;
 		private final VClock vClock;
-		private final List<T> value;
+		private final List<RiakObject> values;
 
-		Response(boolean notFound, boolean unchanged, List<T> value, VClock vClock)
+		Response(boolean notFound, boolean unchanged, Location location, List<RiakObject> values, VClock vClock)
 		{
 			this.notFound = notFound;
 			this.unchanged = unchanged;
-			this.value = value;
+			this.values = values;
 			this.vClock = vClock;
+            this.location = location;
 		}
 
+        public Location getLocation()
+        {
+            return location;
+        }
+        
 		public boolean isNotFound()
 		{
 			return notFound;
@@ -153,30 +155,69 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 			return vClock;
 		}
 
-		public boolean hasValue()
+		public boolean hasValues()
 		{
-			return value != null;
+			return !values.isEmpty();
 		}
 
-		public List<T> getValue()
+		public <T> List<T> getValues(Class<T> clazz)
 		{
-			return value;
+			Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            return convertValues(converter);
 		}
 
+        public <T> T getValue(Class<T> clazz) throws UnresolvedConflictException
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(clazz);
+            List<T> convertedValues = convertValues(converter);
+            
+            ConflictResolver<T> resolver = 
+                ConflictResolverFactory.getInstance().getConflictResolver(clazz);
+            
+            return resolver.resolve(convertedValues);
+        }
+        
+        public <T> T getValue(TypeReference<T> typeReference) throws UnresolvedConflictException
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            List<T> convertedValues = convertValues(converter);
+            
+            ConflictResolver<T> resolver = 
+                ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
+            
+            return resolver.resolve(convertedValues);
+        }
+        
+        public <T> List<T> getValues(TypeReference<T> typeReference)
+        {
+            Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
+            return convertValues(converter);
+        }
+        
+        private <T> List<T> convertValues(Converter<T> converter)
+        {
+            List<T> convertedValues = new ArrayList<T>(values.size());
+            for (RiakObject ro : values)
+            {
+                convertedValues.add(converter.toDomain(ro, location, vClock));
+            }
+            
+            return convertedValues;
+        }
+        
+        
 	}
 
-	public static class Builder<T>
+	public static class Builder
 	{
 
 		private final Location location;
 		private final Map<FetchOption<?>, Object> options =
 			new HashMap<FetchOption<?>, Object>();
-        private Class<T> convertTo;
 
-		public Builder(Location location, Class<T> convertTo)
+		public Builder(Location location)
 		{
 			this.location = location;
-            this.convertTo = convertTo;
 		}
 
 		/**
@@ -188,7 +229,7 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		 * @param <U>
 		 * @return
 		 */
-		public <U> Builder<T> withOption(FetchOption<U> option, U value)
+		public <U> Builder withOption(FetchOption<U> option, U value)
 		{
 			options.put(option, value);
 			return this;
@@ -199,9 +240,9 @@ public class FetchValue<T> extends RiakCommand<FetchValue.Response<T>>
 		 *
 		 * @return a FetchValue command
 		 */
-		public FetchValue<T> build()
+		public FetchValue build()
 		{
-            return new FetchValue<T>(this);
+            return new FetchValue(this);
 		}
 	}
 }
