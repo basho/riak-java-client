@@ -1050,11 +1050,11 @@ public class RiakNode implements RiakResponseListener
             
             if (c.pipeline().names().contains(Constants.SSL_HANDLER))
             {
-                c.pipeline().addAfter(Constants.SSL_HANDLER, "HealthCheck", healthCheck);
+                c.pipeline().addAfter(Constants.SSL_HANDLER, Constants.HEALTHCHECK_CODEC, healthCheck);
             }
             else
             {
-                c.pipeline().addBefore(Constants.MESSAGE_CODEC, "HealthCheck", healthCheck);
+                c.pipeline().addBefore(Constants.MESSAGE_CODEC, Constants.HEALTHCHECK_CODEC, healthCheck);
             }
             logger.debug("healthCheck added to pipeline.");
             
