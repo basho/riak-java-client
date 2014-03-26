@@ -44,6 +44,8 @@ public class NetworkTestFixture implements Runnable
     public static int PB_PARTIAL_WRITE_THEN_CLOSE = 3;
     public static int PB_FULL_WRITE_STAY_OPEN = 4;
     public static int PB_PARTIAL_WRITE_STAY_OPEN = 5;
+    public static int PB_FULL_WRITE_ERROR_STAY_OPEN = 6;
+    public static int NO_LISTENER = 7;
     
     private final Selector selector;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
@@ -105,6 +107,13 @@ public class NetworkTestFixture implements Runnable
         key = server.keyFor(selector);
         key.attach(new AcceptReadPartialWriteStayOpen(server));
         
+        server = ServerSocketChannel.open();
+        server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+        server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_FULL_WRITE_ERROR_STAY_OPEN ));
+        server.configureBlocking(false); 
+        server.register(selector, SelectionKey.OP_ACCEPT); 
+        key = server.keyFor(selector);
+        key.attach(new AcceptReadWriteErrorStayOpen(server));
     }
     
     @Override

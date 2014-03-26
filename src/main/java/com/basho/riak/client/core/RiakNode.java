@@ -20,7 +20,6 @@ import com.basho.riak.client.core.netty.PingHealthCheck;
 import com.basho.riak.client.core.netty.RiakChannelInitializer;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.netty.RiakSecurityDecoder;
-import com.basho.riak.client.core.operations.PingOperation;
 import com.basho.riak.client.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -39,6 +38,7 @@ import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -71,7 +71,10 @@ public class RiakNode implements RiakResponseListener
     private final int port;
     private final String username;
     private final String password;
-    private final KeyStore trustStore; 
+    private final KeyStore trustStore;
+    private final AtomicLong consecutiveFailedOperations = new AtomicLong(0);
+    private final AtomicLong consecutiveFailedConnectionAttempts = new AtomicLong(0);
+    
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
     private volatile ScheduledExecutorService executor;
@@ -670,14 +673,16 @@ public class RiakNode implements RiakResponseListener
             Thread.currentThread().interrupt();
             throw new ConnectionFailedException(ex);
         }
-
+        
         if (!f.isSuccess())
         {
             logger.error("Connection attempt failed: {}:{}; {}",
                 remoteAddress, port, f.cause());
+            consecutiveFailedConnectionAttempts.incrementAndGet();
             throw new ConnectionFailedException(f.cause());
         }
         
+        consecutiveFailedConnectionAttempts.set(0);
         Channel c = f.channel();
         
         if (trustStore != null) 
@@ -809,7 +814,7 @@ public class RiakNode implements RiakResponseListener
     {
         logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(),
             remoteAddress, port);
-        
+        consecutiveFailedOperations.set(0);
         final FutureOperation inProgress = inProgressMap.get(channel);
         
         // Especially with a streaming op, the close listener may trigger causing
@@ -831,6 +836,7 @@ public class RiakNode implements RiakResponseListener
     {
         logger.debug("Riak replied with error; {}:{}", ex.getCode(), ex.getMessage());
         final FutureOperation inProgress = inProgressMap.remove(channel);
+        consecutiveFailedOperations.incrementAndGet();
         if (inProgress != null)
         {
             inProgress.setException(ex);
@@ -1002,11 +1008,11 @@ public class RiakNode implements RiakResponseListener
     // TODO: Revisit if we ever support multiple protocols or change protocols.
     // As-is the parameters work well for protocol buffers.
     /**
-     * Task to see if a number of connections recently closed unexpectedly.
+     * Task to see if a criteria should trigger a health check.
      * <p>
-     * We keep a list of connections that triggered the closeListener. If 
-     * 5 or more of these occur in a 3 second sliding window we check the 
-     * health of the node. 
+     * We keep a list of connections that triggered the closeListener. We also
+     * track the number of consecutive failed connection attempts, and the
+     * number of consecutive error responses from Riak.
      * </p>
      */
     private class HealthMonitorTask implements Runnable
@@ -1026,8 +1032,14 @@ public class RiakNode implements RiakResponseListener
                 recentlyClosed.poll();
             }
             
-            // If we have 5 or more recently closed or we failed a healthcheck
-            if ((state == State.RUNNING && recentlyClosed.size() > 4) ||
+            // If we more than 5 recently closed in 3 seconds, more than 1 consecutive failed
+            // connection attempts, more than 5 consecutive error responses from Riak,
+            // or we failed a healthcheck
+            if ((state == State.RUNNING && 
+                    (recentlyClosed.size() > 5 ||
+                     consecutiveFailedConnectionAttempts.get() > 1 ||
+                     consecutiveFailedOperations.get() > 5)
+                 ) ||
                 state == State.HEALTH_CHECKING)
             {
                 checkHealth();
@@ -1392,11 +1404,11 @@ public class RiakNode implements RiakResponseListener
         }
         
         /**
-         * Set the HealthCheckDecoder used to determine if this RiakNode is healthy.
+         * Set the HealthCheckFactory used to determine if this RiakNode is healthy.
          * <p>
          * If not set the {@link PingHealthCheck} is used.
          * </p>
-         * @param healthCheck an instance of the the healthcheck to use.
+         * @param factory a HealthCheckFactory instance that produces HealthCheckDecoders
          * @return a reference to this object.
          * @see HealthCheckDecoder
          */

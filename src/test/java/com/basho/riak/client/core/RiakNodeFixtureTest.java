@@ -64,7 +64,52 @@ public class RiakNodeFixtureTest extends FixtureTest
         PowerMockito.verifyPrivate(node, atLeastOnce()).invoke("checkHealth", new Object[0]);
         
     }
+    
+    @Test
+    public void failedConnectionsTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
+    {
+        RiakNode node = new RiakNode.Builder()
+                               .withRemotePort(startingPort + NetworkTestFixture.NO_LISTENER)
+                               .withMinConnections(10)
+                               .withConnectionTimeout(10)
+                               .build();
         
+        node.start();
+        Thread.sleep(3000);
+        assertEquals(State.HEALTH_CHECKING, node.getNodeState());
+        node.shutdown().get();
+    }
+        
+    @Test
+    public void operationFailuresTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
+    {
+        RiakNode node = 
+            new RiakNode.Builder()
+                        .withRemoteAddress("127.0.0.1")
+                        .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_ERROR_STAY_OPEN)
+                        .build();
+        
+        node.start();
+        
+        Location location = new Location("test_bucket").setKey("test_key2");
+        
+        for (int i = 0; i < 6; i++)
+        {
+            FetchOperation operation = 
+                new FetchOperation.Builder(location)
+                        .build();
+            
+            boolean accepted = node.execute(operation);
+            assertTrue(accepted);
+            operation.await();
+            assertFalse(operation.isSuccess());
+        }
+        
+        Thread.sleep(2000);
+        assertEquals(State.HEALTH_CHECKING, node.getNodeState());
+        node.shutdown().get();
+    }
+    
     @Test
     public void idleConnectionsAreRemoved() throws UnknownHostException, InterruptedException, Exception
     {
