@@ -22,9 +22,9 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.operations.datatypes.Context;
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
+
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
@@ -54,7 +54,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
         return this;
     }
 
-	public abstract T extractDatatype(CrdtElement element);
+	public abstract T extractDatatype(RiakDatatype element);
 
     @Override
     protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
@@ -84,7 +84,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             @Override
             protected Response<T> convertResponse(DtFetchOperation.Response coreResponse)
             {
-                CrdtElement element = coreResponse.getCrdtElement();
+                RiakDatatype element = coreResponse.getCrdtElement();
                 BinaryValue context = coreResponse.getContext();
 
                 T datatype = extractDatatype(element);
@@ -143,7 +143,9 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             }
         }
 
+
         return builder.build();
+
     }
     
 	protected static abstract class Builder<T extends Builder<T>>
