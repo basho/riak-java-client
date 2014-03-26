@@ -19,7 +19,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -40,7 +40,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     }
 
     @Override
-    protected Response convert(List<RiakDtPB.DtFetchResp> rawResponse) 
+    protected Response convert(List<RiakDtPB.DtFetchResp> rawResponse)
     {
         if (rawResponse.size() != 1)
         {
@@ -50,7 +50,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         RiakDtPB.DtFetchResp response = rawResponse.iterator().next();
 
         CrdtResponseConverter converter = new CrdtResponseConverter();
-        CrdtElement element = converter.convert(response);
+        RiakDatatype element = converter.convert(response);
 
         Response.Builder responseBuilder = new Response.Builder()
             .withCrdtElement(element)
@@ -96,7 +96,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     {
         private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();
         private final Location location;
-        
+
         /**
          * Construct a Builder for a DtFetchOperaiton
          * @param location the location of the object in Riak.
@@ -242,11 +242,11 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         }
 
     }
-    
+
     public static class Response extends ResponseWithLocation
     {
         private final BinaryValue context;
-        private final CrdtElement crdtElement;
+        private final RiakDatatype crdtElement;
 
         protected Response(Init<?> builder)
         {
@@ -270,7 +270,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             return crdtElement != null;
         }
 
-        public CrdtElement getCrdtElement()
+        public RiakDatatype getCrdtElement()
         {
             return crdtElement;
         }
@@ -278,8 +278,8 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
         {
             private BinaryValue context;
-            private CrdtElement crdtElement;
-                        
+            private RiakDatatype crdtElement;
+
             T withContext(BinaryValue context)
             {
                 if (context != null)
@@ -295,15 +295,15 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
                 }
                 return self();
             }
-            
-            T withCrdtElement(CrdtElement crdtElement)
+
+            T withCrdtElement(RiakDatatype crdtElement)
             {
                 this.crdtElement = crdtElement;
                 return self();
             }
         }
-        
-        
+
+
         static class Builder extends Init<Builder>
         {
             @Override
@@ -311,7 +311,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             {
                 return this;
             }
-            
+
             @Override
             Response build()
             {

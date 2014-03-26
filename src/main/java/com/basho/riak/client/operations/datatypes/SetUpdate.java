@@ -16,6 +16,7 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.SetOp;
+import com.basho.riak.client.query.crdt.types.RiakSet;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
