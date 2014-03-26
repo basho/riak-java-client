@@ -16,6 +16,7 @@
 package com.basho.riak.client.core.fixture;
 
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,6 +39,8 @@ abstract class Acceptor
     
     protected final byte pbCode;
     protected final RiakKvPB.RpbGetResp pbMessage;
+    protected final byte pbErrorMsgCode;
+    protected final RiakPB.RpbErrorResp pbErrorMsg;
     
     public Acceptor(ServerSocketChannel server)
     {
@@ -50,7 +53,9 @@ abstract class Acceptor
                                       .build();
         
         pbMessage = RiakKvPB.RpbGetResp.newBuilder().addContent(content).setVclock(ByteString.copyFromUtf8("garbage")).build();
+        pbErrorMsg = RiakPB.RpbErrorResp.newBuilder().setErrcode(0).setErrmsg(ByteString.copyFromUtf8("Riak Error")).build();
         pbCode = (byte)10; 
+        pbErrorMsgCode = (byte)0;
     }
     
     final AcceptorType getType()
