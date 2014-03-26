@@ -25,38 +25,38 @@ import java.util.List;
 
 public class CrdtResponseConverter
 {
-    private CrdtElement parseSet(List<ByteString> setValues)
+    private RiakDatatype parseSet(List<ByteString> setValues)
     {
         List<BinaryValue> entries = new ArrayList<BinaryValue>(setValues.size());
         for (ByteString bstring : setValues)
         {
             entries.add(BinaryValue.unsafeCreate(bstring.toByteArray()));
         }
-        return new CrdtSet(entries);
+        return new RiakSet(entries);
     }
 
-    private CrdtElement parseMap(List<RiakDtPB.MapEntry> mapEntries)
+    private RiakDatatype parseMap(List<RiakDtPB.MapEntry> mapEntries)
     {
-        List<CrdtMap.MapEntry> entries = new ArrayList<CrdtMap.MapEntry>(mapEntries.size());
+        List<RiakMap.MapEntry> entries = new ArrayList<RiakMap.MapEntry>(mapEntries.size());
         for (RiakDtPB.MapEntry entry : mapEntries)
         {
 
             RiakDtPB.MapField field = entry.getField();
 
-            CrdtElement element;
+            RiakDatatype element;
             switch (field.getType())
             {
                 case COUNTER:
-                    element = new CrdtCounter(entry.getCounterValue());
+                    element = new RiakCounter(entry.getCounterValue());
                     break;
                 case FLAG:
-                    element = new CrdtFlag(entry.getFlagValue());
+                    element = new RiakFlag(entry.getFlagValue());
                     break;
                 case MAP:
                     element = parseMap(entry.getMapValueList());
                     break;
                 case REGISTER:
-                    element = new CrdtRegister(BinaryValue.unsafeCreate(entry.getRegisterValue().toByteArray()));
+                    element = new RiakRegister(BinaryValue.unsafeCreate(entry.getRegisterValue().toByteArray()));
                     break;
                 case SET:
                     element = parseSet(entry.getSetValueList());
@@ -66,20 +66,20 @@ public class CrdtResponseConverter
             }
 
             BinaryValue key = BinaryValue.unsafeCreate(entry.getField().getName().toByteArray());
-            entries.add(new CrdtMap.MapEntry(key, element));
+            entries.add(new RiakMap.MapEntry(key, element));
         }
 
-        return new CrdtMap(entries);
+        return new RiakMap(entries);
     }
 
-    public CrdtElement convert(RiakDtPB.DtUpdateResp response)
+    public RiakDatatype convert(RiakDtPB.DtUpdateResp response)
     {
 
-        CrdtElement element = null;
+        RiakDatatype element = null;
 
         if (response.hasCounterValue())
         {
-            element = new CrdtCounter(response.getCounterValue());
+            element = new RiakCounter(response.getCounterValue());
         }
         else if (response.getSetValueCount() > 0)
         {
@@ -90,25 +90,17 @@ public class CrdtResponseConverter
             element = parseMap(response.getMapValueList());
         }
 
-        if (null != element)
-        {
-            if (response.hasContext())
-            {
-                element.setContext(BinaryValue.unsafeCreate(response.getContext().toByteArray()));
-            }
-        }
-
         return element;
 
     }
 
-    public CrdtElement convert(RiakDtPB.DtFetchResp response)
+    public RiakDatatype convert(RiakDtPB.DtFetchResp response)
     {
-        CrdtElement element;
+        RiakDatatype element;
         switch (response.getType())
         {
             case COUNTER:
-                element = new CrdtCounter(response.getValue().getCounterValue());
+                element = new RiakCounter(response.getValue().getCounterValue());
                 break;
             case MAP:
                 element = parseMap(response.getValue().getMapValueList());
@@ -118,11 +110,6 @@ public class CrdtResponseConverter
                 break;
             default:
                 throw new IllegalStateException("No known datatype returned");
-        }
-
-        if (response.hasContext())
-        {
-            element.setContext(BinaryValue.unsafeCreate(response.getContext().toByteArray()));
         }
 
         return element;
