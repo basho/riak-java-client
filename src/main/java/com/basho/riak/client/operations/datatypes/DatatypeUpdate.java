@@ -19,7 +19,7 @@ import com.basho.riak.client.query.crdt.ops.CrdtOp;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 
 /*
-* @author Dave Rusek <drusuk at basho dot com>
+* @author Dave Rusek <drusek at basho dot com>
 * @since 2.0
 */
 public abstract class DatatypeUpdate<T extends RiakDatatype>

@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Command used to delete a value from Riak, referenced by it's key.
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class DeleteValue extends RiakCommand<DeleteValue.Response, Location>

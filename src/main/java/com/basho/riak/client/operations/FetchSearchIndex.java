@@ -25,7 +25,7 @@ import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 import java.util.concurrent.ExecutionException;
 
  /*
- * @author Dave Rusek <drusuk at basho dot com>
+ * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response, String>
