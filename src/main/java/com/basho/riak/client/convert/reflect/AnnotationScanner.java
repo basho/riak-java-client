@@ -120,5 +120,5 @@ public class AnnotationScanner implements Callable<AnnotationInfo> {
     
     private boolean isSetter(Method m) {
         return m.getReturnType().equals(Void.TYPE);
-    }
+    }    
 }
