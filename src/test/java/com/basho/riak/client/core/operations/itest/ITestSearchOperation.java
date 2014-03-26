@@ -52,7 +52,7 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(op);
         op.get();
         
-        prepSearch();
+        prepSearch(bucketType, bucketName);
         
         SearchOperation searchOp = new SearchOperation.Builder(bucketName, "Alice*").build();
         
@@ -71,41 +71,50 @@ public class ITestSearchOperation extends ITestBase
     public void testYokozunaSearch() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testYokozuna);
+        
         // First we have to create an index and attach it to a bucket
+        // and the 'default' bucket type can't be used for search
+        
+        BinaryValue searchBucket = BinaryValue.create("search_bucket");
         YokozunaIndex index = new YokozunaIndex("test_index");
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
-        putOp.get();
+        putOp.await();
         
-        Location location = new Location(bucketName);
+        Location location = new Location(searchBucket).setBucketType(yokozunaBucketType);
         StoreBucketPropsOperation propsOp = 
             new StoreBucketPropsOperation.Builder(location)
                 .withSearchIndex("test_index")
                 .build();
         cluster.execute(propsOp);
-        propsOp.get();
+        propsOp.await();
         
-        prepSearch();
+        assertTrue(propsOp.isSuccess());
+        
+        prepSearch(yokozunaBucketType, searchBucket);
         
         // Without pausing, the index does not propogate in time for the searchop
         // to complete.
         Thread.sleep(3000);
         
-        SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "Alice*").build();
+        SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "text:Alice*").build();
         
         cluster.execute(searchOp);
+        searchOp.await();
+        assertTrue(searchOp.isSuccess());
         SearchOperation.Response result = searchOp.get();        
         for (Map<String, String> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());
-            assertEquals(map.size(), 4); // _yz_rk, _yz_rb, score, pX_X
+            assertEquals(5, map.size()); // {_yz_rk=p3, _yz_rb=search_bucket, _yz_rt=default, score=1.00000000000000000000e+00, _yz_id=default_search_bucket_p3_25}
         }
         
+        resetAndEmptyBucket(location);
         
     }
     
-    private void prepSearch() throws InterruptedException, ExecutionException
+    private void prepSearch(BinaryValue searchBucketType, BinaryValue searchBucket) throws InterruptedException, ExecutionException
     {
 
         RiakObject obj = new RiakObject();
@@ -116,7 +125,7 @@ public class ITestSearchOperation extends ITestBase
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'"));
 
-        Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p1".getBytes()));
+        Location location = new Location(searchBucket).setBucketType(searchBucketType).setKey(BinaryValue.unsafeCreate("p1".getBytes()));
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -132,7 +141,7 @@ public class ITestSearchOperation extends ITestBase
                     "close by her."));
         
         obj.setContentType("text/plain");
-        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p2".getBytes()));
+        location = new Location(searchBucket).setBucketType(searchBucketType).setKey(BinaryValue.unsafeCreate("p2".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -147,7 +156,7 @@ public class ITestSearchOperation extends ITestBase
                     "well."));
         
         obj.setContentType("text/plain");
-        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p3".getBytes()));
+        location = new Location(searchBucket).setBucketType(searchBucketType).setKey(BinaryValue.unsafeCreate("p3".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)

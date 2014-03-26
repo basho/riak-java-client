@@ -64,6 +64,7 @@ public abstract class ITestBase
     protected static BinaryValue setBucketType;
     protected static BinaryValue mapBucketType;
     protected static BinaryValue bucketType;
+    protected static BinaryValue yokozunaBucketType;
     protected static String overrideCert;
 
     @BeforeClass
@@ -83,7 +84,18 @@ public abstract class ITestBase
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         overrideCert = System.getProperty("com.basho.riak.security.cacert");
         
+        /**
+         * Yokozuna.
+         * 
+         * You need to create a bucket type in Riak for YZ:
+         * 
+         * riak-admin bucket-type create yz_search '{"props":{}}'
+         * riak-admin bucket-type activate yz_search
+         */
+        yokozunaBucketType = BinaryValue.create("yz_search");
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
+        
+        
         test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
         // You must create a bucket type 'test_type' if you enable this.
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
