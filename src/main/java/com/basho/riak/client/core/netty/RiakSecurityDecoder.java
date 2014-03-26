@@ -17,6 +17,7 @@
 package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.util.Constants;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -97,7 +98,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                                 // register callback
                                 hsFuture.addListener(new SslListener());
                                 // Add handler
-                                chc.channel().pipeline().addFirst("SSL", sslHandler);
+                                chc.channel().pipeline().addFirst(Constants.SSL_HANDLER, sslHandler);
                                 break;
                             case RiakMessageCodes.MSG_ErrorResp:
                                 logger.debug("Received MSG_ErrorResp reply to startTls");

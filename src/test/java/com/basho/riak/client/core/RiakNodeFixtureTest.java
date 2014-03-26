@@ -98,12 +98,12 @@ public class RiakNodeFixtureTest extends FixtureTest
         
         assertEquals(available.size(), 10);
         
-        node.shutdown();
+        node.shutdown().get();
         
     }
     
     @Test
-    public void nodeGoingDown() throws UnknownHostException, IOException, InterruptedException
+    public void nodeGoingDown() throws UnknownHostException, IOException, InterruptedException, ExecutionException
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
@@ -124,7 +124,7 @@ public class RiakNodeFixtureTest extends FixtureTest
             verify(mockListener).nodeStateChanged(node, RiakNode.State.HEALTH_CHECKING);
             assertEquals(node.getNodeState(), State.HEALTH_CHECKING);
 
-            node.shutdown();
+            node.shutdown().get();
         }
         finally
         {
@@ -134,7 +134,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
     
     @Test
-    public void nodeRecovery() throws UnknownHostException, IOException, InterruptedException
+    public void nodeRecovery() throws UnknownHostException, IOException, InterruptedException, ExecutionException
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
@@ -166,6 +166,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         
         verify(mockListener).nodeStateChanged(node, State.RUNNING);
         assertEquals(node.getNodeState(), State.RUNNING);
+        node.shutdown().get();
     }
     
     @Test
@@ -190,6 +191,7 @@ public class RiakNodeFixtureTest extends FixtureTest
         FetchOperation.Response response = operation.get();
         assertEquals(response.getObjectList().get(0).getValue().toString(), "This is a value!");
         assertTrue(!response.isNotFound());
+        node.shutdown().get();
     }
     
     @Test
@@ -212,10 +214,11 @@ public class RiakNodeFixtureTest extends FixtureTest
         assertFalse(operation.isSuccess());
         assertNotNull(operation.cause());
         assertNotNull(operation.cause().getCause());
+        node.shutdown().get();
     }
 
     @Test
-    public void nodeChangesStateOnPoolState() throws UnknownHostException, IOException, InterruptedException
+    public void nodeChangesStateOnPoolState() throws UnknownHostException, IOException, InterruptedException, ExecutionException
     {
         RiakNode node = 
             new RiakNode.Builder()
@@ -240,6 +243,8 @@ public class RiakNodeFixtureTest extends FixtureTest
             fixture = new NetworkTestFixture(startingPort);
             new Thread(fixture).start();
         }
+        
+        node.shutdown().get();
         
     }
     

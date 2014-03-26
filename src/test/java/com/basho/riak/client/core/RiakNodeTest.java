@@ -253,10 +253,6 @@ public class RiakNodeTest
         Whitebox.setInternalState(node, "state", State.RUNNING);
         Whitebox.invokeMethod(node, "checkHealth", new Object[0]);
         verify(listener).nodeStateChanged(node, State.HEALTH_CHECKING);
-
-        doReturn(true).when(future).isSuccess();
-        Whitebox.invokeMethod(node, "checkHealth", new Object[0]);
-        verify(listener).nodeStateChanged(node, State.RUNNING);
     }
 
     @Test
