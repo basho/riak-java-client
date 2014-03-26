@@ -15,14 +15,13 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-public class ImmediateRiakFuture<V> implements RiakFuture<V>
+class ImmediateRiakFuture<V,S> implements RiakFuture<V,S>
 {
 
     private final V value;
@@ -39,13 +38,13 @@ public class ImmediateRiakFuture<V> implements RiakFuture<V>
     }
 
     @Override
-    public V get() throws InterruptedException, ExecutionException
+    public V get() throws InterruptedException
     {
         return value;
     }
 
     @Override
-    public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
+    public V get(long timeout, TimeUnit unit) throws InterruptedException
     {
         return value;
     }
@@ -63,14 +62,38 @@ public class ImmediateRiakFuture<V> implements RiakFuture<V>
     }
 
     @Override
-    public void addListener(RiakFutureListener<V> listener)
+    public void addListener(RiakFutureListener<V,S> listener)
     {
         listener.handle(this);
     }
 
     @Override
-    public void removeListener(RiakFutureListener<V> listener)
+    public void removeListener(RiakFutureListener<V,S> listener)
     {
         //no-op
+    }
+
+    @Override
+    public void await() throws InterruptedException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void await(long timeout, TimeUnit unit) throws InterruptedException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isSuccess()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public FailureInfo<S> cause()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -23,7 +23,6 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
 import com.basho.riak.client.query.Location;
@@ -34,7 +33,7 @@ import com.basho.riak.client.query.Location;
  * @author David Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class DeleteOperation extends FutureOperation<DeleteOperation.Response, Void>
+public class DeleteOperation extends FutureOperation<DeleteOperation.Response, Void, Location>
 {
 
     private final RiakKvPB.RpbDelReq.Builder reqBuilder;
@@ -47,7 +46,7 @@ public class DeleteOperation extends FutureOperation<DeleteOperation.Response, V
     }
 
     @Override
-    protected Response convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) 
     {
         return new Response.Builder().withLocation(location).build();
     }
@@ -63,6 +62,12 @@ public class DeleteOperation extends FutureOperation<DeleteOperation.Response, V
     protected RiakMessage createChannelMessage()
     {
         return new RiakMessage(RiakMessageCodes.MSG_DelReq, reqBuilder.build().toByteArray());
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
 
     public static class Builder

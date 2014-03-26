@@ -15,13 +15,14 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtMap;
+import com.basho.riak.client.query.crdt.types.RiakMap;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import org.junit.Before;
@@ -54,12 +55,13 @@ public class FetchDatatypeTest
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        when(mockResponse.getCrdtElement()).thenReturn(new CrdtMap(new ArrayList<CrdtMap.MapEntry>()));
+        when(mockResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
         when(mockResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
         when(mockFuture.get()).thenReturn(mockResponse);
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
+        when(mockFuture.isSuccess()).thenReturn(true);
         when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
     }

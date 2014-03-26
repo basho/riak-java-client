@@ -61,9 +61,9 @@ public class RiakUserMetadata
      * @param key the metadata key 
      * @return {@code true} if the entry is present, {@code false} otherwise.
      */
-    public boolean contains(String key)
+    public boolean containsKey(String key)
     {
-        return contains(key, Charset.defaultCharset());
+        return containsKey(key, Charset.defaultCharset());
     }
     
     /**
@@ -74,9 +74,9 @@ public class RiakUserMetadata
      * @param key the metadata key 
      * @return {@code true} if the entry is present, {@code false} otherwise.
      */
-    public boolean contains(String key, Charset charset)
+    public boolean containsKey(String key, Charset charset)
     {
-        return meta.contains(BinaryValue.unsafeCreate(key.getBytes()));
+        return meta.containsKey(BinaryValue.unsafeCreate(key.getBytes()));
     }
     
     /**
@@ -186,6 +186,34 @@ public class RiakUserMetadata
     public void put(BinaryValue key, BinaryValue value)
     {
         meta.put(key, value);
+    }
+    
+    public void remove(BinaryValue key)
+    {
+        meta.remove(key);
+    }
+    
+    public void remove(String key, Charset charset)
+    {
+        BinaryValue wrappedKey = BinaryValue.unsafeCreate(key.getBytes(charset));
+        remove(wrappedKey);
+    }
+    
+    public void remove (String key)
+    {
+        remove(key, Charset.defaultCharset());
+    }
+    
+    // TODO: deal with charset. Should add to annotation
+    public RiakUserMetadata put(Map<String,String> metaMap)
+    {
+        for (Map.Entry<String,String> e : metaMap.entrySet())
+        {
+            BinaryValue wrappedKey = BinaryValue.unsafeCreate(e.getKey().getBytes());
+            BinaryValue wrappedValue = BinaryValue.unsafeCreate(e.getValue().getBytes());
+            meta.put(wrappedKey, wrappedValue);
+        }
+        return this;
     }
     
     /**

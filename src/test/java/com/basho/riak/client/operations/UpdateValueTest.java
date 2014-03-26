@@ -15,8 +15,11 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.cap.ConflictResolver;
-import com.basho.riak.client.cap.DefaultResolver;
+import com.basho.riak.client.cap.ConflictResolverFactory;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.FutureOperation;
@@ -66,8 +69,8 @@ public class UpdateValueTest
 		when(storeResponse.getObjectList()).thenReturn(objects);
 
 		when(mockCluster.execute(any(FutureOperation.class)))
-			.thenReturn(new ImmediateRiakFuture<FetchOperation.Response>(fetchResponse))
-			.thenReturn(new ImmediateRiakFuture<StoreOperation.Response>(storeResponse));
+			.thenReturn(new ImmediateRiakFuture<FetchOperation.Response, Location>(fetchResponse))
+			.thenReturn(new ImmediateRiakFuture<StoreOperation.Response, Location>(storeResponse));
 
 		client = new RiakClient(mockCluster);
 
@@ -79,13 +82,13 @@ public class UpdateValueTest
 	public void testUpdateValue() throws ExecutionException, InterruptedException
 	{
 		UpdateValue.Update spiedUpdate = spy(new NoopUpdate());
-		ConflictResolver<RiakObject> spiedResolver = spy(new DefaultResolver<RiakObject>());
-		Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
+		ConflictResolver<RiakObject> spiedResolver = 
+            spy(ConflictResolverFactory.getInstance().getConflictResolver(RiakObject.class));
+		
+        Converter<RiakObject> spiedConverter = spy(new PassThroughConverter());
 
 		UpdateValue.Builder update =
-			new UpdateValue.Builder<RiakObject>(key)
-				.withConverter(spiedConverter)
-				.withResolver(spiedResolver)
+			new UpdateValue.Builder(key)
 				.withUpdate(spiedUpdate);
 
 		client.execute(update.build());
@@ -93,8 +96,8 @@ public class UpdateValueTest
 		verify(mockCluster, times(2)).execute(any(FutureOperation.class));
 		verify(spiedResolver, times(1)).resolve(anyList());
 		verify(spiedUpdate, times(1)).apply(any(RiakObject.class));
-		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class));
-		verify(spiedConverter, times(2)).toDomain(any(RiakObject.class));
+		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class), any(Location.class), any(VClock.class));
+		verify(spiedConverter, times(2)).toDomain(any(RiakObject.class), any(Location.class), any(VClock.class));
 
 	}
 

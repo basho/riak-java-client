@@ -15,6 +15,9 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.operations.kv.DeleteValue;
+import com.basho.riak.client.operations.kv.DeleteOption;
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
@@ -55,7 +58,8 @@ public class DeleteValueTest
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(null);
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
-        when(mockCluster.<DeleteOperation>execute(any(FutureOperation.class))).thenReturn(mockFuture);
+        when(mockFuture.isSuccess()).thenReturn(true);
+        when(mockCluster.<DeleteOperation, Location>execute(any(FutureOperation.class))).thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
     }
 

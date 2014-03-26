@@ -24,12 +24,11 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation.Response, RiakYokozunaPB.RpbYokozunaIndexGetResp>
+public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation.Response, RiakYokozunaPB.RpbYokozunaIndexGetResp, String>
 {    
     private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder;
     private final String indexName;
@@ -41,7 +40,7 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     }
     
     @Override
-    protected Response convert(List<RiakYokozunaPB.RpbYokozunaIndexGetResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakYokozunaPB.RpbYokozunaIndexGetResp> rawResponse)
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaIndexGetResp response = rawResponse.get(0);
@@ -77,6 +76,12 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
             throw new IllegalArgumentException("Invalid message received", ex);
         }
         
+    }
+
+    @Override
+    protected String getQueryInfo()
+    {
+        return indexName;
     }
     
     public static class Builder

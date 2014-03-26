@@ -15,7 +15,10 @@
  */
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.util.BinaryValue;
 
 
 /**
@@ -24,18 +27,37 @@ import com.basho.riak.client.query.RiakObject;
  * @author Russel Brown <russelldb at basho dot com>
  * @since 1.0
  */
-public class PassThroughConverter implements Converter<RiakObject>
+public final class PassThroughConverter extends Converter<RiakObject>
 {
-    @Override
-    public RiakObject toDomain(RiakObject riakObject)
+    public PassThroughConverter()
     {
-        return riakObject;
+        super(RiakObject.class);
+    }
+    
+    @Override
+    public RiakObject toDomain(RiakObject obj, Location location, VClock vclock)
+    {
+        return obj;
+    }
+    
+    @Override
+    public Converter.OrmExtracted fromDomain(RiakObject domainObject, Location location, VClock vclock)
+    {
+        return new Converter.OrmExtracted(domainObject, location, vclock);
+    }
+    
+    
+
+    @Override
+    public RiakObject toDomain(BinaryValue value, String contentType)
+    {
+        throw new UnsupportedOperationException("Not supported"); 
     }
 
     @Override
-    public RiakObject fromDomain(RiakObject domainObject)
+    public ContentAndType fromDomain(RiakObject domainObject)
     {
-        return domainObject;
+        throw new UnsupportedOperationException("Not supported"); 
     }
     
 }

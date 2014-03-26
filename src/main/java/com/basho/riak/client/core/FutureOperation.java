@@ -24,16 +24,14 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class FutureOperation<T, U> implements RiakFuture<T>
+public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 {
 
     private enum State
@@ -52,12 +50,12 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
     private volatile RiakNode lastNode;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
-    private final HashSet<RiakFutureListener<T>> listeners =
-        new HashSet<RiakFutureListener<T>>();
+    private final HashSet<RiakFutureListener<T,S>> listeners =
+        new HashSet<RiakFutureListener<T,S>>();
     private volatile boolean listenersFired = false;
 
     @Override
-    public void addListener(RiakFutureListener<T> listener)
+    public void addListener(RiakFutureListener<T,S> listener)
     {
 
         boolean fireNow = false;
@@ -87,7 +85,7 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
     }
 
     @Override
-    public void removeListener(RiakFutureListener<T> listener)
+    public void removeListener(RiakFutureListener<T,S> listener)
     {
         listenersLock.lock();
         try
@@ -123,7 +121,7 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
 
         if (fireNow)
         {
-            for (RiakFutureListener<T> listener : listeners)
+            for (RiakFutureListener<T,S> listener : listeners)
             {
                 listener.handle(this);
             }
@@ -229,13 +227,54 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
     }
 
     @Override
-    public final T get() throws InterruptedException, ExecutionException
+    public final boolean isSuccess()
+    {
+        return (isDone() && exception == null);
+    }
+    
+    @Override
+    public final FailureInfo<S> cause()
+    {
+        if (isSuccess())
+        {
+            return null;
+        }
+        else
+        {
+            return new FailureInfo<S>(exception, getQueryInfo());
+        }
+    }
+    
+    @Override
+    public final T get() throws InterruptedException
     {
         latch.await();
 
         if (exception != null)
         {
-            throw new ExecutionException(exception);
+            return null;
+        }
+        else if(null == converted)
+        {
+            converted = convert(rawResponse);
+            
+        }
+
+        return converted;
+    }
+
+    @Override
+    public final T get(long timeout, TimeUnit unit) throws InterruptedException
+    {
+        boolean succeed = latch.await(timeout, unit);
+
+        if (!succeed)
+        {
+            return null;
+        }
+        else if (exception != null)
+        {
+            return null;
         }
 
         if (null == converted)
@@ -247,29 +286,18 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
     }
 
     @Override
-    public final T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
+    public final void await() throws InterruptedException
     {
-        boolean succeed = latch.await(timeout, unit);
-
-        if (!succeed)
-        {
-            throw new TimeoutException();
-        }
-
-        if (exception != null)
-        {
-            throw new ExecutionException(exception);
-        }
-
-        if (null == converted)
-        {
-            converted = convert(rawResponse);
-        }
-
-        return converted;
+        latch.await();
     }
 
-
+    @Override
+    public final void await(long timeout, TimeUnit unit) throws InterruptedException
+    {
+        latch.await(timeout, unit);
+    }
+    
+    
     private void stateCheck(State... allowedStates)
     {
         if (Arrays.binarySearch(allowedStates, state) < 0)
@@ -282,11 +310,12 @@ public abstract class FutureOperation<T, U> implements RiakFuture<T>
         }
     }
 
-    abstract protected T convert(List<U> rawResponse) throws ExecutionException;
+    abstract protected T convert(List<U> rawResponse);
 
     abstract protected RiakMessage createChannelMessage();
 
     abstract protected U decode(RiakMessage rawMessage);
 
+    abstract protected S getQueryInfo();
 
 }

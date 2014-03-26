@@ -21,13 +21,12 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperation.Response, Void>
+public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperation.Response, Void, String>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder;
     private final String indexName;
@@ -39,7 +38,7 @@ public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperati
     }
     
     @Override
-    protected YzDeleteIndexOperation.Response convert(List<Void> rawResponse) throws ExecutionException
+    protected YzDeleteIndexOperation.Response convert(List<Void> rawResponse) 
     {
         return new Response(indexName);
     }
@@ -57,6 +56,12 @@ public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperati
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DelResp);
         return null;
+    }
+
+    @Override
+    protected String getQueryInfo()
+    {
+        return indexName;
     }
     
     public static class Builder

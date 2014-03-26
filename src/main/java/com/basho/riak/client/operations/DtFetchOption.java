@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+ /*
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.cap.Quorum;
 
-public class DtFetchOption<T> extends RiakOption<T> {
+public final class DtFetchOption<T> extends RiakOption<T> {
 
   public static final DtFetchOption<Quorum> R = new DtFetchOption<Quorum>("R");
   public static final DtFetchOption<Quorum> PR = new DtFetchOption<Quorum>("PR");

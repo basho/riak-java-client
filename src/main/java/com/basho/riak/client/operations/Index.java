@@ -19,6 +19,10 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.nio.ByteBuffer;
 
+ /*
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public abstract class Index<T>
 {
 

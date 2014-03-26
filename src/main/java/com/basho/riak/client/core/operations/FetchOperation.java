@@ -28,7 +28,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchOperation extends FutureOperation<FetchOperation.Response, RiakKvPB.RpbGetResp>
+public class FetchOperation extends FutureOperation<FetchOperation.Response, RiakKvPB.RpbGetResp, Location>
 {
     private final RiakKvPB.RpbGetReq.Builder reqBuilder;
     Location location;
@@ -75,7 +74,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     }
 
     @Override
-    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) throws ExecutionException
+    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) 
     {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
@@ -122,6 +121,12 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     {
         RiakKvPB.RpbGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_GetReq, req.toByteArray());
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
     
     public static class Builder

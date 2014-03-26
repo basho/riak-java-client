@@ -253,10 +253,6 @@ public class RiakNodeTest
         Whitebox.setInternalState(node, "state", State.RUNNING);
         Whitebox.invokeMethod(node, "checkHealth", new Object[0]);
         verify(listener).nodeStateChanged(node, State.HEALTH_CHECKING);
-
-        doReturn(true).when(future).isSuccess();
-        Whitebox.invokeMethod(node, "checkHealth", new Object[0]);
-        verify(listener).nodeStateChanged(node, State.RUNNING);
     }
 
     @Test
@@ -367,11 +363,11 @@ public class RiakNodeTest
         await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
     }
 
-    private class FutureOperationImpl extends FutureOperation<String, Message>
+    private class FutureOperationImpl extends FutureOperation<String, Message, Void>
     {
 
         @Override
-        protected String convert(List<Message> rawResponse) throws ExecutionException
+        protected String convert(List<Message> rawResponse)
         {
             return "value";
         }
@@ -386,6 +382,12 @@ public class RiakNodeTest
         protected RiakMessage createChannelMessage()
         {
             return new RiakMessage((byte) 0, new byte[0]);
+        }
+
+        @Override
+        protected Void getQueryInfo()
+        {
+            return null;
         }
 
 

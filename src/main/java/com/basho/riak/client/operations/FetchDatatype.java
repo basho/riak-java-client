@@ -15,19 +15,27 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.operations.datatypes.RiakDatatype;
+import com.basho.riak.client.operations.datatypes.Context;
+
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>>
+ /*
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>, Location>
 {
 
     private final Location location;
@@ -46,10 +54,55 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
         return this;
     }
 
-	public abstract T extractDatatype(CrdtElement element);
+	public abstract T extractDatatype(RiakDatatype element);
 
     @Override
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    {
+        RiakFuture<Response<T>, Location> future = doExecuteAsync(cluster);
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+    
+    @Override
+    protected final RiakFuture<FetchDatatype.Response<T>, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<DtFetchOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<Response<T>, Location, DtFetchOperation.Response, Location> future =
+            new CoreFutureAdapter<Response<T>, Location, DtFetchOperation.Response, Location>(coreFuture) {
+
+            @Override
+            protected Response<T> convertResponse(DtFetchOperation.Response coreResponse)
+            {
+                RiakDatatype element = coreResponse.getCrdtElement();
+                BinaryValue context = coreResponse.getContext();
+
+                T datatype = extractDatatype(element);
+
+                return new Response<T>(datatype, context.getValue());
+            }
+
+            @Override
+            protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+            {
+                return coreQueryInfo;
+            }
+        };
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private DtFetchOperation buildCoreOperation()
     {
         DtFetchOperation.Builder builder = 
             new DtFetchOperation.Builder(location);
@@ -90,18 +143,11 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             }
         }
 
-        DtFetchOperation operation = builder.build();
 
-        DtFetchOperation.Response response = cluster.execute(operation).get();
-        CrdtElement element = response.getCrdtElement();
-        BinaryValue context = response.getContext();
-
-        T datatype = extractDatatype(element);
-
-        return new Response<T>(datatype, context.getValue());
+        return builder.build();
 
     }
-
+    
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
@@ -149,9 +195,9 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             return context != null;
         }
 
-        public byte[] getContext()
+        public Context getContext()
         {
-            return context;
+            return new Context(context);
         }
     }
 

@@ -15,14 +15,21 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-public class Search extends RiakCommand<SearchOperation.Response>
+ /*
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public final class Search extends RiakCommand<SearchOperation.Response, BinaryValue>
 {
 
     public static enum Presort
@@ -42,10 +49,10 @@ public class Search extends RiakCommand<SearchOperation.Response>
     private final int start;
     private final int rows;
     private final Presort presort;
-    private String filterQuery;
-    private String sortField;
-    private List<String> returnFields;
-    private Map<SearchOption<?>, Object> options =
+    private final String filterQuery;
+    private final String sortField;
+    private final List<String> returnFields;
+    private final Map<SearchOption<?>, Object> options =
 	    new HashMap<SearchOption<?>, Object>();
 
     public Search(Builder builder)
@@ -63,9 +70,50 @@ public class Search extends RiakCommand<SearchOperation.Response>
 
 
     @Override
-    public SearchOperation.Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final SearchOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
+        RiakFuture<SearchOperation.Response, BinaryValue> future =
+            doExecuteAsync(cluster);
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+    
+    @Override
+    protected RiakFuture<SearchOperation.Response, BinaryValue> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<SearchOperation.Response, BinaryValue> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<SearchOperation.Response, BinaryValue, SearchOperation.Response, BinaryValue> future =
+            new CoreFutureAdapter<SearchOperation.Response, BinaryValue, SearchOperation.Response, BinaryValue>(coreFuture)
+            {
+                @Override
+                protected SearchOperation.Response convertResponse(SearchOperation.Response coreResponse)
+                {
+                    return coreResponse;
+                }
 
+                @Override
+                protected FailureInfo<BinaryValue> convertFailureInfo(FailureInfo<BinaryValue> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private SearchOperation buildCoreOperation()
+    {
         SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);
 
         for (Map.Entry<SearchOption<?>, Object> option : options.entrySet())
@@ -113,9 +161,7 @@ public class Search extends RiakCommand<SearchOperation.Response>
             builder.withReturnFields(returnFields);
         }
 
-        SearchOperation operation = builder.build();
-        return cluster.execute(operation).get();
-
+        return builder.build();
     }
 
 	public static class Builder

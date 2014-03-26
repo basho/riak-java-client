@@ -16,24 +16,25 @@
 
 package com.basho.riak.client.operations.itest;
 
+import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.operations.RiakClient;
 import com.basho.riak.client.operations.mapreduce.BucketKeyMapReduce;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *

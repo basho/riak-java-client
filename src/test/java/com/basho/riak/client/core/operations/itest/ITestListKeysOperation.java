@@ -89,14 +89,14 @@ public class ITestListKeysOperation extends ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<StoreOperation.Response> listener =
-            new RiakFutureListener<StoreOperation.Response>() {
+        RiakFutureListener<StoreOperation.Response, Location> listener =
+            new RiakFutureListener<StoreOperation.Response, Location>() {
             
             private final int expected = 1000;
             private final AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<StoreOperation.Response> f)
+            public void handle(RiakFuture<StoreOperation.Response, Location> f)
             {
                 try 
                 {
@@ -119,10 +119,7 @@ public class ITestListKeysOperation extends ITestBase
                 {
                     throw new RuntimeException(ex);
                 }
-                catch (ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
+                
             }
         };
         

@@ -15,7 +15,10 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.RiakCommand;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
@@ -24,7 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class ListBuckets extends RiakCommand<ListBuckets.Response>
+ /*
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryValue>
 {
 	private static final String DEFAULT_BUCKET_TYPE = "default";
 
@@ -38,16 +45,55 @@ public class ListBuckets extends RiakCommand<ListBuckets.Response>
     }
 
     @Override
-    public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    {
+        RiakFuture<Response, BinaryValue> future = doExecuteAsync(cluster);
+        
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+    
+    @Override
+    protected RiakFuture<Response, BinaryValue> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue> future =
+            new CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue>(coreFuture)
+            {
+                @Override
+                protected Response convertResponse(ListBucketsOperation.Response coreResponse)
+                {
+                    return new Response(type, coreResponse.getBuckets());
+                }
+
+                @Override
+                protected FailureInfo<BinaryValue> convertFailureInfo(FailureInfo<BinaryValue> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private ListBucketsOperation buildCoreOperation()
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
         if (timeout > 0)
         {
             builder.withTimeout(timeout);
         }
-        ListBucketsOperation operation = builder.build();
-        cluster.execute(operation);
-        return new Response(type, operation.get().getBuckets());
+        return builder.build();
     }
 
     public static class Response implements Iterable<Location> {

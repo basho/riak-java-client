@@ -32,6 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for converting to/from RiakKvPB.RpbContent and RiakObject
@@ -42,9 +44,11 @@ import java.util.concurrent.ExecutionException;
  */
 public class RiakObjectConverter
 {
+    private final static Logger logger = LoggerFactory.getLogger(RiakObjectConverter.class);
+    
     private RiakObjectConverter() {}
     
-    public static List<RiakObject> convert(List<RpbContent> contentList) throws ExecutionException
+    public static List<RiakObject> convert(List<RpbContent> contentList)
     {
         List<RiakObject> roList = new LinkedList<RiakObject>();
         for (RpbContent content : contentList)
@@ -73,7 +77,7 @@ public class RiakObjectConverter
                 ro.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
             }
             
-            if (content.hasValue())
+            if (content.hasValue() && !content.getValue().isEmpty())
             {
                 ro.setValue(BinaryValue.unsafeCreate(content.getValue().toByteArray()));
             }
@@ -106,12 +110,12 @@ public class RiakObjectConverter
                     try
                     {
                         IndexType type = IndexType.typeFromFullname(name);
-                        indexes.getIndex(new RawIndex.Name(name, type))
+                        indexes.getIndex(RawIndex.named(name, type))
                             .add(BinaryValue.unsafeCreate(p.getValue().toByteArray()));
                     }
                     catch (IllegalArgumentException e)
                     {
-                        throw new ExecutionException("Unknown index type" + name, e);
+                        logger.error("Unknown index type during conversion: {};{}", name, e);
                     }
                 }
             }

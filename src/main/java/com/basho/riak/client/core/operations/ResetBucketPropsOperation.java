@@ -22,14 +22,13 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsOperation.Response, Void>
+public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsOperation.Response, Void, Location>
 {
     private final RiakPB.RpbResetBucketReq.Builder reqBuilder;
     private final Location location;
@@ -41,7 +40,7 @@ public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsO
     }
     
     @Override
-    protected Response convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) 
     {
         return new Response.Builder().withLocation(location).build();
     }
@@ -60,6 +59,12 @@ public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsO
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_ResetBucketResp);
         return null;
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
     
     public static class Builder

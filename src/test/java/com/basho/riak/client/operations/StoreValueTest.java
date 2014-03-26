@@ -15,10 +15,12 @@
  */
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.convert.PassThroughConverter;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
@@ -81,9 +83,8 @@ public class StoreValueTest
 	public void testStore() throws ExecutionException, InterruptedException
 	{
 
-		StoreValue.Builder<RiakObject> store =
-			new StoreValue.Builder<RiakObject>(key, riakObject)
-				.withConverter(new PassThroughConverter())
+		StoreValue.Builder store =
+			new StoreValue.Builder(riakObject).withLocation(key)
 				.withVectorClock(vClock)
 				.withOption(StoreOption.ASIS, true)
 				.withOption(StoreOption.DW, new Quorum(1))

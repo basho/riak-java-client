@@ -25,13 +25,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * A Map/Reduce Operation on Riak. No error checking is done on the content type of the content itself
  * with the exception to making sure they are provided.
  */
-public class MapReduceOperation extends FutureOperation<MapReduceOperation.Response, RiakKvPB.RpbMapRedResp>
+public class MapReduceOperation extends FutureOperation<MapReduceOperation.Response, RiakKvPB.RpbMapRedResp, BinaryValue>
 {
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     private final BinaryValue mapReduce;
@@ -43,7 +42,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     }
 
     @Override
-    protected Response convert(List<RiakKvPB.RpbMapRedResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakKvPB.RpbMapRedResp> rawResponse)
     {
         List<BinaryValue> results = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbMapRedResp response : rawResponse)
@@ -81,6 +80,12 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     protected boolean done(RiakKvPB.RpbMapRedResp message)
     {
         return message.getDone();
+    }
+
+    @Override
+    protected BinaryValue getQueryInfo()
+    {
+        return mapReduce;
     }
     
     public static class Builder

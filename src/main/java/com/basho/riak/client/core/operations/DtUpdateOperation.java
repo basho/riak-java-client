@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.ops.*;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -28,9 +28,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Response, RiakDtPB.DtUpdateResp>
+public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Response, RiakDtPB.DtUpdateResp, Location>
 {
     private final Location location;
     private final RiakDtPB.DtUpdateReq.Builder reqBuilder;
@@ -42,7 +41,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     }
 
     @Override
-    protected Response convert(List<RiakDtPB.DtUpdateResp> rawResponse) throws ExecutionException
+    protected Response convert(List<RiakDtPB.DtUpdateResp> rawResponse) 
     {
         if (rawResponse.size() != 1)
         {
@@ -51,7 +50,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
 
         RiakDtPB.DtUpdateResp response = rawResponse.iterator().next();
         CrdtResponseConverter converter = new CrdtResponseConverter();
-        CrdtElement element = converter.convert(response);
+        RiakDatatype element = converter.convert(response);
         
         Response.Builder responseBuilder = 
             new Response.Builder().withCrdtElement(element).withLocation(location);
@@ -91,6 +90,12 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
 
     public static class Builder

@@ -13,26 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
+import com.basho.riak.client.operations.datatypes.Context;
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.operations.datatypes.*;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.crdt.types.CrdtElement;
+import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>>
+ /*
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>, Location>
 {
 
     private final Location loc;
     private final Context ctx;
-    private final DatatypeUpdate<T> datatype;
+    private final DatatypeUpdate datatype;
     private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
     private UpdateDatatype(Builder<T> builder)
@@ -44,8 +53,72 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
     }
 
     @Override
+    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    {
+        RiakFuture<Response<T>, Location> future = doExecuteAsync(cluster);
+            
+        future.await();
+        
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause().getCause());
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    public Response<T> execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    @Override
+    protected RiakFuture<Response<T>, Location> doExecuteAsync(RiakCluster cluster)
+    {
+        RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<Response<T>, Location, DtUpdateOperation.Response, Location> future =
+            new CoreFutureAdapter<Response<T>, Location, DtUpdateOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected Response<T> convertResponse(DtUpdateOperation.Response coreResponse)
+                {
+                    RiakDatatype element = coreResponse.getCrdtElement();
+
+                    T riakDatatype = null;
+                    if (element.isMap())
+                    {
+                        riakDatatype = (T) element.getAsMap();
+                    }
+                    else if (element.isSet())
+                    {
+                        riakDatatype = (T) element.getAsSet();
+                    }
+                    else if (element.isCounter())
+                    {
+                        riakDatatype = (T) element.getAsCounter();
+                    }
+
+                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
+                        ? coreResponse.getGeneratedKey()
+                        : loc.getKey();
+
+                    Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
+                    Context returnedCtx = new Context(coreResponse.getContext().getValue());
+
+                    return new Response<T>(key, returnedCtx, riakDatatype);
+                }
+
+                @Override
+                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
+    private DtUpdateOperation buildCoreOperation()
     {
         DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc);
 
@@ -88,40 +161,15 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
             }
         }
 
-        DtUpdateOperation operation = builder.build();
-        DtUpdateOperation.Response crdtResponse = cluster.execute(operation).get();
-        CrdtElement element = crdtResponse.getCrdtElement();
-
-        T riakDatatype = null;
-        if (element.isMap())
-        {
-            riakDatatype = (T) new RiakMap(element.getAsMap());
-        }
-        else if (element.isSet())
-        {
-            riakDatatype = (T) new RiakSet(element.getAsSet());
-        }
-        else if (element.isCounter())
-        {
-            riakDatatype = (T) new RiakCounter(element.getAsCounter());
-        }
-
-	    BinaryValue returnedKey = crdtResponse.hasGeneratedKey()
-		    ? crdtResponse.getGeneratedKey()
-		    : loc.getKey();
-
-        Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
-        Context returnedCtx = new Context(crdtResponse.getContext().getValue());
-
-        return new Response<T>(key, returnedCtx, riakDatatype);
+        return builder.build();
 
     }
 
-	public static class Builder<T extends RiakDatatype>
+    public static class Builder<T extends RiakDatatype>
 	{
 		private final Location loc;
 		private Context ctx;
-		private DatatypeUpdate<T> datatype;
+		private DatatypeUpdate datatype;
 		private Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
 		public Builder(Location loc)
@@ -141,7 +189,7 @@ public class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDa
 			return this;
 		}
 
-		public Builder<T> withUpdate(DatatypeUpdate<T> update)
+		public Builder<T> withUpdate(DatatypeUpdate update)
 		{
 			this.datatype = update;
 			return this;

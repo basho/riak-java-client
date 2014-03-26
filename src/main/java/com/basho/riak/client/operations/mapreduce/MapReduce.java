@@ -13,10 +13,14 @@
  */
 package com.basho.riak.client.operations.mapreduce;
 
+import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.MapReduceOperation;
-import com.basho.riak.client.operations.RiakCommand;
+import com.basho.riak.client.operations.CoreFutureAdapter;
+import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -33,7 +37,7 @@ import java.util.concurrent.ExecutionException;
  * An operation for defining and runnig a Map/Reduce query on Riak. <p/> <p> See <a
  * href="http://wiki.basho.com/MapReduce.html">Map/Reduce</a> for details. </p>
  */
-public abstract class MapReduce extends RiakCommand<MapReduce.Response>
+public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryValue>
 {
 
 	private final String JSON_CONTENT_TYPE = "application/json";
@@ -48,24 +52,57 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response>
 	}
 
 	@Override
-	public Response execute(RiakCluster cluster) throws ExecutionException, InterruptedException
+	public Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		try
+		RiakFuture<Response, Location> future = doExecuteAsync(cluster);
+
+		future.await();
+
+		if (future.isSuccess())
 		{
-			BinaryValue jobSpec = BinaryValue.create(writeSpec());
-            
-			MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
-
-			MapReduceOperation.Response output = cluster.execute(operation).get();
-
-			return new Response(output.getResults());
-
-		} catch (RiakException e)
+			return future.get();
+		} else
 		{
-			throw new ExecutionException(e);
+			throw new ExecutionException(future.cause().getCause());
 		}
 	}
 
+	@Override
+	protected RiakFuture doExecuteAsync(RiakCluster cluster)
+	{
+		BinaryValue jobSpec = null;
+		try
+		{
+			jobSpec = BinaryValue.create(writeSpec());
+		} catch (RiakException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
+
+		final RiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
+
+		CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue> future =
+				new CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue>(coreFuture) {
+					@Override
+					protected Response convertResponse(MapReduceOperation.Response coreResponse)
+					{
+						return new Response(coreResponse.getResults());
+					}
+
+					@Override
+					protected FailureInfo<BinaryValue> convertFailureInfo(FailureInfo<BinaryValue> coreQueryInfo)
+					{
+						return coreQueryInfo;
+					}
+				};
+
+		coreFuture.addListener(future);
+
+		return future;
+
+	}
 
 	/**
 	 * Creates the JSON string of the M/R job for submitting to the client

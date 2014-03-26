@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  * 
  * @author Brian Roach <roach at basho dot com>
  */
-public class App implements RiakFutureListener<RiakObject>
+public class App 
 {
     private final RiakCluster cluster;
     
@@ -101,24 +101,5 @@ public class App implements RiakFutureListener<RiakObject>
         a.doIt();
     }
 
-    @Override
-    public void handle(RiakFuture<RiakObject> f)
-    {
-        try
-        {
-            RiakObject ro = f.get();
-            System.out.println("value: " + ro.getValue());
-            System.out.println(ro.isDeleted());
-            
-            cluster.shutdown();
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (ExecutionException ex)
-        {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    
 }

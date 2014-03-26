@@ -26,7 +26,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -34,27 +33,25 @@ import java.util.concurrent.ExecutionException;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp>
+public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp, SecondaryIndexQueryOperation.Query>
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
-    private final Location location;
     
     private SecondaryIndexQueryOperation(Builder builder)
     {
         // Yo dawg, we don't ever not want to use streaming.
         builder.pbReqBuilder.setStream(true);
-        this.location = builder.location;
         this.query = builder.query;
         this.pbReq = builder.pbReqBuilder.build();
     }
 
     @Override
-    protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse) throws ExecutionException
+    protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse)
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder = 
             new SecondaryIndexQueryOperation.Response.Builder()
-                .withLocation(location)
+                .withLocation(query.location)
                 .withQuery(query);
         
         for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
@@ -130,6 +127,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     {
         return msg.getDone();
     }
+
+    @Override
+    protected Query getQueryInfo()
+    {
+        return query;
+    }
     
     
     /**
@@ -138,31 +141,24 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     public static class Builder
     {
         private final RiakKvPB.RpbIndexReq.Builder pbReqBuilder = RiakKvPB.RpbIndexReq.newBuilder();
-        private final Location location;
         private final Query query;
         
         /**
          * Constructs a builder for a QueryOperation. 
          * The index name must be the complete name with the _int or _bin suffix.
-         * @param location the location of the index in Riak.
          * @param query A 2i query.
          */
-        public Builder(Location location, Query query)
+        public Builder(Query query)
         {
-            if (location == null)
-            {
-                throw new IllegalArgumentException("Location cannot be null");
-            }
-            else if (query == null)
+            if (query == null)
             {
                 throw new IllegalArgumentException("Query cannot be null.");
             }
 
             this.query = query;
-            this.location = location;
             
-            pbReqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()))
-                        .setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()))
+            pbReqBuilder.setBucket(ByteString.copyFrom(query.location.getBucketName().unsafeGetValue()))
+                        .setType(ByteString.copyFrom(query.location.getBucketType().unsafeGetValue()))
                         .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
                         .setReturnTerms(query.returnKeyAndIndex);
             
@@ -211,6 +207,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     
     public static class Query
     {
+        private final Location location;
         private final BinaryValue indexName;
         private final BinaryValue indexKey;
         private final BinaryValue rangeStart;
@@ -232,8 +229,18 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.continuation = builder.continuation;
             this.paginationSort = builder.paginationSort;
             this.termFilter = builder.termFilter;
+            this.location = builder.location;
         }
 
+        /**
+         * Return the location for the Query.
+         * @return the location.
+         */
+        public Location getLocation()
+        {
+            return location;
+        }
+        
         /**
          * @return the indexName
          */
@@ -310,6 +317,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         
         public static class Builder
         {
+            private final Location location;
             private final BinaryValue indexName;
             private BinaryValue indexKey;
             private BinaryValue rangeStart;
@@ -323,15 +331,21 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             /**
             * Constructs a builder for a (2i) Query. 
             * The index name must be the complete name with the _int or _bin suffix.
+            * @param location the location for this Query
             * @param indexName the name of the index (including suffix).
             */
-            public Builder(BinaryValue indexName)
+            public Builder(Location location, BinaryValue indexName)
             {
-                if (null == indexName || indexName.length() == 0)
+                if (location == null)
+                {
+                    throw new IllegalArgumentException("Location cannot be null");
+                }
+                else if (null == indexName || indexName.length() == 0)
                 {
                     throw new IllegalArgumentException("Index name cannot be null or zero length");
                 }
                 this.indexName = indexName;
+                this.location = location;
             }
             
             /**

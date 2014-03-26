@@ -23,7 +23,6 @@ import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -31,7 +30,7 @@ import java.util.concurrent.ExecutionException;
  * @since 2.0
  */
 //TODO: return some sort of "success" instead of Void
-public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsOperation.Response, Void>
+public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsOperation.Response, Void, Location>
 {
     private final Location location;
     private final RiakPB.RpbSetBucketReq.Builder reqBuilder;
@@ -43,7 +42,7 @@ public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsO
     }
 
     @Override
-    protected Response convert(List<Void> rawResponse) throws ExecutionException
+    protected Response convert(List<Void> rawResponse) 
     {
         return new Response.Builder().withLocation(location).build();
     }
@@ -60,6 +59,12 @@ public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsO
     {
         Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_SetBucketResp);
         return null;
+    }
+
+    @Override
+    protected Location getQueryInfo()
+    {
+        return location;
     }
 
     static abstract class PropsBuilder<T extends PropsBuilder<T>>
