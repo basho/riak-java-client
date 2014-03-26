@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Command used to fetch a value from Riak, referenced by it's key.
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -41,7 +42,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
 	private final Location location;
 	private final Map<FetchOption<?>, Object> options =
-		new HashMap<FetchOption<?>, Object>();
+			new HashMap<FetchOption<?>, Object>();
 
 	FetchValue(Builder builder)
 	{
@@ -53,53 +54,52 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		RiakFuture<Response, Location> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
 
-    @Override
-    protected final RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
-    {
-        RiakFuture<FetchOperation.Response, Location> coreFuture = 
-            cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future = 
-            new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(FetchOperation.Response coreResponse)
-                {
-                    return new Response.Builder().withNotFound(coreResponse.isNotFound()) 
-                                        .withUnchanged(coreResponse.isUnchanged())
-                                        .withLocation(coreResponse.getLocation())
-                                        .withValues(coreResponse.getObjectList()) 
-                                        .withVClock(coreResponse.getVClock())
-                                        .build();
-                }
+		future.await();
 
-                @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-        
-    }
+		if (future.isSuccess())
+		{
+			return future.get();
+		} else
+		{
+			throw new ExecutionException(future.cause().getCause());
+		}
+	}
 
-    private FetchOperation buildCoreOperation()
-    {
-        FetchOperation.Builder builder = new FetchOperation.Builder(location);
+	@Override
+	protected final RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
+	{
+		RiakFuture<FetchOperation.Response, Location> coreFuture =
+				cluster.execute(buildCoreOperation());
+
+		CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future =
+				new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
+				{
+					@Override
+					protected Response convertResponse(FetchOperation.Response coreResponse)
+					{
+						return new Response.Builder().withNotFound(coreResponse.isNotFound())
+								.withUnchanged(coreResponse.isUnchanged())
+								.withLocation(coreResponse.getLocation())
+								.withValues(coreResponse.getObjectList())
+								.withVClock(coreResponse.getVClock())
+								.build();
+					}
+
+					@Override
+					protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+					{
+						return coreQueryInfo;
+					}
+				};
+		coreFuture.addListener(future);
+		return future;
+
+	}
+
+	private FetchOperation buildCoreOperation()
+	{
+		FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
 		for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
 		{
@@ -142,11 +142,10 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		}
 
 		return builder.build();
-    }
-    
+	}
+
 	/**
 	 * A response from Riak including the vector clock.
-	 *
 	 */
 	public static class Response extends KvResponseBase
 	{
@@ -156,72 +155,74 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		Response(Init<?> builder)
 		{
 			super(builder);
-            this.notFound = builder.notFound;
+			this.notFound = builder.notFound;
 			this.unchanged = builder.unchanged;
 		}
 
-        /**
-         * Determine if there was a value in Riak.
-         * <p>
-         * If there was no value present at the supplied {@code Location} in
-         * Riak, this will be true.
-         * </p>
-         * @return true if there was no value in Riak.
-         */
-        public boolean isNotFound()
+		/**
+		 * Determine if there was a value in Riak.
+		 * <p>
+		 * If there was no value present at the supplied {@code Location} in
+		 * Riak, this will be true.
+		 * </p>
+		 *
+		 * @return true if there was no value in Riak.
+		 */
+		public boolean isNotFound()
 		{
 			return notFound;
 		}
 
-        /**
-         * Determine if the value is unchanged.
-         * <p>
-         * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
-         * this indicates if the value in Riak has been modified.
-         * <p>
-         * @return true if the vector clock for the object in Riak matched the 
-         * supplied vector clock, false otherwise. 
-         */
+		/**
+		 * Determine if the value is unchanged.
+		 * <p/>
+		 * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
+		 * this indicates if the value in Riak has been modified.
+		 * <p/>
+		 *
+		 * @return true if the vector clock for the object in Riak matched the
+		 * supplied vector clock, false otherwise.
+		 */
 		public boolean isUnchanged()
 		{
 			return unchanged;
 		}
 
-        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
-        {
-            private boolean notFound;
-            private boolean unchanged;
-            
-            T withUnchanged(boolean unchanged)
-            {
-                this.unchanged = unchanged;
-                return self();
-            }
-            
-            T withNotFound(boolean notFound)
-            {
-                this.notFound = notFound;
-                return self();
-            }
-        }
-        
-        static class Builder extends Init<Builder>
-        {
+		protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
+		{
+			private boolean notFound;
+			private boolean unchanged;
 
-            @Override
-            protected Builder self()
-            {
-                return this;
-            }
+			T withUnchanged(boolean unchanged)
+			{
+				this.unchanged = unchanged;
+				return self();
+			}
 
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
-            
-        }
-        
+			T withNotFound(boolean notFound)
+			{
+				this.notFound = notFound;
+				return self();
+			}
+		}
+
+		static class Builder extends Init<Builder>
+		{
+
+			@Override
+			protected Builder self()
+			{
+				return this;
+			}
+
+			@Override
+			Response build()
+			{
+				return new Response(this);
+			}
+
+		}
+
 	}
 
 	public static class Builder
@@ -229,7 +230,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
 		private final Location location;
 		private final Map<FetchOption<?>, Object> options =
-			new HashMap<FetchOption<?>, Object>();
+				new HashMap<FetchOption<?>, Object>();
 
 		public Builder(Location location)
 		{
@@ -258,7 +259,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		 */
 		public FetchValue build()
 		{
-            return new FetchValue(this);
+			return new FetchValue(this);
 		}
 	}
 }
