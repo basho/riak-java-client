@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 
 
 /**
- * Command used to fetch a value from Riak, referenced by its location.
+ * Command used to fetch a value from Riak.
  * <p>
  * Fetching an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
  * and executing the FetchValue operation.
@@ -180,7 +180,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
     
 	/**
-	 * A response from Riak containing results from a fetch operation.
+	 * A response from Riak containing results from a FetchValue operation.
 	 * <p>
      * The Response, unless marked not found or unchanged, will contain one or
      * more objects returned from Riak (all siblings are returned if present).
@@ -225,6 +225,9 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 			return unchanged;
 		}
 
+        /**
+         * @ExcludeFromJavadoc 
+         */
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private boolean notFound;
@@ -282,13 +285,13 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		}
 
 		/**
-		 * Add an optional setting for this command. This will be passed along with the request to Riak to tell it how
+		 * Add an optional setting for this command. 
+         * This will be passed along with the request to Riak to tell it how
 		 * to behave when servicing the request.
 		 *
-		 * @param option
-		 * @param value
-		 * @param <U>
-		 * @return 
+		 * @param option the option
+		 * @param value the value for the option
+		 * @return a reference to this object.
 		 */
 		public <U> Builder withOption(FetchOption<U> option, U value)
 		{

@@ -18,11 +18,11 @@ import java.lang.reflect.Member;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 /**
- * Reflection/class utilities. Delegates to
- * {@link org.codehaus.jackson.map.util.ClassUtil}.
+ * Reflection/class utilities.
  * 
  * @author russell
  * @author Brian Roach <roach at basho dot com>
+ * @since 1.0
  */
 public final class ClassUtil {
 
@@ -32,8 +32,9 @@ public final class ClassUtil {
      * Make the {@link Member} accessible if possible, throw
      * {@link IllegalArgumentException} is not.
      * 
-     * @param member
-     * @throw {@link IllegalArgumentException} if cannot set accessibility
+     * @param member the member to check
+     * @return the member
+     * @throws IllegalArgumentException if cannot set accessibility
      */
     public static <T extends Member> T checkAndFixAccess(T member) {
          com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member);

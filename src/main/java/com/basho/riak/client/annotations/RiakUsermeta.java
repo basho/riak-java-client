@@ -19,31 +19,60 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a map field or getter/setter pair as containing user meta data for a Riak
+ * Annotates a field or getter/setter method pair in a class to serve as containing user meta data for a Riak
  * object.
  * <p>
  * If you set the key value (to anything other than the empty string) then you
  * can use the annotation to map a single key of user meta data to a field.
  * </p>
  * <p>
- * For example:
- * <code><pre>
- * public class MyClass {
- *     \@RiakKey
- *     private String myKeyString;
+ * <pre>
+ * public class MyClass 
+ * {
  *     
- *     \@RiakUsermeta
- *     private Map<String, String> usermetaData;
- *     // - OR -
- *     \@RiakUsermeta("usermeta-data-key1") 
+ *     {@literal @}RiakUsermeta
+ *     private {@literal Map<String, String>} usermetaData;
+ *     
+ *     {@literal @}RiakUsermeta("usermeta-data-key1") 
  *     private String usermetaDataItem1;
  * }
- * </pre></code>
+ * 
+ * public class MyClass
+ * {
+ *     private {@literal Map<String, String>} usermetaData;
+ *     private String usermetaDataItem1;
+ * 
+ *     {@literal @}RiakUsermeta
+ *     public {@literal Map<String, String>} getMeta()
+ *     {
+ *         return usermetaData;
+ *     }
+ * 
+ *     {@literal @}RiakUsermeta
+ *     public void setMeta({@literal Map<String,String>} meta)
+ *     {
+ *         usermetaData = meta;
+ *     }
+ * 
+ *     {@literal @}RiakUsermeta("usermeta-data-key1") 
+ *     public String getSingleMeta()
+ *     {
+ *          return usermetaDataItem1;
+ *     }
+ * 
+ *     {@literal @}RiakUsermeta("usermeta-data-key1")
+ *     public void setSingleMeta(String meta)
+ *     {
+ *         usermetaDataItem1 = meta;
+ *     }
+ *  }
+ * </pre>
  * </p>
  * 
  * 
  * @author Russel Brown <russelldb at basho dot com>
- * @see JSONConverter
+ * @author Brian Roach <roach at basho dot com>
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakUsermeta {
     /**

@@ -332,9 +332,7 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 		 *
 		 * @param bigVClock a long representing a epoch time value.
 		 * @return a reference to this object.
-		 * @see <a
-		 * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-		 * Clock Pruning</a> for details.
+		 * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a> 
 		 */
 		public Builder withBigVClock(Long bigVClock)
 		{
@@ -477,9 +475,7 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 		 *
 		 * @param hook the Function to add.
 		 * @return a reference to this object.
-		 * @see <a
-		 * href="http://docs.basho.com/riak/latest/dev/using/commit-hooks/">Using
-		 * Commit Hooks</a>
+		 * @see <a href="http://docs.basho.com/riak/latest/dev/using/commit-hooks/">Using Commit Hooks</a>
 		 */
 		public Builder withPrecommitHook(Function hook)
 		{
@@ -497,9 +493,7 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 		 *
 		 * @param hook the Function to add.
 		 * @return a reference to this object.
-		 * @see <a
-		 * href="http://docs.basho.com/riak/latest/dev/using/commit-hooks/">Using
-		 * Commit Hooks</a>
+		 * @see <a href="http://docs.basho.com/riak/latest/dev/using/commit-hooks/">Using Commit Hooks</a>
 		 */
 		public Builder withPostcommitHook(Function hook)
 		{
@@ -512,9 +506,7 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 		 *
 		 * @param oldVClock an long representing a epoch time value.
 		 * @return a reference to this object.
-		 * @see <a
-		 * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-		 * Clock Pruning</a> for details.
+		 * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
 		 */
 		public Builder withOldVClock(Long oldVClock)
 		{
@@ -527,9 +519,7 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 		 *
 		 * @param youngVClock a long representing a epoch time value.
 		 * @return a reference to this object.
-		 * @see <a
-		 * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-		 * Clock Pruning</a> for details.
+		 * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
 		 */
 		public Builder withYoungVClock(Long youngVClock)
 		{
@@ -542,9 +532,7 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 		 *
 		 * @param smallVClock a long representing a epoch time value.
 		 * @return a reference to this object.
-		 * @see <a
-		 * href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
-		 * Clock Pruning</a> for details.
+		 * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a> 
 		 */
 		public Builder withSmallVClock(Long smallVClock)
 		{

@@ -38,6 +38,10 @@ import java.nio.charset.Charset;
  */
 public final class Location
 {
+    /**
+     * The default bucket type used if none is suppled. 
+     * The value is "default"
+     */
     public static final BinaryValue DEFAULT_BUCKET_TYPE = 
         BinaryValue.create("default", Charset.forName("UTF-8"));
 

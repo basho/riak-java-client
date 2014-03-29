@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Basho Technologies
+ * Copyright 2014 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,37 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
+ * Annotates a field or getter/setter method pair in a class to server as the bucket type.
+ * <p>
+ * The type must be a {@code String}.
+ * 
+ * <pre>
+ * class MyPojo
+ * {
+ *     {@literal @}RiakBucketType
+ *     String bucketType;
+ * }
+ * 
+ * class MyPojo
+ * {
+ *     private String bucketType;
+ * 
+ *     {@literal @}RiakBucketType
+ *     public void setBucketType(String bucketType)
+ *     {
+ *         this.bucketType = bucketType;
+ *     }
+ * 
+ *     {@literal @}RiakBucketType
+ *     public String getBucketType()
+ *     {
+ *         return bucketType;
+ *     }
+ * }
+ * </pre>
+ * </p>
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakBucketType
 {

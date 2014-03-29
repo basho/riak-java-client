@@ -29,9 +29,11 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
- * Converts a RiakObject's value to an instance of T. T must have a field
- * annotated with {@link RiakKey} or you must construct the converter with a key to use. RiakObject's value *must* be a JSON string.
- * 
+ * The default Converter used when storing and fetching domain objects from Riak.
+ * <p>
+ * This uses the Jackson JSON library to serialize / deserialize objects to JSON.
+ * The reulsting JSON is then stored in Riak. 
+ * </p>
  * @author Brian Roach <roach at basho dot com>
  * @param <T> type to convert to/from
  * 
@@ -48,7 +50,7 @@ public class JSONConverter<T> extends Converter<T> {
     
     /**
      * Create a JSONConverter for creating instances of <code>type</code> from
-     * JSON and instances of {@link IRiakObject} with a JSON payload from
+     * JSON and instances of {@literal RiakObject} with a JSON payload from
      * instances of <code>clazz</code>
      * 
      * @param type
