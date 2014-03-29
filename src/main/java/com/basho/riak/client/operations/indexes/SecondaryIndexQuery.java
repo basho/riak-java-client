@@ -65,6 +65,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     protected final boolean returnTerms;
     protected final boolean paginationSort;
     protected final String termFilter;
+    protected Integer timeout;
 
     protected abstract IndexConverter<T> getConverter();
 
@@ -80,6 +81,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         this.returnTerms = builder.returnTerms;
         this.paginationSort = builder.paginationSort;
         this.termFilter = builder.termFilter;
+        this.timeout = builder.timeout;
     }
 
     /**
@@ -172,6 +174,15 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         return continuation;
     }
 
+    /**
+     * Get the timeout value for this query.
+     * @return the timeout value, or null if not set.
+     */
+    public Integer getTimeout()
+    {
+        return timeout;
+    }
+    
     protected final SecondaryIndexQueryOperation.Query createCoreQuery()
     {
         IndexConverter<T> converter = getConverter();
@@ -200,6 +211,11 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         if (maxResults != null)
         {
             coreQueryBuilder.withMaxResults(maxResults);
+        }
+        
+        if (timeout != null)
+        {
+            coreQueryBuilder.withTimeout(timeout);
         }
 
         return coreQueryBuilder.build();
@@ -232,6 +248,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         private volatile boolean returnTerms;
         private volatile boolean paginationSort;
         private volatile String termFilter;
+        private volatile Integer timeout;
 
         protected abstract T self();
 
@@ -336,6 +353,20 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         public T withRegexTermFilter(String filter)
         {
             this.termFilter = filter;
+            return self();
+        }
+        
+        /**
+         * Set the timeout for the query.
+         * <p>
+         * Sets the server-side timeout value for this query.
+         * </p>
+         * @param timeout
+         * @return a reference to this object.
+         */
+        public T withTimeout(int timeout)
+        {
+            this.timeout = timeout;
             return self();
         }
     }

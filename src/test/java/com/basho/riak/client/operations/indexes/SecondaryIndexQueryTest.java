@@ -40,6 +40,7 @@ public class SecondaryIndexQueryTest
                 .withContinuation(BinaryValue.create("continuation"))
                 .withMaxResults(Integer.MAX_VALUE)
                 .withPaginationSort(true)
+                .withTimeout(Integer.MAX_VALUE)
                 .build();
         
         SecondaryIndexQueryOperation.Query query = iiq.createCoreQuery();
@@ -51,6 +52,7 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getMaxResults());
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
+        assertEquals(Integer.MAX_VALUE, query.getTimeout().intValue());
         
         
         iiq = new IntIndexQuery.Builder(loc, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
