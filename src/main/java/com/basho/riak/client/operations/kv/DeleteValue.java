@@ -30,7 +30,18 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Command used to delete a value from Riak, referenced by it's key.
+ * Command used to delete a value from Riak.
+ * <p>
+ * Deleting an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
+ * and executing the DeleteValue operation.
+ * <pre>
+ * Location loc = new Location("my_bucket")..setBucketType("my_type").setKey("my_key");
+ * DeleteValue dv = new DeleteValue.Builder(loc).build();
+ * DeleteValue.Response resp = client.execute(dv);
+ * </pre>
+ * </p>
+ * 
+ * 
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -147,7 +158,7 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
     }
 
     /**
-     * The response from Riak
+     * The response from Riak for the DeleteValue operation.
      */
     public static class Response
     {
@@ -158,12 +169,20 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
             this.deleted = deleted;
         }
 
+        /**
+         * Indicates a successful deletion.
+         * 
+         * @return true, always. 
+         */
         public boolean isDeleted()
         {
             return deleted;
         }
     }
 
+    /**
+     * Used to construct a DeleteValue operation.
+     */
 	public static class Builder
 	{
 
@@ -182,7 +201,7 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
 		}
 
 		/**
-		 * Specify the VClock to use when deleting the object from Riak
+		 * Specify the VClock to use when deleting the object from Riak.
 		 *
 		 * @param vClock the vclock
 		 * @return this
@@ -207,6 +226,10 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
 			return this;
 		}
 
+        /**
+         * Construct a DeleteValue object.
+         * @return a new DeleteValue instance.
+         */
 		public DeleteValue build()
 		{
 			return new DeleteValue(this);
