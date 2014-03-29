@@ -47,7 +47,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  * <p>
  * The result of executing this command is a {@code List} of {@link RiakFuture} objects, each one representing a single
- * fetch operation. The simplest use would be a loop where you iterate through and wait for them to complete:
+ * fetch operation. The returned {@code RiakFuture} that contains that list completes
+ * when all the FetchValue operations contained have finished.
  * <p/>
  * <pre>
  * {@code
