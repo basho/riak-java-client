@@ -199,7 +199,7 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
 		 * @param option the option
 		 * @param value  the value associated with the option
 		 * @param <T>    the type required by the option
-		 * @return
+		 * @return a reference to this object
 		 */
 		public <T> Builder withOption(DeleteOption<T> option, T value)
 		{

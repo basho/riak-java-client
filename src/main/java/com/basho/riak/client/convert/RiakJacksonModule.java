@@ -17,13 +17,14 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 
 /**
- * A <a href="">Jackson</a> {@link Module} that customises Jackson's object
- * mapper so we can handle Riak annotations like {@link RiakKey},
- * {@link RiakUsermeta}, and RiakLink correctly.
+ * A Jackson module that customizes Jackson's object
+ * mapper so we can handle Riak annotations like {@literal @RiakKey},
+ * {@literal @RiakUsermeta}, etc correctly.
  *
- * Adds a {@link RiakBeanSerializerModifier} that removes any RiakXXX annotated
+ * Adds a {@link RiakBeanSerializerModifier} that removes any {@literal @RiakXXX} annotated
  * fields from the JSON output (since they will be persisted as object meta data
- * and not as part of the object)
+ * and not as part of the object). Explicitly adding an additional {@literal @JsonProperty}
+ * annotation overrides this exclusion. 
  *
  * @author russell
  *
@@ -32,45 +33,24 @@ public class RiakJacksonModule extends Module
 {
 
     private static final String NAME = "RiakJacksonModule";
-    // TODO get this from pom, or update it per release?
     private static final Version VERSION = Version.unknownVersion();
 
-    /**
-     *
-     */
     public RiakJacksonModule()
     {
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.codehaus.jackson.map.Module#getModuleName()
-     */
     @Override
     public String getModuleName()
     {
         return NAME;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.codehaus.jackson.map.Module#version()
-     */
     @Override
     public Version version()
     {
         return VERSION;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.codehaus.jackson.map.Module#setupModule(org.codehaus.jackson.map.
-     * Module.SetupContext)
-     */
     @Override
     public void setupModule(SetupContext context)
     {

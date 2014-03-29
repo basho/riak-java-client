@@ -118,7 +118,7 @@ abstract class KvResponseBase
      * Get a single, resolved value from this response.
      * <p>
      * All values will be converted to the supplied class using the 
-     * {@coce Converter} returned from the {@code ConverterFactory}. If there are multiple 
+     * {@code Converter} returned from the {@code ConverterFactory}. If there are multiple 
      * values present (siblings), they will then be resolved using the 
      * {@code ConflictResolver} returned by the {@code ConflictResolverFactory}.
      * </p>
@@ -145,7 +145,7 @@ abstract class KvResponseBase
      * Get a single, resolved value from this response.
      * <p>
      * All values will be converted to the supplied class using the 
-     * {@coce Converter} returned from the {@code ConverterFactory}. If there are multiple 
+     * {@code Converter} returned from the {@code ConverterFactory}. If there are multiple 
      * values present (siblings), they will then be resolved using the 
      * {@code ConflictResolver} returned by the {@code ConflictResolverFactory}.
      * </p>
@@ -174,7 +174,7 @@ abstract class KvResponseBase
      * The values will be converted to the supplied class using the 
      * {@code Converter} returned from the {@code ConverterFactory}.
      * </p>
-     * @param clazz the class to be converted to
+     * @param typeReference the TypeReference for the class to be converted to
      * @return a list of values, converted to the supplied class.
      * @see ConverterFactory
      * @see Converter

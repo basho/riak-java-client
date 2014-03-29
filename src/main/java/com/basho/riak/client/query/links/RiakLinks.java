@@ -108,7 +108,7 @@ public class RiakLinks implements Iterable<RiakLink>
      * <p>
      * Changes to the returned set do not modify this container.
      * </p>
-     * @return 
+     * @return the set of RiakLink objects
      */
     public Set<RiakLink> getLinks()
     {

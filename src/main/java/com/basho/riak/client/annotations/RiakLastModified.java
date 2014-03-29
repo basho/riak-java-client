@@ -22,7 +22,31 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
+ * Annotates a field or setter method in a class to store last modified.
+ * <p>
+ * This value is only populated when fetching an object from riak. Setting it when
+ * storing an object has no effect. A getter method is not supported; only a setter
+ * method may be annotated. The type must be {@literal long} or {@literal Long}.
+ * 
+ * <pre>
+ * class MyPojo
+ * {
+ *     {@literal @}RiakLastModified
+ *     Long lastModified;
+ * }
+ * 
+ * class MyPojo
+ * {
+ *     private Long lastModified;
+ * 
+ *     {@literal @}RiakLastModified
+ *     public void setLastModified(Long lastModified)
+ *     {
+ *         this.lastModified = lastModified;
+ *     }
+ * }
+ * </pre>
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */

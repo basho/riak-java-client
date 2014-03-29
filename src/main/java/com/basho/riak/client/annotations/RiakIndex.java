@@ -19,42 +19,58 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a field or getter/setter pair as a RiakIndex.
+ * Annotates a field or getter/setter method pair in a class to serve as a RiakIndex.
  * <p>
- * You do not need to specify the index type prefix (_bin/_int). It will be
- * inferred from the type of the annotated field. 
- * 
- * Only String/Long/long or {@code Set<String>} / {@code Set<Long>}  fields
- * may be annotated with RiakIndex. 
+ * You do not need to specify the index type suffix ({@code _bin}/{@code _int}). It will be
+ * inferred from the type of the annotated field <b>except when using {@code byte[]}</b>;
+ * in this case the full index name including the suffix must be supplied.
  * </p>
  * <p>
- * <b>NOTE: if there are *multiple* values for the same named index and the field
- * in the domain object is an long, Long, or String only the 1st will find 
- * it's way into the domain object</b>
+ * For {@code _bin} indexes, {@code String} and {@code byte[]} types are supported. 
+ * For {@code _int} indexes, {@code Long}, {@code BigInteger} and {@code byte[]} 
+ * are supported. This can either be a single instance or a {@code Set}. 
  * </p>
  * <p>
- * For example: 
+ * <b>Important Note:</b> if there are multiple index keys for the object and the field
+ * is a single value rather than a {@code Set}, only a single index key will be 
+ * set (the first returned). 
  * </p>
  * <pre>
- * 
- * public class MyClass {
- *     &#064;RiakKey
+ * public class MyClass 
+ * {
+ *     {@literal @}RiakKey
  *     private String myKeyString;
  *     
- *     &#064;RiakIndex(name="email")
- *     private String emailAddress; // will be indexed in email_bin index
+ *     {@literal @}RiakIndex(name="email")
+ *     private {@literal Set<String>} emailAddress; // will be indexed in the email_bin index
  *     
- *     &#064;RiakIndex(name="age")
- *     private long age; // will be index in age_int index
+ *     {@literal @}RiakIndex(name="age")
+ *     private long age; // will be indexed in the age_int index
  * }
- *  
+ * 
+ * public class MyClass
+ * {
+ *     private {@literal Set<Long>} categoryIds;
+ * 
+ *     {@literal @}RiakIndex(name="category_ids")
+ *     public {@literal Set<String>} getCategoryIds()
+ *     {
+ *         return categoryIds;
+ *     }
+ * 
+ *     {@literal @}RiakIndex(name="category_ids")
+ *     public void setCategoryIds({@literal Set<String>} ids)
+ *     {
+ *         categoryIds = ids;
+ *     }
+ * }
+ * 
  * </pre>
  * 
- * 
- * 
- * @author russell
- * @see JSONConverter
- */
+ * @author Russell Brown
+ * @author Brian Roach <roach at basho dot com>
+ * @since 1.0
+*/
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakIndex {
     /**
      * @return the index name

@@ -1,4 +1,7 @@
-/*Licensed under the Apache License, Version 2.0 (the "License");
+/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -18,11 +21,36 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a field or getter/setter pair as the vector clock to a data item in Riak.
+ * Annotates a field or getter/setter method pair in a class to serve as the vector clock.
  * <p>
- * This annotation can be used with either byte[] or VClock types.
+ * This annotation can be used with either {@code byte[]} or {@code VClock} types.
  * </p>
+ * <pre>
+ * public class MyPojo 
+ * {
+ *     {@literal @}RiakVClock 
+ *     public VClock vclock;
+ * }
+ * 
+ * public class AnotherPojo 
+ * {
+ *     private VClock vclock;
+ *     
+ *     {@literal @}RiakVClock 
+ *     public VClock getVClock() 
+ *     {
+ *         return vclock;
+ *     }
+ * 
+ *     {@literal @}RiakVClock 
+ *     public void setVClock(VClock vclock) 
+ *     {
+ *         this.vclock = vclock;
+ *     }
+ * }
+ * </pre>
  * @author Brian Roach <roach at basho dot com>
+ * @since 1.4
  */
 
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakVClock {

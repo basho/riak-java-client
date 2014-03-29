@@ -1,15 +1,17 @@
 /*
- * This file is provided to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.basho.riak.client.annotations;
 
@@ -19,27 +21,39 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a field or a getter/setter pair as holding a collection of RiakLinks
+ * Annotates a field or getter/setter method pair in a class to serve as a set of links.
  * <p>
- * Annotate a single field in your domain class. It must be a
- * Collection<RiakLink>. This is so ORM features can still be used and RiakLink
- * data made available. 
- * </p>
- * <p>
- * For example: <code><pre>
- * public class MyClass {
- *     \@RiakKey
- *     private String myKeyString;
- *     
- *     \@RiakLinks
- *     private Collection<RiakLink> links;
+ * The type must be {@literal Collection<RiakLink>}. 
+ * <pre>
+ * class MyPojo
+ * {
+ *     {@literal @}RiakLinks
+ *     {@literal Collection<RiakLink>} riakLinks;
  * }
- * </pre></code>
- * </p>
+ * 
+ * class MyPojo
+ * {
+ *     private {@literal Collection<RiakLink>} riakLinks;
+ * 
+ *     {@literal @}RiakLinks
+ *     public void setRiakLinks({@literal Collection<RiakLink>} riakLinks)
+ *     {
+ *         this.riakLinks = riakLinks;
+ *     }
+ * 
+ *     {@literal @}RiakLinks
+ *     public {@literal Collection<RiakLink>} getRiakLinks()
+ *     {
+ *         return riakLinks;
+ *     }
+ * }
+ * 
+ * </pre>
  * 
  * 
- * @author russell
- * @see JSONConverter
- */
+ * @author Russell Brown <russelldb at basho dot com>
+ * @author Brian Roach <roach at basho dot com>
+ * @since 1.0
+*/
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakLinks {
 }

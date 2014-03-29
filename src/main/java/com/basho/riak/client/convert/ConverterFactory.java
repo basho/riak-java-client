@@ -18,13 +18,25 @@ package com.basho.riak.client.convert;
 
 import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
+ * Holds instances of converters to be used for serialization / deserialization 
+ * of objects stored and fetched from Riak.
+ * <p>
+ * When storing and retrieving your own domain objects to/from Riak, they
+ * need to be serialized / deserialized. By default the {@link JSONConverter}
+ * is provided. This uses the Jackson JSON library to translate your object to/from
+ * JSON. In many cases you will never need to create or register your own
+ * converter with the ConverterFactory.
+ * </p>
+ * <p>
+ * In the case you do need custom conversion, you would extend {@link Converter}
+ * and then register it with the ConverterFactory for your classes.
+ * </p>
+ * 
  * @author Brian Roach <roach at basho dot com>
  * @since  2.0
  */
@@ -41,8 +53,8 @@ public enum ConverterFactory
     
     
     /**
-     * Get the instance of the ConverterFactory;
-     * @return
+     * Get the instance of the ConverterFactory. 
+     * @return the ConverterFactory
      */
     public static ConverterFactory getInstance()
     {
@@ -52,18 +64,26 @@ public enum ConverterFactory
     /**
      * Returns a Converter<T> instance for the supplied class.
      * <p>
-     * If no converter is registered, the default converter is returned.
+     * If no converter is registered, the default {@link JSONConverter} is returned.
      * </p>
      * @param <T> The type for the converter
      * @param type The type used to look up the converter
      * @return an instance of the converter for this class
-     * @see #setDefaultConverter(java.lang.Class) 
      */
     public <T> Converter<T> getConverter(Type type)
     {
         return getConverter(type, null);
     }
     
+    /**
+     * Returns a Converter instance for the supplied class.
+     * <p>
+     * If no converter is registered, the default {@link JSONConverter} is returned.
+     * </p>
+     * @param <T> The type for the converter
+     * @param typeReference the TypeReference for the class being converted.
+     * @return an instance of the converter for this class
+     */
     public <T> Converter<T> getConverter(TypeReference<T> typeReference)
     {
         return getConverter(null, typeReference);
@@ -102,13 +122,22 @@ public enum ConverterFactory
      * </p>
      * @param <T> The type being converted
      * @param clazz the class for this converter.
-     * @param converter an instance of Converter<T>
+     * @param converter an instance of Converter
      */
     public <T> void registerConverterForClass(Class<T> clazz, Converter<T> converter)
     {
         converterInstances.put((Type)clazz, converter);
     }
     
+    /**
+     * Register a converter for the supplied class.
+     * <p>
+     * This instance be re-used for every conversion.
+     * </p>
+     * @param <T> The type being converted
+     * @param typeReference the TypeReference for the class being converted.
+     * @param converter an instance of Converter
+     */
     public <T> void registerConverterForClass(TypeReference<T> typeReference, Converter<T> converter)
     {
         Type t = typeReference.getType();
@@ -125,6 +154,11 @@ public enum ConverterFactory
         converterInstances.remove((Type)clazz);
     }
     
+    /**
+     * Unregister a converter.
+     * @param <T> The type
+     * @param typeReference the TypeReference for the class being converted.
+     */
     public <T> void unregisterConverterForClass(TypeReference<T> typeReference)
     {
         Type t = typeReference.getType();

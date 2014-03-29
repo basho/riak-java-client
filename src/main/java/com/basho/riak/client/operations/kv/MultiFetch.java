@@ -42,24 +42,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * An operation to fetch multiple values from Riak
  * <p>
- * Riak itself does not support pipelining of requests. MutliFetch addresses this issue by using a threadpool to
- * parallelize a set of fetch operations for a given set of keys.
+ * Riak itself does not support pipelining of requests. MutliFetch addresses this issue by using a thread to
+ * parallelize and manage a set of async fetch operations for a given set of keys.
  * </p>
  * <p>
- * The result of executing this command is a {@code List} of {@link Future} objects, each one representing a single
+ * The result of executing this command is a {@code List} of {@link RiakFuture} objects, each one representing a single
  * fetch operation. The simplest use would be a loop where you iterate through and wait for them to complete:
  * <p/>
  * <pre>
  * {@code
- * MultiFetch<MyPojo> multifetch = ...;
- * MultiFetch.Response<MyPojo> response = client.execute(multifetch);
+ * MultiFetch multifetch = ...;
+ * MultiFetch.Response response = client.execute(multifetch);
  * List<MyPojo> myResults = new ArrayList<MyPojo>();
- * for (Future<FetchValue.Response<MyPojo>> f : response)
+ * for (RiakFuture<FetchValue.Response> f : response)
  * {
  *     try
  *     {
- *          FetchValue.Response<MyPojo> response = f.get();
- *          myResults.add(response.view().get(0));
+ *          FetchValue.Response response = f.get();
+ *          myResults.add(response.getValue(MyPojo.class));
  *     }
  *     catch (ExecutionException e)
  *     {
@@ -70,15 +70,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </pre>
  * </p>
  * <p>
- * <b>Thread Pool:</b><br/>
- * The internal {@link ThreadPoolExecutor} is static; all multi-fetch operations performed by a single instance of the
- * client use the same pool, unless overidden upon construction. This is to prevent resource starvation in the case of
- * multiple simultaneous multi-fetch operations. Idle threads (including core threads) are timed out after 5
- * seconds.
- * <br/><br/>
- * The defaults for {@code corePoolSize} is determined by the Java Runtime using:
- * <br/><br/>
- * {@code Runtime.getRuntime().availableProcessors() * 2;}
+ * The maximum number of concurrent requests defaults to 10. This can be changed
+ * when constructing the operation.
  * </p>
  * <p>
  * Be aware that because requests are being parallelized performance is also
@@ -217,7 +210,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
          * parameter controls how many outstanding requests are allowed simultaneously. 
          * </p>
          * @param maxInFlight the max number of outstanding requests.
-         * @return 
+         * @return a reference to this object.
          */
         public Builder withMaxInFlight(int maxInFlight)
         {
@@ -226,12 +219,12 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
         
         /**
-		 * A {@see FetchOption} to use with each fetch operation
+		 * A {@link FetchOption} to use with each fetch operation
 		 *
 		 * @param option an option
 		 * @param value  the option's associated value
 		 * @param <U>    the type of the option's value
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public <U> Builder withOption(FetchOption<U> option, U value)
 		{
@@ -240,9 +233,9 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
 		}
 
 		/**
-		 * Build a {@see MultiFetch} operation from this builder
+		 * Build a {@link MultiFetch} operation from this builder
 		 *
-		 * @return an initialized {@see MultiFetch} operation
+		 * @return an initialized {@link MultiFetch} operation
 		 */
 		public MultiFetch build()
 		{

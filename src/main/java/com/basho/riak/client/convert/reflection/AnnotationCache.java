@@ -21,16 +21,14 @@ import java.util.concurrent.FutureTask;
 /**
  * TODO: consider class reloading and re-scanning
  * @author russell
- * @param <T>
  * 
  */
 public class AnnotationCache {
     @SuppressWarnings("rawtypes") private final ConcurrentHashMap<Class, Future<AnnotationInfo>> cache = new ConcurrentHashMap<Class, Future<AnnotationInfo>>();
 
     /**
-     * @param <T>
-     * @param name
-     * @return
+     * @param clazz the class to be scanned and cached.
+     * @return an AnnotationInfo instance.
      */
     public <T> AnnotationInfo get(Class<T> clazz) {
 
