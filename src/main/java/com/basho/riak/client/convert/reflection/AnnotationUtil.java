@@ -33,15 +33,15 @@ public class AnnotationUtil
     private AnnotationUtil() {}
     
     /**
-     * Attempts to inject <code>key</code> as the value of the {@link RiakKey}
-     * annotated field of <code>domainObject</code>
+     * Attempts to inject <code>key</code> as the value of the {@literal @RiakKey}
+     * annotated member of <code>domainObject</code>
      *
      * @param <T> the type of <code>domainObject</code>
      * @param domainObject the object to inject the key into
      * @param key the key to inject
-     * @return <code>domainObject</code> with {@link RiakKey} annotated field
+     * @return <code>domainObject</code> with {@literal @RiakKey} annotated member
      * set to <code>key</code>
-     * @throws ConversionException if there is a {@link RiakKey} annotated field
+     * @throws ConversionException if there is a {@literal @RiakKey} annotated member
      * but it cannot be set to the value of <code>key</code>
      */
     public static <T> T setKey(T domainObject, BinaryValue key) throws ConversionException
@@ -52,7 +52,7 @@ public class AnnotationUtil
 
     /**
      * Attempts to get a key from <code>domainObject</code> by looking for a
-     * {@link RiakKey} annotated field. If non-present it simply returns
+     * {@literal @RiakKey} annotated member. If non-present it simply returns
      * <code>defaultKey</code>
      *
      * @param <T> the type of <code>domainObject</code>
@@ -60,7 +60,7 @@ public class AnnotationUtil
      * @param defaultKey the pass through value that will get returned if no key
      * found on <code>domainObject</code>
      * @return either the value found on <code>domainObject</code>;s
-     * {@link RiakKey} field or <code>defaultkey</code>
+     * {@literal @RiakKey} member or <code>defaultkey</code>
      */
     public static <T> BinaryValue getKey(T domainObject, BinaryValue defaultKey)
     {
@@ -74,13 +74,13 @@ public class AnnotationUtil
 
     /**
      * Attempts to get a key from <code>domainObject</code> by looking for a
-     * {@link RiakKey} annotated field. If non-present it simply returns
+     * {@literal @RiakKey} annotated member. If non-present it simply returns
      * <code>null</code>
      *
      * @param <T> the type of <code>domainObject</code>
      * @param domainObject the object to search for a key
      * @return either the value found on <code>domainObject</code>;s
-     * {@link RiakKey} field or <code>null</code>
+     * {@literal @RiakKey} member or <code>null</code>
      */
     public static <T> BinaryValue getKey(T domainObject)
     {
@@ -121,15 +121,15 @@ public class AnnotationUtil
     
     /**
      * Attempts to inject <code>vclock</code> as the value of the
-     * {@link RiakVClock} annotated field of <code>domainObject</code>
+     * {@literal @RiakVClock} annotated member of <code>domainObject</code>
      *
      * @param <T> the type of <code>domainObject</code>
      * @param domainObject the object to inject the key into
      * @param vclock the vclock to inject
-     * @return <code>domainObject</code> with {@link RiakVClock} annotated field
+     * @return <code>domainObject</code> with {@literal @RiakVClock} annotated member
      * set to <code>vclock</code>
-     * @throws ConversionException if there is a {@link RiakVClock} annotated
-     * field but it cannot be set to the value of <code>vclock</code>
+     * @throws ConversionException if there is a {@literal @RiakVClock} annotated
+     * member but it cannot be set to the value of <code>vclock</code>
      */
     public static <T> T setVClock(T domainObject, VClock vclock) throws ConversionException
     {
@@ -145,13 +145,13 @@ public class AnnotationUtil
     
     /**
      * Attempts to get a vector clock from <code>domainObject</code> by looking
-     * for a {@link RiakVClock} annotated field. If non-present it simply
+     * for a {@literal @RiakVClock} annotated member. If non-present it simply
      * returns <code>null</code>
      *
      * @param <T> the type of <code>domainObject</code>
      * @param domainObject the object to search for a key
      * @return either the value found on <code>domainObject</code>;s
-     * {@link RiakVClock} field or <code>null</code>
+     * {@literal @RiakVClock} member or <code>null</code>
      */
     public static <T> VClock getVClock(T domainObject)
     {
@@ -160,15 +160,15 @@ public class AnnotationUtil
 
     /**
      * Attempts to inject <code>isTombstone</code> as the value of the
-     * {@link RiakTombstone} annotated field of <code>domainObject</code>
+     * {@literal @RiakTombstone} annotated member of <code>domainObject</code>
      *
      * @param <T> the type of <code>domainObject</code>
      * @param domainObject the object to inject the key into
      * @param isTombstone the boolean to inject
-     * @return <code>domainObject</code> with {@link RiakTombstone} annotated
-     * field set to <code>isTombstone</code>
-     * @throws ConversionException if there is a {@link Riaktombstone} annotated
-     * field but it cannot be set to the value of <code>isTombstone</code>
+     * @return <code>domainObject</code> with {@literal @RiakTombstone} annotated
+     * member set to <code>isTombstone</code>
+     * @throws ConversionException if there is a {@literal @RiakTombstone} annotated
+     * member but it cannot be set to the value of <code>isTombstone</code>
      */
     public static <T> T setTombstone(T domainObject, boolean isTombstone) throws ConversionException
     {
@@ -178,13 +178,13 @@ public class AnnotationUtil
 
     /**
      * Attempts to get boolean from <code>domainObject</code> by looking for a
-     * {@link RiakTombstone} annotated field. If non-present it simply returns
+     * {@literal @RiakTombstone} annotated member. If non-present it simply returns
      * <code>null</code>
      *
      * @param <T> the type of <code>domainObject</code>
      * @param domainObject the object to search for a key
      * @return either the value found on <code>domainObject</code>'s
-     * {@link RiakTombstone} field or <code>null</code>
+     * {@literal @RiakTombstone} member or <code>null</code>
      */
     public static <T> Boolean getTombstone(T domainObject)
     {
@@ -193,7 +193,7 @@ public class AnnotationUtil
 
     /**
      * Attempts to get all the riak indexes from a domain object by looking for
-     * a {@link RiakIndexes} annotated field or getter method.
+     * a {@literal @RiakIndexes} annotated member.
      * <p>
      * If no indexes are present, an empty RiakIndexes is returned.</p>
      *
@@ -208,8 +208,7 @@ public class AnnotationUtil
 
     /**
      * Attempts to populate a domain object with the contents of the supplied
-     * RiakIndexes by looking for a {@link RiakIndexes} annotated field or
-     * setter method.
+     * RiakIndexes by looking for a {@literal @RiakIndex} annotated member
      *
      * @param <T> the type of the domain object
      * @param indexes a populated RiakIndexes object.
@@ -222,10 +221,11 @@ public class AnnotationUtil
     }
 
     /**
-     * Attempts to get the the riak links from a domain object by looking for a
-     * {@link RiakLinks} annotated field or getter method.
+     * Attempts to get the the Riak links from a domain object by looking for a
+     * {@literal @RiakLinks} annotated member.
      *
      * @param <T> the domain object type
+     * @param container the RiakLinks container
      * @param domainObject the domain object
      * @return a Collection of RiakLink objects.
      */
@@ -236,7 +236,7 @@ public class AnnotationUtil
 
     /**
      * Attempts to populate a domain object with riak links by looking for a
-     * {@link RiakLinks} annotated field or setter method.
+     * {@literal @RiakLinks} annotated member.
      *
      * @param <T> the type of the domain object
      * @param links a collection of RiakLink objects
@@ -250,9 +250,10 @@ public class AnnotationUtil
 
     /**
      * Attempts to get the riak user metadata from a domain object by looking
-     * for a {@link RiakUsermeta} annotated field or getter method.
+     * for a {@literal @RiakUsermeta} annotated field or getter method.
      *
      * @param <T> the type of the domain object
+     * @param metaContainer the RiakUserMetadata container
      * @param domainObject the domain object
      * @return a Map containing the user metadata.
      */
@@ -263,7 +264,7 @@ public class AnnotationUtil
 
     /**
      * Attempts to populate a domain object with user metadata by looking for a
-     * {@link RiakUsermeta} annotated field or setter method.
+     * {@literal @RiakUsermeta} annotated member.
      *
      * @param <T> the type of the domain object
      * @param usermetaData a Map of user metadata.

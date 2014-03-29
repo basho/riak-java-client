@@ -9,7 +9,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -23,7 +23,39 @@ import java.lang.annotation.ElementType;
 
 
 /**
- *
+ * Annotates a field or getter/setter method pair in a class to serve as the content-type.
+ * <p>
+ * The type must be a {@code String}. 
+ * </p>
+ * <p>
+ * In most cases this is not needed as the {@link com.basho.riak.client.convert.Converter}
+ * will supply the appropriate content-type during serialization.
+ * 
+ * <pre>
+ * class MyPojo
+ * {
+ *     {@literal @}RiakContentType
+ *     String contentType;
+ * }
+ * 
+ * class MyPojo
+ * {
+ *     private String contentType;
+ * 
+ *     {@literal @}RiakContentType
+ *     public void setContentType(String contentType)
+ *     {
+ *         this.contentType = contentType;
+ *     }
+ * 
+ *     {@literal @}RiakContentType
+ *     public String getContentType()
+ *     {
+ *         return contentType;
+ *     }
+ * }
+ * </pre>
+ * <p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */

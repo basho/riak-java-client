@@ -243,7 +243,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		 * @param option
 		 * @param value
 		 * @param <U>
-		 * @return
+		 * @return a reference to this object.
 		 */
 		public <U> Builder withOption(FetchOption<U> option, U value)
 		{

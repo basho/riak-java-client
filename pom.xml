@@ -168,7 +168,7 @@
                             <tagletArtifact>
                                 <groupId>com.basho.riak</groupId>
                                 <artifactId>riak-client</artifactId>
-                                <version>2.0.0-ALPHA1-SNAPSHOT</version>
+                                <version>2.0.0-SNAPSHOT</version>
                             </tagletArtifact>
                         </taglet>
                     </taglets>
@@ -176,7 +176,7 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
+<!--    <repositories>
         <repository>
             <id>netty-snapshot-repository</id>
             <url>http://repository-netty.forge.cloudbees.com/snapshot/</url>
@@ -187,7 +187,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-    </repositories>
+    </repositories>-->
 
     <dependencies>
         <dependency>

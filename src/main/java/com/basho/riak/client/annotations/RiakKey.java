@@ -1,15 +1,17 @@
 /*
- * This file is provided to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.basho.riak.client.annotations;
 
@@ -19,31 +21,37 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare a field or getter/setter pair as the key to a data item in Riak.
+ * Annotates a field or getter/setter method pair in a class to serve as the key.
  * <p>
- * This annotation can be used either on a field, or getter/setter pair of methods. 
+ * The type must be a {@code String}.
  * <p>
- * 
  * <pre>
- * public class MyPojo {
- *     &#064;RiakKey public String key;
+ * public class MyPojo 
+ * {
+ *     {@literal @}RiakKey 
+ *     public String key;
  * }
  * 
- * public class AnotherPojo {
+ * public class AnotherPojo 
+ * {
  *     private String key;
  *     
- *     &#064;RiakKey public String getKey() {
+ *     {@literal @}RiakKey 
+ *     public String getKey() 
+ *     {
  *         return key;
  *     }
  * 
- *     &#064;RiakKey public void setKey(String key) {
+ *     {@literal @}RiakKey 
+ *     public void setKey(String key) 
+ *     {
  *         this.key = key;
  *     }
  * }
  * </pre>
- * @author russell
+ * @author Russell Brown <russelldb at basho dot com>
  * @author Brian Roach <roach at basho dot com>
- * @see JSONConverter
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakKey {
 
