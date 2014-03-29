@@ -98,10 +98,16 @@ abstract class KvResponseBase
     }
     
     /**
-     * Get the values returned in this response.
+     * Get all the objects returned in this response.
+     * <p>
+     * If siblings were present in Riak for the object you were fetching, 
+     * this method will return all of them to you.
+     * </p>
      * <p>
      * The values will be converted to the supplied class using the 
-     * {@code Converter} returned from the {@code ConverterFactory}.
+     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * or no conversion at all if you pass in {@code RiakObject.class}. 
      * </p>
      * @param clazz the class to be converted to
      * @return a list of values, converted to the supplied class.
@@ -115,12 +121,14 @@ abstract class KvResponseBase
     }
 
     /**
-     * Get a single, resolved value from this response.
+     * Get a single, resolved object from this response.
      * <p>
-     * All values will be converted to the supplied class using the 
-     * {@coce Converter} returned from the {@code ConverterFactory}. If there are multiple 
+     * The values will be converted to the supplied class using the 
+     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * or no conversion at all if you pass in {@code RiakObject.class}. If there are multiple 
      * values present (siblings), they will then be resolved using the 
-     * {@code ConflictResolver} returned by the {@code ConflictResolverFactory}.
+     * {@link com.basho.riak.client.cap.ConflictResolver} returned by the {@link com.basho.riak.client.cap.ConflictResolverFactory}.
      * </p>
      * @param clazz the class to be converted to.
      * @return the single, resolved value converted to the supplied class.
@@ -142,14 +150,24 @@ abstract class KvResponseBase
     }
 
     /**
-     * Get a single, resolved value from this response.
+     * Get a single, resolved object from this response.
      * <p>
-     * All values will be converted to the supplied class using the 
-     * {@coce Converter} returned from the {@code ConverterFactory}. If there are multiple 
+     * The values will be converted to the supplied class using the 
+     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * or no conversion at all if you pass in {@code RiakObject.class}. If there are multiple 
      * values present (siblings), they will then be resolved using the 
-     * {@code ConflictResolver} returned by the {@code ConflictResolverFactory}.
+     * {@link com.basho.riak.client.cap.ConflictResolver} returned by the {@link com.basho.riak.client.cap.ConflictResolverFactory}.
      * </p>
-     * @param typeReference The type to be converted to.
+     * <p>
+     * This version should only be used if you're converting to a parameterized 
+     * generic domain object. For example:
+     * <pre>
+     * {@literal TypeReference<MyPojo<String>>} tr = new {@literal TypeReference<MyPojo<String>>}(){};
+     * {@literal MyPojo<String>} myPojo = response.getValue(tr);
+     * </pre>
+     * </p>
+     * @param typeReference The TypeReference of the class to be converted to.
      * @return the single, resolved value converted to the supplied class.
      * @throws UnresolvedConflictException 
      * @see ConverterFactory
@@ -168,13 +186,27 @@ abstract class KvResponseBase
         return resolver.resolve(convertedValues);
     }
 
-    /**
-     * Get the values returned in this response.
+    /** 
+     * Get the objects returned in this response.
+     * <p>
+     * If siblings were present in Riak for the object you were fetching, 
+     * this method will return all of them to you.
+     * </p>
      * <p>
      * The values will be converted to the supplied class using the 
-     * {@code Converter} returned from the {@code ConverterFactory}.
+     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * or no conversion at all if you pass in a TypeReference for {@code RiakObject.class}. 
      * </p>
-     * @param clazz the class to be converted to
+     * <p>
+     * This version should only be used if you're converting to a parameterized 
+     * generic domain object. For example:
+     * <pre>
+     * {@literal TypeReference<MyPojo<String>>} tr = new {@literal TypeReference<MyPojo<String>>}(){};
+     * {@literal List<MyPojo<String>>} list = response.getValues(tr);
+     * </pre>
+     * </p>
+     * @param typeReference the TypeReference for the class to be converted to
      * @return a list of values, converted to the supplied class.
      * @see ConverterFactory
      * @see Converter

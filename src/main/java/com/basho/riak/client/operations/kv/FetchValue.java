@@ -32,9 +32,44 @@ import java.util.concurrent.ExecutionException;
 
 
 /**
- * Command used to fetch a value from Riak, referenced by it's key.
+ * Command used to fetch a value from Riak, referenced by its location.
+ * <p>
+ * Fetching an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
+ * and executing the FetchValue operation.
+ * <pre>
+ * Location loc = new Location("my_bucket").setKey("my_key");
+ * FetchValue fv = new FetchValue.Builder(loc).build();
+ * FetchValue.Response response = client.execute(fv);
+ * RiakObject obj = response.getValue(RiakObject.class);
+ * </pre>
+ * </p>
+ * <p>
+ * All operations including FetchValue can called async as well.
+ * <pre>
+ * ...
+ * {@literal RiakFuture<FetchValue.Response, Location>} future = client.execute(sv);
+ * ...
+ * future.await();
+ * if (future.isSuccess)
+ * { 
+ *     ... 
+ * }
+ * </pre>
+ * </p>
+ * <p>
+ * ORM features are also provided when retrieving the results from the response. 
+ * By default, JSON serialization / deserializtion is used. For example, if 
+ * the value stored in Riak was JSON and mapped to your class {@code MyPojo}:
+ * <pre>
+ * ...
+ * MyPojo mp = response.getValue(MyPojo.class);
+ * ...
+ * </pre>
+ * </p>
+ * 
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
+ * @see Response
  */
 public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
@@ -145,9 +180,12 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
     
 	/**
-	 * A response from Riak including the vector clock.
-	 *
-	 */
+	 * A response from Riak containing results from a fetch operation.
+	 * <p>
+     * The Response, unless marked not found or unchanged, will contain one or
+     * more objects returned from Riak (all siblings are returned if present).
+     * </p>
+     */
 	public static class Response extends KvResponseBase
 	{
 		private final boolean notFound;
@@ -224,6 +262,9 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
         
 	}
 
+    /**
+     * Used to construct a FetchValue operation. 
+     */
 	public static class Builder
 	{
 
@@ -231,6 +272,10 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		private final Map<FetchOption<?>, Object> options =
 			new HashMap<FetchOption<?>, Object>();
 
+        /**
+         * Constructs a builder for a FetchValue operation using the supplied location.
+         * @param location the location of the object you want to fetch from Riak. 
+         */
 		public Builder(Location location)
 		{
 			this.location = location;
@@ -243,7 +288,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		 * @param option
 		 * @param value
 		 * @param <U>
-		 * @return
+		 * @return 
 		 */
 		public <U> Builder withOption(FetchOption<U> option, U value)
 		{
