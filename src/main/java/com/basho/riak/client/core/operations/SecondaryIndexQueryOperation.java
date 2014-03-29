@@ -477,19 +477,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                     throw new IllegalArgumentException("Cannot use term regular expression in integer query");
                 }
 
-//                if (indexKey != null)
-//                {
-//                    pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
-//                }
-//                else
-//                {
-//                    pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
-//                }
-
                 return new Query(this);
-
             }
-            
         }
     }
     
