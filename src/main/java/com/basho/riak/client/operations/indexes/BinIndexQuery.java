@@ -87,25 +87,31 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
         
-        CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
-            new CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-                {
-                    return new Response(coreResponse, converter);
-                }
-
-                @Override
-                protected FailureInfo<BinIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
-                {
-                    return new FailureInfo<BinIndexQuery>(coreQueryInfo.getCause(), BinIndexQuery.this);
-                }
-            };
+        BinQueryFuture future = new BinQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
     }
 
+    protected final class BinQueryFuture extends CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    {
+        public BinQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(coreFuture);
+        }
+        
+        @Override
+        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+        {
+            return new Response(coreResponse, converter);
+        }
+
+        @Override
+        protected FailureInfo<BinIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+        {
+            return new FailureInfo<BinIndexQuery>(coreQueryInfo.getCause(), BinIndexQuery.this);
+        }
+    }
+    
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
         private Charset charset = Charset.defaultCharset();

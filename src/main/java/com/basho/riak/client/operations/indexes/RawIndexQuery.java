@@ -78,38 +78,31 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
         
-        CoreFutureAdapter<Response, RawIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
-            new CoreFutureAdapter<Response, RawIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-                {
-                    return new Response(coreResponse, converter);
-                }
-
-                @Override
-                protected FailureInfo<RawIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
-                {
-                    return new FailureInfo<RawIndexQuery>(coreQueryInfo.getCause(), RawIndexQuery.this);
-                }
-            };
+        RawQueryFuture future = new RawQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
     }
-    
-//    protected static abstract class Init<BinaryValue, T extends Init<BinaryValue,T>> extends SecondaryIndexQuery.Init<BinaryValue,T>
-//    {
-//
-//        public Init(Location location, String indexName, String type, BinaryValue start, BinaryValue end)
-//        {
-//            super(location, indexName, start, end);
-//        }
-//
-//        public Init(Location location, String indexName, String type, BinaryValue match)
-//        {
-//            super(location, indexName, match);
-//        }
-//    }
+
+    protected final class RawQueryFuture extends CoreFutureAdapter<Response, RawIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    {
+        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(coreFuture);
+        }
+        
+        @Override
+        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+        {
+            return new Response(coreResponse, converter);
+        }
+
+        @Override
+        protected FailureInfo<RawIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+        {
+            return new FailureInfo<RawIndexQuery>(coreQueryInfo.getCause(), RawIndexQuery.this);
+        }
+        
+    }
     
     public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
     {

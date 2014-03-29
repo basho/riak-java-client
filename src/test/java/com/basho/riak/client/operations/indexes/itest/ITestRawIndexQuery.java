@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.operations.itest;
+package com.basho.riak.client.operations.indexes.itest;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.annotations.RiakBucketName;
@@ -22,10 +22,13 @@ import com.basho.riak.client.annotations.RiakIndex;
 import com.basho.riak.client.annotations.RiakKey;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.operations.indexes.IntIndexQuery;
+import com.basho.riak.client.operations.indexes.RawIndexQuery;
+import com.basho.riak.client.operations.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
@@ -34,21 +37,22 @@ import org.junit.Test;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
- * @since 2.0
  */
-public class ITestIntIndexQuery extends ITestBase
+public class ITestRawIndexQuery extends ITestBase
 {
     @Test
     public void simpleTest() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         RiakClient client = new RiakClient(cluster);
+        
+        BinaryValue indexKey = BinaryValue.create("index_test_index_key");
         
         IndexedPojo ip = new IndexedPojo();
         ip.key = "index_test_object_key";
         ip.bucketName = bucketName.toString();
-        ip.indexKey = 123456L;
+        ip.indexKey = indexKey.getValue();
         ip.value = "My Object Value!";
         
         StoreValue sv = new StoreValue.Builder(ip).build();
@@ -59,15 +63,18 @@ public class ITestIntIndexQuery extends ITestBase
         
         Location loc = new Location(bucketName);
         
-        IntIndexQuery iiq = 
-            new IntIndexQuery.Builder(loc, "test_index", 123456L).withKeyAndIndex(true).build();
-        IntIndexQuery.Response iResp = client.execute(iiq);
+        RawIndexQuery biq  =
+            new RawIndexQuery.Builder(loc, "test_index", Type._BIN, indexKey).withKeyAndIndex(true).build();
+        RawIndexQuery.Response iResp = client.execute(biq);
         
         assertTrue(iResp.hasEntries());
-        IntIndexQuery.Response.Entry first = iResp.getEntries().iterator().next();
+        RawIndexQuery.Response.Entry first = iResp.getEntries().iterator().next();
         assertEquals(ip.key, first.getRiakObjectLocation().getKey().toString());
-        assertEquals(ip.indexKey, first.getIndexKey());
+        assertArrayEquals(ip.indexKey, first.getIndexKey().getValue());
+        
     }
+    
+    
     
     public static class IndexedPojo
     {
@@ -77,8 +84,8 @@ public class ITestIntIndexQuery extends ITestBase
         @RiakBucketName
         public String bucketName;
         
-        @RiakIndex(name="test_index")
-        Long indexKey;
+        @RiakIndex(name="test_index_bin")
+        byte[] indexKey;
         
         public String value;
     }

@@ -88,51 +88,63 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
         
-        CoreFutureAdapter<Response, IntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
-            new CoreFutureAdapter<Response, IntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-                {
-                    return new Response(coreResponse, converter);
-                }
-
-                @Override
-                protected FailureInfo<IntIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
-                {
-                    return new FailureInfo<IntIndexQuery>(coreQueryInfo.getCause(), IntIndexQuery.this);
-                }
-            };
+        IntQueryFuture future = new IntQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
             
     }
 
-//    protected static abstract class Init<Long, T extends Init<Long,T>> extends SecondaryIndexQuery.Init<Long,T>
-//    {
-//
-//        public Init(Location location, String indexName, Long start, Long end)
-//        {
-//            super(location, indexName + "_int", start, end);
-//        }
-//
-//        public Init(Location location, String indexName, Long match)
-//        {
-//            super(location, indexName + "_int", match);
-//        }
-//    }
+    protected final class IntQueryFuture extends CoreFutureAdapter<Response, IntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    {
+        public IntQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(coreFuture);
+        }
+        
+        @Override
+        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+        {
+            return new Response(coreResponse, converter);
+        }
 
-    public static class Builder extends SecondaryIndexQuery.Init<Long, Builder>
+        @Override
+        protected FailureInfo<IntIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+        {
+            return new FailureInfo<IntIndexQuery>(coreQueryInfo.getCause(), IntIndexQuery.this);
+        }
+    }
+    
+    protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
 
-        public Builder(Location location, String indexName, Long start, Long end)
+        public Init(Location location, String indexName, S start, S end)
         {
             super(location, indexName + Type._INT, start, end);
         }
 
-        public Builder(Location location, String indexName, Long match)
+        public Init(Location location, String indexName, S match)
         {
             super(location, indexName + Type._INT, match);
+        }
+        
+        @Override
+        public T withRegexTermFilter(String filter)
+        {
+            throw new IllegalArgumentException("Cannot use term filter with _int query");
+        }
+    }
+
+    public static class Builder extends Init<Long, Builder>
+    {
+
+        public Builder(Location location, String indexName, Long start, Long end)
+        {
+            super(location, indexName, start, end);
+        }
+
+        public Builder(Location location, String indexName, Long match)
+        {
+            super(location, indexName, match);
         }
 
         @Override
