@@ -41,7 +41,7 @@ public class ITestIntIndexQuery extends ITestBase
     @Test
     public void testMatchQuery() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         RiakClient client = new RiakClient(cluster);
         
@@ -95,7 +95,7 @@ public class ITestIntIndexQuery extends ITestBase
     @Test
     public void testRangeQuery() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         RiakClient client = new RiakClient(cluster);
         
