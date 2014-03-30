@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * An operation to fetch multiple values from Riak
+ * Command used to fetch multiple values from Riak
  * <p>
  * Riak itself does not support pipelining of requests. MutliFetch addresses this issue by using a thread to
  * parallelize and manage a set of async fetch operations for a given set of keys.
@@ -153,7 +153,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     }
     
     /**
-	 * Build a MultiFetch operation from the supplied parameters. 
+	 * Used to construct a MutiFetch command.
 	 */
 	public static class Builder
 	{
@@ -246,7 +246,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
 	}
 
 	/**
-	 * A result of the execution of this operation, contains a list of individual results for each key
+	 * The response from Raik for a MultiFetch command.
 	 *
 	 */
 	public static final class Response implements Iterable<RiakFuture<FetchValue.Response, Location>>

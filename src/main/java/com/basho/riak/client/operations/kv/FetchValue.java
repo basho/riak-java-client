@@ -180,7 +180,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
     
 	/**
-	 * A response from Riak containing results from a FetchValue operation.
+	 * A response from Riak containing results from a FetchValue command.
 	 * <p>
      * The Response, unless marked not found or unchanged, will contain one or
      * more objects returned from Riak (all siblings are returned if present).
@@ -266,7 +266,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	}
 
     /**
-     * Used to construct a FetchValue operation. 
+     * Used to construct a FetchValue command. 
      */
 	public static class Builder
 	{

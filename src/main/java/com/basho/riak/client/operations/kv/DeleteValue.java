@@ -158,7 +158,7 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
     }
 
     /**
-     * The response from Riak for the DeleteValue operation.
+     * The response from Riak for the DeleteValue command.
      */
     public static class Response
     {
@@ -181,7 +181,7 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
     }
 
     /**
-     * Used to construct a DeleteValue operation.
+     * Used to construct a DeleteValue command.
      */
 	public static class Builder
 	{
