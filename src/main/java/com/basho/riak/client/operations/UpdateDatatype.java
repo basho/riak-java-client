@@ -20,7 +20,6 @@ import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
@@ -52,26 +51,9 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
 	    this.options.putAll(builder.options);
     }
 
-    @Override
-    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response<T>, Location> future = doExecuteAsync(cluster);
-            
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Override
-    protected RiakFuture<Response<T>, Location> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Response<T>, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
             cluster.execute(buildCoreOperation());
@@ -109,7 +91,7 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
                 }
 
                 @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                protected Location convertQueryInfo(Location coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

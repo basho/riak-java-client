@@ -98,7 +98,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     }
 
     @Override
-    protected BinaryValue getQueryInfo()
+    public BinaryValue getQueryInfo()
     {
         return BinaryValue.create(indexName.toString() +": " +queryString);
     }

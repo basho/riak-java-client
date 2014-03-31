@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperation.Response, Void, String>
+public class YzDeleteIndexOperation extends FutureOperation<Void, Void, String>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder;
     private final String indexName;
@@ -38,9 +38,9 @@ public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperati
     }
     
     @Override
-    protected YzDeleteIndexOperation.Response convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse) 
     {
-        return new Response(indexName);
+        return null;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperati
     }
 
     @Override
-    protected String getQueryInfo()
+    public String getQueryInfo()
     {
         return indexName;
     }
@@ -85,20 +85,4 @@ public class YzDeleteIndexOperation extends FutureOperation<YzDeleteIndexOperati
             return new YzDeleteIndexOperation(this);
         }
     }
-    
-    public static class Response
-    {
-        private final String indexName;
-        
-        Response(String indexName)
-        {
-            this.indexName = indexName;
-        }
-        
-        public String getIndexName()
-        {
-            return indexName;
-        }
-    }
-    
 }

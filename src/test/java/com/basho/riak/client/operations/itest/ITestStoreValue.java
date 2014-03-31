@@ -141,6 +141,34 @@ public class ITestStoreValue extends ITestBase
         
     }
     
+    @Test
+    public void riakGeneratesKey() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        
+        RiakAnnotatedPojo pojo = new RiakAnnotatedPojo();
+        
+        pojo.bucketType = "default";
+        pojo.bucketName = bucketName.toString();
+        pojo.contentType = null; // converter will set
+        pojo.value = "my value";
+        
+         StoreValue sv = 
+            new StoreValue.Builder(pojo)
+                .withOption(StoreOption.RETURN_BODY, true)
+                .build();
+        
+        StoreValue.Response resp = client.execute(sv);
+        
+        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
+        
+        assertNotNull(rap.key);
+        assertFalse(rap.key.isEmpty());
+        assertTrue(resp.hasGeneratedKey());
+        assertNotNull(resp.hasGeneratedKey());
+        assertFalse(resp.getGeneratedKey().length() == 0);
+    }
+    
     public static class Pojo
     {
         @JsonProperty

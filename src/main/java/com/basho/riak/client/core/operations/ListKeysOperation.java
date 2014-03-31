@@ -27,13 +27,15 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Void>
+public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Location>
 {
+    private final Location location;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
     private ListKeysOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
+        this.location = builder.location;
     }
 
     @Override
@@ -77,9 +79,9 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     }
 
     @Override
-    protected Void getQueryInfo()
+    public Location getQueryInfo()
     {
-        return null;
+        return location;
     }
     
     public static class Builder
@@ -119,12 +121,11 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         }
     }
     
-    public static class Response extends ResponseWithLocation
+    public static class Response
     {
         private final List<BinaryValue> keys;
-        private Response(Init<?> builder)
+        private Response(Builder builder)
         {
-            super(builder);
             this.keys = builder.keys;
         }
         
@@ -133,33 +134,22 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             return keys;
         }
         
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        static class Builder
         {
             private List<BinaryValue> keys = new ArrayList<BinaryValue>();
             
-            T addKeys(List<BinaryValue> keys)
+            Builder addKeys(List<BinaryValue> keys)
             {
                 this.keys.addAll(keys);
-                return self();
+                return this;
             }
             
-            T addKey(BinaryValue key) 
+            Builder addKey(BinaryValue key) 
             {
                 this.keys.add(key);
-                return self();
-            }
-        }
-        
-        static class Builder extends Init<Builder>
-        {
-
-            @Override
-            protected Builder self()
-            {
                 return this;
             }
 
-            @Override
             Response build()
             {
                 return new Response(this);

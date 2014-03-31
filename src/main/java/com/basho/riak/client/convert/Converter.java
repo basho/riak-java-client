@@ -136,6 +136,11 @@ public abstract class Converter<T>
         bucketName = AnnotationUtil.getBucketName(domainObject, bucketName);
         bucketType = AnnotationUtil.getBucketType(domainObject, bucketType);
         
+        if (bucketName == null)
+        {
+            throw new ConversionException("Bucket name not provided via location or domain object");
+        }
+        
         vclock = AnnotationUtil.getVClock(domainObject, vclock);
         String contentType = 
             AnnotationUtil.getContentType(domainObject, RiakObject.DEFAULT_CONTENT_TYPE);

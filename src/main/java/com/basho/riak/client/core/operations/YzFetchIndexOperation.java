@@ -79,7 +79,7 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     }
 
     @Override
-    protected String getQueryInfo()
+    public String getQueryInfo()
     {
         return indexName;
     }

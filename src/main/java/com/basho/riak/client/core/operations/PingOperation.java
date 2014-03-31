@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Brian Roach <roach at basho dot com>.
+ * Copyright 2014 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class PingOperation extends FutureOperation<PingOperation.Response, Void, Void>
+public class PingOperation extends FutureOperation<Void, Void, Void>
 {
     private final Logger logger = LoggerFactory.getLogger(PingOperation.class);
 
     @Override
-    protected Response convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse) 
     {
-        return new Response(true);
+        return null;
     }
 
     @Override
@@ -50,23 +50,8 @@ public class PingOperation extends FutureOperation<PingOperation.Response, Void,
     }
 
     @Override
-    protected Void getQueryInfo()
+    public Void getQueryInfo()
     {
         return null;
-    }
-    
-    public static class Response
-    {
-        private final boolean succeeded;
-        
-        Response(boolean succeeded)
-        {
-            this.succeeded = succeeded;
-        }
-        
-        public boolean isSuccessful()
-        {
-            return succeeded;
-        }
-    }
+    }    
 }

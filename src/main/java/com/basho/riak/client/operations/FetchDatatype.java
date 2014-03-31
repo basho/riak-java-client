@@ -17,7 +17,6 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
@@ -57,23 +56,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 	public abstract T extractDatatype(RiakDatatype element);
 
     @Override
-    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response<T>, Location> future = doExecuteAsync(cluster);
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-    
-    @Override
-    protected final RiakFuture<FetchDatatype.Response<T>, Location> doExecuteAsync(RiakCluster cluster)
+    protected final RiakFuture<FetchDatatype.Response<T>, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -93,7 +76,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
             }
 
             @Override
-            protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+            protected Location convertQueryInfo(Location coreQueryInfo)
             {
                 return coreQueryInfo;
             }

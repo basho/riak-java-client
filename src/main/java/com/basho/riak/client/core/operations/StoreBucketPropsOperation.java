@@ -30,7 +30,7 @@ import java.util.List;
  * @since 2.0
  */
 //TODO: return some sort of "success" instead of Void
-public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsOperation.Response, Void, Location>
+public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Location>
 {
     private final Location location;
     private final RiakPB.RpbSetBucketReq.Builder reqBuilder;
@@ -42,9 +42,9 @@ public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsO
     }
 
     @Override
-    protected Response convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse) 
     {
-        return new Response.Builder().withLocation(location).build();
+        return null;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsO
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -463,34 +463,6 @@ public class StoreBucketPropsOperation extends FutureOperation<StoreBucketPropsO
         {
             reqBuilder.setProps(propsBuilder);
             return new StoreBucketPropsOperation(this);
-        }
-    }
-    
-    public static class Response extends ResponseWithLocation
-    {
-        private Response(Init<?> builder)
-        {
-            super(builder);
-        }
-        
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
-        {
-            
-        }
-        
-        static class Builder extends Init<Builder>
-        {
-            @Override
-            protected Builder self()
-            {
-                return this;
-            }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
         }
     }
 }

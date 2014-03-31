@@ -80,12 +80,25 @@ public interface RiakFuture<V, T> extends Future<V>
      * @throws InterruptedException 
      */
     void await(long timeout, TimeUnit unit) throws InterruptedException;
+    /**
+     * Determine if the operation was successful.
+     * @return true if completed and successful, false otherwise.
+     */
     boolean isSuccess();
     /**
-     * Return information about the operations and why it failed.
-     * @return A FailureInfo instance containing information about the operation and why it failed.
+     * Return information about the operation and why it failed.
+     * @return The exception thrown during the operation, or null if not set.
      */
-    FailureInfo<T> cause();
+    Throwable cause();
+    /**
+     * Returns information related to the operation performed.
+     * <p>
+     * Useful in async operations when you want to know what operation this
+     * future refers to.
+     * <p>
+     * @return 
+     */
+    T getQueryInfo();
     /**
      * Add a listener to this RiakFuture.
      * @param listener a FiakFutureListener that will be notified when this RiakFuture completes.

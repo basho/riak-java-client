@@ -18,7 +18,6 @@ package com.basho.riak.client.operations.kv;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.UnresolvedConflictException;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.operations.ListenableFuture;
@@ -31,10 +30,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
@@ -60,26 +56,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 	    this.storeOptions.putAll(builder.storeOptions);
     }
 
-    @Override
-    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response, Location> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Override
-    protected RiakFuture<Response, Location> doExecuteAsync(final RiakCluster cluster)
+    protected RiakFuture<Response, Location> executeAsync(final RiakCluster cluster)
     {
         final UpdateValueFuture updateFuture = new UpdateValueFuture(location);
         
@@ -90,7 +69,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         }
 
         RiakFuture<FetchValue.Response, Location> fetchFuture =
-            fetchBuilder.build().doExecuteAsync(cluster);
+            fetchBuilder.build().executeAsync(cluster);
         
         // Anonymous listener that will do the work
         RiakFutureListener<FetchValue.Response, Location> fetchListener =
@@ -137,14 +116,14 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                                     store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
                                 }
                                 RiakFuture<StoreValue.Response, Location> storeFuture = 
-                                    store.build().doExecuteAsync(cluster);
+                                    store.build().executeAsync(cluster);
                                 storeFuture.addListener(updateFuture);
                             }
                             else
                             {
                                 Response updateResponse = new Response.Builder()
                                     .withValues(fetchResponse.getValues(RiakObject.class))
-                                    .withLocation(fetchResponse.getLocation())
+                                    .withLocation(f.getQueryInfo())
                                     .withVClock(fetchResponse.getVClock())
                                     .withUpdated(false)
                                     .build();
@@ -305,7 +284,11 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 
 		public Builder(Location location)
 		{
-			this.location = location;
+			if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
+            }
+            this.location = location;
 		}
 
 		/**
@@ -455,16 +438,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         }
 
         @Override
-        public FailureInfo<Location> cause()
+        public Throwable cause()
         {
-            if (isSuccess())
-            {
-                return null;
-            }
-            else
-            {
-                return new FailureInfo<Location>(exception, location);
-            }
+            return exception;
         }
 
         private void setResponse(Response response)
@@ -492,7 +468,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                     storeResponse = f.get();
                     Response response = new Response.Builder()
                         .withValues(storeResponse.getValues(RiakObject.class))
-                        .withLocation(storeResponse.getLocation())
+                        .withLocation(f.getQueryInfo())
                         .withVClock(storeResponse.getVClock())
                         .withUpdated(true)
                         .build();
@@ -508,6 +484,12 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             {
                 setException(f.cause().getCause());
             }
+        }
+
+        @Override
+        public Location getQueryInfo()
+        {
+            return location;
         }
     }
 }

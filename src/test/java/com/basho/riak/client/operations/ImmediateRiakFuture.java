@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 
@@ -92,7 +91,13 @@ class ImmediateRiakFuture<V,S> implements RiakFuture<V,S>
     }
 
     @Override
-    public FailureInfo<S> cause()
+    public Throwable cause()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public S getQueryInfo()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

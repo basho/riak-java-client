@@ -33,7 +33,7 @@ import com.basho.riak.client.query.Location;
  * @author David Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class DeleteOperation extends FutureOperation<DeleteOperation.Response, Void, Location>
+public class DeleteOperation extends FutureOperation<Void, Void, Location>
 {
 
     private final RiakKvPB.RpbDelReq.Builder reqBuilder;
@@ -46,9 +46,9 @@ public class DeleteOperation extends FutureOperation<DeleteOperation.Response, V
     }
 
     @Override
-    protected Response convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse) 
     {
-        return new Response.Builder().withLocation(location).build();
+        return null;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class DeleteOperation extends FutureOperation<DeleteOperation.Response, V
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -235,33 +235,4 @@ public class DeleteOperation extends FutureOperation<DeleteOperation.Response, V
         }
 
     }
-    
-    public static class Response extends ResponseWithLocation
-    {
-        private Response(Init<?> builder)
-        {
-            super(builder);
-        }
-        
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
-        {
-            
-        }
-        
-        static class Builder extends Init<Builder>
-        {
-            @Override
-            protected Builder self()
-            {
-                return this;
-            }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
-        }
-    }
-
 }

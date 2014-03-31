@@ -55,6 +55,10 @@ public final class Location
      */
     public Location(BinaryValue bucketName)
     {
+        if (null == bucketName || bucketName.length() == 0)
+        {
+            throw new IllegalArgumentException("Bucket name cannot be null or zero length.");
+        }
         this.bucketName = bucketName;
     }
     
@@ -80,7 +84,12 @@ public final class Location
      */
     public Location(String bucketName, Charset charset)
     {
-        this(BinaryValue.create(bucketName, charset));
+        if (bucketName == null || bucketName.isEmpty())
+        {
+            throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+        }
+        
+        this.bucketName = BinaryValue.create(bucketName, charset);
     }
     
     /**
@@ -131,9 +140,9 @@ public final class Location
      */
     public Location setBucketType(BinaryValue bucketType)
     {
-        if (bucketType == null)
+        if (bucketType == null || bucketType.length() == 0)
         {
-            throw new IllegalArgumentException("BucketType can not be null");
+            throw new IllegalArgumentException("Bucket type can not be null or zero length");
         }
         this.bucketType = bucketType;
         return this;

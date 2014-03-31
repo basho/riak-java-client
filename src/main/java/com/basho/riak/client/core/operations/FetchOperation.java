@@ -85,7 +85,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         RiakKvPB.RpbGetResp response = responses.get(0);
         
         FetchOperation.Response.Builder responseBuilder = 
-                new FetchOperation.Response.Builder().withLocation(location);
+                new FetchOperation.Response.Builder();
         
         // If the response is null ... it means not found. Riak only sends 
         // a message code and zero bytes when that's the case. (See: decode() )
@@ -124,7 +124,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -299,14 +299,13 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         
     }
     
-    protected static abstract class KvResponseBase extends ResponseWithLocation
+    protected static abstract class KvResponseBase
     {
         private final List<RiakObject> objectList;
         private final VClock vclock;
         
         protected KvResponseBase(Init<?> builder)
         {
-            super(builder);
             this.objectList = builder.objectList;
             this.vclock = builder.vclock;
         }
@@ -326,11 +325,13 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return vclock;
         }
         
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        protected static abstract class Init<T extends Init<T>> 
         {
             private final List<RiakObject> objectList =
                 new LinkedList<RiakObject>();
             private VClock vclock;
+            protected abstract T self();
+            protected abstract KvResponseBase build();
             
             T addObject(RiakObject object)
             {
@@ -402,7 +403,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             }
 
             @Override
-            Response build()
+            protected Response build()
             {
                 return new Response(this);
             }

@@ -28,7 +28,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsOperation.Response, Void, Location>
+public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Location>
 {
     private final RiakPB.RpbResetBucketReq.Builder reqBuilder;
     private final Location location;
@@ -40,9 +40,9 @@ public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsO
     }
     
     @Override
-    protected Response convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse) 
     {
-        return new Response.Builder().withLocation(location).build();
+        return null;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsO
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -93,33 +93,4 @@ public class ResetBucketPropsOperation extends FutureOperation<ResetBucketPropsO
             return new ResetBucketPropsOperation(this);
         }
     }
-    
-    public static class Response extends ResponseWithLocation
-    {
-        private Response(Init<?> builder)
-        {
-            super(builder);
-        }
-        
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
-        {
-            
-        }
-        
-        static class Builder extends Init<Builder>
-        {
-            @Override
-            protected Builder self()
-            {
-                return this;
-            }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
-        }
-    }
-    
 }

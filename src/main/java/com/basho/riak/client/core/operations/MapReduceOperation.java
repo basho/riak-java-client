@@ -83,7 +83,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     }
 
     @Override
-    protected BinaryValue getQueryInfo()
+    public BinaryValue getQueryInfo()
     {
         return mapReduce;
     }

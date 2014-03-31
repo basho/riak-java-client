@@ -51,7 +51,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder = 
             new SecondaryIndexQueryOperation.Response.Builder()
-                .withLocation(query.location)
                 .withQuery(query);
         
         for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
@@ -129,7 +128,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected Query getQueryInfo()
+    public Query getQueryInfo()
     {
         return query;
     }
@@ -493,15 +492,14 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         }
     }
     
-    public static class Response extends ResponseWithLocation
+    public static class Response
     {
         private final Query query;
         private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
 
-        private Response(Init<?> builder)
+        private Response(Builder builder)
         {
-            super(builder);
             this.continuation = builder.continuation;
             this.entryList = builder.entryList;
             this.query = builder.query;
@@ -559,42 +557,31 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             }
         }
         
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        static class Builder
         {
             private Query query;
             private BinaryValue continuation;
             private List<Response.Entry> entryList = 
                 new ArrayList<Response.Entry>();
             
-            T withContinuation(BinaryValue continuation)
+            Builder withContinuation(BinaryValue continuation)
             {
                 this.continuation = continuation;
-                return self();
-            }
-            
-            T addEntry(Response.Entry entry)
-            {
-                entryList.add(entry);
-                return self();
-            }
-            
-            T withQuery(Query query)
-            {
-                this.query = query;
-                return self();
-            }
-        }
-        
-        static class Builder extends Init<Builder>
-        {
-            
-            @Override
-            protected Builder self()
-            {
                 return this;
             }
             
-            @Override
+            Builder addEntry(Response.Entry entry)
+            {
+                entryList.add(entry);
+                return this;
+            }
+            
+            Builder withQuery(Query query)
+            {
+                this.query = query;
+                return this;
+            }
+            
             Response build()
             {
                 return new Response(this);

@@ -61,14 +61,14 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
 
         RiakKvPB.RpbPutResp response = responses.get(0);
         
+        StoreOperation.Response.Builder responseBuilder = 
+            new StoreOperation.Response.Builder();
+        
         // This only exists if no key was specified in the put request
         if (response.hasKey())
         {
-            location.setKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
+            responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
         }
-        
-        StoreOperation.Response.Builder responseBuilder = 
-            new StoreOperation.Response.Builder().withLocation(location);
         
         if (response.hasVclock())
         {
@@ -107,7 +107,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -328,13 +328,33 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
      */
     public static class Response extends FetchOperation.KvResponseBase
     {
+        private final BinaryValue generatedKey;
+        
         private Response(Init<?> builder)
         {
             super(builder);
+            this.generatedKey = builder.generatedKey;
+        }
+        
+        public boolean hasGeneratedKey()
+        {
+            return generatedKey != null;
+        }
+        
+        public BinaryValue getGeneratedKey()
+        {
+            return generatedKey;
         }
         
         protected static abstract class Init<T extends Init<T>> extends FetchOperation.KvResponseBase.Init<T>
         {
+            private BinaryValue generatedKey;
+            
+            T withGeneratedKey(BinaryValue key)
+            {
+                this.generatedKey = key;
+                return self();
+            }
             
         }
         
@@ -347,7 +367,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             }
             
             @Override
-            Response build()
+            protected Response build()
             {
                 return new Response(this);
             }

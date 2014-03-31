@@ -16,7 +16,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SearchOperation;
@@ -70,25 +69,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
 
 
     @Override
-    protected final SearchOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<SearchOperation.Response, BinaryValue> future =
-            doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-    
-    @Override
-    protected RiakFuture<SearchOperation.Response, BinaryValue> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<SearchOperation.Response, BinaryValue> executeAsync(RiakCluster cluster)
     {
         RiakFuture<SearchOperation.Response, BinaryValue> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -103,7 +84,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
                 }
 
                 @Override
-                protected FailureInfo<BinaryValue> convertFailureInfo(FailureInfo<BinaryValue> coreQueryInfo)
+                protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

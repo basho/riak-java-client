@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Brian Roach <roach at basho dot com>.
+ * Copyright 2014 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 
 /**
@@ -38,15 +37,17 @@ public class ITestPingOperation extends ITestBase
     {
         PingOperation ping = new PingOperation();
         cluster.execute(ping);
-        PingOperation.Response resp = ping.get();
-        assertTrue(resp.isSuccessful());
+        
+        ping.await();
+        assertTrue(ping.isSuccess());
     }
     
     @Test
     public void theMachineThatDoesntGoPing() throws UnknownHostException, InterruptedException
     {
         RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withRemotePort(10000)
+                                        .withRemotePort(10001)
+                                        .withConnectionTimeout(500)
                                         .withMinConnections(10);
         
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
@@ -54,12 +55,10 @@ public class ITestPingOperation extends ITestBase
         
         PingOperation ping = new PingOperation();
         cluster.execute(ping);
-        PingOperation.Response resp = ping.get();
+        ping.await();
         
         assertFalse(ping.isSuccess());
         assertNotNull(ping.cause());
-        assertNotNull(ping.cause().getCause());
-        
         
         cluster.shutdown();
         

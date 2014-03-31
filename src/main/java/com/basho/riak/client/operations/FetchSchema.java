@@ -17,7 +17,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzGetSchemaOperation;
@@ -38,26 +37,7 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
 	}
 
 	@Override
-	protected YzGetSchemaOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-		
-        RiakFuture<YzGetSchemaOperation.Response, String> future = 
-            doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-	}
-    
-    @Override
-    protected RiakFuture<YzGetSchemaOperation.Response, String> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<YzGetSchemaOperation.Response, String> executeAsync(RiakCluster cluster)
     {
         RiakFuture<YzGetSchemaOperation.Response, String> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -72,7 +52,7 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
                 }
 
                 @Override
-                protected FailureInfo<String> convertFailureInfo(FailureInfo<String> coreQueryInfo)
+                protected String convertQueryInfo(String coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

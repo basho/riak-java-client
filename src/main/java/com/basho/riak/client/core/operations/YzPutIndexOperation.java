@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Response, Void, YokozunaIndex>
+public class YzPutIndexOperation extends FutureOperation<Void, Void, YokozunaIndex>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder;
     private final YokozunaIndex index;
@@ -39,9 +39,9 @@ public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Res
     }
     
     @Override
-    protected YzPutIndexOperation.Response convert(List<Void> rawResponse)
+    protected Void convert(List<Void> rawResponse)
     {
-        return new Response(index);
+        return null;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Res
     }
 
     @Override
-    protected YokozunaIndex getQueryInfo()
+    public YokozunaIndex getQueryInfo()
     {
         return index;
     }
@@ -95,21 +95,6 @@ public class YzPutIndexOperation extends FutureOperation<YzPutIndexOperation.Res
         public YzPutIndexOperation build()
         {
             return new YzPutIndexOperation(this);
-        }
-    }
-    
-    public static class Response
-    {
-        private final YokozunaIndex index;
-        
-        Response(YokozunaIndex index)
-        {
-            this.index = index;
-        }
-        
-        public YokozunaIndex getIndex()
-        {
-            return index;
         }
     }
 }

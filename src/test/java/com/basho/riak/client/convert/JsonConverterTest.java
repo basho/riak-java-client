@@ -98,7 +98,7 @@ public class JsonConverterTest
     @Test
     public void testRiakAnnotatedMethodsExcludedFromJson() throws IOException
     {
-        PojoWithRiakMethods pojo = new PojoWithRiakMethods();
+        PojoWithRiakMethodsExcluded pojo = new PojoWithRiakMethodsExcluded();
         JSONConverter<PojoWithRiakMethods> jc = 
             new JSONConverter<PojoWithRiakMethods>(new TypeReference<PojoWithRiakMethods>(){});
         

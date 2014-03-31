@@ -16,7 +16,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
@@ -50,25 +49,7 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>,Seco
     }
 
     @Override
-    protected final Response<T> doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response<T>,SecondaryIndexQueryOperation.Query> future =
-            doExecuteAsync(cluster);
-
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-    
-    @Override
-    protected final RiakFuture<Response<T>,SecondaryIndexQueryOperation.Query> doExecuteAsync(RiakCluster cluster)
+    protected final RiakFuture<Response<T>,SecondaryIndexQueryOperation.Query> executeAsync(RiakCluster cluster)
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -99,7 +80,7 @@ public final class FetchIndex<T> extends RiakCommand<FetchIndex.Response<T>,Seco
                 }
 
                 @Override
-                protected FailureInfo<SecondaryIndexQueryOperation.Query> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+                protected SecondaryIndexQueryOperation.Query convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

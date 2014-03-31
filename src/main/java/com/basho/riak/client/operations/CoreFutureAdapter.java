@@ -16,7 +16,6 @@
 
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +24,10 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
+ * @param <T> The core response type.
+ * @param <S> The core query info type.
+ * @param <T2> The converted response type.
+ * @param <S2> The converted query info type.
  */
 public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S2> implements RiakFutureListener<T,S>
 {
@@ -100,19 +103,17 @@ public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S
     }
 
     @Override
-    public FailureInfo<S2> cause()
+    public Throwable cause()
     {
-        FailureInfo<S> fInfo = coreFuture.cause();
-        if (fInfo != null)
-        {
-            return convertFailureInfo(fInfo);
-        }
-        else
-        {
-            return null;
-        }
+        return coreFuture.cause();
     }
 
+    @Override
+    public S2 getQueryInfo()
+    {
+        return convertQueryInfo(coreFuture.getQueryInfo());
+    }
+    
     @Override
     public void handle(RiakFuture<T,S> f)
     {
@@ -120,5 +121,5 @@ public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S
     }
     
     protected abstract T2 convertResponse(T coreResponse);
-    protected abstract FailureInfo<S2> convertFailureInfo(FailureInfo<S> coreQueryInfo);
+    protected abstract S2 convertQueryInfo(S coreQueryInfo);
 }

@@ -17,7 +17,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
@@ -38,24 +37,7 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
 	}
 
 	@Override
-	protected final YzFetchIndexOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-	    RiakFuture<YzFetchIndexOperation.Response, String> future =
-            doExecuteAsync(cluster);
-        
-        future.await();
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-	}
-
-    @Override
-    protected final RiakFuture<YzFetchIndexOperation.Response, String> doExecuteAsync(RiakCluster cluster)
+    protected final RiakFuture<YzFetchIndexOperation.Response, String> executeAsync(RiakCluster cluster)
     {
         RiakFuture<YzFetchIndexOperation.Response, String> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -70,7 +52,7 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
                 }
 
                 @Override
-                protected FailureInfo<String> convertFailureInfo(FailureInfo<String> coreQueryInfo)
+                protected String convertQueryInfo(String coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

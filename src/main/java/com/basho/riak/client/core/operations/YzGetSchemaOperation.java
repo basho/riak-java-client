@@ -75,7 +75,7 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     }
 
     @Override
-    protected String getQueryInfo()
+    public String getQueryInfo()
     {
         return schemaName;
     }

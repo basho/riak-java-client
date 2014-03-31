@@ -185,12 +185,12 @@ public abstract class ITestBase
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
-        RiakFutureListener<DeleteOperation.Response, Location> listener = new RiakFutureListener<DeleteOperation.Response, Location>() {
+        RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
 
             private final AtomicInteger received = new AtomicInteger();
             
             @Override
-            public void handle(RiakFuture<DeleteOperation.Response, Location> f)
+            public void handle(RiakFuture<Void, Location> f)
             {
                 try
                 {

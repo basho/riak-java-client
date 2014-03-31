@@ -23,7 +23,6 @@ import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.operations.RiakOption;
@@ -31,7 +30,6 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -59,26 +57,9 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     }
 
     
-    @Override
-    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response, Location> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Override
-    protected RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
        Converter converter;
         
@@ -102,24 +83,25 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
                 @Override
                 protected Response convertResponse(StoreOperation.Response coreResponse)
                 {
-                    BinaryValue returnedKey = coreResponse.getLocation().getKey();
-
-                    Location k = 
-                        new Location(orm.getLocation().getBucketName())
-                            .setKey(returnedKey)
-                            .setBucketType(orm.getLocation().getBucketType());
-
+                    Location loc = orm.getLocation();
+                        
+                    if (coreResponse.hasGeneratedKey())
+                    {
+                        loc.setKey(coreResponse.getGeneratedKey());
+                    }
+                    
                     VClock clock = coreResponse.getVClock();
 
                     return new Response.Builder()
                         .withValues(coreResponse.getObjectList())
                         .withVClock(clock)
-                        .withLocation(k)
+                        .withGeneratedKey(coreResponse.getGeneratedKey())
+                        .withLocation(loc) // for ORM
                         .build();
                 }
 
                 @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                protected Location convertQueryInfo(Location coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }
@@ -197,17 +179,37 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     
     public static class Response extends KvResponseBase
     {
-
+        private final BinaryValue generatedKey;
+        
         Response(Init<?> builder)
         {
             super(builder);
+            this.generatedKey = builder.generatedKey;
         }
 
+        public boolean hasGeneratedKey()
+        {
+            return generatedKey != null;
+        }
+        
+        public BinaryValue getGeneratedKey()
+        {
+            return generatedKey;
+        }
+        
         /**
          * @ExcludeFromJavadoc 
          */
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
-        {}
+        {
+            private BinaryValue generatedKey;
+            
+            T withGeneratedKey(BinaryValue generatedKey)
+            {
+                this.generatedKey = generatedKey;
+                return self();
+            }
+        }
         
         static class Builder extends Init<Builder>
         {

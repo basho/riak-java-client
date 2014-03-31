@@ -17,7 +17,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
@@ -40,24 +39,7 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
 	}
 
 	@Override
-	protected final FetchBucketPropsOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-		RiakFuture<FetchBucketPropsOperation.Response, Location> future =
-            doExecuteAsync(cluster);
-		
-        future.await();
-        if(future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-	}
-
-    @Override
-    protected final RiakFuture<FetchBucketPropsOperation.Response, Location> doExecuteAsync(RiakCluster cluster)
+    protected final RiakFuture<FetchBucketPropsOperation.Response, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<FetchBucketPropsOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -72,7 +54,7 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
                 }
 
                 @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                protected Location convertQueryInfo(Location coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }
