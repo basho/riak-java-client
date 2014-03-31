@@ -1,31 +1,12 @@
 package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import java.io.IOException;
 
 public class SearchMapReduce extends MapReduce
 {
-	private final Location bucket;
-	private final String query;
-
-	protected SearchMapReduce(Builder builder)
+	protected SearchMapReduce(SearchInput input, Builder builder)
 	{
-		super(builder);
-		this.bucket = builder.bucket;
-		this.query = builder.query;
-	}
-
-	@Override
-	protected void writeInput(JsonGenerator jg) throws IOException
-	{
-
-		jg.writeStartObject();
-		jg.writeStringField("bucket", bucket.getBucketNameAsString());
-		jg.writeStringField("query", query);
-		jg.writeEndObject();
-
+		super(input, builder);
 	}
 
 	public static class Builder extends MapReduce.Builder
@@ -64,7 +45,7 @@ public class SearchMapReduce extends MapReduce
 				throw new IllegalStateException("A query must be specified");
 			}
 
-			return new SearchMapReduce(this);
+			return new SearchMapReduce(new SearchInput(bucket, query), this);
 		}
 	}
 

@@ -30,7 +30,7 @@ class ReducePhase extends FunctionPhase
 	 * @param arg
 	 * @param keepResult
 	 */
-	public ReducePhase(Function phaseFunction, Object arg, Boolean keepResult)
+	public ReducePhase(Function phaseFunction, Object arg, boolean keepResult)
 	{
 		super(PhaseType.REDUCE, phaseFunction, arg, keepResult);
 	}
@@ -41,7 +41,7 @@ class ReducePhase extends FunctionPhase
 	 */
 	public ReducePhase(Function phaseFunction, Object arg)
 	{
-		this(phaseFunction, arg, null);
+		this(phaseFunction, arg, false);
 	}
 
 	/**
@@ -58,7 +58,7 @@ class ReducePhase extends FunctionPhase
 	 */
 	public ReducePhase(Function phaseFunction)
 	{
-		this(phaseFunction, null, null);
+		this(phaseFunction, null, false);
 	}
 
 }

@@ -26,7 +26,9 @@ import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,13 +44,11 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 
 	private final String JSON_CONTENT_TYPE = "application/json";
 
-	private final Collection<MapReducePhase> phases = new ArrayList<MapReducePhase>();
-	private final Long timeout;
+	private final MapReduceSpec spec;
 
-	protected MapReduce(Builder builder)
+	protected MapReduce(MapReduceInput input, Builder builder)
 	{
-		this.phases.addAll(builder.phases);
-		this.timeout = builder.timeout;
+		this.spec = new MapReduceSpec(input, builder.phases, builder.timeout);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	@Override
 	protected RiakFuture doExecuteAsync(RiakCluster cluster)
 	{
-		BinaryValue jobSpec = null;
+		BinaryValue jobSpec;
 		try
 		{
 			jobSpec = BinaryValue.create(writeSpec());
@@ -84,7 +84,8 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		final RiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
 
 		CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue> future =
-				new CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue>(coreFuture) {
+				new CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue>(coreFuture)
+				{
 					@Override
 					protected Response convertResponse(MapReduceOperation.Response coreResponse)
 					{
@@ -122,144 +123,38 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		try
 		{
 			JsonGenerator jg = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
-			jg.setCodec(new ObjectMapper());
 
-			jg.writeStartObject();
+			ObjectMapper objectMapper = new ObjectMapper();
+			SimpleModule specModule = new SimpleModule("SpecModule", new Version(1, 0, 0, null));
+			//specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
+			specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
+			specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
+			specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
+			specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
+			specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
+			specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
+			objectMapper.registerModule(specModule);
 
-			jg.writeFieldName("inputs");
-			writeInput(jg);
+			jg.setCodec(objectMapper);
 
-			jg.writeFieldName("query");
-			jg.writeStartArray();
+			List<MapReducePhase> phases = spec.getPhases();
+			phases.get(phases.size() - 1).setKeep(true);
+			jg.writeObject(spec);
 
-			writePhases(jg);
-
-			jg.writeEndArray();
-			if (timeout != null)
-			{
-				jg.writeNumberField("timeout", timeout);
-			}
-
-			jg.writeEndObject();
 			jg.flush();
 
 			return out.toString("UTF8");
+
 		} catch (IOException e)
 		{
 			throw new RiakException(e);
 		}
 	}
 
-	void writeFunctionPhase(FunctionPhase phase, JsonGenerator jg) throws IOException
-	{
-		writeFunction(phase.getPhaseFunction(), jg);
-		if (phase.getArg() != null)
-		{
-			jg.writeObjectField("arg", phase.getArg());
-		}
-	}
-
-	void writePhases(JsonGenerator jg) throws IOException
-	{
-		int cnt = 0;
-		synchronized (phases)
-		{
-			final int lastPhase = phases.size();
-			for (MapReducePhase phase : phases)
-			{
-				cnt++;
-				jg.writeStartObject();
-				jg.writeFieldName(phase.getType().toString());
-				jg.writeStartObject();
-
-				switch (phase.getType())
-				{
-					case MAP:
-					case REDUCE:
-						FunctionPhase fphase = (FunctionPhase) phase;
-						writeFunctionPhase(fphase, jg);
-						break;
-					case LINK:
-						jg.writeStringField("bucket", ((LinkPhase) phase).getBucket());
-						jg.writeStringField("tag", ((LinkPhase) phase).getTag());
-						break;
-				}
-
-				//the final phase results should be returned, unless specifically set otherwise
-				if (cnt == lastPhase)
-				{
-					jg.writeBooleanField("keep", isKeepResult(true, phase.isKeep()));
-				} else
-				{
-					jg.writeBooleanField("keep", isKeepResult(false, phase.isKeep()));
-				}
-
-				jg.writeEndObject();
-				jg.writeEndObject();
-			}
-		}
-	}
-
-	void writeFunction(Function function, JsonGenerator jg) throws IOException
-	{
-
-		jg.writeStringField("language", function.isJavascript() ? "javascript" : "erlang");
-
-		if (function.isJavascript())
-		{
-			if (function.isNamed())
-			{
-				jg.writeStringField("name", function.getName());
-			} else if (function.isStored())
-			{
-				jg.writeStringField("bucket", function.getBucket());
-				jg.writeStringField("key", function.getKey());
-			} else if (function.isAnonymous())
-			{
-				jg.writeStringField("source", function.getSource());
-			} else
-			{
-				throw new IllegalStateException("Cannot determine function type");
-			}
-		} else if (!function.isJavascript())
-		{
-			jg.writeStringField("module", function.getModule());
-			jg.writeStringField("function", function.getFunction());
-		}
-
-	}
-
-	/**
-	 * Decide if a map/reduce phase result should be kept (returned) or not.
-	 *
-	 * @param isLastPhase    is the phase being considered the last phase in an m/r job?
-	 * @param phaseKeepValue the Boolean value from a {@link MapPhase} (null|true|false)
-	 * @return <code>phaseKeepValue</code> if not null, otherwise <code>true</code> if <code>isLastPhase</code> is true,
-	 * false otherwise.
-	 */
-	boolean isKeepResult(boolean isLastPhase, Boolean phaseKeepValue)
-	{
-		if (phaseKeepValue != null)
-		{
-			return phaseKeepValue;
-		} else
-		{
-			return isLastPhase;
-		}
-	}
-
-	/**
-	 * Override to write the input specification of the M/R job.
-	 *
-	 * @param jsonGenerator a Jackson {@link JsonGenerator} to write the input spec to
-	 * @throws IOException
-	 */
-	protected abstract void writeInput(JsonGenerator jsonGenerator) throws IOException;
-
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
-		protected final Collection<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+		protected final List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
 		protected Long timeout;
 
 		/**

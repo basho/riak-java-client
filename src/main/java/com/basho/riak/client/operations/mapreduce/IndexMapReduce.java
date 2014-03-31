@@ -2,34 +2,12 @@ package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import java.io.IOException;
 
 public class IndexMapReduce extends MapReduce
 {
-	private final Location bucket;
-	private final String index;
-	private final IndexCriteria criteria;
-
-	protected IndexMapReduce(Builder builder)
+	protected IndexMapReduce(IndexInput input, Builder builder)
 	{
-		super(builder);
-		this.bucket = builder.bucket;
-		this.index = builder.index;
-		this.criteria = builder.criteria;
-	}
-
-	@Override
-	protected void writeInput(JsonGenerator jg) throws IOException
-	{
-
-		jg.writeStartObject();
-		jg.writeStringField("bucket", bucket.getBucketNameAsString());
-		jg.writeStringField("index", index);
-		criteria.writeFields(jg);
-		jg.writeEndObject();
-
+		super(input, builder);
 	}
 
 	public static class Builder extends MapReduce.Builder
@@ -37,7 +15,7 @@ public class IndexMapReduce extends MapReduce
 
 		private Location bucket;
 		private String index;
-		private IndexCriteria criteria;
+		private IndexInput.IndexCriteria criteria;
 
 		@Override
 		protected MapReduce.Builder self()
@@ -59,53 +37,25 @@ public class IndexMapReduce extends MapReduce
 
 		public Builder withRange(final int start, final int end)
 		{
-			this.criteria = new IndexCriteria()
-			{
-				@Override
-				public void writeFields(JsonGenerator jg) throws IOException
-				{
-					jg.writeNumberField("start", start);
-					jg.writeNumberField("end", end);
-				}
-			};
+			this.criteria = new IndexInput.RangeCriteria<Integer>(start, end);
 			return this;
 		}
 
 		public Builder withRange(final BinaryValue start, final BinaryValue end)
 		{
-			this.criteria = new IndexCriteria()
-			{
-				@Override
-				public void writeFields(JsonGenerator jg) throws IOException
-				{
-					jg.writeBinaryField("start", start.getValue());
-					jg.writeBinaryField("end", end.getValue());
-				}
-			};
+			this.criteria = new IndexInput.RangeCriteria<BinaryValue>(start, end);
 			return this;
 		}
 
 		public Builder withMatchValue(final int value)
 		{
-			this.criteria = new IndexCriteria() {
-				@Override
-				public void writeFields(JsonGenerator jg) throws IOException
-				{
-					jg.writeNumberField("key", value);
-				}
-			};
+			this.criteria = new IndexInput.MatchCriteria<Integer>(value);
 			return this;
 		}
 
 		public Builder withMatchValue(final BinaryValue value)
 		{
-			this.criteria = new IndexCriteria() {
-				@Override
-				public void writeFields(JsonGenerator jg) throws IOException
-				{
-					jg.writeBinaryField("key", value.getValue());
-				}
-			};
+			this.criteria = new IndexInput.MatchCriteria<BinaryValue>(value);
 			return this;
 		}
 
@@ -127,14 +77,9 @@ public class IndexMapReduce extends MapReduce
 				throw new IllegalStateException("An index search criteria must be specified");
 			}
 
-			return new IndexMapReduce(this);
+			return new IndexMapReduce(new IndexInput(bucket, index, criteria), this);
 		}
 
-	}
-
-	private static interface IndexCriteria
-	{
-		void writeFields(JsonGenerator jg) throws IOException;
 	}
 
 }

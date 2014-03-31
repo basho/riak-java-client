@@ -2,40 +2,16 @@ package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.filters.KeyFilter;
-import com.fasterxml.jackson.core.JsonGenerator;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BucketMapReduce extends MapReduce
 {
 
-	private final List<KeyFilter> filters = new ArrayList<KeyFilter>();
-	private final Location bucket;
-
-	protected BucketMapReduce(Builder builder)
+	protected BucketMapReduce(BucketInput input, Builder builder)
 	{
-		super(builder);
-		this.filters.addAll(builder.filters);
-		this.bucket = builder.bucket;
-	}
-
-	@Override
-	protected void writeInput(JsonGenerator jg) throws IOException
-	{
-		jg.writeStartObject();
-		jg.writeStringField("bucket", bucket.getBucketNameAsString());
-
-		jg.writeArrayFieldStart("key_filters");
-		for (KeyFilter filter : filters)
-		{
-			jg.writeObject(filter);
-		}
-		jg.writeEndArray();
-
-		jg.writeEndObject();
-
+		super(input, builder);
 	}
 
 	public static class Builder extends MapReduce.Builder<Builder>
@@ -69,7 +45,7 @@ public class BucketMapReduce extends MapReduce
 				throw new IllegalStateException("A bucket must be specified");
 			}
 
-			return new BucketMapReduce(this);
+			return new BucketMapReduce(new BucketInput(bucket, filters), this);
 		}
 	}
 }

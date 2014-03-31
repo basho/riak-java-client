@@ -32,7 +32,7 @@ class MapPhase extends FunctionPhase
 	 * @param keepResult    if the result should be returned or merely provide input for
 	 *                      the next phase.
 	 */
-	public MapPhase(Function phaseFunction, Object arg, Boolean keepResult)
+	public MapPhase(Function phaseFunction, Object arg, boolean keepResult)
 	{
 		super(PhaseType.MAP, phaseFunction, arg, keepResult);
 	}
@@ -46,7 +46,7 @@ class MapPhase extends FunctionPhase
 	 */
 	public MapPhase(Function phaseFunction, Object arg)
 	{
-		this(phaseFunction, arg, null);
+		this(phaseFunction, arg, false);
 	}
 
 	/**
@@ -56,7 +56,7 @@ class MapPhase extends FunctionPhase
 	 */
 	public MapPhase(Function phaseFunction)
 	{
-		this(phaseFunction, null, null);
+		this(phaseFunction, null, false);
 	}
 
 	/**

@@ -42,6 +42,7 @@ abstract class MapReducePhase
 	}
 
 	private final PhaseType type;
+	private boolean keep;
 
 	protected MapReducePhase(PhaseType type)
 	{
@@ -53,7 +54,19 @@ abstract class MapReducePhase
 	 *
 	 * @return true if the results are returned, false otherwise.
 	 */
-	abstract Boolean isKeep();
+	Boolean isKeep() {
+		return keep;
+	}
+
+	/**
+	 * set whether this should be kept
+	 *
+	 * @param keep
+	 */
+	void setKeep(boolean keep)
+	{
+		this.keep = keep;
+	}
 
 	/**
 	 * The PhaseType of this {@link MapReducePhase} implementation.

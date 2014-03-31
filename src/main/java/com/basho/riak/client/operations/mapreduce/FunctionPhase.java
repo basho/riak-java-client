@@ -4,8 +4,7 @@ import com.basho.riak.client.query.functions.Function;
 
 class FunctionPhase extends MapReducePhase
 {
-	private final Function phaseFunction;
-	private final Boolean keep;
+  final PhaseFunction phaseFunction;
 	private final Object arg; // TODO object? you sure?
 
 	/**
@@ -17,20 +16,19 @@ class FunctionPhase extends MapReducePhase
 	 * @param keepResult    if the result should be returned or merely provide input for
 	 *                      the next phase.
 	 */
-	public FunctionPhase(PhaseType type, Function phaseFunction, Object arg, Boolean keepResult)
+	public FunctionPhase(PhaseType type, Function phaseFunction, Object arg, boolean keepResult)
 	{
 		super(type);
-		this.phaseFunction = phaseFunction;
+		this.phaseFunction = new PhaseFunction(phaseFunction, keepResult);
 		this.arg = arg;
-		this.keep = keepResult;
 	}
 
 	/**
 	 * @return the phaseFunction
 	 */
-	public Function getPhaseFunction()
+	public Function getFunction()
 	{
-		return phaseFunction;
+		return phaseFunction.getFunction();
 	}
 
 	/**
@@ -38,7 +36,7 @@ class FunctionPhase extends MapReducePhase
 	 */
 	public Boolean isKeep()
 	{
-		return keep;
+		return phaseFunction.isKeep();
 	}
 
 	/**
@@ -48,5 +46,7 @@ class FunctionPhase extends MapReducePhase
 	{
 		return arg;
 	}
+
+
 
 }
