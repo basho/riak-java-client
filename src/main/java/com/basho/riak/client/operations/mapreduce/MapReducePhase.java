@@ -18,7 +18,7 @@ package com.basho.riak.client.operations.mapreduce;
  *
  * @author russell
  */
-abstract class MapReducePhase
+public abstract class MapReducePhase
 {
 
 	/**

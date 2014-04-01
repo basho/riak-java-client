@@ -5,23 +5,28 @@ import com.basho.riak.client.query.filters.KeyFilter;
 
 import java.util.Collection;
 
-class BucketInput implements MapReduceInput
+public class BucketInput implements MapReduceInput
 {
 
-	private final Location bucket;
+	private final Location location;
 	private final Collection<KeyFilter> filters;
 
-	public BucketInput(Location bucket, Collection<KeyFilter> filters)
+	public BucketInput(Location location, Collection<KeyFilter> filters)
 	{
-		this.bucket = bucket;
+		this.location = location;
 		this.filters = filters;
 	}
 
-	public Location getBucket()
+	public Location getLocation()
 	{
-		return bucket;
+		return location;
 	}
 
+    public boolean hasFilters()
+    {
+        return filters != null && !filters.isEmpty();
+    }
+    
 	public Collection<KeyFilter> getFilters()
 	{
 		return filters;

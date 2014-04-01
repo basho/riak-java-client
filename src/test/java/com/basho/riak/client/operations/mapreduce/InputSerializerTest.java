@@ -29,7 +29,7 @@ public class InputSerializerTest
 		this.jg = new JsonFactory().createGenerator(out);
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		SimpleModule specModule = new SimpleModule("SpecModule", new Version(1, 0, 0, null));
+		SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
 		specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
 		specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
 		specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
@@ -54,8 +54,18 @@ public class InputSerializerTest
 
 	}
 
-	@Test
+    @Test
 	public void testBucketInputSerializer() throws IOException
+    {
+        Location bucket = new Location("bucket");
+        BucketInput input = new BucketInput(bucket, null);
+
+		jg.writeObject(input);
+        assertEquals("\"bucket\"", out.toString());
+    }
+    
+	@Test
+	public void testBucketInputSerializerWithFilter() throws IOException
 	{
 
 		Location bucket = new Location("bucket");
@@ -68,7 +78,32 @@ public class InputSerializerTest
 		assertEquals("{\"bucket\":\"bucket\",\"key_filters\":[[\"ends_with\",\"dave\"]]}", out.toString());
 
 	}
+    
+    @Test public void testBucketInputSerializerWithType() throws IOException
+    {
+        Location bucket = new Location("bucket").setBucketType("type");
+        BucketInput input = new BucketInput(bucket, null);
+        jg.writeObject(input);
+        assertEquals("[\"type\",\"bucket\"]", out.toString());
+    }
+    
+    @Test
+	public void testBucketInputSerializerWithTypeAndFilter() throws IOException
+	{
 
+		Location bucket = new Location("bucket").setBucketType("type");
+		ArrayList<KeyFilter> filters = new ArrayList<KeyFilter>();
+		filters.add(new EndsWithFilter("dave"));
+		BucketInput input = new BucketInput(bucket, filters);
+
+		jg.writeObject(input);
+
+		assertEquals("{\"bucket\":[\"type\",\"bucket\"],\"key_filters\":[[\"ends_with\",\"dave\"]]}", out.toString());
+
+	}
+
+    
+    
 	@Test
 	public void testSerializeBucketKeyInput() throws IOException
 	{
@@ -80,11 +115,27 @@ public class InputSerializerTest
 
 		jg.writeObject(input);
 
-		assertEquals("[[\"bucket\",\"key\",\"default\"],[\"bucket\",\"key\",\"data\",\"default\"]]", out.toString());
+		assertEquals("[[\"bucket\",\"key\",\"\"],[\"bucket\",\"key\",\"data\"]]", out.toString());
 
 
 	}
 
+    @Test
+	public void testSerializeBucketKeyInputWithType() throws IOException
+	{
+
+		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<BucketKeyInput.IndividualInput>();
+		inputs.add(new BucketKeyInput.IndividualInput(new Location("bucket").setBucketType("type").setKey("key")));
+		inputs.add(new BucketKeyInput.IndividualInput(new Location("bucket").setBucketType("type").setKey("key"), "data"));
+		BucketKeyInput input = new BucketKeyInput(inputs);
+
+		jg.writeObject(input);
+
+		assertEquals("[[\"bucket\",\"key\",\"\",\"type\"],[\"bucket\",\"key\",\"data\",\"type\"]]", out.toString());
+
+
+	}
+    
 	@Test
 	public void testSearializeIndexInputMatch() throws Exception
 	{

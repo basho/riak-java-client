@@ -22,6 +22,7 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -96,21 +97,21 @@ public class ITestMapReduceOperation extends ITestBase
             "else r[w] = v[i][w];}}return [r];}\"}}]}";
         
         MapReduceOperation mrOp = 
-            new MapReduceOperation.Builder(BinaryValue.unsafeCreate(query.getBytes()), "application/json")
+            new MapReduceOperation.Builder(BinaryValue.unsafeCreate(query.getBytes()))
                 .build();
         
         cluster.execute(mrOp);
-        List<BinaryValue> resultList = mrOp.get().getResults();
+        ArrayNode resultList = mrOp.get().getResults().get(1);
         
         // The query should return one result which is a JSON array containing a 
         // single JSON object that is a asSet of word counts.
         assertEquals(resultList.size(), 1);
         
         String json = resultList.get(0).toString();
+        System.out.println(json);
         ObjectMapper oMapper = new ObjectMapper(); 
         @SuppressWarnings("unchecked")
-        List<Map<String, Integer>> jsonList = oMapper.readValue(json, List.class);
-        Map<String, Integer> resultMap = jsonList.get(0);
+        Map<String, Integer> resultMap = oMapper.readValue(json, Map.class);
         
         assertNotNull(resultMap.containsKey("the"));
         assertEquals(resultMap.get("the"), Integer.valueOf(8));

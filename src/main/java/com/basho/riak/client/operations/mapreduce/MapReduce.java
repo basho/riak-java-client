@@ -15,12 +15,12 @@ package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.RiakException;
+import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.operations.CoreFutureAdapter;
-import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -29,11 +29,16 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An operation for defining and runnig a Map/Reduce query on Riak. <p/> <p> See <a
@@ -41,11 +46,9 @@ import java.util.concurrent.ExecutionException;
  */
 public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryValue>
 {
-
-	private final String JSON_CONTENT_TYPE = "application/json";
-
 	private final MapReduceSpec spec;
 
+    @SuppressWarnings("unchecked")
 	protected MapReduce(MapReduceInput input, Builder builder)
 	{
 		this.spec = new MapReduceSpec(input, builder.phases, builder.timeout);
@@ -54,7 +57,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	@Override
 	public Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
-		RiakFuture<Response, Location> future = doExecuteAsync(cluster);
+		RiakFuture<Response, BinaryValue> future = doExecuteAsync(cluster);
 
 		future.await();
 
@@ -68,18 +71,21 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	}
 
 	@Override
-	protected RiakFuture doExecuteAsync(RiakCluster cluster)
+	protected RiakFuture<Response, BinaryValue> doExecuteAsync(RiakCluster cluster)
 	{
-		BinaryValue jobSpec;
+		
+        BinaryValue jobSpec;
 		try
 		{
-			jobSpec = BinaryValue.create(writeSpec());
+			String spec = writeSpec();
+            //System.out.println(spec);
+            jobSpec = BinaryValue.create(spec);
 		} catch (RiakException e)
 		{
 			throw new RuntimeException(e);
 		}
 
-		MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec, JSON_CONTENT_TYPE).build();
+		MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec).build();
 
 		final RiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
 
@@ -125,7 +131,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 			JsonGenerator jg = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 
 			ObjectMapper objectMapper = new ObjectMapper();
-			SimpleModule specModule = new SimpleModule("SpecModule", new Version(1, 0, 0, null));
+			SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
 			//specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
 			specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
 			specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
@@ -174,7 +180,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 *
 		 * @param phaseFunction the {@link Function}
 		 * @param keep          keep the results and return them with the query results?
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withMapPhase(Function phaseFunction, boolean keep)
 		{
@@ -192,7 +198,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 * @param phaseFunction the {@link Function}
 		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
 		 * @param keep          if the result should be returned or merely provide input for the next phase.
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withMapPhase(Function phaseFunction, Object arg, boolean keep)
 		{
@@ -209,7 +215,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 *
 		 * @param phaseFunction the {@link Function}
 		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withMapPhase(Function phaseFunction, Object arg)
 		{
@@ -225,7 +231,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 * Add a MapPhase
 		 *
 		 * @param phaseFunction the {@link Function}
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withMapPhase(Function phaseFunction)
 		{
@@ -242,7 +248,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 *
 		 * @param phaseFunction the {@link Function}
 		 * @param keep          keep the results and return them with the query results?
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withReducePhase(Function phaseFunction, boolean keep)
 		{
@@ -260,7 +266,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 * @param phaseFunction the {@link Function}
 		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
 		 * @param keep          if the result should be returned or merely provide input for the next phase.
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withReducePhase(Function phaseFunction, Object arg, boolean keep)
 		{
@@ -277,7 +283,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 *
 		 * @param phaseFunction the {@link Function}
 		 * @param arg           an argument that will be passed to the phase verbatim
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withReducePhase(Function phaseFunction, Object arg)
 		{
@@ -293,7 +299,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 * Add a {@link ReducePhase}
 		 *
 		 * @param phaseFunction
-		 * @return this
+		 * @return a reference to this object.
 		 */
 		public T withReducePhase(Function phaseFunction)
 		{
@@ -311,6 +317,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
 		 * @param tag    the tag (or ("_", or "" for wildcard)
 		 * @param keep   to keep the result of this phase and return it at the end of the operation
+         * @return a reference to this object.
 		 */
 		public T withLinkPhase(String bucket, String tag, boolean keep)
 		{
@@ -328,6 +335,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 *
 		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
 		 * @param tag    the tag (or ("_", or "" for wildcard)
+         * @return a reference to this object.
 		 */
 		public T withLinkPhase(String bucket, String tag)
 		{
@@ -343,25 +351,55 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 
 	}
 
-	public static class Response implements Iterable<BinaryValue>
+	public static class Response
 	{
 
-		private final List<BinaryValue> output;
+		private final Map<Integer, ArrayNode> results;
 
-		public Response(List<BinaryValue> output)
+		public Response(Map<Integer, ArrayNode> results)
 		{
-			this.output = output;
+			this.results = results;
 		}
 
-		@Override
-		public Iterator<BinaryValue> iterator()
-		{
-			return output.iterator();
-		}
-
-		public List<BinaryValue> getOutput()
-		{
-			return output;
-		}
+        public boolean hasResultForPhase(int i)
+        {
+            return results.containsKey(i);
+        }
+        
+        public ArrayNode getResultForPhase(int i)
+        {
+            return results.get(i);
+        }
+        
+        public ArrayNode getResultsFromAllPhases()
+        {
+            return flattenResults();
+        }
+        
+        public <T> Collection<T> getResultsFromAllPhases(Class<T> resultType)
+        {
+            ArrayNode flat = flattenResults();
+            ObjectMapper mapper = new ObjectMapper();
+            try
+            {
+                return mapper.readValue(flat.toString(), mapper.getTypeFactory().constructCollectionType(Collection.class, resultType));
+            }
+            catch (IOException ex)
+            {
+                throw new ConversionException("Could not convert Mapreduce response",ex);
+            }
+        }
+        
+        private ArrayNode flattenResults()
+        {
+            final JsonNodeFactory factory = JsonNodeFactory.instance;
+            ArrayNode flatArray = factory.arrayNode();
+            for (Map.Entry<Integer,ArrayNode> entry : results.entrySet())
+            {
+                flatArray.addAll(entry.getValue());
+            }
+            return flatArray;
+        }
+		
 	}
 }

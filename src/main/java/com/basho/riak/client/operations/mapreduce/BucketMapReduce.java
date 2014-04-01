@@ -34,10 +34,10 @@ public class BucketMapReduce extends MapReduce
 
 		public Builder withKeyFilter(KeyFilter filter)
 		{
-			filters.add(filter);
+            filters.add(filter);
 			return this;
 		}
-
+        
 		public BucketMapReduce build()
 		{
 			if (bucket == null)

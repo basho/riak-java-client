@@ -4,7 +4,7 @@ import com.basho.riak.client.query.Location;
 
 import java.util.Collection;
 
-class BucketKeyInput implements MapReduceInput
+public class BucketKeyInput implements MapReduceInput
 {
 
 	private final Collection<IndividualInput> inputs;
@@ -27,13 +27,17 @@ class BucketKeyInput implements MapReduceInput
 	  IndividualInput(Location location, String keyData)
 		{
 			this.location = location;
+            if (keyData == null)
+            {
+                throw new IllegalArgumentException("keyData cannot be null.");
+            }
 			this.keyData = keyData;
 		}
 
 	  IndividualInput(Location location)
 		{
 			this.location = location;
-			this.keyData = null;
+			this.keyData = "";
 		}
 
 		public boolean hasKeyData()

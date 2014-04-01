@@ -1,6 +1,7 @@
 package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.filters.KeyFilter;
 import com.basho.riak.client.query.functions.Function;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -29,7 +30,7 @@ public class MapReduceSpecSerializerTest
 		this.jg = new JsonFactory().createGenerator(out);
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		SimpleModule specModule = new SimpleModule("SpecModule", new Version(1, 0, 0, null));
+		SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
 		specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
 		specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
 		specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
@@ -52,13 +53,13 @@ public class MapReduceSpecSerializerTest
 		phases.add(new MapPhase(Function.newNamedJsFunction("map_func")));
 		phases.add(new ReducePhase(Function.newNamedJsFunction("reduce_func")));
 		phases.add(new LinkPhase("bucket", "tag"));
-		BucketInput input = new BucketInput(new Location("bucket"), Collections.EMPTY_LIST);
+		BucketInput input = new BucketInput(new Location("bucket"), Collections.<KeyFilter>emptyList());
 
 		MapReduceSpec spec = new MapReduceSpec(input, phases, 1000L);
 
 		jg.writeObject(spec);
-
-		Assert.assertEquals("{\"inputs\":{\"bucket\":\"bucket\",\"key_filters\":[]}," +
+        
+		Assert.assertEquals("{\"inputs\":\"bucket\"," +
 				"\"timeout\":1000,\"query\":" +
 				"[{\"map\":{\"language\":\"javascript\",\"name\":\"map_func\",\"keep\":false,\"arg\":null}}," +
 				"{\"reduce\":{\"language\":\"javascript\",\"name\":\"reduce_func\",\"keep\":false,\"arg\":null}}," +

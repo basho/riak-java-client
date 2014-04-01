@@ -27,7 +27,7 @@ public class PhaseFunctionSerializerTest
 		this.jg = new JsonFactory().createGenerator(out);
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		SimpleModule specModule = new SimpleModule("SpecModule", new Version(1, 0, 0, null));
+		SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
 		specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
 		objectMapper.registerModule(specModule);
 
