@@ -76,7 +76,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
 	private final Location location;
 	private final Map<FetchOption<?>, Object> options =
-		new HashMap<FetchOption<?>, Object>();
+			new HashMap<FetchOption<?>, Object>();
 
 	FetchValue(Builder builder)
 	{
@@ -88,53 +88,52 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
 	{
 		RiakFuture<Response, Location> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
 
-    @Override
-    protected final RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
-    {
-        RiakFuture<FetchOperation.Response, Location> coreFuture = 
-            cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future = 
-            new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(FetchOperation.Response coreResponse)
-                {
-                    return new Response.Builder().withNotFound(coreResponse.isNotFound()) 
-                                        .withUnchanged(coreResponse.isUnchanged())
-                                        .withLocation(coreResponse.getLocation())
-                                        .withValues(coreResponse.getObjectList()) 
-                                        .withVClock(coreResponse.getVClock())
-                                        .build();
-                }
+		future.await();
 
-                @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-        
-    }
+		if (future.isSuccess())
+		{
+			return future.get();
+		} else
+		{
+			throw new ExecutionException(future.cause().getCause());
+		}
+	}
 
-    private FetchOperation buildCoreOperation()
-    {
-        FetchOperation.Builder builder = new FetchOperation.Builder(location);
+	@Override
+	protected final RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
+	{
+		RiakFuture<FetchOperation.Response, Location> coreFuture =
+				cluster.execute(buildCoreOperation());
+
+		CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future =
+				new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
+				{
+					@Override
+					protected Response convertResponse(FetchOperation.Response coreResponse)
+					{
+						return new Response.Builder().withNotFound(coreResponse.isNotFound())
+								.withUnchanged(coreResponse.isUnchanged())
+								.withLocation(coreResponse.getLocation())
+								.withValues(coreResponse.getObjectList())
+								.withVClock(coreResponse.getVClock())
+								.build();
+					}
+
+					@Override
+					protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+					{
+						return coreQueryInfo;
+					}
+				};
+		coreFuture.addListener(future);
+		return future;
+
+	}
+
+	private FetchOperation buildCoreOperation()
+	{
+		FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
 		for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
 		{
@@ -177,8 +176,8 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		}
 
 		return builder.build();
-    }
-    
+	}
+
 	/**
 	 * A response from Riak containing results from a FetchValue command.
 	 * <p>
@@ -194,32 +193,34 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		Response(Init<?> builder)
 		{
 			super(builder);
-            this.notFound = builder.notFound;
+			this.notFound = builder.notFound;
 			this.unchanged = builder.unchanged;
 		}
 
-        /**
-         * Determine if there was a value in Riak.
-         * <p>
-         * If there was no value present at the supplied {@code Location} in
-         * Riak, this will be true.
-         * </p>
-         * @return true if there was no value in Riak.
-         */
-        public boolean isNotFound()
+		/**
+		 * Determine if there was a value in Riak.
+		 * <p>
+		 * If there was no value present at the supplied {@code Location} in
+		 * Riak, this will be true.
+		 * </p>
+		 *
+		 * @return true if there was no value in Riak.
+		 */
+		public boolean isNotFound()
 		{
 			return notFound;
 		}
 
-        /**
-         * Determine if the value is unchanged.
-         * <p>
-         * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
-         * this indicates if the value in Riak has been modified.
-         * <p>
-         * @return true if the vector clock for the object in Riak matched the 
-         * supplied vector clock, false otherwise. 
-         */
+		/**
+		 * Determine if the value is unchanged.
+		 * <p/>
+		 * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
+		 * this indicates if the value in Riak has been modified.
+		 * <p/>
+		 *
+		 * @return true if the vector clock for the object in Riak matched the
+		 * supplied vector clock, false otherwise.
+		 */
 		public boolean isUnchanged()
 		{
 			return unchanged;
@@ -262,7 +263,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             }
             
         }
-        
+
 	}
 
     /**
@@ -273,7 +274,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
 		private final Location location;
 		private final Map<FetchOption<?>, Object> options =
-			new HashMap<FetchOption<?>, Object>();
+				new HashMap<FetchOption<?>, Object>();
 
         /**
          * Constructs a builder for a FetchValue operation using the supplied location.
@@ -306,7 +307,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		 */
 		public FetchValue build()
 		{
-            return new FetchValue(this);
+			return new FetchValue(this);
 		}
 	}
 }

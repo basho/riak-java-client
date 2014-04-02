@@ -20,11 +20,19 @@ import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.client.util.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.IOException;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Map/Reduce Operation on Riak. No error checking is done on the content type of the content itself
@@ -34,6 +42,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
 {
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     private final BinaryValue mapReduce;
+    private final Logger logger = LoggerFactory.getLogger(MapReduceOperation.class);
     
     private MapReduceOperation(Builder builder)
     {
@@ -44,15 +53,57 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     @Override
     protected Response convert(List<RiakKvPB.RpbMapRedResp> rawResponse)
     {
-        List<BinaryValue> results = new ArrayList<BinaryValue>(rawResponse.size());
+        // Riak streams the result back. Each message from Riak contains a int 
+        // that tells you what phase the result is from. The result from a phase
+        // can span multiple messages. Each result chunk is a JSON array.
+        
+        final JsonNodeFactory factory = JsonNodeFactory.instance;
+        final ObjectMapper mapper = new ObjectMapper();
+        final Map<Integer, ArrayNode> resultMap = new LinkedHashMap<Integer, ArrayNode>();
+        
+        int phase = 0;
+        
         for (RiakKvPB.RpbMapRedResp response : rawResponse)
         {
+            if (response.hasPhase())
+            {
+                phase = response.getPhase();
+            }
             if (response.hasResponse())
             {
-                results.add(BinaryValue.create(response.getResponse().toByteArray()));
+                ArrayNode jsonArray = null;
+                if (resultMap.containsKey(phase))
+                {
+                    jsonArray = resultMap.get(phase);
+                }
+                else 
+                {
+                    jsonArray = factory.arrayNode();
+                    resultMap.put(phase, jsonArray);
+                }
+                
+                JsonNode responseJson;
+                try
+                {
+                    responseJson = mapper.readTree(response.getResponse().toStringUtf8());
+                }
+                catch (IOException ex)
+                {
+                    logger.error("Mapreduce job returned non-JSON; {}",response.getResponse().toStringUtf8());
+                    throw new RuntimeException("Non-JSON response from MR job", ex);
+                }
+                
+                if (responseJson.isArray())
+                {
+                    jsonArray.addAll((ArrayNode)responseJson);
+                }
+                else
+                {
+                    logger.error("Mapreduce job returned JSON that wasn't an array; {}", response.getResponse().toStringUtf8());
+                }
             }
         }
-        return new Response(mapReduce, results);
+        return new Response(mapReduce, resultMap);
     }
 
     @Override
@@ -98,21 +149,17 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
          * Create a MapReduce operation builder with the given function.
          *
          * @param mapReduce a mapReduce query.
-         * @param contentType a http-style content encoding type (typically application/json)
          */
-        public Builder(BinaryValue mapReduce, String contentType)
+        public Builder(BinaryValue mapReduce)
         {
             if ((null == mapReduce) || mapReduce.length() == 0)
             {
                 throw new IllegalArgumentException("MapReduce can not be null or empty.");
             }
-            else if ((null == contentType) || contentType.length() == 0)
-            {
-                throw new IllegalArgumentException("ContentType can not be null or empty.");
-            }
+            
             
             reqBuilder.setRequest(ByteString.copyFrom(mapReduce.unsafeGetValue()))
-                        .setContentType(ByteString.copyFromUtf8(contentType));
+                        .setContentType(ByteString.copyFromUtf8("application/json"));
             this.mapReduce = mapReduce;
         
         }
@@ -126,12 +173,12 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     public static class Response
     {
         private final BinaryValue mapReduce;
-        private final List<BinaryValue> results;
+        private final Map<Integer, ArrayNode> resultMap;
         
-        Response(BinaryValue mapReduce, List<BinaryValue> results)
+        Response(BinaryValue mapReduce,Map<Integer, ArrayNode> results)
         {
             this.mapReduce = mapReduce;
-            this.results = results;
+            this.resultMap = results;
         }
         
         public BinaryValue getMapReduceQuery()
@@ -139,9 +186,9 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
             return mapReduce;
         }
         
-        public List<BinaryValue> getResults()
+        public Map<Integer, ArrayNode> getResults()
         {
-            return results;
+            return resultMap;
         }
         
     }
