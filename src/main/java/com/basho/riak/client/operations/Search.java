@@ -22,7 +22,6 @@ import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>

@@ -23,7 +23,6 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
 
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>

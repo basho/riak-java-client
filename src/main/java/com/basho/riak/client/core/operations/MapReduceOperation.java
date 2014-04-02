@@ -71,7 +71,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
             }
             if (response.hasResponse())
             {
-                ArrayNode jsonArray = null;
+                ArrayNode jsonArray;
                 if (resultMap.containsKey(phase))
                 {
                     jsonArray = resultMap.get(phase);
@@ -103,7 +103,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
                 }
             }
         }
-        return new Response(mapReduce, resultMap);
+        return new Response(resultMap);
     }
 
     @Override
@@ -172,18 +172,11 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     
     public static class Response
     {
-        private final BinaryValue mapReduce;
         private final Map<Integer, ArrayNode> resultMap;
         
-        Response(BinaryValue mapReduce,Map<Integer, ArrayNode> results)
+        Response(Map<Integer, ArrayNode> results)
         {
-            this.mapReduce = mapReduce;
             this.resultMap = results;
-        }
-        
-        public BinaryValue getMapReduceQuery()
-        {
-            return mapReduce;
         }
         
         public Map<Integer, ArrayNode> getResults()

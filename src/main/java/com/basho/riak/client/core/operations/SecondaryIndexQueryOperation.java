@@ -50,8 +50,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse)
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder = 
-            new SecondaryIndexQueryOperation.Response.Builder()
-                .withQuery(query);
+            new SecondaryIndexQueryOperation.Response.Builder();
         
         for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
         {
@@ -512,7 +511,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     
     public static class Response
     {
-        private final Query query;
         private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
 
@@ -520,12 +518,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             this.continuation = builder.continuation;
             this.entryList = builder.entryList;
-            this.query = builder.query;
-        }
-        
-        public Query getQuery()
-        {
-            return query;
         }
         
         public boolean hasContinuation()
@@ -577,7 +569,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         
         static class Builder
         {
-            private Query query;
             private BinaryValue continuation;
             private List<Response.Entry> entryList = 
                 new ArrayList<Response.Entry>();
@@ -591,12 +582,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             Builder addEntry(Response.Entry entry)
             {
                 entryList.add(entry);
-                return this;
-            }
-            
-            Builder withQuery(Query query)
-            {
-                this.query = query;
                 return this;
             }
             

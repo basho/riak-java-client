@@ -45,8 +45,7 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaSchemaGetResp response = rawResponse.get(0);
         
-        return new Response(schemaName, 
-                            new YokozunaSchema(response.getSchema().getName().toStringUtf8(),
+        return new Response(new YokozunaSchema(response.getSchema().getName().toStringUtf8(),
                                     response.getSchema().getContent().toStringUtf8()));
         
     }
@@ -105,17 +104,10 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     public static class Response
     {
         private final YokozunaSchema schema;
-        private final String schemaName;
         
-        Response(String schemaName, YokozunaSchema schema)
+        Response(YokozunaSchema schema)
         {
-            this.schemaName = schemaName;
             this.schema = schema;
-        }
-        
-        public String getSchemaName()
-        {
-            return schemaName;
         }
         
         public YokozunaSchema getSchema()

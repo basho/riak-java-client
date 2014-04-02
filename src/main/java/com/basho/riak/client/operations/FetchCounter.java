@@ -16,21 +16,55 @@
 
 package com.basho.riak.client.operations;
 
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.RiakCounter;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.util.BinaryValue;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class FetchCounter extends FetchDatatype<RiakCounter>
+public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.Response, Location>
 {
 	private FetchCounter(Builder builder)
 	{
 		super(builder);
 	}
 
+    @Override
+    protected final RiakFuture<FetchCounter.Response, Location> executeAsync(RiakCluster cluster)
+    {
+        RiakFuture<DtFetchOperation.Response, Location> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location> future =
+            new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture) {
+
+            @Override
+            protected FetchCounter.Response convertResponse(DtFetchOperation.Response coreResponse)
+            {
+                RiakDatatype element = coreResponse.getCrdtElement();
+                BinaryValue context = coreResponse.getContext();
+
+                RiakCounter datatype = extractDatatype(element);
+
+                return new Response(datatype, context.getValue());
+            }
+
+            @Override
+            protected Location convertQueryInfo(Location coreQueryInfo)
+            {
+                return coreQueryInfo;
+            }
+        };
+        coreFuture.addListener(future);
+        return future;
+    }
+    
 	@Override
 	public RiakCounter extractDatatype(RiakDatatype element)
 	{
@@ -56,4 +90,12 @@ public final class FetchCounter extends FetchDatatype<RiakCounter>
 			return new FetchCounter(this);
 		}
 	}
+    
+    public static class Response extends FetchDatatype.Response<RiakCounter>
+    {
+        Response(RiakCounter counter, byte[] context)
+        {
+            super(counter, context);
+        }
+    }
 }

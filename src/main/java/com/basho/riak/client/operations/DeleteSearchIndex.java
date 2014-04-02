@@ -5,7 +5,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Dave Rusek <drusek at basho dot com>
@@ -28,24 +27,24 @@ public final class DeleteSearchIndex extends RiakCommand<Void, String>
         
         CoreFutureAdapter<Void, String, Void, String> future =
             new CoreFutureAdapter<Void, String, Void, String>(coreFuture)
-            {
+    {
+        
+        @Override
+        protected Void convertResponse(Void coreResponse)
+        {
+            return coreResponse;
+        }
 
-                @Override
-                protected Void convertResponse(Void coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected String convertQueryInfo(String coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
+        @Override
+        protected String convertQueryInfo(String coreQueryInfo)
+        {
+            return coreQueryInfo;
+        }
             };
         coreFuture.addListener(future);
         return future;
     }
-
+    
     private YzDeleteIndexOperation buildCoreOperation()
     {
         return new YzDeleteIndexOperation.Builder(index).build();

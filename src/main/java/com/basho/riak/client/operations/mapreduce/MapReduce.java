@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * An operation for defining and runnig a Map/Reduce query on Riak. <p/> <p> See <a
@@ -112,7 +111,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 
 			ObjectMapper objectMapper = new ObjectMapper();
 			SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-			//specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
 			specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
 			specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
 			specModule.addSerializer(BucketInput.class, new BucketInputSerializer());

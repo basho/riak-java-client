@@ -99,7 +99,7 @@ public class ITestDatatype extends ITestBase
 		UpdateDatatype.Response<RiakMap> updateResponse = client.execute(update);
 
 		FetchMap fetch = new FetchMap.Builder(updateResponse.getKey()).build();
-		FetchDatatype.Response<RiakMap> fetchResponse = client.execute(fetch);
+		FetchMap.Response fetchResponse = client.execute(fetch);
 
 		// users
 		RiakMap usersMap = fetchResponse.getDatatype();

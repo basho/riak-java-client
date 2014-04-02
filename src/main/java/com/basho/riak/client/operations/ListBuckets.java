@@ -24,7 +24,6 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>

@@ -17,24 +17,20 @@ package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.operations.datatypes.Context;
 
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
-import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<FetchDatatype.Response<T>, Location>
+public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
 
     private final Location location;
@@ -47,7 +43,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 	    this.options.putAll(builder.options);
     }
 
-    public <U> FetchDatatype<T> withOption(DtFetchOption<U> option, U value)
+    public <V> FetchDatatype<T,S,U> withOption(DtFetchOption<V> option, V value)
     {
         options.put(option, value);
         return this;
@@ -55,37 +51,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
 
 	public abstract T extractDatatype(RiakDatatype element);
 
-    @Override
-    protected final RiakFuture<FetchDatatype.Response<T>, Location> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<DtFetchOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Response<T>, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<Response<T>, Location, DtFetchOperation.Response, Location>(coreFuture) {
-
-            @Override
-            protected Response<T> convertResponse(DtFetchOperation.Response coreResponse)
-            {
-                RiakDatatype element = coreResponse.getCrdtElement();
-                BinaryValue context = coreResponse.getContext();
-
-                T datatype = extractDatatype(element);
-
-                return new Response<T>(datatype, context.getValue());
-            }
-
-            @Override
-            protected Location convertQueryInfo(Location coreQueryInfo)
-            {
-                return coreQueryInfo;
-            }
-        };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private DtFetchOperation buildCoreOperation()
+    protected final DtFetchOperation buildCoreOperation()
     {
         DtFetchOperation.Builder builder = 
             new DtFetchOperation.Builder(location);
@@ -162,7 +128,7 @@ public abstract class FetchDatatype<T extends RiakDatatype> extends RiakCommand<
         private final T datatype;
         private final byte[] context;
 
-        public Response(T datatype, byte[] context)
+        protected Response(T datatype, byte[] context)
         {
             this.datatype = datatype;
             this.context = context;

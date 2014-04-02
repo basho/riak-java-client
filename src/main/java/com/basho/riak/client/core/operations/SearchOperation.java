@@ -71,8 +71,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
             }
             docList.add(map);
         }
-        return new Response(docList, resp.getMaxScore(), resp.getNumFound(), 
-                            queryString, indexName);
+        return new Response(docList, resp.getMaxScore(), resp.getNumFound());
 
     }
 
@@ -268,17 +267,12 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         private final List<Map<String, String>> results;
         private final float maxScore;
         private final int numResults;
-        private final String queryString;
-        private final BinaryValue indexName;
-
-        Response(List<Map<String,String>> results, float maxScore, int numResults, 
-                    String queryString, BinaryValue indexName)
+        
+        Response(List<Map<String,String>> results, float maxScore, int numResults)
         {
             this.results = results;
             this.maxScore = maxScore;
             this.numResults = numResults;
-            this.queryString = queryString;
-            this.indexName = indexName;
         }
 
         @Override
@@ -287,16 +281,6 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
             return results.iterator();
         }
 
-        public String getQueryString()
-        {
-            return queryString;
-        }
-        
-        public BinaryValue getIndexName()
-        {
-            return indexName;
-        }
-        
         /**
          * Returns the max score from the search query.
          * @return the max score.

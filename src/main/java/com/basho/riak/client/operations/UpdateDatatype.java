@@ -29,7 +29,6 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
