@@ -1,21 +1,19 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.query.Location;
-
 public class SearchInput implements MapReduceInput
 {
-	private final Location bucket;
+	private final String index;
 	private final String search;
 
-	public SearchInput(Location bucket, String search)
+	public SearchInput(String index, String search)
 	{
-		this.bucket = bucket;
+		this.index = index;
 		this.search = search;
 	}
 
-	public Location getBucket()
+	public String getIndex()
 	{
-		return bucket;
+		return index;
 	}
 
 	public String getSearch()

@@ -135,7 +135,7 @@ public class ITestIndexMapReduce extends ITestBase
     @Test
     public void rangeIndex() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         initValues("default");
         
         Location loc = new Location(mrBucketName);
@@ -162,8 +162,8 @@ public class ITestIndexMapReduce extends ITestBase
     @Test
     public void rangeIndexDiffType() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(testBucketType);
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        Assume.assumeTrue(test2i);
         
         initValues(bucketType.toString());
         

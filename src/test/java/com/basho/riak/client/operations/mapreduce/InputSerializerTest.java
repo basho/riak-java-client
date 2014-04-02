@@ -46,11 +46,11 @@ public class InputSerializerTest
 	{
 
 		Location bucket = new Location("bucket");
-		SearchInput input = new SearchInput(bucket, "query");
+		SearchInput input = new SearchInput("index", "query");
 
 		jg.writeObject(input);
 
-		assertEquals("{\"bucket\":\"bucket\",\"query\":\"query\"}", out.toString());
+		assertEquals("{\"module\":\"yokozuna\",\"function\":\"mapred_search\",\"arg\":[\"index\",\"query\"]}", out.toString());
 
 	}
 

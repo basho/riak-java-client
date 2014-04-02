@@ -108,7 +108,6 @@ public class ITestMapReduceOperation extends ITestBase
         assertEquals(resultList.size(), 1);
         
         String json = resultList.get(0).toString();
-        System.out.println(json);
         ObjectMapper oMapper = new ObjectMapper(); 
         @SuppressWarnings("unchecked")
         Map<String, Integer> resultMap = oMapper.readValue(json, Map.class);

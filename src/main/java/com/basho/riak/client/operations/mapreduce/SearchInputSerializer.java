@@ -12,8 +12,13 @@ public class SearchInputSerializer extends JsonSerializer<SearchInput>
 	public void serialize(SearchInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
 	{
 	 	jg.writeStartObject();
-		jg.writeObjectField("bucket", input.getBucket().getBucketNameAsString());
-		jg.writeObjectField("query", input.getSearch());
+        jg.writeObjectField("module", "yokozuna");
+        jg.writeObjectField("function", "mapred_search");
+		
+        jg.writeArrayFieldStart("arg");
+        jg.writeString(input.getIndex());
+		jg.writeString(input.getSearch());
+        jg.writeEndArray();
 		jg.writeEndObject();
 	}
 }

@@ -75,7 +75,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		try
 		{
 			String spec = writeSpec();
-            System.out.println(spec);
+            //System.out.println(spec);
             jobSpec = BinaryValue.create(spec);
 		} catch (RiakException e)
 		{

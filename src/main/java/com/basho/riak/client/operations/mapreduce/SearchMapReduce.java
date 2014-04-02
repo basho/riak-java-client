@@ -1,7 +1,5 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.query.Location;
-
 public class SearchMapReduce extends MapReduce
 {
 	protected SearchMapReduce(SearchInput input, Builder builder)
@@ -9,21 +7,21 @@ public class SearchMapReduce extends MapReduce
 		super(input, builder);
 	}
 
-	public static class Builder extends MapReduce.Builder
+	public static class Builder extends MapReduce.Builder<Builder>
 	{
 
-		private Location bucket;
+		private String index;
 		private String query;
 
 		@Override
-		protected MapReduce.Builder self()
+		protected Builder self()
 		{
 			return this;
 		}
 
-		public Builder withBucket(Location bucket)
+		public Builder withIndex(String index)
 		{
-			this.bucket = bucket;
+			this.index = index;
 			return this;
 		}
 
@@ -35,9 +33,9 @@ public class SearchMapReduce extends MapReduce
 
 		public SearchMapReduce build()
 		{
-			if (bucket == null)
+			if (index == null)
 			{
-				throw new IllegalStateException("A bucket must be specified");
+				throw new IllegalStateException("An index must be specified");
 			}
 
 			if (query == null)
@@ -45,7 +43,7 @@ public class SearchMapReduce extends MapReduce
 				throw new IllegalStateException("A query must be specified");
 			}
 
-			return new SearchMapReduce(new SearchInput(bucket, query), this);
+			return new SearchMapReduce(new SearchInput(index, query), this);
 		}
 	}
 

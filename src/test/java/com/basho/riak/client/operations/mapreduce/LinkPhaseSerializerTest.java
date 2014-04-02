@@ -25,7 +25,7 @@ public class LinkPhaseSerializerTest
 		this.jg = new JsonFactory().createGenerator(out);
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		SimpleModule specModule = new SimpleModule("SpecModule", new Version(1, 0, 0, null));
+		SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
 		specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
 		objectMapper.registerModule(specModule);
 

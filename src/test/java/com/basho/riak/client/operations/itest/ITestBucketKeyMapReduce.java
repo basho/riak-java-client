@@ -124,10 +124,8 @@ public class ITestBucketKeyMapReduce extends ITestBase
         ArrayNode resultList = response.getResultForPhase(1);
 
 		assertEquals(1, response.getResultsFromAllPhases().size());
-        System.out.println(response.getResultsFromAllPhases().toString());
         
 		String json = resultList.get(0).toString();
-        System.out.println(json);
 		ObjectMapper oMapper = new ObjectMapper();
         
         TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
@@ -185,10 +183,8 @@ public class ITestBucketKeyMapReduce extends ITestBase
         ArrayNode resultList = response.getResultForPhase(1);
 
 		assertEquals(1, response.getResultsFromAllPhases().size());
-        System.out.println(response.getResultsFromAllPhases().toString());
         
 		String json = resultList.get(0).toString();
-        System.out.println(json);
 		ObjectMapper oMapper = new ObjectMapper();
         
         TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};

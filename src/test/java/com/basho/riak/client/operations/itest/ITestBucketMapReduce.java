@@ -181,7 +181,6 @@ public class ITestBucketMapReduce extends ITestBase
         assertTrue(future.isSuccess());
         
         MapReduce.Response response = future.get();
-        System.out.println(response.getResultsFromAllPhases());
         assertEquals(4, response.getResultsFromAllPhases().size());
         assertEquals(46, response.getResultsFromAllPhases().get(0).asInt());
         assertEquals(49, response.getResultsFromAllPhases().get(3).asInt());
