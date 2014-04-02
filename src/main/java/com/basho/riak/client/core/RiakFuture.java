@@ -96,7 +96,7 @@ public interface RiakFuture<V, T> extends Future<V>
      * Useful in async operations when you want to know what operation this
      * future refers to.
      * <p>
-     * @return 
+     * @return Information pertaining to the operation attached to this future.
      */
     T getQueryInfo();
     /**
