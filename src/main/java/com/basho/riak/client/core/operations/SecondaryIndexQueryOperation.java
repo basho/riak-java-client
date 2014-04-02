@@ -193,6 +193,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 pbReqBuilder.setTermRegex(ByteString.copyFrom(query.termFilter.unsafeGetValue()));
             }
+            
+            if (query.timeout != null)
+            {
+                pbReqBuilder.setTimeout(query.timeout);
+            }
         }
         
         /**
@@ -217,6 +222,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final BinaryValue continuation;
         private final Boolean paginationSort;
         private final BinaryValue termFilter;
+        private final Integer timeout;
         
         private Query(Builder builder)
         {
@@ -230,6 +236,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.paginationSort = builder.paginationSort;
             this.termFilter = builder.termFilter;
             this.location = builder.location;
+            this.timeout = builder.timeout;
         }
 
         /**
@@ -313,6 +320,13 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return termFilter;
         }
         
+        /**
+         * @return the timeout value, or null if not set.
+         */
+        public Integer getTimeout()
+        {
+            return timeout;
+        }
         
         
         public static class Builder
@@ -327,6 +341,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private BinaryValue continuation;
             private Boolean paginationSort;
             private BinaryValue termFilter;
+            private Integer timeout;
             
             /**
             * Constructs a builder for a (2i) Query. 
@@ -452,6 +467,20 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                return this;
            }
            
+           /**
+            * Set the timeout for the query.
+            * <p>
+            * Sets the server-side timeout value for this query.
+            * </p>
+            * @param timeout
+            * @return a reference to this object.
+            */
+           public Builder withTimeout(int timeout)
+           {
+               this.timeout = timeout;
+               return this;
+           }
+           
            public Query build()
             {
                 // sanity checks
@@ -477,19 +506,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                     throw new IllegalArgumentException("Cannot use term regular expression in integer query");
                 }
 
-//                if (indexKey != null)
-//                {
-//                    pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
-//                }
-//                else
-//                {
-//                    pbReqBuilder.setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
-//                }
-
                 return new Query(this);
-
             }
-            
         }
     }
     
