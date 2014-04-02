@@ -147,6 +147,18 @@ public class InputSerializerTest
 
 		assertEquals("{\"bucket\":\"bucket\",\"index\":\"index_int\",\"key\":\"dave\"}", out.toString());
 	}
+    
+    @Test
+	public void testSearializeIndexInputMatchWithType() throws Exception
+	{
+		Location bucket = new Location("bucket").setBucketType("type");
+		IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<String>("dave");
+		IndexInput input = new IndexInput(bucket, "index_int", criteria);
+
+		jg.writeObject(input);
+
+		assertEquals("{\"bucket\":[\"type\",\"bucket\"],\"index\":\"index_int\",\"key\":\"dave\"}", out.toString());
+	}
 
 	@Test
 	public void testSearializeIndexInputRange() throws Exception
@@ -158,6 +170,18 @@ public class InputSerializerTest
 		jg.writeObject(input);
 
 		assertEquals("{\"bucket\":\"bucket\",\"index\":\"index_int\",\"start\":1,\"end\":2}", out.toString());
+	}
+    
+    @Test
+	public void testSearializeIndexInputRangeWithType() throws Exception
+	{
+		Location bucket = new Location("bucket").setBucketType("type");
+		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<Integer>(1, 2);
+		IndexInput input = new IndexInput(bucket, "index_int", criteria);
+
+		jg.writeObject(input);
+
+		assertEquals("{\"bucket\":[\"type\",\"bucket\"],\"index\":\"index_int\",\"start\":1,\"end\":2}", out.toString());
 	}
 
 }

@@ -10,22 +10,22 @@ public class IndexMapReduce extends MapReduce
 		super(input, builder);
 	}
 
-	public static class Builder extends MapReduce.Builder
+	public static class Builder extends MapReduce.Builder<Builder>
 	{
 
-		private Location bucket;
+		private Location location;
 		private String index;
 		private IndexInput.IndexCriteria criteria;
 
 		@Override
-		protected MapReduce.Builder self()
+		protected Builder self()
 		{
 			return this;
 		}
 
-		public Builder withBucket(Location bucket)
+		public Builder withLocation(Location location)
 		{
-			this.bucket = bucket;
+			this.location = location;
 			return this;
 		}
 
@@ -35,9 +35,9 @@ public class IndexMapReduce extends MapReduce
 			return this;
 		}
 
-		public Builder withRange(final int start, final int end)
+		public Builder withRange(final long start, final long end)
 		{
-			this.criteria = new IndexInput.RangeCriteria<Integer>(start, end);
+			this.criteria = new IndexInput.RangeCriteria<Long>(start, end);
 			return this;
 		}
 
@@ -47,9 +47,9 @@ public class IndexMapReduce extends MapReduce
 			return this;
 		}
 
-		public Builder withMatchValue(final int value)
+		public Builder withMatchValue(final long value)
 		{
-			this.criteria = new IndexInput.MatchCriteria<Integer>(value);
+			this.criteria = new IndexInput.MatchCriteria<Long>(value);
 			return this;
 		}
 
@@ -62,7 +62,7 @@ public class IndexMapReduce extends MapReduce
 		public IndexMapReduce build()
 		{
 
-			if (bucket == null)
+			if (location == null)
 			{
 				throw new IllegalStateException("A bucket must be specified");
 			}
@@ -77,7 +77,7 @@ public class IndexMapReduce extends MapReduce
 				throw new IllegalStateException("An index search criteria must be specified");
 			}
 
-			return new IndexMapReduce(new IndexInput(bucket, index, criteria), this);
+			return new IndexMapReduce(new IndexInput(location, index, criteria), this);
 		}
 
 	}

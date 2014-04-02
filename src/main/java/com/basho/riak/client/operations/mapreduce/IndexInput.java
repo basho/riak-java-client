@@ -4,20 +4,20 @@ import com.basho.riak.client.query.Location;
 
 public class IndexInput implements MapReduceInput
 {
-	private final Location bucket;
+	private final Location location;
 	private final String index;
 	private final IndexCriteria criteria;
 
-	public IndexInput(Location bucket, String index, IndexCriteria criteria)
+	public IndexInput(Location location, String index, IndexCriteria criteria)
 	{
-		this.bucket = bucket;
+		this.location = location;
 		this.index = index;
 		this.criteria = criteria;
 	}
 
-	public Location getBucket()
+	public Location getLocation()
 	{
-		return bucket;
+		return location;
 	}
 
 	public String getIndex()

@@ -31,14 +31,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.type.CollectionType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * An operation for defining and runnig a Map/Reduce query on Riak. <p/> <p> See <a
@@ -78,7 +75,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		try
 		{
 			String spec = writeSpec();
-            //System.out.println(spec);
+            System.out.println(spec);
             jobSpec = BinaryValue.create(spec);
 		} catch (RiakException e)
 		{

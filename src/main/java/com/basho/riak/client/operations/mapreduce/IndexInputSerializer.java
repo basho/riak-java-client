@@ -1,5 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
+import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -12,8 +13,21 @@ public class IndexInputSerializer extends JsonSerializer<IndexInput>
 	public void serialize(IndexInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
 	{
 		jg.writeStartObject();
-		jg.writeStringField("bucket", input.getBucket().getBucketNameAsString());
-		jg.writeStringField("index", input.getIndex());
+		
+        // Riak bug ... explicitly specifying "default" as the type breaks things
+        if (!input.getLocation().getBucketType().equals(Location.DEFAULT_BUCKET_TYPE))
+        {
+            jg.writeArrayFieldStart("bucket");
+            jg.writeString(input.getLocation().getBucketTypeAsString());
+            jg.writeString(input.getLocation().getBucketNameAsString());
+            jg.writeEndArray();
+        }
+        else
+        {
+            jg.writeStringField("bucket", input.getLocation().getBucketNameAsString());
+        }
+        
+        jg.writeStringField("index", input.getIndex());
 		IndexInput.IndexCriteria criteria = input.getCriteria();
 		if (criteria instanceof IndexInput.MatchCriteria)
 		{
