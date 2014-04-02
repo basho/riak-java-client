@@ -41,7 +41,7 @@ public class ITestBinIndexQuery extends ITestBase
     @Test
     public void testMatchQuery() throws ExecutionException, InterruptedException
     {
-        Assume.assumeTrue(test2i);
+        //Assume.assumeTrue(test2i);
         
         RiakClient client = new RiakClient(cluster);
         
@@ -58,10 +58,10 @@ public class ITestBinIndexQuery extends ITestBase
         assertTrue(svFuture.isSuccess());
         
         IndexedPojo ip2 = new IndexedPojo();
-        ip.key = "index_test_object_key2";
-        ip.bucketName = bucketName.toString();
-        ip.indexKey = "index_test_index_key";
-        ip.value = "My Object Value!";
+        ip2.key = "index_test_object_key2";
+        ip2.bucketName = bucketName.toString();
+        ip2.indexKey = "index_test_index_key";
+        ip2.value = "My Object Value!";
         
         sv = new StoreValue.Builder(ip2).build();
         svFuture = client.executeAsync(sv);
