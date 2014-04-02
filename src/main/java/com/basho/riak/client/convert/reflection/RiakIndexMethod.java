@@ -19,6 +19,7 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 import com.basho.riak.client.annotations.RiakIndex;
+import java.math.BigInteger;
 
 /**
  *
@@ -28,7 +29,9 @@ public class RiakIndexMethod
 {
     public enum MethodType { LONG_SETTER, LONG_GETTER, SET_LONG_GETTER, SET_LONG_SETTER, 
                             STRING_GETTER, STRING_SETTER, SET_STRING_GETTER, SET_STRING_SETTER,
-                            RAW_SETTER, RAW_GETTER, SET_RAW_SETTER, SET_RAW_GETTER }
+                            RAW_SETTER, RAW_GETTER, SET_RAW_SETTER, SET_RAW_GETTER,
+                            BIG_INT_SETTER, BIG_INT_GETTER, SET_BIG_INT_GETTER, SET_BIG_INT_SETTER
+    }
     
     private final Method method;
     private final String indexName;
@@ -105,6 +108,10 @@ public class RiakIndexMethod
                         {
                             return MethodType.SET_LONG_SETTER;
                         }
+                        else if (BigInteger.class.equals(genericType))
+                        {
+                            return MethodType.SET_BIG_INT_SETTER;
+                        }
                         else if (genericType.isArray() && genericType.getComponentType().equals(byte.class))
                         {
                             return MethodType.SET_RAW_SETTER;
@@ -121,6 +128,10 @@ public class RiakIndexMethod
                     else if (c.equals(Long.class) || c.equals(long.class))
                     {
                         return MethodType.LONG_SETTER;
+                    }
+                    else if (c.equals(BigInteger.class))
+                    {
+                        return MethodType.BIG_INT_SETTER;
                     }
                     else if (c.isArray() && c.getComponentType().equals(byte.class))
                     {
@@ -147,6 +158,10 @@ public class RiakIndexMethod
                         {
                             return MethodType.SET_LONG_GETTER;
                         }
+                        else if (BigInteger.class.equals(genericType))
+                        {
+                            return MethodType.SET_BIG_INT_GETTER;
+                        }
                         else if (genericType.isArray() && genericType.getComponentType().equals(byte.class))
                         {
                             return MethodType.SET_RAW_GETTER;
@@ -163,6 +178,10 @@ public class RiakIndexMethod
                     else if (c.equals(Long.class) || c.equals(long.class))
                     {
                         return MethodType.LONG_GETTER;
+                    }
+                    else if (c.equals(BigInteger.class))
+                    {
+                        return MethodType.BIG_INT_SETTER;
                     }
                     else if (c.isArray() && c.getComponentType().equals(byte.class))
                     {

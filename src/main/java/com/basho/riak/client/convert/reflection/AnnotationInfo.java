@@ -31,6 +31,7 @@ import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
+import com.basho.riak.client.query.indexes.BigIntIndex;
 import com.basho.riak.client.query.indexes.IndexType;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.RawIndex;
@@ -39,6 +40,7 @@ import com.basho.riak.client.query.indexes.StringBinIndex;
 import com.basho.riak.client.query.links.RiakLinks;
 import com.basho.riak.client.util.BinaryValue;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -658,6 +660,21 @@ public class AnnotationInfo
                         }
                     }
                     break;
+                case SET_BIG_INT:
+                case BIG_INT:
+                    BigIntIndex bigIntIndex = container.getIndex(BigIntIndex.named(f.getIndexName()));
+                    if (val != null)
+                    {
+                        if (f.getFieldType() == RiakIndexField.FieldType.SET_BIG_INT)
+                        {
+                            bigIntIndex.add((Set<BigInteger>) val);
+                        }
+                        else
+                        {
+                            bigIntIndex.add((BigInteger) val);
+                        }
+                    }
+                    break;
                 case SET_RAW:
                 case RAW:
                 {
@@ -725,6 +742,23 @@ public class AnnotationInfo
                         }
                     }
                     break;
+                case SET_BIG_INT_GETTER:
+                case BIG_INT_GETTER:
+                    val = getMethodValue(m.getMethod(), obj);
+                    // We want to create the index regardless
+                    BigIntIndex bigIntIndex = container.getIndex(BigIntIndex.named(m.getIndexName()));
+                    if (val != null)
+                    {
+                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_BIG_INT_GETTER)
+                        {
+                            bigIntIndex.add((Set<BigInteger>) val);
+                        }
+                        else
+                        {
+                            bigIntIndex.add((BigInteger) val);
+                        }
+                    }
+                    break;
                 case SET_RAW_GETTER:
                 case RAW_GETTER:
                     val = getMethodValue(m.getMethod(), obj);
@@ -775,6 +809,11 @@ public class AnnotationInfo
                     StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(f.getIndexName()));
                     val = stringIndex.values();
                     break;
+                case SET_BIG_INT:
+                case BIG_INT:
+                    BigIntIndex bigIntIndex = indexes.getIndex(BigIntIndex.named(f.getIndexName()));
+                    val = bigIntIndex.values();
+                    break;
                 case SET_RAW:
                 case RAW:
                     IndexType iType = IndexType.typeFromFullname(f.getIndexName());
@@ -795,6 +834,7 @@ public class AnnotationInfo
             {
                 if (f.getFieldType() == RiakIndexField.FieldType.LONG || 
                       f.getFieldType() == RiakIndexField.FieldType.STRING ||
+                      f.getFieldType() == RiakIndexField.FieldType.BIG_INT ||
                       f.getFieldType() == RiakIndexField.FieldType.RAW) 
                 {
                     if (!val.isEmpty())
@@ -825,6 +865,11 @@ public class AnnotationInfo
                     StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(m.getIndexName()));
                     val = stringIndex.values();
                     break;
+                case SET_BIG_INT_SETTER:
+                case BIG_INT_SETTER:
+                    BigIntIndex bigIntIndex = indexes.getIndex(BigIntIndex.named(m.getIndexName()));
+                    val = bigIntIndex.values();
+                    break;
                 case SET_RAW_SETTER:
                 case RAW_SETTER:
                     IndexType iType = IndexType.typeFromFullname(m.getIndexName());
@@ -845,6 +890,7 @@ public class AnnotationInfo
             {
                 if (m.getMethodType() == RiakIndexMethod.MethodType.LONG_SETTER ||
                       m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER ||
+                      m.getMethodType() == RiakIndexMethod.MethodType.BIG_INT_SETTER ||
                       m.getMethodType() == RiakIndexMethod.MethodType.RAW_SETTER) 
                 {
                     if (!val.isEmpty())

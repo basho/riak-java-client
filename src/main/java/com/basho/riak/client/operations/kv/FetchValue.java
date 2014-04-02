@@ -74,7 +74,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
 	private final Location location;
 	private final Map<FetchOption<?>, Object> options =
-		new HashMap<FetchOption<?>, Object>();
+			new HashMap<FetchOption<?>, Object>();
 
 	FetchValue(Builder builder)
 	{
@@ -113,9 +113,9 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
         
     }
 
-    private FetchOperation buildCoreOperation()
-    {
-        FetchOperation.Builder builder = new FetchOperation.Builder(location);
+	private FetchOperation buildCoreOperation()
+	{
+		FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
 		for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
 		{
@@ -158,8 +158,8 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		}
 
 		return builder.build();
-    }
-    
+	}
+
 	/**
 	 * A response from Riak containing results from a FetchValue command.
 	 * <p>
@@ -175,32 +175,34 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		Response(Init<?> builder)
 		{
 			super(builder);
-            this.notFound = builder.notFound;
+			this.notFound = builder.notFound;
 			this.unchanged = builder.unchanged;
 		}
 
-        /**
-         * Determine if there was a value in Riak.
-         * <p>
-         * If there was no value present at the supplied {@code Location} in
-         * Riak, this will be true.
-         * </p>
-         * @return true if there was no value in Riak.
-         */
-        public boolean isNotFound()
+		/**
+		 * Determine if there was a value in Riak.
+		 * <p>
+		 * If there was no value present at the supplied {@code Location} in
+		 * Riak, this will be true.
+		 * </p>
+		 *
+		 * @return true if there was no value in Riak.
+		 */
+		public boolean isNotFound()
 		{
 			return notFound;
 		}
 
-        /**
-         * Determine if the value is unchanged.
-         * <p>
-         * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
-         * this indicates if the value in Riak has been modified.
-         * <p>
-         * @return true if the vector clock for the object in Riak matched the 
-         * supplied vector clock, false otherwise. 
-         */
+		/**
+		 * Determine if the value is unchanged.
+		 * <p/>
+		 * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
+		 * this indicates if the value in Riak has been modified.
+		 * <p/>
+		 *
+		 * @return true if the vector clock for the object in Riak matched the
+		 * supplied vector clock, false otherwise.
+		 */
 		public boolean isUnchanged()
 		{
 			return unchanged;
@@ -243,7 +245,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             }
             
         }
-        
+
 	}
 
     /**
@@ -254,7 +256,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
 		private final Location location;
 		private final Map<FetchOption<?>, Object> options =
-			new HashMap<FetchOption<?>, Object>();
+				new HashMap<FetchOption<?>, Object>();
 
         /**
          * Constructs a builder for a FetchValue operation using the supplied location.
@@ -291,7 +293,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		 */
 		public FetchValue build()
 		{
-            return new FetchValue(this);
+			return new FetchValue(this);
 		}
 	}
 }

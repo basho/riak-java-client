@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import com.basho.riak.client.annotations.RiakIndex;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.util.Set;
 
 /**
@@ -26,7 +27,7 @@ import java.util.Set;
  */
 public class RiakIndexField {
 
-    public enum FieldType { LONG, SET_LONG, STRING, SET_STRING, RAW, SET_RAW }
+    public enum FieldType { LONG, SET_LONG, STRING, SET_STRING, RAW, SET_RAW, BIG_INT, SET_BIG_INT }
     
     private final Field field;
     private final String indexName;
@@ -90,6 +91,10 @@ public class RiakIndexField {
                     {
                         return FieldType.SET_LONG;
                     }
+                    else if (BigInteger.class.equals(genericType))
+                    {
+                        return FieldType.SET_BIG_INT;
+                    }
                     else if (genericType.isArray() && genericType.getComponentType().equals(byte.class))
                     {
                         return FieldType.SET_RAW;
@@ -108,12 +113,16 @@ public class RiakIndexField {
                 {
                     return FieldType.LONG;
                 }
+                else if (c.equals(BigInteger.class))
+                {
+                    return FieldType.BIG_INT;
+                }
                 else if (c.isArray() && c.getComponentType().equals(byte.class))
                 {
                     return FieldType.RAW;
                 }
             }
-            throw new IllegalArgumentException("@RiakIndex must be a single or Set<> of long/Long or String: " +
+            throw new IllegalArgumentException("@RiakIndex must be a single or Set<> of Long, BigInteger, or String: " +
                                                f);
         }
         throw new IllegalArgumentException("Field can not be null.");
