@@ -17,7 +17,7 @@ public class BucketMapReduce extends MapReduce
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 
-		private Location bucket;
+		private Location location;
 		private final List<KeyFilter> filters = new ArrayList<KeyFilter>();
 
 		@Override
@@ -26,9 +26,9 @@ public class BucketMapReduce extends MapReduce
 			return this;
 		}
 
-		public Builder withBucket(Location bucket)
+		public Builder withLocation(Location location)
 		{
-			this.bucket = bucket;
+			this.location = location;
 			return this;
 		}
 
@@ -40,12 +40,12 @@ public class BucketMapReduce extends MapReduce
         
 		public BucketMapReduce build()
 		{
-			if (bucket == null)
+			if (location == null)
 			{
 				throw new IllegalStateException("A bucket must be specified");
 			}
 
-			return new BucketMapReduce(new BucketInput(bucket, filters), this);
+			return new BucketMapReduce(new BucketInput(location, filters), this);
 		}
 	}
 }
