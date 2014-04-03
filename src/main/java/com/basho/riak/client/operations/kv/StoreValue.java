@@ -46,7 +46,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     private final Object value;
     private final VClock vClock;
     private final TypeReference<?> typeReference;
-
+    
     StoreValue(Builder builder)
     {
         this.options.putAll(builder.options);
@@ -261,7 +261,22 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 			this.vClock = vClock;
 			return this;
 		}
-
+        
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+            withOption(StoreOption.TIMEOUT, timeout);
+            return this;
+        }
+        
 		public <T> Builder withOption(StoreOption<T> option, T value)
 		{
 			options.put(option, value);
