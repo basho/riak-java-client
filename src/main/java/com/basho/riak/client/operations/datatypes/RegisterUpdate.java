@@ -22,7 +22,7 @@ import com.basho.riak.client.util.BinaryValue;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class RegisterUpdate extends DatatypeUpdate
+public class RegisterUpdate implements DatatypeUpdate
 {
 
     private byte[] value = null;

@@ -16,7 +16,6 @@
 package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.MapOp;
-import com.basho.riak.client.query.crdt.types.RiakMap;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
@@ -26,7 +25,7 @@ import java.util.Set;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class MapUpdate extends DatatypeUpdate<RiakMap>
+public class MapUpdate implements DatatypeUpdate
 {
 
     private final Set<MapOp.MapField> adds = new HashSet<MapOp.MapField>();
