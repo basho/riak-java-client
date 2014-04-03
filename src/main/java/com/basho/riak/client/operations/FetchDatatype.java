@@ -112,6 +112,21 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
             this.location = location;
 		}
 
+        
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public T withTimeout(int timeout)
+        {
+            return withOption(DtFetchOption.TIMEOUT, timeout);
+        }
+        
 		public <U> T withOption(DtFetchOption<U> option, U value)
 		{
 			this.options.put(option, value);

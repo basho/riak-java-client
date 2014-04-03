@@ -37,7 +37,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 
     protected final Location loc;
     private final Context ctx;
-    private final Integer timeout;
     private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
     @SuppressWarnings("unchecked")
@@ -46,18 +45,12 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         this.loc = builder.loc;
         this.ctx = builder.ctx;
 	    this.options.putAll(builder.options);
-        this.timeout = builder.timeout;
     }
     
     protected final DtUpdateOperation buildCoreOperation(DatatypeUpdate update)
     {
         DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc);
 
-        if (timeout != null)
-        {
-            builder.withTimeout(timeout);
-        }
-        
         if (ctx != null)
         {
             builder.withContext(BinaryValue.create(ctx.getBytes()));
@@ -105,7 +98,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 	{
 		private final Location loc;
 		private Context ctx;
-        private Integer timeout;
 		private Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
 		Builder(Location location)
@@ -133,9 +125,18 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 			return self();
 		}
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
         public T withTimeout(int timeout)
         {
-            this.timeout = timeout;
+            withOption(DtUpdateOption.TIMEOUT, timeout);
             return self();
         }
         
