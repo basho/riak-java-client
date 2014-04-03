@@ -34,7 +34,7 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
 {
 
     private final Location location;
-    private final Map<DtFetchOption<?>, Object> options = new HashMap<DtFetchOption<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
 	@SuppressWarnings("unchecked")
     protected FetchDatatype(Builder builder)
@@ -43,7 +43,7 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
 	    this.options.putAll(builder.options);
     }
 
-    public <V> FetchDatatype<T,S,U> withOption(DtFetchOption<V> option, V value)
+    public <V> FetchDatatype<T,S,U> withOption(Option<V> option, V value)
     {
         options.put(option, value);
         return this;
@@ -56,37 +56,37 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
         DtFetchOperation.Builder builder = 
             new DtFetchOperation.Builder(location);
         
-        for (Map.Entry<DtFetchOption<?>, Object> entry : options.entrySet())
+        for (Map.Entry<Option<?>, Object> entry : options.entrySet())
         {
-            if (entry.getKey() == DtFetchOption.R)
+            if (entry.getKey() == Option.R)
             {
                 builder.withR(((Quorum) entry.getValue()).getIntValue());
             }
-            else if (entry.getKey() == DtFetchOption.PR)
+            else if (entry.getKey() == Option.PR)
             {
                 builder.withPr(((Quorum) entry.getValue()).getIntValue());
             }
-            else if (entry.getKey() == DtFetchOption.BASIC_QUORUM)
+            else if (entry.getKey() == Option.BASIC_QUORUM)
             {
                 builder.withBasicQuorum((Boolean) entry.getValue());
             }
-            else if (entry.getKey() == DtFetchOption.NOTFOUND_OK)
+            else if (entry.getKey() == Option.NOTFOUND_OK)
             {
                 builder.withNotFoundOK((Boolean) entry.getValue());
             }
-            else if (entry.getKey() == DtFetchOption.TIMEOUT)
+            else if (entry.getKey() == Option.TIMEOUT)
             {
                 builder.withTimeout((Integer) entry.getValue());
             }
-            else if (entry.getKey() == DtFetchOption.SLOPPY_QUORUM)
+            else if (entry.getKey() == Option.SLOPPY_QUORUM)
             {
                 builder.withSloppyQuorum((Boolean) entry.getValue());
             }
-            else if (entry.getKey() == DtFetchOption.N_VAL)
+            else if (entry.getKey() == Option.N_VAL)
             {
                 builder.withNVal((Integer) entry.getValue());
             }
-            else if (entry.getKey() == DtFetchOption.INCLUDE_CONTEXT)
+            else if (entry.getKey() == Option.INCLUDE_CONTEXT)
             {
                 builder.includeContext((Boolean) entry.getValue());
             }
@@ -97,11 +97,30 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
 
     }
     
+    /**
+    * @author Dave Rusek <drusek at basho dot com>
+    * @since 2.0
+    */
+   public static final class Option<T> extends RiakOption<T> {
+
+     public static final Option<Quorum> R = new Option<Quorum>("R");
+     public static final Option<Quorum> PR = new Option<Quorum>("PR");
+     public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+     public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+     public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+     public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+     public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+     public static final Option<Boolean> INCLUDE_CONTEXT = new Option<Boolean>("INCLUDE_CONTEXT");
+
+     public Option(String name) {
+       super(name);
+     }
+   }
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
 		private final Location location;
-		private final Map<DtFetchOption<?>, Object> options = new HashMap<DtFetchOption<?>, Object>();
+		private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
 		protected Builder(Location location)
 		{
@@ -124,10 +143,10 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
          */
         public T withTimeout(int timeout)
         {
-            return withOption(DtFetchOption.TIMEOUT, timeout);
+            return withOption(Option.TIMEOUT, timeout);
         }
         
-		public <U> T withOption(DtFetchOption<U> option, U value)
+		public <U> T withOption(Option<U> option, U value)
 		{
 			this.options.put(option, value);
 			return self();

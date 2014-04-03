@@ -20,7 +20,7 @@ import com.basho.riak.client.cap.ConflictResolver;
 import com.basho.riak.client.cap.ConflictResolverFactory;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.operations.kv.FetchOption;
+import com.basho.riak.client.operations.kv.FetchValue.Option;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
@@ -126,7 +126,7 @@ public class ITestFetchValue extends ITestBase
         client.execute(sv);
         
         FetchValue fv = new FetchValue.Builder(loc)
-                            .withOption(FetchOption.DELETED_VCLOCK, false)
+                            .withOption(Option.DELETED_VCLOCK, false)
                             .build(); 
         
         FetchValue.Response fResp = client.execute(fv);

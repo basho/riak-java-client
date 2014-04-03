@@ -21,6 +21,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
+import com.basho.riak.client.operations.FetchDatatype.Option;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.RiakMap;
 import com.basho.riak.client.util.BinaryValue;
@@ -71,14 +72,14 @@ public class FetchDatatypeTest
     {
 
         FetchMap fetchValue = new FetchMap.Builder(key)
-            .withOption(DtFetchOption.TIMEOUT, 100)
-            .withOption(DtFetchOption.BASIC_QUORUM, true)
-            .withOption(DtFetchOption.N_VAL, 1)
-            .withOption(DtFetchOption.NOTFOUND_OK, true)
-            .withOption(DtFetchOption.PR, new Quorum(1))
-            .withOption(DtFetchOption.R, new Quorum(1))
-            .withOption(DtFetchOption.SLOPPY_QUORUM, true)
-            .withOption(DtFetchOption.INCLUDE_CONTEXT, true)
+            .withOption(Option.TIMEOUT, 100)
+            .withOption(Option.BASIC_QUORUM, true)
+            .withOption(Option.N_VAL, 1)
+            .withOption(Option.NOTFOUND_OK, true)
+            .withOption(Option.PR, new Quorum(1))
+            .withOption(Option.R, new Quorum(1))
+            .withOption(Option.SLOPPY_QUORUM, true)
+            .withOption(Option.INCLUDE_CONTEXT, true)
 	        .build();
 
         client.execute(fetchValue);

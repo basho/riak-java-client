@@ -73,8 +73,8 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
 
 	private final Location location;
-	private final Map<FetchOption<?>, Object> options =
-			new HashMap<FetchOption<?>, Object>();
+	private final Map<Option<?>, Object> options =
+			new HashMap<Option<?>, Object>();
 
 	FetchValue(Builder builder)
 	{
@@ -117,40 +117,40 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	{
 		FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
-		for (Map.Entry<FetchOption<?>, Object> opPair : options.entrySet())
+		for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
 		{
 
 			RiakOption<?> option = opPair.getKey();
 
-			if (option == FetchOption.R)
+			if (option == Option.R)
 			{
 				builder.withR(((Quorum) opPair.getValue()).getIntValue());
-			} else if (option == FetchOption.DELETED_VCLOCK)
+			} else if (option == Option.DELETED_VCLOCK)
 			{
 				builder.withReturnDeletedVClock((Boolean) opPair.getValue());
-			} else if (option == FetchOption.TIMEOUT)
+			} else if (option == Option.TIMEOUT)
 			{
 				builder.withTimeout((Integer) opPair.getValue());
-			} else if (option == FetchOption.HEAD)
+			} else if (option == Option.HEAD)
 			{
 				builder.withHeadOnly((Boolean) opPair.getValue());
-			} else if (option == FetchOption.BASIC_QUORUM)
+			} else if (option == Option.BASIC_QUORUM)
 			{
 				builder.withBasicQuorum((Boolean) opPair.getValue());
-			} else if (option == FetchOption.IF_MODIFIED)
+			} else if (option == Option.IF_MODIFIED)
 			{
 				VClock clock = (VClock) opPair.getValue();
 				builder.withIfNotModified(clock.getBytes());
-			} else if (option == FetchOption.N_VAL)
+			} else if (option == Option.N_VAL)
 			{
 				builder.withNVal((Integer) opPair.getValue());
-			} else if (option == FetchOption.PR)
+			} else if (option == Option.PR)
 			{
 				builder.withPr(((Quorum) opPair.getValue()).getIntValue());
-			} else if (option == FetchOption.SLOPPY_QUORUM)
+			} else if (option == Option.SLOPPY_QUORUM)
 			{
 				builder.withSloppyQuorum((Boolean) opPair.getValue());
-			} else if (option == FetchOption.NOTFOUND_OK)
+			} else if (option == Option.NOTFOUND_OK)
 			{
 				builder.withNotFoundOK((Boolean) opPair.getValue());
 			}
@@ -249,14 +249,83 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	}
 
     /**
+    * Options for controlling how Riak performs the fetch operation.
+    * <p>
+    * These options can be supplied to the {@link FetchValue.Builder} to change
+    * how Riak performs the operation. These override the defaults provided
+    * by the bucket.
+    * </p>
+    *
+    * @author Dave Rusek <drusek at basho dot com>
+    * @since 2.0
+    * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">Replication Properties</a>
+    */
+   public static final class Option<T> extends RiakOption<T>
+   {
+
+       /**
+        * Read Quorum.
+        * How many replicas need to agree when fetching the object.
+        */
+       public static final Option<Quorum> R = new Option<Quorum>("R");
+       /**
+        * Primary Read Quorum.
+        * How many primary replicas need to be available when retrieving the object.
+        */
+       public static final Option<Quorum> PR = new Option<Quorum>("PR");
+       /**
+        * Basic Quorum.
+        * Whether to return early in some failure cases (eg. when r=1 and you get 
+        * 2 errors and a success basic_quorum=true would return an error)
+        */
+       public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+       /**
+        * Not Found OK.
+        * Whether to treat notfounds as successful reads for the purposes of R
+        */
+       public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+       /**
+        * If Modified.
+        * When a vector clock is supplied with this option, only return the object 
+        * if the vector clocks don't match.
+        */
+       public static final Option<VClock> IF_MODIFIED = new Option<VClock>("IF_MODIFIED");
+       /**
+        * Head.
+        * return the object with the value(s) set as empty. This allows you to get the 
+        * meta data without a potentially large value. Analogous to an HTTP HEAD request.
+        */
+       public static final Option<Boolean> HEAD = new Option<Boolean>("HEAD");
+       /**
+        * Deleted VClock.
+        * By default single tombstones are not returned by a fetch operations. This 
+        * will return a Tombstone if it is present. 
+        */
+       public static final Option<Boolean> DELETED_VCLOCK = new Option<Boolean>("DELETED_VCLOCK");
+       /**
+        * Timeout.
+        * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
+        */
+       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+
+       private Option(String name)
+       {
+           super(name);
+       }
+
+   }
+    
+    /**
      * Used to construct a FetchValue command. 
      */
 	public static class Builder
 	{
 
 		private final Location location;
-		private final Map<FetchOption<?>, Object> options =
-				new HashMap<FetchOption<?>, Object>();
+		private final Map<Option<?>, Object> options =
+				new HashMap<Option<?>, Object>();
 
         /**
          * Constructs a builder for a FetchValue operation using the supplied location.
@@ -280,7 +349,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		 * @param value the value for the option
 		 * @return a reference to this object.
 		 */
-		public <U> Builder withOption(FetchOption<U> option, U value)
+		public <U> Builder withOption(Option<U> option, U value)
 		{
 			options.put(option, value);
 			return this;
@@ -297,7 +366,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
          */
         public Builder withTimeout(int timeout)
         {
-            withOption(FetchOption.TIMEOUT, timeout);
+            withOption(Option.TIMEOUT, timeout);
             return this;
         }
         

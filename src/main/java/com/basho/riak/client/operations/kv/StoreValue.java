@@ -41,8 +41,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 {
     private final Location location;
-    private final Map<StoreOption<?>, Object> options =
-	    new HashMap<StoreOption<?>, Object>();
+    private final Map<Option<?>, Object> options =
+	    new HashMap<Option<?>, Object>();
     private final Object value;
     private final VClock vClock;
     private final TypeReference<?> typeReference;
@@ -122,52 +122,52 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             builder.withVClock(orm.getVclock());
         }
 
-        for (Map.Entry<StoreOption<?>, Object> opPair : options.entrySet())
+        for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
         {
 
             RiakOption<?> option = opPair.getKey();
 
-            if (option == StoreOption.TIMEOUT)
+            if (option == Option.TIMEOUT)
             {
                 builder.withTimeout((Integer) opPair.getValue());
             }
-            else if (option == StoreOption.RETURN_HEAD)
+            else if (option == Option.RETURN_HEAD)
             {
                 builder.withReturnHead((Boolean) opPair.getValue());
             }
-            else if (option == StoreOption.ASIS)
+            else if (option == Option.ASIS)
             {
                 builder.withAsis((Boolean) opPair.getValue());
             }
-            else if (option == StoreOption.DW)
+            else if (option == Option.DW)
             {
                 builder.withDw(((Quorum) opPair.getValue()).getIntValue());
             }
-            else if (option == StoreOption.IF_NONE_MATCH)
+            else if (option == Option.IF_NONE_MATCH)
             {
                 builder.withIfNoneMatch((Boolean) opPair.getValue());
             }
-            else if (option == StoreOption.IF_NOT_MODIFIED)
+            else if (option == Option.IF_NOT_MODIFIED)
             {
                 builder.withIfNotModified((Boolean) opPair.getValue());
             }
-            else if (option == StoreOption.N_VAL)
+            else if (option == Option.N_VAL)
             {
                 builder.withNVal((Integer) opPair.getValue());
             }
-            else if (option == StoreOption.PW)
+            else if (option == Option.PW)
             {
                 builder.withPw(((Quorum) opPair.getValue()).getIntValue());
             }
-            else if (option == StoreOption.SLOPPY_QUORUM)
+            else if (option == Option.SLOPPY_QUORUM)
             {
                 builder.withSloppyQuorum((Boolean) opPair.getValue());
             }
-            else if (option == StoreOption.W)
+            else if (option == Option.W)
             {
                 builder.withW(((Quorum) opPair.getValue()).getIntValue());
             }
-            else if (option == StoreOption.RETURN_BODY)
+            else if (option == Option.RETURN_BODY)
             {
                 builder.withReturnBody((Boolean) opPair.getValue());
             }
@@ -176,6 +176,74 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 
         return builder.build();
     }
+    
+    /**
+    * Options For controlling how Riak performs the store operation.
+    * <p>
+    * These options can be supplied to the {@link StoreValue.Builder} to change
+    * how Riak performs the operation. These override the defaults provided
+    * by the bucket.
+    * </p>
+    * @author Dave Rusek <drusek at basho dot com>
+    * @since 2.0
+    * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">Replication Properties</a>
+    */
+   public final static class Option<T> extends RiakOption<T>
+   {
+
+       /**
+        * Write Quorum.
+        * How many replicas to write to before returning a successful response.
+        */
+       public static final Option<Quorum> W = new Option<Quorum>("W");
+       /**
+        * Durable Write Quorum.
+        * How many replicas to commit to durable storage before returning a successful response.
+        */
+       public static final Option<Quorum> DW = new Option<Quorum>("DW");
+       /**
+        * Primary Write Quorum.
+        * How many primary nodes must be up when the write is attempted.
+        */
+       public static final Option<Quorum> PW = new Option<Quorum>("PW");
+       /**
+        * If Not Modified.
+        * Update the value only if the vclock in the supplied object matches the one in the database.
+        */
+       public static final Option<Boolean> IF_NOT_MODIFIED = new Option<Boolean>("IF_NOT_MODIFIED");
+       /**
+        * If None Match.
+        * Store the value only if this bucket/key combination are not already defined.
+        */
+       public static final Option<Boolean> IF_NONE_MATCH = new Option<Boolean>("IF_NONE_MATCH");
+       /**
+        * Return Body.
+        * Return the object stored in Riak. Note this will return all siblings.
+        */
+       public static final Option<Boolean> RETURN_BODY = new Option<Boolean>("RETURN_BODY");
+       /**
+        * Return Head.
+        * Like {@link #RETURN_BODY} except that the value(s) in the object are blank to 
+        * avoid returning potentially large value(s).
+        */
+       public static final Option<Boolean> RETURN_HEAD = new Option<Boolean>("RETURN_HEAD");
+       /**
+        * Timeout.
+        * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
+        */
+       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+
+       public static final Option<Boolean> ASIS = new Option<Boolean>("ASIS");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+
+
+       private Option(String name)
+       {
+           super(name);
+       }
+   }
+
     
     public static class Response extends KvResponseBase
     {
@@ -231,8 +299,8 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 	public static class Builder
 	{
 
-		private final Map<StoreOption<?>, Object> options =
-			new HashMap<StoreOption<?>, Object>();
+		private final Map<Option<?>, Object> options =
+			new HashMap<Option<?>, Object>();
 		private final Object value;
 		private VClock vClock;
         private Location location;
@@ -273,11 +341,11 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          */
         public Builder withTimeout(int timeout)
         {
-            withOption(StoreOption.TIMEOUT, timeout);
+            withOption(Option.TIMEOUT, timeout);
             return this;
         }
         
-		public <T> Builder withOption(StoreOption<T> option, T value)
+		public <T> Builder withOption(Option<T> option, T value)
 		{
 			options.put(option, value);
 			return this;

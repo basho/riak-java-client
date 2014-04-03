@@ -19,7 +19,7 @@ package com.basho.riak.client.operations.itest;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
-import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,7 +46,7 @@ public class ITestStoreValue extends ITestBase
         pojo.value = "test store value";
         StoreValue sv = 
             new StoreValue.Builder(pojo).withLocation(loc)
-                .withOption(StoreOption.RETURN_BODY, true)
+                .withOption(Option.RETURN_BODY, true)
                 .build();
         
         StoreValue.Response resp = client.execute(sv);
@@ -81,7 +81,7 @@ public class ITestStoreValue extends ITestBase
         
          StoreValue sv = 
             new StoreValue.Builder(pojo)
-                .withOption(StoreOption.RETURN_BODY, true)
+                .withOption(Option.RETURN_BODY, true)
                 .build();
         
         StoreValue.Response resp = client.execute(sv);
@@ -128,7 +128,7 @@ public class ITestStoreValue extends ITestBase
         
         StoreValue sv = 
             new StoreValue.Builder(pojo)
-                .withOption(StoreOption.RETURN_BODY, true)
+                .withOption(Option.RETURN_BODY, true)
                 .build();
         
         StoreValue.Response resp = client.execute(sv);
@@ -155,7 +155,7 @@ public class ITestStoreValue extends ITestBase
         
          StoreValue sv = 
             new StoreValue.Builder(pojo)
-                .withOption(StoreOption.RETURN_BODY, true)
+                .withOption(Option.RETURN_BODY, true)
                 .build();
         
         StoreValue.Response resp = client.execute(sv);

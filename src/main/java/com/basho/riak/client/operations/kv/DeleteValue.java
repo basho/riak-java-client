@@ -22,6 +22,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.operations.CoreFutureAdapter;
+import com.basho.riak.client.operations.RiakOption;
 import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
@@ -47,8 +48,8 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 {
 
     private final Location location;
-    private final Map<DeleteOption<?>, Object> options =
-	    new HashMap<DeleteOption<?>, Object>();
+    private final Map<Option<?>, Object> options =
+	    new HashMap<Option<?>, Object>();
     private final VClock vClock;
 
     public DeleteValue(Builder builder)
@@ -92,44 +93,44 @@ public final class DeleteValue extends RiakCommand<Void, Location>
             builder.withVclock(vClock);
         }
 
-        for (Map.Entry<DeleteOption<?>, Object> optPair : options.entrySet())
+        for (Map.Entry<Option<?>, Object> optPair : options.entrySet())
         {
 
-            DeleteOption<?> option = optPair.getKey();
+            Option<?> option = optPair.getKey();
 
-            if (option == DeleteOption.DW)
+            if (option == Option.DW)
             {
                 builder.withDw(((Quorum) optPair.getValue()).getIntValue());
             }
-            else if (option == DeleteOption.N_VAL)
+            else if (option == Option.N_VAL)
             {
                 builder.withNVal((Integer) optPair.getValue());
             }
-            else if (option == DeleteOption.PR)
+            else if (option == Option.PR)
             {
                 builder.withPr(((Quorum) optPair.getValue()).getIntValue());
             }
-            else if (option == DeleteOption.R)
+            else if (option == Option.R)
             {
                 builder.withR(((Quorum) optPair.getValue()).getIntValue());
             }
-            else if (option == DeleteOption.PW)
+            else if (option == Option.PW)
             {
                 builder.withPw(((Quorum) optPair.getValue()).getIntValue());
             }
-            else if (option == DeleteOption.RW)
+            else if (option == Option.RW)
             {
                 builder.withRw(((Quorum) optPair.getValue()).getIntValue());
             }
-            else if (option == DeleteOption.SLOPPY_QUORUM)
+            else if (option == Option.SLOPPY_QUORUM)
             {
                 builder.withSloppyQuorum((Boolean) optPair.getValue());
             }
-            else if (option == DeleteOption.TIMEOUT)
+            else if (option == Option.TIMEOUT)
             {
                 builder.withTimeout((Integer) optPair.getValue());
             }
-            else if (option == DeleteOption.W)
+            else if (option == Option.W)
             {
                 builder.withW(((Quorum) optPair.getValue()).getIntValue());
             }
@@ -138,26 +139,50 @@ public final class DeleteValue extends RiakCommand<Void, Location>
         return builder.build();
     }
 
-    /**
-     * The response from Riak for the DeleteValue command.
-     */
-    public static class Response
+    public final static class Option<T> extends RiakOption<T>
     {
-        private final boolean deleted;
-
-        protected Response(boolean deleted)
-        {
-            this.deleted = deleted;
-        }
 
         /**
-         * Indicates a successful deletion.
-         * 
-         * @return true, always. 
+         * Read Write Quorum.
+         * Quorum for both operations (get and put) involved in deleting an object 
          */
-        public boolean isDeleted()
+        public static final Option<Quorum> RW = new Option<Quorum>("RW");
+        /**
+         * Read Quorum.
+         * How many replicas need to agree when fetching the object.
+         */
+        public static final Option<Quorum> R = new Option<Quorum>("R");
+        /**
+         * Write Quorum.
+         * How many replicas to write to before returning a successful response.
+         */
+        public static final Option<Quorum> W = new Option<Quorum>("W");
+        /**
+         * Primary Read Quorum.
+         * How many primary replicas need to be available when retrieving the object.
+         */
+        public static final Option<Quorum> PR = new Option<Quorum>("PR");
+        /**
+         * Primary Write Quorum. 
+         * How many primary nodes must be up when the write is attempted
+         */
+        public static final Option<Quorum> PW = new Option<Quorum>("PW");
+        /**
+         * Durable Write Quorum.
+         * How many replicas to commit to durable storage before returning a successful response.
+         */
+        public static final Option<Quorum> DW = new Option<Quorum>("DW");
+        /**
+         * Timeout.
+         * Sets the server-side timeout for this operation. The default is 60 seconds.
+         */
+        public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+        public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+        public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+
+        private Option(String name)
         {
-            return deleted;
+            super(name);
         }
     }
 
@@ -168,8 +193,8 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 	{
 
 		private final Location location;
-		private final Map<DeleteOption<?>, Object> options =
-			new HashMap<DeleteOption<?>, Object>();
+		private final Map<Option<?>, Object> options =
+			new HashMap<Option<?>, Object>();
 		private VClock vClock;
 
 		public Builder(Location location)
@@ -201,7 +226,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 		 * @param <T>    the type required by the option
 		 * @return a reference to this object
 		 */
-		public <T> Builder withOption(DeleteOption<T> option, T value)
+		public <T> Builder withOption(Option<T> option, T value)
 		{
 			options.put(option, value);
 			return this;
@@ -218,7 +243,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          */
         public Builder withTimeout(int timeout)
         {
-            withOption(DeleteOption.TIMEOUT, timeout);
+            withOption(Option.TIMEOUT, timeout);
             return this;
         }
         

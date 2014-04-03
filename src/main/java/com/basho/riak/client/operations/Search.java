@@ -50,8 +50,8 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
     private final String filterQuery;
     private final String sortField;
     private final List<String> returnFields;
-    private final Map<SearchOption<?>, Object> options =
-	    new HashMap<SearchOption<?>, Object>();
+    private final Map<Option<?>, Object> options =
+	    new HashMap<Option<?>, Object>();
 
     public Search(Builder builder)
     {
@@ -96,16 +96,16 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
     {
         SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);
 
-        for (Map.Entry<SearchOption<?>, Object> option : options.entrySet())
+        for (Map.Entry<Option<?>, Object> option : options.entrySet())
         {
 
-            if (option.getKey() == SearchOption.DEFAULT_FIELD)
+            if (option.getKey() == Option.DEFAULT_FIELD)
             {
                 builder.withDefaultField((String) option.getValue());
             }
-            else if (option.getKey() == SearchOption.DEFAULT_OPERATION)
+            else if (option.getKey() == Option.DEFAULT_OPERATION)
             {
-                SearchOption.Operation op = (SearchOption.Operation) option.getValue();
+                Option.Operation op = (Option.Operation) option.getValue();
                 builder.withDefaultOperation(op.opStr);
             }
 
@@ -144,6 +144,34 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
         return builder.build();
     }
 
+    /*
+    * @author Dave Rusek <drusek at basho dot com>
+    * @since 2.0
+    */
+   public static final class Option<T> extends RiakOption<T>
+   {
+
+       public static enum Operation
+       {
+           AND("and"), OR("or");
+
+           final String opStr;
+
+           Operation(String opStr)
+           {
+               this.opStr = opStr;
+           }
+       }
+
+       public static Option<Operation> DEFAULT_OPERATION = new Option<Operation>("DEFAULT_OPERATION");
+       public static Option<String> DEFAULT_FIELD = new Option<String>("DEFAULT_FIELD");
+
+       private Option(String name)
+       {
+           super(name);
+       }
+   }
+    
 	public static class Builder
 	{
 		private final String index;
@@ -154,7 +182,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
 		private String filterQuery;
 		private String sortField;
 		private List<String> returnFields;
-		private Map<SearchOption<?>, Object> options = new HashMap<SearchOption<?>, Object>();
+		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
 		public Builder(String index, String query)
 		{
@@ -180,7 +208,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
 			return this;
 		}
 
-		public <T> Builder withOption(SearchOption<T> option, T value)
+		public <T> Builder withOption(Option<T> option, T value)
 		{
 			options.put(option, value);
 			return this;

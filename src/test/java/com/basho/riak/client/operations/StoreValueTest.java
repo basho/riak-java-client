@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.cap.BasicVClock;
@@ -86,17 +86,17 @@ public class StoreValueTest
 		StoreValue.Builder store =
 			new StoreValue.Builder(riakObject).withLocation(key)
 				.withVectorClock(vClock)
-				.withOption(StoreOption.ASIS, true)
-				.withOption(StoreOption.DW, new Quorum(1))
-				.withOption(StoreOption.IF_NONE_MATCH, true)
-				.withOption(StoreOption.IF_NOT_MODIFIED, true)
-				.withOption(StoreOption.PW, new Quorum(1))
-				.withOption(StoreOption.N_VAL, 1)
-				.withOption(StoreOption.RETURN_BODY, true)
-				.withOption(StoreOption.RETURN_HEAD, true)
-				.withOption(StoreOption.SLOPPY_QUORUM, true)
-				.withOption(StoreOption.TIMEOUT, 1000)
-				.withOption(StoreOption.W, new Quorum(1));
+				.withOption(Option.ASIS, true)
+				.withOption(Option.DW, new Quorum(1))
+				.withOption(Option.IF_NONE_MATCH, true)
+				.withOption(Option.IF_NOT_MODIFIED, true)
+				.withOption(Option.PW, new Quorum(1))
+				.withOption(Option.N_VAL, 1)
+				.withOption(Option.RETURN_BODY, true)
+				.withOption(Option.RETURN_HEAD, true)
+				.withOption(Option.SLOPPY_QUORUM, true)
+				.withOption(Option.TIMEOUT, 1000)
+				.withOption(Option.W, new Quorum(1));
 
 		client.execute(store.build());
 
