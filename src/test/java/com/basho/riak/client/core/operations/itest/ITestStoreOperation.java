@@ -90,13 +90,12 @@ public class ITestStoreOperation extends ITestBase
         StoreOperation.Response response = storeOp.get();
         obj = response.getObjectList().get(0);
         
-        assertTrue(response.hasVClock());
+        assertNotNull(obj.getVClock());
         
         obj.setValue(BinaryValue.create("changed"));
 
         storeOp = new StoreOperation.Builder(location)
                 .withContent(obj)
-                .withVClock(response.getVClock())
                 .withReturnBody(true)
                 .build();
         

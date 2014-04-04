@@ -18,6 +18,9 @@ package com.basho.riak.client.operations.kv;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.UnresolvedConflictException;
+import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.convert.ConversionException;
+import com.basho.riak.client.convert.reflection.AnnotationUtil;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.operations.ListenableFuture;
@@ -84,32 +87,44 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                         try 
                         {
                             fetchResponse = f.get();
-                            Object resolved;
-                            if (typeReference == null)
+                            Object resolved = null;
+                            VClock vclock = null;
+                            
+                            if (!fetchResponse.isNotFound())
                             {
-                                // Steal the type from the Update. Yes, Really.
-                                ParameterizedType pType = (ParameterizedType)update.getClass().getGenericSuperclass();
-                                Type t = pType.getActualTypeArguments()[0];
-                                if (t instanceof ParameterizedType)
+                                if (typeReference == null)
                                 {
-                                    t = ((ParameterizedType)t).getRawType();
+                                    // Steal the type from the Update. Yes, Really.
+                                    ParameterizedType pType = (ParameterizedType)update.getClass().getGenericSuperclass();
+                                    Type t = pType.getActualTypeArguments()[0];
+                                    if (t instanceof ParameterizedType)
+                                    {
+                                        t = ((ParameterizedType)t).getRawType();
+                                    }
+
+                                    resolved = fetchResponse.getValue((Class<?>) t);
+                                }
+                                else
+                                {
+                                    resolved = fetchResponse.getValue(typeReference);
                                 }
 
-                                resolved = fetchResponse.getValue((Class<?>) t);
+                                // We get the vclock so we can inject it into the updated object. 
+                                // This is so the end user doesn't have to worry about vclocks
+                                // in the Update.
+                                vclock = fetchResponse.getVectorClock();
                             }
-                            else
-                            {
-                                resolved = fetchResponse.getValue(typeReference);
-                            }
-
+                            
                             Object updated = ((Update<Object>)update).apply(resolved);
+
                             if (update.isModified())
                             {
-
+                                AnnotationUtil.setVClock(updated, vclock);
+                                
                                 StoreValue.Builder store = 
                                     new StoreValue.Builder(updated, typeReference)
                                         .withLocation(location)
-                                        .withVectorClock(fetchResponse.getVClock());
+                                        .withVectorClock(vclock);
 
                                 for (Map.Entry<StoreValue.Option<?>, Object> optPair : storeOptions.entrySet())
                                 {
@@ -122,13 +137,12 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                             else
                             {
                                 Response updateResponse = new Response.Builder()
-                                    .withValues(fetchResponse.getValues(RiakObject.class))
                                     .withLocation(f.getQueryInfo())
-                                    .withVClock(fetchResponse.getVClock())
                                     .withUpdated(false)
                                     .build();
                                 updateFuture.setResponse(updateResponse);
                             }
+                            
                             
                         }
                         catch (InterruptedException ex) 
@@ -136,6 +150,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                             updateFuture.setException(ex);
                         }
                         catch (UnresolvedConflictException ex)
+                        {
+                            updateFuture.setException(ex);
+                        }
+                        catch (ConversionException ex)
                         {
                             updateFuture.setException(ex);
                         }
@@ -486,7 +504,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                     Response response = new Response.Builder()
                         .withValues(storeResponse.getValues(RiakObject.class))
                         .withLocation(f.getQueryInfo())
-                        .withVClock(storeResponse.getVClock())
                         .withUpdated(true)
                         .build();
                     setResponse(response);

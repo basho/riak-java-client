@@ -25,6 +25,9 @@ import com.basho.riak.client.convert.ConverterFactory;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.annotations.RiakVClock;
+import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.convert.RiakJacksonModule;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.StoreValue;
@@ -91,6 +94,7 @@ public class ITestORM extends ITestBase
         assertTrue(gpf.list.containsAll(gpf2.list));
 
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new RiakJacksonModule());
         String json = mapper.writeValueAsString(gpf2);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
@@ -130,6 +134,7 @@ public class ITestORM extends ITestBase
         assertTrue(gpf.list.containsAll(gpf2.list));
 
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new RiakJacksonModule());
         String json = mapper.writeValueAsString(gpf2);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
@@ -160,6 +165,7 @@ public class ITestORM extends ITestBase
         assertEquals(1, gpi.value.intValue());
         
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new RiakJacksonModule());
         String json = mapper.writeValueAsString(gpi);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
@@ -327,6 +333,7 @@ public class ITestORM extends ITestBase
         assertEquals("Little bunny foo foo.", f.fooValue);
         
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new RiakJacksonModule());
         String json = mapper.writeValueAsString(f);
         RiakObject ro = uvResp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
@@ -384,15 +391,42 @@ public class ITestORM extends ITestBase
         assertEquals("Little bunny foo foo.", ro.getValue().toString());
     }
     
+    @Test
+    public void updateRiakObject() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        Location loc = new Location(bucketName).setKey("test_ORM_key9");
+        UpdateValue uv = new UpdateValue.Builder(loc)
+                        .withUpdate(new Update<RiakObject>(){
+
+                                        @Override
+                                        public RiakObject apply(RiakObject original)
+                                        {
+                                            return new RiakObject().setValue(BinaryValue.create("value"));
+                                        }
+                                    })
+                        .withStoreOption(Option.RETURN_BODY, true)
+                        .build();
+        
+        UpdateValue.Response response = client.execute(uv);
+        RiakObject ro = response.getValues().get(0);
+        assertNotNull(ro.getVClock());
+    }
+    
     public static class GenericPojo<T>
     {
         public T value;
         public List<T> list;
+        
+        @RiakVClock
+        public VClock vclock;
     }
     
     public static class Foo
     {
         public String fooValue;
+        @RiakVClock
+        public VClock vclock;
         
         public Foo() {}
         
@@ -450,7 +484,7 @@ public class ITestORM extends ITestBase
                 total += gpi.value;
             }
             GenericPojo<Integer> newObj = new GenericPojo<Integer>();
-            newObj.value = total;
+            newObj.value = total;            
             return newObj;
         }
         

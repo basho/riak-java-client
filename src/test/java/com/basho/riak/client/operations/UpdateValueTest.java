@@ -96,8 +96,8 @@ public class UpdateValueTest
 		verify(mockCluster, times(2)).execute(any(FutureOperation.class));
 		verify(spiedResolver, times(1)).resolve(anyList());
 		verify(spiedUpdate, times(1)).apply(any(RiakObject.class));
-		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class), any(Location.class), any(VClock.class));
-		verify(spiedConverter, times(2)).toDomain(any(RiakObject.class), any(Location.class), any(VClock.class));
+		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class), any(Location.class));
+		verify(spiedConverter, times(2)).toDomain(any(RiakObject.class), any(Location.class));
 
 	}
 

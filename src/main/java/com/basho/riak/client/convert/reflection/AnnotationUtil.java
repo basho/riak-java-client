@@ -119,6 +119,11 @@ public class AnnotationUtil
         return AnnotationHelper.getInstance().getRiakBucketType(domainObject);
     }
     
+    public static <T> boolean hasVClockAnnotation(T domainObject)
+    {
+        return AnnotationHelper.getInstance().hasRiakVClockAnnotation(domainObject);
+    }
+    
     /**
      * Attempts to inject <code>vclock</code> as the value of the
      * {@literal @RiakVClock} annotated member of <code>domainObject</code>

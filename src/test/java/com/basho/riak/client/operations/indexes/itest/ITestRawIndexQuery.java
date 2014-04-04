@@ -20,6 +20,8 @@ import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.annotations.RiakBucketName;
 import com.basho.riak.client.annotations.RiakIndex;
 import com.basho.riak.client.annotations.RiakKey;
+import com.basho.riak.client.annotations.RiakVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.indexes.RawIndexQuery;
@@ -86,6 +88,9 @@ public class ITestRawIndexQuery extends ITestBase
         
         @RiakIndex(name="test_index_bin")
         byte[] indexKey;
+        
+        @RiakVClock
+        VClock vclock;
         
         public String value;
     }

@@ -23,6 +23,8 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchValue.Option;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.annotations.RiakVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
@@ -248,6 +250,10 @@ public class ITestFetchValue extends ITestBase
     {
         @JsonProperty
         String value;
+        
+        @RiakVClock
+        VClock vclock;
+        
     }
     
     public static class MyResolver implements ConflictResolver<Pojo>

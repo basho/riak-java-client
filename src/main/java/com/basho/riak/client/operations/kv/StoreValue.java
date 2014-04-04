@@ -44,16 +44,16 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     private final Map<Option<?>, Object> options =
 	    new HashMap<Option<?>, Object>();
     private final Object value;
-    private final VClock vClock;
     private final TypeReference<?> typeReference;
+    private final VClock vclock;
     
     StoreValue(Builder builder)
     {
         this.options.putAll(builder.options);
         this.location = builder.location;
         this.value = builder.value;
-	    this.vClock = builder.vClock;
         this.typeReference = builder.typeReference;
+        this.vclock = builder.vclock;
     }
 
     
@@ -61,7 +61,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
-       Converter converter;
+        Converter converter;
         
         if (typeReference == null)
         {
@@ -72,7 +72,14 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             converter = ConverterFactory.getInstance().getConverter(typeReference);
         }
         
-        final OrmExtracted orm = converter.fromDomain(value, location, vClock);
+        final OrmExtracted orm = converter.fromDomain(value, location);
+        
+        // If there's no vector clock in the object, use one possibly given via
+        // the builder.
+        if (orm.getRiakObject().getVClock() == null)
+        {
+            orm.getRiakObject().setVClock(vclock);
+        }
         
         RiakFuture<StoreOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation(orm));
@@ -90,11 +97,10 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
                         loc.setKey(coreResponse.getGeneratedKey());
                     }
                     
-                    VClock clock = coreResponse.getVClock();
+                    
 
                     return new Response.Builder()
                         .withValues(coreResponse.getObjectList())
-                        .withVClock(clock)
                         .withGeneratedKey(coreResponse.getGeneratedKey())
                         .withLocation(loc) // for ORM
                         .build();
@@ -117,11 +123,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             new StoreOperation.Builder(orm.getLocation())
                 .withContent(orm.getRiakObject());
         
-        if (orm.getVclock() != null)
-        {
-            builder.withVClock(orm.getVclock());
-        }
-
         for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
         {
 
@@ -302,9 +303,9 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 		private final Map<Option<?>, Object> options =
 			new HashMap<Option<?>, Object>();
 		private final Object value;
-		private VClock vClock;
         private Location location;
         private TypeReference<?> typeReference;
+        private VClock vclock;
 
 
         public Builder(Object value)
@@ -323,12 +324,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             this.location = location;
             return this;
         }
-        
-		public Builder withVectorClock(VClock vClock)
-		{
-			this.vClock = vClock;
-			return this;
-		}
         
         /**
          * Set the Riak-side timeout value.
@@ -351,6 +346,23 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 			return this;
 		}
 
+        /**
+         * Set the vector clock.
+         * <p>
+         * When storing core Java types ({@code HashMap},
+         * {@code ArrayList},{@code String}, etc) or non-annotated POJOs this
+         * method allows you to specify the vector clock retrieved from a 
+         * prior fetch operation. 
+         * </p>
+         * @param vclock The vector clock to send to Riak.
+         * @return a reference to this object.
+         */
+        public Builder withVectorClock(VClock vclock)
+        {
+            this.vclock = vclock;
+            return this;
+        }
+        
 		public StoreValue build()
 		{
 			return new StoreValue(this);

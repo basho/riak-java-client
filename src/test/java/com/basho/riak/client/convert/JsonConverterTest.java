@@ -53,7 +53,7 @@ public class JsonConverterTest
         JSONConverter<PojoWithRiakFields> jc = 
             new JSONConverter<PojoWithRiakFields>(new TypeReference<PojoWithRiakFields>(){});
         
-        RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
+        RiakObject o = jc.fromDomain(pojo, null).getRiakObject();
         
         String json = o.getValue().toString();
         assertFalse(fieldExistsInJson(json,"key"));
@@ -78,7 +78,7 @@ public class JsonConverterTest
         PojoWithRiakFieldsIncluded pojo = new PojoWithRiakFieldsIncluded();
         JSONConverter<PojoWithRiakFieldsIncluded> jc = 
             new JSONConverter<PojoWithRiakFieldsIncluded>(new TypeReference<PojoWithRiakFieldsIncluded>(){});
-        RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
+        RiakObject o = jc.fromDomain(pojo, null).getRiakObject();
         
         String json = o.getValue().toString();
         assertTrue(fieldExistsInJson(json,"key"));
@@ -102,7 +102,7 @@ public class JsonConverterTest
         JSONConverter<PojoWithRiakMethods> jc = 
             new JSONConverter<PojoWithRiakMethods>(new TypeReference<PojoWithRiakMethods>(){});
         
-        RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
+        RiakObject o = jc.fromDomain(pojo, null).getRiakObject();
         
         String json = o.getValue().toString();
         assertFalse(fieldExistsInJson(json,"key"));
@@ -125,7 +125,7 @@ public class JsonConverterTest
         JSONConverter<PojoWithRiakMethodsIncluded> jc = 
             new JSONConverter<PojoWithRiakMethodsIncluded>(new TypeReference<PojoWithRiakMethodsIncluded>(){});
         
-        RiakObject o = jc.fromDomain(pojo, null, vclock).getRiakObject();
+        RiakObject o = jc.fromDomain(pojo, null).getRiakObject();
         
         String json = o.getValue().toString();
         assertTrue(fieldExistsInJson(json,"key"));
@@ -160,13 +160,13 @@ public class JsonConverterTest
             
         JSONConverter<EmptyPojoWithRiakFields> jc = 
             new JSONConverter<EmptyPojoWithRiakFields>(new TypeReference<EmptyPojoWithRiakFields>(){});
-        OrmExtracted orm = jc.fromDomain(pojo, null, null);
+        OrmExtracted orm = jc.fromDomain(pojo, null);
         
         RiakObject riakObject = orm.getRiakObject();
         riakObject.setLastModified(123);
         riakObject.setVTag("vtag");
         
-        EmptyPojoWithRiakFields convertedPojo = jc.toDomain(riakObject, orm.getLocation(), orm.getVclock());
+        EmptyPojoWithRiakFields convertedPojo = jc.toDomain(riakObject, orm.getLocation());
         
         assertEquals(pojo.key, convertedPojo.key);
         assertEquals(pojo.bucketName, convertedPojo.bucketName);

@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.converters;
 
+import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.IndexType;
@@ -31,7 +32,6 @@ import com.google.protobuf.ByteString;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,13 +48,17 @@ public class RiakObjectConverter
     
     private RiakObjectConverter() {}
     
-    public static List<RiakObject> convert(List<RpbContent> contentList)
+    public static List<RiakObject> convert(List<RpbContent> contentList, ByteString contentVClock)
     {
         List<RiakObject> roList = new LinkedList<RiakObject>();
+        BasicVClock vclock = new BasicVClock(contentVClock.toByteArray());
+        
         for (RpbContent content : contentList)
         {
             RiakObject ro = new RiakObject();
-                    
+            
+            ro.setVClock(vclock);
+            
             if (content.hasDeleted())
             {
                 ro.setDeleted(content.getDeleted());

@@ -18,6 +18,8 @@ package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.annotations.RiakVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.operations.kv.UpdateValue.Update;
@@ -123,6 +125,9 @@ public class ITestUpdateValue extends ITestBase
     {
         @JsonProperty
         int value;
+        
+        @RiakVClock
+        VClock vclock;
     }
     
     public static class UpdateAnnotatedPojo extends Update<RiakAnnotatedPojo>

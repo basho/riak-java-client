@@ -17,6 +17,8 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.annotations.RiakBucketName;
+import com.basho.riak.client.annotations.RiakVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter.OrmExtracted;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
@@ -57,12 +59,12 @@ public class ConverterFactoryTest
         pojo.bar = "bar_value";
         
         
-        OrmExtracted orm = converter.fromDomain(pojo , null, null);
+        OrmExtracted orm = converter.fromDomain(pojo , null);
         RiakObject ro = orm.getRiakObject();
         
         assertNotNull(ro.getValue());
         
-        Pojo pojo2 = converter.toDomain(ro, new Location("bucket"), null);
+        Pojo pojo2 = converter.toDomain(ro, new Location("bucket"));
         
         assertEquals(pojo.foo, pojo2.foo);
         assertEquals(pojo.bar, pojo2.bar);
@@ -79,10 +81,10 @@ public class ConverterFactoryTest
         
         RiakObject o = new RiakObject();
         
-        RiakObject o2 = converter.toDomain(o, null, null);
+        RiakObject o2 = converter.toDomain(o, null);
         assertEquals(o, o2);
         
-        OrmExtracted orm = converter.fromDomain(o, null, null);
+        OrmExtracted orm = converter.fromDomain(o, null);
         assertEquals(o, orm.getRiakObject());
         
         
@@ -144,6 +146,9 @@ public class ConverterFactoryTest
         
         @RiakBucketName
         String bucketName = "my_bucket";
+        
+        @RiakVClock
+        VClock vclock;
         
         @JsonProperty
         String foo;
