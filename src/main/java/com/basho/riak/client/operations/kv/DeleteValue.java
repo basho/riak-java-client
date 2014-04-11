@@ -26,7 +26,6 @@ import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Command used to delete a value from Riak.
@@ -208,6 +207,21 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 			return this;
 		}
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+            withOption(DeleteOption.TIMEOUT, timeout);
+            return this;
+        }
+        
         /**
          * Construct a DeleteValue object.
          * @return a new DeleteValue instance.

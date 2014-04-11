@@ -368,6 +368,23 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             return this;
         }
         
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for both the 
+         * fetch and store operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+            withFetchOption(FetchOption.TIMEOUT, timeout);
+            withStoreOption(StoreOption.TIMEOUT, timeout);
+            return this;
+        }
+        
 		public UpdateValue build()
 		{
 			return new UpdateValue(this);

@@ -286,6 +286,21 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 			return this;
 		}
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+            withOption(FetchOption.TIMEOUT, timeout);
+            return this;
+        }
+        
 		/**
 		 * Build a {@link FetchValue} object
 		 *

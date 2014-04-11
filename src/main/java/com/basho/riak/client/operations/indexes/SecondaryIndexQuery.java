@@ -357,11 +357,13 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         }
         
         /**
-         * Set the timeout for the query.
+         * Set the Riak-side timeout value.
          * <p>
-         * Sets the server-side timeout value for this query.
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for both the 
+         * fetch and store operation.
          * </p>
-         * @param timeout
+         * @param timeout the timeout in milliseconds
          * @return a reference to this object.
          */
         public T withTimeout(int timeout)
