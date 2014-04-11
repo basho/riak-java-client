@@ -18,7 +18,7 @@ package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.RiakClient;
-import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.operations.kv.UpdateValue.Update;
 import com.basho.riak.client.query.Location;
@@ -40,7 +40,7 @@ public class ITestUpdateValue extends ITestBase
         
         Location loc = new Location(bucketName).setKey("test_update_key1");
         UpdateValue uv = new UpdateValue.Builder(loc)
-                            .withStoreOption(StoreOption.RETURN_BODY, true)
+                            .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdatePojo())
                             .build();
         
@@ -62,7 +62,7 @@ public class ITestUpdateValue extends ITestBase
         
         Location loc = new Location(bucketName).setKey("test_update_key2");
         UpdateValue uv = new UpdateValue.Builder(loc)
-                            .withStoreOption(StoreOption.RETURN_BODY, true)
+                            .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdateAnnotatedPojo())
                             .build();
         
@@ -95,7 +95,7 @@ public class ITestUpdateValue extends ITestBase
         
         Location loc = new Location(bucketName);
         UpdateValue uv = new UpdateValue.Builder(loc)
-                            .withStoreOption(StoreOption.RETURN_BODY, true)
+                            .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdateAnnotatedPojo())
                             .build();
         UpdateValue.Response resp = client.execute(uv);

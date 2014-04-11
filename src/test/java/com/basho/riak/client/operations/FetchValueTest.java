@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations;
 
-import com.basho.riak.client.operations.kv.FetchOption;
+import com.basho.riak.client.operations.kv.FetchValue.Option;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.cap.BasicVClock;
@@ -73,16 +73,16 @@ public class FetchValueTest
     {
 
         FetchValue.Builder fetchValue = new FetchValue.Builder(key)
-            .withOption(FetchOption.TIMEOUT, 100)
-            .withOption(FetchOption.BASIC_QUORUM, true)
-            .withOption(FetchOption.DELETED_VCLOCK, true)
-            .withOption(FetchOption.HEAD, true)
-            .withOption(FetchOption.IF_MODIFIED, vClock)
-            .withOption(FetchOption.N_VAL, 1)
-            .withOption(FetchOption.NOTFOUND_OK, true)
-            .withOption(FetchOption.PR, new Quorum(1))
-            .withOption(FetchOption.R, new Quorum(1))
-            .withOption(FetchOption.SLOPPY_QUORUM, true);
+            .withOption(Option.TIMEOUT, 100)
+            .withOption(Option.BASIC_QUORUM, true)
+            .withOption(Option.DELETED_VCLOCK, true)
+            .withOption(Option.HEAD, true)
+            .withOption(Option.IF_MODIFIED, vClock)
+            .withOption(Option.N_VAL, 1)
+            .withOption(Option.NOTFOUND_OK, true)
+            .withOption(Option.PR, new Quorum(1))
+            .withOption(Option.R, new Quorum(1))
+            .withOption(Option.SLOPPY_QUORUM, true);
 
         client.execute(fetchValue.build());
 

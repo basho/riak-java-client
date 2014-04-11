@@ -6,7 +6,7 @@ import com.basho.riak.client.operations.datatypes.RegisterUpdate;
 import com.basho.riak.client.operations.datatypes.FlagUpdate;
 import com.basho.riak.client.operations.datatypes.SetUpdate;
 import com.basho.riak.client.operations.FetchMap;
-import com.basho.riak.client.operations.DtUpdateOption;
+import com.basho.riak.client.operations.UpdateDatatype.Option;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.UpdateMap;
@@ -92,7 +92,7 @@ public class ITestDatatype extends ITestBase
 			.update(username, userMapUpdate);
 
 		UpdateMap update = new UpdateMap.Builder(carts, userEntryUpdate)
-			.withOption(DtUpdateOption.RETURN_BODY, true)
+			.withOption(Option.RETURN_BODY, true)
 			.build();
 		UpdateMap.Response updateResponse = client.execute(update);
 
@@ -145,7 +145,7 @@ public class ITestDatatype extends ITestBase
 		// Insert a Map and Counter into logins and observe both counter and map returned
 		UpdateMap conflictedUpdateCmd =
 			new UpdateMap.Builder(carts, new MapUpdate().addMap(numLogins).addCounter(numLogins))
-				.withOption(DtUpdateOption.RETURN_BODY, true)
+				.withOption(Option.RETURN_BODY, true)
 				.build();
 
 		UpdateMap.Response conflictedResponse =

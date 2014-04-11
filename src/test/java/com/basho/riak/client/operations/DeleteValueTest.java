@@ -16,7 +16,7 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.operations.kv.DeleteValue;
-import com.basho.riak.client.operations.kv.DeleteOption;
+import com.basho.riak.client.operations.kv.DeleteValue.Option;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.Quorum;
@@ -68,16 +68,16 @@ public class DeleteValueTest
     {
         DeleteValue.Builder delete = new DeleteValue.Builder(key)
 	        .withVClock(vClock)
-            .withOption(DeleteOption.DW, new Quorum(1))
-            .withOption(DeleteOption.N_VAL, 1)
-            .withOption(DeleteOption.PR, new Quorum(1))
-            .withOption(DeleteOption.PW, new Quorum(1))
-            .withOption(DeleteOption.R, new Quorum(1))
-            .withOption(DeleteOption.RW, new Quorum(1))
-            .withOption(DeleteOption.DW, new Quorum(1))
-            .withOption(DeleteOption.SLOPPY_QUORUM, true)
-            .withOption(DeleteOption.TIMEOUT, 100)
-            .withOption(DeleteOption.W, new Quorum(1));
+            .withOption(Option.DW, new Quorum(1))
+            .withOption(Option.N_VAL, 1)
+            .withOption(Option.PR, new Quorum(1))
+            .withOption(Option.PW, new Quorum(1))
+            .withOption(Option.R, new Quorum(1))
+            .withOption(Option.RW, new Quorum(1))
+            .withOption(Option.DW, new Quorum(1))
+            .withOption(Option.SLOPPY_QUORUM, true)
+            .withOption(Option.TIMEOUT, 100)
+            .withOption(Option.W, new Quorum(1));
 
 
         client.execute(delete.build());

@@ -42,10 +42,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
     private final Location location;
     private final Update<?> update;
     private final TypeReference<?> typeReference;
-    private final Map<FetchOption<?>, Object> fetchOptions =
-	    new HashMap<FetchOption<?>, Object>();
-    private final Map<StoreOption<?>, Object> storeOptions =
-	    new HashMap<StoreOption<?>, Object>();
+    private final Map<FetchValue.Option<?>, Object> fetchOptions =
+	    new HashMap<FetchValue.Option<?>, Object>();
+    private final Map<StoreValue.Option<?>, Object> storeOptions =
+	    new HashMap<StoreValue.Option<?>, Object>();
 
     UpdateValue(Builder builder)
     {
@@ -63,9 +63,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         final UpdateValueFuture updateFuture = new UpdateValueFuture(location);
         
         FetchValue.Builder fetchBuilder = new FetchValue.Builder(location);
-        for (Map.Entry<FetchOption<?>, Object> optPair : fetchOptions.entrySet())
+        for (Map.Entry<FetchValue.Option<?>, Object> optPair : fetchOptions.entrySet())
         {
-            fetchBuilder.withOption((FetchOption<Object>) optPair.getKey(), optPair.getValue());
+            fetchBuilder.withOption((FetchValue.Option<Object>) optPair.getKey(), optPair.getValue());
         }
 
         RiakFuture<FetchValue.Response, Location> fetchFuture =
@@ -111,9 +111,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                                         .withLocation(location)
                                         .withVectorClock(fetchResponse.getVClock());
 
-                                for (Map.Entry<StoreOption<?>, Object> optPair : storeOptions.entrySet())
+                                for (Map.Entry<StoreValue.Option<?>, Object> optPair : storeOptions.entrySet())
                                 {
-                                    store.withOption((StoreOption<Object>) optPair.getKey(), optPair.getValue());
+                                    store.withOption((StoreValue.Option<Object>) optPair.getKey(), optPair.getValue());
                                 }
                                 RiakFuture<StoreValue.Response, Location> storeFuture = 
                                     store.build().executeAsync(cluster);
@@ -277,10 +277,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 		private final Location location;
 		private Update<?> update;
         private TypeReference<?> typeReference;
-		private final Map<FetchOption<?>, Object> fetchOptions =
-			new HashMap<FetchOption<?>, Object>();
-		private final Map<StoreOption<?>, Object> storeOptions =
-			new HashMap<StoreOption<?>, Object>();
+		private final Map<FetchValue.Option<?>, Object> fetchOptions =
+			new HashMap<FetchValue.Option<?>, Object>();
+		private final Map<StoreValue.Option<?>, Object> storeOptions =
+			new HashMap<StoreValue.Option<?>, Object>();
 
 		public Builder(Location location)
 		{
@@ -299,7 +299,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 		 * @param <U>    the type of the option's value
 		 * @return this
 		 */
-		public <U> Builder withFetchOption(FetchOption<U> option, U value)
+		public <U> Builder withFetchOption(FetchValue.Option<U> option, U value)
 		{
 			fetchOptions.put(option, value);
 			return this;
@@ -313,7 +313,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 		 * @param <U>    the type of the option's value
 		 * @return this
 		 */
-		public <U> Builder withStoreOption(StoreOption<U> option, U value)
+		public <U> Builder withStoreOption(StoreValue.Option<U> option, U value)
 		{
 			storeOptions.put(option, value);
 			return this;
@@ -380,8 +380,8 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
          */
         public Builder withTimeout(int timeout)
         {
-            withFetchOption(FetchOption.TIMEOUT, timeout);
-            withStoreOption(StoreOption.TIMEOUT, timeout);
+            withFetchOption(FetchValue.Option.TIMEOUT, timeout);
+            withStoreOption(StoreValue.Option.TIMEOUT, timeout);
             return this;
         }
         

@@ -20,6 +20,7 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.operations.ListenableFuture;
+import com.basho.riak.client.operations.kv.FetchValue.Option;
 import com.basho.riak.client.query.Location;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,7 +88,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     public static final int DEFAULT_MAX_IN_FLIGHT = 10;
     
     private final ArrayList<Location> locations = new ArrayList<Location>();
-	private final Map<FetchOption<?>, Object> options = new HashMap<FetchOption<?>, Object>();
+	private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
     private final int maxInFlight;
 
 	private MultiFetch(Builder builder)
@@ -122,9 +123,9 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
 		{
             FetchValue.Builder builder = new FetchValue.Builder(location);
 			
-			for (FetchOption<?> option : options.keySet())
+			for (Option<?> option : options.keySet())
 			{
-				builder.withOption((FetchOption<Object>) option, options.get(option));
+				builder.withOption((Option<Object>) option, options.get(option));
 			}
 
 			fetchValueOperations.add(builder.build());
@@ -140,7 +141,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
 	public static class Builder
 	{
 		private ArrayList<Location> keys = new ArrayList<Location>();
-		private Map<FetchOption<?>, Object> options = new HashMap<FetchOption<?>, Object>();
+		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
         private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
         
         /**
@@ -202,14 +203,14 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
         
         /**
-		 * A {@link FetchOption} to use with each fetch operation
+		 * A {@link Option} to use with each fetch operation
 		 *
 		 * @param option an option
 		 * @param value  the option's associated value
 		 * @param <U>    the type of the option's value
 		 * @return a reference to this object.
 		 */
-		public <U> Builder withOption(FetchOption<U> option, U value)
+		public <U> Builder withOption(Option<U> option, U value)
 		{
 			this.options.put(option, value);
 			return this;
@@ -226,7 +227,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
          */
         public Builder withTimeout(int timeout)
         {
-            withOption(FetchOption.TIMEOUT, timeout);
+            withOption(Option.TIMEOUT, timeout);
             return this;
         }
         

@@ -37,7 +37,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 
     protected final Location loc;
     private final Context ctx;
-    private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
     @SuppressWarnings("unchecked")
     UpdateDatatype(Builder builder)
@@ -58,33 +58,33 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 
         builder.withOp(update.getOp());
 
-        for (Map.Entry<DtUpdateOption<?>, Object> entry : options.entrySet())
+        for (Map.Entry<Option<?>, Object> entry : options.entrySet())
         {
-            if (entry.getKey() == DtUpdateOption.DW)
+            if (entry.getKey() == Option.DW)
             {
                 builder.withDw(((Quorum) entry.getValue()).getIntValue());
             }
-            else if (entry.getKey() == DtUpdateOption.N_VAL)
+            else if (entry.getKey() == Option.N_VAL)
             {
                 builder.withNVal((Integer) entry.getValue());
             }
-            else if (entry.getKey() == DtUpdateOption.PW)
+            else if (entry.getKey() == Option.PW)
             {
                 builder.withPw(((Quorum) entry.getValue()).getIntValue());
             }
-            else if (entry.getKey() == DtUpdateOption.RETURN_BODY)
+            else if (entry.getKey() == Option.RETURN_BODY)
             {
                 builder.withReturnBody((Boolean) entry.getValue());
             }
-            else if (entry.getKey() == DtUpdateOption.SLOPPY_QUORUM)
+            else if (entry.getKey() == Option.SLOPPY_QUORUM)
             {
                 builder.withSloppyQuorum((Boolean) entry.getValue());
             }
-            else if (entry.getKey() == DtUpdateOption.TIMEOUT)
+            else if (entry.getKey() == Option.TIMEOUT)
             {
                 builder.withTimeout((Integer) entry.getValue());
             }
-            else if (entry.getKey() == DtUpdateOption.W)
+            else if (entry.getKey() == Option.W)
             {
                 builder.withW(((Quorum) entry.getValue()).getIntValue());
             }
@@ -94,11 +94,32 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 
     }
 
+    /**
+    * @author Dave Rusek <drusek at basho dot com>
+    * @since 2.0
+    */
+   public static final class Option<T> extends RiakOption<T>
+   {
+
+       public static final Option<Quorum> DW = new Option<Quorum>("DW");
+       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+       public static final Option<Quorum> PW = new Option<Quorum>("PW");
+       public static final Option<Boolean> RETURN_BODY = new Option<Boolean>("RETURN_BODY");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+       public static final Option<Quorum> W = new Option<Quorum>("W");
+
+       public Option(String name)
+       {
+           super(name);
+       }
+   }
+    
     static abstract class Builder<T extends Builder<T>>
 	{
 		private final Location loc;
 		private Context ctx;
-		private Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
+		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
 		Builder(Location location)
 		{
@@ -119,7 +140,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 			return self();
 		}
 
-		public <U> T withOption(DtUpdateOption<U> option, U value)
+		public <U> T withOption(Option<U> option, U value)
 		{
 			this.options.put(option, value);
 			return self();
@@ -136,7 +157,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
          */
         public T withTimeout(int timeout)
         {
-            withOption(DtUpdateOption.TIMEOUT, timeout);
+            withOption(Option.TIMEOUT, timeout);
             return self();
         }
         

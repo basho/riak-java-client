@@ -26,7 +26,7 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.operations.kv.StoreOption;
+import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.operations.kv.UpdateValue.Update;
@@ -74,7 +74,7 @@ public class ITestORM extends ITestBase
         StoreValue sv = 
             new StoreValue.Builder(gpf)
                 .withLocation(loc)
-                .withOption(StoreOption.RETURN_BODY, true)
+                .withOption(Option.RETURN_BODY, true)
                 .build();
         
         StoreValue.Response resp = client.execute(sv);
@@ -148,7 +148,7 @@ public class ITestORM extends ITestBase
         
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         UpdateValue.Response resp = client.execute(uv);
@@ -209,7 +209,7 @@ public class ITestORM extends ITestBase
         
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         UpdateValue.Response uvResp = client.execute(uv);
@@ -265,7 +265,7 @@ public class ITestORM extends ITestBase
         
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         UpdateValue.Response uvResp = client.execute(uv);
@@ -306,7 +306,7 @@ public class ITestORM extends ITestBase
         
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         UpdateValue.Response uvResp = client.execute(uv);
@@ -317,7 +317,7 @@ public class ITestORM extends ITestBase
         
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         uvResp = client.execute(uv);
@@ -360,7 +360,7 @@ public class ITestORM extends ITestBase
         
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         UpdateValue.Response uvResp = client.execute(uv);
@@ -371,7 +371,7 @@ public class ITestORM extends ITestBase
         
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
-                        .withStoreOption(StoreOption.RETURN_BODY, true)
+                        .withStoreOption(Option.RETURN_BODY, true)
                         .build();
         
         uvResp = client.execute(uv);

@@ -21,6 +21,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
+import com.basho.riak.client.operations.UpdateDatatype.Option;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.MapUpdate;
 import com.basho.riak.client.query.Location;
@@ -78,13 +79,13 @@ public class UpdateDatatypeTest
 
         UpdateMap store = new UpdateMap.Builder(key, update)
 	        .withContext(context)
-            .withOption(DtUpdateOption.DW, new Quorum(1))
-            .withOption(DtUpdateOption.PW, new Quorum(1))
-            .withOption(DtUpdateOption.N_VAL, 1)
-            .withOption(DtUpdateOption.RETURN_BODY, true)
-            .withOption(DtUpdateOption.SLOPPY_QUORUM, true)
-            .withOption(DtUpdateOption.TIMEOUT, 1000)
-            .withOption(DtUpdateOption.W, new Quorum(1))
+            .withOption(Option.DW, new Quorum(1))
+            .withOption(Option.PW, new Quorum(1))
+            .withOption(Option.N_VAL, 1)
+            .withOption(Option.RETURN_BODY, true)
+            .withOption(Option.SLOPPY_QUORUM, true)
+            .withOption(Option.TIMEOUT, 1000)
+            .withOption(Option.W, new Quorum(1))
 	        .build();
 
         client.execute(store);
