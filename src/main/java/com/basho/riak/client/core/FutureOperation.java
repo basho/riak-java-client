@@ -29,6 +29,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Brian Roach <roach at basho dot com>
+ * @param <T> The type the operation returns
+ * @param <U> The protocol type returned 
+ * @param <S> Query info type
  * @since 2.0
  */
 public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
@@ -233,7 +236,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
     
     @Override
-    public final FailureInfo<S> cause()
+    public final Throwable cause()
     {
         if (isSuccess())
         {
@@ -241,7 +244,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         }
         else
         {
-            return new FailureInfo<S>(exception, getQueryInfo());
+            return exception;
         }
     }
     
@@ -316,6 +319,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     abstract protected U decode(RiakMessage rawMessage);
 
-    abstract protected S getQueryInfo();
+    @Override
+    abstract public S getQueryInfo();
 
 }

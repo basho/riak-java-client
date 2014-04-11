@@ -16,7 +16,6 @@
 
 package com.basho.riak.client.operations.indexes;
 
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
@@ -25,7 +24,6 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -55,25 +53,7 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     }
 
     @Override
-    protected Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response, RawIndexQuery> future = 
-            doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }    
-    }
-
-    @Override
-    protected RiakFuture<Response, RawIndexQuery> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Response, RawIndexQuery> executeAsync(RiakCluster cluster)
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
@@ -93,13 +73,13 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
-            return new Response(coreResponse, converter);
+            return new Response(location, coreResponse, converter);
         }
 
         @Override
-        protected FailureInfo<RawIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+        protected RawIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
         {
-            return new FailureInfo<RawIndexQuery>(coreQueryInfo.getCause(), RawIndexQuery.this);
+            return RawIndexQuery.this;
         }
         
     }
@@ -131,9 +111,9 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     
     public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
     {
-        protected Response(SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
+        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
         {
-            super(coreResponse, converter);
+            super(queryLocation, coreResponse, converter);
         }
         
         @Override

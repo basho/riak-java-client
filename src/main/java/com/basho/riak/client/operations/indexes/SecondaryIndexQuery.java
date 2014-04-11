@@ -375,11 +375,13 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     {
         final IndexConverter<T> converter;
         final SecondaryIndexQueryOperation.Response coreResponse;
+        final Location queryLocation;
         
-        protected Response(SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<T> converter)
+        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<T> converter)
         {
             this.coreResponse = coreResponse;
             this.converter = converter;
+            this.queryLocation = queryLocation;
         }
         
         public boolean hasContinuation()
@@ -399,8 +401,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         
         protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
         {
-            Location loc = new Location(coreResponse.getLocation().getBucketName())
-                                .setBucketType(coreResponse.getLocation().getBucketType())
+            Location loc = new Location(queryLocation.getBucketName())
+                                .setBucketType(queryLocation.getBucketType())
                                 .setKey(e.getObjectKey());
             return loc;
         }

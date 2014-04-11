@@ -21,25 +21,31 @@ import com.basho.riak.client.core.RiakFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
- *
+ * The base class for all Riak Commands.
+ * <p>
+ * All the commands the {@link RiakClient} can execute extend this class. 
+ * <p>
  * @author Dave Rusek <drusek at basho dot com>
+ * @param <T> The response type
+ * @param <S> The query info type
  * @since 2.0
  */
 public abstract class RiakCommand<T,S>
 {
-    final T execute(RiakCluster cluster) throws ExecutionException, InterruptedException 
+    protected final T execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        return doExecute(cluster);
+        RiakFuture<T,S> future = executeAsync(cluster);
+        future.await();
+        if (future.isSuccess())
+        {
+            return future.get();
+        }
+        else
+        {
+            throw new ExecutionException(future.cause());
+        }
+        
     }
-    
-    protected abstract T doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException;
-    
-    final RiakFuture<T,S> executeAsync(RiakCluster cluster)
-    {
-        return doExecuteAsync(cluster);
-    }
-    protected abstract RiakFuture<T,S> doExecuteAsync(RiakCluster cluster);
-    
-    
+    protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);    
 } 
 

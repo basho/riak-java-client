@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.Response, Void, YokozunaSchema>
+public class YzPutSchemaOperation extends FutureOperation<Void, Void, YokozunaSchema>
 {
     private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder;
     private final YokozunaSchema schema;
@@ -39,9 +39,9 @@ public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.R
     }
     
     @Override
-    protected YzPutSchemaOperation.Response convert(List<Void> rawResponse)
+    protected Void convert(List<Void> rawResponse)
     {
-        return new Response(schema);
+        return null;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.R
     }
 
     @Override
-    protected YokozunaSchema getQueryInfo()
+    public YokozunaSchema getQueryInfo()
     {
         return schema;
     }
@@ -84,21 +84,6 @@ public class YzPutSchemaOperation extends FutureOperation<YzPutSchemaOperation.R
         public YzPutSchemaOperation build()
         {
             return new YzPutSchemaOperation(this);
-        }
-    }
-    
-    public static class Response
-    {
-        private final YokozunaSchema schema;
-        
-        Response(YokozunaSchema schema)
-        {
-            this.schema = schema;
-        }
-        
-        public YokozunaSchema getScema()
-        {
-            return schema;
         }
     }
 }

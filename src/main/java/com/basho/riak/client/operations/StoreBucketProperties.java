@@ -17,20 +17,18 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.functions.Function;
 
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOperation.Response, Location>
+public final class StoreBucketProperties extends RiakCommand<Void, Location>
 {
 
 	private final Location location;
@@ -87,41 +85,22 @@ public final class StoreBucketProperties extends RiakCommand<StoreBucketPropsOpe
 	}
 
 	@Override
-	protected final StoreBucketPropsOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-        RiakFuture<StoreBucketPropsOperation.Response, Location> future =
-            doExecuteAsync(cluster);
-		
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new IllegalArgumentException(future.cause().getCause());
-        }
-
-	}
-    
-    @Override
-    protected final RiakFuture<StoreBucketPropsOperation.Response, Location> doExecuteAsync(RiakCluster cluster)
+    protected final RiakFuture<Void, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<StoreBucketPropsOperation.Response, Location> coreFuture =
+        RiakFuture<Void, Location> coreFuture =
             cluster.execute(buildCoreOperation());
     
-        CoreFutureAdapter<StoreBucketPropsOperation.Response, Location, StoreBucketPropsOperation.Response, Location> future =
-            new CoreFutureAdapter<StoreBucketPropsOperation.Response, Location, StoreBucketPropsOperation.Response, Location>(coreFuture)
+        CoreFutureAdapter<Void, Location, Void, Location> future =
+            new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
             {
                 @Override
-                protected StoreBucketPropsOperation.Response convertResponse(StoreBucketPropsOperation.Response coreResponse)
+                protected Void convertResponse(Void coreResponse)
                 {
                     return coreResponse;
                 }
 
                 @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                protected Location convertQueryInfo(Location coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

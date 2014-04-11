@@ -47,10 +47,7 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
     {
         // This isn't streaming, there will only be one response. 
         RiakPB.RpbBucketProps pbProps = rawResponse.get(0).getProps();
-        return new Response.Builder()
-                    .withLocation(location)
-                    .withBucketProperties(BucketPropertiesConverter.convert(pbProps))
-                    .build();
+        return new Response(BucketPropertiesConverter.convert(pbProps));
     }
 
     @Override
@@ -75,7 +72,7 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -107,44 +104,17 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
         }
     }
     
-    public static class Response extends ResponseWithLocation
+    public static class Response
     {
         private final BucketProperties props;
-        private Response(Init<?> builder)
+        private Response(BucketProperties props)
         {
-            super(builder);
-            this.props = builder.props;
+            this.props = props;
         }
         
         public BucketProperties getBucketProperties()
         {
             return props;
-        }
-        
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
-        {
-            private BucketProperties props;
-            
-            T withBucketProperties(BucketProperties props)
-            {
-                this.props = props;
-                return self();
-            }
-        }
-        
-        static class Builder extends Init<Builder>
-        {
-            @Override
-            protected Builder self()
-            {
-                return this;
-            }
-            
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
         }
     }
 }

@@ -362,7 +362,7 @@ public class FutureOperationTest
         }
 
         @Override
-        protected Void getQueryInfo()
+        public Void getQueryInfo()
         {
             return null;
         }
@@ -402,7 +402,7 @@ public class FutureOperationTest
         }
 
         @Override
-        protected Void getQueryInfo()
+        public Void getQueryInfo()
         {
             return null;
         }

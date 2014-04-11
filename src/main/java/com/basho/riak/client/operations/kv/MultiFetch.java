@@ -17,7 +17,6 @@ package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.operations.ListenableFuture;
@@ -100,23 +99,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     }
 
 	@Override
-	protected final Response doExecute(final RiakCluster cluster) throws InterruptedException, ExecutionException
-	{
-        RiakFuture<Response, List<Location>> future = doExecuteAsync(cluster);
-		
-        future.await();
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-    
-    @Override
-    protected RiakFuture<Response, List<Location>> doExecuteAsync(final RiakCluster cluster)
+    protected RiakFuture<Response, List<Location>> executeAsync(final RiakCluster cluster)
     {
         List<FetchValue> fetchOperations = buildFetchOperations();
         MultiFetchFuture future = new MultiFetchFuture(locations);
@@ -305,7 +288,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
                 }
                 
                 RiakFuture<FetchValue.Response, Location> future =
-                    fv.doExecuteAsync(cluster);
+                    fv.executeAsync(cluster);
                 future.addListener(this);
             }
         }
@@ -396,16 +379,15 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
 
         @Override
-        public FailureInfo<List<Location>> cause()
+        public List<Location> getQueryInfo()
         {
-            if (!isDone() || isSuccess())
-            {
-                return null;
-            }
-            else
-            {
-                return new FailureInfo<List<Location>>(null, locations);
-            }
+            return locations;
+        }
+        
+        @Override
+        public Throwable cause()
+        {
+            return exception;
         }
         
         private void addFetchFuture(RiakFuture<FetchValue.Response, Location> future)

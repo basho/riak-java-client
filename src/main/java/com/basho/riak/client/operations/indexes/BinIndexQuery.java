@@ -16,7 +16,6 @@
 
 package com.basho.riak.client.operations.indexes;
 
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
@@ -27,7 +26,6 @@ import com.basho.riak.client.util.BinaryValue;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -65,24 +63,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     }
 
     @Override
-    protected Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response, BinIndexQuery> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-
-    @Override
-    protected RiakFuture<Response, BinIndexQuery> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Response, BinIndexQuery> executeAsync(RiakCluster cluster)
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
@@ -102,13 +83,13 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
-            return new Response(coreResponse, converter);
+            return new Response(location, coreResponse, converter);
         }
 
         @Override
-        protected FailureInfo<BinIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+        protected BinIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
         {
-            return new FailureInfo<BinIndexQuery>(coreQueryInfo.getCause(), BinIndexQuery.this);
+            return BinIndexQuery.this;
         }
     }
     
@@ -162,9 +143,9 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     
     public static class Response extends SecondaryIndexQuery.Response<String>
     {
-        protected Response(SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<String> converter)
+        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<String> converter)
         {
-            super(coreResponse, converter);
+            super(queryLocation, coreResponse, converter);
         }
         
         @Override

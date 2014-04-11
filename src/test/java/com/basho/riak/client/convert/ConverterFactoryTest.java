@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.convert;
 
+import com.basho.riak.client.annotations.RiakBucketName;
 import com.basho.riak.client.convert.Converter.OrmExtracted;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
@@ -61,7 +62,7 @@ public class ConverterFactoryTest
         
         assertNotNull(ro.getValue());
         
-        Pojo pojo2 = converter.toDomain(ro, new Location((String)null), null);
+        Pojo pojo2 = converter.toDomain(ro, new Location("bucket"), null);
         
         assertEquals(pojo.foo, pojo2.foo);
         assertEquals(pojo.bar, pojo2.bar);
@@ -140,6 +141,9 @@ public class ConverterFactoryTest
     public static class Pojo
     {
         public Pojo(){}
+        
+        @RiakBucketName
+        String bucketName = "my_bucket";
         
         @JsonProperty
         String foo;

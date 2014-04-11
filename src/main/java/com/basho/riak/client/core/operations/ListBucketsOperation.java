@@ -80,7 +80,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     }
 
     @Override
-    protected BinaryValue getQueryInfo()
+    public BinaryValue getQueryInfo()
     {
         return bucketType;
     }

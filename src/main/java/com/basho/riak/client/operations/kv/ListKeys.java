@@ -16,7 +16,6 @@
 package com.basho.riak.client.operations.kv;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
@@ -26,13 +25,12 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends RiakCommand<ListKeys.Response, Void>
+public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 {
 
 	private final Location location;
@@ -44,31 +42,14 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Void>
 		this.timeout = builder.timeout;
 	}
 
-	@Override
-	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-		RiakFuture<ListKeys.Response, Void> future =
-            doExecuteAsync(cluster);
-		
-        future.await();
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-	}
-
-    @Override 
-    protected final RiakFuture<ListKeys.Response, Void> doExecuteAsync(RiakCluster cluster)
+	@Override 
+    protected final RiakFuture<ListKeys.Response, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<ListKeysOperation.Response, Void> coreFuture = 
+        RiakFuture<ListKeysOperation.Response, Location> coreFuture = 
             cluster.execute(buildCoreOperation());
         
-        CoreFutureAdapter<ListKeys.Response, Void, ListKeysOperation.Response, Void> future =
-            new CoreFutureAdapter<ListKeys.Response, Void, ListKeysOperation.Response, Void>(coreFuture)
+        CoreFutureAdapter<ListKeys.Response, Location, ListKeysOperation.Response, Location> future =
+            new CoreFutureAdapter<ListKeys.Response, Location, ListKeysOperation.Response, Location>(coreFuture)
             {
                 @Override
                 protected Response convertResponse(ListKeysOperation.Response coreResponse)
@@ -77,7 +58,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Void>
                 }
 
                 @Override
-                protected FailureInfo<Void> convertFailureInfo(FailureInfo<Void> coreQueryInfo)
+                protected Location convertQueryInfo(Location coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

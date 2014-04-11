@@ -16,7 +16,6 @@
 
 package com.basho.riak.client.operations.indexes;
 
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
@@ -25,7 +24,6 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -65,25 +63,7 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
     }
 
     @Override
-    protected Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response, IntIndexQuery> future = 
-            doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-
-    @Override
-    protected RiakFuture<Response, IntIndexQuery> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Response, IntIndexQuery> executeAsync(RiakCluster cluster)
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
@@ -104,13 +84,13 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
-            return new Response(coreResponse, converter);
+            return new Response(location, coreResponse, converter);
         }
 
         @Override
-        protected FailureInfo<IntIndexQuery> convertFailureInfo(FailureInfo<SecondaryIndexQueryOperation.Query> coreQueryInfo)
+        protected IntIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
         {
-            return new FailureInfo<IntIndexQuery>(coreQueryInfo.getCause(), IntIndexQuery.this);
+            return IntIndexQuery.this;
         }
     }
     
@@ -161,9 +141,9 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
     
     public static class Response extends SecondaryIndexQuery.Response<Long>
     {
-        protected Response(SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter)
+        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter)
         {
-            super(coreResponse, converter);
+            super(queryLocation, coreResponse, converter);
         }
         
         @Override

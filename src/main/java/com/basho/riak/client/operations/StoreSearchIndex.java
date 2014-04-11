@@ -1,7 +1,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
@@ -13,7 +12,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreSearchIndex extends RiakCommand<YzPutIndexOperation.Response, YokozunaIndex>
+public final class StoreSearchIndex extends RiakCommand<Void, YokozunaIndex>
 {
 	private final YokozunaIndex index;
 
@@ -23,40 +22,22 @@ public final class StoreSearchIndex extends RiakCommand<YzPutIndexOperation.Resp
 	}
 
 	@Override
-	protected final YzPutIndexOperation.Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-	    RiakFuture<YzPutIndexOperation.Response, YokozunaIndex> future =
-            doExecuteAsync(cluster);
-	    
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-	}
-
-    @Override
-    protected RiakFuture<YzPutIndexOperation.Response, YokozunaIndex> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Void, YokozunaIndex> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<YzPutIndexOperation.Response, YokozunaIndex> coreFuture =
+        RiakFuture<Void, YokozunaIndex> coreFuture =
             cluster.execute(buildCoreOperation());
         
-        CoreFutureAdapter<YzPutIndexOperation.Response, YokozunaIndex, YzPutIndexOperation.Response, YokozunaIndex> future =
-            new CoreFutureAdapter<YzPutIndexOperation.Response, YokozunaIndex, YzPutIndexOperation.Response, YokozunaIndex>(coreFuture)
+        CoreFutureAdapter<Void, YokozunaIndex, Void, YokozunaIndex> future =
+            new CoreFutureAdapter<Void, YokozunaIndex, Void, YokozunaIndex>(coreFuture)
             {
                 @Override
-                protected YzPutIndexOperation.Response convertResponse(YzPutIndexOperation.Response coreResponse)
+                protected Void convertResponse(Void coreResponse)
                 {
                     return coreResponse;
                 }
 
                 @Override
-                protected FailureInfo<YokozunaIndex> convertFailureInfo(FailureInfo<YokozunaIndex> coreQueryInfo)
+                protected YokozunaIndex convertQueryInfo(YokozunaIndex coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

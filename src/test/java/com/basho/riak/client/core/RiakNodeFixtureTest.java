@@ -258,7 +258,6 @@ public class RiakNodeFixtureTest extends FixtureTest
         FetchOperation.Response response = operation.get();
         assertFalse(operation.isSuccess());
         assertNotNull(operation.cause());
-        assertNotNull(operation.cause().getCause());
         node.shutdown().get();
     }
 

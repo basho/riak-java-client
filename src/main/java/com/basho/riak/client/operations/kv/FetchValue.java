@@ -20,7 +20,6 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.operations.RiakOption;
@@ -28,7 +27,6 @@ import com.basho.riak.client.query.Location;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -85,51 +83,35 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	}
 
 	@Override
-	protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-		RiakFuture<Response, Location> future = doExecuteAsync(cluster);
+    protected final RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
+    {
+        RiakFuture<FetchOperation.Response, Location> coreFuture = 
+            cluster.execute(buildCoreOperation());
+        
+        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future = 
+            new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
+            {
+                @Override
+                protected Response convertResponse(FetchOperation.Response coreResponse)
+                {
+                    return new Response.Builder().withNotFound(coreResponse.isNotFound()) 
+                                        .withUnchanged(coreResponse.isUnchanged())
+                                        .withValues(coreResponse.getObjectList()) 
+                                        .withVClock(coreResponse.getVClock())
+                                        .withLocation(location) // for ORM
+                                        .build();
+                }
 
-		future.await();
-
-		if (future.isSuccess())
-		{
-			return future.get();
-		} else
-		{
-			throw new ExecutionException(future.cause().getCause());
-		}
-	}
-
-	@Override
-	protected final RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
-	{
-		RiakFuture<FetchOperation.Response, Location> coreFuture =
-				cluster.execute(buildCoreOperation());
-
-		CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future =
-				new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
-				{
-					@Override
-					protected Response convertResponse(FetchOperation.Response coreResponse)
-					{
-						return new Response.Builder().withNotFound(coreResponse.isNotFound())
-								.withUnchanged(coreResponse.isUnchanged())
-								.withLocation(coreResponse.getLocation())
-								.withValues(coreResponse.getObjectList())
-								.withVClock(coreResponse.getVClock())
-								.build();
-					}
-
-					@Override
-					protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
-					{
-						return coreQueryInfo;
-					}
-				};
-		coreFuture.addListener(future);
-		return future;
-
-	}
+                @Override
+                protected Location convertQueryInfo(Location coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
+        coreFuture.addListener(future);
+        return future;
+        
+    }
 
 	private FetchOperation buildCoreOperation()
 	{
@@ -282,7 +264,11 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
          */
 		public Builder(Location location)
 		{
-			this.location = location;
+			if (!location.hasKey())
+            {
+                throw new IllegalArgumentException("Location must contain a key");
+            }
+            this.location = location;
 		}
 
 		/**

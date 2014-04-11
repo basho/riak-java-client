@@ -49,15 +49,6 @@ abstract class KvResponseBase
     }
 
     /**
-     * Get the location in Riak this response corresponds to.
-     * @return the location.
-     */
-    public Location getLocation()
-    {
-        return location;
-    }
-    
-    /**
      * Determine if a vclock was returned.
      * @return true if a vclock is present, false otherwise
      */

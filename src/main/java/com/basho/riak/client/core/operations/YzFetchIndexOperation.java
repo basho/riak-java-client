@@ -52,7 +52,7 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
                                             pbIndex.getSchema().toStringUtf8()));
         }
         
-        return new Response(indexName, indexList);
+        return new Response(indexList);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     }
 
     @Override
-    protected String getQueryInfo()
+    public String getQueryInfo()
     {
         return indexName;
     }
@@ -113,17 +113,10 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     public static class Response
     {
         private final List<YokozunaIndex> indexList;
-        private final String indexName;
         
-        Response(String indexName, List<YokozunaIndex> indexList)
+        Response(List<YokozunaIndex> indexList)
         {
-            this.indexName = indexName;
             this.indexList = indexList;
-        }
-        
-        public String getIndexName()
-        {
-            return indexName;
         }
         
         public List<YokozunaIndex> getIndexes()

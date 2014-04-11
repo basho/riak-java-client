@@ -16,7 +16,6 @@ package com.basho.riak.client.operations.mapreduce;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.RiakException;
 import com.basho.riak.client.convert.ConversionException;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.MapReduceOperation;
@@ -35,7 +34,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * An operation for defining and runnig a Map/Reduce query on Riak. <p/> <p> See <a
@@ -52,23 +50,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	}
 
 	@Override
-	public Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-	{
-		RiakFuture<Response, BinaryValue> future = doExecuteAsync(cluster);
-
-		future.await();
-
-		if (future.isSuccess())
-		{
-			return future.get();
-		} else
-		{
-			throw new ExecutionException(future.cause().getCause());
-		}
-	}
-
-	@Override
-	protected RiakFuture<Response, BinaryValue> doExecuteAsync(RiakCluster cluster)
+	protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
 	{
 		
         BinaryValue jobSpec;
@@ -96,7 +78,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 					}
 
 					@Override
-					protected FailureInfo<BinaryValue> convertFailureInfo(FailureInfo<BinaryValue> coreQueryInfo)
+					protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
 					{
 						return coreQueryInfo;
 					}
@@ -129,7 +111,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 
 			ObjectMapper objectMapper = new ObjectMapper();
 			SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-			//specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
 			specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
 			specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
 			specModule.addSerializer(BucketInput.class, new BucketInputSerializer());

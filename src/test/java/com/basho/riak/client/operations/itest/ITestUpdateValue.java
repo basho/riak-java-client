@@ -88,6 +88,20 @@ public class ITestUpdateValue extends ITestBase
         
     }
     
+    @Test(expected=IllegalArgumentException.class)
+    public void invalidLocation() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        
+        Location loc = new Location(bucketName);
+        UpdateValue uv = new UpdateValue.Builder(loc)
+                            .withStoreOption(StoreOption.RETURN_BODY, true)
+                            .withUpdate(new UpdateAnnotatedPojo())
+                            .build();
+        UpdateValue.Response resp = client.execute(uv);
+        
+    }
+    
     public static class UpdatePojo extends Update<Pojo>
     {
 

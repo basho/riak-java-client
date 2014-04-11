@@ -55,13 +55,13 @@ public class ITestSearchMapReduce extends ITestBase
         
         YokozunaIndex index = new YokozunaIndex("test_mr_index");
         StoreSearchIndex ssi = new StoreSearchIndex.Builder(index).build();
-        YzPutIndexOperation.Response siResp = client.execute(ssi);
+        client.execute(ssi);
         
         Location location = new Location(mrBucketName).setBucketType(bucketType);
         StoreBucketProperties sbp = new StoreBucketProperties.Builder(location)
                                     .withSearchIndex(index.getName())
                                     .build();
-        StoreBucketPropsOperation.Response bpResp = client.execute(sbp);
+        client.execute(sbp);
         
         // Without pausing, the index does not propogate in time for the searchop
         // to complete.

@@ -53,8 +53,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         RiakDatatype element = converter.convert(response);
 
         Response.Builder responseBuilder = new Response.Builder()
-            .withCrdtElement(element)
-            .withLocation(location);
+            .withCrdtElement(element);
 
         if (response.hasContext())
         {
@@ -87,7 +86,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -243,14 +242,13 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
     }
 
-    public static class Response extends ResponseWithLocation
+    public static class Response 
     {
         private final BinaryValue context;
         private final RiakDatatype crdtElement;
 
         protected Response(Init<?> builder)
         {
-            super(builder);
             this.context = builder.context;
             this.crdtElement = builder.crdtElement;
         }
@@ -275,11 +273,14 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             return crdtElement;
         }
 
-        protected static abstract class Init<T extends Init<T>> extends ResponseWithLocation.Init<T>
+        protected static abstract class Init<T extends Init<T>>
         {
             private BinaryValue context;
             private RiakDatatype crdtElement;
 
+            protected abstract T self();
+            protected abstract Response build();
+            
             T withContext(BinaryValue context)
             {
                 if (context != null)
@@ -304,7 +305,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         }
 
 
-        static class Builder extends Init<Builder>
+        private static class Builder extends Init<Builder>
         {
             @Override
             protected Builder self()
@@ -313,7 +314,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             }
 
             @Override
-            Response build()
+            protected Response build()
             {
                 return new Response(this);
             }

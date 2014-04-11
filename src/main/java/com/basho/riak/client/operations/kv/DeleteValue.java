@@ -18,7 +18,6 @@ package com.basho.riak.client.operations.kv;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.cap.VClock;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
@@ -45,7 +44,7 @@ import java.util.concurrent.ExecutionException;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class DeleteValue extends RiakCommand<DeleteValue.Response, Location>
+public final class DeleteValue extends RiakCommand<Void, Location>
 {
 
     private final Location location;
@@ -61,39 +60,22 @@ public final class DeleteValue extends RiakCommand<DeleteValue.Response, Locatio
     }
 
     @Override
-    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
+    protected RiakFuture<Void, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Response, Location> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return new Response(true);
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-
-    @Override
-    protected RiakFuture<Response, Location> doExecuteAsync(RiakCluster cluster)
-    {
-        RiakFuture<DeleteOperation.Response, Location> coreFuture =
+        RiakFuture<Void, Location> coreFuture =
             cluster.execute(buildCoreOperation());
         
-        CoreFutureAdapter<Response, Location, DeleteOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, DeleteOperation.Response, Location>(coreFuture)
+        CoreFutureAdapter<Void, Location, Void, Location> future =
+            new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
             {
                 @Override
-                protected Response convertResponse(DeleteOperation.Response coreResponse)
+                protected Void convertResponse(Void coreResponse)
                 {
-                    return new Response(true);
+                    return coreResponse;
                 }
 
                 @Override
-                protected FailureInfo<Location> convertFailureInfo(FailureInfo<Location> coreQueryInfo)
+                protected Location convertQueryInfo(Location coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

@@ -53,7 +53,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         RiakDatatype element = converter.convert(response);
         
         Response.Builder responseBuilder = 
-            new Response.Builder().withCrdtElement(element).withLocation(location);
+            new Response.Builder().withCrdtElement(element);
 
         if (response.hasKey())
         {
@@ -93,7 +93,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     }
 
     @Override
-    protected Location getQueryInfo()
+    public Location getQueryInfo()
     {
         return location;
     }
@@ -461,7 +461,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             }
             
             @Override
-            Response build()
+            protected Response build()
             {
                 return new Response(this);
             }

@@ -16,7 +16,6 @@
 package com.basho.riak.client.operations;
 
 import com.basho.riak.client.RiakCommand;
-import com.basho.riak.client.core.FailureInfo;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
@@ -25,7 +24,6 @@ import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
@@ -33,8 +31,6 @@ import java.util.concurrent.ExecutionException;
  */
 public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryValue>
 {
-	private static final String DEFAULT_BUCKET_TYPE = "default";
-
     private final int timeout;
     private final BinaryValue type;
 
@@ -45,24 +41,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
     }
 
     @Override
-    protected final Response doExecute(RiakCluster cluster) throws ExecutionException, InterruptedException
-    {
-        RiakFuture<Response, BinaryValue> future = doExecuteAsync(cluster);
-        
-        future.await();
-        
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause().getCause());
-        }
-    }
-    
-    @Override
-    protected RiakFuture<Response, BinaryValue> doExecuteAsync(RiakCluster cluster)
+    protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
     {
         RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
             cluster.execute(buildCoreOperation());
@@ -77,7 +56,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
                 }
 
                 @Override
-                protected FailureInfo<BinaryValue> convertFailureInfo(FailureInfo<BinaryValue> coreQueryInfo)
+                protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }

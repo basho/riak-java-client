@@ -234,6 +234,16 @@ public class ITestFetchValue extends ITestBase
         
     }
     
+    @Test(expected=IllegalArgumentException.class)
+    public void invalidLocation() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+        Location loc = new Location(bucketName);
+        FetchValue fv = new FetchValue.Builder(loc).build(); 
+        FetchValue.Response resp = client.execute(fv);
+        
+    }
+    
     public static class Pojo
     {
         @JsonProperty

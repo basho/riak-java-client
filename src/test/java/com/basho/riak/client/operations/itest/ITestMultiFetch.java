@@ -74,7 +74,7 @@ public class ITestMultiFetch extends ITestBase
         
         for (RiakFuture<FetchValue.Response, Location> future : mfr.getResponses())
         {
-            returnedLocations.add(future.get().getLocation());
+            returnedLocations.add(future.getQueryInfo());
             returnedValues.add(future.get().getValue(RiakObject.class).getValue());
         }
         
