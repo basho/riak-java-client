@@ -21,7 +21,7 @@ import com.basho.riak.client.query.crdt.ops.FlagOp;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class FlagUpdate extends DatatypeUpdate
+public class FlagUpdate implements DatatypeUpdate
 {
 
     private boolean flag = false;

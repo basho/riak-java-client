@@ -76,9 +76,8 @@ public class UpdateDatatypeTest
 
         MapUpdate update = new MapUpdate();
 
-        UpdateDatatype<RiakMap> store = new UpdateDatatype.Builder<RiakMap>(key)
+        UpdateMap store = new UpdateMap.Builder(key, update)
 	        .withContext(context)
-	        .withUpdate(update)
             .withOption(DtUpdateOption.DW, new Quorum(1))
             .withOption(DtUpdateOption.PW, new Quorum(1))
             .withOption(DtUpdateOption.N_VAL, 1)

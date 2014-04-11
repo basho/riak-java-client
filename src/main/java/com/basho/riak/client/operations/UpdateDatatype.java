@@ -20,8 +20,6 @@ import com.basho.riak.client.operations.datatypes.DatatypeUpdate;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
@@ -34,81 +32,38 @@ import java.util.Map;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<UpdateDatatype.Response<T>, Location>
+public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
 
-    private final Location loc;
+    protected final Location loc;
     private final Context ctx;
-    private final DatatypeUpdate datatype;
+    private final Integer timeout;
     private final Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
-    private UpdateDatatype(Builder<T> builder)
+    @SuppressWarnings("unchecked")
+    UpdateDatatype(Builder builder)
     {
         this.loc = builder.loc;
         this.ctx = builder.ctx;
-        this.datatype = builder.datatype;
 	    this.options.putAll(builder.options);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected RiakFuture<Response<T>, Location> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
-            cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Response<T>, Location, DtUpdateOperation.Response, Location> future =
-            new CoreFutureAdapter<Response<T>, Location, DtUpdateOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response<T> convertResponse(DtUpdateOperation.Response coreResponse)
-                {
-                    RiakDatatype element = coreResponse.getCrdtElement();
-
-                    T riakDatatype = null;
-                    if (element.isMap())
-                    {
-                        riakDatatype = (T) element.getAsMap();
-                    }
-                    else if (element.isSet())
-                    {
-                        riakDatatype = (T) element.getAsSet();
-                    }
-                    else if (element.isCounter())
-                    {
-                        riakDatatype = (T) element.getAsCounter();
-                    }
-
-                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
-                        ? coreResponse.getGeneratedKey()
-                        : loc.getKey();
-
-                    Location key = new Location(loc.getBucketName()).setKey(returnedKey).setBucketType(loc.getBucketType());
-                    Context returnedCtx = new Context(coreResponse.getContext().getValue());
-
-                    return new Response<T>(key, returnedCtx, riakDatatype);
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        this.timeout = builder.timeout;
     }
     
-    private DtUpdateOperation buildCoreOperation()
+    protected final DtUpdateOperation buildCoreOperation(DatatypeUpdate update)
     {
         DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc);
 
+        if (timeout != null)
+        {
+            builder.withTimeout(timeout);
+        }
+        
         if (ctx != null)
         {
             builder.withContext(BinaryValue.create(ctx.getBytes()));
         }
 
-        builder.withOp(datatype.getOp());
+        builder.withOp(update.getOp());
 
         for (Map.Entry<DtUpdateOption<?>, Object> entry : options.entrySet())
         {
@@ -146,58 +101,59 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
 
     }
 
-    public static class Builder<T extends RiakDatatype>
+    static abstract class Builder<T extends Builder<T>>
 	{
 		private final Location loc;
 		private Context ctx;
-		private DatatypeUpdate datatype;
+        private Integer timeout;
 		private Map<DtUpdateOption<?>, Object> options = new HashMap<DtUpdateOption<?>, Object>();
 
-		public Builder(Location loc)
+		Builder(Location location)
 		{
-			this.loc = loc;
+			if (location == null)
+            {
+                throw new IllegalArgumentException("Location cannot be null.");
+            }
+            this.loc = location;
 		}
 
-		public Builder<T> withContext(Context context)
+        public T withContext(Context context)
 		{
-			this.ctx = context;
-			return this;
+			if (context == null)
+            {
+                throw new IllegalArgumentException("Context cannot be null.");
+            }
+            this.ctx = context;
+			return self();
 		}
 
-		public <U> Builder<T> withOption(DtUpdateOption<U> option, U value)
+		public <U> T withOption(DtUpdateOption<U> option, U value)
 		{
 			this.options.put(option, value);
-			return this;
+			return self();
 		}
 
-		public Builder<T> withUpdate(DatatypeUpdate update)
-		{
-			this.datatype = update;
-			return this;
-		}
+        public T withTimeout(int timeout)
+        {
+            this.timeout = timeout;
+            return self();
+        }
+        
+        protected abstract T self();
+        protected abstract UpdateDatatype build();
+    }
 
-		public UpdateDatatype<T> build()
-		{
-			return new UpdateDatatype<T>(this);
-		}
-	}
-
-    public static class Response<T>
+    static abstract class Response<T>
     {
         private final T datatype;
         private final Context context;
-        private final Location key;
+        private final BinaryValue generatedKey;
 
-        Response(Location key, Context context, T datatype)
+        Response(Context context, T datatype, BinaryValue generatedKey)
         {
-            this.key = key;
             this.datatype = datatype;
             this.context = context;
-        }
-
-        public Location getKey()
-        {
-            return key;
+            this.generatedKey = generatedKey;
         }
 
         public boolean hasContext()
@@ -218,6 +174,16 @@ public final class UpdateDatatype<T extends RiakDatatype> extends RiakCommand<Up
         public T getDatatype()
         {
             return datatype;
+        }
+        
+        public boolean hasGeneratedKey()
+        {
+            return generatedKey != null;
+        }
+        
+        public BinaryValue getGeneratedKey()
+        {
+            return generatedKey;
         }
     }
 }

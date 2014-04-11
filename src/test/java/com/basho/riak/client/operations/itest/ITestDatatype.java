@@ -5,12 +5,11 @@ import com.basho.riak.client.operations.datatypes.MapUpdate;
 import com.basho.riak.client.operations.datatypes.RegisterUpdate;
 import com.basho.riak.client.operations.datatypes.FlagUpdate;
 import com.basho.riak.client.operations.datatypes.SetUpdate;
-import com.basho.riak.client.operations.UpdateDatatype;
 import com.basho.riak.client.operations.FetchMap;
-import com.basho.riak.client.operations.FetchDatatype;
 import com.basho.riak.client.operations.DtUpdateOption;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.operations.UpdateMap;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.BinaryValue;
@@ -92,13 +91,13 @@ public class ITestDatatype extends ITestBase
 		MapUpdate userEntryUpdate = new MapUpdate()
 			.update(username, userMapUpdate);
 
-		UpdateDatatype<RiakMap> update = new UpdateDatatype.Builder<RiakMap>(carts)
-			.withUpdate(userEntryUpdate)
+		UpdateMap update = new UpdateMap.Builder(carts, userEntryUpdate)
 			.withOption(DtUpdateOption.RETURN_BODY, true)
 			.build();
-		UpdateDatatype.Response<RiakMap> updateResponse = client.execute(update);
+		UpdateMap.Response updateResponse = client.execute(update);
 
-		FetchMap fetch = new FetchMap.Builder(updateResponse.getKey()).build();
+        Location loc = new Location(carts.getBucketName()).setBucketType(carts.getBucketType());
+		FetchMap fetch = new FetchMap.Builder(loc.setKey(updateResponse.getGeneratedKey())).build();
 		FetchMap.Response fetchResponse = client.execute(fetch);
 
 		// users
@@ -144,15 +143,12 @@ public class ITestDatatype extends ITestBase
 		resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
 
 		// Insert a Map and Counter into logins and observe both counter and map returned
-		UpdateDatatype<RiakMap> conflictedUpdateCmd =
-			new UpdateDatatype.Builder<RiakMap>(carts)
-				.withUpdate(new MapUpdate()
-					.addMap(numLogins)
-					.addCounter(numLogins))
+		UpdateMap conflictedUpdateCmd =
+			new UpdateMap.Builder(carts, new MapUpdate().addMap(numLogins).addCounter(numLogins))
 				.withOption(DtUpdateOption.RETURN_BODY, true)
 				.build();
 
-		UpdateDatatype.Response<RiakMap> conflictedResponse =
+		UpdateMap.Response conflictedResponse =
 			client.execute(conflictedUpdateCmd);
 
 		assertNotNull(conflictedResponse.getDatatype());
