@@ -288,6 +288,28 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                 }
             };
         }
+        
+        /**
+         * Returns an Update that replaces whatever is in Riak.
+         * <p>
+         * This Update simply returns the supplied value, thus replacing 
+         * anything currently in Riak with that value.
+         * </p>
+         * @param newValue the obj to store in Riak.
+         * @return an Update instance.
+         */
+        public static <T> Update<T> clobberUpdate(final T newValue)
+        {
+            return new Update<T>()
+            {
+                @Override
+                public T apply(T original)
+                {
+                    return newValue;
+                }
+                
+            };
+        }
     }
 
 	public static class Builder
@@ -309,7 +331,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             this.location = location;
 		}
 
-		/**
+        /**
 		 * Add an option for the fetch phase of the update
 		 *
 		 * @param option the option
