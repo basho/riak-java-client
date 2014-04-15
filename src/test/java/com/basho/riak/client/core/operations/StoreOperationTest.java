@@ -22,7 +22,7 @@ import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLink;
 import com.basho.riak.client.util.BinaryValue;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.Test;

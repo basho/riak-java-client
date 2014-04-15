@@ -20,7 +20,7 @@ import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.BucketPropertiesConverter;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.Location;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
