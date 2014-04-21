@@ -34,6 +34,26 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
+ * <p/>
+ * <pre>
+ *   {@code
+ *   Client client = ...
+ *   Location loc = ...
+ *   UpdateValue update = new Builder(loc).withUpdate(new Update<Object>() {
+ *     @Override
+ *     public Object apply(Object original) {
+ *       return ...
+ *     }
+ *   }).build();
+ *   }
+ *
+ *   UpdateValue.Response response = client.execute(update);
+ * </pre>
+ * <p/>
+ * This operation will perform a fetch, perform your update, the store the value back to Riak.
+ * This operation is meant as a convenience for the typical fetch -> update -> store cycle
+ * needed to update a value in Riak.
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
