@@ -30,18 +30,44 @@ import java.util.Map;
 
 
 /**
- * Command used to fetch a value from Riak.
- * <p>
- * Fetching an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
- * and executing the FetchValue operation.
+ * Command used to fetch a value from Riak, referenced by it's key.
+ * <p/>
+ * <p/>
+ * Basic Usage:
  * <pre>
- * Location loc = new Location("my_bucket").setKey("my_key");
- * FetchValue fv = new FetchValue.Builder(loc).build();
- * FetchValue.Response response = client.execute(fv);
- * RiakObject obj = response.getValue(RiakObject.class);
+ *   {@code
+ *   Client client = ...
+ *   Location loc = ...
+ *
+ *   FetchValue fetch = new FetchValue.Builder(loc).build();
+ *   FetchValue.Response response = client.execute(fetch);
+ *
+ *   List<RiakObject> values = response.getValues();
+ *   }
  * </pre>
- * </p>
- * <p>
+ * <p/>
+ * You can also convert values to your own Domain Objects.
+ * <p/>
+ * First, register your converter:
+ * <p/>
+ * <pre>
+ *   {@code
+ *   ConverterFactory.registerConverterForClass(MyDO.class, new JSONConverter(MyDO.class));
+ *   }
+ * </pre>
+ * <p/>
+ * Then, fetch the value and get it using {@link KvResponseBase#getValues(Class)}. This will convert the
+ * {@link com.basho.riak.client.query.RiakObject}s returned using the previously registered converter.
+ * <p/>
+ * <pre>
+ *   {@code
+ *   FetchValue fetch = FetchValue.Builder(loc).build();
+ *   FetchValue.Response response = client.execute(fetch);
+ *
+ *   List<MyDo> values = response.getValues(MyDO.class);
+ *   }
+ * </pre>
+ * <p/>
  * All operations including FetchValue can called async as well.
  * <pre>
  * ...
@@ -49,25 +75,15 @@ import java.util.Map;
  * ...
  * future.await();
  * if (future.isSuccess)
- * { 
- *     ... 
+ * {
+ *     ...
  * }
  * </pre>
  * </p>
- * <p>
- * ORM features are also provided when retrieving the results from the response. 
- * By default, JSON serialization / deserializtion is used. For example, if 
- * the value stored in Riak was JSON and mapped to your class {@code MyPojo}:
- * <pre>
- * ...
- * MyPojo mp = response.getValue(MyPojo.class);
- * ...
- * </pre>
- * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
- * @since 2.0
  * @see Response
+ * @since 2.0
  */
 public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
@@ -83,35 +99,35 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	}
 
 	@Override
-    protected final RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<FetchOperation.Response, Location> coreFuture = 
-            cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future = 
-            new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(FetchOperation.Response coreResponse)
-                {
-                    return new Response.Builder().withNotFound(coreResponse.isNotFound()) 
-                                        .withUnchanged(coreResponse.isUnchanged())
-                                        .withValues(coreResponse.getObjectList()) 
-                                        .withVClock(coreResponse.getVClock())
-                                        .withLocation(location) // for ORM
-                                        .build();
-                }
+	protected final RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
+	{
+		RiakFuture<FetchOperation.Response, Location> coreFuture =
+				cluster.execute(buildCoreOperation());
 
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-        
-    }
+		CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future =
+				new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
+				{
+					@Override
+					protected Response convertResponse(FetchOperation.Response coreResponse)
+					{
+						return new Response.Builder().withNotFound(coreResponse.isNotFound())
+								.withUnchanged(coreResponse.isUnchanged())
+								.withValues(coreResponse.getObjectList())
+								.withVClock(coreResponse.getVClock())
+								.withLocation(location) // for ORM
+								.build();
+					}
+
+					@Override
+					protected Location convertQueryInfo(Location coreQueryInfo)
+					{
+						return coreQueryInfo;
+					}
+				};
+		coreFuture.addListener(future);
+		return future;
+
+	}
 
 	private FetchOperation buildCoreOperation()
 	{
@@ -163,10 +179,10 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 	/**
 	 * A response from Riak containing results from a FetchValue command.
 	 * <p>
-     * The Response, unless marked not found or unchanged, will contain one or
-     * more objects returned from Riak (all siblings are returned if present).
-     * </p>
-     */
+	 * The Response, unless marked not found or unchanged, will contain one or
+	 * more objects returned from Riak (all siblings are returned if present).
+	 * </p>
+	 */
 	public static class Response extends KvResponseBase
 	{
 		private final boolean notFound;
@@ -196,7 +212,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		/**
 		 * Determine if the value is unchanged.
 		 * <p/>
-		 * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
+		 * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchValue.Option#IF_MODIFIED}
 		 * this indicates if the value in Riak has been modified.
 		 * <p/>
 		 *
@@ -208,118 +224,118 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 			return unchanged;
 		}
 
-        /**
-         * @ExcludeFromJavadoc 
-         */
-        protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
-        {
-            private boolean notFound;
-            private boolean unchanged;
-            
-            T withUnchanged(boolean unchanged)
-            {
-                this.unchanged = unchanged;
-                return self();
-            }
-            
-            T withNotFound(boolean notFound)
-            {
-                this.notFound = notFound;
-                return self();
-            }
-        }
-        
-        static class Builder extends Init<Builder>
-        {
+		/**
+		 * @ExcludeFromJavadoc
+		 */
+		protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
+		{
+			private boolean notFound;
+			private boolean unchanged;
 
-            @Override
-            protected Builder self()
-            {
-                return this;
-            }
+			T withUnchanged(boolean unchanged)
+			{
+				this.unchanged = unchanged;
+				return self();
+			}
 
-            @Override
-            Response build()
-            {
-                return new Response(this);
-            }
-            
-        }
+			T withNotFound(boolean notFound)
+			{
+				this.notFound = notFound;
+				return self();
+			}
+		}
+
+		static class Builder extends Init<Builder>
+		{
+
+			@Override
+			protected Builder self()
+			{
+				return this;
+			}
+
+			@Override
+			Response build()
+			{
+				return new Response(this);
+			}
+
+		}
 
 	}
 
-    /**
-    * Options for controlling how Riak performs the fetch operation.
-    * <p>
-    * These options can be supplied to the {@link FetchValue.Builder} to change
-    * how Riak performs the operation. These override the defaults provided
-    * by the bucket.
-    * </p>
-    *
-    * @author Dave Rusek <drusek at basho dot com>
-    * @since 2.0
-    * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">Replication Properties</a>
-    */
-   public static final class Option<T> extends RiakOption<T>
-   {
+	/**
+	 * Options for controlling how Riak performs the fetch operation.
+	 * <p>
+	 * These options can be supplied to the {@link FetchValue.Builder} to change
+	 * how Riak performs the operation. These override the defaults provided
+	 * by the bucket.
+	 * </p>
+	 *
+	 * @author Dave Rusek <drusek at basho dot com>
+	 * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">Replication Properties</a>
+	 * @since 2.0
+	 */
+	public static final class Option<T> extends RiakOption<T>
+	{
 
-       /**
-        * Read Quorum.
-        * How many replicas need to agree when fetching the object.
-        */
-       public static final Option<Quorum> R = new Option<Quorum>("R");
-       /**
-        * Primary Read Quorum.
-        * How many primary replicas need to be available when retrieving the object.
-        */
-       public static final Option<Quorum> PR = new Option<Quorum>("PR");
-       /**
-        * Basic Quorum.
-        * Whether to return early in some failure cases (eg. when r=1 and you get 
-        * 2 errors and a success basic_quorum=true would return an error)
-        */
-       public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
-       /**
-        * Not Found OK.
-        * Whether to treat notfounds as successful reads for the purposes of R
-        */
-       public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
-       /**
-        * If Modified.
-        * When a vector clock is supplied with this option, only return the object 
-        * if the vector clocks don't match.
-        */
-       public static final Option<VClock> IF_MODIFIED = new Option<VClock>("IF_MODIFIED");
-       /**
-        * Head.
-        * return the object with the value(s) set as empty. This allows you to get the 
-        * meta data without a potentially large value. Analogous to an HTTP HEAD request.
-        */
-       public static final Option<Boolean> HEAD = new Option<Boolean>("HEAD");
-       /**
-        * Deleted VClock.
-        * By default single tombstones are not returned by a fetch operations. This 
-        * will return a Tombstone if it is present. 
-        */
-       public static final Option<Boolean> DELETED_VCLOCK = new Option<Boolean>("DELETED_VCLOCK");
-       /**
-        * Timeout.
-        * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
-        */
-       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+		/**
+		 * Read Quorum.
+		 * How many replicas need to agree when fetching the object.
+		 */
+		public static final Option<Quorum> R = new Option<Quorum>("R");
+		/**
+		 * Primary Read Quorum.
+		 * How many primary replicas need to be available when retrieving the object.
+		 */
+		public static final Option<Quorum> PR = new Option<Quorum>("PR");
+		/**
+		 * Basic Quorum.
+		 * Whether to return early in some failure cases (eg. when r=1 and you get
+		 * 2 errors and a success basic_quorum=true would return an error)
+		 */
+		public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+		/**
+		 * Not Found OK.
+		 * Whether to treat notfounds as successful reads for the purposes of R
+		 */
+		public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+		/**
+		 * If Modified.
+		 * When a vector clock is supplied with this option, only return the object
+		 * if the vector clocks don't match.
+		 */
+		public static final Option<VClock> IF_MODIFIED = new Option<VClock>("IF_MODIFIED");
+		/**
+		 * Head.
+		 * return the object with the value(s) set as empty. This allows you to get the
+		 * meta data without a potentially large value. Analogous to an HTTP HEAD request.
+		 */
+		public static final Option<Boolean> HEAD = new Option<Boolean>("HEAD");
+		/**
+		 * Deleted VClock.
+		 * By default single tombstones are not returned by a fetch operations. This
+		 * will return a Tombstone if it is present.
+		 */
+		public static final Option<Boolean> DELETED_VCLOCK = new Option<Boolean>("DELETED_VCLOCK");
+		/**
+		 * Timeout.
+		 * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
+		 */
+		public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+		public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+		public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
 
-       private Option(String name)
-       {
-           super(name);
-       }
+		private Option(String name)
+		{
+			super(name);
+		}
 
-   }
-    
-    /**
-     * Used to construct a FetchValue command. 
-     */
+	}
+
+	/**
+	 * Used to construct a FetchValue command.
+	 */
 	public static class Builder
 	{
 
@@ -327,26 +343,27 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		private final Map<Option<?>, Object> options =
 				new HashMap<Option<?>, Object>();
 
-        /**
-         * Constructs a builder for a FetchValue operation using the supplied location.
-         * @param location the location of the object you want to fetch from Riak. 
-         */
+		/**
+		 * Constructs a builder for a FetchValue operation using the supplied location.
+		 *
+		 * @param location the location of the object you want to fetch from Riak.
+		 */
 		public Builder(Location location)
 		{
 			if (!location.hasKey())
-            {
-                throw new IllegalArgumentException("Location must contain a key");
-            }
-            this.location = location;
+			{
+				throw new IllegalArgumentException("Location must contain a key");
+			}
+			this.location = location;
 		}
 
 		/**
-		 * Add an optional setting for this command. 
-         * This will be passed along with the request to Riak to tell it how
+		 * Add an optional setting for this command.
+		 * This will be passed along with the request to Riak to tell it how
 		 * to behave when servicing the request.
 		 *
 		 * @param option the option
-		 * @param value the value for the option
+		 * @param value  the value for the option
 		 * @return a reference to this object.
 		 */
 		public <U> Builder withOption(Option<U> option, U value)
@@ -355,21 +372,22 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 			return this;
 		}
 
-        /**
-         * Set the Riak-side timeout value.
-         * <p>
-         * By default, riak has a 60s timeout for operations. Setting
-         * this value will override that default for this operation.
-         * </p>
-         * @param timeout the timeout in milliseconds to be sent to riak.
-         * @return a reference to this object.
-         */
-        public Builder withTimeout(int timeout)
-        {
-            withOption(Option.TIMEOUT, timeout);
-            return this;
-        }
-        
+		/**
+		 * Set the Riak-side timeout value.
+		 * <p>
+		 * By default, riak has a 60s timeout for operations. Setting
+		 * this value will override that default for this operation.
+		 * </p>
+		 *
+		 * @param timeout the timeout in milliseconds to be sent to riak.
+		 * @return a reference to this object.
+		 */
+		public Builder withTimeout(int timeout)
+		{
+			withOption(Option.TIMEOUT, timeout);
+			return this;
+		}
+
 		/**
 		 * Build a {@link FetchValue} object
 		 *
