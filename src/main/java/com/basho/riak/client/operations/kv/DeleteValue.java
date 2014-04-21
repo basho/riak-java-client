@@ -30,186 +30,189 @@ import java.util.Map;
 
 /**
  * Command used to delete a value from Riak.
- * <p>
- * Deleting an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
- * and executing the DeleteValue operation.
+ * <p/>
+ * Basic Usage:
  * <pre>
- * Location loc = new Location("my_bucket")..setBucketType("my_type").setKey("my_key");
- * DeleteValue dv = new DeleteValue.Builder(loc).build();
- * DeleteValue.Response resp = client.execute(dv);
+ *   {@code
+ *   Client client = ...
+ *   Location loc = ...
+ *   DeleteValue del = new DeleteValue.Builder(loc).build();
+ *   DeleteValue.Response response = client.execute(del);
+ *   }
  * </pre>
- * </p>
- * 
- * 
+ * <p/>
+ * You can interrogate the {@see DeleteValue.Response} to make sure the value was actually deleted.
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class DeleteValue extends RiakCommand<Void, Location>
 {
 
-    private final Location location;
-    private final Map<Option<?>, Object> options =
-	    new HashMap<Option<?>, Object>();
-    private final VClock vClock;
+	private final Location location;
+	private final Map<Option<?>, Object> options =
+			new HashMap<Option<?>, Object>();
+	private final VClock vClock;
 
-    public DeleteValue(Builder builder)
-    {
-        this.location = builder.location;
-        this.options.putAll(builder.options);
-        this.vClock = builder.vClock;
-    }
+	public DeleteValue(Builder builder)
+	{
+		this.location = builder.location;
+		this.options.putAll(builder.options);
+		this.vClock = builder.vClock;
+	}
 
-    @Override
-    protected RiakFuture<Void, Location> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<Void, Location> coreFuture =
-            cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Void, Location, Void, Location> future =
-            new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
-            {
-                @Override
-                protected Void convertResponse(Void coreResponse)
-                {
-                    return coreResponse;
-                }
+	@Override
+	protected RiakFuture<Void, Location> executeAsync(RiakCluster cluster)
+	{
+		RiakFuture<Void, Location> coreFuture =
+				cluster.execute(buildCoreOperation());
 
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
+		CoreFutureAdapter<Void, Location, Void, Location> future =
+				new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
+				{
+					@Override
+					protected Void convertResponse(Void coreResponse)
+					{
+						return coreResponse;
+					}
 
-    private DeleteOperation buildCoreOperation()
-    {
-        DeleteOperation.Builder builder = new DeleteOperation.Builder(location);
+					@Override
+					protected Location convertQueryInfo(Location coreQueryInfo)
+					{
+						return coreQueryInfo;
+					}
+				};
+		coreFuture.addListener(future);
+		return future;
+	}
 
-        if (vClock != null)
-        {
-            builder.withVclock(vClock);
-        }
+	private DeleteOperation buildCoreOperation()
+	{
+		DeleteOperation.Builder builder = new DeleteOperation.Builder(location);
 
-        for (Map.Entry<Option<?>, Object> optPair : options.entrySet())
-        {
+		if (vClock != null)
+		{
+			builder.withVclock(vClock);
+		}
 
-            Option<?> option = optPair.getKey();
+		for (Map.Entry<Option<?>, Object> optPair : options.entrySet())
+		{
 
-            if (option == Option.DW)
-            {
-                builder.withDw(((Quorum) optPair.getValue()).getIntValue());
-            }
-            else if (option == Option.N_VAL)
-            {
-                builder.withNVal((Integer) optPair.getValue());
-            }
-            else if (option == Option.PR)
-            {
-                builder.withPr(((Quorum) optPair.getValue()).getIntValue());
-            }
-            else if (option == Option.R)
-            {
-                builder.withR(((Quorum) optPair.getValue()).getIntValue());
-            }
-            else if (option == Option.PW)
-            {
-                builder.withPw(((Quorum) optPair.getValue()).getIntValue());
-            }
-            else if (option == Option.RW)
-            {
-                builder.withRw(((Quorum) optPair.getValue()).getIntValue());
-            }
-            else if (option == Option.SLOPPY_QUORUM)
-            {
-                builder.withSloppyQuorum((Boolean) optPair.getValue());
-            }
-            else if (option == Option.TIMEOUT)
-            {
-                builder.withTimeout((Integer) optPair.getValue());
-            }
-            else if (option == Option.W)
-            {
-                builder.withW(((Quorum) optPair.getValue()).getIntValue());
-            }
-        }
+			Option<?> option = optPair.getKey();
 
-        return builder.build();
-    }
+			if (option == Option.DW)
+			{
+				builder.withDw(((Quorum) optPair.getValue()).getIntValue());
+			} else if (option == Option.N_VAL)
+			{
+				builder.withNVal((Integer) optPair.getValue());
+			} else if (option == Option.PR)
+			{
+				builder.withPr(((Quorum) optPair.getValue()).getIntValue());
+			} else if (option == Option.R)
+			{
+				builder.withR(((Quorum) optPair.getValue()).getIntValue());
+			} else if (option == Option.PW)
+			{
+				builder.withPw(((Quorum) optPair.getValue()).getIntValue());
+			} else if (option == Option.RW)
+			{
+				builder.withRw(((Quorum) optPair.getValue()).getIntValue());
+			} else if (option == Option.SLOPPY_QUORUM)
+			{
+				builder.withSloppyQuorum((Boolean) optPair.getValue());
+			} else if (option == Option.TIMEOUT)
+			{
+				builder.withTimeout((Integer) optPair.getValue());
+			} else if (option == Option.W)
+			{
+				builder.withW(((Quorum) optPair.getValue()).getIntValue());
+			}
+		}
 
-    public final static class Option<T> extends RiakOption<T>
-    {
+		return builder.build();
+	}
 
-        /**
-         * Read Write Quorum.
-         * Quorum for both operations (get and put) involved in deleting an object 
-         */
-        public static final Option<Quorum> RW = new Option<Quorum>("RW");
-        /**
-         * Read Quorum.
-         * How many replicas need to agree when fetching the object.
-         */
-        public static final Option<Quorum> R = new Option<Quorum>("R");
-        /**
-         * Write Quorum.
-         * How many replicas to write to before returning a successful response.
-         */
-        public static final Option<Quorum> W = new Option<Quorum>("W");
-        /**
-         * Primary Read Quorum.
-         * How many primary replicas need to be available when retrieving the object.
-         */
-        public static final Option<Quorum> PR = new Option<Quorum>("PR");
-        /**
-         * Primary Write Quorum. 
-         * How many primary nodes must be up when the write is attempted
-         */
-        public static final Option<Quorum> PW = new Option<Quorum>("PW");
-        /**
-         * Durable Write Quorum.
-         * How many replicas to commit to durable storage before returning a successful response.
-         */
-        public static final Option<Quorum> DW = new Option<Quorum>("DW");
-        /**
-         * Timeout.
-         * Sets the server-side timeout for this operation. The default is 60 seconds.
-         */
-        public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-        public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-        public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+	public final static class Option<T> extends RiakOption<T>
+	{
 
-        private Option(String name)
-        {
-            super(name);
-        }
-    }
+		/**
+		 * Read Write Quorum.
+		 * Quorum for both operations (get and put) involved in deleting an object
+		 */
+		public static final Option<Quorum> RW = new Option<Quorum>("RW");
+		/**
+		 * Read Quorum.
+		 * How many replicas need to agree when fetching the object.
+		 */
+		public static final Option<Quorum> R = new Option<Quorum>("R");
+		/**
+		 * Write Quorum.
+		 * How many replicas to write to before returning a successful response.
+		 */
+		public static final Option<Quorum> W = new Option<Quorum>("W");
+		/**
+		 * Primary Read Quorum.
+		 * How many primary replicas need to be available when retrieving the object.
+		 */
+		public static final Option<Quorum> PR = new Option<Quorum>("PR");
+		/**
+		 * Primary Write Quorum.
+		 * How many primary nodes must be up when the write is attempted
+		 */
+		public static final Option<Quorum> PW = new Option<Quorum>("PW");
+		/**
+		 * Durable Write Quorum.
+		 * How many replicas to commit to durable storage before returning a successful response.
+		 */
+		public static final Option<Quorum> DW = new Option<Quorum>("DW");
+		/**
+		 * Timeout.
+		 * Sets the server-side timeout for this operation. The default is 60 seconds.
+		 */
+		public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+		public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+		public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
 
-    /**
-     * Used to construct a DeleteValue command.
-     */
+		private Option(String name)
+		{
+			super(name);
+		}
+	}
+
+	/**
+	 * A builder for the delete operation.
+	 */
 	public static class Builder
 	{
 
 		private final Location location;
 		private final Map<Option<?>, Object> options =
-			new HashMap<Option<?>, Object>();
+				new HashMap<Option<?>, Object>();
 		private VClock vClock;
 
+		/**
+		 * Create a builder for a delete operation at the specified location
+		 *
+		 * @param location the location of the value being deleted
+		 */
 		public Builder(Location location)
 		{
 			if (location == null)
-            {
-                throw new IllegalArgumentException("Location cannot be null");
-            }
-            this.location = location;
+			{
+				throw new IllegalArgumentException("Location cannot be null");
+			}
+			this.location = location;
 		}
 
 		/**
-		 * Specify the VClock to use when deleting the object from Riak.
+		 * The vector clock to use when deleting this value. A vclock is obtained
+		 * from a {@link com.basho.riak.client.operations.kv.FetchValue} operation.
+		 * If you are performing concurrent updates to a location without a vclock,
+		 * tombstone siblings may be created, if enabled, or values may be overridden
+		 * if lww is set.
 		 *
-		 * @param vClock the vclock
+		 * @param vClock a previously fetched Virtual Clock.
 		 * @return this
 		 */
 		public Builder withVClock(VClock vClock)
@@ -219,12 +222,14 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 		}
 
 		/**
-		 * Add a delete option
+		 * It is possible, though not recommended unless you have a specific use case, to
+		 * modify Riak's quorum values on each store operation. You may do this by including
+		 * specific optional parameters for this request.
 		 *
-		 * @param option the option
-		 * @param value  the value associated with the option
-		 * @param <T>    the type required by the option
-		 * @return a reference to this object
+		 * @param option optional parameter
+		 * @param value  a input value for the specified option
+		 * @param <T>    the required type for the option value
+		 * @return this
 		 */
 		public <T> Builder withOption(Option<T> option, T value)
 		{
@@ -232,25 +237,27 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 			return this;
 		}
 
-        /**
-         * Set the Riak-side timeout value.
-         * <p>
-         * By default, riak has a 60s timeout for operations. Setting
-         * this value will override that default for this operation.
-         * </p>
-         * @param timeout the timeout in milliseconds to be sent to riak.
-         * @return a reference to this object.
-         */
-        public Builder withTimeout(int timeout)
-        {
-            withOption(Option.TIMEOUT, timeout);
-            return this;
-        }
-        
-        /**
-         * Construct a DeleteValue object.
-         * @return a new DeleteValue instance.
-         */
+		/**
+		 * Set the Riak-side timeout value.
+		 * <p>
+		 * By default, riak has a 60s timeout for operations. Setting
+		 * this value will override that default for this operation.
+		 * </p>
+		 *
+		 * @param timeout the timeout in milliseconds to be sent to riak.
+		 * @return a reference to this object.
+		 */
+		public Builder withTimeout(int timeout)
+		{
+			withOption(Option.TIMEOUT, timeout);
+			return this;
+		}
+
+		/**
+		 * Create a new {@link com.basho.riak.client.operations.kv.DeleteValue}
+		 *
+		 * @return new DeleteValue request
+		 */
 		public DeleteValue build()
 		{
 			return new DeleteValue(this);
