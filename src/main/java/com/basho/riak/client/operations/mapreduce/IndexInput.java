@@ -2,7 +2,7 @@ package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
 
-public class IndexInput implements MapReduceInput
+class IndexInput implements MapReduceInput
 {
 	private final Location location;
 	private final String index;

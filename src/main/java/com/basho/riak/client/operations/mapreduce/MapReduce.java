@@ -43,7 +43,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 {
 	private final MapReduceSpec spec;
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	protected MapReduce(MapReduceInput input, Builder builder)
 	{
 		this.spec = new MapReduceSpec(input, builder.phases, builder.timeout);
@@ -52,13 +52,13 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	@Override
 	protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
 	{
-		
-        BinaryValue jobSpec;
+
+		BinaryValue jobSpec;
 		try
 		{
 			String spec = writeSpec();
-            //System.out.println(spec);
-            jobSpec = BinaryValue.create(spec);
+			//System.out.println(spec);
+			jobSpec = BinaryValue.create(spec);
 		} catch (RiakException e)
 		{
 			throw new RuntimeException(e);
@@ -295,7 +295,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
 		 * @param tag    the tag (or ("_", or "" for wildcard)
 		 * @param keep   to keep the result of this phase and return it at the end of the operation
-         * @return a reference to this object.
+		 * @return a reference to this object.
 		 */
 		public T withLinkPhase(String bucket, String tag, boolean keep)
 		{
@@ -313,7 +313,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		 *
 		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
 		 * @param tag    the tag (or ("_", or "" for wildcard)
-         * @return a reference to this object.
+		 * @return a reference to this object.
 		 */
 		public T withLinkPhase(String bucket, String tag)
 		{
@@ -339,45 +339,44 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 			this.results = results;
 		}
 
-        public boolean hasResultForPhase(int i)
-        {
-            return results.containsKey(i);
-        }
-        
-        public ArrayNode getResultForPhase(int i)
-        {
-            return results.get(i);
-        }
-        
-        public ArrayNode getResultsFromAllPhases()
-        {
-            return flattenResults();
-        }
-        
-        public <T> Collection<T> getResultsFromAllPhases(Class<T> resultType)
-        {
-            ArrayNode flat = flattenResults();
-            ObjectMapper mapper = new ObjectMapper();
-            try
-            {
-                return mapper.readValue(flat.toString(), mapper.getTypeFactory().constructCollectionType(Collection.class, resultType));
-            }
-            catch (IOException ex)
-            {
-                throw new ConversionException("Could not convert Mapreduce response",ex);
-            }
-        }
-        
-        private ArrayNode flattenResults()
-        {
-            final JsonNodeFactory factory = JsonNodeFactory.instance;
-            ArrayNode flatArray = factory.arrayNode();
-            for (Map.Entry<Integer,ArrayNode> entry : results.entrySet())
-            {
-                flatArray.addAll(entry.getValue());
-            }
-            return flatArray;
-        }
-		
+		public boolean hasResultForPhase(int i)
+		{
+			return results.containsKey(i);
+		}
+
+		public ArrayNode getResultForPhase(int i)
+		{
+			return results.get(i);
+		}
+
+		public ArrayNode getResultsFromAllPhases()
+		{
+			return flattenResults();
+		}
+
+		public <T> Collection<T> getResultsFromAllPhases(Class<T> resultType)
+		{
+			ArrayNode flat = flattenResults();
+			ObjectMapper mapper = new ObjectMapper();
+			try
+			{
+				return mapper.readValue(flat.toString(), mapper.getTypeFactory().constructCollectionType(Collection.class, resultType));
+			} catch (IOException ex)
+			{
+				throw new ConversionException("Could not convert Mapreduce response", ex);
+			}
+		}
+
+		private ArrayNode flattenResults()
+		{
+			final JsonNodeFactory factory = JsonNodeFactory.instance;
+			ArrayNode flatArray = factory.arrayNode();
+			for (Map.Entry<Integer, ArrayNode> entry : results.entrySet())
+			{
+				flatArray.addAll(entry.getValue());
+			}
+			return flatArray;
+		}
+
 	}
 }

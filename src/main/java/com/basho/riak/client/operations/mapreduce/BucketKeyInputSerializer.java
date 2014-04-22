@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
-public class BucketKeyInputSerializer extends JsonSerializer<BucketKeyInput>
+class BucketKeyInputSerializer extends JsonSerializer<BucketKeyInput>
 {
 	@Override
 	public void serialize(BucketKeyInput input, JsonGenerator jg, SerializerProvider sp) throws IOException

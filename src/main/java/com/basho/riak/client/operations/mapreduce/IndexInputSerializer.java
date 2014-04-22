@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
-public class IndexInputSerializer extends JsonSerializer<IndexInput>
+class IndexInputSerializer extends JsonSerializer<IndexInput>
 {
 	@Override
 	public void serialize(IndexInput input, JsonGenerator jg, SerializerProvider sp) throws IOException

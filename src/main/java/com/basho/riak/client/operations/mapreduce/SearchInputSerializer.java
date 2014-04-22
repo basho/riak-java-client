@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
-public class SearchInputSerializer extends JsonSerializer<SearchInput>
+class SearchInputSerializer extends JsonSerializer<SearchInput>
 {
 	@Override
 	public void serialize(SearchInput input, JsonGenerator jg, SerializerProvider sp) throws IOException

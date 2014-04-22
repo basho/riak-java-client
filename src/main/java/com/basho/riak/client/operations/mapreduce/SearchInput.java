@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-public class SearchInput implements MapReduceInput
+class SearchInput implements MapReduceInput
 {
 	private final String index;
 	private final String search;

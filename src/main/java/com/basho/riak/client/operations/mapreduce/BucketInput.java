@@ -5,7 +5,7 @@ import com.basho.riak.client.query.filters.KeyFilter;
 
 import java.util.Collection;
 
-public class BucketInput implements MapReduceInput
+class BucketInput implements MapReduceInput
 {
 
 	private final Location location;
