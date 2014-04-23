@@ -21,45 +21,85 @@ import com.basho.riak.client.util.BinaryValue;
 import java.util.HashSet;
 import java.util.Set;
 
- /*
+/**
+ * An update to a Riak set datatype.
+ * <p/>
+ * Usage:
+ * <pre>
+ *   {@code
+ *   Location loc = null;
+ *   RiakClient client = null;
+ *   UpdateSet update = new UpdateSet.Builder(loc, new SetUpdate()
+ *     .add("value1")
+ *     .remove("value2"))
+ *   .build();
+ *   UpdateSet.Response response = client.execute(update);
+ *   }
+ * </pre>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class SetUpdate implements DatatypeUpdate
 {
 
-    private final Set<BinaryValue> adds = new HashSet<BinaryValue>();
-    private final Set<BinaryValue> removes = new HashSet<BinaryValue>();
+	private final Set<BinaryValue> adds = new HashSet<BinaryValue>();
+	private final Set<BinaryValue> removes = new HashSet<BinaryValue>();
 
-    public SetUpdate()
-    {
-    }
+	/**
+	 * Create an empty set update
+	 */
+	public SetUpdate()
+	{
+	}
 
-    public SetUpdate add(byte[] value)
-    {
-        this.adds.add(BinaryValue.create(value));
-        return this;
-    }
+	/**
+	 * Add a member to the set
+	 *
+	 * @param value value to add
+	 * @return this
+	 */
+	public SetUpdate add(byte[] value)
+	{
+		this.adds.add(BinaryValue.create(value));
+		return this;
+	}
 
-    public SetUpdate remove(BinaryValue value)
-    {
-        this.removes.add(value);
-        return this;
-    }
+	/**
+	 * Remove an element from the set
+	 *
+	 * @param value value to remove
+	 * @return this
+	 */
+	public SetUpdate remove(BinaryValue value)
+	{
+		this.removes.add(value);
+		return this;
+	}
 
-    public Set<BinaryValue> getAdds()
-    {
-        return adds;
-    }
+	/**
+	 * Get the set of additions
+	 *
+	 * @return accumulated set of additions
+	 */
+	public Set<BinaryValue> getAdds()
+	{
+		return adds;
+	}
 
-    public Set<BinaryValue> getRemoves()
-    {
-        return removes;
-    }
+	/**
+	 * Get the set of removals
+	 *
+	 * @return accumulated set of removals
+	 */
+	public Set<BinaryValue> getRemoves()
+	{
+		return removes;
+	}
 
-    @Override
-    public SetOp getOp()
-    {
-        return new SetOp(adds, removes);
-    }
+	@Override
+	public SetOp getOp()
+	{
+		return new SetOp(adds, removes);
+	}
 }

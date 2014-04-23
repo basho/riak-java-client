@@ -17,8 +17,6 @@
 package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.RiakClient;
-import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.StoreBucketProperties;
 import com.basho.riak.client.operations.StoreSearchIndex;
@@ -30,10 +28,12 @@ import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.BinaryValue;
-import java.util.concurrent.ExecutionException;
-import static junit.framework.Assert.assertEquals;
 import org.junit.Assume;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  *
@@ -99,7 +99,7 @@ public class ITestSearchMapReduce extends ITestBase
         Thread.sleep(3000);
         
         SearchMapReduce smr = new SearchMapReduce.Builder()
-                            .withIndex(index.getName())
+                            .withBucket(index.getName())
                             .withQuery("NOT leader_b:true")
                             .withMapPhase(Function.newAnonymousJsFunction("function(v) { return [1]; }"), false)
                             .withReducePhase(Function.newNamedJsFunction("Riak.reduceSum"), true)

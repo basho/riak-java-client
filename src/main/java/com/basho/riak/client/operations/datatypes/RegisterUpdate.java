@@ -18,46 +18,97 @@ package com.basho.riak.client.operations.datatypes;
 import com.basho.riak.client.query.crdt.ops.RegisterOp;
 import com.basho.riak.client.util.BinaryValue;
 
- /*
+/**
+ * An update to a Riak register datatype. Registers can only exist within Maps so you must
+ * nest a RegisterUpdate within an enclosing MapUpdate.
+ * <p/>
+ * <p/>
+ * Usage:
+ * <pre>
+ *   {@code
+ *   Location loc = ...;
+ *   RiakClient client = ...;
+ *   UpdateMap update = new MapUpdate.Builder(loc,
+ *     new MapUpdate().update("flag",
+ *       new RegisterUpdate(new byte[] {'/0'})))
+ *   .build();
+ *   UpdateMap.Response response = client.execute(update);
+ *   }
+ * </pre>
+ * <p/>
+ * If a register is deeply nested within a map (of maps (of maps (...))) you must nest the update appropriately.
+ * <p/>
+ * <pre>
+ *   {@code
+ *   Location loc = ...;
+ *   RiakClient client = ...;
+ *   UpdateMap update = new MapUpdate.Builder(loc,
+ *     new MapUpdate().update("map",
+ *       new MapUpdate().update("flag",
+ *         new RegisterUpdate(new byte[] {'/0'}))))
+ *   .build();
+ *   UpdateMap.Response response = client.execute(update);
+ *   }
+ * </pre>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class RegisterUpdate implements DatatypeUpdate
 {
 
-    private byte[] value = null;
+	private byte[] value = null;
 
-    public RegisterUpdate(byte[] value)
-    {
-        this.value = value;
-    }
+	public RegisterUpdate(byte[] value)
+	{
+		this.value = value;
+	}
 
-    public RegisterUpdate()
-    {
-    }
+	/**
+	 * Create an empty register update
+	 */
+	public RegisterUpdate()
+	{
+	}
 
-    public RegisterUpdate set(byte[] value)
-    {
-        this.value = value;
-        return this;
-    }
+	/**
+	 * Construct a new update for a register
+	 *
+	 * @param value the value to store
+	 * @return this
+	 */
+	public RegisterUpdate set(byte[] value)
+	{
+		this.value = value;
+		return this;
+	}
 
-    public RegisterUpdate clear()
-    {
-        this.value = null;
-        return this;
-    }
+	/**
+	 * Clear the register
+	 *
+	 * @return this
+	 */
+	public RegisterUpdate clear()
+	{
+		this.value = null;
+		return this;
+	}
 
-    public byte[] get()
-    {
-        return value;
-    }
+	/**
+	 * Get the value of this update
+	 *
+	 * @return
+	 */
+	public byte[] get()
+	{
+		return value;
+	}
 
-    @Override
-    public RegisterOp getOp()
-    {
-        return new RegisterOp(BinaryValue.create(value));
-    }
+	@Override
+	public RegisterOp getOp()
+	{
+		return new RegisterOp(BinaryValue.create(value));
+	}
 
 
 }

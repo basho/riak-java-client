@@ -17,32 +17,60 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.CounterOp;
 
-/*
-* @author Dave Rusek <drusek at basho dot com>
-* @since 2.0
-*/
+/**
+ * An addition (positive value) or subtraction (negative value) from
+ * a Riak counter datatype.
+ *
+ *
+ * Usage:
+ * <pre>
+ *   {@code
+ *   Location loc = null;
+ *   RiakClient client = null;
+ *   UpdateCounter update = new UpdateCounter.Builder(loc, new CounterUpdate(1)).build();
+ *   UpdateCounter.Response response = client.execute(update);
+ *   }
+ * </pre>
+ *
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public class CounterUpdate implements DatatypeUpdate
 {
 
-    private long delta = 0;
+	private long delta = 0;
 
-    public CounterUpdate()
-    {
-    }
+	/**
+	 * Construct and empty counter update
+	 */
+	public CounterUpdate()
+	{
+	}
 
-    public CounterUpdate(long delta)
-    {
-        this.delta = delta;
-    }
+	/**
+	 * Create a new update
+	 *
+	 * @param delta the +/- delta to apply to this counter
+	 */
+	public CounterUpdate(long delta)
+	{
+		this.delta = delta;
+	}
 
-    public long getDelta()
-    {
-        return delta;
-    }
+	/**
+	 * Get the update value
+	 *
+	 * @return the delta for this update
+	 */
+	public long getDelta()
+	{
+		return delta;
+	}
 
-    @Override
-    public CounterOp getOp()
-    {
-        return new CounterOp(delta);
-    }
+	@Override
+	public CounterOp getOp()
+	{
+		return new CounterOp(delta);
+	}
+
 }

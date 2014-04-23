@@ -17,38 +17,89 @@ package com.basho.riak.client.operations.datatypes;
 
 import com.basho.riak.client.query.crdt.ops.FlagOp;
 
- /*
+/**
+ * An update to a Riak flag datatype. Flags can only exist within Maps so you must
+ * nest a FlagUpdate within an enclosing MapUpdate.
+ * <p/>
+ * <p/>
+ * Usage:
+ * <pre>
+ *   {@code
+ *   Location loc = ...;
+ *   RiakClient client = ...;
+ *   UpdateMap update = new MapUpdate.Builder(loc,
+ *     new MapUpdate().update("flag",
+ *       new FlagUpdate(false)))
+ *   .build();
+ *   UpdateMap.Response response = client.execute(update);
+ *   }
+ * </pre>
+ * <p/>
+ * If a flag is deeply nested within a map (of maps (of maps (...))) you must nest the update appropriately.
+ * <p/>
+ * <pre>
+ *   {@code
+ *   Location loc = ...;
+ *   RiakClient client = ...;
+ *   UpdateMap update = new MapUpdate.Builder(loc,
+ *     new MapUpdate().update("map",
+ *       new MapUpdate().update("flag",
+ *         new FlagUpdate(false))))
+ *   .build();
+ *   UpdateMap.Response response = client.execute(update);
+ *   }
+ * </pre>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class FlagUpdate implements DatatypeUpdate
 {
 
-    private boolean flag = false;
+	private boolean flag = false;
 
-    public FlagUpdate(boolean flag)
-    {
-        this.flag = flag;
-    }
+	/**
+	 * Construct an empty flag update
+	 */
+	public FlagUpdate()
+	{
+	}
 
-    public FlagUpdate()
-    {
-    }
+	/**
+	 * Construct a new flag update to set the flag to the given value
+	 *
+	 * @param flag the new value of the flag
+	 */
+	public FlagUpdate(boolean flag)
+	{
+		this.flag = flag;
+	}
 
-    public FlagUpdate set(boolean flag)
-    {
-        this.flag = flag;
-        return this;
-    }
+	/**
+	 * Set the value of the flag
+	 *
+	 * @param flag the value
+	 * @return this
+	 */
+	public FlagUpdate set(boolean flag)
+	{
+		this.flag = flag;
+		return this;
+	}
 
-    public boolean isEnabled()
-    {
-        return flag;
-    }
+	/**
+	 * True if the value is true
+	 *
+	 * @return the value of the flag
+	 */
+	public boolean isEnabled()
+	{
+		return flag;
+	}
 
-    @Override
-    public FlagOp getOp()
-    {
-        return new FlagOp(flag);
-    }
+	@Override
+	public FlagOp getOp()
+	{
+		return new FlagOp(flag);
+	}
 }

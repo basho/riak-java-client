@@ -15,22 +15,27 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
- /*
+/**
+ * A Riak datatype context. This is returned by a fetch, when requested, of
+ * any Riak datatype and should be returned when performing a delete on a
+ * {@link com.basho.riak.client.query.crdt.types.RiakSet}
+ * or a {@link com.basho.riak.client.query.crdt.types.RiakMap}.
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class Context
 {
 
-    private final byte[] bytes;
+	private final byte[] bytes;
 
-    public Context(byte[] bytes)
-    {
-        this.bytes = bytes;
-    }
+	public Context(byte[] bytes)
+	{
+		this.bytes = bytes;
+	}
 
-    public byte[] getBytes()
-    {
-        return bytes;
-    }
+	public byte[] getBytes()
+	{
+		return bytes;
+	}
 }
