@@ -75,10 +75,13 @@ public class TestClientHelper {
     @Mock RiakObject object;
     @Mock org.apache.http.HttpResponse mockHttpResponse;
     @Mock HttpEntity mockHttpEntity;
+    InputStream stream;
     ClientHelper impl;
     
-    @Before public void setup() {
+    @Before public void setup() throws Exception{
         MockitoAnnotations.initMocks(this);
+
+        stream = new ByteArrayInputStream("some sort of stream".getBytes("utf-8"));
 
         when(object.getBucket()).thenReturn(bucket);
         when(object.getKey()).thenReturn(key);
@@ -294,6 +297,17 @@ public class TestClientHelper {
         HttpResponse r = impl.executeMethod(null, null, mockHttpRequestBase, meta, true);
         
         assertNull(r.getBody());
+        assertSame(stream, r.getStream());
+    }
+
+    @Test public void execute_method_with_stream_and_null_entity_response_returns_null_body_and_null_stream() throws IOException {
+        HttpRequestBase mockHttpRequestBase = mock(HttpRequestBase.class);
+        stubResponse(true);
+        when(mockHttpResponse.getEntity()).thenReturn(null);
+        HttpResponse r = impl.executeMethod(null, null, mockHttpRequestBase, meta, true);
+
+        assertNull(r.getBody());
+        assertNull(r.getStream());
     }
 
     @Test public void execute_method_with_stream_response_doesnt_consume_stream_or_close_connection() throws IOException {
@@ -373,5 +387,6 @@ public class TestClientHelper {
         }
         when(mockHttpResponse.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"));
         when(mockHttpResponse.getEntity()).thenReturn(mockHttpEntity);
+        when(mockHttpEntity.getContent()).thenReturn(stream);
     }
 }
