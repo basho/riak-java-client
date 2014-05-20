@@ -96,11 +96,6 @@
             <version>20140107</version>
         </dependency>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>2.4.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
@@ -277,37 +272,6 @@
             </build>
         </profile>
         <profile>
-            <id>githubUpload</id>
-            <activation>
-                <property>
-                    <name>github.downloads</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.github</groupId>
-                        <artifactId>downloads-maven-plugin</artifactId>
-                        <version>0.4</version>
-                        <configuration>
-                            <description>${project.version} release of ${project.name}</description>
-                            <override>false</override>
-                            <includeAttached>true</includeAttached>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>upload</goal>
-                                </goals>
-                                <phase>install</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>dependencyArchive</id>
             <activation>
                 <property>
@@ -387,9 +351,9 @@
                         <artifactId>maven-assembly-plugin</artifactId>
                         <version>2.2.1</version>
                         <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
+                            <descriptors>
+                                <descriptor>src/main/assembly/rjc-all-in-one.xml</descriptor>
+                            </descriptors>
                             <archive>
                             </archive>
                         </configuration>
