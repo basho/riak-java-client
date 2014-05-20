@@ -22,6 +22,7 @@ import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter;
 import com.basho.riak.client.convert.ConverterFactory;
+import com.basho.riak.client.convert.reflection.AnnotationUtil;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.RiakObject;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,35 +38,15 @@ import java.util.List;
 abstract class KvResponseBase
 {
     private final Location location;
-    private final VClock vclock;
     private final List<RiakObject> values;
     
         
     protected KvResponseBase(Init<?> builder)
     {
         this.location = builder.location;
-        this.vclock = builder.vclock;
         this.values = builder.values;
     }
 
-    /**
-     * Determine if a vclock was returned.
-     * @return true if a vclock is present, false otherwise
-     */
-    public boolean hasVClock()
-    {
-        return vclock != null;
-    }
-    
-    /**
-     * Get the returned Vector Clock.
-     * @return the vclock, if present. null otherwise.
-     */
-    public VClock getVClock()
-    {
-        return vclock;
-    }
-    
     /**
      * Determine if this response contains any returned values.
      * @return true if values are present, false otherwise.
@@ -86,6 +67,40 @@ abstract class KvResponseBase
     public int getNumberOfValues()
     {
         return values.size();
+    }
+    
+    /**
+     * Get all the objects returned in this response.
+     * <p>
+     * If siblings were present in Riak for the object you were fetching, 
+     * this method will return all of them to you.
+     * </p>
+     * @return a list of values as RiakObjects
+     */
+    public List<RiakObject> getValues()
+    {
+        return values;
+    }
+    
+    /**
+     * Get the vector clock returned with this response.
+     * <p>
+     * When storing/retrieving core Java types ({@code HashMap},
+     * {@code ArrayList},{@code String}, etc) or non-annotated POJOs 
+     * this method allows you to retrieve the vector clock.
+     * </p>
+     * @return The vector clock or null if one is not present.
+     */
+    public VClock getVectorClock()
+    {
+        if (hasValues())
+        {
+            return values.get(0).getVClock();
+        }
+        else
+        {
+            return null;
+        }
     }
     
     /**
@@ -137,7 +152,15 @@ abstract class KvResponseBase
         ConflictResolver<T> resolver = 
             ConflictResolverFactory.getInstance().getConflictResolver(clazz);
 
-        return resolver.resolve(convertedValues);
+        T resolved = resolver.resolve(convertedValues);
+        
+        if (hasValues() && resolved != null)
+        {
+            VClock vclock = values.get(0).getVClock();
+            AnnotationUtil.setVClock(resolved, vclock);
+        }
+        
+        return resolved;
     }
 
     /**
@@ -174,7 +197,14 @@ abstract class KvResponseBase
         ConflictResolver<T> resolver = 
             ConflictResolverFactory.getInstance().getConflictResolver(typeReference);
 
-        return resolver.resolve(convertedValues);
+        T resolved = resolver.resolve(convertedValues);
+        if (hasValues() && resolved != null)
+        {
+            VClock vclock = values.get(0).getVClock();
+            AnnotationUtil.setVClock(resolved, vclock);
+        }
+        
+        return resolved;
     }
 
     /** 
@@ -213,7 +243,7 @@ abstract class KvResponseBase
         List<T> convertedValues = new ArrayList<T>(values.size());
         for (RiakObject ro : values)
         {
-            convertedValues.add(converter.toDomain(ro, location, vclock));
+            convertedValues.add(converter.toDomain(ro, location));
         }
 
         return convertedValues;
@@ -226,7 +256,6 @@ abstract class KvResponseBase
     protected static abstract class Init<T extends Init<T>>
     {
         private Location location;
-        private VClock vclock;
         private List<RiakObject> values = new ArrayList<RiakObject>();
 
         protected abstract T self();
@@ -235,12 +264,6 @@ abstract class KvResponseBase
         T withLocation(Location location)
         {
             this.location = location;
-            return self();
-        }
-        
-        T withVClock(VClock vclock)
-        {
-            this.vclock = vclock;
             return self();
         }
         

@@ -101,17 +101,20 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             // it deleted
             if (response.getContentCount() == 0)
             {
-                responseBuilder.addObject(new RiakObject().setDeleted(true));
+                RiakObject ro = new RiakObject()
+                                    .setDeleted(true)
+                                    .setVClock(new BasicVClock(response.getVclock().toByteArray()));
+                
+                responseBuilder.addObject(ro);
             }
             else
             {
-                responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList()));
+                responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList(), response.getVclock()));
             }
 
-                responseBuilder.withVClock(new BasicVClock(response.getVclock().toByteArray()))
-                       .withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
+            responseBuilder.withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
 
-            }
+        }
         
         return responseBuilder.build();
     }
@@ -302,12 +305,10 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     protected static abstract class KvResponseBase
     {
         private final List<RiakObject> objectList;
-        private final VClock vclock;
         
         protected KvResponseBase(Init<?> builder)
         {
             this.objectList = builder.objectList;
-            this.vclock = builder.vclock;
         }
         
         public List<RiakObject> getObjectList()
@@ -315,21 +316,10 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             return objectList;
         }
         
-        public boolean hasVClock()
-        {
-            return vclock != null;
-        }
-        
-        public VClock getVClock()
-        {
-            return vclock;
-        }
-        
         protected static abstract class Init<T extends Init<T>> 
         {
             private final List<RiakObject> objectList =
                 new LinkedList<RiakObject>();
-            private VClock vclock;
             protected abstract T self();
             protected abstract KvResponseBase build();
             
@@ -342,12 +332,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             T addObjects(List<RiakObject> objects)
             {
                 objectList.addAll(objects);
-                return self();
-            }
-            
-            T withVClock(VClock vclock)
-            {
-                this.vclock = vclock;
                 return self();
             }
         }

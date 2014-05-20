@@ -97,7 +97,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
                     return new Response.Builder().withNotFound(coreResponse.isNotFound()) 
                                         .withUnchanged(coreResponse.isUnchanged())
                                         .withValues(coreResponse.getObjectList()) 
-                                        .withVClock(coreResponse.getVClock())
                                         .withLocation(location) // for ORM
                                         .build();
                 }

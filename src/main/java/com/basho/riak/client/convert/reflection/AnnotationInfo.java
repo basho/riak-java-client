@@ -345,6 +345,11 @@ public class AnnotationInfo
         }
     }
     
+    public boolean hasRiakVClock()
+    {
+        return riakVClockField != null || riakVClockSetter != null;
+    }
+    
     public <T> VClock getRiakVClock(T obj)
     {
 

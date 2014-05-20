@@ -68,10 +68,9 @@ public abstract class Converter<T>
      * 
      * @param obj the RiakObject to be converted
      * @param location The location of this RiakObject in Riak
-     * @param vclock the vclock to use.
      * @return an instance of the domain type T
      */
-    public T toDomain(RiakObject obj, Location location, VClock vclock)
+    public T toDomain(RiakObject obj, Location location)
     {
         T domainObject;
         if (obj.isDeleted())
@@ -93,7 +92,7 @@ public abstract class Converter<T>
         AnnotationUtil.setBucketName(domainObject, location.getBucketName());
         AnnotationUtil.setBucketType(domainObject, location.getBucketType());
 
-        AnnotationUtil.setVClock(domainObject, vclock);
+        AnnotationUtil.setVClock(domainObject, obj.getVClock());
         AnnotationUtil.setTombstone(domainObject, obj.isDeleted());
         AnnotationUtil.setLastModified(domainObject, obj.getLastModified());
 
@@ -119,14 +118,13 @@ public abstract class Converter<T>
      * The domain object itself may be completely annotated with everything 
      * required to produce a RiakObject except for the value portion. 
      * This will prefer annotated
-     * items over the {@code Location} and {@code VClock} passed in.
+     * items over the {@code Location} passed in.
      * </p>
      * @param domainObject a domain object to be stored in Riak.
      * @param location the Location to store the data in Riak.
-     * @param vclock the vclock to use.
      * @return a {@code RiakObject} to be stored in Riak.
      */
-    public OrmExtracted fromDomain(T domainObject, Location location, VClock vclock)
+    public OrmExtracted fromDomain(T domainObject, Location location)
     {        
         BinaryValue key = location != null ? location.getKey() : null;
         BinaryValue bucketName = location != null ? location.getBucketName() : null;
@@ -141,7 +139,7 @@ public abstract class Converter<T>
             throw new ConversionException("Bucket name not provided via location or domain object");
         }
         
-        vclock = AnnotationUtil.getVClock(domainObject, vclock);
+        VClock vclock = AnnotationUtil.getVClock(domainObject);
         String contentType = 
             AnnotationUtil.getContentType(domainObject, RiakObject.DEFAULT_CONTENT_TYPE);
         
@@ -155,7 +153,8 @@ public abstract class Converter<T>
         contentType = cAndT.contentType != null ? cAndT.contentType : contentType;
         
         riakObject.setContentType(contentType)
-                    .setValue(cAndT.content);
+                    .setValue(cAndT.content)
+                    .setVClock(vclock);
         
         location = new Location(bucketName).setKey(key);
         
@@ -164,7 +163,7 @@ public abstract class Converter<T>
             location.setBucketType(bucketType);
         }
         
-        OrmExtracted extracted = new OrmExtracted(riakObject, location, vclock);
+        OrmExtracted extracted = new OrmExtracted(riakObject, location);
         return extracted;
     }
     
@@ -191,13 +190,11 @@ public abstract class Converter<T>
     {
         private final RiakObject riakObject;
         private final Location location;
-        private final VClock vclock;
         
-        public OrmExtracted(RiakObject riakObject, Location location, VClock vclock)
+        public OrmExtracted(RiakObject riakObject, Location location)
         {
             this.riakObject = riakObject;
             this.location = location;
-            this.vclock = vclock;
         }
 
         /**
@@ -214,14 +211,6 @@ public abstract class Converter<T>
         public Location getLocation()
         {
             return location;
-        }
-
-        /**
-         * @return the vclock
-         */
-        public VClock getVclock()
-        {
-            return vclock;
         }
     }
 

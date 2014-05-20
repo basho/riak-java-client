@@ -35,15 +35,15 @@ public final class PassThroughConverter extends Converter<RiakObject>
     }
     
     @Override
-    public RiakObject toDomain(RiakObject obj, Location location, VClock vclock)
+    public RiakObject toDomain(RiakObject obj, Location location)
     {
         return obj;
     }
     
     @Override
-    public Converter.OrmExtracted fromDomain(RiakObject domainObject, Location location, VClock vclock)
+    public Converter.OrmExtracted fromDomain(RiakObject domainObject, Location location)
     {
-        return new Converter.OrmExtracted(domainObject, location, vclock);
+        return new Converter.OrmExtracted(domainObject, location);
     }
     
     

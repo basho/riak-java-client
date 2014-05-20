@@ -76,6 +76,7 @@ public class StoreValueTest
 		when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
 		client = new RiakClient(mockCluster);
 		riakObject = new RiakObject();
+        riakObject.setVClock(vClock);
 		riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
 	}
 
@@ -85,7 +86,6 @@ public class StoreValueTest
 
 		StoreValue.Builder store =
 			new StoreValue.Builder(riakObject).withLocation(key)
-				.withVectorClock(vClock)
 				.withOption(Option.ASIS, true)
 				.withOption(Option.DW, new Quorum(1))
 				.withOption(Option.IF_NONE_MATCH, true)

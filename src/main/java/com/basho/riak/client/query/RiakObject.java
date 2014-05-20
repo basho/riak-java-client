@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.query;
 
+import com.basho.riak.client.annotations.RiakVClock;
+import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
 import com.basho.riak.client.query.indexes.RiakIndexes;
 import com.basho.riak.client.query.links.RiakLinks;
@@ -70,6 +72,11 @@ public final class RiakObject
     private volatile boolean isDeleted;
     private volatile boolean isModified;
     
+    // This is annotated to that the UpdateValue command 
+    // can inject a vclock. 
+    @RiakVClock
+    private volatile VClock vclock;
+    
     private volatile long lastModified;
     
     /**
@@ -120,6 +127,26 @@ public final class RiakObject
             throw new IllegalArgumentException("value can not be zero length");
         }
         this.value = value;
+        return this;
+    }
+    
+    /**
+     * Get the vector clock for this RiakObject.
+     * @return The vector clock, or null if not set.
+     */
+    public VClock getVClock()
+    {
+        return vclock;
+    }
+    
+    /**
+     * Set the vector clock for this RiakObject.
+     * @param vclock a vector clock.
+     * @return a reference to this object.
+     */
+    public RiakObject setVClock(VClock vclock)
+    {
+        this.vclock = vclock;
         return this;
     }
     

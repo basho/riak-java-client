@@ -60,7 +60,7 @@ public class ITestDeleteOperation extends ITestBase
         
         DeleteOperation delOp =
             new DeleteOperation.Builder(location)
-                .withVclock(response.getVClock()).build();
+                .withVclock(rObj2.getVClock()).build();
         cluster.execute(delOp);
         delOp.get();
         

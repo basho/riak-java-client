@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.cap.BasicVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
@@ -70,15 +69,10 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
         }
         
-        if (response.hasVclock())
-        {
-            responseBuilder.withVClock(new BasicVClock(response.getVclock().toByteArray()));
-        }
-        
-        
+        // Is there a case where this isn't true? Can a delete interleve?
         if (response.getContentCount() > 0)
         {
-            responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList()));
+            responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList(), response.getVclock()));
         }
         
         return responseBuilder.build();
@@ -146,21 +140,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             }
             
             reqBuilder.setContent(RiakObjectConverter.convert(content));
-            return this;
-        }
-        
-        /**
-         * Set the vclock for this operation.
-         * @param vclock a vclock from a previous fetch operation.
-         * @return a reference to this object.
-         */
-        public Builder withVClock(VClock vclock)
-        {
-            if (null == vclock)
+            
+            if (content.getVClock() != null)
             {
-                throw new IllegalArgumentException("VClock cannot be null.");
+                reqBuilder.setVclock(ByteString.copyFrom(content.getVClock().getBytes()));
             }
-            reqBuilder.setVclock(ByteString.copyFrom(vclock.getBytes()));
             return this;
         }
         

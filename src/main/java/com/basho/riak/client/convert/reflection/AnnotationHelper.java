@@ -71,6 +71,12 @@ public class AnnotationHelper {
         return obj;
     }
     
+    public <T> boolean hasRiakVClockAnnotation(T obj)
+    {
+        final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
+        return annotationInfo.hasRiakVClock();
+    }
+    
     public <T> T setRiakVClock(T obj, VClock vclock) {
         final AnnotationInfo annotationInfo = annotationCache.get(obj.getClass());
         annotationInfo.setRiakVClock(obj, vclock);
