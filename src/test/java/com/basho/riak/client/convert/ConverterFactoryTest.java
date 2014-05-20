@@ -72,6 +72,15 @@ public class ConverterFactoryTest
     }
     
     @Test
+    public void stringConverter()
+    {
+        ConverterFactory factory = ConverterFactory.getInstance();
+        Converter<String> converter = factory.getConverter(String.class);
+        
+        assertTrue(converter instanceof StringConverter);
+    }
+    
+    @Test
     public void riakObjectConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
