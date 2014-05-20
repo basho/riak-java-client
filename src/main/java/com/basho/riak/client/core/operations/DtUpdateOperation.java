@@ -22,7 +22,7 @@ import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;

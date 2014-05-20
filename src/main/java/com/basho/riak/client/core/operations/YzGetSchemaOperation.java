@@ -18,7 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.search.YokozunaSchema;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -54,14 +54,14 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     protected RiakMessage createChannelMessage()
     {
         RiakYokozunaPB.RpbYokozunaSchemaGetReq req = reqBuilder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_GetYzSchemaReq, req.toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_YokozunaSchemaGetReq, req.toByteArray());
         
     }
 
     @Override
     protected RiakYokozunaPB.RpbYokozunaSchemaGetResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_GetYzSchemaResp);
+        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaSchemaGetResp);
         try
         {
             return RiakYokozunaPB.RpbYokozunaSchemaGetResp.parseFrom(rawMessage.getData());

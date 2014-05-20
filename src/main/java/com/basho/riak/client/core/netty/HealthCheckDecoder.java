@@ -18,7 +18,7 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;

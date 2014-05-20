@@ -18,7 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.search.YokozunaIndex;
-import com.basho.riak.client.util.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakYokozunaPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -59,14 +59,14 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     protected RiakMessage createChannelMessage()
     {
         RiakYokozunaPB.RpbYokozunaIndexGetReq req = reqBuilder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_GetYzIndexReq, req.toByteArray());
+        return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexGetReq, req.toByteArray());
         
     }
 
     @Override
     protected RiakYokozunaPB.RpbYokozunaIndexGetResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_GetYzIndexResp);
+        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaIndexGetResp);
         try
         {
             return RiakYokozunaPB.RpbYokozunaIndexGetResp.parseFrom(rawMessage.getData());
