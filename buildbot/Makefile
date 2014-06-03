@@ -8,7 +8,9 @@ preconfigure:
 	echo "storage_backend = leveldb" >> ${RIAK_CONF}
 	echo "search = on" >> ${RIAK_CONF}
 	echo "listener.protobuf.internal = 127.0.0.1:8087" >> ${RIAK_CONF}
-	echo '[{riak_api,[{keyfile,"${CERTS_DIR}/key.pem"},{certfile,"${CERTS_DIR}/cert.pem"},{cacertfile,"${CERTS_DIR}/cacert.pem"}]}].' > ${ADVANCED_CONF}
+	echo "ssl.keyfile = ${CERTS_DIR}/key.pem" >> ${RIAK_CONF}
+	echo "ssl.certfile = ${CERTS_DIR}/cert.pem" >> ${RIAK_CONF}
+	echo "ssl.cacertfile = ${CERTS_DIR}/cacert.pem" >> ${RIAK_CONF}
 
 configure:
 	@${RIAK_ADMIN} bucket-type create test_type '{"props":{}}'
