@@ -74,7 +74,7 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
     }
     
     
-    public class Builder extends UpdateDatatype.Builder<Builder>
+    public static class Builder extends UpdateDatatype.Builder<Builder>
     {
         private final SetUpdate update;
         
