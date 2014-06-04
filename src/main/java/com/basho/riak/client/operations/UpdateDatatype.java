@@ -115,7 +115,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
        }
    }
     
-    static abstract class Builder<T extends Builder<T>>
+    public static abstract class Builder<T extends Builder<T>>
 	{
 		private final Location loc;
 		private Context ctx;
@@ -165,7 +165,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         protected abstract UpdateDatatype build();
     }
 
-    static abstract class Response<T>
+    public static abstract class Response<T>
     {
         private final T datatype;
         private final Context context;
