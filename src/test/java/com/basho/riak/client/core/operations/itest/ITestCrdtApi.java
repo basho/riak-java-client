@@ -79,7 +79,7 @@ public class ITestCrdtApi extends ITestBase
         for (int i = 0; i < 10; ++i)
         {
             buffer.putInt(i);
-            favorites.add(buffer.array());
+            favorites.add(BinaryValue.create(buffer.array()));
             buffer.rewind();
         }
 

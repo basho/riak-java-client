@@ -35,15 +35,27 @@ public class SetUpdate implements DatatypeUpdate
     {
     }
 
-    public SetUpdate add(byte[] value)
+    public SetUpdate add(BinaryValue value)
+    {
+        this.adds.add(value);
+        return this;
+    }
+
+    public SetUpdate add(String value)
     {
         this.adds.add(BinaryValue.create(value));
         return this;
     }
-
+    
     public SetUpdate remove(BinaryValue value)
     {
         this.removes.add(value);
+        return this;
+    }
+    
+    public SetUpdate remove(String value)
+    {
+        this.removes.add(BinaryValue.create(value));
         return this;
     }
 

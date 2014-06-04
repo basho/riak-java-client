@@ -39,6 +39,11 @@ public class RiakSet extends RiakDatatype<Set<BinaryValue>>
         return elements.contains(element);
     }
 
+    public boolean contains(String element)
+    {
+        return elements.contains(BinaryValue.create(element));
+    }
+    
 	@Override
 	public Set<BinaryValue> view()
 	{
