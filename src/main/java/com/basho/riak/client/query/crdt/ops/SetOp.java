@@ -55,4 +55,10 @@ public class SetOp implements CrdtOp
     {
         return removes;
     }
+    
+    @Override
+    public String toString()
+    {
+        return "Add: " + adds + " Remove: " + removes;
+    }
 }

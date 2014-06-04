@@ -44,4 +44,10 @@ public class RiakSet extends RiakDatatype<Set<BinaryValue>>
 	{
 		return Collections.unmodifiableSet(elements);
 	}
+    
+    @Override
+    public String toString()
+    {
+        return elements.toString();
+    }
 }

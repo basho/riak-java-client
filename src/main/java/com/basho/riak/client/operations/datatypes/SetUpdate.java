@@ -62,4 +62,10 @@ public class SetUpdate implements DatatypeUpdate
     {
         return new SetOp(adds, removes);
     }
+    
+    @Override
+    public String toString()
+    {
+        return "Add: " + adds + " Remove: " + removes;
+    }
 }
