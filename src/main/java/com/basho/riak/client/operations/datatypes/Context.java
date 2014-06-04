@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
+import com.basho.riak.client.util.BinaryValue;
+
  /*
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
@@ -22,15 +24,15 @@ package com.basho.riak.client.operations.datatypes;
 public class Context
 {
 
-    private final byte[] bytes;
+    private final BinaryValue value;
 
-    public Context(byte[] bytes)
+    public Context(BinaryValue value)
     {
-        this.bytes = bytes;
+        this.value = value;
     }
-
-    public byte[] getBytes()
+    
+    public BinaryValue getValue()
     {
-        return bytes;
+        return value;
     }
 }

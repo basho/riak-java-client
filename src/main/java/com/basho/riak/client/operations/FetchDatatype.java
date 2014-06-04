@@ -160,9 +160,9 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
     {
 
         private final T datatype;
-        private final byte[] context;
+        private final Context context;
 
-        protected Response(T datatype, byte[] context)
+        protected Response(T datatype, Context context)
         {
             this.datatype = datatype;
             this.context = context;
@@ -180,7 +180,7 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
 
         public Context getContext()
         {
-            return new Context(context);
+            return context;
         }
     }
 

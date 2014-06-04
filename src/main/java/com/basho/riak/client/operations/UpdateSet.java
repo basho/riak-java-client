@@ -58,7 +58,11 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
-                    Context returnedCtx = new Context(coreResponse.getContext().getValue());
+                    Context returnedCtx = null;
+                    if (coreResponse.hasContext())
+                    {
+                        returnedCtx = new Context(coreResponse.getContext());
+                    }
                     return new Response(returnedCtx, set, returnedKey);
                 }
 
