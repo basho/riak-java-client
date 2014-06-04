@@ -58,7 +58,13 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
-                    Context returnedCtx = new Context(coreResponse.getContext().getValue());
+                    
+                    Context returnedCtx = null;
+                    if (coreResponse.hasContext())
+                    {
+                        returnedCtx = new Context(coreResponse.getContext());
+                    }
+                    
                     return new Response(returnedCtx, map, returnedKey);
                 }
 

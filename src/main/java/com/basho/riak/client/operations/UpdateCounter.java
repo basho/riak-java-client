@@ -58,7 +58,13 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
-                    Context returnedCtx = new Context(coreResponse.getContext().getValue());
+                    
+                    Context returnedCtx = null;
+                    if (coreResponse.hasContext())
+                    {
+                        returnedCtx = new Context(coreResponse.getContext());
+                    }
+                    
                     return new Response(returnedCtx, counter, returnedKey);
                 }
 

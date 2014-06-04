@@ -19,6 +19,7 @@ package com.basho.riak.client.operations;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
+import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.query.crdt.types.RiakSet;
@@ -48,11 +49,16 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
             protected FetchSet.Response convertResponse(DtFetchOperation.Response coreResponse)
             {
                 RiakDatatype element = coreResponse.getCrdtElement();
-                BinaryValue context = coreResponse.getContext();
+                
+                Context context = null;
+                if (coreResponse.hasContext())
+                {
+                    context = new Context(coreResponse.getContext());
+                }
 
                 RiakSet datatype = extractDatatype(element);
 
-                return new Response(datatype, context.getValue());
+                return new Response(datatype, context);
             }
 
             @Override
@@ -93,7 +99,7 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
     
     public static class Response extends FetchDatatype.Response<RiakSet>
     {
-        Response(RiakSet set, byte[] context)
+        Response(RiakSet set, Context context)
         {
             super(set,context);
         }

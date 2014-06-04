@@ -53,7 +53,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
 
         if (ctx != null)
         {
-            builder.withContext(BinaryValue.create(ctx.getBytes()));
+            builder.withContext(ctx.getValue());
         }
 
         builder.withOp(update.getOp());
