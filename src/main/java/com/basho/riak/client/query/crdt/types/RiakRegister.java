@@ -19,7 +19,7 @@ import com.basho.riak.client.util.BinaryValue;
 
 public class RiakRegister extends RiakDatatype<BinaryValue>
 {
-    private BinaryValue value;
+    private final BinaryValue value;
 
     public RiakRegister(BinaryValue value)
     {
@@ -36,4 +36,10 @@ public class RiakRegister extends RiakDatatype<BinaryValue>
 	{
 		return value;
 	}
+    
+    @Override
+    public String toString()
+    {
+        return value.toString();
+    }
 }

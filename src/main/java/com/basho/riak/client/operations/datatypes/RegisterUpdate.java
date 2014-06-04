@@ -25,30 +25,25 @@ import com.basho.riak.client.util.BinaryValue;
 public class RegisterUpdate implements DatatypeUpdate
 {
 
-    private byte[] value = null;
+    private final BinaryValue value;
 
     public RegisterUpdate(byte[] value)
     {
-        this.value = value;
+        this.value = BinaryValue.create(value);
     }
 
-    public RegisterUpdate()
-    {
-    }
-
-    public RegisterUpdate set(byte[] value)
+    public RegisterUpdate(BinaryValue value)
     {
         this.value = value;
-        return this;
     }
-
-    public RegisterUpdate clear()
+    
+    
+    public RegisterUpdate(String value)
     {
-        this.value = null;
-        return this;
+        this.value = BinaryValue.create(value);
     }
-
-    public byte[] get()
+    
+    public BinaryValue get()
     {
         return value;
     }
@@ -56,8 +51,13 @@ public class RegisterUpdate implements DatatypeUpdate
     @Override
     public RegisterOp getOp()
     {
-        return new RegisterOp(BinaryValue.create(value));
+        return new RegisterOp(value);
     }
 
+    @Override
+    public String toString()
+    {
+        return value.toString();
+    }
 
 }
