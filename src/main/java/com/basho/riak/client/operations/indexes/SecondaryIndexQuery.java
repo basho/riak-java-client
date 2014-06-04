@@ -236,7 +236,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         BinaryValue convert(T input);
     }
     
-    protected static abstract class Init<S, T extends Init<S,T>>
+    public static abstract class Init<S, T extends Init<S,T>>
     {
         private final Location location;
         private final String indexName;
@@ -411,7 +411,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
                 
         protected abstract List<?> getEntries();
         
-        protected abstract static class Entry<T>
+        public abstract static class Entry<T>
         {
             private final Location RiakObjectLocation;
             private final BinaryValue indexKey;
