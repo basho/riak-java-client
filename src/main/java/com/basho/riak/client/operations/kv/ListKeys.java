@@ -54,7 +54,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
                 @Override
                 protected Response convertResponse(ListKeysOperation.Response coreResponse)
                 {
-                    return new Response(location.getBucketName(), coreResponse.getKeys());
+                    return new Response(location.getBucketType(), location.getBucketName(), coreResponse.getKeys());
                 }
 
                 @Override
@@ -83,18 +83,20 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 	{
 
 		private final BinaryValue bucket;
+        private final BinaryValue type;
 		private final List<BinaryValue> keys;
 
-		public Response(BinaryValue bucket, List<BinaryValue> keys)
+		public Response(BinaryValue type, BinaryValue bucket, List<BinaryValue> keys)
 		{
 			this.bucket = bucket;
 			this.keys = keys;
+            this.type = type;
 		}
 
 		@Override
 		public Iterator<Location> iterator()
 		{
-			return new Itr(bucket, keys.iterator());
+			return new Itr(type, bucket, keys.iterator());
 		}
 	}
 
@@ -102,11 +104,13 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 	{
 		private final Iterator<BinaryValue> iterator;
 		private final BinaryValue bucket;
+        private final BinaryValue type;
 
-		private Itr(BinaryValue bucket, Iterator<BinaryValue> iterator)
+		private Itr(BinaryValue type, BinaryValue bucket, Iterator<BinaryValue> iterator)
 		{
 			this.iterator = iterator;
 			this.bucket = bucket;
+            this.type = type;
 		}
 
 		@Override
@@ -119,7 +123,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 		public Location next()
 		{
 			BinaryValue key = iterator.next();
-			return new Location(bucket).setKey(key);
+			return new Location(bucket).setBucketType(type).setKey(key);
 		}
 
 		@Override
