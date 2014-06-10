@@ -16,6 +16,8 @@
 
 package com.basho.riak.client.operations;
 
+import java.util.Collections;
+
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
@@ -54,7 +56,13 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
                 protected Response convertResponse(DtUpdateOperation.Response coreResponse)
                 {
                     RiakDatatype element = coreResponse.getCrdtElement();
-                    RiakSet set = element.getAsSet();
+                    RiakSet set = null;
+                    if(element != null) {
+                        set = element.getAsSet();
+                    }
+                    if(set == null) {
+                        set = new RiakSet(Collections.<BinaryValue>emptyList());
+                    }
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
