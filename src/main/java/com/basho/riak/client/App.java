@@ -8,6 +8,7 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.BucketProperties;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 
 import java.io.File;
@@ -60,18 +61,18 @@ public class App
 
         try
         {
-
-	        Location location = new Location("test_bucket3").setBucketType("test_type2");
+            Namespace ns = new Namespace("test_type2", "test_bucket3");
+	        
 	        FetchBucketPropsOperation bpOp =
-		        new FetchBucketPropsOperation.Builder(location)
+		        new FetchBucketPropsOperation.Builder(ns)
 			        .build();
 
 	        cluster.execute(bpOp);
 	        BucketProperties props = bpOp.get().getBucketProperties();
 	        System.out.println(props);
 
-
-	        location = new Location("test_bucket2").setKey("test_key2");
+            ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket2");
+	        Location location = new Location(ns, "test_key2");
 
 	        FetchOperation fetchOp =
 		        new FetchOperation.Builder(location)

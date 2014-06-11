@@ -18,6 +18,7 @@ package com.basho.riak.client.core;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -77,7 +78,8 @@ public class RiakClusterFixtureTest
         RiakCluster cluster = new RiakCluster.Builder(list).build();
         cluster.start();
         
-        Location location = new Location("test_bucket").setKey("test_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
+        Location location = new Location(ns, "test_key2");
         
         FetchOperation operation = 
             new FetchOperation.Builder(location).build();
@@ -116,7 +118,8 @@ public class RiakClusterFixtureTest
         
         cluster.start();
         
-        Location location = new Location("test_bucket").setKey("test_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
+        Location location = new Location(ns, "test_key2");
         
         FetchOperation operation = 
             new FetchOperation.Builder(location)

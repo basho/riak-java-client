@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.filters.KeyFilter;
 
 import java.util.Collection;
@@ -8,18 +8,18 @@ import java.util.Collection;
 public class BucketInput implements MapReduceInput
 {
 
-	private final Location location;
+	private final Namespace namespace;
 	private final Collection<KeyFilter> filters;
 
-	public BucketInput(Location location, Collection<KeyFilter> filters)
+	public BucketInput(Namespace namespace, Collection<KeyFilter> filters)
 	{
-		this.location = location;
+		this.namespace = namespace;
 		this.filters = filters;
 	}
 
-	public Location getLocation()
+	public Namespace getNamespace()
 	{
-		return location;
+		return namespace;
 	}
 
     public boolean hasFilters()

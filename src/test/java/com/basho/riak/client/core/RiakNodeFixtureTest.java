@@ -19,6 +19,7 @@ import com.basho.riak.client.core.RiakNode.State;
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import io.netty.channel.Channel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +92,8 @@ public class RiakNodeFixtureTest extends FixtureTest
         
         node.start();
         
-        Location location = new Location("test_bucket").setKey("test_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
+        Location location = new Location(ns, "test_key2");
         
         for (int i = 0; i < 6; i++)
         {
@@ -225,7 +227,8 @@ public class RiakNodeFixtureTest extends FixtureTest
         
         node.start();
         
-        Location location = new Location("test_bucket").setKey("test_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
+        Location location = new Location(ns, "test_key2");
         
         FetchOperation operation = 
             new FetchOperation.Builder(location)
@@ -249,7 +252,9 @@ public class RiakNodeFixtureTest extends FixtureTest
                         .build();
         node.start();
         
-        Location location = new Location("test_bucket").setKey("test_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
+        Location location = new Location(ns, "test_key2");
+
         FetchOperation operation = 
             new FetchOperation.Builder(location)
                     .build();

@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.filters.KeyFilter;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class BucketMapReduce extends MapReduce
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 
-		private Location location;
+		private Namespace namespace;
 		private final List<KeyFilter> filters = new ArrayList<KeyFilter>();
 
 		@Override
@@ -26,9 +26,9 @@ public class BucketMapReduce extends MapReduce
 			return this;
 		}
 
-		public Builder withLocation(Location location)
+		public Builder withNamespace(Namespace namespace)
 		{
-			this.location = location;
+			this.namespace = namespace;
 			return this;
 		}
 
@@ -40,12 +40,12 @@ public class BucketMapReduce extends MapReduce
         
 		public BucketMapReduce build()
 		{
-			if (location == null)
+			if (namespace == null)
 			{
-				throw new IllegalStateException("A bucket must be specified");
+				throw new IllegalStateException("A Namespace must be specified");
 			}
 
-			return new BucketMapReduce(new BucketInput(location, filters), this);
+			return new BucketMapReduce(new BucketInput(namespace, filters), this);
 		}
 	}
 }

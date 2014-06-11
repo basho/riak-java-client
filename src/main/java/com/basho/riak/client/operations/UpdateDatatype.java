@@ -22,6 +22,7 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.cap.Quorum;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -35,22 +36,34 @@ import java.util.Map;
 public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
 
-    protected final Location loc;
+    protected final Namespace namespace;
+    protected final BinaryValue key;
     private final Context ctx;
     private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
     @SuppressWarnings("unchecked")
     UpdateDatatype(Builder builder)
     {
-        this.loc = builder.loc;
+        this.namespace = builder.namespace;
+        this.key = builder.key;
         this.ctx = builder.ctx;
 	    this.options.putAll(builder.options);
     }
     
     protected final DtUpdateOperation buildCoreOperation(DatatypeUpdate update)
     {
-        DtUpdateOperation.Builder builder = new DtUpdateOperation.Builder(loc);
-
+        DtUpdateOperation.Builder builder;
+        
+        if (key != null)
+        {
+            Location loc = new Location(namespace, key);
+            builder = new DtUpdateOperation.Builder(loc);
+        }
+        else
+        {
+            builder = new DtUpdateOperation.Builder(namespace);
+        }
+        
         if (ctx != null)
         {
             builder.withContext(ctx.getValue());
@@ -117,7 +130,8 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
     
     public static abstract class Builder<T extends Builder<T>>
 	{
-		private final Location loc;
+		private final Namespace namespace;
+        private BinaryValue key;
 		private Context ctx;
 		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
@@ -127,9 +141,19 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
             {
                 throw new IllegalArgumentException("Location cannot be null.");
             }
-            this.loc = location;
+            this.namespace = location.getNamespace();
+            this.key = location.getKey();
 		}
 
+        Builder(Namespace namespace)
+        {
+            if (namespace == null)
+            {
+                throw new IllegalArgumentException("Namespace cannot be null.");
+            }
+            this.namespace = namespace;
+        }
+        
         public T withContext(Context context)
 		{
 			if (context == null)

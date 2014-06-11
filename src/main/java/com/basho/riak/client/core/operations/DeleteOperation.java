@@ -85,14 +85,10 @@ public class DeleteOperation extends FutureOperation<Void, Void, Location>
             {
                 throw new IllegalArgumentException("Location can not be null");
             }
-            else if (!location.hasKey())
-            {
-                throw new IllegalArgumentException("Location must contain a key");
-            }
-
-            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
+            
+            reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
-            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
             this.location = location;
         }
 

@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -28,15 +28,15 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Location>
+public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Namespace>
 {
     private final RiakPB.RpbResetBucketReq.Builder reqBuilder;
-    private final Location location;
+    private final Namespace namespace;
     
     private ResetBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
-        this.location = builder.location;
+        this.namespace = builder.namespace;
     }
     
     @Override
@@ -62,30 +62,30 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Locat
     }
 
     @Override
-    public Location getQueryInfo()
+    public Namespace getQueryInfo()
     {
-        return location;
+        return namespace;
     }
     
     public static class Builder
     {
         private final RiakPB.RpbResetBucketReq.Builder reqBuilder = 
             RiakPB.RpbResetBucketReq.newBuilder();
-        private final Location location;
+        private final Namespace namespace;
         
         /**
          * Construct a builder for a ResetBucketPropsOperation. 
-         * @param location The location of the bucket in Riak.
+         * @param namespace The namespace in Riak.
          */
-        public Builder(Location location)
+        public Builder(Namespace namespace)
         {
-            if (location == null)
+            if (namespace == null)
             {
-                throw new IllegalArgumentException("Location cannot be null");
+                throw new IllegalArgumentException("Namespace cannot be null");
             }
-            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
-            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
-            this.location = location;
+            reqBuilder.setBucket(ByteString.copyFrom(namespace.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
+            this.namespace = namespace;
         }
         
         public ResetBucketPropsOperation build()

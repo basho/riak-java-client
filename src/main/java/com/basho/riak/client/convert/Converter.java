@@ -18,6 +18,7 @@ package com.basho.riak.client.convert;
 import com.basho.riak.client.convert.reflection.AnnotationUtil;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.lang.reflect.Constructor;
@@ -89,8 +90,8 @@ public abstract class Converter<T>
         }
 
         AnnotationUtil.setKey(domainObject, location.getKey());
-        AnnotationUtil.setBucketName(domainObject, location.getBucketName());
-        AnnotationUtil.setBucketType(domainObject, location.getBucketType());
+        AnnotationUtil.setBucketName(domainObject, location.getNamespace().getBucketName());
+        AnnotationUtil.setBucketType(domainObject, location.getNamespace().getBucketType());
 
         AnnotationUtil.setVClock(domainObject, obj.getVClock());
         AnnotationUtil.setTombstone(domainObject, obj.isDeleted());
@@ -121,14 +122,14 @@ public abstract class Converter<T>
      * items over the {@code Location} passed in.
      * </p>
      * @param domainObject a domain object to be stored in Riak.
-     * @param location the Location to store the data in Riak.
-     * @return a {@code RiakObject} to be stored in Riak.
+     * @param namespace the namespace in Riak
+     * @param key the key for the object
+     * @return data to be stored in Riak.
      */
-    public OrmExtracted fromDomain(T domainObject, Location location)
+    public OrmExtracted fromDomain(T domainObject, Namespace namespace, BinaryValue key)
     {        
-        BinaryValue key = location != null ? location.getKey() : null;
-        BinaryValue bucketName = location != null ? location.getBucketName() : null;
-        BinaryValue bucketType = location != null ? location.getBucketType() : null;
+        BinaryValue bucketName = namespace != null ? namespace.getBucketName() : null;
+        BinaryValue bucketType = namespace != null ? namespace.getBucketType() : null;
         
         key = AnnotationUtil.getKey(domainObject, key);
         bucketName = AnnotationUtil.getBucketName(domainObject, bucketName);
@@ -136,7 +137,7 @@ public abstract class Converter<T>
         
         if (bucketName == null)
         {
-            throw new ConversionException("Bucket name not provided via location or domain object");
+            throw new ConversionException("Bucket name not provided via namespace or domain object");
         }
         
         VClock vclock = AnnotationUtil.getVClock(domainObject);
@@ -156,14 +157,18 @@ public abstract class Converter<T>
                     .setValue(cAndT.content)
                     .setVClock(vclock);
         
-        location = new Location(bucketName).setKey(key);
-        
-        if (bucketType != null)
+        // We allow an annotated object to omit @BucketType and get the default
+        Namespace ns;
+        if (bucketType == null)
         {
-            location.setBucketType(bucketType);
+            ns = new Namespace(bucketName);
+        }
+        else
+        {
+            ns = new Namespace(bucketType, bucketName);
         }
         
-        OrmExtracted extracted = new OrmExtracted(riakObject, location);
+        OrmExtracted extracted = new OrmExtracted(riakObject, ns, key);
         return extracted;
     }
     
@@ -189,12 +194,14 @@ public abstract class Converter<T>
     public static class OrmExtracted
     {
         private final RiakObject riakObject;
-        private final Location location;
+        private final Namespace namespace;
+        private final BinaryValue key;
         
-        public OrmExtracted(RiakObject riakObject, Location location)
+        public OrmExtracted(RiakObject riakObject, Namespace namespace, BinaryValue key)
         {
             this.riakObject = riakObject;
-            this.location = location;
+            this.namespace = namespace;
+            this.key = key;
         }
 
         /**
@@ -206,12 +213,23 @@ public abstract class Converter<T>
         }
 
         /**
-         * @return the location
+         * @return the namespace
          */
-        public Location getLocation()
+        public Namespace getNamespace()
         {
-            return location;
+            return namespace;
         }
+        
+        public boolean hasKey()
+        {
+            return key != null;
+        }
+        
+        public BinaryValue getKey()
+        {
+            return key;
+        }
+        
     }
 
     protected class ContentAndType

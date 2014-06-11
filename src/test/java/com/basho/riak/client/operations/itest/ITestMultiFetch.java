@@ -23,6 +23,7 @@ import com.basho.riak.client.operations.kv.FetchValue;
 import com.basho.riak.client.operations.kv.MultiFetch;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.LinkedList;
@@ -48,13 +49,14 @@ public class ITestMultiFetch extends ITestBase
         String valuePrefix = "value_";
         List<Location> locations = new LinkedList<Location>();
         List<BinaryValue> values = new LinkedList<BinaryValue>();
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         
         // Store some stuff
         for (int i = 0; i < 5; i++)
         {
             String key = keyPrefix + i;
             String value = valuePrefix + i;
-            Location loc = new Location(bucketName).setKey(key);
+            Location loc = new Location(ns, key);
             locations.add(loc);
             values.add(BinaryValue.create(value));
             RiakObject o = new RiakObject().setValue(BinaryValue.create(value));

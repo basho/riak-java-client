@@ -21,7 +21,7 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testBucketType;
 import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Assume;
@@ -37,8 +37,8 @@ public class ITestBucketProperties extends ITestBase
     @Test
     public void testFetchDefaultBucketProps() throws InterruptedException, ExecutionException
     {
-        Location location = new Location(bucketName);
-        BucketProperties props = fetchBucketProps(location);
+        Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        BucketProperties props = fetchBucketProps(namespace);
         assertTrue(props.hasNVal());
         assertTrue(props.hasAllowMulti());
         assertTrue(props.hasBasicQuorum());
@@ -68,15 +68,15 @@ public class ITestBucketProperties extends ITestBase
     @Test
     public void testSetDefaultBucketProps() throws InterruptedException, ExecutionException
     {
-        Location location = new Location(bucketName);
+        Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation.Builder builder = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(namespace)
                 .withAllowMulti(true)
                 .withNVal(4);
         
         storeBucketProps(builder);
         
-        BucketProperties props = fetchBucketProps(location);
+        BucketProperties props = fetchBucketProps(namespace);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
@@ -86,21 +86,21 @@ public class ITestBucketProperties extends ITestBase
     @Test
     public void testResetBucketProps() throws InterruptedException, ExecutionException
     {
-        Location location = new Location(bucketName);
+        Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation.Builder builder = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(namespace)
                 .withNVal(4)
                 .withR(1);
         
         storeBucketProps(builder);
-        BucketProperties props = fetchBucketProps(location);
+        BucketProperties props = fetchBucketProps(namespace);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertEquals(props.getR().getIntValue(), 1);
         
         resetAndEmptyBucket(bucketName);
         
-        props = fetchBucketProps(location);
+        props = fetchBucketProps(namespace);
         assertEquals(props.getNVal(), Integer.valueOf(3));
         assertEquals(props.getR(), Quorum.quorumQuorum());
         
@@ -110,8 +110,8 @@ public class ITestBucketProperties extends ITestBase
     public void testFetchBucketPropsFromType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        Location location = new Location(bucketName).setBucketType(bucketType);
-        BucketProperties props = fetchBucketProps(location);
+        Namespace namespace = new Namespace(bucketType, bucketName);
+        BucketProperties props = fetchBucketProps(namespace);
         assertTrue(props.hasNVal());
         assertTrue(props.hasAllowMulti());
         assertTrue(props.hasBasicQuorum());
@@ -140,26 +140,26 @@ public class ITestBucketProperties extends ITestBase
     public void testSetBucketPropsInType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        Location location = new Location(bucketName).setBucketType(bucketType);
+        Namespace namespace = new Namespace(bucketType, bucketName);
         StoreBucketPropsOperation.Builder builder = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(namespace)
                 .withR(1)
                 .withNVal(4);
         
         storeBucketProps(builder);
-        BucketProperties props = fetchBucketProps(location);
+        BucketProperties props = fetchBucketProps(namespace);
         
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertEquals(props.getR().getIntValue(), 1);
         
-        location = new Location(bucketName);
-        props = fetchBucketProps(location);
+        namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        props = fetchBucketProps(namespace);
         assertEquals(props.getNVal(), Integer.valueOf(3));
     }
     
-    private BucketProperties fetchBucketProps(Location location) throws InterruptedException, ExecutionException
+    private BucketProperties fetchBucketProps(Namespace namespace) throws InterruptedException, ExecutionException
     {
-        FetchBucketPropsOperation.Builder builder = new FetchBucketPropsOperation.Builder(location);
+        FetchBucketPropsOperation.Builder builder = new FetchBucketPropsOperation.Builder(namespace);
         FetchBucketPropsOperation op = builder.build();
         cluster.execute(op);
         return op.get().getBucketProperties();

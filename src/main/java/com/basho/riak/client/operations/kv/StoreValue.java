@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.fasterxml.jackson.core.type.TypeReference;
 
  /*
@@ -40,7 +41,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 {
-    private final Location location;
+    private final Namespace namespace;
+    private final BinaryValue key;
     private final Map<Option<?>, Object> options =
 	    new HashMap<Option<?>, Object>();
     private final Object value;
@@ -50,7 +52,8 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     StoreValue(Builder builder)
     {
         this.options.putAll(builder.options);
-        this.location = builder.location;
+        this.namespace = builder.namespace;
+        this.key = builder.key;
         this.value = builder.value;
         this.typeReference = builder.typeReference;
         this.vclock = builder.vclock;
@@ -72,7 +75,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             converter = ConverterFactory.getInstance().getConverter(typeReference);
         }
         
-        final OrmExtracted orm = converter.fromDomain(value, location);
+        final OrmExtracted orm = converter.fromDomain(value, namespace, key);
         
         // If there's no vector clock in the object, use one possibly given via
         // the builder.
@@ -90,15 +93,15 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
                 @Override
                 protected Response convertResponse(StoreOperation.Response coreResponse)
                 {
-                    Location loc = orm.getLocation();
-                        
+                    Namespace ns = orm.getNamespace();
+                    BinaryValue key = orm.getKey();
                     if (coreResponse.hasGeneratedKey())
                     {
-                        loc.setKey(coreResponse.getGeneratedKey());
+                        key = coreResponse.getGeneratedKey();
                     }
                     
+                    Location loc = new Location(ns, key);
                     
-
                     return new Response.Builder()
                         .withValues(coreResponse.getObjectList())
                         .withGeneratedKey(coreResponse.getGeneratedKey())
@@ -119,9 +122,19 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     
     private StoreOperation buildCoreOperation(OrmExtracted orm)
     {
-        StoreOperation.Builder builder = 
-            new StoreOperation.Builder(orm.getLocation())
-                .withContent(orm.getRiakObject());
+        StoreOperation.Builder builder;
+        
+        if (orm.hasKey())
+        {
+            Location loc = new Location(orm.getNamespace(), orm.getKey());
+            builder = new StoreOperation.Builder(loc);
+        }
+        else
+        {
+            builder = new StoreOperation.Builder(orm.getNamespace());
+        }
+        
+        builder.withContent(orm.getRiakObject());
         
         for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
         {
@@ -303,10 +316,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 		private final Map<Option<?>, Object> options =
 			new HashMap<Option<?>, Object>();
 		private final Object value;
-        private Location location;
+        private Namespace namespace;
+        private BinaryValue key;
         private TypeReference<?> typeReference;
         private VClock vclock;
 
+        
 
         public Builder(Object value)
         {
@@ -321,7 +336,14 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         
 		public Builder withLocation(Location location)
         {
-            this.location = location;
+            this.namespace = location.getNamespace();
+            this.key = location.getKey();
+            return this;
+        }
+        
+        public Builder withNamespace(Namespace namespace)
+        {
+            this.namespace = namespace;
             return this;
         }
         

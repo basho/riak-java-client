@@ -24,6 +24,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,8 +43,8 @@ public class ITestStoreValue extends ITestBase
     public void simpleTest() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        
-        Location loc = new Location(bucketName).setKey("test_store_key");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_store_key");
         Pojo pojo = new Pojo();
         pojo.value = "test store value";
         StoreValue sv = 

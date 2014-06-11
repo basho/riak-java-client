@@ -28,6 +28,7 @@ import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.StringBinIndex;
@@ -38,6 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -48,12 +50,25 @@ import org.junit.Test;
 public class ITestFetchValue extends ITestBase
 {
     @Test
-    public void simpleTest() 
+    public void simpleTestDefaultType()
+    {
+        simpleTest(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void simpleTestTestType()
+    {
+        Assume.assumeTrue(testBucketType);
+        simpleTest(bucketType.toString());
+    }
+    
+    private void simpleTest(String bucketType) 
     {
         try
         {
             RiakClient client = new RiakClient(cluster);
-            Location loc = new Location(bucketName).setKey("test_fetch_key1");
+            Namespace ns = new Namespace(bucketType, bucketName.toString());
+            Location loc = new Location(ns, "test_fetch_key1");
             
             Pojo pojo = new Pojo();
             pojo.value = "test value";
@@ -84,10 +99,23 @@ public class ITestFetchValue extends ITestBase
     }
     
     @Test
-    public void notFound() throws ExecutionException, InterruptedException
+    public void notFoundDefaultType() throws ExecutionException, InterruptedException
+    {
+        notFound(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void notFoundTestType() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testBucketType);
+        notFound(bucketType.toString());
+    }
+    
+    private void notFound(String bucketType) throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key2");
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location loc = new Location(ns, "test_fetch_key2");
         FetchValue fv = new FetchValue.Builder(loc).build();
         FetchValue.Response fResp = client.execute(fv);
         
@@ -104,9 +132,9 @@ public class ITestFetchValue extends ITestBase
     public void ReproRiakTombstoneBehavior() throws ExecutionException, InterruptedException
     {
         // We're back to allow_mult=false as default
-        Location location = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
@@ -114,7 +142,7 @@ public class ITestFetchValue extends ITestBase
         
         
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key3");
+        Location loc = new Location(ns, "test_fetch_key3");
         
         Pojo pojo = new Pojo();
         pojo.value = "test value";
@@ -138,10 +166,23 @@ public class ITestFetchValue extends ITestBase
     }
     
     @Test
-    public void resolveSiblings() throws ExecutionException, InterruptedException
+    public void resolveSiblingsDefaultType() throws ExecutionException, InterruptedException
+    {
+        resolveSiblings(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void resolveSiblingsTestType() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testBucketType);
+        resolveSiblings(bucketType.toString());
+    }
+    
+    private void resolveSiblings(String bucketType) throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key4");
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location loc = new Location(ns, "test_fetch_key4");
         
         Pojo pojo = new Pojo();
         pojo.value = "test value";
@@ -169,10 +210,23 @@ public class ITestFetchValue extends ITestBase
     }
     
     @Test
-    public void fetchAnnotatedPojo() throws ExecutionException, InterruptedException
+    public void fetchAnnotatedPojoDefaultType() throws ExecutionException, InterruptedException
+    {
+        fetchAnnotatedPojo(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void fetchAnnotatedPojoTestType() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testBucketType);
+        fetchAnnotatedPojo(bucketType.toString());
+    }
+    
+    private void fetchAnnotatedPojo(String bucketType) throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key5");
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location loc = new Location(ns, "test_fetch_key5");
         
         String jsonValue = "{\"value\":\"my value\"}";
         
@@ -189,11 +243,11 @@ public class ITestFetchValue extends ITestBase
         RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
         
         assertNotNull(rap.bucketName);
-        assertEquals(loc.getBucketNameAsString(), rap.bucketName);
+        assertEquals(ns.getBucketNameAsString(), rap.bucketName);
         assertNotNull(rap.key);
         assertEquals(loc.getKeyAsString(), rap.key);
         assertNotNull(rap.bucketType);
-        assertEquals(loc.getBucketTypeAsString(), rap.bucketType);
+        assertEquals(ns.getBucketTypeAsString(), rap.bucketType);
         assertNotNull(rap.contentType);
         assertEquals(ro.getContentType(), rap.contentType);
         assertNotNull(rap.vclock);
@@ -209,7 +263,8 @@ public class ITestFetchValue extends ITestBase
     public void fetchAnnotatedPojoWIthIndexes() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_fetch_key6");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns,"test_fetch_key6");
         
         String jsonValue = "{\"value\":\"my value\"}";
         
@@ -233,16 +288,6 @@ public class ITestFetchValue extends ITestBase
         assertEquals(rap.userId.longValue(), 1L);
         
         
-        
-    }
-    
-    @Test(expected=IllegalArgumentException.class)
-    public void invalidLocation() throws ExecutionException, InterruptedException
-    {
-        RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName);
-        FetchValue fv = new FetchValue.Builder(loc).build(); 
-        FetchValue.Response resp = client.execute(fv);
         
     }
     

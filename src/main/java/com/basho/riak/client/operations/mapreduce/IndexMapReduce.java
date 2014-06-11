@@ -1,6 +1,7 @@
 package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 
 public class IndexMapReduce extends MapReduce
@@ -13,7 +14,7 @@ public class IndexMapReduce extends MapReduce
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 
-		private Location location;
+		private Namespace namespace;
 		private String index;
 		private IndexInput.IndexCriteria criteria;
 
@@ -23,9 +24,9 @@ public class IndexMapReduce extends MapReduce
 			return this;
 		}
 
-		public Builder withLocation(Location location)
+		public Builder withNamespace(Namespace namespace)
 		{
-			this.location = location;
+			this.namespace = namespace;
 			return this;
 		}
 
@@ -62,9 +63,9 @@ public class IndexMapReduce extends MapReduce
 		public IndexMapReduce build()
 		{
 
-			if (location == null)
+			if (namespace == null)
 			{
-				throw new IllegalStateException("A bucket must be specified");
+				throw new IllegalStateException("A namespace must be specified");
 			}
 
 			if (index == null)
@@ -77,7 +78,7 @@ public class IndexMapReduce extends MapReduce
 				throw new IllegalStateException("An index search criteria must be specified");
 			}
 
-			return new IndexMapReduce(new IndexInput(location, index, criteria), this);
+			return new IndexMapReduce(new IndexInput(namespace, index, criteria), this);
 		}
 
 	}

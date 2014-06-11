@@ -23,6 +23,7 @@ import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.mapreduce.BucketMapReduce;
 import com.basho.riak.client.operations.mapreduce.MapReduce;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.filters.GreaterThanFilter;
 import com.basho.riak.client.query.filters.LessThanFilter;
@@ -33,13 +34,13 @@ import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.concurrent.ExecutionException;
+import org.junit.After;
 import org.junit.Test;
 
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
-import org.junit.Ignore;
 
 /**
  *
@@ -50,14 +51,32 @@ public class ITestBucketMapReduce extends ITestBase
     private final RiakClient client = new RiakClient(cluster);
     private final  String mrBucketName = bucketName.toString() + "_mr";
     
+    @After
+    public void cleanUp() throws InterruptedException, ExecutionException
+    {
+        // Because some of these tests blow up due to Riak bugs we need 
+        // to clean up the mess here
+        Namespace ns = new Namespace(mrBucketName);
+        resetAndEmptyBucket(ns);
+        
+        if (testBucketType)
+        {
+            ns = new Namespace(bucketType.toString(), mrBucketName);
+            resetAndEmptyBucket(ns);
+        }
+        
+    }
+    
     private void initValues(String bucketType) throws InterruptedException
     {
         // insert 200 items into a bucket
        
+        Namespace ns = new Namespace(bucketType, mrBucketName);
+        
         String keyPrefix = "mr_test_";
         for (int i = 0; i < 200; i++)
         {
-            Location loc = new Location(mrBucketName).setBucketType(bucketType).setKey(keyPrefix + i);
+            Location loc = new Location(ns, keyPrefix + i);
             RiakObject ro = new RiakObject().setContentType("text/plain")
                 .setValue(BinaryValue.create(Integer.toString(i)));
             StoreValue sv = new StoreValue.Builder(ro).withLocation(loc).build();
@@ -68,14 +87,25 @@ public class ITestBucketMapReduce extends ITestBase
     }
     
     @Test
-    public void erlangBucketMR() throws InterruptedException, ExecutionException
+    public void erlangBucketMRDefaultType() throws InterruptedException, ExecutionException
     {
-        initValues("default");
-        
-        Location loc = new Location(mrBucketName);
+        erlangBucketMR(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void erlangBucketMRTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testBucketType);
+        erlangBucketMR(bucketType.toString());
+    }
+    
+    private void erlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
+    {
+        initValues(bucketType);
+        Namespace ns = new Namespace(bucketType, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
-                .withLocation(loc)
+                .withNamespace(ns)
                 .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
@@ -92,18 +122,30 @@ public class ITestBucketMapReduce extends ITestBase
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
         
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
     }
     
     @Test
-    public void JsBucketMR() throws InterruptedException, ExecutionException
+    public void JsBucketMRDefaultType() throws InterruptedException, ExecutionException
     {
-        initValues("default");
+        JsBucketMR(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void JsBucketMRTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testBucketType);
+        JsBucketMR(bucketType.toString());
+    }
+    
+    private void JsBucketMR(String bucketType) throws InterruptedException, ExecutionException
+    {
+        initValues(bucketType);
         
-        Location loc = new Location(mrBucketName);
+        Namespace ns = new Namespace(bucketType, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
-                .withLocation(loc)
+                .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), false)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
                 .build();
@@ -111,7 +153,7 @@ public class ITestBucketMapReduce extends ITestBase
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
         
         future.await();
-        assertTrue(future.isSuccess());
+        assertTrue("Map reduce operation Operation failed:" + future.cause(), future.isSuccess());
         
         MapReduce.Response response = future.get();
         
@@ -124,18 +166,18 @@ public class ITestBucketMapReduce extends ITestBase
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
                
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
     }
     
     @Test
     public void multiPhaseResult() throws InterruptedException, ExecutionException
     {
-        initValues("default");
+        initValues(Namespace.DEFAULT_BUCKET_TYPE);
         
-        Location loc = new Location(mrBucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
-                .withLocation(loc)
+                .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), true)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
                 .build();
@@ -157,17 +199,17 @@ public class ITestBucketMapReduce extends ITestBase
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
         
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
     }
     
     @Test
     public void keyFilter() throws InterruptedException, ExecutionException
     {
-        initValues("default");
-        Location loc = new Location(mrBucketName);
+        initValues(Namespace.DEFAULT_BUCKET_TYPE);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
-                .withLocation(loc)
+                .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"))
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"),true)
                 .withKeyFilter(new TokenizeFilter("_",3))
@@ -185,7 +227,7 @@ public class ITestBucketMapReduce extends ITestBase
         assertEquals(46, response.getResultsFromAllPhases().get(0).asInt());
         assertEquals(49, response.getResultsFromAllPhases().get(3).asInt());
         
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
     }
     
     @Test
@@ -194,11 +236,10 @@ public class ITestBucketMapReduce extends ITestBase
         Assume.assumeTrue(testBucketType);
         
         initValues(bucketType.toString());
-        
-        Location loc = new Location(mrBucketName).setBucketType(bucketType);
+        Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
-                .withLocation(loc)
+                .withNamespace(ns)
                 .withMapPhase(Function.newAnonymousJsFunction(
                     "function(value, keydata, arg) {" +
                         "  var data = value.values[0].data;" +
@@ -213,12 +254,9 @@ public class ITestBucketMapReduce extends ITestBase
         
         assertEquals(179, response.getResultsFromAllPhases().size());
         
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
     }
     
-    // This is yet another bug in Riak and will not work. Engel is supposed to 
-    // fix it in Riak.
-    @Ignore
     @Test
     public void differentBucketTypeWithFilter() throws InterruptedException, ExecutionException
     {
@@ -226,10 +264,10 @@ public class ITestBucketMapReduce extends ITestBase
 
         initValues(bucketType.toString());
         
-        Location loc = new Location(mrBucketName).setBucketType(bucketType);
+         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
-                .withLocation(loc)
+                .withNamespace(ns)
                 .withKeyFilter(new TokenizeFilter("_",3))
                 .withKeyFilter(new StringToIntFilter())
                 .withKeyFilter(new LogicalAndFilter(new LessThanFilter<Integer>(50), new GreaterThanFilter<Integer>(45)))
@@ -245,7 +283,7 @@ public class ITestBucketMapReduce extends ITestBase
         future.await();
         assertTrue(future.isSuccess());
         assertEquals(4, future.get().getResultsFromAllPhases().size());
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
 
     }
     

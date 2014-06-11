@@ -17,7 +17,7 @@
 package com.basho.riak.client.operations.indexes;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -32,10 +32,10 @@ public class SecondaryIndexQueryTest
     @Test
     public void intIndexQueryBuildsCorrectly()
     {
-        Location loc = new Location("bucket_name").setBucketType("bucket_type");
+        Namespace ns = new Namespace("bucket_type", "bucket_name");
         
         IntIndexQuery iiq = 
-            new IntIndexQuery.Builder(loc, "test_index", Long.MAX_VALUE)
+            new IntIndexQuery.Builder(ns, "test_index", Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .withContinuation(BinaryValue.create("continuation"))
                 .withMaxResults(Integer.MAX_VALUE)
@@ -45,7 +45,7 @@ public class SecondaryIndexQueryTest
         
         SecondaryIndexQueryOperation.Query query = iiq.createCoreQuery();
         
-        assertEquals(loc, query.getLocation());
+        assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(Long.MAX_VALUE, Long.valueOf(query.getIndexKey().toString()).longValue());
         assertEquals(BinaryValue.create("continuation"), query.getContinuation());
@@ -55,7 +55,7 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getTimeout().intValue());
         
         
-        iiq = new IntIndexQuery.Builder(loc, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
+        iiq = new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .withContinuation(BinaryValue.create("continuation"))
                 .withMaxResults(Integer.MAX_VALUE)
@@ -64,7 +64,7 @@ public class SecondaryIndexQueryTest
         
         query = iiq.createCoreQuery();
         
-        assertEquals(loc, query.getLocation());
+        assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(Long.MIN_VALUE, Long.valueOf(query.getRangeStart().toString()).longValue());
         assertEquals(Long.MAX_VALUE, Long.valueOf(query.getRangeEnd().toString()).longValue());
@@ -77,7 +77,7 @@ public class SecondaryIndexQueryTest
         // You can't use a term filter with an _int query
         try
         {
-            iiq = new IntIndexQuery.Builder(loc, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
+            iiq = new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withRegexTermFilter("filter")
                 .build();
             
@@ -90,9 +90,9 @@ public class SecondaryIndexQueryTest
     @Test 
     public void binIndexQueryBuildsCorrectly()
     {
-        Location loc = new Location("bucket_name").setBucketType("bucket_type");
+        Namespace ns = new Namespace("bucket_type", "bucket_name");
         
-        BinIndexQuery biq = new BinIndexQuery.Builder(loc, "test_index", "index_key")
+        BinIndexQuery biq = new BinIndexQuery.Builder(ns, "test_index", "index_key")
             .withKeyAndIndex(true)
             .withMaxResults(Integer.MAX_VALUE)
             .withContinuation(BinaryValue.create("continuation"))
@@ -102,7 +102,7 @@ public class SecondaryIndexQueryTest
         
         SecondaryIndexQueryOperation.Query query = biq.createCoreQuery();
         
-        assertEquals(loc, query.getLocation());
+        assertEquals(ns, query.getNamespace());
         assertEquals("test_index_bin", query.getIndexName().toString());
         assertEquals("index_key", query.getIndexKey().toString());
         assertEquals(BinaryValue.create("continuation"), query.getContinuation());
@@ -110,7 +110,7 @@ public class SecondaryIndexQueryTest
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
         
-        biq = new BinIndexQuery.Builder(loc, "test_index", "aaa", "zzz")
+        biq = new BinIndexQuery.Builder(ns, "test_index", "aaa", "zzz")
             .withKeyAndIndex(true)
             .withMaxResults(Integer.MAX_VALUE)
             .withContinuation(BinaryValue.create("continuation"))
@@ -120,7 +120,7 @@ public class SecondaryIndexQueryTest
         
         query = biq.createCoreQuery();
         
-        assertEquals(loc, query.getLocation());
+        assertEquals(ns, query.getNamespace());
         assertEquals("test_index_bin", query.getIndexName().toString());
         assertEquals("aaa", query.getRangeStart().toString());
         assertEquals("zzz", query.getRangeEnd().toString());
@@ -133,30 +133,30 @@ public class SecondaryIndexQueryTest
     
     public void rawIndexQueryBuildsCorrectly()
     {
-        Location loc = new Location("bucket_name").setBucketType("bucket_type");
+        Namespace ns = new Namespace("bucket_type", "bucket_name");
         
         BinaryValue indexMatch = BinaryValue.create("match");
         BinaryValue indexStart = BinaryValue.create("start");
         BinaryValue indexEnd = BinaryValue.create("end");
         
         RawIndexQuery riq = 
-            new RawIndexQuery.Builder(loc, "test_index", SecondaryIndexQuery.Type._INT, indexMatch)
+            new RawIndexQuery.Builder(ns, "test_index", SecondaryIndexQuery.Type._INT, indexMatch)
                 .build();
         
         SecondaryIndexQueryOperation.Query query = riq.createCoreQuery();
         
-        assertEquals(loc, query.getLocation());
+        assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(indexMatch, query.getIndexKey());
         
         riq = 
-            new RawIndexQuery.Builder(loc, "test_index", SecondaryIndexQuery.Type._INT, 
+            new RawIndexQuery.Builder(ns, "test_index", SecondaryIndexQuery.Type._INT, 
                                       indexStart, indexEnd)
                 .build();
                 
         query = riq.createCoreQuery();
         
-        assertEquals(loc, query.getLocation());
+        assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(indexStart, query.getRangeStart());
         assertEquals(indexEnd, query.getRangeEnd());

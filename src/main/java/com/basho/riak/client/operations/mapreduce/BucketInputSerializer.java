@@ -1,6 +1,6 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -15,32 +15,32 @@ public class BucketInputSerializer extends JsonSerializer<BucketInput>
 		if (input.hasFilters())
         {
             jg.writeStartObject();
-            if (!input.getLocation().getBucketType().equals(Location.DEFAULT_BUCKET_TYPE))
+            if (!input.getNamespace().getBucketType().toStringUtf8().equals(Namespace.DEFAULT_BUCKET_TYPE))
             {
                 jg.writeArrayFieldStart("bucket");
-                jg.writeString(input.getLocation().getBucketTypeAsString());
-                jg.writeString(input.getLocation().getBucketNameAsString());
+                jg.writeString(input.getNamespace().getBucketTypeAsString());
+                jg.writeString(input.getNamespace().getBucketNameAsString());
                 jg.writeEndArray();
             }
             else
             {
-                jg.writeObjectField("bucket", input.getLocation().getBucketNameAsString());
+                jg.writeObjectField("bucket", input.getNamespace().getBucketNameAsString());
             }
             
             jg.writeObjectField("key_filters", input.getFilters());
             
             jg.writeEndObject();
         }
-        else if (!input.getLocation().getBucketType().equals(Location.DEFAULT_BUCKET_TYPE))
+        else if (!input.getNamespace().getBucketType().toStringUtf8().equals(Namespace.DEFAULT_BUCKET_TYPE))
         {
             jg.writeStartArray();
-            jg.writeString(input.getLocation().getBucketTypeAsString());
-            jg.writeString(input.getLocation().getBucketNameAsString());
+            jg.writeString(input.getNamespace().getBucketTypeAsString());
+            jg.writeString(input.getNamespace().getBucketNameAsString());
             jg.writeEndArray();
         }
         else
         {
-            jg.writeString(input.getLocation().getBucketNameAsString());
+            jg.writeString(input.getNamespace().getBucketNameAsString());
         }
 
 		

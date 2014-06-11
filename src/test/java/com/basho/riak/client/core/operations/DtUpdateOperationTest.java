@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -27,9 +27,8 @@ import static junit.framework.Assert.assertTrue;
 
 public class DtUpdateOperationTest
 {
-
-    private final BinaryValue bucket = BinaryValue.create("buket");
-    private final BinaryValue type = BinaryValue.create("type");
+    private final Namespace namespace = new Namespace("type", "bucket");
+    
 
     @Test
     public void testGetCounterOp()
@@ -37,8 +36,7 @@ public class DtUpdateOperationTest
 
         final long counterValue = 1;
         CounterOp op = new CounterOp(counterValue);
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.CounterOp counterOp = operation.getCounterOp(op);
 
         assertEquals(counterValue, counterOp.getIncrement());
@@ -56,8 +54,7 @@ public class DtUpdateOperationTest
             .add(addition)
             .remove(removal);
 
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.SetOp setOp = operation.getSetOp(op);
 
         BinaryValue serializedAddition = BinaryValue.unsafeCreate(setOp.getAdds(0).toByteArray());
@@ -76,8 +73,7 @@ public class DtUpdateOperationTest
 
         FlagOp op = new FlagOp(enabled);
 
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.MapUpdate.FlagOp flagOp = operation.getFlagOp(op);
 
         assertEquals(RiakDtPB.MapUpdate.FlagOp.ENABLE, flagOp);
@@ -92,8 +88,7 @@ public class DtUpdateOperationTest
 
         RegisterOp op = new RegisterOp(registerValue);
 
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         ByteString registerOp = operation.getRegisterOp(op);
 
         ByteString serializedValue = ByteString.copyFrom(registerValue.unsafeGetValue());
@@ -111,8 +106,7 @@ public class DtUpdateOperationTest
             .add(addKey, MapOp.FieldType.COUNTER)
             .remove(removeKey, MapOp.FieldType.COUNTER);
         
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op);
 
         assertTrue(mapOp.getAddsCount() == 1);
@@ -149,8 +143,7 @@ public class DtUpdateOperationTest
             .update(mapKey, new MapOp()
                 .add(mapAddValue, MapOp.FieldType.COUNTER));
 
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op);
 
         assertTrue(mapOp.getUpdatesCount() == 5);
@@ -170,8 +163,7 @@ public class DtUpdateOperationTest
         BinaryValue key3 = BinaryValue.create("key3");
         MapOp op3 = new MapOp().update(key3, op2);
 
-        Location location = new Location(bucket).setBucketType(type);
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(location);
+        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op3);
 
         assertTrue(mapOp.getUpdatesCount() == 1);

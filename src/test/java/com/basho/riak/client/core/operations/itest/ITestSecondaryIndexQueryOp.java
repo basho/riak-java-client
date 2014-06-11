@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.indexes.LongIntIndex;
 import com.basho.riak.client.query.indexes.StringBinIndex;
@@ -36,19 +37,32 @@ import org.junit.Test;
 public class ITestSecondaryIndexQueryOp extends ITestBase
 {
     @Test
-    public void testSingleQuerySingleResponse() throws InterruptedException, ExecutionException
+    public void testSingleQuerySingleResponseDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        testSingleQuerySingleResponse(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testSingleQuerySingleResponseTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testSingleQuerySingleResponse(bucketType.toString());
+    }
+    
+    private void testSingleQuerySingleResponse(String bucketType) throws InterruptedException, ExecutionException
+    {
         
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
-
-        SetupIndexTestData(indexName, keyBase, value);
-
-        Location location = new Location(bucketName);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        
+        setupIndexTestData(ns, indexName, keyBase, value);
+        
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .build();
         
@@ -64,7 +78,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
         query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withReturnKeyAndIndex(true)
                 .build();
@@ -82,21 +96,34 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
     
     @Test
-    public void testSingleQueryMultipleResponse() throws InterruptedException, ExecutionException
+    public void testSingleQueryMultipleResponseDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        testSingleQueryMultipleResponse(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testSingleQueryMultipleResponseTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testSingleQueryMultipleResponse(bucketType.toString());
+    }
+    
+    private void testSingleQueryMultipleResponse(String bucketType) throws InterruptedException, ExecutionException
+    {
         
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
         
         for (long i = 0; i < 100; i++)
         {
             RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
 
             obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(5L);
-
-            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
+            Location location = new Location(ns, BinaryValue.unsafeCreate((keyBase + i).getBytes()));
             StoreOperation storeOp =
                 new StoreOperation.Builder(location)
                     .withContent(obj)
@@ -106,10 +133,8 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             storeOp.get();
         }
         
-        Location location = new Location(bucketName);
-        
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withPaginationSort(true)
                 .build();
@@ -126,7 +151,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "0");
         
         query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withPaginationSort(true)
                 .withReturnKeyAndIndex(true)
@@ -147,20 +172,35 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
     
     @Test
-    public void testRangeQuery() throws InterruptedException, ExecutionException
+    public void testRangeQueryDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        testRangeQuery(Namespace.DEFAULT_BUCKET_TYPE);
+        
+    }
+    
+    @Test
+    public void testRangeQueryTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testRangeQuery(bucketType.toString());
+        
+    }
+    
+    private void testRangeQuery(String bucketType) throws InterruptedException, ExecutionException
+    {
         
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
-
-        SetupIndexTestData(indexName, keyBase, value);
-
-        Location location = new Location(bucketName);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());    
         
+        setupIndexTestData(ns, indexName, keyBase, value);
+
+            
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                 .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
                 .withPaginationSort(true)
@@ -178,7 +218,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(response.getEntryList().get(0).getObjectKey().toString(), keyBase + "5");
         
         query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
                     .withReturnKeyAndIndex(true)
@@ -198,19 +238,31 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
-    public void testNoSortWithNoPaging() throws InterruptedException, ExecutionException
+    public void testNoSortWithNoPagingDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        testNoSortWithNoPaging(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testNoSortWithNoPagingTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testNoSortWithNoPaging(bucketType.toString());
+    }
+    
+    private void testNoSortWithNoPaging(String bucketType) throws InterruptedException, ExecutionException
+    {
 
         String indexName = "test_index_pagination";
         String value = "value";
-
-        SetupIndexTestData(indexName, "", value);
-
-        Location location = new Location(bucketName);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
         
+        setupIndexTestData(ns, indexName, "", value);
+
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                 .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                 .withPaginationSort(false)
@@ -227,19 +279,32 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
-    public void testSortWithNoPaging() throws InterruptedException, ExecutionException
+    public void testSortWithNoPagingDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        testSortWithNoPaging(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testSortWithNoPagingTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testSortWithNoPaging(bucketType.toString());
+    }
+    
+    private void testSortWithNoPaging(String bucketType) throws InterruptedException, ExecutionException
+    {
 
         String indexName = "test_index_pagination";
         String value = "value";
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
 
-        SetupIndexTestData(indexName, "", value);
+        setupIndexTestData(ns, indexName, "", value);
 
-        Location location = new Location(bucketName);
         
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                 .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                 .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                 .withPaginationSort(true)
@@ -258,20 +323,33 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
-    public void testNoSortWithPaging() throws InterruptedException, ExecutionException
+    public void testNoSortWithPagingDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        testNoSortWithPaging(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testNoSortWithPagingTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testNoSortWithPaging(bucketType.toString());
+    }
+    
+    private void testNoSortWithPaging(String bucketType) throws InterruptedException, ExecutionException
+    {
 
         String indexName = "test_index_pagination";
         String value = "value";
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        
+        setupIndexTestData(ns, indexName, "", value);
 
-        SetupIndexTestData(indexName, "", value);
-
-        try {
-            Location location = new Location(bucketName);
-            
+        try 
+        {
             SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                     .withPaginationSort(false)
@@ -290,19 +368,30 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
-    public void testSortWithPaging() throws InterruptedException, ExecutionException
+    public void testSortWithPagingDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-
+        testSortWithPaging(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testSortWithPagingTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testSortWithPaging(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    private void testSortWithPaging(String bucketType) throws InterruptedException, ExecutionException
+    {
         String indexName = "test_index_pagination";
         String value = "value";
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
 
-        SetupIndexTestData(indexName, "", value);
-
-        Location location = new Location(bucketName);
+        setupIndexTestData(ns, indexName, "", value);
         
         SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
                     .withPaginationSort(true)
@@ -322,20 +411,34 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
-    public void testRegexTermFilter() throws InterruptedException, ExecutionException
+    public void testRegexTermFilterDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-
+        testRegexTermFilter(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testRegexTermFilterTestType() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testRegexTermFilter(bucketType.toString());
+    }
+    
+    private void testRegexTermFilter(String bucketType) throws InterruptedException, ExecutionException
+    {
         String indexName = "test_index_regex";
         String value = "value";
-
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        
         for (long i = 0; i < 20; i++)
         {
             RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
 
             obj.getIndexes().getIndex(StringBinIndex.named(indexName)).add("foo" + String.format("%02d", i));
 
-            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate(Long.toString(i).getBytes()));
+            
+            Location location = new Location(ns, BinaryValue.unsafeCreate(Long.toString(i).getBytes()));
             StoreOperation storeOp =
                     new StoreOperation.Builder(location)
                             .withContent(obj)
@@ -345,10 +448,9 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             storeOp.get();
         }
 
-        Location location = new Location(bucketName);
         
         SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate((indexName + "_bin").getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate((indexName + "_bin").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate("foo00".getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate("foo19".getBytes()))
                     .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
@@ -371,15 +473,28 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
-    public void testExceptionThrownWhenUsingRegexFilterOnIntIndexes()
+    public void testExceptionThrownWhenUsingRegexFilterOnIntIndexesDefaultType()
     {
         Assume.assumeTrue(test2i);
+        testExceptionThrownWhenUsingRegexFilterOnIntIndexes(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testExceptionThrownWhenUsingRegexFilterOnIntIndexesTestType()
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testExceptionThrownWhenUsingRegexFilterOnIntIndexes(bucketType.toString());
+    }
+    
+    private void testExceptionThrownWhenUsingRegexFilterOnIntIndexes(String bucketType)
+    {
         
         try {
-            Location location = new Location(bucketName);
+            Namespace ns = new Namespace(bucketType, bucketName.toString());
             
             SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.unsafeCreate(("foo_int").getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate(("foo_int").getBytes()))
                     .withRangeStart(BinaryValue.unsafeCreate("0".getBytes()))
                     .withRangeEnd(BinaryValue.unsafeCreate("100".getBytes()))
                     .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
@@ -395,7 +510,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         }
     }
 
-    private void SetupIndexTestData(String indexName, String keyBase, String value)
+    private void setupIndexTestData(Namespace ns, String indexName, String keyBase, String value)
             throws InterruptedException, ExecutionException
     {
         for (long i = 0; i < 100; i++)
@@ -404,7 +519,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(i);
 
-            Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate((keyBase + i).getBytes()));
+            Location location = new Location(ns, keyBase + i);
             StoreOperation storeOp =
                     new StoreOperation.Builder(location)
                             .withContent(obj)

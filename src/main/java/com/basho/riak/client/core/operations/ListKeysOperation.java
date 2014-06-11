@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -27,15 +27,15 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Location>
+public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
 {
-    private final Location location;
+    private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
     
     private ListKeysOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
-        this.location = builder.location;
+        this.namespace = builder.namespace;
     }
 
     @Override
@@ -79,30 +79,30 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     }
 
     @Override
-    public Location getQueryInfo()
+    public Namespace getQueryInfo()
     {
-        return location;
+        return namespace;
     }
     
     public static class Builder
     {
         private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
-        private final Location location;
+        private final Namespace namespace;
         
         /**
          * Construct a builder for a ListKeysOperaiton.
-         * @param location The location in Riak.
+         * @param namespace The namespace in Riak.
          */
-        public Builder(Location location)
+        public Builder(Namespace namespace)
         {
-            if (location == null)
+            if (namespace == null)
             {
-                throw new IllegalArgumentException("Location cannot be null");
+                throw new IllegalArgumentException("Namespace cannot be null");
             }
-            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
-            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
-            this.location = location;
+            reqBuilder.setBucket(ByteString.copyFrom(namespace.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
+            this.namespace = namespace;
         }
         
         public Builder withTimeout(int timeout)

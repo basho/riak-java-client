@@ -21,6 +21,7 @@ import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import org.junit.Test;
 
 /**
@@ -38,14 +40,26 @@ import org.junit.Test;
 public class ITestListBucketsOperation extends ITestBase
 {
     @Test
-    public void testListBuckets() throws InterruptedException, ExecutionException
+    public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
+    {
+        testListBuckets(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testListBucketsTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testListBuckets(bucketType.toString());
+    }
+    
+    private void testListBuckets(String bucketType) throws InterruptedException, ExecutionException
     {
         // Empty buckets do not show up
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(bucketName).setKey(key);
+        Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(rObj)
@@ -54,7 +68,9 @@ public class ITestListBucketsOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        ListBucketsOperation listOp = new ListBucketsOperation.Builder().build();
+        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
+                                        .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                                        .build();
         cluster.execute(listOp);
         List<BinaryValue> bucketList = listOp.get().getBuckets();
         assertTrue(bucketList.size() > 0);
@@ -72,7 +88,19 @@ public class ITestListBucketsOperation extends ITestBase
     }
     
     @Test
-    public void testLargeBucketList() throws InterruptedException, ExecutionException
+    public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException
+    {
+        testLargeBucketList(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testLargeBucketListTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testLargeBucketList(bucketType.toString());
+    }
+    
+    private void testLargeBucketList(String bucketType) throws InterruptedException, ExecutionException
     {
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
@@ -82,7 +110,7 @@ public class ITestListBucketsOperation extends ITestBase
         RiakFutureListener<StoreOperation.Response, Location> listener =
             new RiakFutureListener<StoreOperation.Response, Location>() {
                 
-                private AtomicInteger received = new AtomicInteger();
+                private final AtomicInteger received = new AtomicInteger();
                 
                 @Override
                 public void handle(RiakFuture<StoreOperation.Response, Location> f)
@@ -107,9 +135,9 @@ public class ITestListBucketsOperation extends ITestBase
         
         for (int i = 0; i < 1000; i++)
         {
-            BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + i).getBytes());
+            Namespace ns = new Namespace(bucketType, bucketName.toString() + i);
             RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-            Location location = new Location(bName).setKey(key);
+            Location location = new Location(ns, key);
             StoreOperation storeOp = 
                 new StoreOperation.Builder(location)
                     .withContent(rObj)
@@ -121,15 +149,17 @@ public class ITestListBucketsOperation extends ITestBase
         
         latch.await();
         
-        ListBucketsOperation listOp = new ListBucketsOperation.Builder().build();
+        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
+                                        .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                                        .build();
         cluster.execute(listOp);
         List<BinaryValue> bucketList = listOp.get().getBuckets();
         assertTrue(bucketList.size() >= 1000);
         
         for (int i = 0; i < 1000; i++)
         {
-            BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + i).getBytes());
-            resetAndEmptyBucket(bName);
+            Namespace ns = new Namespace(bucketType, bucketName.toString() + i);
+            resetAndEmptyBucket(ns);
         }
         
     }

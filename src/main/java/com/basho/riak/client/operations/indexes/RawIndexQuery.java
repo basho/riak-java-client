@@ -21,6 +21,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,7 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
-            return new Response(location, coreResponse, converter);
+            return new Response(namespace, coreResponse, converter);
         }
 
         @Override
@@ -87,14 +88,14 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
     {
 
-        public Builder(Location location, String indexName, Type type, BinaryValue start, BinaryValue end)
+        public Builder(Namespace namespace, String indexName, Type type, BinaryValue start, BinaryValue end)
         {
-            super(location, indexName + type, start, end);
+            super(namespace, indexName + type, start, end);
         }
 
-        public Builder(Location location, String indexName, Type type, BinaryValue match)
+        public Builder(Namespace namespace, String indexName, Type type, BinaryValue match)
         {
-            super(location, indexName + type, match);
+            super(namespace, indexName + type, match);
         }
 
         @Override
@@ -111,7 +112,7 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     
     public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
     {
-        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
         }

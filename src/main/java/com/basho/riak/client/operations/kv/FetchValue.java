@@ -332,9 +332,9 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
          */
 		public Builder(Location location)
 		{
-			if (!location.hasKey())
+			if (location == null)
             {
-                throw new IllegalArgumentException("Location must contain a key");
+                throw new IllegalArgumentException("Location cannot be null");
             }
             this.location = location;
 		}

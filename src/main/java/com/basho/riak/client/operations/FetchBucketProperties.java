@@ -20,32 +20,31 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 
-import java.util.concurrent.ExecutionException;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Location>
+public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Namespace>
 {
 
-	private final Location location;
+	private final Namespace namespace;
 
 	public FetchBucketProperties(Builder builder)
 	{
-		this.location = builder.location;
+		this.namespace = builder.namespace;
 	}
 
 	@Override
-    protected final RiakFuture<FetchBucketPropsOperation.Response, Location> executeAsync(RiakCluster cluster)
+    protected final RiakFuture<FetchBucketPropsOperation.Response, Namespace> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<FetchBucketPropsOperation.Response, Location> coreFuture =
+        RiakFuture<FetchBucketPropsOperation.Response, Namespace> coreFuture =
             cluster.execute(buildCoreOperation());
         
-        CoreFutureAdapter<FetchBucketPropsOperation.Response, Location, FetchBucketPropsOperation.Response, Location> future =
-            new CoreFutureAdapter<FetchBucketPropsOperation.Response, Location, FetchBucketPropsOperation.Response, Location>(coreFuture)
+        CoreFutureAdapter<FetchBucketPropsOperation.Response, Namespace, FetchBucketPropsOperation.Response, Namespace> future =
+            new CoreFutureAdapter<FetchBucketPropsOperation.Response, Namespace, FetchBucketPropsOperation.Response, Namespace>(coreFuture)
             {
                 @Override
                 protected FetchBucketPropsOperation.Response convertResponse(FetchBucketPropsOperation.Response coreResponse)
@@ -54,7 +53,7 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
                 }
 
                 @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
+                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }
@@ -65,21 +64,20 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
     
     private FetchBucketPropsOperation buildCoreOperation()
     {
-        return new FetchBucketPropsOperation.Builder(location).build();
+        return new FetchBucketPropsOperation.Builder(namespace).build();
     }
 
 	public static class Builder
 	{
+		private final Namespace namespace;
 
-		private final Location location;
-
-		public Builder(Location location)
+		public Builder(Namespace namespace)
 		{
-			if (location == null)
+			if (namespace == null)
             {
-                throw new IllegalArgumentException("Location cannot be null");
+                throw new IllegalArgumentException("Namespace cannot be null");
             }
-            this.location = location;
+            this.namespace = namespace;
 		}
 
 		public FetchBucketProperties build()

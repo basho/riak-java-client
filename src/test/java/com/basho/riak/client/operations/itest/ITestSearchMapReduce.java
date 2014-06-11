@@ -17,8 +17,6 @@
 package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.RiakClient;
-import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.StoreBucketProperties;
 import com.basho.riak.client.operations.StoreSearchIndex;
@@ -26,6 +24,7 @@ import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.mapreduce.MapReduce;
 import com.basho.riak.client.operations.mapreduce.SearchMapReduce;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.search.YokozunaIndex;
@@ -57,8 +56,8 @@ public class ITestSearchMapReduce extends ITestBase
         StoreSearchIndex ssi = new StoreSearchIndex.Builder(index).build();
         client.execute(ssi);
         
-        Location location = new Location(mrBucketName).setBucketType(bucketType);
-        StoreBucketProperties sbp = new StoreBucketProperties.Builder(location)
+        Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
+        StoreBucketProperties sbp = new StoreBucketProperties.Builder(ns)
                                     .withSearchIndex(index.getName())
                                     .build();
         client.execute(sbp);
@@ -70,28 +69,28 @@ public class ITestSearchMapReduce extends ITestBase
         RiakObject ro = new RiakObject()
                         .setContentType("application/json")
                         .setValue(BinaryValue.create("{\"name_s\":\"Lion-o\", \"age_i\":30, \"leader_b\":true}"));
-        location.setKey("liono");
+        Location location = new Location(ns, "liono");
         StoreValue sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
         
         ro = new RiakObject()
                 .setContentType("application/json")
                 .setValue(BinaryValue.create("{\"name_s\":\"Cheetara\", \"age_i\":28, \"leader_b\":false}"));
-        location.setKey("cheetara");
+        location = new Location(ns, "cheetara");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
         
         ro = new RiakObject()
                 .setContentType("application/json")
                 .setValue(BinaryValue.create("{\"name_s\":\"Snarf\", \"age_i\":43}"));
-        location.setKey("snarf");
+        location = new Location(ns, "snarf");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
         
         ro = new RiakObject()
                 .setContentType("application/json")
                 .setValue(BinaryValue.create("{\"name_s\":\"Panthro\", \"age_i\":36}"));
-        location.setKey("panthro");
+        location = new Location(ns, "panthro");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
         
@@ -109,7 +108,7 @@ public class ITestSearchMapReduce extends ITestBase
         
         assertEquals(3, mrResp.getResultsFromAllPhases().get(0).asInt());
         
-        resetAndEmptyBucket(location);
+        resetAndEmptyBucket(ns);
     }
     
 }

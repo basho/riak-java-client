@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
@@ -30,15 +30,15 @@ import java.util.List;
  * @since 2.0
  */
 //TODO: return some sort of "success" instead of Void
-public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Location>
+public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Namespace>
 {
-    private final Location location;
+    private final Namespace namespace;
     private final RiakPB.RpbSetBucketReq.Builder reqBuilder;
 
     private StoreBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
-        this.location = builder.location;
+        this.namespace = builder.namespace;
     }
 
     @Override
@@ -62,9 +62,9 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Locat
     }
 
     @Override
-    public Location getQueryInfo()
+    public Namespace getQueryInfo()
     {
-        return location;
+        return namespace;
     }
 
     static abstract class PropsBuilder<T extends PropsBuilder<T>>
@@ -436,21 +436,21 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Locat
     {
         private final RiakPB.RpbSetBucketReq.Builder reqBuilder
             = RiakPB.RpbSetBucketReq.newBuilder();
-        private final Location location;
+        private final Namespace namespace;
         
         /**
          * Constructs a builder for a StoreBucketPropsOperation.
-         * @param location The location of the bucket in Riak.
+         * @param namespace The namespace in Riak.
          */
-        public Builder(Location location)
+        public Builder(Namespace namespace)
         {
-            if (location == null)
+            if (namespace == null)
             {
-                throw new IllegalArgumentException("Location cannot be null");
+                throw new IllegalArgumentException("Namespace cannot be null");
             }
-            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
-            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
-            this.location = location;
+            reqBuilder.setBucket(ByteString.copyFrom(namespace.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
+            this.namespace = namespace;
         }
         
         @Override

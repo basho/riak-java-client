@@ -34,6 +34,7 @@ import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.operations.kv.UpdateValue.Update;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -66,7 +67,8 @@ public class ITestORM extends ITestBase
     public void storeParamterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key1");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_ORM_key1");
         
         GenericPojo<Foo> gpf = new GenericPojo<Foo>();
         List<Foo> fooList = new ArrayList<Foo>();
@@ -105,7 +107,8 @@ public class ITestORM extends ITestBase
     public void storeAndFetchParamterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_ORM_key2");
         
         GenericPojo<Foo> gpf = new GenericPojo<Foo>();
         List<Foo> fooList = new ArrayList<Foo>();
@@ -145,7 +148,8 @@ public class ITestORM extends ITestBase
     public void updateParameterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key3");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_ORM_key3");
         
         MyUpdate update = new MyUpdate();
         TypeReference<GenericPojo<Integer>> tr = 
@@ -181,16 +185,16 @@ public class ITestORM extends ITestBase
     public void updateAndResolveParameterizedTypeJSON() throws ExecutionException, InterruptedException
     {
         // We're back to allow_mult=false as default
-        Location location = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
         
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key4");
+        Location loc = new Location(ns, "test_ORM_key4");
         
         MyUpdate update = new MyUpdate();
         TypeReference<GenericPojo<Integer>> tr = 
@@ -232,9 +236,9 @@ public class ITestORM extends ITestBase
     public void updateAndResolveParameterizedTypeCustom() throws ExecutionException, InterruptedException
     {
         // We're back to allow_mult=false as default
-        Location location = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
@@ -242,7 +246,7 @@ public class ITestORM extends ITestBase
         
         
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key5");
+        Location loc = new Location(ns, "test_ORM_key5");
         
         TypeReference<GenericPojo<Integer>> tr = 
             new TypeReference<GenericPojo<Integer>>(){};
@@ -291,7 +295,8 @@ public class ITestORM extends ITestBase
     public void updateAndResolveRawTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key6");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_ORM_key6");
         ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
         MyFooUpdate update = new MyFooUpdate();
         
@@ -344,7 +349,8 @@ public class ITestORM extends ITestBase
     public void updateAndResolveRawTypeCustom() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key7");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_ORM_key7");
         
         ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
         ConverterFactory.getInstance().registerConverterForClass(Foo.class, new MyFooConverter());
@@ -395,7 +401,8 @@ public class ITestORM extends ITestBase
     public void updateRiakObject() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Location loc = new Location(bucketName).setKey("test_ORM_key9");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_ORM_key9");
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(new Update<RiakObject>(){
 

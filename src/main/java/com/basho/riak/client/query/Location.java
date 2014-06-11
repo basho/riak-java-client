@@ -20,174 +20,85 @@ import com.basho.riak.client.util.BinaryValue;
 import java.nio.charset.Charset;
 
 /**
- * Basic bean that encapsulates a key, bucket name, and bucket type.
+ * Encapsulates a key and Namespace.
  * <p>
- * Objects in Riak are stored using a combination of bucket type, bucket name,
- * and Key. This class encapsulates these three items and is used with most 
- * client operations.
+ * Many client operations locate a piece of information in Riak via a
+ * bucket type, bucket name, and  a key. This class encapsulates these 
+ * three items by combining a {@link Namespace} with a key and is 
+ * used with most client operations.
  * </p>
  * <p>
  * Riak itself is character set agnostic; everything is stored as bytes. The 
  * convenience methods in this class rely on either the default Charset or a 
- * supplied one to convert Strings to byte[].
+ * supplied one to convert Strings to a byte[].
  * <p>
  * 
- * @author David Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public final class Location
 {
-    /**
-     * The default bucket type used if none is suppled. 
-     * The value is "default"
-     */
-    public static final BinaryValue DEFAULT_BUCKET_TYPE = 
-        BinaryValue.create("default", Charset.forName("UTF-8"));
-
-	private final BinaryValue bucketName;
-    private volatile BinaryValue bucketType = DEFAULT_BUCKET_TYPE;
-	private volatile BinaryValue key;
+    
+	private final Namespace namespace;
+	private final BinaryValue key;
     
     /**
-     * Construct a new Location with the provided bucket name. 
-     * @param bucketName The name of the bucket in Riak
+     * Construct a new Location with the provided Namespace and key.
+     * @param namespace The namespace for this location.
+     * @param key The key for this location.
      */
-    public Location(BinaryValue bucketName)
+    public Location(Namespace namespace, BinaryValue key)
     {
-        if (null == bucketName || bucketName.length() == 0)
+        if (namespace == null)
         {
-            throw new IllegalArgumentException("Bucket name cannot be null or zero length.");
+            throw new IllegalArgumentException("Namespace cannot be null");
         }
-        this.bucketName = bucketName;
-    }
-    
-    /**
-     * Construct a new Location with the provided bucket name. 
-     * <p>
-     * The supplied String is converted to bytes using the default charset.
-     * </p>
-     * @param bucketName The name of the bucket in Riak
-     */
-    public Location(String bucketName)
-    {
-        this(bucketName, Charset.defaultCharset());
-    }
-    
-    /**
-     * Construct a new Location with the provided bucket name. 
-     * <p>
-     * The supplied String is converted to bytes using the supplied charset.
-     * </p>
-     * @param bucketName The name of the bucket in Riak
-     * @param charset the charset used to convert to bytes.
-     */
-    public Location(String bucketName, Charset charset)
-    {
-        if (bucketName == null || bucketName.isEmpty())
+        else if (key == null || key.length() == 0)
         {
-            throw new IllegalArgumentException("Bucket name cannot be null or zero length");
+            throw new IllegalArgumentException("Key cannot be null or zero length");
         }
-        
-        this.bucketName = BinaryValue.create(bucketName, charset);
-    }
-    
-    /**
-     * Set the key portion of this Location.
-     * @param key the key to be used in Riak.
-     * @return a reference to this object.
-     */
-    public Location setKey(BinaryValue key)
-    {
+        this.namespace = namespace;
         this.key = key;
-        return this;
     }
     
     /**
-     * Set the key portion of this location.
-     * <p>
-     * The supplied string is converted to bytes using the default charset.
-     * </p>
-     * @param key the key for this location
-     * @return a reference to this object.
-     */
-    public Location setKey(String key)
-    {
-        return setKey(key, Charset.defaultCharset());
-    }
-    
-    /**
-     * Set the key portion of this location.
+     * Construct a new Location with the provided Namespace and key.
      * <p>
      * The supplied string is converted to bytes using the supplied charset.
      * </p>
-     * @param key the key for this location
-     * @param charset the charset to use for conversion to bytes
-     * @return a reference to this object.
+     * @param namespace The namespace for this location.
+     * @param key The key for this location.
+     * @param charset the charset for the key
      */
-    public Location setKey(String key, Charset charset)
+    public Location(Namespace namespace, String key, Charset charset)
     {
-        return setKey(BinaryValue.create(key, charset));
-    }
-    
-    /**
-     * Set the bucket type for this Location.
-     * <p>
-     * If not set, the "default" type is used.
-     * </p>
-     * @param bucketType the Riak bucket type.
-     * @return a reference to this object.
-     */
-    public Location setBucketType(BinaryValue bucketType)
-    {
-        if (bucketType == null || bucketType.length() == 0)
+        if (key == null || key.length() == 0)
         {
-            throw new IllegalArgumentException("Bucket type can not be null or zero length");
+            throw new IllegalArgumentException("Key cannot be null or zero length");
         }
-        this.bucketType = bucketType;
-        return this;
+        else if (namespace == null)
+        {
+            throw new IllegalArgumentException("Namespace cannot be null");
+        }
+        else if (charset == null)
+        {
+            throw new IllegalArgumentException("Charset cannot be null");
+        }
+        this.namespace = namespace;
+        this.key = BinaryValue.create(key, charset);
     }
     
     /**
-     * Set the bucket type for this Location.
+     * Construct a new Location with the provided namespace and key.
      * <p>
-     * The supplied String is converted to bytes using the default charset.
+     * The supplied string is converted to bytes using the default charset.
      * </p>
-     * <p>
-     * If not set, the "default" type is used.
-     * </p>
-     * @param bucketType the Riak bucket type.
-     * @return a reference to this object.
+     * @param namespace The namespace for this location.
+     * @param key The key for this location.
      */
-    public Location setBucketType(String bucketType)
+    public Location(Namespace namespace, String key)
     {
-        return setBucketType(bucketType, Charset.defaultCharset());
-    }
-    
-    /**
-     * Set the bucket type for this Location.
-     * <p>
-     * The supplied String is converted to bytes using the supplied charset.
-     * </p>
-     * <p>
-     * If not set, the "default" type is used.
-     * </p>
-     * @param bucketType the Riak bucket type.
-     * @param charset the charset used to convert the string to bytes
-     * @return a reference to this object.
-     */
-    public Location setBucketType(String bucketType, Charset charset)
-    {
-        return setBucketType(BinaryValue.create(bucketType, charset));
-    }
-    
-    /**
-     * Return whether or not this location contains a key;
-     * @return true if key is present, false otherwise.
-     */
-    public boolean hasKey()
-    {
-        return key != null;
+        this(namespace, key, Charset.defaultCharset());
     }
     
     /**
@@ -225,110 +136,50 @@ public final class Location
     }
     
     /**
-     * Returns the bucket name for this Location.
-     * @return the Riak bucket name.
+     * Return the Namespace for this location.
+     * @return the namespace.
      */
-    public BinaryValue getBucketName()
+    public Namespace getNamespace()
     {
-        return bucketName;
+        return namespace;
     }
-    
-    /**
-     * Get the bucket name for this location as a String.
-     * <p>
-     * The default Charset is used.
-     * <p>
-     * @return the key for this Location as a String.
-     */
-    public String getBucketNameAsString()
-    {
-        return bucketName.toString();
-    }
-    
-     /**
-     * Get the bucket name for this location as a String.
-     * <p>
-     * The supplied Charset is used.
-     * <p>
-     * @param charset the Charset used to convert to a String.
-     * @return the key for this Location as a String.
-     */
-    public String getBucketNameAsString(Charset charset)
-    {
-        return bucketName.toString(charset);
-    }
-    
-    /**
-     * Returns the bucket type for this Location.
-     * @return the Riak bucket type.
-     */
-    public BinaryValue getBucketType()
-    {
-        return bucketType;
-    }
-    
-    /**
-     * Get the bucket type for this location as a String.
-     * <p>
-     * The default Charset is used to convert to a String.
-     * </p>
-     * @return The bucket type for this location as a String.
-     */
-    public String getBucketTypeAsString()
-    {
-        return bucketType.toString();
-    }
-    
-    /**
-     * Get the bucket type for this location as a String.
-     * <p>
-     * The supplied Charset is used to convert to a String.
-     * </p>
-     * @param charset The Charset used to convert to a String.
-     * @return The bucket type for this location as a String.
-     */
-    public String getBucketTypeAsString(Charset charset)
-    {
-        return bucketType.toString(charset);
-    }
-    
-    @Override
-	public int hashCode()
-	{
-		int result = 17;
-		result = 37 * result + bucketType.hashCode();
-		result = 37 * result + bucketName.hashCode();
-		result = 37 * result + key.hashCode();
-		return result;
-	}
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (obj == this)
-		{
-			return true;
-		}
-        else if (obj == null)
+    @Override
+    public int hashCode()
+    {
+        int hash = 7;
+        hash = 79 * hash + (this.namespace != null ? this.namespace.hashCode() : 0);
+        hash = 79 * hash + (this.key != null ? this.key.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
         {
             return false;
         }
-        else if (!(obj instanceof Location))
-		{
-			return false;
-		}
-
-		Location other = (Location) obj;
-
-        return ( (key == other.key || (key != null && key.equals(other.key))) &&
-             (bucketName == other.bucketName || (bucketName != null && bucketName.equals(other.bucketName))) &&
-             (bucketType == other.bucketType || (bucketType != null && bucketType.equals(other.bucketType))) );
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        final Location other = (Location) obj;
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace)))
+        {
+            return false;
+        }
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key)))
+        {
+            return false;
+        }
+        return true;
     }
 
 	@Override
 	public String toString()
 	{
-		return "{type: " + bucketType + ", bucket: " + bucketName + ", key: " + key + "}";
+		return "{namespace: " + namespace + ", key: " + key + "}";
 	}
     
 }

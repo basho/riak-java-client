@@ -20,11 +20,13 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import org.junit.Test;
 
 /**
@@ -35,11 +37,24 @@ public class ITestFetchOperation extends ITestBase
 {
     
     @Test
-    public void testFetchOpNotFound() throws InterruptedException, ExecutionException
+    public void testFetchOpNotFoundDefaultType() throws InterruptedException, ExecutionException
+    {
+        testFetchOpNotFound(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testFetchOpNotFoundTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testFetchOpNotFound(bucketType.toString());
+    }
+    
+    private void testFetchOpNotFound(String bucketType) throws InterruptedException, ExecutionException
     {
         final BinaryValue key = BinaryValue.unsafeCreate("my_key_1".getBytes());
         final String value = "{\"value\":\"value\"}";
-        Location location = new Location(bucketName).setKey(key);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location location = new Location(ns, key);
         FetchOperation fetchOp = 
             new FetchOperation.Builder(location).build();
                 
@@ -51,13 +66,26 @@ public class ITestFetchOperation extends ITestBase
     }
     
     @Test
-    public void testFetchOpNoSiblings() throws InterruptedException, ExecutionException
+    public void testFetchOpNoSiblingsDefaultType() throws InterruptedException, ExecutionException
+    {
+        testFetchOpNoSiblings(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testFetchOpNoSiblingsTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testFetchOpNoSiblings(bucketType.toString());
+    }
+    
+    private void testFetchOpNoSiblings(String bucketType) throws InterruptedException, ExecutionException
     {
         final BinaryValue key = BinaryValue.unsafeCreate("my_key_2".getBytes());
         final String value = "{\"value\":\"value\"}";
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(bucketName).setKey(key);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location location = new Location(ns, key);
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(rObj)
@@ -80,21 +108,33 @@ public class ITestFetchOperation extends ITestBase
     }
     
     @Test
-    public void testFetchOpWithSiblings() throws InterruptedException, ExecutionException
+    public void testFetchOpWithSiblingsDefaultType() throws InterruptedException, ExecutionException
+    {
+        testFetchOpWithSiblings(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testFetchOpWithSiblingsTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testFetchOpWithSiblings(bucketType.toString());
+    }
+    
+    private void testFetchOpWithSiblings(String bucketType) throws InterruptedException, ExecutionException
     {
         final BinaryValue key = BinaryValue.unsafeCreate("my_key_3".getBytes());
         final String value = "{\"value\":\"value\"}";
         
-        Location location = new Location(bucketName);
+        Namespace namespace = new Namespace(bucketType, bucketName.toString());
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(namespace)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        location = new Location(bucketName).setKey(key);
+        Location location = new Location(namespace, key);
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(rObj)

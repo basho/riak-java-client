@@ -19,6 +19,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
@@ -113,20 +114,39 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 throw new IllegalArgumentException("Location cannot be null");
             }
-            else if (location.getBucketType().equals(Location.DEFAULT_BUCKET_TYPE))
+            else if (location.getNamespace().getBucketTypeAsString().equals(Namespace.DEFAULT_BUCKET_TYPE))
             {
                 throw new IllegalArgumentException("Default bucket type does not accept CRDTs");
             }
             
-            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
-            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
-            if (location.hasKey())
-            {
-                reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
-            }
+            reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
+            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
+            
             this.location = location;
         }
 
+        public Builder(Namespace namespace)
+        {
+            if (namespace == null)
+            {
+                throw new IllegalArgumentException("Namespace cannot be null");
+            }
+            else if (namespace.getBucketTypeAsString().equals(Namespace.DEFAULT_BUCKET_TYPE))
+            {
+                throw new IllegalArgumentException("Default bucket type does not accept CRDTs");
+            }
+            
+            Location loc = new Location(namespace, "RIAK_GENERATED");
+            
+            reqBuilder.setBucket(ByteString.copyFrom(loc.getNamespace().getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(loc.getNamespace().getBucketType().unsafeGetValue()));
+            reqBuilder.setKey(ByteString.copyFrom(loc.getKey().unsafeGetValue()));
+            
+            this.location = loc;
+            
+        }
+        
         /**
          * Set the context for this operation.
          *

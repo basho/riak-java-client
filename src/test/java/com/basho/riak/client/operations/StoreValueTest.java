@@ -26,6 +26,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -59,7 +60,7 @@ public class StoreValueTest
 	@Mock RiakFuture mockFuture;
 	@Mock StoreOperation.Response mockResponse;
 	VClock vClock = new BasicVClock(new byte[]{'1'});
-	Location key = new Location("bucket").setKey("key").setBucketType("type");
+	Location key = new Location(new Namespace("type", "bucket"), "key");
 	RiakClient client;
 	RiakObject riakObject;
 

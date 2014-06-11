@@ -17,7 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -89,7 +89,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     {
         private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = 
             RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
-        private BinaryValue bucketType = Location.DEFAULT_BUCKET_TYPE;
+        private BinaryValue bucketType = BinaryValue.create(Namespace.DEFAULT_BUCKET_TYPE);
         
         /**
          * Create a Builder for a ListBucketsOperation.
@@ -114,7 +114,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         
         /**
         * Set the bucket type.
-        * If unset "default" is used. 
+        * If unset {@link Namespace#DEFAULT_BUCKET_TYPE} is used. 
         * @param bucketType the bucket type to use
         * @return A reference to this object.
         */
