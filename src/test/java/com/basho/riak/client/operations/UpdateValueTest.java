@@ -27,6 +27,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Before;
@@ -46,7 +47,7 @@ import static org.mockito.Mockito.*;
 public class UpdateValueTest
 {
 	@Mock RiakCluster mockCluster;
-	Location key = new Location("bucket").setKey("key").setBucketType("type");
+	Location key = new Location(new Namespace("type", "bucket"), "key");
 	RiakClient client;
 	RiakObject riakObject;
 
@@ -96,7 +97,7 @@ public class UpdateValueTest
 		verify(mockCluster, times(2)).execute(any(FutureOperation.class));
 		verify(spiedResolver, times(1)).resolve(anyList());
 		verify(spiedUpdate, times(1)).apply(any(RiakObject.class));
-		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class), any(Location.class));
+		verify(spiedConverter, times(1)).fromDomain(any(RiakObject.class), any(Namespace.class), any(BinaryValue.class));
 		verify(spiedConverter, times(2)).toDomain(any(RiakObject.class), any(Location.class));
 
 	}

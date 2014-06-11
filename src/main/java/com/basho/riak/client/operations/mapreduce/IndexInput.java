@@ -1,23 +1,23 @@
 package com.basho.riak.client.operations.mapreduce;
 
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 
 public class IndexInput implements MapReduceInput
 {
-	private final Location location;
+	private final Namespace namespace;
 	private final String index;
 	private final IndexCriteria criteria;
 
-	public IndexInput(Location location, String index, IndexCriteria criteria)
+	public IndexInput(Namespace namespace, String index, IndexCriteria criteria)
 	{
-		this.location = location;
+		this.namespace = namespace;
 		this.index = index;
 		this.criteria = criteria;
 	}
 
-	public Location getLocation()
+	public Namespace getNamespace()
 	{
-		return location;
+		return namespace;
 	}
 
 	public String getIndex()

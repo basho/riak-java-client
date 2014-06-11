@@ -22,6 +22,7 @@ import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.CounterUpdate;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.types.RiakCounter;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
@@ -102,6 +103,16 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
             this.update = update;
         }
 
+        public Builder(Namespace namespace, CounterUpdate update)
+        {
+            super(namespace);
+            if (update == null)
+            {
+                throw new IllegalArgumentException("Update cannot be null");
+            }
+            this.update = update;
+        }
+        
         @Override
         public UpdateCounter build()
         {

@@ -22,6 +22,7 @@ import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.SetUpdate;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.query.crdt.types.RiakSet;
 import com.basho.riak.client.util.BinaryValue;
@@ -85,6 +86,16 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
         public Builder(Location loc, SetUpdate update)
         {
             super(loc);
+            if (update == null)
+            {
+                throw new IllegalArgumentException("Update cannot be null");
+            }
+            this.update = update;
+        }
+        
+        public Builder(Namespace namespace, SetUpdate update)
+        {
+            super(namespace);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");

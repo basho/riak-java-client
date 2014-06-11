@@ -23,6 +23,7 @@ import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.mapreduce.IndexMapReduce;
 import com.basho.riak.client.operations.mapreduce.MapReduce;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.query.indexes.LongIntIndex;
@@ -45,11 +46,10 @@ public class ITestIndexMapReduce extends ITestBase
     private void initValues(String bucketType) throws InterruptedException
     {
         String keyPrefix = "mr_test_";
+        Namespace ns = new Namespace(bucketType, mrBucketName);
         for (int i = 0; i < 200; i++)
         {
-            Location loc = new Location(mrBucketName)
-                                .setBucketType(bucketType)
-                                .setKey(keyPrefix + i);
+            Location loc = new Location(ns, keyPrefix + i);
             RiakObject ro = new RiakObject().setContentType("text/plain")
                 .setValue(BinaryValue.create(Integer.toString(i)));
             ro.getIndexes().getIndex(LongIntIndex.named("user_id")).add((long)i);
@@ -63,11 +63,10 @@ public class ITestIndexMapReduce extends ITestBase
     private void initValuesOneToN(String bucketType) throws InterruptedException
     {
         String keyPrefix = "mr_test_";
+        Namespace ns = new Namespace(bucketType, mrBucketName);
         for (int i = 0; i < 200; i++)
         {
-            Location loc = new Location(mrBucketName)
-                                .setBucketType(bucketType)
-                                .setKey(keyPrefix + i);
+            Location loc = new Location(ns, keyPrefix + i);
             RiakObject ro = new RiakObject().setContentType("text/plain")
                 .setValue(BinaryValue.create(Integer.toString(i)));
             // Single index key used on all 200 objects
@@ -83,11 +82,10 @@ public class ITestIndexMapReduce extends ITestBase
     public void matchIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-        initValuesOneToN("default");
-        
-        Location loc = new Location(mrBucketName);
+        initValuesOneToN(Namespace.DEFAULT_BUCKET_TYPE);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
-                            .withLocation(loc)
+                            .withNamespace(ns)
                             .withIndex("user_id_int")
                             .withMatchValue(1L)
                             .withMapPhase(Function.newAnonymousJsFunction(
@@ -101,7 +99,7 @@ public class ITestIndexMapReduce extends ITestBase
         
         assertEquals(200, response.getResultsFromAllPhases().size());
                 
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
 
     }
     
@@ -112,10 +110,9 @@ public class ITestIndexMapReduce extends ITestBase
         Assume.assumeTrue(test2i);
         
         initValuesOneToN(bucketType.toString());
-        
-        Location loc = new Location(mrBucketName).setBucketType(bucketType);
+        Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
-                            .withLocation(loc)
+                            .withNamespace(ns)
                             .withIndex("user_id_int")
                             .withMatchValue(1L)
                             .withMapPhase(Function.newAnonymousJsFunction(
@@ -129,18 +126,18 @@ public class ITestIndexMapReduce extends ITestBase
         
         assertEquals(200, response.getResultsFromAllPhases().size());
                 
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
     }
     
     @Test
     public void rangeIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-        initValues("default");
+        initValues(Namespace.DEFAULT_BUCKET_TYPE);
         
-        Location loc = new Location(mrBucketName);
+        Namespace ns = new Namespace(mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
-                            .withLocation(loc)
+                            .withNamespace(ns)
                             .withIndex("user_id_int")
                             .withRange(0, 19)
                             .withMapPhase(Function.newAnonymousJsFunction(
@@ -154,7 +151,7 @@ public class ITestIndexMapReduce extends ITestBase
         
         assertEquals(20, response.getResultsFromAllPhases().size());
                 
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
         
         
     }
@@ -166,10 +163,9 @@ public class ITestIndexMapReduce extends ITestBase
         Assume.assumeTrue(test2i);
         
         initValues(bucketType.toString());
-        
-        Location loc = new Location(mrBucketName).setBucketType(bucketType);
+        Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
-                            .withLocation(loc)
+                            .withNamespace(ns)
                             .withIndex("user_id_int")
                             .withRange(0, 19)
                             .withMapPhase(Function.newAnonymousJsFunction(
@@ -183,7 +179,7 @@ public class ITestIndexMapReduce extends ITestBase
         
         assertEquals(20, response.getResultsFromAllPhases().size());
                 
-        resetAndEmptyBucket(loc);
+        resetAndEmptyBucket(ns);
         
         
     }

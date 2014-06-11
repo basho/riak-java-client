@@ -21,6 +21,7 @@ import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import org.junit.Test;
 
 /**
@@ -38,29 +40,50 @@ import org.junit.Test;
 public class ITestListKeysOperation extends ITestBase
 {
     
-    
     @Test
-    public void testListNoKeys() throws InterruptedException, ExecutionException
+    public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException
     {
-        final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_1").getBytes());
-        Location location = new Location(bName);
-        ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
-        cluster.execute(klistOp);
-        List<BinaryValue> kList = klistOp.get().getKeys();
-        assertTrue(kList.isEmpty());
-        resetAndEmptyBucket(bName);
-
+        testListNoKeys(Namespace.DEFAULT_BUCKET_TYPE);
     }
     
     @Test
-    public void testListKey() throws InterruptedException, ExecutionException
+    public void testListNoKeysTestType() throws InterruptedException, ExecutionException
     {
-        final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_2").getBytes());
+        assumeTrue(testBucketType);
+        testListNoKeys(bucketType.toString());
+    }
+    
+    private void testListNoKeys(String bucketType) throws InterruptedException, ExecutionException
+    {
+        Namespace ns = new Namespace(bucketType, bucketName.toString() + "_1");
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
+        cluster.execute(klistOp);
+        List<BinaryValue> kList = klistOp.get().getKeys();
+        assertTrue(kList.isEmpty());
+        resetAndEmptyBucket(ns);
+    }
+    
+    @Test
+    public void testListKeyDefaultType() throws InterruptedException, ExecutionException
+    {
+        testListKey(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testListKeyTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testListKey(bucketType.toString());
+    }
+    
+    private void testListKey(String bucketType) throws InterruptedException, ExecutionException
+    {
+        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_2");
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
         
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(bName).setKey(key);
+        Location location = new Location(ns, key);
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(rObj)
@@ -69,23 +92,34 @@ public class ITestListKeysOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        location = new Location(bName);
-        ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
         cluster.execute(klistOp);
         List<BinaryValue> kList = klistOp.get().getKeys();
         
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), key);
-        resetAndEmptyBucket(bName);
+        resetAndEmptyBucket(ns);
 
     }
     
     @Test
-    public void testLargeKeyList() throws InterruptedException, ExecutionException
+    public void testLargeKeyListDefaultType() throws InterruptedException, ExecutionException
+    {
+        testLargeKeyList(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testLargeKeyListTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testLargeKeyList(bucketType.toString());
+    }
+    
+    private void testLargeKeyList(String bucketType) throws InterruptedException, ExecutionException
     {
         final String baseKey = "my_key";
         final String value = "{\"value\":\"value\"}";
-        final BinaryValue bName = BinaryValue.unsafeCreate((bucketName.toString() + "_3").getBytes());
+        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_3");
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
         
@@ -106,8 +140,7 @@ public class ITestListKeysOperation extends ITestBase
 
                     if (expected == received.intValue())
                     {
-                        Location location = new Location(bName);
-                        ListKeysOperation klistOp = new ListKeysOperation.Builder(location).build();
+                        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
                         cluster.execute(klistOp);
                         List<BinaryValue> kList;
                         kList = klistOp.get().getKeys();
@@ -128,7 +161,7 @@ public class ITestListKeysOperation extends ITestBase
             semaphore.acquire();
             BinaryValue key = BinaryValue.unsafeCreate((baseKey + i).getBytes());
             RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-            Location location = new Location(bName).setKey(key);
+            Location location = new Location(ns, key);
             StoreOperation storeOp = 
                 new StoreOperation.Builder(location)
                 .withContent(rObj)
@@ -139,7 +172,7 @@ public class ITestListKeysOperation extends ITestBase
         }
         
         latch.await();
-        ITestBase.resetAndEmptyBucket(bName);
+        ITestBase.resetAndEmptyBucket(ns);
         
     }
 }

@@ -20,7 +20,7 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.functions.Function;
 
 
@@ -28,10 +28,10 @@ import com.basho.riak.client.query.functions.Function;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreBucketProperties extends RiakCommand<Void, Location>
+public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
 {
 
-	private final Location location;
+	private final Namespace namespace;
 	private final Boolean allowMulti;
 	private final String backend;
 	private final Boolean basicQuorum;
@@ -58,7 +58,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Location>
 	StoreBucketProperties(Builder builder)
 	{
 
-		this.location = builder.location;
+		this.namespace = builder.namespace;
 		this.allowMulti = builder.allowMulti;
 		this.backend = builder.backend;
 		this.bigVClock = builder.bigVClock;
@@ -85,13 +85,13 @@ public final class StoreBucketProperties extends RiakCommand<Void, Location>
 	}
 
 	@Override
-    protected final RiakFuture<Void, Location> executeAsync(RiakCluster cluster)
+    protected final RiakFuture<Void, Namespace> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Void, Location> coreFuture =
+        RiakFuture<Void, Namespace> coreFuture =
             cluster.execute(buildCoreOperation());
     
-        CoreFutureAdapter<Void, Location, Void, Location> future =
-            new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
+        CoreFutureAdapter<Void, Namespace, Void, Namespace> future =
+            new CoreFutureAdapter<Void, Namespace, Void, Namespace>(coreFuture)
             {
                 @Override
                 protected Void convertResponse(Void coreResponse)
@@ -100,7 +100,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Location>
                 }
 
                 @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
+                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }
@@ -113,7 +113,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Location>
     private StoreBucketPropsOperation buildCoreOperation()
     {
         StoreBucketPropsOperation.Builder builder = 
-            new StoreBucketPropsOperation.Builder(location);
+            new StoreBucketPropsOperation.Builder(namespace);
 		
 		if (allowMulti != null)
 		{
@@ -231,7 +231,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Location>
 	public static class Builder
 	{
 
-		private final Location location;
+		private final Namespace namespace;
 		private Boolean allowMulti;
 		private String backend;
 		private Boolean basicQuorum;
@@ -256,9 +256,13 @@ public final class StoreBucketProperties extends RiakCommand<Void, Location>
 		private String searchIndex;
 
 
-		public Builder(Location location)
+		public Builder(Namespace namespace)
 		{
-			this.location = location;
+			if (namespace == null)
+            {
+                throw new IllegalArgumentException("Namespace cannot be null");
+            }
+            this.namespace = namespace;
 		}
 
 		/**

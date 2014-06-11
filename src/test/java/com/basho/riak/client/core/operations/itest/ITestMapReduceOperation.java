@@ -19,6 +19,7 @@ import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,12 +27,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
@@ -39,9 +41,23 @@ import static org.junit.Assert.assertNotNull;
  * @since 2.0
  */
 public class ITestMapReduceOperation extends ITestBase
-{
+{    
     @Test
-    public void testBasicMR() throws InterruptedException, ExecutionException, IOException
+    public void testBasicMRDefaultType() throws InterruptedException, ExecutionException, IOException
+    {
+        // This will currently fail as the 4 arity input in broken in Riak. Specifying 
+        // "default" doesn't work. I've worked around this in the User API. 
+        testBasicMR(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
+    }
+    
+    @Test
+    public void testBasicMRTestType() throws InterruptedException, ExecutionException, IOException
+    {
+        assumeTrue(testBucketType);
+        testBasicMR(new Namespace(bucketType, bucketName));
+    }
+    
+    private void testBasicMR(Namespace namespace) throws InterruptedException, ExecutionException, IOException
     {
         RiakObject obj = new RiakObject();
                             
@@ -50,7 +66,7 @@ public class ITestMapReduceOperation extends ITestBase
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'"));
-        Location location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p1".getBytes()));
+        Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -65,7 +81,7 @@ public class ITestMapReduceOperation extends ITestBase
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
                     "close by her."));
         
-        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p2".getBytes()));
+        location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -78,7 +94,7 @@ public class ITestMapReduceOperation extends ITestBase
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
                     "well."));
-        location = new Location(bucketName).setKey(BinaryValue.unsafeCreate("p3".getBytes()));
+        location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -88,7 +104,11 @@ public class ITestMapReduceOperation extends ITestBase
         storeOp.get();
             
         String bName = bucketName.toString();
-        String query = "{\"inputs\":[[\"" + bName + "\",\"p1\"],[\"" + bName + "\",\"p2\"],[\"" + bName + "\",\"p3\"]]," +
+        String bType = bucketType.toString();
+        
+        String query = "{\"inputs\":[[\"" + bName + "\",\"p1\",\"\",\"" + bType + "\"]," +
+            "[\"" + bName + "\",\"p2\",\"\",\"" + bType + "\"]," +
+            "[\"" + bName + "\",\"p3\",\"\",\"" + bType + "\"]]," +
             "\"query\":[{\"map\":{\"language\":\"javascript\",\"source\":\"" +
             "function(v) {var m = v.values[0].data.toLowerCase().match(/\\w*/g); var r = [];" +
             "for(var i in m) {if(m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
@@ -101,6 +121,8 @@ public class ITestMapReduceOperation extends ITestBase
                 .build();
         
         cluster.execute(mrOp);
+        mrOp.await();
+        assertTrue(mrOp.isSuccess());
         ArrayNode resultList = mrOp.get().getResults().get(1);
         
         // The query should return one result which is a JSON array containing a 
@@ -113,7 +135,7 @@ public class ITestMapReduceOperation extends ITestBase
         Map<String, Integer> resultMap = oMapper.readValue(json, Map.class);
         
         assertNotNull(resultMap.containsKey("the"));
-        assertEquals(resultMap.get("the"), Integer.valueOf(8));
+        assertEquals(Integer.valueOf(8),resultMap.get("the"));
         
     }
 }

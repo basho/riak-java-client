@@ -27,6 +27,7 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.indexes.IntIndexQuery;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -71,10 +72,10 @@ public class ITestIntIndexQuery extends ITestBase
         svFuture.await();
         assertTrue(svFuture.isSuccess());
         
-        Location loc = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         
         IntIndexQuery iiq = 
-            new IntIndexQuery.Builder(loc, "test_index", 123456L).withKeyAndIndex(true).build();
+            new IntIndexQuery.Builder(ns, "test_index", 123456L).withKeyAndIndex(true).build();
         IntIndexQuery.Response iResp = client.execute(iiq);
         
         assertTrue(iResp.hasEntries());
@@ -125,10 +126,10 @@ public class ITestIntIndexQuery extends ITestBase
         svFuture.await();
         assertTrue(svFuture.isSuccess());
         
-        Location loc = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         
         IntIndexQuery iiq = 
-            new IntIndexQuery.Builder(loc, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
+            new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .build();
         

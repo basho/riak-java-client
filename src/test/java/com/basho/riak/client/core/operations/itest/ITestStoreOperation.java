@@ -18,12 +18,14 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.query.BucketProperties;
+import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import org.junit.Test;
 
 /**
@@ -37,12 +39,24 @@ public class ITestStoreOperation extends ITestBase
     final private String value = "{\"value\":\"some value\"}";
     
     @Test
-    public void testSimpleStore() throws InterruptedException, ExecutionException
+    public void testSimpleStoreDefaultType() throws InterruptedException, ExecutionException
+    {
+        testSimpleStore(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void testSimpleStoreTestType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testSimpleStore(bucketType.toString());
+    }
+    
+    private void testSimpleStore(String bucketType) throws InterruptedException, ExecutionException
     {
         
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
-        
-        Location location = new Location(bucketName).setKey(key);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location location = new Location(ns, key);
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -62,23 +76,33 @@ public class ITestStoreOperation extends ITestBase
     }
     
     @Test
-    public void testStoreWithVClockAndReturnbody() throws InterruptedException, ExecutionException
+    public void testStoreWithVClockAndReturnbodyDefaultType() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testStoreWithVClockAndReturnbody(bucketType.toString());
+    }
+    
+    @Test
+    public void testStoreWithVClockAndReturnbodyTestType() throws InterruptedException, ExecutionException
+    {
+        testStoreWithVClockAndReturnbody(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    private void testStoreWithVClockAndReturnbody(String bucketType) throws InterruptedException, ExecutionException
     {
         // Enable allow_multi, store a new item, then do a read/modify/write 
         // using the vclock
-        BinaryValue bName = 
-            BinaryValue.unsafeCreate((bucketName.toString() + "_1").getBytes());
         
-        Location location = new Location(bName);
+        Namespace ns = new Namespace(bucketType, bucketName.toString() + "_1");
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
         
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
-        location.setKey(key);
+        Location location = new Location(ns, key);
        
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
@@ -105,7 +129,7 @@ public class ITestStoreOperation extends ITestBase
         
         assertEquals(obj.getValue().toString(), "changed");
         
-        resetAndEmptyBucket(bName);
+        resetAndEmptyBucket(ns);
     }
     
 }

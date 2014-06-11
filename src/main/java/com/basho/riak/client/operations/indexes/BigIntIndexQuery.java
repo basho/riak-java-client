@@ -21,6 +21,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
-            return new Response(location, coreResponse, converter);
+            return new Response(namespace, coreResponse, converter);
         }
 
         @Override
@@ -95,14 +96,14 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
 
-        public Init(Location location, String indexName, S start, S end)
+        public Init(Namespace namespace, String indexName, S start, S end)
         {
-            super(location, indexName + Type._INT, start, end);
+            super(namespace, indexName + Type._INT, start, end);
         }
 
-        public Init(Location location, String indexName, S match)
+        public Init(Namespace namespace, String indexName, S match)
         {
-            super(location, indexName + Type._INT, match);
+            super(namespace, indexName + Type._INT, match);
         }
         
         @Override
@@ -115,14 +116,14 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
     public static class Builder extends Init<BigInteger, Builder>
     {
 
-        public Builder(Location location, String indexName, BigInteger start, BigInteger end)
+        public Builder(Namespace namespace, String indexName, BigInteger start, BigInteger end)
         {
-            super(location, indexName, start, end);
+            super(namespace, indexName, start, end);
         }
 
-        public Builder(Location location, String indexName, BigInteger match)
+        public Builder(Namespace namespace, String indexName, BigInteger match)
         {
-            super(location, indexName, match);
+            super(namespace, indexName, match);
         }
 
         @Override
@@ -139,7 +140,7 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
     
     public static class Response extends SecondaryIndexQuery.Response<BigInteger>
     {
-        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BigInteger> converter)
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BigInteger> converter)
         {
             super(queryLocation, coreResponse, converter);
         }

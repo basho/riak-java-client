@@ -17,6 +17,7 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -45,12 +46,12 @@ public class StringConverter extends Converter<String>
     }
     
     @Override
-    public Converter.OrmExtracted fromDomain(String domainObject, Location location)
+    public Converter.OrmExtracted fromDomain(String domainObject, Namespace namespace, BinaryValue key)
     {
         RiakObject obj = new RiakObject()
                         .setValue(BinaryValue.create(domainObject))
                         .setContentType("text/plain");
-        return new Converter.OrmExtracted(obj, location);
+        return new Converter.OrmExtracted(obj, namespace, key);
     }
     
     @Override

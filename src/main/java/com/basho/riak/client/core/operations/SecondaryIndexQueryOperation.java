@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -155,8 +156,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
             this.query = query;
             
-            pbReqBuilder.setBucket(ByteString.copyFrom(query.location.getBucketName().unsafeGetValue()))
-                        .setType(ByteString.copyFrom(query.location.getBucketType().unsafeGetValue()))
+            pbReqBuilder.setBucket(ByteString.copyFrom(query.namespace.getBucketName().unsafeGetValue()))
+                        .setType(ByteString.copyFrom(query.namespace.getBucketType().unsafeGetValue()))
                         .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
                         .setReturnTerms(query.returnKeyAndIndex);
             
@@ -210,7 +211,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     
     public static class Query
     {
-        private final Location location;
+        private final Namespace namespace;
         private final BinaryValue indexName;
         private final BinaryValue indexKey;
         private final BinaryValue rangeStart;
@@ -233,7 +234,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.continuation = builder.continuation;
             this.paginationSort = builder.paginationSort;
             this.termFilter = builder.termFilter;
-            this.location = builder.location;
+            this.namespace = builder.namespace;
             this.timeout = builder.timeout;
         }
 
@@ -241,9 +242,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
          * Return the location for the Query.
          * @return the location.
          */
-        public Location getLocation()
+        public Namespace getNamespace()
         {
-            return location;
+            return namespace;
         }
         
         /**
@@ -329,7 +330,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         
         public static class Builder
         {
-            private final Location location;
+            private final Namespace namespace;
             private final BinaryValue indexName;
             private BinaryValue indexKey;
             private BinaryValue rangeStart;
@@ -344,21 +345,21 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             /**
             * Constructs a builder for a (2i) Query. 
             * The index name must be the complete name with the _int or _bin suffix.
-            * @param location the location for this Query
+            * @param namespace the namespace for this Query
             * @param indexName the name of the index (including suffix).
             */
-            public Builder(Location location, BinaryValue indexName)
+            public Builder(Namespace namespace, BinaryValue indexName)
             {
-                if (location == null)
+                if (namespace == null)
                 {
-                    throw new IllegalArgumentException("Location cannot be null");
+                    throw new IllegalArgumentException("Namespace cannot be null");
                 }
                 else if (null == indexName || indexName.length() == 0)
                 {
                     throw new IllegalArgumentException("Index name cannot be null or zero length");
                 }
                 this.indexName = indexName;
-                this.location = location;
+                this.namespace = namespace;
             }
             
             /**

@@ -11,6 +11,7 @@ import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.UpdateMap;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Assume;
@@ -38,7 +39,7 @@ public class ITestDatatype extends ITestBase
 	private final String loggedIn = "logged-in";
 	private final String shoppingCart = "cart";
 
-	private final Location carts = new Location(bucketName).setBucketType(mapBucketType);
+    private final Namespace carts = new Namespace(mapBucketType, bucketName);
 
 	private final RiakClient client = new RiakClient(cluster);
 
@@ -51,9 +52,7 @@ public class ITestDatatype extends ITestBase
 		 * Update some info about a user in a table of users
 		 */
 
-		RiakClient client = new RiakClient(cluster);
-
-		resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
+		resetAndEmptyBucket(carts);
 
 		BinaryValue key = BinaryValue.create("user-info");
 
@@ -96,8 +95,8 @@ public class ITestDatatype extends ITestBase
 			.build();
 		UpdateMap.Response updateResponse = client.execute(update);
 
-        Location loc = new Location(carts.getBucketName()).setBucketType(carts.getBucketType());
-		FetchMap fetch = new FetchMap.Builder(loc.setKey(updateResponse.getGeneratedKey())).build();
+        Location loc = new Location(carts, updateResponse.getGeneratedKey());
+		FetchMap fetch = new FetchMap.Builder(loc).build();
 		FetchMap.Response fetchResponse = client.execute(fetch);
 
 		// users
@@ -140,7 +139,7 @@ public class ITestDatatype extends ITestBase
 	public void testConflict() throws ExecutionException, InterruptedException
 	{
 
-		resetAndEmptyBucket(new Location(bucketName).setBucketType(mapBucketType));
+		resetAndEmptyBucket(carts);
 
 		// Insert a Map and Counter into logins and observe both counter and map returned
 		UpdateMap conflictedUpdateCmd =

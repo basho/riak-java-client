@@ -21,6 +21,7 @@ import com.basho.riak.client.annotations.RiakVClock;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.Converter.OrmExtracted;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -59,12 +60,13 @@ public class ConverterFactoryTest
         pojo.bar = "bar_value";
         
         
-        OrmExtracted orm = converter.fromDomain(pojo , null);
+        OrmExtracted orm = converter.fromDomain(pojo , null, null);
         RiakObject ro = orm.getRiakObject();
         
         assertNotNull(ro.getValue());
         
-        Pojo pojo2 = converter.toDomain(ro, new Location("bucket"));
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
+        Pojo pojo2 = converter.toDomain(ro, new Location(ns, "key"));
         
         assertEquals(pojo.foo, pojo2.foo);
         assertEquals(pojo.bar, pojo2.bar);
@@ -93,7 +95,7 @@ public class ConverterFactoryTest
         RiakObject o2 = converter.toDomain(o, null);
         assertEquals(o, o2);
         
-        OrmExtracted orm = converter.fromDomain(o, null);
+        OrmExtracted orm = converter.fromDomain(o, null, null);
         assertEquals(o, orm.getRiakObject());
         
         

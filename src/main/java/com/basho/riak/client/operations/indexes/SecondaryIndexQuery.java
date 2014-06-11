@@ -21,6 +21,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     }
     
     
-    protected final Location location;
+    protected final Namespace namespace;
     protected final String indexName;
     protected final BinaryValue continuation;
     protected final T match;
@@ -71,7 +72,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
 
     protected SecondaryIndexQuery(Init<T,?> builder)
     {
-        this.location = builder.location;
+        this.namespace = builder.namespace;
         this.indexName = builder.indexName;
         this.continuation = builder.continuation;
         this.match = builder.match;
@@ -88,9 +89,9 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
      * Get the location for this query.
      * @return the location encompassing a bucket and bucket type.
      */
-    public Location getLocation()
+    public Namespace getNamespace()
     {
-        return location;
+        return namespace;
     }
 
     /**
@@ -188,7 +189,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         IndexConverter<T> converter = getConverter();
 
         SecondaryIndexQueryOperation.Query.Builder coreQueryBuilder =
-            new SecondaryIndexQueryOperation.Query.Builder(location, BinaryValue.create(indexName))
+            new SecondaryIndexQueryOperation.Query.Builder(namespace, BinaryValue.create(indexName))
                 .withContinuation(continuation)
                 .withReturnKeyAndIndex(returnTerms)
                 .withPaginationSort(paginationSort);
@@ -238,7 +239,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     
     public static abstract class Init<S, T extends Init<S,T>>
     {
-        private final Location location;
+        private final Namespace namespace;
         private final String indexName;
         private volatile BinaryValue continuation;
         private volatile S match;
@@ -258,14 +259,14 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
          * Returns all objects in Riak that have an index value
          * in the specified range.
          * </p>
-         * @param location the location for this query.
+         * @param namespace the namespace for this query.
          * @param indexName the indexname
          * @param start the start index value
          * @param end the end index value
          */
-        public Init(Location location, String indexName, S start, S end)
+        public Init(Namespace namespace, String indexName, S start, S end)
         {
-            this.location = location;
+            this.namespace = namespace;
             this.indexName = indexName;
             this.start = start;
             this.end = end;
@@ -277,13 +278,13 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
          * Returns all objects in Riak that have an index value matching the
          * one supplied.
          * </p>
-         * @param location the location for this query
+         * @param namespace the namespace for this query
          * @param indexName the index name
          * @param match the index value.
          */
-        public Init(Location location, String indexName, S match)
+        public Init(Namespace namespace, String indexName, S match)
         {
-            this.location = location;
+            this.namespace = namespace;
             this.indexName = indexName;
             this.match = match;
         }
@@ -377,9 +378,9 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     {
         final IndexConverter<T> converter;
         final SecondaryIndexQueryOperation.Response coreResponse;
-        final Location queryLocation;
+        final Namespace queryLocation;
         
-        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<T> converter)
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<T> converter)
         {
             this.coreResponse = coreResponse;
             this.converter = converter;
@@ -403,9 +404,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         
         protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
         {
-            Location loc = new Location(queryLocation.getBucketName())
-                                .setBucketType(queryLocation.getBucketType())
-                                .setKey(e.getObjectKey());
+            Location loc = new Location(queryLocation, e.getObjectKey());
             return loc;
         }
                 

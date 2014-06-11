@@ -23,6 +23,7 @@ import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.BinaryValue;
@@ -43,9 +44,9 @@ public class ITestSearchOperation extends ITestBase
     {
         Assume.assumeTrue(legacyRiakSearch);
         
-        Location location = new Location(bucketName);
+        Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         StoreBucketPropsOperation op = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(namespace)
                 .withLegacyRiakSearchEnabled(true)
                 .build();
         
@@ -82,9 +83,9 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(putOp);
         putOp.await();
         
-        Location location = new Location(searchBucket).setBucketType(yokozunaBucketType);
+        Namespace namespace = new Namespace(yokozunaBucketType, searchBucket);
         StoreBucketPropsOperation propsOp = 
-            new StoreBucketPropsOperation.Builder(location)
+            new StoreBucketPropsOperation.Builder(namespace)
                 .withSearchIndex("test_index")
                 .build();
         cluster.execute(propsOp);
@@ -110,7 +111,7 @@ public class ITestSearchOperation extends ITestBase
             assertEquals(5, map.size()); // {_yz_rk=p3, _yz_rb=search_bucket, _yz_rt=default, score=1.00000000000000000000e+00, _yz_id=default_search_bucket_p3_25}
         }
         
-        resetAndEmptyBucket(location);
+        resetAndEmptyBucket(namespace);
         
     }
     
@@ -125,7 +126,8 @@ public class ITestSearchOperation extends ITestBase
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'"));
 
-        Location location = new Location(searchBucket).setBucketType(searchBucketType).setKey(BinaryValue.unsafeCreate("p1".getBytes()));
+        Namespace namespace = new Namespace(searchBucketType, searchBucket);
+        Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
         StoreOperation storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -141,7 +143,7 @@ public class ITestSearchOperation extends ITestBase
                     "close by her."));
         
         obj.setContentType("text/plain");
-        location = new Location(searchBucket).setBucketType(searchBucketType).setKey(BinaryValue.unsafeCreate("p2".getBytes()));
+        location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)
@@ -156,7 +158,7 @@ public class ITestSearchOperation extends ITestBase
                     "well."));
         
         obj.setContentType("text/plain");
-        location = new Location(searchBucket).setBucketType(searchBucketType).setKey(BinaryValue.unsafeCreate("p3".getBytes()));
+        location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
                 .withContent(obj)

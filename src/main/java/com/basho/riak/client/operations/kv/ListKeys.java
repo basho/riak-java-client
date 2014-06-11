@@ -21,6 +21,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
@@ -30,35 +31,35 @@ import java.util.List;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
+public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 {
 
-	private final Location location;
+	private final Namespace namespace;
 	private final int timeout;
 
 	ListKeys(Builder builder)
 	{
-		this.location = builder.location;
+		this.namespace = builder.namespace;
 		this.timeout = builder.timeout;
 	}
 
 	@Override 
-    protected final RiakFuture<ListKeys.Response, Location> executeAsync(RiakCluster cluster)
+    protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<ListKeysOperation.Response, Location> coreFuture = 
+        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture = 
             cluster.execute(buildCoreOperation());
         
-        CoreFutureAdapter<ListKeys.Response, Location, ListKeysOperation.Response, Location> future =
-            new CoreFutureAdapter<ListKeys.Response, Location, ListKeysOperation.Response, Location>(coreFuture)
+        CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace> future =
+            new CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace>(coreFuture)
             {
                 @Override
                 protected Response convertResponse(ListKeysOperation.Response coreResponse)
                 {
-                    return new Response(location.getBucketType(), location.getBucketName(), coreResponse.getKeys());
+                    return new Response(namespace, coreResponse.getKeys());
                 }
 
                 @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
+                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
                 {
                     return coreQueryInfo;
                 }
@@ -69,7 +70,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
     
     private ListKeysOperation buildCoreOperation()
     {
-        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(location);
+        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
 
 		if (timeout > 0)
 		{
@@ -82,35 +83,31 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 	public static class Response implements Iterable<Location>
 	{
 
-		private final BinaryValue bucket;
-        private final BinaryValue type;
+		private final Namespace namespace;
 		private final List<BinaryValue> keys;
 
-		public Response(BinaryValue type, BinaryValue bucket, List<BinaryValue> keys)
+		public Response(Namespace namespace, List<BinaryValue> keys)
 		{
-			this.bucket = bucket;
-			this.keys = keys;
-            this.type = type;
-		}
+			this.namespace = namespace;
+            this.keys = keys;
+        }
 
 		@Override
 		public Iterator<Location> iterator()
 		{
-			return new Itr(type, bucket, keys.iterator());
+			return new Itr(namespace, keys.iterator());
 		}
 	}
 
 	private static class Itr implements Iterator<Location>
 	{
 		private final Iterator<BinaryValue> iterator;
-		private final BinaryValue bucket;
-        private final BinaryValue type;
+		private final Namespace namespace;
 
-		private Itr(BinaryValue type, BinaryValue bucket, Iterator<BinaryValue> iterator)
+		private Itr(Namespace namespace, Iterator<BinaryValue> iterator)
 		{
 			this.iterator = iterator;
-			this.bucket = bucket;
-            this.type = type;
+			this.namespace = namespace;
 		}
 
 		@Override
@@ -123,7 +120,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 		public Location next()
 		{
 			BinaryValue key = iterator.next();
-			return new Location(bucket).setBucketType(type).setKey(key);
+			return new Location(namespace, key);
 		}
 
 		@Override
@@ -135,12 +132,16 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Location>
 
 	public static class Builder
 	{
-		private final Location location;
+		private final Namespace namespace;
 		private int timeout;
 
-		public Builder(Location location)
+		public Builder(Namespace namespace)
 		{
-			this.location = location;
+			if (namespace == null)
+            {
+                throw new IllegalArgumentException("Namespace cannot be null");
+            }
+            this.namespace = namespace;
 		}
 
 		public Builder withTimeout(int timeout)

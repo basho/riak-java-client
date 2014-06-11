@@ -17,6 +17,7 @@ package com.basho.riak.client.convert;
 
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 
@@ -41,9 +42,9 @@ public final class PassThroughConverter extends Converter<RiakObject>
     }
     
     @Override
-    public Converter.OrmExtracted fromDomain(RiakObject domainObject, Location location)
+    public Converter.OrmExtracted fromDomain(RiakObject domainObject, Namespace namespace, BinaryValue key)
     {
-        return new Converter.OrmExtracted(domainObject, location);
+        return new Converter.OrmExtracted(domainObject, namespace, key);
     }
     
     

@@ -21,6 +21,7 @@ import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.mapreduce.BucketKeyMapReduce;
 import com.basho.riak.client.operations.mapreduce.MapReduce;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.query.functions.Function;
 import com.basho.riak.client.util.BinaryValue;
@@ -36,7 +37,6 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Assume;
-import org.junit.Ignore;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -56,7 +56,8 @@ public class ITestBucketKeyMapReduce extends ITestBase
 				"book her sister was reading, but it had no pictures or conversations in " +
 				"it, 'and what is the use of a book,' thought Alice 'without pictures or " +
 				"conversation?'"));
-		Location location = new Location(bucketName).setBucketType(bucketType).setKey("p1");
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+		Location location = new Location(ns, "p1");
 		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
 		obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
@@ -65,7 +66,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
 				"picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
 				"close by her."));
 
-		location = new Location(bucketName).setBucketType(bucketType).setKey("p2");
+		location = new Location(ns, "p2");
 		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
 
@@ -73,137 +74,106 @@ public class ITestBucketKeyMapReduce extends ITestBase
 				"dipped suddenly down, so suddenly that Alice had not a moment to think " +
 				"about stopping herself before she found herself falling down a very deep " +
 				"well."));
-		location = new Location(bucketName).setBucketType(bucketType).setKey("p3");
+		location = new Location(ns, "p3");
 		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
     }
     
 	@Test
-	public void JsBucketKeyMR() throws InterruptedException, ExecutionException, IOException
-	{
-		initValues("default");
-        
-		MapReduce mr = new BucketKeyMapReduce.Builder()
-				.withLocation(new Location(bucketName).setKey("p1"))
-				.withLocation(new Location(bucketName).setKey("p2"))
-				.withLocation(new Location(bucketName).setKey("p3"))
-				.withMapPhase(Function.newAnonymousJsFunction(
-						"function(v, key_data) {" +
-								"  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
-								"  var r = [];" +
-								"  for(var i in m) {" +
-								"    if(m[i] != '') {" +
-								"      var o = {};" +
-								"      o[m[i]] = 1;" +
-								"      r.push(o);" +
-								"     }" +
-								"  }" +
-								"  return r;" +
-								"}"
-				))
-				.withReducePhase(Function.newAnonymousJsFunction(
-						"function(v, key_data) {" +
-								"  var r = {};" +
-								"  for(var i in v) {" +
-								"    for(var w in v[i]) {" +
-								"      if(w in r)" +
-								"        r[w] += v[i][w];" +
-								"      else" +
-								"        r[w] = v[i][w];" +
-								"     }" +
-								"  }" +
-								"  return [r];" +
-								"}"
-				), true)
-				.build();
-
-		MapReduce.Response response = client.execute(mr);
-		
-        // The query should return one phase result which is a JSON array containing a
-		// single JSON object that is a set of word counts.        
-        ArrayNode resultList = response.getResultForPhase(1);
-
-		assertEquals(1, response.getResultsFromAllPhases().size());
-        
-		String json = resultList.get(0).toString();
-		ObjectMapper oMapper = new ObjectMapper();
-        
-        TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
-        Map<String, Integer> resultMap = oMapper.readValue(json, type);
-
-		assertNotNull(resultMap.containsKey("the"));
-		assertEquals(Integer.valueOf(8), resultMap.get("the"));
-
-	}
-    
-    @Test
-	public void JsBucketKeyMRDiffType() throws InterruptedException, ExecutionException, IOException
-	{
-		Assume.assumeTrue(testBucketType);
-        initValues(bucketType.toString());
-        
-		MapReduce mr = new BucketKeyMapReduce.Builder()
-				.withLocation(new Location(bucketName).setBucketType(bucketType).setKey("p1"))
-				.withLocation(new Location(bucketName).setBucketType(bucketType).setKey("p2"))
-				.withLocation(new Location(bucketName).setBucketType(bucketType).setKey("p3"))
-				.withMapPhase(Function.newAnonymousJsFunction(
-						"function(v, key_data) {" +
-								"  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
-								"  var r = [];" +
-								"  for(var i in m) {" +
-								"    if(m[i] != '') {" +
-								"      var o = {};" +
-								"      o[m[i]] = 1;" +
-								"      r.push(o);" +
-								"     }" +
-								"  }" +
-								"  return r;" +
-								"}"
-				))
-				.withReducePhase(Function.newAnonymousJsFunction(
-						"function(v, key_data) {" +
-								"  var r = {};" +
-								"  for(var i in v) {" +
-								"    for(var w in v[i]) {" +
-								"      if(w in r)" +
-								"        r[w] += v[i][w];" +
-								"      else" +
-								"        r[w] = v[i][w];" +
-								"     }" +
-								"  }" +
-								"  return [r];" +
-								"}"
-				), true)
-				.build();
-
-		MapReduce.Response response = client.execute(mr);
-		
-        // The query should return one phase result which is a JSON array containing a
-		// single JSON object that is a set of word counts.        
-        ArrayNode resultList = response.getResultForPhase(1);
-
-		assertEquals(1, response.getResultsFromAllPhases().size());
-        
-		String json = resultList.get(0).toString();
-		ObjectMapper oMapper = new ObjectMapper();
-        
-        TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
-        Map<String, Integer> resultMap = oMapper.readValue(json, type);
-
-		assertNotNull(resultMap.containsKey("the"));
-		assertEquals(Integer.valueOf(8), resultMap.get("the"));
-
-	}
-    
-    @Test
-    public void erlangBucketKeyMR() throws ExecutionException, InterruptedException
+    public void JsBucketKeyMRDefaultType() throws InterruptedException, ExecutionException, IOException
     {
-        initValues("default");
+        JsBucketKeyMR(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    @Test
+    public void JsBucketKeyMRTestType() throws InterruptedException, ExecutionException, IOException
+    {
+        //Assume.assumeTrue(testBucketType);
+        JsBucketKeyMR(bucketType.toString());
+    }
+    
+	private void JsBucketKeyMR(String bucketType) throws InterruptedException, ExecutionException, IOException
+	{
+		initValues(bucketType);
+        
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+		MapReduce mr = new BucketKeyMapReduce.Builder()
+				.withLocation(new Location(ns, "p1"))
+				.withLocation(new Location(ns, "p2"))
+				.withLocation(new Location(ns, "p3"))
+				.withMapPhase(Function.newAnonymousJsFunction(
+						"function(v, key_data) {" +
+								"  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
+								"  var r = [];" +
+								"  for(var i in m) {" +
+								"    if(m[i] != '') {" +
+								"      var o = {};" +
+								"      o[m[i]] = 1;" +
+								"      r.push(o);" +
+								"     }" +
+								"  }" +
+								"  return r;" +
+								"}"
+				))
+				.withReducePhase(Function.newAnonymousJsFunction(
+						"function(v, key_data) {" +
+								"  var r = {};" +
+								"  for(var i in v) {" +
+								"    for(var w in v[i]) {" +
+								"      if(w in r)" +
+								"        r[w] += v[i][w];" +
+								"      else" +
+								"        r[w] = v[i][w];" +
+								"     }" +
+								"  }" +
+								"  return [r];" +
+								"}"
+				), true)
+				.build();
+
+		MapReduce.Response response = client.execute(mr);
+		
+        // The query should return one phase result which is a JSON array containing a
+		// single JSON object that is a set of word counts.        
+        ArrayNode resultList = response.getResultForPhase(1);
+
+		assertEquals(1, response.getResultsFromAllPhases().size());
+        
+		String json = resultList.get(0).toString();
+		ObjectMapper oMapper = new ObjectMapper();
+        
+        TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
+        Map<String, Integer> resultMap = oMapper.readValue(json, type);
+
+		assertNotNull(resultMap.containsKey("the"));
+		assertEquals(Integer.valueOf(8), resultMap.get("the"));
+
+	}
+    
+    @Test
+    public void erlangBucketKeyMRDefaultType() throws ExecutionException, InterruptedException
+    {
+        erlangBucketKeyMR(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+    
+    // This will fail due to a bug in Riak. Named functions in a type other than default are
+    // broken.
+    @Test
+    public void erlangBucketKeyMRTestType() throws ExecutionException, InterruptedException
+    {
+        //Assume.assumeTrue(testBucketType);
+        erlangBucketKeyMR(bucketType.toString());
+    }
+    
+    private void erlangBucketKeyMR(String bucketType) throws ExecutionException, InterruptedException
+    {
+        initValues(bucketType);
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
         
         MapReduce mr = new BucketKeyMapReduce.Builder()
-				.withLocation(new Location(bucketName).setKey("p1"))
-				.withLocation(new Location(bucketName).setKey("p2"))
-				.withLocation(new Location(bucketName).setKey("p3"))
+				.withLocation(new Location(ns, "p1"))
+				.withLocation(new Location(ns, "p2"))
+				.withLocation(new Location(ns, "p3"))
                 .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false) 
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce","reduce_sort"), true)
                 .build();
@@ -212,28 +182,6 @@ public class ITestBucketKeyMapReduce extends ITestBase
         
         assertEquals(3, response.getResultsFromAllPhases().size());
         
-    }
-    
-    // This will currently blow up due to a bug in riak. Any named funcs (JS or
-    // erlang) fail if used with a bucket type that's not "default"
-    @Ignore
-    @Test
-    public void differentBucketType() throws ExecutionException, InterruptedException
-    {
-        //Assume.assumeTrue(testBucketType);
-        initValues(bucketType.toString());
-        
-        MapReduce mr = new BucketKeyMapReduce.Builder()
-				.withLocation(new Location(bucketName).setBucketType(bucketType).setKey("p1"))
-				.withLocation(new Location(bucketName).setBucketType(bucketType).setKey("p2"))
-				.withLocation(new Location(bucketName).setBucketType(bucketType).setKey("p3"))
-                .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), false) 
-                .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
-                .build();
-        
-        MapReduce.Response response = client.execute(mr);
-        
-        assertEquals(3, response.getResultsFromAllPhases().size());
     }
     
 }

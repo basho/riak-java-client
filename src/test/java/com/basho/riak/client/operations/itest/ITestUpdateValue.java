@@ -24,6 +24,7 @@ import com.basho.riak.client.operations.kv.StoreValue.Option;
 import com.basho.riak.client.operations.kv.UpdateValue;
 import com.basho.riak.client.operations.kv.UpdateValue.Update;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
@@ -39,8 +40,8 @@ public class ITestUpdateValue extends ITestBase
     public void simpleTest() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        
-        Location loc = new Location(bucketName).setKey("test_update_key1");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_update_key1");
         UpdateValue uv = new UpdateValue.Builder(loc)
                             .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdatePojo())
@@ -61,8 +62,8 @@ public class ITestUpdateValue extends ITestBase
     public void updateAnnotatedPojo() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        
-        Location loc = new Location(bucketName).setKey("test_update_key2");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Location loc = new Location(ns, "test_update_key2");
         UpdateValue uv = new UpdateValue.Builder(loc)
                             .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdateAnnotatedPojo())
@@ -72,11 +73,11 @@ public class ITestUpdateValue extends ITestBase
         RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
         
         assertNotNull(rap.bucketName);
-        assertEquals(loc.getBucketNameAsString(), rap.bucketName);
+        assertEquals(ns.getBucketNameAsString(), rap.bucketName);
         assertNotNull(rap.key);
         assertEquals(loc.getKeyAsString(), rap.key);
         assertNotNull(rap.bucketType);
-        assertEquals(loc.getBucketTypeAsString(), rap.bucketType);
+        assertEquals(ns.getBucketTypeAsString(), rap.bucketType);
         assertNotNull(rap.contentType);
         assertEquals("application/json", rap.contentType);
         assertNotNull(rap.vclock);
@@ -87,20 +88,6 @@ public class ITestUpdateValue extends ITestBase
         assertNotNull(rap.value);
         assertEquals("updated value", rap.value);
         
-        
-    }
-    
-    @Test(expected=IllegalArgumentException.class)
-    public void invalidLocation() throws ExecutionException, InterruptedException
-    {
-        RiakClient client = new RiakClient(cluster);
-        
-        Location loc = new Location(bucketName);
-        UpdateValue uv = new UpdateValue.Builder(loc)
-                            .withStoreOption(Option.RETURN_BODY, true)
-                            .withUpdate(new UpdateAnnotatedPojo())
-                            .build();
-        UpdateValue.Response resp = client.execute(uv);
         
     }
     

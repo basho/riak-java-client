@@ -19,7 +19,7 @@ import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.BucketPropertiesConverter;
 import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
@@ -31,15 +31,15 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsOperation.Response, RiakPB.RpbGetBucketResp, Location>
+public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsOperation.Response, RiakPB.RpbGetBucketResp, Namespace>
 {
     private final RiakPB.RpbGetBucketReq.Builder reqBuilder;
-    private final Location location;
+    private final Namespace namespace;
     
     public FetchBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
-        this.location = builder.location;
+        this.namespace = builder.namespace;
     }
     
     @Override
@@ -72,30 +72,30 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
     }
 
     @Override
-    public Location getQueryInfo()
+    public Namespace getQueryInfo()
     {
-        return location;
+        return namespace;
     }
     
     public static class Builder
     {
         private final RiakPB.RpbGetBucketReq.Builder reqBuilder = 
             RiakPB.RpbGetBucketReq.newBuilder();
-        private final Location location;
+        private final Namespace namespace;
         
         /**
          * Construct a builder for a FetchBucketPropsOperation.
-         * @param location The location of the bucket.
+         * @param namespace The namespace for the bucket.
          */
-        public Builder(Location location)
+        public Builder(Namespace namespace)
         {
-            if (location == null)
+            if (namespace == null)
             {
-                throw new IllegalArgumentException("Location cannot be null");
+                throw new IllegalArgumentException("Namespace cannot be null");
             }
-            reqBuilder.setBucket(ByteString.copyFrom(location.getBucketName().unsafeGetValue()));
-            reqBuilder.setType(ByteString.copyFrom(location.getBucketType().unsafeGetValue()));
-            this.location = location;
+            reqBuilder.setBucket(ByteString.copyFrom(namespace.getBucketName().unsafeGetValue()));
+            reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
+            this.namespace = namespace;
         }
         
         public FetchBucketPropsOperation build()

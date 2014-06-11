@@ -1,6 +1,7 @@
 package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.filters.KeyFilter;
 import com.basho.riak.client.query.functions.Function;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -53,7 +54,7 @@ public class MapReduceSpecSerializerTest
 		phases.add(new MapPhase(Function.newNamedJsFunction("map_func")));
 		phases.add(new ReducePhase(Function.newNamedJsFunction("reduce_func")));
 		phases.add(new LinkPhase("bucket", "tag"));
-		BucketInput input = new BucketInput(new Location("bucket"), Collections.<KeyFilter>emptyList());
+		BucketInput input = new BucketInput(new Namespace("bucket"), Collections.<KeyFilter>emptyList());
 
 		MapReduceSpec spec = new MapReduceSpec(input, phases, 1000L);
 

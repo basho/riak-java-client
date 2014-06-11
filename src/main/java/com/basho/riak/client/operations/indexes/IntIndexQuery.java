@@ -21,6 +21,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.operations.CoreFutureAdapter;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
-            return new Response(location, coreResponse, converter);
+            return new Response(namespace, coreResponse, converter);
         }
 
         @Override
@@ -97,14 +98,14 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
 
-        public Init(Location location, String indexName, S start, S end)
+        public Init(Namespace namespace, String indexName, S start, S end)
         {
-            super(location, indexName + Type._INT, start, end);
+            super(namespace, indexName + Type._INT, start, end);
         }
 
-        public Init(Location location, String indexName, S match)
+        public Init(Namespace namespace, String indexName, S match)
         {
-            super(location, indexName + Type._INT, match);
+            super(namespace, indexName + Type._INT, match);
         }
         
         @Override
@@ -117,14 +118,14 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
     public static class Builder extends Init<Long, Builder>
     {
 
-        public Builder(Location location, String indexName, Long start, Long end)
+        public Builder(Namespace namespace, String indexName, Long start, Long end)
         {
-            super(location, indexName, start, end);
+            super(namespace, indexName, start, end);
         }
 
-        public Builder(Location location, String indexName, Long match)
+        public Builder(Namespace namespace, String indexName, Long match)
         {
-            super(location, indexName, match);
+            super(namespace, indexName, match);
         }
 
         @Override
@@ -141,7 +142,7 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
     
     public static class Response extends SecondaryIndexQuery.Response<Long>
     {
-        protected Response(Location queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter)
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter)
         {
             super(queryLocation, coreResponse, converter);
         }

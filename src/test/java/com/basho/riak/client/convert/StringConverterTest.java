@@ -17,6 +17,7 @@
 package com.basho.riak.client.convert;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.RiakObject;
 import com.basho.riak.client.util.BinaryValue;
 import static org.junit.Assert.*;
@@ -33,17 +34,18 @@ public class StringConverterTest
     public void producesRiakObject()
     {
         String foo = "some value";
-        Location loc = new Location("bucket").setKey("key");
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
         StringConverter converter = new StringConverter();
         
         
-        Converter.OrmExtracted orm = converter.fromDomain(foo, loc);
+        Converter.OrmExtracted orm = converter.fromDomain(foo, ns, BinaryValue.create("key"));
         
         assertNotNull(orm.getRiakObject());
         RiakObject obj = orm.getRiakObject();
         assertEquals(foo, obj.getValue().toString());
         assertEquals("text/plain", obj.getContentType());
-        assertEquals(loc, orm.getLocation());
+        assertEquals(ns, orm.getNamespace());
+        assertEquals("key", orm.getKey().toString());
     }
     
     @Test

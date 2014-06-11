@@ -1,6 +1,7 @@
 package com.basho.riak.client.operations.mapreduce;
 
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.filters.EndsWithFilter;
 import com.basho.riak.client.query.filters.KeyFilter;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -44,8 +45,6 @@ public class InputSerializerTest
 	@Test
 	public void testSearchInputSerializer() throws IOException
 	{
-
-		Location bucket = new Location("bucket");
 		SearchInput input = new SearchInput("index", "query");
 
 		jg.writeObject(input);
@@ -57,8 +56,8 @@ public class InputSerializerTest
     @Test
 	public void testBucketInputSerializer() throws IOException
     {
-        Location bucket = new Location("bucket");
-        BucketInput input = new BucketInput(bucket, null);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
+        BucketInput input = new BucketInput(ns, null);
 
 		jg.writeObject(input);
         assertEquals("\"bucket\"", out.toString());
@@ -68,10 +67,10 @@ public class InputSerializerTest
 	public void testBucketInputSerializerWithFilter() throws IOException
 	{
 
-		Location bucket = new Location("bucket");
+		Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
 		ArrayList<KeyFilter> filters = new ArrayList<KeyFilter>();
 		filters.add(new EndsWithFilter("dave"));
-		BucketInput input = new BucketInput(bucket, filters);
+		BucketInput input = new BucketInput(ns, filters);
 
 		jg.writeObject(input);
 
@@ -81,8 +80,8 @@ public class InputSerializerTest
     
     @Test public void testBucketInputSerializerWithType() throws IOException
     {
-        Location bucket = new Location("bucket").setBucketType("type");
-        BucketInput input = new BucketInput(bucket, null);
+        Namespace ns = new Namespace("type", "bucket");
+        BucketInput input = new BucketInput(ns, null);
         jg.writeObject(input);
         assertEquals("[\"type\",\"bucket\"]", out.toString());
     }
@@ -91,10 +90,10 @@ public class InputSerializerTest
 	public void testBucketInputSerializerWithTypeAndFilter() throws IOException
 	{
 
-		Location bucket = new Location("bucket").setBucketType("type");
+		Namespace ns = new Namespace("type", "bucket");
 		ArrayList<KeyFilter> filters = new ArrayList<KeyFilter>();
 		filters.add(new EndsWithFilter("dave"));
-		BucketInput input = new BucketInput(bucket, filters);
+		BucketInput input = new BucketInput(ns, filters);
 
 		jg.writeObject(input);
 
@@ -107,10 +106,10 @@ public class InputSerializerTest
 	@Test
 	public void testSerializeBucketKeyInput() throws IOException
 	{
-
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
 		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<BucketKeyInput.IndividualInput>();
-		inputs.add(new BucketKeyInput.IndividualInput(new Location("bucket").setKey("key")));
-		inputs.add(new BucketKeyInput.IndividualInput(new Location("bucket").setKey("key"), "data"));
+		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key")));
+		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key"), "data"));
 		BucketKeyInput input = new BucketKeyInput(inputs);
 
 		jg.writeObject(input);
@@ -123,10 +122,10 @@ public class InputSerializerTest
     @Test
 	public void testSerializeBucketKeyInputWithType() throws IOException
 	{
-
+        Namespace ns = new Namespace("type", "bucket");
 		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<BucketKeyInput.IndividualInput>();
-		inputs.add(new BucketKeyInput.IndividualInput(new Location("bucket").setBucketType("type").setKey("key")));
-		inputs.add(new BucketKeyInput.IndividualInput(new Location("bucket").setBucketType("type").setKey("key"), "data"));
+		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key")));
+		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key"), "data"));
 		BucketKeyInput input = new BucketKeyInput(inputs);
 
 		jg.writeObject(input);
@@ -139,21 +138,20 @@ public class InputSerializerTest
 	@Test
 	public void testSearializeIndexInputMatch() throws Exception
 	{
-		Location bucket = new Location("bucket");
+		Namespace ns = new Namespace("bucket");
 		IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<String>("dave");
-		IndexInput input = new IndexInput(bucket, "index_int", criteria);
+		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
-
 		assertEquals("{\"bucket\":\"bucket\",\"index\":\"index_int\",\"key\":\"dave\"}", out.toString());
 	}
     
     @Test
 	public void testSearializeIndexInputMatchWithType() throws Exception
 	{
-		Location bucket = new Location("bucket").setBucketType("type");
-		IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<String>("dave");
-		IndexInput input = new IndexInput(bucket, "index_int", criteria);
+		Namespace ns = new Namespace("type", "bucket");
+        IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<String>("dave");
+		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
 
@@ -163,9 +161,9 @@ public class InputSerializerTest
 	@Test
 	public void testSearializeIndexInputRange() throws Exception
 	{
-		Location bucket = new Location("bucket");
+		Namespace ns = new Namespace("bucket");
 		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<Integer>(1, 2);
-		IndexInput input = new IndexInput(bucket, "index_int", criteria);
+		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
 
@@ -175,9 +173,9 @@ public class InputSerializerTest
     @Test
 	public void testSearializeIndexInputRangeWithType() throws Exception
 	{
-		Location bucket = new Location("bucket").setBucketType("type");
+		Namespace ns = new Namespace("type","bucket");
 		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<Integer>(1, 2);
-		IndexInput input = new IndexInput(bucket, "index_int", criteria);
+		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
 

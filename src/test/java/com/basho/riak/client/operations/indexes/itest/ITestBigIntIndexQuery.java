@@ -27,6 +27,7 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.indexes.BigIntIndexQuery;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import java.math.BigInteger;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertEquals;
@@ -72,10 +73,10 @@ public class ITestBigIntIndexQuery extends ITestBase
         svFuture.await();
         assertTrue(svFuture.isSuccess());
         
-        Location loc = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         
         BigIntIndexQuery iiq = 
-            new BigIntIndexQuery.Builder(loc, "test_index", new BigInteger("91234567890123456789012345678901234567890"))
+            new BigIntIndexQuery.Builder(ns, "test_index", new BigInteger("91234567890123456789012345678901234567890"))
                 .withKeyAndIndex(true).build();
         BigIntIndexQuery.Response iResp = client.execute(iiq);
         
@@ -127,10 +128,9 @@ public class ITestBigIntIndexQuery extends ITestBase
         svFuture.await();
         assertTrue(svFuture.isSuccess());
         
-        Location loc = new Location(bucketName);
-        
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         BigIntIndexQuery iiq = 
-            new BigIntIndexQuery.Builder(loc, "test_index", 
+            new BigIntIndexQuery.Builder(ns, "test_index", 
                                          new BigInteger("91234567890123456789012345678901234567890"), 
                                          new BigInteger("91234567890123456789012345678901234567898"))
                 .withKeyAndIndex(true)

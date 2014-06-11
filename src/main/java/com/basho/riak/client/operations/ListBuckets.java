@@ -19,7 +19,7 @@ import com.basho.riak.client.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.Iterator;
@@ -75,7 +75,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         return builder.build();
     }
 
-    public static class Response implements Iterable<Location> {
+    public static class Response implements Iterable<Namespace> {
 
         private final BinaryValue type;
         private final List<BinaryValue> buckets;
@@ -87,13 +87,13 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         }
 
         @Override
-        public Iterator<Location> iterator()
+        public Iterator<Namespace> iterator()
         {
             return new Itr(buckets.iterator(), type);
         }
     }
 
-    private static class Itr implements Iterator<Location>
+    private static class Itr implements Iterator<Namespace>
     {
         private final Iterator<BinaryValue> iterator;
         private final BinaryValue type;
@@ -111,10 +111,10 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         }
 
         @Override
-        public Location next()
+        public Namespace next()
         {
             BinaryValue bucket = iterator.next();
-            return new Location(type).setBucketType(bucket);
+            return new Namespace(type, bucket);
         }
 
         @Override

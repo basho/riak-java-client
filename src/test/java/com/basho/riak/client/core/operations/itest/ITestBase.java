@@ -23,6 +23,7 @@ import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,6 +71,8 @@ public abstract class ITestBase
     @BeforeClass
     public static void setUp() throws UnknownHostException, FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
+        bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
+        
         /**
          * Riak security.
          * 
@@ -95,14 +98,27 @@ public abstract class ITestBase
         yokozunaBucketType = BinaryValue.create("yz_search");
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
         
-        
-        test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
-        // You must create a bucket type 'test_type' if you enable this.
+        /**
+         * Bucket type
+         * 
+         * you must create the type 'test_type' to use this:
+         * 
+         * riak-admin bucket-type create test_type '{"props":{}}'
+         * riak-admin bucket-type activate test_type
+         */
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
-        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
         bucketType = BinaryValue.unsafeCreate("test_type".getBytes());
+        
+        /**
+         * Secondary indexes
+         * 
+         * The backend must be 'leveldb' in riak config to us this
+         */
+        test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
+        
+        
         legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
-        bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
+        
         
         /**
          * In order to run the CRDT itests you must first manually
@@ -119,6 +135,7 @@ public abstract class ITestBase
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
         mapBucketType = BinaryValue.create("maps");
+        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
 
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withMinConnections(10);
@@ -159,6 +176,10 @@ public abstract class ITestBase
     public void beforeTest() throws InterruptedException, ExecutionException
     {
         resetAndEmptyBucket(bucketName);
+        if (testBucketType)
+        {
+            resetAndEmptyBucket(new Namespace(bucketType, bucketName));
+        }
     }
     
     @AfterClass
@@ -170,13 +191,13 @@ public abstract class ITestBase
     
     public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
     {
-        resetAndEmptyBucket(new Location(name));
+        resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, name.toString()));
 
     }
 
-    protected static void resetAndEmptyBucket(Location location) throws InterruptedException, ExecutionException
+    protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
     {
-       ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(location);
+        ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(namespace);
         
         ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
@@ -213,7 +234,7 @@ public abstract class ITestBase
         
         for (BinaryValue k : keyList)
         {
-            location.setKey(k);
+            Location location = new Location(namespace, k);
             DeleteOperation.Builder delOpBuilder = new DeleteOperation.Builder(location);
             DeleteOperation delOp = delOpBuilder.build();
             delOp.addListener(listener);
@@ -227,7 +248,7 @@ public abstract class ITestBase
         }
         
         ResetBucketPropsOperation.Builder resetOpBuilder = 
-            new ResetBucketPropsOperation.Builder(location);
+            new ResetBucketPropsOperation.Builder(namespace);
         
         ResetBucketPropsOperation resetOp = resetOpBuilder.build();
         cluster.execute(resetOp);

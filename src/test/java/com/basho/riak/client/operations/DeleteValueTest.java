@@ -26,6 +26,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class DeleteValueTest
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     VClock vClock = new BasicVClock(new byte[]{'1'});
-    Location key = new Location("bucket").setKey("key").setBucketType("type");
+    Location key = new Location(new Namespace("type","bucket"), "key");
     RiakClient client;
 
     @Before

@@ -324,11 +324,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 
 		public Builder(Location location)
 		{
-			if (!location.hasKey())
-            {
-                throw new IllegalArgumentException("Location must contain a key");
-            }
-            this.location = location;
+			this.location = location;
 		}
 
         /**

@@ -25,6 +25,7 @@ import com.basho.riak.client.operations.UpdateDatatype.Option;
 import com.basho.riak.client.operations.datatypes.Context;
 import com.basho.riak.client.operations.datatypes.MapUpdate;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.query.crdt.types.RiakMap;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
@@ -52,7 +53,7 @@ public class UpdateDatatypeTest
     @Mock DtUpdateOperation.Response mockResponse;
     @Mock Context context;
     RiakClient client;
-	Location key = new Location("bucket").setKey("key").setBucketType("type");
+	Location key = new Location(new Namespace("type","bucket"), "key");
 
     @Before
     @SuppressWarnings("unchecked")

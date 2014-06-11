@@ -28,6 +28,7 @@ import com.basho.riak.client.operations.indexes.RawIndexQuery;
 import com.basho.riak.client.operations.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.query.Location;
+import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertArrayEquals;
@@ -63,10 +64,10 @@ public class ITestRawIndexQuery extends ITestBase
         svFuture.await();
         assertTrue(svFuture.isSuccess());
         
-        Location loc = new Location(bucketName);
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         
         RawIndexQuery biq  =
-            new RawIndexQuery.Builder(loc, "test_index", Type._BIN, indexKey).withKeyAndIndex(true).build();
+            new RawIndexQuery.Builder(ns, "test_index", Type._BIN, indexKey).withKeyAndIndex(true).build();
         RawIndexQuery.Response iResp = client.execute(biq);
         
         assertTrue(iResp.hasEntries());
