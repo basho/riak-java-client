@@ -13,8 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.query.crdt.ops;
+package com.basho.riak.client.core.query.crdt.ops;
 
-public interface CrdtOp
+public class FlagOp implements CrdtOp
 {
+
+    private final boolean enabled;
+
+    public FlagOp(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    public boolean getEnabled()
+    {
+        return enabled;
+    }
 }

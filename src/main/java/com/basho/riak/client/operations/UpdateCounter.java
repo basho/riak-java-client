@@ -54,8 +54,12 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
                 @Override
                 protected Response convertResponse(DtUpdateOperation.Response coreResponse)
                 {
-                    RiakDatatype element = coreResponse.getCrdtElement();
-                    RiakCounter counter = element.getAsCounter();
+                    RiakCounter counter = null;
+                    if (coreResponse.hasCrdtElement())
+                    {
+                        RiakDatatype element = coreResponse.getCrdtElement();
+                        counter = element.getAsCounter();
+                    }
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;

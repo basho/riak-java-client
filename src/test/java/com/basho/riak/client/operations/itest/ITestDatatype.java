@@ -141,9 +141,12 @@ public class ITestDatatype extends ITestBase
 
 		resetAndEmptyBucket(carts);
 
+        MapUpdate innerMapUpdate = new MapUpdate().update("flag", new FlagUpdate(true));
+        CounterUpdate innerCounterUpdate = new CounterUpdate(1);
+        
 		// Insert a Map and Counter into logins and observe both counter and map returned
 		UpdateMap conflictedUpdateCmd =
-			new UpdateMap.Builder(carts, new MapUpdate().addMap(numLogins).addCounter(numLogins))
+			new UpdateMap.Builder(carts, new MapUpdate().update(numLogins, innerMapUpdate).update(numLogins, innerCounterUpdate))
 				.withOption(Option.RETURN_BODY, true)
 				.build();
 

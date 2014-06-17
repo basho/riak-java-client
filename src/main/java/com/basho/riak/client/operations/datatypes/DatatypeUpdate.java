@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.ops.CrdtOp;
+import com.basho.riak.client.core.query.crdt.ops.CrdtOp;
 
 /*
 * @author Dave Rusek <drusek at basho dot com>

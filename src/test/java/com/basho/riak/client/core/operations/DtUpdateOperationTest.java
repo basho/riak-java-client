@@ -15,8 +15,12 @@
  */
 package com.basho.riak.client.core.operations;
 
+import com.basho.riak.client.core.query.crdt.ops.MapOp;
+import com.basho.riak.client.core.query.crdt.ops.RegisterOp;
+import com.basho.riak.client.core.query.crdt.ops.SetOp;
+import com.basho.riak.client.core.query.crdt.ops.CounterOp;
+import com.basho.riak.client.core.query.crdt.ops.FlagOp;
 import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
@@ -77,7 +81,7 @@ public class DtUpdateOperationTest
         RiakDtPB.MapUpdate.FlagOp flagOp = operation.getFlagOp(op);
 
         assertEquals(RiakDtPB.MapUpdate.FlagOp.ENABLE, flagOp);
-
+ 
     }
 
     @Test
@@ -93,30 +97,6 @@ public class DtUpdateOperationTest
 
         ByteString serializedValue = ByteString.copyFrom(registerValue.unsafeGetValue());
         assertEquals(serializedValue, registerOp);
-    }
-
-    @Test
-    public void testGetMapOpAdditionsAndRemovals()
-    {
-
-        BinaryValue addKey = BinaryValue.create("add");
-        BinaryValue removeKey = BinaryValue.create("remove");
-
-        MapOp op = new MapOp()
-            .add(addKey, MapOp.FieldType.COUNTER)
-            .remove(removeKey, MapOp.FieldType.COUNTER);
-        
-        DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
-        RiakDtPB.MapOp mapOp = operation.getMapOp(op);
-
-        assertTrue(mapOp.getAddsCount() == 1);
-        assertEquals(ByteString.copyFrom(addKey.unsafeGetValue()), mapOp.getAdds(0).getName());
-        assertEquals(RiakDtPB.MapField.MapFieldType.COUNTER, mapOp.getAdds(0).getType());
-
-        assertTrue(mapOp.getRemovesCount() == 1);
-        assertEquals(ByteString.copyFrom(removeKey.unsafeGetValue()), mapOp.getRemoves(0).getName());
-        assertEquals(RiakDtPB.MapField.MapFieldType.COUNTER, mapOp.getRemoves(0).getType());
-
     }
 
     @Test
@@ -140,8 +120,7 @@ public class DtUpdateOperationTest
             .update(setKey, new SetOp().add(setAddValue))
             .update(flagKey, new FlagOp(true))
             .update(registerKey, new RegisterOp(registerValue))
-            .update(mapKey, new MapOp()
-                .add(mapAddValue, MapOp.FieldType.COUNTER));
+            .update(mapKey, new MapOp());
 
         DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.MapOp mapOp = operation.getMapOp(op);
@@ -167,7 +146,6 @@ public class DtUpdateOperationTest
         RiakDtPB.MapOp mapOp = operation.getMapOp(op3);
 
         assertTrue(mapOp.getUpdatesCount() == 1);
-        assertTrue(mapOp.getAddsCount() == 0);
         assertTrue(mapOp.getRemovesCount() == 0);
 
         //op3

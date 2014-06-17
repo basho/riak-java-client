@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.ops.RegisterOp;
+import com.basho.riak.client.core.query.crdt.ops.RegisterOp;
 import com.basho.riak.client.util.BinaryValue;
 
  /*

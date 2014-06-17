@@ -54,8 +54,12 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
                 @Override
                 protected Response convertResponse(DtUpdateOperation.Response coreResponse)
                 {
-                    RiakDatatype element = coreResponse.getCrdtElement();
-                    RiakSet set = element.getAsSet();
+                    RiakSet set = null;
+                    if (coreResponse.hasCrdtElement())
+                    {
+                        RiakDatatype element = coreResponse.getCrdtElement();
+                        set = element.getAsSet();
+                    }
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;

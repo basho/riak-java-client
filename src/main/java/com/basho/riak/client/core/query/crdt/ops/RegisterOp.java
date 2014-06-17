@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.query.crdt.ops;
+package com.basho.riak.client.core.query.crdt.ops;
 
-public class CounterOp implements CrdtOp
+import com.basho.riak.client.util.BinaryValue;
+
+public class RegisterOp implements CrdtOp
 {
-    private final long increment;
 
-    public CounterOp(long increment)
+    private final BinaryValue value;
+
+    public RegisterOp(BinaryValue value)
     {
-        this.increment = increment;
+        this.value = value;
     }
 
-    public long getIncrement()
+    public BinaryValue getValue()
     {
-        return increment;
+        return value;
     }
 }

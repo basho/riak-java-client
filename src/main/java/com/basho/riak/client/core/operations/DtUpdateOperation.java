@@ -15,12 +15,17 @@
  */
 package com.basho.riak.client.core.operations;
 
+import com.basho.riak.client.core.query.crdt.ops.CounterOp;
+import com.basho.riak.client.core.query.crdt.ops.RegisterOp;
+import com.basho.riak.client.core.query.crdt.ops.MapOp;
+import com.basho.riak.client.core.query.crdt.ops.CrdtOp;
+import com.basho.riak.client.core.query.crdt.ops.FlagOp;
+import com.basho.riak.client.core.query.crdt.ops.SetOp;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -103,6 +108,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     {
         private final RiakDtPB.DtUpdateReq.Builder reqBuilder = RiakDtPB.DtUpdateReq.newBuilder();
         private final Location location;
+        private boolean removeOpPresent = false;
         
         /**
          * Construct a builder for a DtUpdateOperation.
@@ -137,11 +143,11 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
                 throw new IllegalArgumentException("Default bucket type does not accept CRDTs");
             }
             
+            // This is simply for the returned query info
             Location loc = new Location(namespace, "RIAK_GENERATED");
             
             reqBuilder.setBucket(ByteString.copyFrom(loc.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(loc.getNamespace().getBucketType().unsafeGetValue()));
-            reqBuilder.setKey(ByteString.copyFrom(loc.getKey().unsafeGetValue()));
             
             this.location = loc;
             
@@ -259,6 +265,11 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
 
         public DtUpdateOperation build()
         {
+            if (removeOpPresent && !reqBuilder.hasContext())
+            {
+                throw new IllegalStateException("Remove operations cannot be performed without a context.");
+            }
+            
             return new DtUpdateOperation(this);
         }
 
@@ -282,7 +293,11 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 setOpBuilder.addRemoves(ByteString.copyFrom(element.unsafeGetValue()));
             }
-
+            
+            if (setOpBuilder.getRemovesCount() > 0)
+            {
+                removeOpPresent = true;
+            }
             return setOpBuilder.build();
         }
 
@@ -329,14 +344,14 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         {
             RiakDtPB.MapOp.Builder mapOpBuilder = RiakDtPB.MapOp.newBuilder();
 
-            for (MapOp.MapField field : op.getAdds())
-            {
-                mapOpBuilder.addAdds(getMapField(field));
-            }
-
             for (MapOp.MapField field : op.getRemoves())
             {
                 mapOpBuilder.addRemoves(getMapField(field));
+            }
+            
+            if (mapOpBuilder.getRemovesCount() > 0)
+            {
+                removeOpPresent = true;
             }
 
             for (MapOp.MapUpdate update : op.getUpdates())
@@ -397,13 +412,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             return this;
         }
 
-        /**
-         * Add a counter update operation to this operation.
-         *
-         * @param op the update
-         * @return a reference to this object.
-         */
-        public Builder withOp(CounterOp op)
+        private Builder withOp(CounterOp op)
         {
             reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
                 .setCounterOp(getCounterOp(op)));
@@ -411,26 +420,14 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             return this;
         }
 
-        /**
-         * Add a asMap update operation to this operation.
-         *
-         * @param op the update
-         * @return a reference to this object.
-         */
-        public Builder withOp(MapOp op)
+        private Builder withOp(MapOp op)
         {
             reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
                 .setMapOp(getMapOp(op)));
             return this;
         }
 
-        /**
-         * Add a asSet update operation to this operation.
-         *
-         * @param op the update
-         * @return a reference to this object.
-         */
-        public Builder withOp(SetOp op)
+        private Builder withOp(SetOp op)
         {
 
             reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()

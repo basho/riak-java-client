@@ -15,12 +15,16 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.core.query.crdt.ops.MapOp;
+import com.basho.riak.client.core.query.crdt.ops.RegisterOp;
+import com.basho.riak.client.core.query.crdt.ops.SetOp;
+import com.basho.riak.client.core.query.crdt.ops.CounterOp;
+import com.basho.riak.client.core.query.crdt.ops.FlagOp;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.crdt.ops.*;
 import com.basho.riak.client.query.crdt.types.*;
 import com.basho.riak.client.util.BinaryValue;
 import org.junit.Test;
@@ -253,14 +257,7 @@ public class ITestDtUpdateOperation extends ITestBase
         Location location = new Location(new Namespace(mapBucketType, bucketName), key);
         BinaryValue setValue = BinaryValue.create("value");
         BinaryValue mapKey = BinaryValue.create("set");
-        DtUpdateOperation add =
-            new DtUpdateOperation.Builder(location)
-                .withOp(new MapOp().add(mapKey, MapOp.FieldType.SET))
-                .build();
-
-        cluster.execute(add);
-        add.get();
-
+        
         DtUpdateOperation update =
             new DtUpdateOperation.Builder(location)
                 .withOp(new MapOp().update(mapKey, new SetOp().add(setValue)))
@@ -279,13 +276,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
 
         mapKey = BinaryValue.create("counter");
-        add = new DtUpdateOperation.Builder(location)
-            .withOp(new MapOp().add(mapKey, MapOp.FieldType.COUNTER))
-            .build();
-
-        cluster.execute(add);
-        add.get();
-
+        
         update = new DtUpdateOperation.Builder(location)
             .withOp(new MapOp().update(mapKey, new CounterOp(1)))
             .build();
@@ -304,21 +295,13 @@ public class ITestDtUpdateOperation extends ITestBase
 
         mapKey = BinaryValue.create("flag");
 
-        DtUpdateOperation addSet =
-            new DtUpdateOperation.Builder(location)
-                .withOp(new MapOp().add(mapKey, MapOp.FieldType.FLAG))
-                .build();
-
-        cluster.execute(addSet);
-        addSet.get();
-
-        add =
+        update =
             new DtUpdateOperation.Builder(location)
                 .withOp(new MapOp().update(mapKey, new FlagOp(true)))
                 .build();
 
-        cluster.execute(add);
-        add.get();
+        cluster.execute(update);
+        update.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(3, map.view().size());
@@ -330,19 +313,13 @@ public class ITestDtUpdateOperation extends ITestBase
 
 
         mapKey = BinaryValue.create("register");
-        addSet = new DtUpdateOperation.Builder(location)
-            .withOp(new MapOp().add(mapKey, MapOp.FieldType.REGISTER))
-            .build();
-
-        cluster.execute(addSet);
-        addSet.get();
-
-        add = new DtUpdateOperation.Builder(location)
+        
+        update = new DtUpdateOperation.Builder(location)
             .withOp(new MapOp().update(mapKey, new RegisterOp(mapKey)))
             .build();
 
-        cluster.execute(add);
-        add.get();
+        cluster.execute(update);
+        update.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(4, map.view().size());
@@ -354,19 +331,12 @@ public class ITestDtUpdateOperation extends ITestBase
 
         mapKey = BinaryValue.create("map");
 
-        addSet = new DtUpdateOperation.Builder(location)
-            .withOp(new MapOp().add(mapKey, MapOp.FieldType.MAP))
+        update = new DtUpdateOperation.Builder(location)
+            .withOp(new MapOp().update(mapKey, new MapOp().update(mapKey, new FlagOp(false))))
             .build();
 
-        cluster.execute(addSet);
-        addSet.get();
-
-        add = new DtUpdateOperation.Builder(location)
-            .withOp(new MapOp().update(mapKey, new MapOp().add(mapKey, MapOp.FieldType.FLAG)))
-            .build();
-
-        cluster.execute(add);
-        add.get();
+        cluster.execute(update);
+        update.get();
 
         map = fetchMap(mapBucketType, bucketName, key);
         Map<BinaryValue, List<RiakDatatype>> mapView = map.view();
@@ -389,6 +359,155 @@ public class ITestDtUpdateOperation extends ITestBase
 
         resetAndEmptyBucket(new Namespace(mapBucketType, bucketName));
 
+    }
+    
+    @Test
+    public void testComplexMapUpdate() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testCrdt);
+        testComplexMapUpdate(false);
+    }
+    
+    @Test
+    public void testComplexMapUpdateWithReturnBody() throws InterruptedException, ExecutionException
+    {
+        // This test will currently fail as returnbody is broken in some cases in Riak.
+        assumeTrue(testCrdt);
+        testComplexMapUpdate(true);
+    }
+    
+    
+    private void testComplexMapUpdate(boolean returnBody) throws InterruptedException, ExecutionException
+    {
+        /*
+            Data structure:
+
+            Riak key = "user-info"
+            Crdt Map
+              -> "Bob" : map
+                  -> "logins"     : counter
+                  -> "last-login" : register
+                  -> "logged-in"  : flag
+                  -> "cart"       : set
+
+         */
+        
+        BinaryValue key = BinaryValue.create("user-info2");
+        BinaryValue username = BinaryValue.create("Bob");
+        BinaryValue logins = BinaryValue.create("logins");
+        BinaryValue lastLogin = BinaryValue.create("last-login");
+        BinaryValue loggedIn = BinaryValue.create("logged-in");
+        BinaryValue cartContents = BinaryValue.create("cart");
+        
+        
+        MapOp outerMap = new MapOp();
+        MapOp innerMap = new MapOp();
+        
+        ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
+        byte[] now = nowBinary.array();
+        
+        CounterOp counterOp = new CounterOp(1);
+        RegisterOp registerOp = new RegisterOp(BinaryValue.create(now));
+        FlagOp flagOp = new FlagOp(false);
+        SetOp setOp = new SetOp()
+                        .add(BinaryValue.create("Item 1"))
+                        .add(BinaryValue.create("Item 2"));
+        
+        innerMap.update(logins, counterOp)
+                .update(lastLogin, registerOp)
+                .update(loggedIn, flagOp)
+                .update(cartContents, setOp);
+        
+        outerMap.update(username, innerMap);
+        
+        Namespace ns = new Namespace(mapBucketType, bucketName);
+        Location loc = new Location(ns, key);
+        
+        DtUpdateOperation update = new DtUpdateOperation.Builder(loc)
+                                        .withOp(outerMap)
+                                        .withReturnBody(returnBody)
+                                        .build();
+        
+        cluster.execute(update);
+        
+        update.await();
+        
+        if (!update.isSuccess())
+        {
+            fail("Update operation failed: " + update.cause().toString());
+        }
+        
+        RiakMap map;
+        if (returnBody)
+        {
+            DtUpdateOperation.Response response = update.get();
+            assertNotNull(response);
+            assertTrue(response.hasCrdtElement());
+            assertTrue(response.hasContext());
+            RiakDatatype dt = response.getCrdtElement();
+            assertTrue(dt.isMap());
+            map = dt.getAsMap();
+        }
+        else
+        {
+            map = fetchMap(mapBucketType, bucketName, key);
+        }
+        
+        
+        map = map.getMap(username);
+        assertNotNull(map);
+        RiakCounter counter = map.getCounter(logins);
+        assertNotNull(counter);
+        RiakRegister register = map.getRegister(lastLogin);
+        assertNotNull(register);
+        RiakFlag flag = map.getFlag(loggedIn);
+        assertNotNull(flag);
+        RiakSet set = map.getSet(cartContents);
+        assertNotNull(set);
+        
+        resetAndEmptyBucket(new Namespace(mapBucketType, bucketName));
+        
+    }
+    
+    @Test
+    public void testSimpleMap() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testCrdt);
+        
+        BinaryValue key = BinaryValue.create("simple-map");
+        BinaryValue mapKey = BinaryValue.create("set");
+        Namespace ns = new Namespace(mapBucketType, bucketName);
+        Location loc = new Location(ns, key);
+        
+        SetOp setOp = new SetOp()
+                        .add(BinaryValue.create("Item 1"))
+                        .add(BinaryValue.create("Item 2"));
+        
+        
+        MapOp op = new MapOp().update(mapKey, setOp);
+        
+        DtUpdateOperation update = new DtUpdateOperation.Builder(loc)
+                                        .withOp(op)
+                                        .withReturnBody(true)
+                                        .build();
+        
+        cluster.execute(update);
+        
+        update.await(); 
+        
+        assertTrue(update.isSuccess());
+        DtUpdateOperation.Response response = update.get();
+        assertNotNull(response);
+        assertTrue(response.hasCrdtElement());
+        assertTrue(response.hasContext());
+        RiakDatatype dt = response.getCrdtElement();
+        assertTrue(dt.isMap());
+        RiakMap map = dt.getAsMap();
+        
+        resetAndEmptyBucket(new Namespace(mapBucketType, bucketName));
+        
+        
+        
     }
 
 }

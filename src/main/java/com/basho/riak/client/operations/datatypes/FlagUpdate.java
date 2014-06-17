@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.ops.FlagOp;
+import com.basho.riak.client.core.query.crdt.ops.FlagOp;
 
  /*
  * @author Dave Rusek <drusek at basho dot com>

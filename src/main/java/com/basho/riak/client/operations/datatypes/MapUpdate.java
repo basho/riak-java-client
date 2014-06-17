@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.operations.datatypes;
 
-import com.basho.riak.client.query.crdt.ops.MapOp;
+import com.basho.riak.client.core.query.crdt.ops.MapOp;
 import com.basho.riak.client.util.BinaryValue;
 
 import java.util.HashSet;
@@ -28,47 +28,11 @@ import java.util.Set;
 public class MapUpdate implements DatatypeUpdate
 {
 
-    private final Set<MapOp.MapField> adds = new HashSet<MapOp.MapField>();
     private final Set<MapOp.MapField> removes = new HashSet<MapOp.MapField>();
     private final Set<MapOp.MapUpdate> updates = new HashSet<MapOp.MapUpdate>();
 
     public MapUpdate()
     {
-    }
-
-    public MapUpdate addCounter(String key)
-    {
-        BinaryValue k = BinaryValue.create(key);
-        adds.add(new MapOp.MapField(MapOp.FieldType.COUNTER, k));
-        return this;
-    }
-
-    public MapUpdate addRegister(String key)
-    {
-        BinaryValue k = BinaryValue.create(key);
-        adds.add(new MapOp.MapField(MapOp.FieldType.REGISTER, k));
-        return this;
-    }
-
-    public MapUpdate addFlag(String key)
-    {
-        BinaryValue k = BinaryValue.create(key);
-        adds.add(new MapOp.MapField(MapOp.FieldType.FLAG, k));
-        return this;
-    }
-
-    public MapUpdate addSet(String key)
-    {
-        BinaryValue k = BinaryValue.create(key);
-        adds.add(new MapOp.MapField(MapOp.FieldType.SET, k));
-        return this;
-    }
-
-    public MapUpdate addMap(String key)
-    {
-        BinaryValue k = BinaryValue.create(key);
-        adds.add(new MapOp.MapField(MapOp.FieldType.MAP, k));
-        return this;
     }
 
     public MapUpdate removeCounter(String key)
@@ -174,6 +138,6 @@ public class MapUpdate implements DatatypeUpdate
     @Override
     public MapOp getOp()
     {
-        return new MapOp(adds, removes, updates);
+        return new MapOp(removes, updates);
     }
 }

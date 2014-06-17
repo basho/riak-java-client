@@ -54,8 +54,12 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
                 @Override
                 protected Response convertResponse(DtUpdateOperation.Response coreResponse)
                 {
-                    RiakDatatype element = coreResponse.getCrdtElement();
-                    RiakMap map = element.getAsMap();
+                    RiakMap map = null;
+                    if (coreResponse.hasCrdtElement())
+                    {
+                        RiakDatatype element = coreResponse.getCrdtElement();
+                        map = element.getAsMap();
+                    }
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
