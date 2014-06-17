@@ -154,6 +154,7 @@ public class ITestDtUpdateOperation extends ITestBase
 
         Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
         Location location = new Location(new Namespace(setBucketType, bucketName), key);
+        BinaryValue ctx = null;
         for (int i = 0; i < iterations; ++i)
         {
             ByteBuffer buff = (ByteBuffer) ByteBuffer.allocate(8).putInt(i).rewind();
@@ -163,22 +164,26 @@ public class ITestDtUpdateOperation extends ITestBase
             DtUpdateOperation update =
                 new DtUpdateOperation.Builder(location)
                     .withOp(new SetOp().add(wrapped))
+                    .withReturnBody(true)
                     .build();
 
             cluster.execute(update);
-            update.get();
+            DtUpdateOperation.Response resp = update.get();
+            ctx = resp.getContext();
+            set = resp.getCrdtElement().getAsSet();
         }
 
-        set = fetchSet(setBucketType, bucketName, key);
         assertEquals(iterations, set.viewAsSet().size());
         assertEquals(testValues, set.viewAsSet());
 
+        
         for (BinaryValue setElement : testValues)
         {
 
             DtUpdateOperation update =
                 new DtUpdateOperation.Builder(location)
                     .withOp(new SetOp().remove(setElement))
+                    .withContext(ctx)
                     .build();
 
             cluster.execute(update);
@@ -197,7 +202,7 @@ public class ITestDtUpdateOperation extends ITestBase
     public void testCrdtSetInterleved() throws ExecutionException, InterruptedException
     {
 
-        //assumeTrue(testCrdt);
+        assumeTrue(testCrdt);
 
         final int iterations = 1;
 
