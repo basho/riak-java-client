@@ -197,7 +197,7 @@ public class ITestDtUpdateOperation extends ITestBase
     public void testCrdtSetInterleved() throws ExecutionException, InterruptedException
     {
 
-        assumeTrue(testCrdt);
+        //assumeTrue(testCrdt);
 
         final int iterations = 1;
 
@@ -219,14 +219,16 @@ public class ITestDtUpdateOperation extends ITestBase
             DtUpdateOperation add =
                 new DtUpdateOperation.Builder(location)
                     .withOp(new SetOp().add(wrapped))
+                    .withReturnBody(true)
                     .build();
 
             cluster.execute(add);
-            add.get();
+            DtUpdateOperation.Response resp = add.get();
 
             DtUpdateOperation delete =
                 new DtUpdateOperation.Builder(location)
                     .withOp(new SetOp().remove(wrapped))
+                    .withContext(resp.getContext())
                     .build();
 
             cluster.execute(delete);
