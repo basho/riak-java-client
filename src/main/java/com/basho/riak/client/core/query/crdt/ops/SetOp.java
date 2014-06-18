@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.query.crdt.ops;
+package com.basho.riak.client.core.query.crdt.ops;
 
 import com.basho.riak.client.util.BinaryValue;
 
@@ -59,6 +59,6 @@ public class SetOp implements CrdtOp
     @Override
     public String toString()
     {
-        return "Add: " + adds + " Remove: " + removes;
+        return "{Add: " + adds + " Remove: " + removes + "}";
     }
 }

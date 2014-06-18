@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.query.crdt.ops;
+package com.basho.riak.client.core.query.crdt.ops;
 
 import com.basho.riak.client.util.BinaryValue;
 
@@ -54,20 +54,17 @@ public class MapOp implements CrdtOp
         }
     }
 
-    private final Set<MapField> adds;
     private final Set<MapField> removes;
     private final Set<MapUpdate> updates;
 
     public MapOp()
     {
-        adds = new HashSet<MapField>();
         removes = new HashSet<MapField>();
         updates = new HashSet<MapUpdate>();
     }
 
-    public MapOp(Set<MapField> adds, Set<MapField> removes, Set<MapUpdate> updates)
+    public MapOp(Set<MapField> removes, Set<MapUpdate> updates)
     {
-        this.adds = adds;
         this.removes = removes;
         this.updates = updates;
     }
@@ -105,25 +102,12 @@ public class MapOp implements CrdtOp
         return update(key, op, FieldType.FLAG);
     }
 
-    public MapOp add(BinaryValue key, FieldType type)
-    {
-        MapField field = new MapField(type, key);
-        adds.add(field);
-        removes.remove(field);
-        return this;
-    }
-
+    
     public MapOp remove(BinaryValue key, FieldType type)
     {
         MapField field = new MapField(type, key);
         removes.add(field);
-        adds.remove(field);
         return this;
-    }
-
-    public Set<MapField> getAdds()
-    {
-        return unmodifiableSet(adds);
     }
 
     public Set<MapField> getRemoves()

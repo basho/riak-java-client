@@ -259,11 +259,6 @@
             <version>2.2.2</version>
         </dependency>
         <dependency>
-            <groupId>com.basho.riak.protobuf</groupId>
-            <artifactId>riak-pb</artifactId>
-            <version>2.0.0.14</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-joda</artifactId>
             <version>2.2.2</version>
@@ -273,6 +268,11 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.0.17.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>com.basho.riak.protobuf</groupId>
+            <artifactId>riak-pb</artifactId>
+            <version>2.0.0.16</version>
         </dependency>
     </dependencies>
 </project>

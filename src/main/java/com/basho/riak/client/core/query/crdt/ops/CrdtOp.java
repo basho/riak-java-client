@@ -13,22 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.query.crdt.ops;
+package com.basho.riak.client.core.query.crdt.ops;
 
-import com.basho.riak.client.util.BinaryValue;
-
-public class RegisterOp implements CrdtOp
+public interface CrdtOp
 {
-
-    private final BinaryValue value;
-
-    public RegisterOp(BinaryValue value)
-    {
-        this.value = value;
-    }
-
-    public BinaryValue getValue()
-    {
-        return value;
-    }
+    
 }

@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.query.crdt.ops;
+package com.basho.riak.client.core.query.crdt.ops;
 
-public class FlagOp implements CrdtOp
+public class CounterOp implements CrdtOp
 {
+    private final long increment;
 
-    private final boolean enabled;
-
-    public FlagOp(boolean enabled)
+    public CounterOp(long increment)
     {
-        this.enabled = enabled;
+        this.increment = increment;
     }
 
-    public boolean getEnabled()
+    public long getIncrement()
     {
-        return enabled;
+        return increment;
+    }
+    
+    
+    
+    @Override
+    public String toString()
+    {
+        return "{increment: " + increment + "}";
     }
 }
