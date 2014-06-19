@@ -501,4 +501,21 @@ public class RiakConnectionPool {
     public String getPoolState() {
         return state.name();
     }
+
+    /**
+     * Convenience to monitor connections in use
+     * @return count of connections in use
+     */
+    public int getConnectionsInUse(){
+        return this.inUse.size();
+
+    }
+
+    /**
+     * Convenience to monitor connections available
+     * @return count of connections available
+     */
+    public int getConnectionsAvailable(){
+        return this.available.size();
+    }
 }
