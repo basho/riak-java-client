@@ -19,6 +19,7 @@ package com.basho.riak.client.operations.itest;
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.operations.StoreBucketProperties;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.mapreduce.BucketMapReduce;
 import com.basho.riak.client.operations.mapreduce.MapReduce;
@@ -41,6 +42,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
+import org.junit.Before;
 
 /**
  *
@@ -48,8 +50,19 @@ import org.junit.Assume;
  */
 public class ITestBucketMapReduce extends ITestBase
 {
-    private final RiakClient client = new RiakClient(cluster);
-    private final  String mrBucketName = bucketName.toString() + "_mr";
+    private final static RiakClient client = new RiakClient(cluster);
+    private final static String mrBucketName = bucketName.toString() + "_mr";
+    
+    @Before
+    public void changeBucketProps() throws ExecutionException, InterruptedException
+    {
+        if (testBucketType)
+        {
+            Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
+            StoreBucketProperties op = new StoreBucketProperties.Builder(ns).withAllowMulti(false).build();
+            client.execute(op);
+        }
+    }
     
     @After
     public void cleanUp() throws InterruptedException, ExecutionException
