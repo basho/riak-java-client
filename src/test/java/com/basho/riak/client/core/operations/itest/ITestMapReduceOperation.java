@@ -103,8 +103,8 @@ public class ITestMapReduceOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
             
-        String bName = bucketName.toString();
-        String bType = bucketType.toString();
+        String bName = namespace.getBucketNameAsString();
+        String bType = namespace.getBucketTypeAsString();
         
         String query = "{\"inputs\":[[\"" + bName + "\",\"p1\",\"\",\"" + bType + "\"]," +
             "[\"" + bName + "\",\"p2\",\"\",\"" + bType + "\"]," +
@@ -136,6 +136,8 @@ public class ITestMapReduceOperation extends ITestBase
         
         assertNotNull(resultMap.containsKey("the"));
         assertEquals(Integer.valueOf(8),resultMap.get("the"));
+        
+        resetAndEmptyBucket(namespace);
         
     }
 }
