@@ -112,17 +112,30 @@ public class ITestYzAdminOperations extends ITestBase
         
         // Testing has shown that even though Riak responds to the create op ... 
         // the index isn't actually created yet and the delete op return "not found" 
+        Thread.sleep(10000);
+        
         
         YzFetchIndexOperation fetchOp = 
             new YzFetchIndexOperation.Builder().withIndexName("test_index")
                 .build();
         
         cluster.execute(fetchOp);
+        fetchOp.await();
+        if (!fetchOp.isSuccess())
+        {
+            assertTrue(fetchOp.cause().toString(), fetchOp.isSuccess());
+        }
+        
         List<YokozunaIndex> indexList = fetchOp.get().getIndexes();
         
         assertFalse(indexList.isEmpty());
         index = indexList.get(0);
         assertEquals(index.getSchema(), "_yz_default");
+        
+        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_index").build();
+        cluster.execute(delOp);
+        delOp.await();
+        assertTrue(delOp.isSuccess());
         
     }
     
