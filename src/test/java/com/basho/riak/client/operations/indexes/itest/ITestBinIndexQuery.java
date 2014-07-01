@@ -44,7 +44,7 @@ public class ITestBinIndexQuery extends ITestBase
     @Test
     public void testMatchQuery() throws ExecutionException, InterruptedException
     {
-        //Assume.assumeTrue(test2i);
+        Assume.assumeTrue(test2i);
         
         RiakClient client = new RiakClient(cluster);
         

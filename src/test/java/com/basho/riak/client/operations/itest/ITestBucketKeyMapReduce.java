@@ -17,6 +17,7 @@ package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.operations.StoreBucketProperties;
 import com.basho.riak.client.operations.kv.StoreValue;
 import com.basho.riak.client.operations.mapreduce.BucketKeyMapReduce;
 import com.basho.riak.client.operations.mapreduce.MapReduce;
@@ -33,10 +34,12 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import org.junit.After;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Assume;
+import org.junit.Before;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -46,6 +49,30 @@ public class ITestBucketKeyMapReduce extends ITestBase
 {
 
 	RiakClient client = new RiakClient(cluster);
+    static final String mrBucket = "mr_bucket";
+    
+    @Before
+    public void changeBucketProps() throws ExecutionException, InterruptedException
+    {
+        if (testBucketType)
+        {
+            Namespace ns = new Namespace(bucketType.toString(), mrBucket);
+            StoreBucketProperties op = new StoreBucketProperties.Builder(ns).withAllowMulti(false).build();
+            client.execute(op);
+        }
+    }
+    
+    @After
+    public void clearMrBucket() throws InterruptedException, ExecutionException
+    {
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucket);
+        resetAndEmptyBucket(ns);
+        if (testBucketType)
+        {
+            ns = new Namespace(bucketType.toString(), mrBucket);
+            resetAndEmptyBucket(ns);
+        }
+    }
 
     private void initValues(String bucketType) throws ExecutionException, InterruptedException
     {
@@ -56,7 +83,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
 				"book her sister was reading, but it had no pictures or conversations in " +
 				"it, 'and what is the use of a book,' thought Alice 'without pictures or " +
 				"conversation?'"));
-        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Namespace ns = new Namespace(bucketType, mrBucket);
 		Location location = new Location(ns, "p1");
 		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
@@ -88,7 +115,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
     @Test
     public void JsBucketKeyMRTestType() throws InterruptedException, ExecutionException, IOException
     {
-        //Assume.assumeTrue(testBucketType);
+        Assume.assumeTrue(testBucketType);
         JsBucketKeyMR(bucketType.toString());
     }
     
@@ -96,7 +123,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
 	{
 		initValues(bucketType);
         
-        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Namespace ns = new Namespace(bucketType, mrBucket);
 		MapReduce mr = new BucketKeyMapReduce.Builder()
 				.withLocation(new Location(ns, "p1"))
 				.withLocation(new Location(ns, "p2"))
@@ -147,7 +174,6 @@ public class ITestBucketKeyMapReduce extends ITestBase
 
 		assertNotNull(resultMap.containsKey("the"));
 		assertEquals(Integer.valueOf(8), resultMap.get("the"));
-
 	}
     
     @Test
@@ -161,14 +187,14 @@ public class ITestBucketKeyMapReduce extends ITestBase
     @Test
     public void erlangBucketKeyMRTestType() throws ExecutionException, InterruptedException
     {
-        //Assume.assumeTrue(testBucketType);
+        Assume.assumeTrue(testBucketType);
         erlangBucketKeyMR(bucketType.toString());
     }
     
     private void erlangBucketKeyMR(String bucketType) throws ExecutionException, InterruptedException
     {
         initValues(bucketType);
-        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Namespace ns = new Namespace(bucketType, mrBucket);
         
         MapReduce mr = new BucketKeyMapReduce.Builder()
 				.withLocation(new Location(ns, "p1"))
@@ -181,7 +207,6 @@ public class ITestBucketKeyMapReduce extends ITestBase
         MapReduce.Response response = client.execute(mr);
         
         assertEquals(3, response.getResultsFromAllPhases().size());
-        
     }
     
 }
