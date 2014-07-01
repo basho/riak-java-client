@@ -17,6 +17,7 @@
 package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.StoreBucketProperties;
 import com.basho.riak.client.operations.StoreSearchIndex;
@@ -31,6 +32,7 @@ import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -46,8 +48,8 @@ public class ITestSearchMapReduce extends ITestBase
     @Test
     public void serachMR() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(testYokozuna);
-        Assume.assumeTrue(testBucketType);
+//        Assume.assumeTrue(testYokozuna);
+//        Assume.assumeTrue(testBucketType);
         
         // First we have to create an index and attach it to a bucket
         // and the 'default' bucket type can't be used for search
@@ -56,15 +58,15 @@ public class ITestSearchMapReduce extends ITestBase
         StoreSearchIndex ssi = new StoreSearchIndex.Builder(index).build();
         client.execute(ssi);
         
+        // Without pausing, the index does not propogate in time for the bucket
+        // props op to succeed
+        Thread.sleep(10000);
+        
         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         StoreBucketProperties sbp = new StoreBucketProperties.Builder(ns)
                                     .withSearchIndex(index.getName())
                                     .build();
         client.execute(sbp);
-        
-        // Without pausing, the index does not propogate in time for the searchop
-        // to complete.
-        Thread.sleep(3000);
         
         RiakObject ro = new RiakObject()
                         .setContentType("application/json")
@@ -109,6 +111,10 @@ public class ITestSearchMapReduce extends ITestBase
         assertEquals(3, mrResp.getResultsFromAllPhases().get(0).asInt());
         
         resetAndEmptyBucket(ns);
+        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_mr_index").build();
+        cluster.execute(delOp);
+        delOp.await();
+        assertTrue(delOp.isSuccess());
     }
     
 }
