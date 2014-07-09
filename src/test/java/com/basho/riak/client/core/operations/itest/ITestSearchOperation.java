@@ -72,7 +72,7 @@ public class ITestSearchOperation extends ITestBase
     @Test
     public void testYokozunaSearch() throws InterruptedException, ExecutionException
     {
-        //Assume.assumeTrue(testYokozuna);
+        Assume.assumeTrue(testYokozuna);
         
         // First we have to create an index and attach it to a bucket
         // and the 'default' bucket type can't be used for search
@@ -86,9 +86,7 @@ public class ITestSearchOperation extends ITestBase
         
         assertTrue(putOp.isSuccess());
         
-        // Without sleeping the bucket props operation will fail saying the 
-        // index does not exist.
-        Thread.sleep(10000);
+        assureIndexExists("test_index");
         
         Namespace namespace = new Namespace(yokozunaBucketType, searchBucket);
         StoreBucketPropsOperation propsOp = 

@@ -22,6 +22,7 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
+import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 import com.basho.riak.client.query.Location;
 import com.basho.riak.client.query.Namespace;
 import com.basho.riak.client.util.BinaryValue;
@@ -256,4 +257,20 @@ public abstract class ITestBase
 
     }
     
+    public static boolean assureIndexExists(String indexName) throws InterruptedException
+    {
+        for (int x = 0; x < 5; x++)
+        {
+            Thread.sleep(2000);
+            YzFetchIndexOperation fetch = new YzFetchIndexOperation.Builder().withIndexName(indexName).build();
+            cluster.execute(fetch);
+            fetch.await();
+            if (fetch.isSuccess())
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

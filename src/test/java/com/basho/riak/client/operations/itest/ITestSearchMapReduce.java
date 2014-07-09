@@ -48,8 +48,8 @@ public class ITestSearchMapReduce extends ITestBase
     @Test
     public void serachMR() throws InterruptedException, ExecutionException
     {
-//        Assume.assumeTrue(testYokozuna);
-//        Assume.assumeTrue(testBucketType);
+        Assume.assumeTrue(testYokozuna);
+        Assume.assumeTrue(testBucketType);
         
         // First we have to create an index and attach it to a bucket
         // and the 'default' bucket type can't be used for search
@@ -58,9 +58,7 @@ public class ITestSearchMapReduce extends ITestBase
         StoreSearchIndex ssi = new StoreSearchIndex.Builder(index).build();
         client.execute(ssi);
         
-        // Without pausing, the index does not propogate in time for the bucket
-        // props op to succeed
-        Thread.sleep(10000);
+        assertTrue("Index not created", assureIndexExists("test_mr_index"));
         
         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         StoreBucketProperties sbp = new StoreBucketProperties.Builder(ns)
@@ -96,7 +94,7 @@ public class ITestSearchMapReduce extends ITestBase
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
         
-        // Sleep some more or ... yeah, it doesn't work.
+        // Sleep some more or ... yeah, it doesn't work. 
         Thread.sleep(3000);
         
         SearchMapReduce smr = new SearchMapReduce.Builder()

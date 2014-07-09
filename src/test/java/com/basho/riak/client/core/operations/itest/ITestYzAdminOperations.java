@@ -110,9 +110,7 @@ public class ITestYzAdminOperations extends ITestBase
         cluster.execute(putOp);
         putOp.get();
         
-        // Testing has shown that even though Riak responds to the create op ... 
-        // the index isn't actually created yet and the delete op return "not found" 
-        Thread.sleep(10000);
+        assertTrue("Index not created", assureIndexExists("test_index"));
         
         
         YzFetchIndexOperation fetchOp = 
@@ -139,7 +137,6 @@ public class ITestYzAdminOperations extends ITestBase
         
     }
     
-    // This ppears to also be broken in Riak as of pre7
     @Test
     public void testDeleteIndex() throws InterruptedException, ExecutionException
     {
@@ -150,9 +147,7 @@ public class ITestYzAdminOperations extends ITestBase
         cluster.execute(putOp);
         putOp.get();
         
-        // Testing has shown that even though Riak responds to the create op ... 
-        // the index isn't actually created yet and the delete op return "not found" 
-        Thread.sleep(5000);
+        assertTrue("Index not created", assureIndexExists("test_index5"));
         
         YzDeleteIndexOperation delOp = 
             new YzDeleteIndexOperation.Builder("test_index5").build();
