@@ -17,6 +17,7 @@
 package com.basho.riak.client.operations.itest;
 
 import com.basho.riak.client.RiakClient;
+import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.operations.StoreBucketProperties;
 import com.basho.riak.client.operations.StoreSearchIndex;
@@ -31,6 +32,7 @@ import com.basho.riak.client.query.search.YokozunaIndex;
 import com.basho.riak.client.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -56,15 +58,13 @@ public class ITestSearchMapReduce extends ITestBase
         StoreSearchIndex ssi = new StoreSearchIndex.Builder(index).build();
         client.execute(ssi);
         
+        assertTrue("Index not created", assureIndexExists("test_mr_index"));
+        
         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         StoreBucketProperties sbp = new StoreBucketProperties.Builder(ns)
                                     .withSearchIndex(index.getName())
                                     .build();
         client.execute(sbp);
-        
-        // Without pausing, the index does not propogate in time for the searchop
-        // to complete.
-        Thread.sleep(3000);
         
         RiakObject ro = new RiakObject()
                         .setContentType("application/json")
@@ -94,7 +94,7 @@ public class ITestSearchMapReduce extends ITestBase
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
         
-        // Sleep some more or ... yeah, it doesn't work.
+        // Sleep some more or ... yeah, it doesn't work. 
         Thread.sleep(3000);
         
         SearchMapReduce smr = new SearchMapReduce.Builder()
@@ -109,6 +109,10 @@ public class ITestSearchMapReduce extends ITestBase
         assertEquals(3, mrResp.getResultsFromAllPhases().get(0).asInt());
         
         resetAndEmptyBucket(ns);
+        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_mr_index").build();
+        cluster.execute(delOp);
+        delOp.await();
+        assertTrue(delOp.isSuccess());
     }
     
 }

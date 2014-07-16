@@ -110,23 +110,33 @@ public class ITestYzAdminOperations extends ITestBase
         cluster.execute(putOp);
         putOp.get();
         
-        // Testing has shown that even though Riak responds to the create op ... 
-        // the index isn't actually created yet and the delete op return "not found" 
+        assertTrue("Index not created", assureIndexExists("test_index"));
+        
         
         YzFetchIndexOperation fetchOp = 
             new YzFetchIndexOperation.Builder().withIndexName("test_index")
                 .build();
         
         cluster.execute(fetchOp);
+        fetchOp.await();
+        if (!fetchOp.isSuccess())
+        {
+            assertTrue(fetchOp.cause().toString(), fetchOp.isSuccess());
+        }
+        
         List<YokozunaIndex> indexList = fetchOp.get().getIndexes();
         
         assertFalse(indexList.isEmpty());
         index = indexList.get(0);
         assertEquals(index.getSchema(), "_yz_default");
         
+        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_index").build();
+        cluster.execute(delOp);
+        delOp.await();
+        assertTrue(delOp.isSuccess());
+        
     }
     
-    // This ppears to also be broken in Riak as of pre7
     @Test
     public void testDeleteIndex() throws InterruptedException, ExecutionException
     {
@@ -137,9 +147,7 @@ public class ITestYzAdminOperations extends ITestBase
         cluster.execute(putOp);
         putOp.get();
         
-        // Testing has shown that even though Riak responds to the create op ... 
-        // the index isn't actually created yet and the delete op return "not found" 
-        Thread.sleep(5000);
+        assertTrue("Index not created", assureIndexExists("test_index5"));
         
         YzDeleteIndexOperation delOp = 
             new YzDeleteIndexOperation.Builder("test_index5").build();

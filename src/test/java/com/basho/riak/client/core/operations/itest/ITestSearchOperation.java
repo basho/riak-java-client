@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
@@ -83,6 +84,10 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(putOp);
         putOp.await();
         
+        assertTrue(putOp.isSuccess());
+        
+        assureIndexExists("test_index");
+        
         Namespace namespace = new Namespace(yokozunaBucketType, searchBucket);
         StoreBucketPropsOperation propsOp = 
             new StoreBucketPropsOperation.Builder(namespace)
@@ -91,13 +96,12 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(propsOp);
         propsOp.await();
         
-        assertTrue(propsOp.isSuccess());
+        if (!propsOp.isSuccess())
+        {
+            assertTrue(propsOp.cause().toString(), propsOp.isSuccess());
+        }
         
         prepSearch(yokozunaBucketType, searchBucket);
-        
-        // Without pausing, the index does not propogate in time for the searchop
-        // to complete.
-        Thread.sleep(3000);
         
         SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "text:Alice*").build();
         
@@ -112,6 +116,11 @@ public class ITestSearchOperation extends ITestBase
         }
         
         resetAndEmptyBucket(namespace);
+        
+        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_index").build();
+        cluster.execute(delOp);
+        delOp.await();
+        assertTrue(delOp.isSuccess());
         
     }
     
