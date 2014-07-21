@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -25,7 +25,7 @@ import com.google.protobuf.ByteString;
 import java.util.List;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
-import com.basho.riak.client.query.Location;
+import com.basho.riak.client.core.query.Location;
 
 /**
  * An operation to delete a riak object

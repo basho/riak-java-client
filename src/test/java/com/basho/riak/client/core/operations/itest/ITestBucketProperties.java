@@ -15,13 +15,13 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.cap.Quorum;
+import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import static com.basho.riak.client.core.operations.itest.ITestBase.testBucketType;
-import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.query.Namespace;
+import com.basho.riak.client.core.query.BucketProperties;
+import com.basho.riak.client.core.query.Namespace;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import org.junit.Assume;

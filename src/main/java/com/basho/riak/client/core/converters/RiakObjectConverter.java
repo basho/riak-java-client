@@ -15,16 +15,16 @@
  */
 package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.cap.BasicVClock;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.UserMetadata.RiakUserMetadata;
-import com.basho.riak.client.query.indexes.IndexType;
-import com.basho.riak.client.query.indexes.RawIndex;
-import com.basho.riak.client.query.indexes.RiakIndex;
-import com.basho.riak.client.query.indexes.RiakIndexes;
-import com.basho.riak.client.query.links.RiakLink;
-import com.basho.riak.client.query.links.RiakLinks;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.api.cap.BasicVClock;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.UserMetadata.RiakUserMetadata;
+import com.basho.riak.client.core.query.indexes.IndexType;
+import com.basho.riak.client.core.query.indexes.RawIndex;
+import com.basho.riak.client.core.query.indexes.RiakIndex;
+import com.basho.riak.client.core.query.indexes.RiakIndexes;
+import com.basho.riak.client.core.query.links.RiakLink;
+import com.basho.riak.client.core.query.links.RiakLinks;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakKvPB.RpbContent;
 import com.basho.riak.protobuf.RiakPB;

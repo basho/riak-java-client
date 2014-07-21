@@ -15,13 +15,13 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.cap.BasicVClock;
-import com.basho.riak.client.cap.VClock;
+import com.basho.riak.client.api.cap.BasicVClock;
+import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.RiakObject;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;

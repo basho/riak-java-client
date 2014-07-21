@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.query.crdt.ops;
 
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.HashSet;
 import java.util.Set;

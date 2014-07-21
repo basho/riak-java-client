@@ -17,12 +17,12 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.indexes.LongIntIndex;
-import com.basho.riak.client.query.indexes.StringBinIndex;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.LongIntIndex;
+import com.basho.riak.client.core.query.indexes.StringBinIndex;
+import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.concurrent.ExecutionException;
 import org.junit.Assume;

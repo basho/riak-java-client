@@ -19,9 +19,9 @@ package com.basho.riak.client.core.netty;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.HealthCheckFactory;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.util.BinaryValue;
 
 /**
  * A health check that attempts to store a value in Riak.

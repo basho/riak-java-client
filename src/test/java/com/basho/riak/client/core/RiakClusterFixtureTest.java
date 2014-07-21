@@ -17,8 +17,8 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.Namespace;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
