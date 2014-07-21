@@ -20,7 +20,7 @@ import com.basho.riak.client.core.netty.PingHealthCheck;
 import com.basho.riak.client.core.netty.RiakChannelInitializer;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.netty.RiakSecurityDecoder;
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.core.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

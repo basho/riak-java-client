@@ -16,13 +16,13 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.query.indexes.LongIntIndex;
-import com.basho.riak.client.query.indexes.RiakIndexes;
-import com.basho.riak.client.query.links.RiakLink;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.LongIntIndex;
+import com.basho.riak.client.core.query.indexes.RiakIndexes;
+import com.basho.riak.client.core.query.links.RiakLink;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.InvalidProtocolBufferException;

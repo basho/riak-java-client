@@ -15,6 +15,12 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.core.query.crdt.types.RiakSet;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.query.crdt.types.RiakMap;
+import com.basho.riak.client.core.query.crdt.types.RiakCounter;
+import com.basho.riak.client.core.query.crdt.types.RiakFlag;
+import com.basho.riak.client.core.query.crdt.types.RiakRegister;
 import com.basho.riak.client.core.query.crdt.ops.MapOp;
 import com.basho.riak.client.core.query.crdt.ops.RegisterOp;
 import com.basho.riak.client.core.query.crdt.ops.SetOp;
@@ -23,10 +29,9 @@ import com.basho.riak.client.core.query.crdt.ops.FlagOp;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;

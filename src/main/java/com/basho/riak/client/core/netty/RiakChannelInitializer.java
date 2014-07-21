@@ -16,7 +16,7 @@
 package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakResponseListener;
-import com.basho.riak.client.util.Constants;
+import com.basho.riak.client.core.util.Constants;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

@@ -15,18 +15,22 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.operations.datatypes.CounterUpdate;
-import com.basho.riak.client.operations.datatypes.MapUpdate;
-import com.basho.riak.client.operations.datatypes.RegisterUpdate;
-import com.basho.riak.client.operations.datatypes.FlagUpdate;
-import com.basho.riak.client.operations.datatypes.SetUpdate;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.query.crdt.types.RiakMap;
+import com.basho.riak.client.core.query.crdt.types.RiakCounter;
+import com.basho.riak.client.core.query.crdt.types.RiakRegister;
+import com.basho.riak.client.core.query.crdt.types.RiakFlag;
+import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
+import com.basho.riak.client.api.commands.datatypes.MapUpdate;
+import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
+import com.basho.riak.client.api.commands.datatypes.FlagUpdate;
+import com.basho.riak.client.api.commands.datatypes.SetUpdate;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.Namespace;
-import com.basho.riak.client.query.crdt.types.*;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
 

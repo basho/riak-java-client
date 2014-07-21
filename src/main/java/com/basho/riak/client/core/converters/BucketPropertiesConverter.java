@@ -17,8 +17,8 @@
 package com.basho.riak.client.core.converters;
 
 import com.basho.riak.client.core.operations.Operations;
-import com.basho.riak.client.query.BucketProperties;
-import com.basho.riak.client.query.functions.Function;
+import com.basho.riak.client.core.query.BucketProperties;
+import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import java.util.ArrayList;

@@ -18,8 +18,8 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
-import com.basho.riak.client.query.RiakObject;
-import com.basho.riak.client.util.BinaryValue;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
@@ -28,8 +28,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 
 import static com.basho.riak.client.core.operations.Operations.checkMessageType;
-import com.basho.riak.client.query.Location;
-import com.basho.riak.client.query.Namespace;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
