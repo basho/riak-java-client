@@ -28,6 +28,32 @@ import java.util.concurrent.Future;
 /**
  * The client used to perform operations on Riak.
  * 
+ * The easiest way to get started with the client is using one of the static 
+ * methods provided to instantiate and start the client:
+ * <pre>
+ * <code>
+ * List<String> addresses = new LinkedList<String>();
+ * addresses.add("192.168.1.1");
+ * addresses.add("192.168.1.2");
+ * addresses.add("192.168.1.3");
+ * RiakClient client = RiakClient.newClient(addresses);
+ * </code>
+ * </pre>
+ * For more complex configurations, you can instantiate a RiakCluster from the 
+ * core packages and supply it to the RiakClient constructor.
+ * 
+ * Once you have a client, commands from the {@literal com.basho.riak.client.api.commands.*}
+ * packages are built then executed by the client:
+ * <pre>
+ * <code>
+ * Namespace ns = new Namespace("default","my_bucket");
+ * Location loc = new Location(ns, "my_key");
+ * FetchValue fv = new FetchValue.Builder(loc).build();
+ * FetchValue.Response response = client.execute(fv);
+ * RiakObject obj = response.getValue(RiakObject.class);
+ * </code>
+ * </pre>
+ * 
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
