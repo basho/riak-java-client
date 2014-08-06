@@ -18,9 +18,10 @@ package com.basho.riak.client.api;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
+
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -95,7 +96,7 @@ public class RiakClient
     public static RiakClient newClient() throws UnknownHostException
     {
         RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withMinConnections(10);
+                                        .withMinConnections(RiakNode.Builder.DEFAULT_MIN_CONNECTIONS);
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         return new RiakClient(cluster);
@@ -114,6 +115,57 @@ public class RiakClient
     {
         return newClient(RiakNode.Builder.DEFAULT_REMOTE_PORT, remoteAddresses);
     }
+
+    /**
+     * Static factory method to create a new client instance.
+     * This method produces a client connected to the supplied addresses on
+     * the default port.
+     * @param remoteAddresses a array of IP addresses or hostnames
+     * @return a new client instance
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+    public static RiakClient newClient(String... remoteAddresses) throws UnknownHostException
+    {
+        return newClient(RiakNode.Builder.DEFAULT_REMOTE_PORT, remoteAddresses);
+    }
+
+    /**
+     * Static factory method to create a new client instance.
+     * This method produces a client connected to the supplied addresses on
+     * the supplied port.
+     * @param remoteAddresses a array of InetSocketAddress
+     * @return a new client instance
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+    public static RiakClient newClient(InetSocketAddress... remoteAddresses) throws UnknownHostException
+    {
+        RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withMinConnections(RiakNode.Builder.DEFAULT_MIN_CONNECTIONS);
+        List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, remoteAddresses);
+        RiakCluster cluster = new RiakCluster.Builder(nodes).build();
+        cluster.start();
+        return new RiakClient(cluster);
+    }
+
+    /**
+     * Static factory method to create a new client instance.
+     * This method produces a client connected to the supplied addresses on
+     * the supplied port.
+     * @param remoteAddresses a array of IP addresses or hostnames
+     * @param port the port to connect to on the supplied hosts.
+     * @return a new client instance
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+    public static RiakClient newClient(int port, String... remoteAddresses) throws UnknownHostException
+    {
+        RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withRemotePort(port)
+                                        .withMinConnections(RiakNode.Builder.DEFAULT_MIN_CONNECTIONS);
+        List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, remoteAddresses);
+        RiakCluster cluster = new RiakCluster.Builder(nodes).build();
+        cluster.start();
+        return new RiakClient(cluster);
+    }
     
     /**
      * Static factory method to create a new client instance.
@@ -126,13 +178,7 @@ public class RiakClient
      */
     public static RiakClient newClient(int port, List<String> remoteAddresses) throws UnknownHostException
     {
-        RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withRemotePort(port)
-                                        .withMinConnections(10);
-        List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, remoteAddresses);
-        RiakCluster cluster = new RiakCluster.Builder(nodes).build();
-        cluster.start();
-        return new RiakClient(cluster);
+        return newClient(port, remoteAddresses.toArray(new String[remoteAddresses.size()]));
     }
     
 	/**

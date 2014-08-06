@@ -1445,10 +1445,49 @@ public class RiakNode implements RiakResponseListener
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
             throws UnknownHostException
         {
-            List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.size());
+        	return buildNodes(builder, remoteAddresses.toArray(new String[remoteAddresses.size()]));
+        }
+
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes
+         * using the supplied addresses.
+         *
+         * @param builder         a configured builder
+         * @param remoteAddresses a array of IP addresses or FQDN
+         * @return a list of constructed RiakNodes
+         * @throws UnknownHostException if a supplied FQDN can not be resolved.
+         */
+        public static List<RiakNode> buildNodes(Builder builder, String... remoteAddresses)
+            throws UnknownHostException
+        {
+            List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.length);
             for (String remoteAddress : remoteAddresses)
             {
                 builder.withRemoteAddress(remoteAddress);
+                nodes.add(builder.build());
+            }
+            return nodes;
+        }
+
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes
+         * using the supplied addresses on the supplied port.
+         *
+         * @param builder         a configured builder
+         * @param remoteAddresses a array of InetSocketAddress
+         * @return a list of constructed RiakNodes
+         * @throws UnknownHostException if a supplied FQDN can not be resolved.
+         */
+        public static List<RiakNode> buildNodes(Builder builder, InetSocketAddress... remoteAddresses)
+            throws UnknownHostException
+        {
+            List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.length);
+            for (InetSocketAddress remoteAddress : remoteAddresses)
+            {
+                builder.withRemoteAddress(remoteAddress.getHostString());
+                builder.withRemotePort(remoteAddress.getPort());
                 nodes.add(builder.build());
             }
             return nodes;
