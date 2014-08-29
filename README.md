@@ -32,18 +32,62 @@ addresses.add("192.168.1.3");
 RiakClient client = RiakClient.newClient(addresses);
 ```
 
+The client object is thread safe and may be shared across multiple threads.
+
 For more complex configurations, you can instantiate a RiakCluster from the 
 core packages and supply it to the RiakClient constructor.
 
-Once you have a client, commands from the `com.basho.riak.client.api.commands.*` 
-packages are built then executed by the client:
+The client executes commands found in the `com.basho.riak.client.api.commands`
+package.  Some basic examples of building and executing these commands is shown
+below.
+
+## Getting Data In
+
+```java
+Namespace ns = new Namespace("default", "my_bucket");
+Location location = new Location(ns, "my_key");
+RiakObject riakObject = new RiakObject();
+riakObject.setValue(BinaryValue.create("my_value"));
+StoreValue store = new StoreValue.Builder(riakObject)
+  .withLocation(location)
+  .withOption(Option.W, new Quorum(3)).build();
+client.execute(store);
+```
+
+## Getting Data Out
 
 ```java
 Namespace ns = new Namespace("default","my_bucket");
-Location loc = new Location(ns, "my_key");
-FetchValue fv = new FetchValue.Builder(loc).build();
+Location location = new Location(ns, "my_key");
+FetchValue fv = new FetchValue.Builder(location).build();
 FetchValue.Response response = client.execute(fv);
 RiakObject obj = response.getValue(RiakObject.class);
 ```
 
+## Using 2.0 Data Types (Maps & Registers)
 
+A [bucket type](http://docs.basho.com/riak/2.0.0/dev/advanced/bucket-types/) must be created (in all local and remote clusters) before 2.0
+data types can be used.  In the example below, it is assumed that the type
+"my_map_type" has been created and associated to the "my_map_bucket" prior
+to this code executing.
+
+Once a bucket has been associated with a type, all values stored in that bucket
+must belong to that data type.
+
+```java
+Namespace ns = new Namespace("my_map_type", "my_map_bucket");
+Location location = new Location(ns, "my_key");
+RegisterUpdate ru1 = new RegisterUpdate(BinaryValue.create("map_value_1"));
+RegisterUpdate ru2 = new RegisterUpdate(BinaryValue.create("map_value_2"));
+MapUpdate mu = new MapUpdate();
+mu.update("map_key_1", ru1);
+mu.update("map_key_1", ru2);
+UpdateMap update = new UpdateMap.Builder(location, mu).build();
+client.execute(update);
+```
+
+## Search 2.0
+
+```java
+# TBD
+```
