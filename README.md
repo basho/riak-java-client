@@ -66,7 +66,7 @@ RiakObject obj = response.getValue(RiakObject.class);
 
 ## Using 2.0 Data Types (Maps & Registers)
 
-A [bucket type](http://docs.basho.com/riak/2.0.0/dev/advanced/bucket-types/) must be created (in all local and remote clusters) before 2.0
+A [bucket type](http://docs.basho.com/riak/latest/dev/advanced/bucket-types) must be created (in all local and remote clusters) before 2.0
 data types can be used.  In the example below, it is assumed that the type
 "my_map_type" has been created and associated to the "my_map_bucket" prior
 to this code executing.
