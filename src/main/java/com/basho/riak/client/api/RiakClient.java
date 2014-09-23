@@ -210,6 +210,20 @@ public class RiakClient
     }
     
     /**
+     * Static factory method to create a new client instance.
+     * This method produces a client connected to the supplied addresses on
+     * the supplied port.
+     * @param remoteAddresses a list of IP addresses or hostnames
+     * @param port the (protocol buffers) port to connect to on the supplied hosts.
+     * @return a new client instance
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+     public static RiakClient newClient(int port, String... remoteAddresses) throws UnknownHostException
+     {
+         return newClient(port, Arrays.asList(remoteAddresses));
+     }
+    
+    /**
      * Static factory method for creating a new client instance.
      * This method produces a client connected to a single node.
      * @param port the protocol buffers port of the node.
