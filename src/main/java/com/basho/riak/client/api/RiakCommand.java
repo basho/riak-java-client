@@ -86,15 +86,7 @@ public abstract class RiakCommand<T,S>
     {
         RiakFuture<T,S> future = executeAsync(cluster);
         future.await();
-        if (future.isSuccess())
-        {
-            return future.get();
-        }
-        else
-        {
-            throw new ExecutionException(future.cause());
-        }
-        
+        return future.get();
     }
     protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);    
 } 

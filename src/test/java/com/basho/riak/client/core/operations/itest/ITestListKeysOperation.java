@@ -152,6 +152,10 @@ public class ITestListKeysOperation extends ITestBase
                 {
                     throw new RuntimeException(ex);
                 }
+                catch (ExecutionException ex)
+                {
+                    throw new RuntimeException(ex);
+                }
                 
             }
         };

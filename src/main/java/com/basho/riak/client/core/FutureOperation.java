@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -250,13 +251,13 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
     
     @Override
-    public final T get() throws InterruptedException
+    public final T get() throws InterruptedException, ExecutionException
     {
         latch.await();
 
         if (exception != null)
         {
-            return null;
+            throw new ExecutionException(exception);
         }
         else if(null == converted)
         {
@@ -268,27 +269,44 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
 
     @Override
-    public final T get(long timeout, TimeUnit unit) throws InterruptedException
+    public final T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
         boolean succeed = latch.await(timeout, unit);
 
         if (!succeed)
         {
-            return null;
+            throw new TimeoutException();
         }
         else if (exception != null)
         {
-            return null;
+            throw new ExecutionException(exception);
         }
-
-        if (null == converted)
+        else if (null == converted)
         {
             converted = convert(rawResponse);
         }
-
+        
         return converted;
     }
 
+    @Override
+    public final T getNow()
+    {
+        if (latch.getCount() < 1)
+        {
+            if (null == converted)
+            {
+                converted = convert(rawResponse);
+            }
+            
+            return converted;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
     @Override
     public final void await() throws InterruptedException
     {
