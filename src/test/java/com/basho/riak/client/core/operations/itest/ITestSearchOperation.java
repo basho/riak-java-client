@@ -28,6 +28,7 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 import com.basho.riak.client.core.util.BinaryValue;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
@@ -62,7 +63,7 @@ public class ITestSearchOperation extends ITestBase
         SearchOperation.Response result = searchOp.get();
         
         assertEquals(result.numResults(), 2);
-        for (Map<String, String> map : result.getAllResults())
+        for (Map<String, List<String>> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());
             assertEquals(map.size(), 2); // id and value fields
@@ -101,18 +102,24 @@ public class ITestSearchOperation extends ITestBase
             assertTrue(propsOp.cause().toString(), propsOp.isSuccess());
         }
         
+        Thread.sleep(5000);
+        
         prepSearch(yokozunaBucketType, searchBucket);
         
-        SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "text:Alice*").build();
+        Thread.sleep(5000); 
+        
+        SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "multi_ss:t*").build();
         
         cluster.execute(searchOp);
         searchOp.await();
         assertTrue(searchOp.isSuccess());
         SearchOperation.Response result = searchOp.get();        
-        for (Map<String, String> map : result.getAllResults())
+        for (Map<String, List<String>> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());
-            assertEquals(5, map.size()); // {_yz_rk=p3, _yz_rb=search_bucket, _yz_rt=default, score=1.00000000000000000000e+00, _yz_id=default_search_bucket_p3_25}
+            assertEquals(7, map.size()); // [_yz_rk, _yz_rb, multi_ss, content_s, _yz_rt, score, _yz_id]
+            assertTrue(map.containsKey("multi_ss"));
+            assertEquals(2, map.get("multi_ss").size()); 
         }
         
         resetAndEmptyBucket(namespace);
@@ -127,13 +134,13 @@ public class ITestSearchOperation extends ITestBase
     private void prepSearch(BinaryValue searchBucketType, BinaryValue searchBucket) throws InterruptedException, ExecutionException
     {
 
-        RiakObject obj = new RiakObject();
+        RiakObject obj = new RiakObject().setContentType("application/json");
                             
-        obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
+        obj.setValue(BinaryValue.create("{ \"content_s\":\"Alice was beginning to get very tired of sitting by her sister on the " +
                     "bank, and of having nothing to do: once or twice she had peeped into the " +
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
-                    "conversation?'"));
+                    "conversation?'\"}"));
 
         Namespace namespace = new Namespace(searchBucketType, searchBucket);
         Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
@@ -145,13 +152,13 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
+        obj.setValue(BinaryValue.create("{ \"content_s\":\"So she was considering in her own mind (as well as she could, for the " +
                     "hot day made her feel very sleepy and stupid), whether the pleasure " +
                     "of making a daisy-chain would be worth the trouble of getting up and " +
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
-                    "close by her."));
+                    "close by her.\", \"multi_ss\":[\"this\",\"that\"]}"));
         
-        obj.setContentType("text/plain");
+        
         location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)
@@ -161,12 +168,11 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         
-        obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
+        obj.setValue(BinaryValue.create("{ \"content_s\":\"The rabbit-hole went straight on like a tunnel for some way, and then " +
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
-                    "well."));
+                    "well.\"}"));
         
-        obj.setContentType("text/plain");
         location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
         storeOp = 
             new StoreOperation.Builder(location)

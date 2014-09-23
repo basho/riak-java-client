@@ -61,13 +61,20 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     {
         // This isn't a streaming op, there will only be one protobuf
         RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);
-        List<Map<String, String>> docList = new LinkedList<Map<String, String>>();
+        List<Map<String, List<String>>> docList = new LinkedList<Map<String, List<String>>>();
         for (RiakSearchPB.RpbSearchDoc pbDoc : resp.getDocsList())
         {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, List<String>> map = new HashMap<String, List<String>>();
             for (RpbPair pair : pbDoc.getFieldsList())
             {
-                map.put(pair.getKey().toStringUtf8(), pair.getValue().toStringUtf8());
+                String key = pair.getKey().toStringUtf8();
+                List<String> list = map.get(key);
+                if (null == list)
+                {
+                    list = new LinkedList<String>();
+                    map.put(key, list);
+                }
+                list.add(pair.getValue().toStringUtf8());
             }
             docList.add(map);
         }
@@ -264,11 +271,11 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
 
     public static class Response implements Iterable
     {
-        private final List<Map<String, String>> results;
+        private final List<Map<String, List<String>>> results;
         private final float maxScore;
         private final int numResults;
         
-        Response(List<Map<String,String>> results, float maxScore, int numResults)
+        Response(List<Map<String,List<String>>> results, float maxScore, int numResults)
         {
             this.results = results;
             this.maxScore = maxScore;
@@ -276,7 +283,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         }
 
         @Override
-        public Iterator<Map<String,String>> iterator()
+        public Iterator<Map<String, List<String>>> iterator()
         {
             return results.iterator();
         }
@@ -303,7 +310,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
          * Returns the entire list of results from the search query.
          * @return a list containing all the result sets. 
          */
-        public List<Map<String,String>> getAllResults()
+        public List<Map<String, List<String>>> getAllResults()
         {
             return results;
         }
