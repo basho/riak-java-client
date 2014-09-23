@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.search;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 
-import java.util.concurrent.ExecutionException;
 
- /*
+/**
+ * Command used to fetch a search index from Riak.
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response, String>
+public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, String>
 {
 	private final String index;
 
-	FetchSearchIndex(Builder builder)
+	FetchIndex(Builder builder)
 	{
 		this.index = builder.index;
 	}
@@ -66,6 +67,9 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
         return new YzFetchIndexOperation.Builder().withIndexName(index).build();
     }
 
+    /**
+     * Builder for a FetchIndex command.
+     */
 	public static class Builder
 	{
 		private final String index;
@@ -75,9 +79,9 @@ public class FetchSearchIndex extends RiakCommand<YzFetchIndexOperation.Response
 			this.index = index;
 		}
 
-		public FetchSearchIndex build()
+		public FetchIndex build()
 		{
-			return new FetchSearchIndex(this);
+			return new FetchIndex(this);
 		}
 	}
 }

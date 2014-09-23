@@ -32,20 +32,21 @@ import java.util.Map;
 /**
  * Command used to fetch a value from Riak.
  * <p>
- * Fetching an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
+ * Fetching an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.core.query.Location}
  * and executing the FetchValue operation.
  * <pre>
- * Location loc = new Location("my_bucket").setKey("my_key");
+ * Namespace ns = new Namespace("my_type","my_bucket");
+ * Location loc = new Location(ns, "my_key");
  * FetchValue fv = new FetchValue.Builder(loc).build();
  * FetchValue.Response response = client.execute(fv);
  * RiakObject obj = response.getValue(RiakObject.class);
  * </pre>
  * </p>
  * <p>
- * All operations including FetchValue can called async as well.
+ * All operations can called async as well.
  * <pre>
  * ...
- * {@literal RiakFuture<FetchValue.Response, Location>} future = client.execute(sv);
+ * {@literal RiakFuture<FetchValue.Response, Location>} future = client.execute(fv);
  * ...
  * future.await();
  * if (future.isSuccess)
@@ -195,7 +196,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 		/**
 		 * Determine if the value is unchanged.
 		 * <p/>
-		 * If the fetch request set {@link com.basho.riak.client.operations.kv.FetchOption#IF_MODIFIED}
+		 * If the fetch request set {@link com.basho.riak.client.api.commands.kv.FetchValue.Option#IF_MODIFIED}
 		 * this indicates if the value in Riak has been modified.
 		 * <p/>
 		 *

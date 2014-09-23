@@ -43,25 +43,75 @@ import java.util.concurrent.TimeUnit;
  * |        Uncompleted       |    |    +===========================+
  * +--------------------------+    |    | Completed with failure    |
  * |      isDone() = <b>false</b>    |    |    +---------------------------+
- * |   isSuccess() = false    |----+---->   isDone() = <b>true</b>         |
- * | isCancelled() = false    |    |    |    cause() = <b>non-null</b>     |
- * |       cause() = null     |    |    +===========================+
- * +--------------------------+    |    | Completed by cancellation |
+ * |   isSuccess() = false    |----+---->      isDone() = <b>true</b>      |
+ * | isCancelled() = false    |    |    |   isSuccess() = <b>false</b>     |
+ * |       cause() = null     |    |    |       cause() = <b>non-null</b>  |
+ * +--------------------------+    |    +===========================+
+ *                                 |    | Completed by cancellation |
  *                                 |    +---------------------------+
  *                                 +---->      isDone() = <b>true</b>      |
  *                                      | isCancelled() = <b>true</b>      |
  *                                      +---------------------------+
  * </pre>
  * </p>
+ * <p>
+ * The typical use pattern is to call {@literal await()}, check {@literal isSuccess()}
+ * then call {@literal get()} or {@literal cause()}</p>
  * @author Brian Roach <roach at basho dot com>
+ * @param <V> the (response) return type
+ * @param <T> The query info type 
  * @since 2.0
  */
 public interface RiakFuture<V, T> extends Future<V>
 {
+    /**
+     * Not supported due to limitations of the Riak API.
+     * <p>
+     * At present time there is no way to cancel an operation sent to Riak.
+     * This method will never succeed and always return false. 
+     * </p>
+     * @param mayInterruptIfRunning
+     * @return always false.
+     */
     @Override
     boolean cancel(boolean mayInterruptIfRunning);
+    
+    /**
+     * Waits for this RiakFuture to be completed if necessary and returns the response if available.
+     * <p>
+     * If the operation has failed, the response will be {@literal null}. 
+     * </p>
+     * 
+     * @return The response, or {@literal null} if the operation failed.
+     * @throws InterruptedException 
+     * @see #isSuccess() 
+     */
     @Override
     V get() throws InterruptedException;
+    
+    /**
+     * Waits if necessary for at most the given time for the computation
+     * to complete, and then retrieves its result, if available.
+     * <p>
+     * If the operation has failed or has not yet completed, the response will be {@literal null}. 
+     * </p>
+     * <p>
+     * Note that the timeout value here is how long <b>you</b> are willing to wait
+     * for this RiakFuture to complete. Upon return you can check {@literal isDone()}
+     * to see if the future has completed yet or not. The operation is still in
+     * progress if that returns false.
+     * </p>
+     * <p>
+     * If you wish to set a timeout on the command itself, use the timeout() method
+     * provided in the command's associated builder.
+     * </p>
+     * @param timeout the amount of time to wait before returning.
+     * @param unit the unit of time.
+     * @return the response, or null if not completed or failed.
+     * @throws InterruptedException 
+     * @see #isDone() 
+     * @see #isSuccess() 
+     */
     @Override
     V get(long timeout, TimeUnit unit) throws InterruptedException;
     @Override
@@ -70,24 +120,50 @@ public interface RiakFuture<V, T> extends Future<V>
     boolean isDone();
     /**
      * Waits for this RiakFuture to be completed.
+     * <p>
+     * Upon returning, the operation has completed. Checking isSuccess() tells 
+     * you if it did so successfully.
+     * </p>
      * @throws InterruptedException 
+     * @see #isSuccess() 
      */
     void await() throws InterruptedException;
     /**
-     * Waits for this RiakFuture to be completed, or times out.
+     * Waits for this RiakFuture to be completed for a set amount of time.
+     * <p>Note that the timeout value here is how long <b>you</b> are willing to wait
+     * for this RiakFuture to complete. Upon return you can check {@literal isDone()}
+     * to see if the future has completed yet or not. The operation is still in
+     * progress if that returns false.
+     * </p>
+     * <p>
+     * If you wish to set a timeout on the command itself, use the timeout() method
+     * provided in the command's associated builder.
+     * </p>
+     * 
      * @param timeout the amount of time to wait before returning.
      * @param unit the unit of time.
      * @throws InterruptedException 
+     * @see #isDone() 
+     * @see #isSuccess() 
      */
     void await(long timeout, TimeUnit unit) throws InterruptedException;
     /**
      * Determine if the operation was successful.
+     * <p>
+     * In the case of true, get() will then return the response. If false, 
+     * cause() will then return non-null.
      * @return true if completed and successful, false otherwise.
+     * @see #cause() 
      */
     boolean isSuccess();
     /**
      * Return information about the operation and why it failed.
+     * <p>
+     * Note this will return {@literal null} if the operation completed 
+     * successfully.
+     * </p>
      * @return The exception thrown during the operation, or null if not set.
+     * @see #isSuccess() 
      */
     Throwable cause();
     /**

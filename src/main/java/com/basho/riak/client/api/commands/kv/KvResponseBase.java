@@ -111,8 +111,8 @@ abstract class KvResponseBase
      * </p>
      * <p>
      * The values will be converted to the supplied class using the 
-     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
-     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
      * or no conversion at all if you pass in {@code RiakObject.class}. 
      * </p>
      * @param clazz the class to be converted to
@@ -130,11 +130,11 @@ abstract class KvResponseBase
      * Get a single, resolved object from this response.
      * <p>
      * The values will be converted to the supplied class using the 
-     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
-     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
      * or no conversion at all if you pass in {@code RiakObject.class}. If there are multiple 
      * values present (siblings), they will then be resolved using the 
-     * {@link com.basho.riak.client.cap.ConflictResolver} returned by the {@link com.basho.riak.client.cap.ConflictResolverFactory}.
+     * {@link com.basho.riak.client.api.cap.ConflictResolver} returned by the {@link com.basho.riak.client.api.cap.ConflictResolverFactory}.
      * </p>
      * @param clazz the class to be converted to.
      * @return the single, resolved value converted to the supplied class.
@@ -167,11 +167,11 @@ abstract class KvResponseBase
      * Get a single, resolved object from this response.
      * <p>
      * The values will be converted to the supplied class using the 
-     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
-     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
      * or no conversion at all if you pass in {@code RiakObject.class}. If there are multiple 
      * values present (siblings), they will then be resolved using the 
-     * {@link com.basho.riak.client.cap.ConflictResolver} returned by the {@link com.basho.riak.client.cap.ConflictResolverFactory}.
+     * {@link com.basho.riak.client.api.cap.ConflictResolver} returned by the {@link com.basho.riak.client.api.cap.ConflictResolverFactory}.
      * </p>
      * <p>
      * This version should only be used if you're converting to a parameterized 
@@ -215,8 +215,8 @@ abstract class KvResponseBase
      * </p>
      * <p>
      * The values will be converted to the supplied class using the 
-     * {@link com.basho.riak.client.convert.Converter} returned from the {@link com.basho.riak.client.convert.ConverterFactory}.
-     * By default this will be the {@link com.basho.riak.client.convert.JSONConverter},
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
      * or no conversion at all if you pass in a TypeReference for {@code RiakObject.class}. 
      * </p>
      * <p>

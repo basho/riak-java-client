@@ -17,29 +17,51 @@ package com.basho.riak.client.api.commands.datatypes;
 
 import com.basho.riak.client.core.query.crdt.ops.CounterOp;
 
-/*
-* @author Dave Rusek <drusek at basho dot com>
-* @since 2.0
-*/
+/**
+ * An update to a Riak counter datatype.
+ * <p>
+ * When building a {@link UpdateCounter} or {@link UpdateMap} command
+ * this class is used to encapsulate the update to be performed on a 
+ * Riak counter datatype.
+ * </p>
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public class CounterUpdate implements DatatypeUpdate
 {
 
     private long delta = 0;
 
+    /**
+     * Constructs a CounterUpdate with a delta of 0 (zero).
+     */
     public CounterUpdate()
     {
     }
 
+    /**
+     * Constructs a CounterUpdate with the supplied delta.
+     * <p>To decrease a counter supply a negative value.</p>
+     * @param delta the value to add to the counter in Riak.
+     */
     public CounterUpdate(long delta)
     {
         this.delta = delta;
     }
 
+    /**
+     * Get the delta.
+     * @return the value contained in this CounterUpdate.
+     */
     public long getDelta()
     {
         return delta;
     }
 
+    /**
+     * Returns the core update.
+     * @return the update used by the client core.
+     */
     @Override
     public CounterOp getOp()
     {

@@ -15,7 +15,16 @@
  */
 package com.basho.riak.client.core.query.crdt.types;
 
-public class RiakFlag extends RiakDatatype<Boolean>
+/**
+ * Representation of the Riak flag datatype.
+ * <p>
+ * This in an immutable boolean value which can be returned within a 
+ * {@link RiakMap}. 
+ * </p>
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public class RiakFlag extends RiakDatatype
 {
 
     private boolean enabled = false;
@@ -25,11 +34,19 @@ public class RiakFlag extends RiakDatatype<Boolean>
         this.enabled = enabled;
     }
 
+    /**
+     * Return whether this flag is enabled.
+     * @return true if enabled, false otherwise.
+     */
     public boolean getEnabled()
     {
         return enabled;
     }
 
+    /**
+     * Return whether this flag is enabled.
+     * @return true if enabled, false otherwise.
+     */
 	@Override
 	public Boolean view()
 	{

@@ -27,8 +27,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Performs a 2i query where the 2i index keys are raw bytes.
+ * <p>
+ * A RawIndexQuery is used when you are using raw bytes for your 2i keys. The
+ * parameters are provided as BinaryValue objects. 
+ * </p>
+ * <pre>
+ * <code>
+ * byte[] bytes = new byte[] { 1,2,3,4};
+ * BinaryValue key = BinaryValue.create(bytes);
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * RawIndexQuery q = new RawIndexQuery.Builder(ns, "my_index", Type._BIN, key).build();
+ * RawIndexquery.Response resp = client.execute(q);
+ * </code>
+ * </pre>
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery>
 {
@@ -85,14 +99,40 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         
     }
     
+    /**
+     * Builder used to construct a RawIndexQuery command.
+     */
     public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
     {
 
+        /**
+         * Construct a Builder for a RawIndexQuery with a range.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension as these are supplied by the type. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param type The Riak index type.
+         * @param start The start of the 2i range.
+         * @param end The end of the 2i range.
+         */
         public Builder(Namespace namespace, String indexName, Type type, BinaryValue start, BinaryValue end)
         {
             super(namespace, indexName + type, start, end);
         }
 
+        /**
+         * Construct a Builder for a RawIndexQuery with a single 2i key.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension as these are supplied by the type. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param type The Riak index type.
+         * @param match The 2i key to query.
+         */ 
         public Builder(Namespace namespace, String indexName, Type type, BinaryValue match)
         {
             super(namespace, indexName + type, match);
@@ -104,6 +144,10 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             return this;
         }
 
+        /**
+         * Construct the query.
+         * @return a new RawIndexQuery
+         */
         public RawIndexQuery build()
         {
             return new RawIndexQuery(this);

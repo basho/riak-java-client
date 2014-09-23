@@ -15,36 +15,67 @@
  */
 package com.basho.riak.client.core.query.crdt.types;
 
-public abstract class RiakDatatype<T>
+/**
+ * Base abstract class for all datatypes.
+ * 
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public abstract class RiakDatatype
 {
 
-	public abstract T view();
+    public abstract Object view();
 
+    /**
+     * Determine if this datatype is a map.
+     * @return true if a map, false otherwise.
+     */
     public boolean isMap()
     {
         return this instanceof RiakMap;
     }
 
+    /**
+     * Determine if this datatype is a set.
+     * @return true if a set, false otherwise.
+     */
     public boolean isSet()
     {
         return this instanceof RiakSet;
     }
 
+    /**
+     * Determine if this datatype is a counter.
+     * @return true if a counter, false otherwise.
+     */
     public boolean isCounter()
     {
         return this instanceof RiakCounter;
     }
 
+    /**
+     * Determine if this datatype is a register.
+     * @return true if a register, false otherwise.
+     */
     public boolean isRegister()
     {
         return this instanceof RiakRegister;
     }
 
+    /**
+     * Determine if this datatype is a flag.
+     * @return true if a flag, false otherwise.
+     */
     public boolean isFlag()
     {
         return this instanceof RiakFlag;
     }
 
+    /**
+     * Get this datatype as a map.
+     * @return a RiakMap
+     * @throws IllegalStateException if this is not a map.
+     */
     public RiakMap getAsMap()
     {
         if (!isMap())
@@ -54,6 +85,11 @@ public abstract class RiakDatatype<T>
         return (RiakMap) this;
     }
 
+    /**
+     * Get this datatype as a set.
+     * @return a RiakSet
+     * @throws IllegalStateException if this is not a set.
+     */
     public RiakSet getAsSet()
     {
         if (!isSet())
@@ -63,6 +99,11 @@ public abstract class RiakDatatype<T>
         return (RiakSet) this;
     }
 
+    /**
+     * Get this datatype as a counter.
+     * @return a RiakCounter
+     * @throws IllegalStateException if this is not a counter.
+     */
     public RiakCounter getAsCounter()
     {
         if (!isCounter())
@@ -72,6 +113,11 @@ public abstract class RiakDatatype<T>
         return (RiakCounter) this;
     }
 
+    /**
+     * Get this datatype as a register.
+     * @return a RiakRegister
+     * @throws IllegalStateException if this is not a register.
+     */
     public RiakRegister getAsRegister()
     {
         if (!isRegister())
@@ -81,6 +127,11 @@ public abstract class RiakDatatype<T>
         return (RiakRegister) this;
     }
 
+    /**
+     * Get this datatype as a flag.
+     * @return a RiakFlag
+     * @throws IllegalStateException if this is not a flag.
+     */
     public RiakFlag getAsFlag()
     {
         if (!isFlag())

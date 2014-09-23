@@ -5,6 +5,11 @@ import com.basho.riak.client.core.query.Location;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to perform a map reduce operation over a specific set of keys in a bucket.
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public class BucketKeyMapReduce extends MapReduce
 {
 
@@ -13,6 +18,9 @@ public class BucketKeyMapReduce extends MapReduce
 		super(input, builder);
 	}
 
+    /**
+     * Builder for a BucketKeyMapReduce command.
+     */
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 

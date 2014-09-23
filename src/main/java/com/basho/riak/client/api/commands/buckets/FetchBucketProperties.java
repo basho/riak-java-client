@@ -14,16 +14,30 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
 
- /*
+/**
+ * Command used to fetch the properties of a bucket in Riak.
+ * <p>
+ * <pre>
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * FetchBucketProperties fbp = new FetchBucketProperties.Builder(ns).build();
+ * FetchBucketPropsOperation.Response resp = client.execute(fbp);
+ * BucketProperties props = resp.getBucketProperties();
+ * }
+ * </pre>
+ * Note that this simply returns the core response {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
+ * 
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -67,10 +81,17 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
         return new FetchBucketPropsOperation.Builder(namespace).build();
     }
 
+    /**
+     * Builder used to construct a FetchBucketPoperties command.
+     */
 	public static class Builder
 	{
 		private final Namespace namespace;
 
+        /**
+         * Construct a Builder for a FetchBucketProperties command.
+         * @param namespace The namespace for the bucket. 
+         */
 		public Builder(Namespace namespace)
 		{
 			if (namespace == null)
@@ -80,6 +101,10 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
             this.namespace = namespace;
 		}
 
+        /**
+         * Construct a new FetchBucketProperties command.
+         * @return a new FetchBucketProperties command.
+         */
 		public FetchBucketProperties build()
 		{
 			return new FetchBucketProperties(this);

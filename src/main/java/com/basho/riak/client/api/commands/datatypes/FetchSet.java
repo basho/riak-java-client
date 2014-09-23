@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.datatypes;
 
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.api.commands.datatypes.Context;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.core.query.crdt.types.RiakSet;
-import com.basho.riak.client.core.util.BinaryValue;
 
- /*
+/**
+ * Command used to fetch a set datatype from Riak.
+ * <p>
+ * <pre>
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * Location loc = new Location(ns, "my_key");
+ * FetchSet fs = new FetchSet.Builder(loc).build();
+ * FetchSet.Response resp = client.execute(fs);
+ * RiakSet rSet = resp.getDatatype();
+ * Set<BinaryValue> set = rSet.view();
+ * }
+ * </pre>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -77,10 +88,17 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
 		return element.getAsSet();
 	}
 
+    /**
+     * Builder used to construct a FetchSet command.
+     */
 	public static class Builder extends FetchDatatype.Builder<Builder>
 	{
 
-		public Builder(Location location)
+		/**
+         * Construct a builder for a FetchSet command.
+         * @param location the location of the set in Riak.
+         */
+        public Builder(Location location)
 		{
 			super(location);
 		}
@@ -91,12 +109,29 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
 			return this;
 		}
 
+        /**
+         * Construct a FetchSet command.
+         * @return a new FetchSet Command.
+         */
 		public FetchSet build()
 		{
 			return new FetchSet(this);
 		}
 	}
     
+    /**
+     * Response from a FetchSet command.
+     * <p>
+     * Encapsulates a RiakSet returned from the FetchSet command.
+     * <pre>
+     * {@code
+     * ...
+     * RiakSet rSet = response.getDatatype();
+     * Set<BinaryValue> set = rSet.view();
+     * }
+     * </pre>
+     * </p>
+     */
     public static class Response extends FetchDatatype.Response<RiakSet>
     {
         Response(RiakSet set, Context context)

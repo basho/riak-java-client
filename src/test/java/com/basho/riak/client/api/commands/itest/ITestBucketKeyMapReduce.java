@@ -17,7 +17,7 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.api.commands.StoreBucketProperties;
+import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.mapreduce.BucketKeyMapReduce;
 import com.basho.riak.client.api.commands.mapreduce.MapReduce;

@@ -28,7 +28,7 @@ import java.lang.annotation.ElementType;
  * The type must be a {@code String}. 
  * </p>
  * <p>
- * In most cases this is not needed as the {@link com.basho.riak.client.convert.Converter}
+ * In most cases this is not needed as the {@link com.basho.riak.client.api.convert.Converter}
  * will supply the appropriate content-type during serialization.
  * 
  * <pre>

@@ -114,8 +114,8 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         }
 
         /**
-         * Set whether a context should be returned
-         * Default to false
+         * Set whether a context should be returned.
+         * Defaults to true.
          *
          * @param context return context
          * @return a reference to this object.

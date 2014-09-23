@@ -36,8 +36,11 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * An operation for defining and runnig a Map/Reduce query on Riak. <p/> <p> See <a
+ * Base abstract class for all MapReduce commands.
+ * <p> See <a
  * href="http://wiki.basho.com/MapReduce.html">Map/Reduce</a> for details. </p>
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
  */
 public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryValue>
 {
@@ -135,6 +138,9 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 		}
 	}
 
+    /**
+     * Base abstract class for all MapReduce command builders.
+     */
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
@@ -329,6 +335,9 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 
 	}
 
+    /**
+     * Response from a Map Reduce command.
+     */
 	public static class Response
 	{
 

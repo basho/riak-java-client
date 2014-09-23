@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.search;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzGetSchemaOperation;
 
-import java.util.concurrent.ExecutionException;
 
- /*
+/**
+ * Command used to fetch a search schema from Riak.
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -66,6 +67,9 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
         return new YzGetSchemaOperation.Builder(schema).build();
     }
 
+    /**
+     * Builder for a FetchSchema command.
+     */
 	public static class Builder
 	{
 		private final String schema;

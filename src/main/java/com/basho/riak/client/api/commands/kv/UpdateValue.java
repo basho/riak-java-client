@@ -37,6 +37,50 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
+ * <p>
+ * The UpdateValue command completely encapsulates the typical read/modify/write 
+ * cycle used with data in Riak. 
+ * </p>
+ * <p>The object specified by the given {@link com.basho.riak.client.core.query.Location}
+ * will be fetched from Riak and have the {@link com.basho.riak.client.api.cap.ConflictResolver} stored in
+ * the {@link com.basho.riak.client.api.cap.ConflictResolverFactory} applied. The resolved
+ * object is then passed to your {@link com.basho.riak.client.api.commands.kv.UpdateValue.Update}
+ * and the result stored back into Riak.
+ * </p>
+ * <pre>
+ * <code>
+ * class AppendUpdate extends UpdateValue.Update<MyPojo>
+ * {
+ *     private final String update;
+ * 
+ *     public AppendUpdate(String update)
+ *     {
+ *         this.update = update;
+ *     }
+ * 
+ *     {@literal @Override}
+ *     public MyPojo apply(MyPojo original)
+ *     {
+ *         if (original == null)
+ *         {
+ *             original = new MyPojo();
+ *         }
+ * 
+ *         original.value += update;
+ *         return original;
+ *     }
+ * }
+ * 
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * Location loc = new Location(ns, "my_key");
+ * AppendUpdate update = new AppendUpdate("append this string");
+ * 
+ * UpdateValue uv = 
+ *     new UpdateValue.Builder(loc).withUpdate(update).build();
+ * 
+ * UpdateValue.Response response = client.execute(uv);
+ * </code>
+ * </pre>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -312,6 +356,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         }
     }
 
+    /**
+     * Used to construct an UpdateValue command.
+     */
 	public static class Builder
 	{
 		private final Location location;
@@ -322,13 +369,17 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 		private final Map<StoreValue.Option<?>, Object> storeOptions =
 			new HashMap<StoreValue.Option<?>, Object>();
 
+        /**
+         * Construct a Builder for an UpdateValue command.
+         * @param location the location of the object in Riak to update.
+         */
 		public Builder(Location location)
 		{
 			this.location = location;
 		}
 
         /**
-		 * Add an option for the fetch phase of the update
+		 * Add an option for the fetch phase of the update.
 		 *
 		 * @param option the option
 		 * @param value  the option's value
@@ -342,7 +393,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
 		}
 
 		/**
-		 * Add an option for the store phase of the update
+		 * Add an option for the store phase of the update.
 		 *
 		 * @param option the option
 		 * @param value  the option's value
@@ -369,10 +420,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
          * </p>
          * @param update The {@code Update} instance
          * @return a reference to this object.
-         * @see com.basho.riak.client.convert.Converter
-         * @see com.basho.riak.client.convert.ConverterFactory
-         * @see com.basho.riak.client.cap.ConflictResolver
-         * @see com.basho.riak.client.cap.ConflictResolverFactory
+         * @see com.basho.riak.client.api.convert.Converter
+         * @see com.basho.riak.client.api.convert.ConverterFactory
+         * @see com.basho.riak.client.api.cap.ConflictResolver
+         * @see com.basho.riak.client.api.cap.ConflictResolverFactory
          */
         public Builder withUpdate(Update<?> update)
 		{
@@ -392,10 +443,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
          * @param update The {@code Update} instance
          * @param typeReference the {@code TypeReference} for the class used for conversion.
          * @return a reference to this object.
-         * @see com.basho.riak.client.convert.Converter
-         * @see com.basho.riak.client.convert.ConverterFactory
-         * @see com.basho.riak.client.cap.ConflictResolver
-         * @see com.basho.riak.client.cap.ConflictResolverFactory
+         * @see com.basho.riak.client.api.convert.Converter
+         * @see com.basho.riak.client.api.convert.ConverterFactory
+         * @see com.basho.riak.client.api.cap.ConflictResolver
+         * @see com.basho.riak.client.api.cap.ConflictResolverFactory
          */
         public <T> Builder withUpdate(Update<T> update, TypeReference<T> typeReference)
         {
@@ -421,6 +472,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             return this;
         }
         
+        /**
+         * Construct the UpdateValue command.
+         * @return a new UpdateValue command.
+         */
 		public UpdateValue build()
 		{
 			return new UpdateValue(this);

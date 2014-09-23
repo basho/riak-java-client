@@ -6,15 +6,15 @@
  * storing/retrieving your own domain object. All annotations can be applied to
  * a field or a getter/setter pair of methods. 
  * </p><p>
- * In addition, the {@link com.basho.riak.client.convert.Converter} 
+ * In addition, the {@link com.basho.riak.client.api.convert.Converter} 
  * interface allows for serialization/deserialization for the data portion. 
  * </p>
  * <p>
  * By annotating your own domain object, you can simply pass an instance of it
- * to {@link com.basho.riak.client.operations.kv.StoreValue}. 
+ * to {@link com.basho.riak.client.api.commands.kv.StoreValue}. 
  * </p>
  * <p>
- * When fetching data from Riak, the reverse is also true. The {@link com.basho.riak.client.operations.kv.FetchValue.Response}
+ * When fetching data from Riak, the reverse is also true. The {@link com.basho.riak.client.api.commands.kv.FetchValue.Response}
  * handles injecting your domain object with any of the annotated values. 
  * <p>
  * <p>

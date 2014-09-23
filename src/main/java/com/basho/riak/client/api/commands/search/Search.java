@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.search;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
+import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SearchOperation;
@@ -23,7 +25,8 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.*;
 
- /*
+/**
+ * Command used to perform a serach in Riak.
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -172,6 +175,9 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
        }
    }
     
+   /**
+    * Builder for a Search command.
+    */
 	public static class Builder
 	{
 		private final String index;

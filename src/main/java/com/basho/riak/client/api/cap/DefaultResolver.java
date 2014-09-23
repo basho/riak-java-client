@@ -18,9 +18,16 @@ package com.basho.riak.client.api.cap;
 import java.util.List;
 
 /**
- * A conflict resolver that doesn't resolve conflict. If it is presented with a
- * collection of siblings with more than one entry it throws an Exception
- *
+ * A conflict resolver that doesn't resolve conflict. 
+ * <p>
+ * This is the default ConflictResolver used if there is not one registered 
+ * in the {@link com.basho.riak.client.api.cap.ConflictResolverFactory} for the 
+ * class of object being resolved.
+ * </p>
+ * <p>
+ * If it is presented with a
+ * collection of siblings with more than one entry it throws an Exception.
+ *</p>
  * @author Russell Brown <Russelldb at basho dot com>
  * @since 1.0
  */

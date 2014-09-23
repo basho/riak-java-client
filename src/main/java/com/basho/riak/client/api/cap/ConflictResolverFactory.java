@@ -22,8 +22,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
+ * Simple factory for ConflictResolver objects.
+ * <p>
+ * When you have multiple writers there may be multiple versions of the same
+ * object stored in Riak. When fetching all of these will be returned and you
+ * will need to resolve the conflict. 
+ * </p>
+ * <p>
+ * To facilitate this, you can store an instance of the {@link ConflictResolver}
+ * in this factory for a class. It will then be used by the {@link com.basho.riak.client.api.commands.kv.FetchValue.Response}
+ * to resolve a set a of siblings to a single object.
+ * </p>
+ * 
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public enum ConflictResolverFactory
 {

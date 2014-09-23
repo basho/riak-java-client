@@ -31,15 +31,28 @@ import java.util.Map;
 /**
  * Command used to delete a value from Riak.
  * <p>
- * Deleting an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.query.Location}
- * and executing the DeleteValue operation.
+ * Deleting an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.core.query.Location}
+ * and executing the operation.
  * <pre>
- * Location loc = new Location("my_bucket")..setBucketType("my_type").setKey("my_key");
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * Location loc = new Location(ns, "my_key");
  * DeleteValue dv = new DeleteValue.Builder(loc).build();
  * DeleteValue.Response resp = client.execute(dv);
  * </pre>
  * </p>
- * 
+ * <p>
+ * All operations can called async as well.
+ * <pre>
+ * ...
+ * {@literal RiakFuture<DeleveValue.Response, Location>} future = client.execute(dv);
+ * ...
+ * future.await();
+ * if (future.isSuccess)
+ * { 
+ *     ... 
+ * }
+ * </pre>
+ * </p>
  * 
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
@@ -197,6 +210,10 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 			new HashMap<Option<?>, Object>();
 		private VClock vClock;
 
+        /**
+         * Construct a Builder for a DeleteValue command.
+         * @param location the location of the object in Riak
+         */
 		public Builder(Location location)
 		{
 			if (location == null)
@@ -219,7 +236,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 		}
 
 		/**
-		 * Add a delete option
+		 * Add a delete option.
 		 *
 		 * @param option the option
 		 * @param value  the value associated with the option

@@ -14,18 +14,30 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.datatypes;
 
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.api.commands.datatypes.Context;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
 import com.basho.riak.client.core.query.crdt.types.RiakMap;
-import com.basho.riak.client.core.util.BinaryValue;
 
- /*
+/**
+ * Command used to fetch a counter datatype from Riak.
+ * <p>
+ * <pre>
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * Location loc = new Location(ns, "my_key");
+ * FetchMap fm = new FetchMap.Builder(loc).build();
+ * FetchMap.Response resp = client.execute(fm);
+ * RiakMap rMap = resp.getDatatype();
+ * Map<BinaryValue, List<RiakDatatype>> map = rMap.view();
+ * }
+ * </pre>
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -77,9 +89,16 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
         return future;
     }
     
+    /**
+     * Builder used to construct a FetchMap command.
+     */
 	public static class Builder extends FetchDatatype.Builder<Builder>
 	{
 
+        /**
+         * Construct a Builder for a FetchMap command.
+         * @param location the location of the map in Riak.
+         */
 		public Builder(Location location)
 		{
 			super(location);
@@ -91,6 +110,10 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
 			return this;
 		}
 
+        /**
+         * Construct a new FetchMap command.
+         * @return a new FetchMap command.
+         */
 		public FetchMap build()
 		{
 			return new FetchMap(this);
@@ -98,6 +121,20 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
 
 	}
 
+    /**
+     * Response from a FetchMap command.
+     * <p>
+     * Encapsulates a RiakMap returned from the command.
+     * <pre>
+     * {@code
+     * ...
+     * RiakMap rMap = response.getDatatype();
+     * Map<BinaryValue, List<RiakDatatype>> map = rMap.view();
+     * 
+     * }
+     * </pre>
+     * </p>
+     */
     public static class Response extends FetchDatatype.Response<RiakMap>
     {
         protected Response(RiakMap datatype, Context context)

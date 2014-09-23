@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
@@ -25,7 +26,20 @@ import com.basho.riak.client.core.util.BinaryValue;
 import java.util.Iterator;
 import java.util.List;
 
- /*
+/**
+ * Command used to list the buckets contained in a bucket type.
+ * <p>
+ * <pre>
+ * {@code
+ * ListBuckets lb = new ListBuckets.Builder("my_type").build();
+ * ListBuckets.Response resp = client.execute(lb);
+ * for (Namespace ns : response)
+ * {
+ *     System.out.println(ns.getBucketName());
+ * }
+ * }
+ * </pre>
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -75,6 +89,20 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         return builder.build();
     }
 
+    /**
+     * A response from a ListBuckets command.
+     * <p>This encapsulates an immutable list of bucket names 
+     * and is Iterable:
+     * <pre>
+     * {@code
+     * for (Namespace ns : response)
+     * {
+     *     System.out.println(ns.getBucketName());
+     * }
+     * }
+     * </pre>
+     * </p>
+     */
     public static class Response implements Iterable<Namespace> {
 
         private final BinaryValue type;
@@ -124,27 +152,51 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         }
     }
 
+    /**
+     * Builder for a ListBuckets command.
+     */
 	public static class Builder
 	{
 		private int timeout;
 		private final BinaryValue type;
 
+        /**
+         * Construct a Builder for a ListBuckets command.
+         * @param type the bucket type.
+         */
 		public Builder(String type)
 		{
 			this.type = BinaryValue.create(type);
 		}
 
+        /**
+         * Construct a Builder for a ListBuckets command.
+         * @param type the bucket type.
+         */
 		public Builder(BinaryValue type)
 		{
 			this.type = type;
 		}
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
 		public Builder withTimeout(int timeout)
 		{
 			this.timeout = timeout;
 			return this;
 		}
 
+        /**
+         * Construct a new ListBuckets command.
+         * @return a new ListBuckets command.
+         */
 		public ListBuckets build()
 		{
 			return new ListBuckets(this);

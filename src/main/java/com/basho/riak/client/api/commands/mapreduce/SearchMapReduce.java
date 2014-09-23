@@ -1,5 +1,10 @@
 package com.basho.riak.client.api.commands.mapreduce;
 
+/**
+ * Command used to perform a map reduce operation with a search query as input.
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public class SearchMapReduce extends MapReduce
 {
 	protected SearchMapReduce(SearchInput input, Builder builder)
@@ -7,6 +12,9 @@ public class SearchMapReduce extends MapReduce
 		super(input, builder);
 	}
 
+    /**
+     * Builder for a SearchMapReduce command.
+     */
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 

@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
- * @see com.basho.riak.client.query.RiakObject#getUserMeta() 
+ * @see com.basho.riak.client.core.query.RiakObject#getUserMeta() 
  */
 public class RiakUserMetadata
 {
@@ -120,7 +120,7 @@ public class RiakUserMetadata
     /**
      * Get a user metadata entry.
      * <p>
-     * This method and its {@link RiakUserMetadata#put(com.basho.riak.client.util.BinaryValue, com.basho.riak.client.util.BinaryValue)}
+     * This method and its {@link RiakUserMetadata#put(com.basho.riak.client.core.util.BinaryValue, com.basho.riak.client.core.util.BinaryValue)}
      * allow access to the raw bytes.
      * </p>
      * @param key the key for the user metadata entry  
@@ -177,7 +177,7 @@ public class RiakUserMetadata
     /**
      * Set a user metadata entry using raw bytes.
      * <p>
-     * This method and its {@link RiakUserMetadata#get(com.basho.riak.client.util.BinaryValue)}
+     * This method and its {@link RiakUserMetadata#get(com.basho.riak.client.core.util.BinaryValue)}
      * counterpart all access to the user metadata raw bytes
      * </p>
      * @param key the key for the user metadata entry 

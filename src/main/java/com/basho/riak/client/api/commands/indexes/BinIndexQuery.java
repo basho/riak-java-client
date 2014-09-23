@@ -29,8 +29,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Performs a 2i query where the 2i index keys are strings.
+ * <p>
+ * A RawIndexQuery is used when you are using strings for your 2i keys. The
+ * parameters are provided as String objects. 
+ * </p>
+ * <pre>
+ * <code>
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * String key = "some_key";
+ * BinIndexQuery q = new BinIndexQuery.Builder(ns, "my_index", key).build();
+ * BinIndexQuery.Response resp = client.execute(q);
+ * </code>
+ * </pre>
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Response, BinIndexQuery>
 {
@@ -116,14 +129,38 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
     }
 
+    /**
+     * Builder used to construct a BinIndexQuery.
+     */
     public static class Builder extends Init<String, Builder>
     {
 
+        /**
+         * Construct a Builder for a BinIndexQuery with a range.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param start The start of the 2i range.
+         * @param end The end of the 2i range.
+         */
         public Builder(Namespace namespace, String indexName, String start, String end)
         {
             super(namespace, indexName, start, end);
         }
 
+        /**
+         * Construct a Builder for a BinIndexQuery with a single 2i key.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param match the 2i key.
+         */
         public Builder(Namespace namespace, String indexName, String match)
         {
             super(namespace, indexName, match);
@@ -135,6 +172,10 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             return this;
         }
 
+        /**
+         * Construct the query.
+         * @return a new BinIndexQuery
+         */
         public BinIndexQuery build()
         {
             return new BinIndexQuery(this);

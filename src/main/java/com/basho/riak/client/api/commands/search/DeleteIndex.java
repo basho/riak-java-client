@@ -1,20 +1,22 @@
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.search;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
 
 /**
+ * Command used to delete a search index in Riak.
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class DeleteSearchIndex extends RiakCommand<Void, String>
+public final class DeleteIndex extends RiakCommand<Void, String>
 {
 	private final String index;
 
-	DeleteSearchIndex(Builder builder)
+	DeleteIndex(Builder builder)
 	{
 		this.index = builder.index;
 	}
@@ -50,6 +52,9 @@ public final class DeleteSearchIndex extends RiakCommand<Void, String>
         return new YzDeleteIndexOperation.Builder(index).build();
     }
     
+    /**
+     * Builder for a DeleteIndex command.
+     */
 	public static class Builder
 	{
 
@@ -60,9 +65,9 @@ public final class DeleteSearchIndex extends RiakCommand<Void, String>
 			this.index = index;
 		}
 
-		public DeleteSearchIndex build()
+		public DeleteIndex build()
 		{
-			return new DeleteSearchIndex(this);
+			return new DeleteIndex(this);
 		}
 	}
 }

@@ -104,6 +104,9 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
         }
     }
     
+    /**
+     * Response from Fetching a bucket's properties.
+     */
     public static class Response
     {
         private final BucketProperties props;
@@ -112,6 +115,10 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
             this.props = props;
         }
         
+        /**
+         * Returns the fetched BucketProperties.
+         * @return the BucketProperties.
+         */
         public BucketProperties getBucketProperties()
         {
             return props;
