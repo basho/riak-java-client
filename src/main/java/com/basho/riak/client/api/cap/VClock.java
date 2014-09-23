@@ -24,11 +24,13 @@ package com.basho.riak.client.api.cap;
 public interface VClock
 {
     /**
+     * Get the bytes that make up this VClock.
      * @return a copy of this vector clocks bytes
      */
     byte[] getBytes();
 
     /**
+     * Get the string representation of this VClock.
      * @return a UTF-8 String of this vector clocks bytes
      */
     String asString();

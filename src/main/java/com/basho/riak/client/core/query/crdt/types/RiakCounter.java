@@ -15,7 +15,15 @@
  */
 package com.basho.riak.client.core.query.crdt.types;
 
-public class RiakCounter extends RiakDatatype<Long>
+/**
+ * Representation of the Riak counter datatype.
+ * <p>
+ * This is an immutable value returned when querying Riak for a counter datatype.
+ * </p>
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public class RiakCounter extends RiakDatatype
 {
 
     private long value = 0;
@@ -25,6 +33,10 @@ public class RiakCounter extends RiakDatatype<Long>
         this.value = value;
     }
 
+    /**
+     * Get this RiakCounter as a {@link Long} value.
+     * @return a Long value for this RiakCounter.
+     */
 	@Override
     public Long view()
     {

@@ -75,7 +75,7 @@ public class CrdtResponseConverterTest
         RiakDatatype element = converter.convert(resp);
 
         assertTrue(element.isSet());
-        assertEquals(wrappedValues, element.getAsSet().viewAsSet());
+        assertEquals(wrappedValues, element.getAsSet().view());
 
     }
 
@@ -150,7 +150,7 @@ public class CrdtResponseConverterTest
         assertEquals((Long) counterValue, riakCounter.view());
 
         RiakSet crdtSet = crdtMap.get(setKey).get(0).getAsSet();
-        assertEquals(wrappedSetValues, crdtSet.viewAsSet());
+        assertEquals(wrappedSetValues, crdtSet.view());
 
         // the asMap doesn't have any values
 

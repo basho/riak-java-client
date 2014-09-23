@@ -155,7 +155,7 @@ public class ITestDtUpdateOperation extends ITestBase
         resetAndEmptyBucket(new Namespace(setBucketType, bucketName));
 
         RiakSet set = fetchSet(setBucketType, bucketName, key);
-        assertTrue(set.viewAsSet().isEmpty());
+        assertTrue(set.view().isEmpty());
 
         Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
         Location location = new Location(new Namespace(setBucketType, bucketName), key);
@@ -178,8 +178,8 @@ public class ITestDtUpdateOperation extends ITestBase
             set = resp.getCrdtElement().getAsSet();
         }
 
-        assertEquals(iterations, set.viewAsSet().size());
-        assertEquals(testValues, set.viewAsSet());
+        assertEquals(iterations, set.view().size());
+        assertEquals(testValues, set.view());
 
         
         for (BinaryValue setElement : testValues)
@@ -197,7 +197,7 @@ public class ITestDtUpdateOperation extends ITestBase
         }
 
         set = fetchSet(setBucketType, bucketName, key);
-        assertTrue(set.viewAsSet().isEmpty());
+        assertTrue(set.view().isEmpty());
 
         resetAndEmptyBucket(new Namespace(setBucketType, bucketName));
 
@@ -216,7 +216,7 @@ public class ITestDtUpdateOperation extends ITestBase
         resetAndEmptyBucket(new Namespace(setBucketType, bucketName));
 
         RiakSet set = fetchSet(setBucketType, bucketName, key);
-        assertTrue(set.viewAsSet().isEmpty());
+        assertTrue(set.view().isEmpty());
 
         Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
         Location location = new Location(new Namespace(setBucketType, bucketName), key);
@@ -246,7 +246,7 @@ public class ITestDtUpdateOperation extends ITestBase
         }
 
         set = fetchSet(setBucketType, bucketName, key);
-        assertTrue(set.viewAsSet().isEmpty());
+        assertTrue(set.view().isEmpty());
 
         resetAndEmptyBucket(new Namespace(setBucketType, bucketName));
 
@@ -284,7 +284,7 @@ public class ITestDtUpdateOperation extends ITestBase
 	    assertEquals(1, map.view().get(mapKey).size());
         assertTrue(map.view().get(mapKey).get(0).isSet());
         RiakSet set = map.view().get(mapKey).get(0).getAsSet();
-        assertTrue(set.viewAsSet().contains(setValue));
+        assertTrue(set.view().contains(setValue));
 
 
         mapKey = BinaryValue.create("counter");

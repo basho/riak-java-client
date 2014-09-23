@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.datatypes;
 
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
+import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.operations.DtFetchOperation;
-import com.basho.riak.client.api.commands.datatypes.Context;
 
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
@@ -26,10 +26,11 @@ import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
 import java.util.HashMap;
 import java.util.Map;
 
- /*
- * @author Dave Rusek <drusek at basho dot com>
- * @since 2.0
- */
+ /**
+  * Base abstract class for all CRDT fetch commands. 
+  * @author Dave Rusek <drusek at basho dot com>
+  * @since 2.0
+  */
 public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
 
@@ -97,25 +98,61 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
 
     }
     
-    /**
+   /**
+    * Tuning parameters for all datatype fetch commands.
     * @author Dave Rusek <drusek at basho dot com>
     * @since 2.0
     */
-   public static final class Option<T> extends RiakOption<T> {
+    public static final class Option<T> extends RiakOption<T> {
 
-     public static final Option<Quorum> R = new Option<Quorum>("R");
-     public static final Option<Quorum> PR = new Option<Quorum>("PR");
-     public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
-     public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
-     public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-     public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-     public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
-     public static final Option<Boolean> INCLUDE_CONTEXT = new Option<Boolean>("INCLUDE_CONTEXT");
+    /**
+     * Read Quorum.
+     * How many replicas need to agree when fetching the object.
+     */
+    public static final Option<Quorum> R = new Option<Quorum>("R");
+    
+    /**
+    * Primary Read Quorum.
+    * How many primary replicas need to be available when retrieving the object.
+    */
+    public static final Option<Quorum> PR = new Option<Quorum>("PR");
+    
+    /**
+     * Basic Quorum.
+     * Whether to return early in some failure cases (eg. when r=1 and you get 
+     * 2 errors and a success basic_quorum=true would return an error)
+     */
+    public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+    
+    /**
+     * Not Found OK.
+     * Whether to treat notfounds as successful reads for the purposes of R
+     */
+    public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+    
+    /**
+     * Timeout.
+     * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
+     */
+    public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+    public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+    public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+    
+    /**
+     * Whether to return a context.
+     * The default is true. Use this option if you're planning on only reading the datatype.
+     */
+    public static final Option<Boolean> INCLUDE_CONTEXT = new Option<Boolean>("INCLUDE_CONTEXT");
 
      public Option(String name) {
        super(name);
      }
    }
+    
+    /**
+     * Base abstract builder for all datatype fetch command builders.
+     * @param <T> 
+     */
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
@@ -146,6 +183,16 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
             return withOption(Option.TIMEOUT, timeout);
         }
         
+        /**
+		 * Add an optional setting for this command. 
+         * This will be passed along with the request to Riak to tell it how
+		 * to behave when servicing the request.
+		 *
+		 * @param option the option
+		 * @param value the value for the option
+		 * @return a reference to this object.
+         * @see Option
+		 */
 		public <U> T withOption(Option<U> option, U value)
 		{
 			this.options.put(option, value);
@@ -156,6 +203,10 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
 
 	}
 
+    /**
+     * Base response for all CRDT fetch commands.
+     * @param <T> 
+     */
     public static class Response<T extends RiakDatatype>
     {
 
@@ -168,16 +219,32 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
             this.context = context;
         }
 
+        /**
+         * Get the datatype from this response.
+         * @return the fetched datatype.
+         */
         public T getDatatype()
         {
             return datatype;
         }
 
+        /**
+         * Check to see if a context is present in this response.
+         * @return true if a context is present, false otherwise.
+         */
         public boolean hasContext()
         {
             return context != null;
         }
 
+        /**
+         * Get the context from this response.
+         * <p>
+         * The context is used when a subsequent update to the datatype
+         * is performed.
+         * </p>
+         * @return the context if present, null otherwise.
+         */
         public Context getContext()
         {
             return context;

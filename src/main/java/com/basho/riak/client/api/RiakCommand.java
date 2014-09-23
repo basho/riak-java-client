@@ -24,8 +24,58 @@ import java.util.concurrent.ExecutionException;
  * The base class for all Riak Commands.
  * <p>
  * All the commands the {@link RiakClient} can execute extend this class. 
- * <p>
- * @author Dave Rusek <drusek at basho dot com>
+ * <h2>Client Commands</h2>
+ * <h4>Fetching, storing and deleting objects</h4>
+ * <ul>
+ * <li>{@link com.basho.riak.client.api.commands.kv.FetchValue}</li>
+ * <li>{@link com.basho.riak.client.api.commands.kv.MultiFetch}</li>
+ * <li>{@link com.basho.riak.client.api.commands.kv.StoreValue}</li>
+ * <li>{@link com.basho.riak.client.api.commands.kv.UpdateValue}</li>
+ * <li>{@link com.basho.riak.client.api.commands.kv.DeleteValue}</li>
+ * </ul>
+ * <h4>Listing keys in a namespace</h4>
+ * <ul><li>{@link com.basho.riak.client.api.commands.kv.ListKeys}</li></ul>
+ * <h4>Secondary index (2i) commands</h4>
+ * <ul>
+ * <li>{@link com.basho.riak.client.api.commands.indexes.RawIndexQuery}</li>
+ * <li>{@link com.basho.riak.client.api.commands.indexes.BinIndexQuery}</li>
+ * <li>{@link com.basho.riak.client.api.commands.indexes.IntIndexQuery}</li>
+ * <li>{@link com.basho.riak.client.api.commands.indexes.BigIntIndexQuery}</li>
+ * </ul>
+ * <h4>Fetching and storing datatypes (CRDTs)</h4>
+ * <ul>
+ * <li>{@link com.basho.riak.client.api.commands.datatypes.FetchCounter}</li>
+ * <li>{@link com.basho.riak.client.api.commands.datatypes.FetchSet}</li>
+ * <li>{@link com.basho.riak.client.api.commands.datatypes.FetchMap}</li>
+ * <li>{@link com.basho.riak.client.api.commands.datatypes.UpdateCounter}</li>
+ * <li>{@link com.basho.riak.client.api.commands.datatypes.UpdateSet}</li>
+ * <li>{@link com.basho.riak.client.api.commands.datatypes.UpdateMap}</li>
+ * </ul>
+ * <h4>Querying and modifying buckets</h4>
+ * <ul>
+ * <li>{@link com.basho.riak.client.api.commands.buckets.FetchBucketProperties}</li>
+ * <li>{@link com.basho.riak.client.api.commands.buckets.StoreBucketProperties}</li>
+ * <li>{@link com.basho.riak.client.api.commands.buckets.ListBuckets}</li>
+ * </ul>
+ * <h4>Search commands</h4>
+ * <ul>
+ * <li>{@link com.basho.riak.client.api.commands.search.Search}</li>
+ * <li>{@link com.basho.riak.client.api.commands.search.FetchIndex}</li>
+ * <li>{@link com.basho.riak.client.api.commands.search.StoreIndex}</li>
+ * <li>{@link com.basho.riak.client.api.commands.search.DeleteIndex}</li>
+ * <li>{@link com.basho.riak.client.api.commands.search.FetchSchema}</li>
+ * <li>{@link com.basho.riak.client.api.commands.search.StoreSchema}</li>
+* </ul>
+* <h4>Map-Reduce</h4>
+ * <ul>
+ * <li>{@link com.basho.riak.client.api.commands.mapreduce.BucketMapReduce}</li>
+ * <li>{@link com.basho.riak.client.api.commands.mapreduce.BucketKeyMapReduce}</li>
+ * <li>{@link com.basho.riak.client.api.commands.mapreduce.IndexMapReduce}</li>
+ * <li>{@link com.basho.riak.client.api.commands.mapreduce.SearchMapReduce}</li>
+ * </ul>
+ * </p>
+ * @author Dave Rusek
+ * @author Brian Roach <roach at basho.com>
  * @param <T> The response type
  * @param <S> The query info type
  * @since 2.0

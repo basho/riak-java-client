@@ -1,9 +1,13 @@
 package com.basho.riak.client.api.commands.mapreduce;
 
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
+/**
+ * Command used to performa a map reduce operation using a secondary index (2i) as input. 
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public class IndexMapReduce extends MapReduce
 {
 	protected IndexMapReduce(IndexInput input, Builder builder)
@@ -11,6 +15,9 @@ public class IndexMapReduce extends MapReduce
 		super(input, builder);
 	}
 
+    /**
+     * Builder for a IndexMapReduce command.
+     */
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 

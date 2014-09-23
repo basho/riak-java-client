@@ -27,7 +27,25 @@ import com.basho.riak.client.core.util.BinaryValue;
 import java.util.Iterator;
 import java.util.List;
 
- /*
+/**
+ * Command used to list the keys in a bucket.
+ * <p>
+ * This command is used to retrieve a list of all keys in a bucket. The response
+ * is iterable and contains a list of Locations.
+ * <pre>
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * ListKeys lk = ListKeys.Builder(ns).build();
+ * ListKeys.Response response = client.execute(lk);
+ * for (Location l : response)
+ * {
+ *     System.out.println(l.getKeyAsString());
+ * }
+ * </pre>
+ * </p>
+ * <p>
+ * <b>This is a very expensive operation and is not recommended for use on a production system</b>
+ * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -130,11 +148,18 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 		}
 	}
 
+    /**
+     * Used to construct a ListKeys command.
+     */
 	public static class Builder
 	{
 		private final Namespace namespace;
 		private int timeout;
 
+        /**
+         * Constructs a Builder for a ListKeys command.
+         * @param namespace the namespace from which to list keys.
+         */
 		public Builder(Namespace namespace)
 		{
 			if (namespace == null)
@@ -144,12 +169,25 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
             this.namespace = namespace;
 		}
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
 		public Builder withTimeout(int timeout)
 		{
 			this.timeout = timeout;
 			return this;
 		}
 
+        /**
+         * Construct the ListKeys command.
+         * @return A ListKeys command.
+         */
 		public ListKeys build()
 		{
 			return new ListKeys(this);

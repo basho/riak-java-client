@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
@@ -24,7 +25,20 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
 
 
- /*
+/**
+ * Command used to store (modify) the properties of a bucket in Riak.
+ * <p>
+ * <pre>
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * StoreBucketProperties sbp = 
+ *  new StoreBucketProperties.Builder(ns)
+ *      .withAllowMulti(true)
+ *      .build();
+ * client.execute(sbp);
+ * }
+ * </pre>
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */

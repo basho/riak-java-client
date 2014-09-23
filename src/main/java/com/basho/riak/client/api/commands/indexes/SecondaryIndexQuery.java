@@ -374,6 +374,10 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         }
     }
     
+    /**
+     * Base class for all 2i responses.
+     * @param <T> The type contained in the resposne.
+     */
     public abstract static class Response<T> 
     {
         final IndexConverter<T> converter;
@@ -387,20 +391,33 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             this.queryLocation = queryLocation;
         }
         
+        /**
+         * Check if this response has a continuation.
+         * @return true if the response contains a continuation.
+         */
         public boolean hasContinuation()
         {
             return coreResponse.hasContinuation();
         }
         
+        /**
+         * Get the continuation from this response.
+         * @return the continuation, or null if none is present.
+         */
         public BinaryValue getContinuation()
         {
             return coreResponse.getContinuation();
         }
         
+        /**
+         * Check is this response contains any entries.
+         * @return true if entries are present, false otherwise.
+         */
         public boolean hasEntries()
         {
             return !coreResponse.getEntryList().isEmpty();
         }
+        
         
         protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
         {
@@ -423,11 +440,21 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
                 this.converter = converter;
             }
             
+            /**
+             * Get the location for this entry.
+             * @return the location for this object in Riak.
+             */
             public Location getRiakObjectLocation()
             {
                 return RiakObjectLocation;
             }
             
+            /**
+             * Get this 2i key for this entry.
+             * Note this will only be present if the {@literal withKeyAndIndex(true)} 
+             * method was used when constructing the query. 
+             * @return The 2i key for this entry or null if not present.
+             */
             public T getIndexKey()
             {
                 return converter.convert(indexKey);

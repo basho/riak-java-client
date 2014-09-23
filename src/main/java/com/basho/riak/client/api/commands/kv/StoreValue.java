@@ -35,7 +35,36 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.fasterxml.jackson.core.type.TypeReference;
 
- /*
+/**
+ * Command used to store a value in Riak.
+ * <p>
+ * To store a value in Riak you supply a {@link com.basho.riak.client.core.query.Location}
+ * and an object to store. The object may be an instance of {@link com.basho.riak.client.core.query.RiakObject}
+ * or your own POJO. In the case of a POJO the default serialization uses the Jackson JSON library
+ * to store your object as JSON in Riak.
+ * <pre>
+ * Namespace ns = new Namespace("my_type","my_bucket");
+ * Location loc = new Location(ns, "my_key");
+ * RiakObject ro = new RiakObject();
+ * ro.setValue(BinaryValue.create("This is my value"));
+ * StoreValue sv = 
+ *      new StoreValue.Builder(ro).withLocation(loc).build();
+ * StoreValue.Response response = client.execute(sv);
+ * </pre>
+ * </p>
+ * <p>
+ * All operations can called async as well.
+ * <pre>
+ * ...
+ * {@literal RiakFuture<StoreValue.Response, Location>} future = client.execute(sv);
+ * ...
+ * future.await();
+ * if (future.isSuccess)
+ * { 
+ *     ... 
+ * }
+ * </pre>
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -310,6 +339,9 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         }
     }
 
+    /**
+     * Used to construct a StoreValue command.
+     */
 	public static class Builder
 	{
 
@@ -323,17 +355,48 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 
         
 
+        /**
+         * Construct a Builder for a StoreValue command.
+         * <p>
+         * Prior to storing the object, it's raw type (class) will
+         * be used to retrieve a converter from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+         * For anything other than a RiakObject this is the {@link com.basho.riak.client.api.convert.JSONConverter}
+         * by default.
+         * </p>
+         * @param value The object to be stored in Riak. 
+         */
         public Builder(Object value)
         {
             this.value = value;
         }
         
+        /**
+         * Construct a Builder for a StoreValue command.
+         * <p>
+         * Prior to storing the object, the supplied TypeReference will
+         * be used to retrieve a converter from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+         * For anything other than a RiakObject this is the {@link com.basho.riak.client.api.convert.JSONConverter}
+         * by default.
+         * </p>
+         * @param value The object to be stored in Riak. 
+         * @param typeReference the TypeReference for the object.
+         */
         public Builder(Object value, TypeReference<?> typeReference)
         {
             this.value = value;
             this.typeReference = typeReference;
         }
         
+        /**
+         * Set the location to store the object.
+         * <p>
+         * When storing a RiakObject or a POJO that does not have annotations for
+         * the bucket and key, a {@link com.basho.riak.client.core.query.Location} 
+         * must be provided.
+         * </p>
+         * @param location the location to store the object in Riak.
+         * @return a reference to this object.
+         */
 		public Builder withLocation(Location location)
         {
             this.namespace = location.getNamespace();
@@ -341,6 +404,16 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             return this;
         }
         
+        /**
+         * Set the namespace to store the object.
+         * <p>
+         * When storing a POJO that does not have an annotation for the 
+         * bucket type and bucket, a {@link com.basho.riak.client.core.query.Namespace} 
+         * must be supplied.
+         * </p>
+         * @param namespace The namespaec to store the object.
+         * @return a reference to this object.
+         */
         public Builder withNamespace(Namespace namespace)
         {
             this.namespace = namespace;
@@ -362,6 +435,15 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             return this;
         }
         
+        /**
+		 * Add an optional setting for this command. 
+         * This will be passed along with the request to Riak to tell it how
+		 * to behave when servicing the request.
+		 *
+		 * @param option the option
+		 * @param value the value for the option
+		 * @return a reference to this object.
+		 */
 		public <T> Builder withOption(Option<T> option, T value)
 		{
 			options.put(option, value);
@@ -385,6 +467,10 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             return this;
         }
         
+        /**
+         * Construct the StoreValue command.
+         * @return the new StoreValue command.
+         */
 		public StoreValue build()
 		{
 			return new StoreValue(this);

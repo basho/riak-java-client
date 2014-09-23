@@ -23,14 +23,14 @@
  * for textual (String) data. The server API distinguishes between the two via 
  * a suffix ({@code "_int"} and {@code "_bin"} respectively) added to the index's 
  * name. In the client this is encapsulated in the 
- * {@link com.basho.riak.client.query.indexes.IndexType} enum. When specifying 
+ * {@link com.basho.riak.client.core.query.indexes.IndexType} enum. When specifying 
  * an index name you do not have to append this suffix; it's done automatically.
- * <p> A {@link com.basho.riak.client.query.indexes.RiakIndex} is made up of the index name, it's type,
+ * <p> A {@link com.basho.riak.client.core.query.indexes.RiakIndex} is made up of the index name, it's type,
  * then one or more queryable index values. 
  * </p>
  * <p>
- * {@code RiakIndex} instances are created and managed via the {@link com.basho.riak.client.query.indexes.RiakIndexes}
- * container. The container is stored in a {@link com.basho.riak.client.query.RiakObject}.
+ * {@code RiakIndex} instances are created and managed via the {@link com.basho.riak.client.core.query.indexes.RiakIndexes}
+ * container. The container is stored in a {@link com.basho.riak.client.core.query.RiakObject}.
  * </p>
  * <h4>Working with RiakIndexes</h4>
  * <p>Data in Riak, including secondary indexes, is stored as raw bytes. The conversion
@@ -71,7 +71,7 @@
  * <p>
  * What this means is that any {@code RiakIndex} having the same name and {@code Indextype}
  * will refer to the same index. This is only important to note if you are mixing 
- * access to the indexes using {@link com.basho.riak.client.query.indexes.RawIndex}. 
+ * access to the indexes using {@link com.basho.riak.client.core.query.indexes.RawIndex}. 
  * The test case below demonstrates
  * the relation.</p>
  * <blockquote><pre>

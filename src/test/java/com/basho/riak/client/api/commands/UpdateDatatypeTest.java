@@ -15,14 +15,14 @@
  */
 package com.basho.riak.client.api.commands;
 
-import com.basho.riak.client.api.commands.UpdateMap;
+import com.basho.riak.client.api.commands.datatypes.UpdateMap;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.api.commands.UpdateDatatype.Option;
+import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.api.commands.datatypes.Context;
 import com.basho.riak.client.api.commands.datatypes.MapUpdate;
 import com.basho.riak.client.core.query.Location;

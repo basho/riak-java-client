@@ -27,7 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Performs a 2i query where the 2i index keys are numeric.
+ * <p>
+ * A IntIndexQuery is used when you are using integers for your 2i keys. The
+ * parameters are provided as long values.
+ * </p>
+ * <pre>
+ * <code>
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * long key = 1234L;
+ * IntIndexQuery q = new IntIndexQuery.Builder(ns, "my_index", key).build();
+ * IntIndexQuery.Response resp = client.execute(q);
+ * </code>
+ * </pre>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -115,14 +127,38 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         }
     }
 
+    /**
+     * Builder used to construct a IntIndexQuery.
+     */
     public static class Builder extends Init<Long, Builder>
     {
 
+        /**
+         * Construct a Builder for a IntIndexQuery with a range.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param start the start of the 2i range.
+         * @param end the end of the 2i range.
+         */
         public Builder(Namespace namespace, String indexName, Long start, Long end)
         {
             super(namespace, indexName, start, end);
         }
 
+        /**
+         * Construct a Builder for a IntIndexQuery with a single 2i key.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param match the 2i key.
+         */
         public Builder(Namespace namespace, String indexName, Long match)
         {
             super(namespace, indexName, match);
@@ -134,6 +170,10 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             return this;
         }
 
+        /**
+         * Construct the query.
+         * @return a new IntIndexQuery
+         */
         public IntIndexQuery build()
         {
             return new IntIndexQuery(this);

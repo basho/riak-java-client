@@ -6,6 +6,11 @@ import com.basho.riak.client.api.commands.mapreduce.filters.KeyFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Command used to perform a Map Reduce operation over a bucket in Riak.
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public class BucketMapReduce extends MapReduce
 {
 
@@ -14,6 +19,9 @@ public class BucketMapReduce extends MapReduce
 		super(input, builder);
 	}
 
+    /**
+     * Builder for a BucketMapReduce command.
+     */
 	public static class Builder extends MapReduce.Builder<Builder>
 	{
 

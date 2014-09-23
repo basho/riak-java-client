@@ -17,10 +17,11 @@ package com.basho.riak.client.api.commands.datatypes;
 
 import com.basho.riak.client.core.query.crdt.ops.CrdtOp;
 
-/*
-* @author Dave Rusek <drusek at basho dot com>
-* @since 2.0
-*/
+/**
+ * An object that represents an update to a Riak datatype.
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
 public interface DatatypeUpdate
 {
     public abstract CrdtOp getOp();

@@ -12,7 +12,7 @@
  * the License.
  */
 /**
- * The set of key filters that can be used in a {@link com.basho.riak.client.operations.mapreduce.MapReduce}
+ * The set of key filters that can be used in a {@link com.basho.riak.client.api.commands.mapreduce.MapReduce}
  *
 
  * <p>

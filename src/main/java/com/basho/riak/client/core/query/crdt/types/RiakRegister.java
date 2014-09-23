@@ -17,7 +17,15 @@ package com.basho.riak.client.core.query.crdt.types;
 
 import com.basho.riak.client.core.util.BinaryValue;
 
-public class RiakRegister extends RiakDatatype<BinaryValue>
+/**
+ * Representation of the Riak register datatype.
+ * <p>
+ * This is an immutable register which can be returned within a {@link RiakMap}.
+ * </p>
+ * @author Dave Rusek <drusek at basho dot com>
+ * @since 2.0
+ */
+public class RiakRegister extends RiakDatatype
 {
     private final BinaryValue value;
 
@@ -26,11 +34,19 @@ public class RiakRegister extends RiakDatatype<BinaryValue>
         this.value = value;
     }
 
+    /**
+     * Returns the RiakRegister as a BinaryValue.
+     * @return the register.
+     */
     public BinaryValue getValue()
     {
         return value;
     }
 
+    /**
+     * Returns the RiakRegister as a BinaryValue.
+     * @return the register.
+     */
 	@Override
 	public BinaryValue view()
 	{

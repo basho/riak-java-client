@@ -1,14 +1,15 @@
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.search;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.core.query.search.YokozunaSchema;
 
-import java.util.concurrent.ExecutionException;
 
- /*
+/**
+ * Command used to store a search schema in Riak.
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -51,6 +52,9 @@ public final class StoreSchema extends RiakCommand<Void, YokozunaSchema>
         return new YzPutSchemaOperation.Builder(schema).build();
     }
 
+    /**
+     * Builder for a StoreSchema command.
+     */
     public static class Builder
 	{
 		private final YokozunaSchema schema;

@@ -14,34 +14,50 @@
  * limitations under the License.
  */
 
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.datatypes;
 
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import com.basho.riak.client.api.commands.datatypes.Context;
 import com.basho.riak.client.core.query.Location;
-import com.basho.riak.client.api.commands.datatypes.MapUpdate;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
-import com.basho.riak.client.core.query.crdt.types.RiakMap;
+import com.basho.riak.client.core.query.crdt.types.RiakSet;
 import com.basho.riak.client.core.util.BinaryValue;
 
 /**
- *
+ * Command used to update or create a set datatype in Riak.
+ * <p>
+ * To update or create a set in Riak you construct a {@link SetUpdate} and use
+ * this command to send it to Riak.
+ * <pre>
+ * {@code 
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * Location loc = new Location(ns, "my_key");
+ * SetUpdate update = new SetUpdate().add("some_new_value");
+ * 
+ * UpdateSet us = new UpdateSet.Builder(loc, update).withReturnDatatype(true).build();
+ * UpdateSet.Response resp = client.execute(us);
+ * RiakSet = resp.getDatatype();
+ * }
+ * </pre>
+ * </p>
+ * 
+ * @author Dave Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Location>
+public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Location>
 {
-    private final MapUpdate update;
+    private final SetUpdate update;
     
-    private UpdateMap(Builder builder)
+    private UpdateSet(Builder builder)
     {
         super(builder);
         this.update = builder.update;
     }
-
+    
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
@@ -54,23 +70,21 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
                 @Override
                 protected Response convertResponse(DtUpdateOperation.Response coreResponse)
                 {
-                    RiakMap map = null;
+                    RiakSet set = null;
                     if (coreResponse.hasCrdtElement())
                     {
                         RiakDatatype element = coreResponse.getCrdtElement();
-                        map = element.getAsMap();
+                        set = element.getAsSet();
                     }
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
-                    
                     Context returnedCtx = null;
                     if (coreResponse.hasContext())
                     {
                         returnedCtx = new Context(coreResponse.getContext());
                     }
-                    
-                    return new Response(returnedCtx, map, returnedKey);
+                    return new Response(returnedCtx, set, returnedKey);
                 }
 
                 @Override
@@ -84,20 +98,19 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
         return future;
     }
     
-    public static final class Response extends UpdateDatatype.Response<RiakMap>
+    /**
+     * Builder used to construct an UpdateSet command.
+     */
+    public static class Builder extends UpdateDatatype.Builder<Builder>
     {
-        private Response(Context context, RiakMap datatype, BinaryValue generatedKey)
-        {
-            super(context, datatype, generatedKey);
-        }
+        private final SetUpdate update;
         
-    }
-    
-    public static final class Builder extends UpdateDatatype.Builder<Builder>
-    {
-        private final MapUpdate update;
-        
-        public Builder(Location location, MapUpdate update)
+        /**
+         * Construct a Builder for an UpdateSet command.
+         * @param location the location of the set in Riak.
+         * @param update the update to apply to the set.
+         */
+        public Builder(Location location, SetUpdate update)
         {
             super(location);
             if (update == null)
@@ -106,8 +119,19 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
             }
             this.update = update;
         }
-
-        public Builder(Namespace namespace, MapUpdate update)
+        
+        /**
+         * Constructs a builder for an UpdateSet command with only a Namespace.
+         * <p>
+         * By providing only a Namespace with the update, Riak will create the 
+         * set, generate the key, 
+         * and return it in the response. 
+         * </p>
+         * @param namespace the namespace to create the datatype.
+         * @param update the update to apply
+         * @see Response#getGeneratedKey() 
+         */
+        public Builder(Namespace namespace, SetUpdate update)
         {
             super(namespace);
             if (update == null)
@@ -117,18 +141,33 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
             this.update = update;
         }
         
+        /**
+         * Construct a new UpdateSet command.
+         * @return a new UpdateSet command.
+         */
+        @Override
+        public UpdateSet build()
+        {
+            return new UpdateSet(this);
+        }
+        
         @Override
         protected Builder self()
         {
             return this;
         }
-
-        @Override
-        public UpdateMap build()
-        {
-            return new UpdateMap(this);
-        }
-
+        
     }
     
+    /**
+     * A response from an UpdateSet command.
+     */
+    public static class Response extends UpdateDatatype.Response<RiakSet>
+    {
+        private Response(Context context, RiakSet datatype, BinaryValue generatedKey)
+        {
+            super(context, datatype, generatedKey);
+        }
+        
+    }
 }

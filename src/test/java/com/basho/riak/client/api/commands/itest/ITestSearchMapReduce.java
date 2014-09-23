@@ -19,8 +19,8 @@ package com.basho.riak.client.api.commands.itest;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.api.commands.StoreBucketProperties;
-import com.basho.riak.client.api.commands.StoreSearchIndex;
+import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
+import com.basho.riak.client.api.commands.search.StoreIndex;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.mapreduce.MapReduce;
 import com.basho.riak.client.api.commands.mapreduce.SearchMapReduce;
@@ -55,7 +55,7 @@ public class ITestSearchMapReduce extends ITestBase
         // and the 'default' bucket type can't be used for search
         
         YokozunaIndex index = new YokozunaIndex("test_mr_index");
-        StoreSearchIndex ssi = new StoreSearchIndex.Builder(index).build();
+        StoreIndex ssi = new StoreIndex.Builder(index).build();
         client.execute(ssi);
         
         assertTrue("Index not created", assureIndexExists("test_mr_index"));

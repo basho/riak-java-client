@@ -20,7 +20,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
- *
+ * Encapsulates a Riak vector clock.
  * @author Russel Brown <russelldb at basho dot com>
  * @since 1.0
  */
@@ -29,7 +29,7 @@ public class BasicVClock implements VClock
     private final byte[] value;
     
     /**
-     * Create BasicVclock
+     * Create a BasicVclock.
      * @param value the vector clock bytes. NOTE: copies the value
      * @throws IllegalArgumentException if <code>value</code> is null
      */
@@ -41,7 +41,7 @@ public class BasicVClock implements VClock
     }
     
     /**
-     * Create BasicVclock from utf8 String.
+     * Create a BasicVclock from utf8 String.
      * @param vclock the vector clock.
      * @throws IllegalArgumentException if {@code vclock} is null
      */

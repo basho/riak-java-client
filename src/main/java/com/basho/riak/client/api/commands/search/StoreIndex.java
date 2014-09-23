@@ -1,22 +1,23 @@
-package com.basho.riak.client.api.commands;
+package com.basho.riak.client.api.commands.search;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 
-import java.util.concurrent.ExecutionException;
 
- /*
+/**
+ * Command used to store a search index in Riak.
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreSearchIndex extends RiakCommand<Void, YokozunaIndex>
+public final class StoreIndex extends RiakCommand<Void, YokozunaIndex>
 {
 	private final YokozunaIndex index;
 
-	StoreSearchIndex(Builder builder)
+	StoreIndex(Builder builder)
 	{
 		this.index = builder.index;
 	}
@@ -51,6 +52,9 @@ public final class StoreSearchIndex extends RiakCommand<Void, YokozunaIndex>
         return new YzPutIndexOperation.Builder(index).build();
     }
     
+    /**
+     * Builder for a StoreIndex command.
+     */
 	public static class Builder
 	{
 		private final YokozunaIndex index;
@@ -60,9 +64,9 @@ public final class StoreSearchIndex extends RiakCommand<Void, YokozunaIndex>
 			this.index = index;
 		}
 
-		public StoreSearchIndex build()
+		public StoreIndex build()
 		{
-			return new StoreSearchIndex(this);
+			return new StoreIndex(this);
 		}
 	}
 }

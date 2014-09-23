@@ -300,7 +300,7 @@ public class BucketProperties
      *
      * @return a List containing the pre-commit hooks.
      * @see
-     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.query.functions.Function)
+     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.core.query.functions.Function) 
      */
     public List<Function> getPrecommitHooks()
     {
@@ -322,7 +322,7 @@ public class BucketProperties
      *
      * @return a List containing the post-commit hooks
      * @see
-     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.query.functions.Function)
+     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.core.query.functions.Function) 
      */
     public List<Function> getPostcommitHooks()
     {

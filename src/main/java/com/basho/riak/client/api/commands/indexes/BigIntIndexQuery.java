@@ -28,8 +28,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Performs a 2i query where the 2i index keys are numeric.
+ * <p>
+ * A BigIntIndexQuery is used when you are using integers for your 2i keys. The
+ * parameters are provided as BigInteger values. Use this query if your  
+ * 2i key values exceed that 
+ * which can be stored in a (64 bit) long, 
+ * </p>
+ * <pre>
+ * <code>
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * BigInteger key = new BigInteger(someReallyLongNumber);
+ * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
+ * BigIntIndexQuery.Response resp = client.execute(q);
+ * </code>
+ * </pre>
  * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
 public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntIndexQuery.Response, BigIntIndexQuery>
 {
@@ -113,14 +128,38 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         }
     }
     
+    /**
+     * Builder used to construct a BigIntIndexQuery.
+     */
     public static class Builder extends Init<BigInteger, Builder>
     {
 
+        /**
+         * Construct a Builder for a BigIntIndexQuery with a range.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param start the start of the 2i range.
+         * @param end the end of the 2i range.
+         */
         public Builder(Namespace namespace, String indexName, BigInteger start, BigInteger end)
         {
             super(namespace, indexName, start, end);
         }
 
+        /**
+         * Construct a Builder for a BigIntIndexQuery with a single 2i key.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension. 
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param match the 2i key.
+         */
         public Builder(Namespace namespace, String indexName, BigInteger match)
         {
             super(namespace, indexName, match);
@@ -132,6 +171,10 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
             return this;
         }
 
+        /**
+         * Construct the query.
+         * @return a new BigIntIndexQuery.
+         */
         public BigIntIndexQuery build()
         {
             return new BigIntIndexQuery(this);
