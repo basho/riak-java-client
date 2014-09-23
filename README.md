@@ -5,9 +5,9 @@ This branch of the Riak Java Client is for the new v2.0 client, to be used with
 
 Previous versions:
 
-[riak-client-1.4.2](https://github.com/basho/riak-java-client/tree/1.4.2) - For use with Riak 1.4.x
+[riak-client-1.4.4](https://github.com/basho/riak-java-client/tree/1.4.4) - For use with Riak 1.4.x
 
-[riak-client-1.1.3](https://github.com/basho/riak-java-client/tree/1.1.3) - For use with < Riak 1.4.0
+[riak-client-1.1.4](https://github.com/basho/riak-java-client/tree/1.1.4) - For use with < Riak 1.4.0
 
 This client is published to Maven Central and can be included in your project by adding:
 
