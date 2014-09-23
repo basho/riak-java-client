@@ -15,8 +15,10 @@
  */
 package com.basho.riak.client.core;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The result of an asynchronous Riak operation. 
@@ -56,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * <p>
  * The typical use pattern is to call {@literal await()}, check {@literal isSuccess()}
- * then call {@literal get()} or {@literal cause()}</p>
+ * then call {@literal getNow()} or {@literal cause()}</p>
  * @author Brian Roach <roach at basho dot com>
  * @param <V> the (response) return type
  * @param <T> The query info type 
@@ -78,42 +80,34 @@ public interface RiakFuture<V, T> extends Future<V>
     
     /**
      * Waits for this RiakFuture to be completed if necessary and returns the response if available.
-     * <p>
-     * If the operation has failed, the response will be {@literal null}. 
-     * </p>
-     * 
-     * @return The response, or {@literal null} if the operation failed.
-     * @throws InterruptedException 
-     * @see #isSuccess() 
+     * @return The response from the operation.
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
+     * @throws ExecutionException if the computation threw an
+     * exception
      */
     @Override
-    V get() throws InterruptedException;
+    V get() throws InterruptedException, ExecutionException;
     
     /**
      * Waits if necessary for at most the given time for the computation
      * to complete, and then retrieves its result, if available.
      * <p>
-     * If the operation has failed or has not yet completed, the response will be {@literal null}. 
-     * </p>
-     * <p>
      * Note that the timeout value here is how long <b>you</b> are willing to wait
-     * for this RiakFuture to complete. Upon return you can check {@literal isDone()}
-     * to see if the future has completed yet or not. The operation is still in
-     * progress if that returns false.
-     * </p>
-     * <p>
-     * If you wish to set a timeout on the command itself, use the timeout() method
-     * provided in the command's associated builder.
+     * for this RiakFuture to complete. If you wish to set a timeout on the command 
+     * itself, use the timeout() method provided in the command's associated builder.
      * </p>
      * @param timeout the amount of time to wait before returning.
      * @param unit the unit of time.
      * @return the response, or null if not completed or failed.
-     * @throws InterruptedException 
-     * @see #isDone() 
-     * @see #isSuccess() 
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting.
+     * @throws ExecutionException if the computation threw an
+     * exception.
+     * @throws TimeoutException if the wait timed out.
      */
     @Override
-    V get(long timeout, TimeUnit unit) throws InterruptedException;
+    V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
     @Override
     boolean isCancelled();
     @Override
@@ -124,7 +118,8 @@ public interface RiakFuture<V, T> extends Future<V>
      * Upon returning, the operation has completed. Checking isSuccess() tells 
      * you if it did so successfully.
      * </p>
-     * @throws InterruptedException 
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
      * @see #isSuccess() 
      */
     void await() throws InterruptedException;
@@ -142,7 +137,8 @@ public interface RiakFuture<V, T> extends Future<V>
      * 
      * @param timeout the amount of time to wait before returning.
      * @param unit the unit of time.
-     * @throws InterruptedException 
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
      * @see #isDone() 
      * @see #isSuccess() 
      */
@@ -154,6 +150,22 @@ public interface RiakFuture<V, T> extends Future<V>
      * cause() will then return non-null.
      * @return true if completed and successful, false otherwise.
      * @see #cause() 
+     */
+    
+    /**
+     * Return the result without blocking or throwing an exception. 
+     * If the future is not yet done or has failed this will return null. 
+     * As it is possible that a null value is used to mark the future as successful 
+     * you also need to check if the future is really done with {@link #isDone()  
+     * and not rely on the returned null value.
+     * @return The response, or {@literal null} if the future is not yet completed or failed.
+     * @see #isDone() 
+     * @see #isSuccess() 
+     */
+    V getNow();
+    /**
+     * Determine if the operation completed successfully.
+     * @return true if the operation succeeded, false if not yet completed or failed.
      */
     boolean isSuccess();
     /**

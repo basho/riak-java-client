@@ -123,6 +123,10 @@ public class ITestListBucketsOperation extends ITestBase
                     {
                         throw new RuntimeException(ex);
                     }
+                    catch (ExecutionException ex)
+                    {
+                        throw new RuntimeException(ex);
+                    }
                     
                     semaphore.release();
                     received.incrementAndGet();

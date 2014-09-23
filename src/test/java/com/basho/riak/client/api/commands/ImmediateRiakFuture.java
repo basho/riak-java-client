@@ -49,6 +49,12 @@ class ImmediateRiakFuture<V,S> implements RiakFuture<V,S>
     }
 
     @Override
+    public V getNow()
+    {
+        return value;
+    }
+    
+    @Override
     public boolean isCancelled()
     {
         return false;

@@ -260,7 +260,7 @@ public class RiakNodeFixtureTest extends FixtureTest
                     .build();
         
         boolean accepted = node.execute(operation);
-        FetchOperation.Response response = operation.get();
+        operation.await();
         assertFalse(operation.isSuccess());
         assertNotNull(operation.cause());
         node.shutdown().get();

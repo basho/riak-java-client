@@ -33,6 +33,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -198,6 +199,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                             updateFuture.setException(ex);
                         }
                         catch (ConversionException ex)
+                        {
+                            updateFuture.setException(ex);
+                        }
+                        catch (ExecutionException ex)
                         {
                             updateFuture.setException(ex);
                         }
@@ -516,6 +521,12 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         }
 
         @Override
+        public Response getNow()
+        {
+            return updateResponse;
+        }
+        
+        @Override
         public boolean isCancelled()
         {
             return false;
@@ -583,6 +594,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                     
                 }
                 catch (InterruptedException ex) 
+                {
+                    setException(ex);
+                }
+                catch (ExecutionException ex)
                 {
                     setException(ex);
                 }

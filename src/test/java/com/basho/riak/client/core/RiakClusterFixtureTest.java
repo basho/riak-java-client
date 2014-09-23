@@ -129,7 +129,7 @@ public class RiakClusterFixtureTest
         
         try
         {
-            FetchOperation.Response response = operation.get();
+            operation.await();
             assertFalse(operation.isSuccess());
             assertNotNull(operation.cause());
         }

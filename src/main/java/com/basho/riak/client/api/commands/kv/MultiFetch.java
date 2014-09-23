@@ -364,6 +364,19 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
 
         @Override
+        public Response getNow()
+        {
+            if (isDone())
+            {
+                return new Response(futures);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        @Override
         public boolean isCancelled()
         {
             return false;

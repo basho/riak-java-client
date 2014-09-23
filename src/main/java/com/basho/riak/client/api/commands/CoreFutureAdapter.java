@@ -18,7 +18,9 @@ package com.basho.riak.client.api.commands;
 
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  *
@@ -45,33 +47,31 @@ public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S
     }
 
     @Override
-    public T2 get() throws InterruptedException
+    public T2 get() throws InterruptedException, ExecutionException
     {
-        T response = coreFuture.get();
-        if (response != null)
-        {
-            return convertResponse(coreFuture.get());
-        }
-        else 
-        {
-            return null;
-        }
+        return convertResponse(coreFuture.get());
     }
 
     @Override
-    public T2 get(long timeout, TimeUnit unit) throws InterruptedException
+    public T2 get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
     {
         T response = coreFuture.get(timeout, unit);
-        if (response != null)
+        return convertResponse(response);
+    }
+
+    @Override
+    public T2 getNow()
+    {
+        if (coreFuture.isDone())
         {
-            return convertResponse(coreFuture.get(timeout, unit));
+            return convertResponse(coreFuture.getNow());
         }
         else
         {
             return null;
         }
     }
-
+    
     @Override
     public boolean isCancelled()
     {

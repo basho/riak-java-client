@@ -128,7 +128,7 @@ public class FutureOperationTest
         assertNotNull(operation.get());
     }
 
-    @Test
+    @Test(expected=TimeoutException.class)
     public void notDoneBlocksGet() throws InterruptedException, ExecutionException, TimeoutException
     {
         final int NUM_TRIES = 3;
