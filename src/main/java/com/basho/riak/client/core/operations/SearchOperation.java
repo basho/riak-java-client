@@ -252,7 +252,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         {
             if (null == arg || arg.length() == 0)
             {
-                throw new IllegalArgumentException("Arguemt cannot be null or zero length");
+                throw new IllegalArgumentException("Argument cannot be null or zero length");
             }
         }
 
