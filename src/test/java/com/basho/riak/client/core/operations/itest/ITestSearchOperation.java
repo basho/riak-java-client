@@ -28,6 +28,7 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 import com.basho.riak.client.core.util.BinaryValue;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
@@ -62,7 +63,7 @@ public class ITestSearchOperation extends ITestBase
         SearchOperation.Response result = searchOp.get();
         
         assertEquals(result.numResults(), 2);
-        for (Map<String, String> map : result.getAllResults())
+        for (Map<String, List<String>> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());
             assertEquals(map.size(), 2); // id and value fields
@@ -109,7 +110,7 @@ public class ITestSearchOperation extends ITestBase
         searchOp.await();
         assertTrue(searchOp.isSuccess());
         SearchOperation.Response result = searchOp.get();        
-        for (Map<String, String> map : result.getAllResults())
+        for (Map<String, List<String>> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());
             assertEquals(5, map.size()); // {_yz_rk=p3, _yz_rb=search_bucket, _yz_rt=default, score=1.00000000000000000000e+00, _yz_id=default_search_bucket_p3_25}
