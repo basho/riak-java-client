@@ -240,6 +240,25 @@ public class RiakClient
         cluster.start();
         return new RiakClient(cluster);
     }
+
+    /**
+     * Static factory method to create a new client instance for a single-node test cluster.
+     * This method produces a client connected to a single node on the supplied
+     * address and port.
+     * @param address the IP address of the node
+     * @param port the port to connect to on the supplied host
+     * @return a new client instance
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+    public static RiakClient newClient(String address, int port) throws UnknownHostException {
+        RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withRemotePort(port)
+                                        .withRemoteAddress(address)
+                                        .withMinConnections(10);
+        RiakCluster cluster = new RiakCluster.Builder(node).build();
+        cluster.start();
+        return new RiakClient(cluster);
+    }
     
     /**
      * Static factory method to create a new client instance. 
