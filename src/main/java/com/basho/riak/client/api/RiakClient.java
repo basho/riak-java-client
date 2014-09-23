@@ -20,6 +20,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -206,6 +207,19 @@ public class RiakClient
         cluster.start();
         return new RiakClient(cluster);
         
+    }
+    
+    /**
+     * Static factory method for creating a new client instance.
+     * This method produces a client connected to a single node.
+     * @param port the protocol buffers port of the node.
+     * @param address the IP address or hostname to connect to.
+     * @return a new client instance. 
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+    public static RiakClient newClient(int port, String address) throws UnknownHostException
+    {
+        return newClient(port, Arrays.asList(address));
     }
     
     /**
