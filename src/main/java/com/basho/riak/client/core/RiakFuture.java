@@ -156,7 +156,7 @@ public interface RiakFuture<V, T> extends Future<V>
      * Return the result without blocking or throwing an exception. 
      * If the future is not yet done or has failed this will return null. 
      * As it is possible that a null value is used to mark the future as successful 
-     * you also need to check if the future is really done with {@link #isDone()  
+     * you also need to check if the future is really done with {@link #isDone()}  
      * and not rely on the returned null value.
      * @return The response, or {@literal null} if the future is not yet completed or failed.
      * @see #isDone() 

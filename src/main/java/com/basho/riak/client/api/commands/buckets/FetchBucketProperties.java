@@ -26,15 +26,14 @@ import com.basho.riak.client.core.query.Namespace;
 
 /**
  * Command used to fetch the properties of a bucket in Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * FetchBucketProperties fbp = new FetchBucketProperties.Builder(ns).build();
  * FetchBucketPropsOperation.Response resp = client.execute(fbp);
- * BucketProperties props = resp.getBucketProperties();
- * }
- * </pre>
+ * BucketProperties props = resp.getBucketProperties();}</pre>
  * Note that this simply returns the core response {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
  * 
  * </p>

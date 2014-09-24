@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * The UpdateValue command completely encapsulates the typical read/modify/write 
  * cycle used with data in Riak. 
@@ -48,8 +49,8 @@ import java.util.concurrent.TimeUnit;
  * object is then passed to your {@link com.basho.riak.client.api.commands.kv.UpdateValue.Update}
  * and the result stored back into Riak.
  * </p>
- * <pre>
- * <code>
+ * <pre class="prettyprint">
+ * {@code
  * class AppendUpdate extends UpdateValue.Update<MyPojo>
  * {
  *     private final String update;
@@ -79,9 +80,7 @@ import java.util.concurrent.TimeUnit;
  * UpdateValue uv = 
  *     new UpdateValue.Builder(loc).withUpdate(update).build();
  * 
- * UpdateValue.Response response = client.execute(uv);
- * </code>
- * </pre>
+ * UpdateValue.Response response = client.execute(uv);}</pre>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */

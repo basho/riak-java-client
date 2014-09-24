@@ -31,39 +31,40 @@ import java.util.Map;
 
 /**
  * Command used to fetch a value from Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * Fetching an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.core.query.Location}
  * and executing the FetchValue operation.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("my_type","my_bucket");
  * Location loc = new Location(ns, "my_key");
  * FetchValue fv = new FetchValue.Builder(loc).build();
  * FetchValue.Response response = client.execute(fv);
- * RiakObject obj = response.getValue(RiakObject.class);
- * </pre>
+ * RiakObject obj = response.getValue(RiakObject.class);}</pre>
  * </p>
  * <p>
  * All operations can called async as well.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * ...
- * {@literal RiakFuture<FetchValue.Response, Location>} future = client.execute(fv);
+ * RiakFuture<FetchValue.Response, Location> future = client.executeAsync(fv);
  * ...
  * future.await();
- * if (future.isSuccess)
+ * if (future.isSuccess())
  * { 
  *     ... 
- * }
- * </pre>
+ * }}</pre>
  * </p>
  * <p>
  * ORM features are also provided when retrieving the results from the response. 
  * By default, JSON serialization / deserializtion is used. For example, if 
  * the value stored in Riak was JSON and mapped to your class {@code MyPojo}:
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * ...
  * MyPojo mp = response.getValue(MyPojo.class);
- * ...
- * </pre>
+ * ...}</pre>
  * </p>
  * 
  * @author Dave Rusek <drusek at basho dot com>

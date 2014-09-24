@@ -28,19 +28,18 @@ import java.util.List;
 
 /**
  * Performs a 2i query where the 2i index keys are raw bytes.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * A RawIndexQuery is used when you are using raw bytes for your 2i keys. The
  * parameters are provided as BinaryValue objects. 
  * </p>
- * <pre>
- * <code>
+ * <pre class="prettyprint">
+ * {@code
  * byte[] bytes = new byte[] { 1,2,3,4};
  * BinaryValue key = BinaryValue.create(bytes);
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * RawIndexQuery q = new RawIndexQuery.Builder(ns, "my_index", Type._BIN, key).build();
- * RawIndexquery.Response resp = client.execute(q);
- * </code>
- * </pre>
+ * RawIndexquery.Response resp = client.execute(q);}</pre>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */

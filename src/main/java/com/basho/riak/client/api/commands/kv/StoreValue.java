@@ -37,33 +37,34 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * Command used to store a value in Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * To store a value in Riak you supply a {@link com.basho.riak.client.core.query.Location}
  * and an object to store. The object may be an instance of {@link com.basho.riak.client.core.query.RiakObject}
  * or your own POJO. In the case of a POJO the default serialization uses the Jackson JSON library
  * to store your object as JSON in Riak.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("my_type","my_bucket");
  * Location loc = new Location(ns, "my_key");
  * RiakObject ro = new RiakObject();
  * ro.setValue(BinaryValue.create("This is my value"));
  * StoreValue sv = 
  *      new StoreValue.Builder(ro).withLocation(loc).build();
- * StoreValue.Response response = client.execute(sv);
- * </pre>
+ * StoreValue.Response response = client.execute(sv);}</pre>
  * </p>
  * <p>
  * All operations can called async as well.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * ...
- * {@literal RiakFuture<StoreValue.Response, Location>} future = client.execute(sv);
+ * RiakFuture<StoreValue.Response, Location> future = client.executeAsync(sv);
  * ...
  * future.await();
- * if (future.isSuccess)
+ * if (future.isSuccess())
  * { 
  *     ... 
- * }
- * </pre>
+ * }}</pre>
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0

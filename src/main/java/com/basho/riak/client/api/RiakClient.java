@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 
 
 /**
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * The client used to perform operations on Riak.
  * <p>
  * The core of the Java client models a Riak cluster:
@@ -39,22 +40,18 @@ import java.util.concurrent.Future;
  * The easiest way to get started with the client API is using one of the static 
  * methods provided to instantiate and start the client:
  * </p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
- * List<String> addresses = new LinkedList<String>();
- * addresses.add("192.168.1.1");
- * addresses.add("192.168.1.2");
- * addresses.add("192.168.1.3");
- * RiakClient client = RiakClient.newClient(addresses);
- * }
- * </pre>
+ * RiakClient client = 
+ *     RiakClient.newClient("192.168.1.1","192.168.1.2","192.168.1.3"); } </pre>
+ * 
  * Note that the Riak Java client uses the Riak Protocol Buffers API exclusively. 
  * <p>
  * For more complex configurations you will instantiate one or more {@link com.basho.riak.client.core.RiakNode}s
  * and build a {@link com.basho.riak.client.core.RiakCluster} to supply to the 
  * RiakClient constructor.
  * </p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * RiakNode.Builder builder = new RiakNode.Builder();
  * builder.withMinConnections(10);
@@ -68,27 +65,22 @@ import java.util.concurrent.Future;
  * List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, addresses);
  * RiakCluster cluster = new RiakCluster.Builder(nodes).build();
  * cluster.start();
- * RiakClient client = new RiakClient(cluster);
- * 
- * }
- * </pre>
+ * RiakClient client = new RiakClient(cluster); }</pre>
  * <p>
  * Once you have a client, {@literal RiakCommand}s from the {@literal com.basho.riak.client.api.commands.*}
  * packages are built then executed by the client:
- * <pre>
- * <code>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("default","my_bucket");
  * Location loc = new Location(ns, "my_key");
  * FetchValue fv = new FetchValue.Builder(loc).build();
  * FetchValue.Response response = client.execute(fv);
- * RiakObject obj = response.getValue(RiakObject.class);
- * </code>
- * </pre>
+ * RiakObject obj = response.getValue(RiakObject.class);}</pre>
  * </p>
  * <p>
  * You can also execute all {@literal RiakCommand}s asynchronously. A 
  * {@link RiakFuture} for the operation is immediately returned:
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("default","my_bucket");
  * Location loc = new Location(ns, "my_key");
@@ -97,20 +89,18 @@ import java.util.concurrent.Future;
  * future.await();
  * if (future.isSuccess())
  * {
- *  FetchValue.Response response = future.get();
- *  RiakObject obj = response.getValue(RiakObject.class);
- *  ...
+ *     FetchValue.Response response = future.get();
+ *     RiakObject obj = response.getValue(RiakObject.class);
+ *     ...
  * }
  * else
  * {
- *  Throwable error = future.cause();
- *  ...
- * }
- * }
- * </pre>
+ *     Throwable error = future.cause();
+ *     ...
+ * }}</pre>
  * </p>
  * <p>
- * <h2>RiakCommand subclasses</h2>
+ * <h1>RiakCommand subclasses</h1>
  * <h4>Fetching, storing and deleting objects</h4>
  * <ul>
  * <li>{@link com.basho.riak.client.api.commands.kv.FetchValue}</li>
@@ -174,17 +164,7 @@ public class RiakClient
      * The RiakClient provides a user API on top of the client core. Once 
      * instantiated, commands are submitted to it for execution on Riak. 
      * </p>
-     * <pre>
-     * RiakClient client = RiakClient.newClient();
-     * Namespace ns = new Namespace("default","my_bucket");
-     * Location loc = new Location(ns, "my_key");
-     * FetchValue fv = new FetchValue.Builder(loc).build();
-     * FetchValue.Response response = client.execute(fv);
-     * RiakObject obj = response.getValue(RiakObject.class);
-     * client.shutdown();
-     * </pre>
-     * 
-	 * @param cluster the started RiakCluster to use.
+     * @param cluster the started RiakCluster to use.
 	 */
 	public RiakClient(RiakCluster cluster)
 	{
@@ -224,19 +204,6 @@ public class RiakClient
      }
     
     /**
-     * Static factory method for creating a new client instance.
-     * This method produces a client connected to a single node.
-     * @param port the protocol buffers port of the node.
-     * @param address the IP address or hostname to connect to.
-     * @return a new client instance. 
-     * @throws UnknownHostException if a supplied hostname cannot be resolved.
-     */
-    public static RiakClient newClient(int port, String address) throws UnknownHostException
-    {
-        return newClient(port, Arrays.asList(address));
-    }
-    
-    /**
      * Static factory method to create a new client instance.
      * This method produces a client connected to the supplied addresses on
      * the default (protocol buffers) port (8087).
@@ -247,6 +214,19 @@ public class RiakClient
     public static RiakClient newClient(List<String> remoteAddresses) throws UnknownHostException
     {
         return newClient(RiakNode.Builder.DEFAULT_REMOTE_PORT, remoteAddresses);
+    }
+    
+    /**
+     * Static factory method to create a new client instance.
+     * This method produces a client connected to the supplied addresses on
+     * the default (protocol buffers) port (8087).
+     * @param remoteAddresses a list of IP addresses or hostnames
+     * @return a new client instance
+     * @throws UnknownHostException if a supplied hostname cannot be resolved.
+     */
+    public static RiakClient newClient(String... remoteAddresses) throws UnknownHostException
+    {
+        return newClient(RiakNode.Builder.DEFAULT_REMOTE_PORT, Arrays.asList(remoteAddresses));
     }
     
     /**

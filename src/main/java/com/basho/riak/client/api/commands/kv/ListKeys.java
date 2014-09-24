@@ -29,18 +29,19 @@ import java.util.List;
 
 /**
  * Command used to list the keys in a bucket.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * This command is used to retrieve a list of all keys in a bucket. The response
  * is iterable and contains a list of Locations.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * ListKeys lk = ListKeys.Builder(ns).build();
  * ListKeys.Response response = client.execute(lk);
  * for (Location l : response)
  * {
  *     System.out.println(l.getKeyAsString());
- * }
- * </pre>
+ * }}</pre>
  * </p>
  * <p>
  * <b>This is a very expensive operation and is not recommended for use on a production system</b>

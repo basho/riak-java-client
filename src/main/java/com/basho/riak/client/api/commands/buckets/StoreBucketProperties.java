@@ -28,16 +28,14 @@ import com.basho.riak.client.core.query.functions.Function;
 /**
  * Command used to store (modify) the properties of a bucket in Riak.
  * <p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * StoreBucketProperties sbp = 
  *  new StoreBucketProperties.Builder(ns)
  *      .withAllowMulti(true)
  *      .build();
- * client.execute(sbp);
- * }
- * </pre>
+ * client.execute(sbp);}</pre>
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0

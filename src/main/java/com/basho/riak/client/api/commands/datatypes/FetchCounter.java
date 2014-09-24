@@ -26,16 +26,15 @@ import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
 
  /**
  * Command used to fetch a counter datatype from Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");
  * FetchCounter fc = new FetchCounter.Builder(loc).build();
  * FetchCounter.Response resp = client.execute(fc);
- * Long counter = resp.getDatatype().view();
- * }
- * </pre>
+ * Long counter = resp.getDatatype().view();}</pre>
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>

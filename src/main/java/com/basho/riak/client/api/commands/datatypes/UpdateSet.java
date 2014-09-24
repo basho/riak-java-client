@@ -28,10 +28,11 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 /**
  * Command used to update or create a set datatype in Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * To update or create a set in Riak you construct a {@link SetUpdate} and use
  * this command to send it to Riak.
- * <pre>
+ * <pre class="prettyprint">
  * {@code 
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");

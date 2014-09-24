@@ -30,28 +30,29 @@ import java.util.Map;
 
 /**
  * Command used to delete a value from Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * Deleting an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.core.query.Location}
  * and executing the operation.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");
  * DeleteValue dv = new DeleteValue.Builder(loc).build();
- * DeleteValue.Response resp = client.execute(dv);
- * </pre>
+ * DeleteValue.Response resp = client.execute(dv);}</pre>
  * </p>
  * <p>
  * All operations can called async as well.
- * <pre>
+ * <pre class="prettyprint">
+ * {@code
  * ...
- * {@literal RiakFuture<DeleveValue.Response, Location>} future = client.execute(dv);
+ * RiakFuture<DeleveValue.Response, Location> future = client.executeAsync(dv);
  * ...
  * future.await();
- * if (future.isSuccess)
+ * if (future.isSuccess())
  * { 
  *     ... 
- * }
- * </pre>
+ * }}</pre>
  * </p>
  * 
  * @author Dave Rusek <drusek at basho dot com>

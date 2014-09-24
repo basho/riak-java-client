@@ -26,8 +26,9 @@ import com.basho.riak.client.core.query.crdt.types.RiakMap;
 
 /**
  * Command used to fetch a counter datatype from Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");

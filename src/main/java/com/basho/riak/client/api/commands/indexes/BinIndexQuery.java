@@ -30,18 +30,17 @@ import java.util.List;
 
 /**
  * Performs a 2i query where the 2i index keys are strings.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * A RawIndexQuery is used when you are using strings for your 2i keys. The
  * parameters are provided as String objects. 
  * </p>
- * <pre>
- * <code>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * String key = "some_key";
  * BinIndexQuery q = new BinIndexQuery.Builder(ns, "my_index", key).build();
- * BinIndexQuery.Response resp = client.execute(q);
- * </code>
- * </pre>
+ * BinIndexQuery.Response resp = client.execute(q);}</pre>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */

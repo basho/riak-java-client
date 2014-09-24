@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Command used to fetch multiple values from Riak.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * Riak itself does not support pipelining of requests. MutliFetch addresses this issue by using a thread to
  * parallelize and manage a set of async fetch operations for a given set of keys.
@@ -49,8 +50,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * fetch operation. The returned {@code RiakFuture} that contains that list completes
  * when all the FetchValue operations contained have finished.
  * <p/>
- * <pre>
- * <code>
+ * <pre class="prettyprint">
+ * {@code
  * MultiFetch multifetch = ...;
  * MultiFetch.Response response = client.execute(multifetch);
  * List<MyPojo> myResults = new ArrayList<MyPojo>();
@@ -65,9 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     {
  *         // log error, etc.
  *     }
- * }
- * </code>
- * </pre>
+ * }}</pre>
  * </p>
  * <p>
  * The maximum number of concurrent requests defaults to 10. This can be changed

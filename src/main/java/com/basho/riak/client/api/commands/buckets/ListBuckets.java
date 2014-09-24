@@ -28,17 +28,16 @@ import java.util.List;
 
 /**
  * Command used to list the buckets contained in a bucket type.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
- * <pre>
+ * <pre class="prettyprint">
  * {@code
  * ListBuckets lb = new ListBuckets.Builder("my_type").build();
  * ListBuckets.Response resp = client.execute(lb);
  * for (Namespace ns : response)
  * {
  *     System.out.println(ns.getBucketName());
- * }
- * }
- * </pre>
+ * }}</pre>
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0

@@ -29,20 +29,19 @@ import java.util.List;
 
 /**
  * Performs a 2i query where the 2i index keys are numeric.
+ * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * A BigIntIndexQuery is used when you are using integers for your 2i keys. The
  * parameters are provided as BigInteger values. Use this query if your  
  * 2i key values exceed that 
  * which can be stored in a (64 bit) long, 
  * </p>
- * <pre>
- * <code>
+ * <pre class="prettyprint">
+ * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * BigInteger key = new BigInteger(someReallyLongNumber);
  * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
- * BigIntIndexQuery.Response resp = client.execute(q);
- * </code>
- * </pre>
+ * BigIntIndexQuery.Response resp = client.execute(q);}</pre>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
