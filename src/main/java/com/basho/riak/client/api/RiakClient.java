@@ -89,7 +89,7 @@ import java.util.concurrent.Future;
  * future.await();
  * if (future.isSuccess())
  * {
- *     FetchValue.Response response = future.get();
+ *     FetchValue.Response response = future.getNow();
  *     RiakObject obj = response.getValue(RiakObject.class);
  *     ...
  * }
