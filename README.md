@@ -63,7 +63,7 @@ cluster.start();
 RiakClient client = new RiakClient(cluster)
 ```
 
-Once you have a client, commands from the `com.basho.riak.client.api.commands.*` 
+Once you have a client, commands from the [com.basho.riak.client.api.commands.*](#riakcommand-subclasses) 
 packages are built then executed by the client.
 
 Some basic examples of building and executing these commands is shown
