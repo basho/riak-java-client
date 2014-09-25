@@ -38,11 +38,8 @@ The easiest way to get started with the client is using one of the static
 methods provided to instantiate and start the client:
 
 ```java
-List<String> addresses = new LinkedList<String>();
-addresses.add("192.168.1.1");
-addresses.add("192.168.1.2");
-addresses.add("192.168.1.3");
-RiakClient client = RiakClient.newClient(addresses);
+RiakClient client = 
+    RiakClient.newClient("192.168.1.1","192.168.1.2","192.168.1.3");
 ```
 
 The RiakClient object is thread safe and may be shared across multiple threads.
@@ -54,7 +51,7 @@ core packages and supply it to the RiakClient constructor.
 RiakNode.Builder builder = new RiakNode.Builder();
 builder.withMinConnections(10);
 builder.withMaxConnections(50);
-
+ 
 List<String> addresses = new LinkedList<String>();
 addresses.add("192.168.1.1");
 addresses.add("192.168.1.2");
@@ -63,8 +60,7 @@ addresses.add("192.168.1.3");
 List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, addresses);
 RiakCluster cluster = new RiakCluster.Builder(nodes).build();
 cluster.start();
-
-RiakClient client = new RiakClient(cluster);
+RiakClient client = new RiakClient(cluster)
 ```
 
 Once you have a client, commands from the `com.basho.riak.client.api.commands.*` 
@@ -118,8 +114,53 @@ UpdateMap update = new UpdateMap.Builder(location, mu).build();
 client.execute(update);
 ```
 
-## Search 2.0
+ <h1>RiakCommand subclasses</h1>
+ <h4>Fetching, storing and deleting objects</h4>
+ <ul>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.html" title="class in com.basho.riak.client.api.commands.kv"><code>FetchValue</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/MultiFetch.html" title="class in com.basho.riak.client.api.commands.kv"><code>MultiFetch</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/StoreValue.html" title="class in com.basho.riak.client.api.commands.kv"><code>StoreValue</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/UpdateValue.html" title="class in com.basho.riak.client.api.commands.kv"><code>UpdateValue</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/DeleteValue.html" title="class in com.basho.riak.client.api.commands.kv"><code>DeleteValue</code></a></li>
+ </ul>
+ <h4>Listing keys in a namespace</h4>
+ <ul><li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/ListKeys.html" title="class in com.basho.riak.client.api.commands.kv"><code>ListKeys</code></a></li></ul>
+ <h4>Secondary index (2i) commands</h4>
+ <ul>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/indexes/RawIndexQuery.html" title="class in com.basho.riak.client.api.commands.indexes"><code>RawIndexQuery</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/indexes/BinIndexQuery.html" title="class in com.basho.riak.client.api.commands.indexes"><code>BinIndexQuery</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/indexes/IntIndexQuery.html" title="class in com.basho.riak.client.api.commands.indexes"><code>IntIndexQuery</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/indexes/BigIntIndexQuery.html" title="class in com.basho.riak.client.api.commands.indexes"><code>BigIntIndexQuery</code></a></li>
+ </ul>
+ <h4>Fetching and storing datatypes (CRDTs)</h4>
+ <ul>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/datatypes/FetchCounter.html" title="class in com.basho.riak.client.api.commands.datatypes"><code>FetchCounter</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/datatypes/FetchSet.html" title="class in com.basho.riak.client.api.commands.datatypes"><code>FetchSet</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/datatypes/FetchMap.html" title="class in com.basho.riak.client.api.commands.datatypes"><code>FetchMap</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/datatypes/UpdateCounter.html" title="class in com.basho.riak.client.api.commands.datatypes"><code>UpdateCounter</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/datatypes/UpdateSet.html" title="class in com.basho.riak.client.api.commands.datatypes"><code>UpdateSet</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/datatypes/UpdateMap.html" title="class in com.basho.riak.client.api.commands.datatypes"><code>UpdateMap</code></a></li>
+ </ul>
+ <h4>Querying and modifying buckets</h4>
+ <ul>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/buckets/FetchBucketProperties.html" title="class in com.basho.riak.client.api.commands.buckets"><code>FetchBucketProperties</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/buckets/StoreBucketProperties.html" title="class in com.basho.riak.client.api.commands.buckets"><code>StoreBucketProperties</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/buckets/ListBuckets.html" title="class in com.basho.riak.client.api.commands.buckets"><code>ListBuckets</code></a></li>
+ </ul>
+ <h4>Search commands</h4>
+ <ul>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/search/Search.html" title="class in com.basho.riak.client.api.commands.search"><code>Search</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/search/FetchIndex.html" title="class in com.basho.riak.client.api.commands.search"><code>FetchIndex</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/search/StoreIndex.html" title="class in com.basho.riak.client.api.commands.search"><code>StoreIndex</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/search/DeleteIndex.html" title="class in com.basho.riak.client.api.commands.search"><code>DeleteIndex</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/search/FetchSchema.html" title="class in com.basho.riak.client.api.commands.search"><code>FetchSchema</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/search/StoreSchema.html" title="class in com.basho.riak.client.api.commands.search"><code>StoreSchema</code></a></li>
+ </ul>
+ <h4>Map-Reduce</h4>
+ <ul>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/mapreduce/BucketMapReduce.html" title="class in com.basho.riak.client.api.commands.mapreduce"><code>BucketMapReduce</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/mapreduce/BucketKeyMapReduce.html" title="class in com.basho.riak.client.api.commands.mapreduce"><code>BucketKeyMapReduce</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/mapreduce/IndexMapReduce.html" title="class in com.basho.riak.client.api.commands.mapreduce"><code>IndexMapReduce</code></a></li>
+ <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/mapreduce/SearchMapReduce.html" title="class in com.basho.riak.client.api.commands.mapreduce"><code>SearchMapReduce</code></a></li>
+ </ul>
 
-```java
-# TBD
-```
