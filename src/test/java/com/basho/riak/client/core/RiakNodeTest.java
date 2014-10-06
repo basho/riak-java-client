@@ -63,7 +63,7 @@ public class RiakNodeTest
         assertEquals(node.getMaxConnections(), Integer.MAX_VALUE);
         assertEquals(node.getConnectionTimeout(), RiakNode.Builder.DEFAULT_CONNECTION_TIMEOUT);
         assertEquals(node.getIdleTimeout(), RiakNode.Builder.DEFAULT_IDLE_TIMEOUT);
-	assertEquals(node.getSOTimeout(), RiakNode.Builder.DEFAULT_SO_TIMEOUT);
+		assertEquals(node.getSOTimeout(), RiakNode.Builder.DEFAULT_SO_TIMEOUT);
         assertEquals(node.getMinConnections(), RiakNode.Builder.DEFAULT_MIN_CONNECTIONS);
         assertEquals(node.availablePermits(), Integer.MAX_VALUE);
     }
@@ -76,8 +76,7 @@ public class RiakNodeTest
         final int MIN_CONNECTIONS = 2002;
         final int MAX_CONNECTIONS = 2003;
         final int PORT = 2004;
-        final int READ_TIMEOUT = 2005;
-	final int SO_TIMEOUT = 2006;
+		final int SO_TIMEOUT = 2006;
         final String REMOTE_ADDRESS = "localhost";
         final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
         final Bootstrap BOOTSTRAP = PowerMockito.spy(new Bootstrap());
@@ -93,7 +92,7 @@ public class RiakNodeTest
             .withRemoteAddress(REMOTE_ADDRESS)
             .withExecutor(EXECUTOR)
             .withBootstrap(BOOTSTRAP)
-	    .withSOTimeout(SO_TIMEOUT)
+	    	.withSOTimeout(SO_TIMEOUT)
             .build();
 
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
@@ -106,7 +105,7 @@ public class RiakNodeTest
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
         assertEquals(node.availablePermits(), MAX_CONNECTIONS);
         assertEquals(node.getPort(), PORT);
-	assertEquals(node.getSOTimeout(), SO_TIMEOUT);
+		assertEquals(node.getSOTimeout(), SO_TIMEOUT);
 
     }
 

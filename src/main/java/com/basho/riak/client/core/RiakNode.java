@@ -176,7 +176,7 @@ public class RiakNode implements RiakResponseListener
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
-	this.soTimeout = builder.soTimeout;
+		this.soTimeout = builder.soTimeout;
         this.minConnections = builder.minConnections;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
@@ -524,15 +524,16 @@ public class RiakNode implements RiakResponseListener
     }
 
     /**
-     * Returns the SO timeout in milliseconds.
+     * Sets the underlying socket SO (read) timeout in milliseconds.
      *
-     * @return the SOTimeout
-     * @see Builder#withSOTimeout(int)
+	 * @param soTimeoutInMillis the SO (read) timeout to set
+	 * @return a reference to this RiakNode
+	 * @see Builder#withSOTimeout(int)
      */
     public RiakNode setSOTimeout(int soTimeoutInMillis)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-	this.soTimeout = soTimeoutInMillis;
+		this.soTimeout = soTimeoutInMillis;
         bootstrap.option(ChannelOption.SO_TIMEOUT, connectionTimeout);
         return this;
     }
