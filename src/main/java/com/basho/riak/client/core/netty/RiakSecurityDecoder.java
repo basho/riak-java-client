@@ -109,7 +109,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                                 promise.tryFailure((riakErrorToException(protobuf)));
                                 break;
                             default:
-				logger.debug("Invalid return code during StartTLS from {}:{}", remoteAddr, remotePort);
+				logger.debug("Invalid return code during StartTLS from {}:{} code", remoteAddr, remotePort, code);
                                 promise.tryFailure(new RiakResponseException(0,
                                     "Invalid return code during StartTLS; " + code));
                         }
@@ -228,7 +228,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
             else
             {
-                logger.debug("SSLHandshake Failed with {}:{}.", remoteAddr, remotePort);
+                logger.warn("SSLHandshake Failed with {}:{}.", remoteAddr, remotePort, future.cause());
                 promise.tryFailure(future.cause());
             }
         }
