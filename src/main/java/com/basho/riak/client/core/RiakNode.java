@@ -76,6 +76,7 @@ public class RiakNode implements RiakResponseListener
     
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
+    private volatile RiakChannelInitializer riakChannelInitializer;
     private volatile ScheduledExecutorService executor;
     private volatile boolean ownsExecutor;
     private volatile State state;
@@ -84,7 +85,7 @@ public class RiakNode implements RiakResponseListener
     private volatile int minConnections;
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
-    private volatile int soTimeout;
+    private volatile int readTimeout;
     private volatile boolean blockOnMaxConnections;
 
     private HealthCheckFactory healthCheckFactory;
@@ -176,7 +177,7 @@ public class RiakNode implements RiakResponseListener
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
-        this.soTimeout = builder.soTimeout;
+        this.readTimeout = builder.readTimeout;
         this.minConnections = builder.minConnections;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
@@ -244,17 +245,14 @@ public class RiakNode implements RiakResponseListener
             ownsBootstrap = true;
         }
 
-        bootstrap.handler(new RiakChannelInitializer(this))
+
+        riakChannelInitializer = new RiakChannelInitializer(this, readTimeout);
+        bootstrap.handler(riakChannelInitializer)
             .remoteAddress(new InetSocketAddress(remoteAddress, port));
 
         if (connectionTimeout > 0)
         {
             bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
-        }
-
-        if (soTimeout > 0)
-        {
-            bootstrap.option(ChannelOption.SO_TIMEOUT, soTimeout);
         }
 
         if (minConnections > 0)
@@ -524,30 +522,30 @@ public class RiakNode implements RiakResponseListener
     }
 
     /**
-     * Sets the underlying socket SO (read) timeout in milliseconds.
+     * Sets the read timeout in milliseconds.
      *
-     * @param soTimeoutInMillis the SO (read) timeout to set
+     * @param readTimeoutInMillis the read timeout to set
      * @return a reference to this RiakNode
-     * @see Builder#withSOTimeout(int)
+     * @see Builder#withReadTimeout(int)
      */
-    public RiakNode setSOTimeout(int soTimeoutInMillis)
+    public RiakNode setReadTimeout(int readTimeoutInMillis)
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        this.soTimeout = soTimeoutInMillis;
-        bootstrap.option(ChannelOption.SO_TIMEOUT, connectionTimeout);
+        this.readTimeout = readTimeoutInMillis;
+		riakChannelInitializer.setReadTimeout(readTimeout);
         return this;
     }
 
     /**
-     * Returns the SO timeout in milliseconds.
+     * Returns the read timeout in milliseconds.
      *
-     * @return the SOTimeout
-     * @see Builder#withSOTimeout(int)
+     * @return the readTimeout
+     * @see Builder#withReadTimeout(int)
      */
-    public int getSOTimeout()
+    public int getReadTimeout()
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
-        return soTimeout;
+        return readTimeout;
     }
 
     /**
@@ -1234,11 +1232,11 @@ public class RiakNode implements RiakResponseListener
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
         /**
-         * The default so timeout in milliseconds if not specified: {@value #DEFAULT_SO_TIMEOUT}
+         * The default so timeout in milliseconds if not specified: {@value #DEFAULT_READ_TIMEOUT}
          *
-         * @see #withSOTimeout(int)
+         * @see #withReadTimeout(int)
          */
-        public final static int DEFAULT_SO_TIMEOUT = 0;
+        public final static int DEFAULT_READ_TIMEOUT = 0;
         
         /**
          * The default HealthCheckFactory.
@@ -1256,7 +1254,7 @@ public class RiakNode implements RiakResponseListener
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-        private int soTimeout = DEFAULT_SO_TIMEOUT;
+        private int readTimeout = DEFAULT_READ_TIMEOUT;
         private HealthCheckFactory healthCheckFactory = DEFAULT_HEALTHCHECK_FACTORY;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
@@ -1373,15 +1371,15 @@ public class RiakNode implements RiakResponseListener
         }
 
         /**
-         * Set the SO timeout used when waiting for a response on the underlying sockets
+         * Set the read timeout used when waiting for a response on the underlying sockets
          *
-         * @param soTimeoutMillis
+         * @param readTimeoutMillis
          * @return this
-         * @see #DEFAULT_SO_TIMEOUT
+         * @see #DEFAULT_READ_TIMEOUT
          */
-        public Builder withSOTimeout(int soTimeoutMillis)
+        public Builder withReadTimeout(int readTimeoutMillis)
         {
-            this.soTimeout = soTimeoutMillis;
+            this.readTimeout = readTimeoutMillis;
             return this;
         }
 
