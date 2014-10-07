@@ -695,6 +695,7 @@ public class RiakNode implements RiakResponseListener
         
         try
         {
+            logger.debug("Waiting for new connection from channel future to {}:{}", remoteAddress, port);
             f.await();
         }
         catch (InterruptedException ex)
@@ -712,12 +713,15 @@ public class RiakNode implements RiakResponseListener
             consecutiveFailedConnectionAttempts.incrementAndGet();
             throw new ConnectionFailedException(f.cause());
         }
+
+        logger.debug("Connection to {}:{} successful", remoteAddress, port);
         
         consecutiveFailedConnectionAttempts.set(0);
         Channel c = f.channel();
         
         if (trustStore != null) 
         {
+			logger.debug("trustStore set starting TLS");
             SSLContext context;
             try 
             {
@@ -752,11 +756,12 @@ public class RiakNode implements RiakResponseListener
             }
 
             engine.setUseClientMode(true);
-            RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
+            RiakSecurityDecoder decoder = new RiakSecurityDecoder(remoteAddress, port, engine, username, password);
             c.pipeline().addFirst(decoder);
                 
             try
             {
+                logger.debug("Waiting for authentication to complete with {}:{}", remoteAddress, port);
                 DefaultPromise<Void> promise = decoder.getPromise();
                 promise.await();
                 
