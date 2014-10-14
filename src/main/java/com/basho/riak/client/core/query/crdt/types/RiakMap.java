@@ -74,13 +74,14 @@ public class RiakMap extends RiakDatatype
      */
 	public RiakMap getMap(BinaryValue key)
 	{
-		for (RiakDatatype dt : entries.get(key))
-		{
-			if (dt.isMap()) {
-				return dt.getAsMap();
-			}
-		}
-		return null;
+            if (entries.containsKey(key)) {
+                for (RiakDatatype dt : entries.get(key)) {
+                    if (dt.isMap()) {
+                        return dt.getAsMap();
+                    }
+                }
+            }
+            return null;
 	}
 
     /**
@@ -102,13 +103,14 @@ public class RiakMap extends RiakDatatype
      */
 	public RiakSet getSet(BinaryValue key)
 	{
-		for (RiakDatatype dt : entries.get(key))
-		{
-			if (dt.isSet()) {
-				return dt.getAsSet();
-			}
-		}
-		return null;
+            if (entries.containsKey(key)) {
+                for (RiakDatatype dt : entries.get(key)) {
+                    if (dt.isSet()) {
+                        return dt.getAsSet();
+                    }
+                }
+            }
+            return null;
 	}
 
     /**
@@ -130,13 +132,14 @@ public class RiakMap extends RiakDatatype
      */
 	public RiakCounter getCounter(BinaryValue key)
 	{
-		for (RiakDatatype dt : entries.get(key))
-		{
-			if (dt.isCounter()) {
-				return dt.getAsCounter();
-			}
-		}
-		return null;
+            if (entries.containsKey(key)) {
+                for (RiakDatatype dt : entries.get(key)) {
+                    if (dt.isCounter()) {
+                        return dt.getAsCounter();
+                    }
+                }
+            }
+            return null;
 	}
 
     /**
@@ -158,13 +161,14 @@ public class RiakMap extends RiakDatatype
      */
 	public RiakFlag getFlag(BinaryValue key)
 	{
-		for (RiakDatatype dt : entries.get(key))
-		{
-			if (dt.isFlag()) {
-				return dt.getAsFlag();
-			}
-		}
-		return null;
+            if (entries.containsKey(key)) {
+                for (RiakDatatype dt : entries.get(key)) {
+                    if (dt.isFlag()) {
+                        return dt.getAsFlag();
+                    }
+                }
+            }
+            return null;
 	}
 
     /**
@@ -186,13 +190,14 @@ public class RiakMap extends RiakDatatype
      */
 	public RiakRegister getRegister(BinaryValue key)
 	{
-		for (RiakDatatype dt : entries.get(key))
-		{
-			if (dt.isRegister()) {
-				return dt.getAsRegister();
-			}
-		}
-		return null;
+            if (entries.containsKey(key)) {
+                for (RiakDatatype dt : entries.get(key)) {
+                    if (dt.isRegister()) {
+                        return dt.getAsRegister();
+                    }
+                }
+            }
+            return null;
 	}
 
     /**
