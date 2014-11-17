@@ -109,7 +109,7 @@ RegisterUpdate ru1 = new RegisterUpdate(BinaryValue.create("map_value_1"));
 RegisterUpdate ru2 = new RegisterUpdate(BinaryValue.create("map_value_2"));
 MapUpdate mu = new MapUpdate();
 mu.update("map_key_1", ru1);
-mu.update("map_key_1", ru2);
+mu.update("map_key_2", ru2);
 UpdateMap update = new UpdateMap.Builder(location, mu).build();
 client.execute(update);
 ```
