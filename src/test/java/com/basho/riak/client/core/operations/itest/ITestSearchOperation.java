@@ -128,7 +128,13 @@ public class ITestSearchOperation extends ITestBase
         cluster.execute(delOp);
         delOp.await();
         assertTrue(delOp.isSuccess());
-        
+
+        SearchOperation searchOpWithString = new SearchOperation.Builder("test_index", "multi_ss:t*").build();
+        cluster.execute(searchOpWithString);
+        searchOpWithString.await();
+        assertTrue(searchOpWithString.isSuccess());
+        SearchOperation.Response newResult = searchOpWithString.get();
+        assertSame(result, newResult);
     }
     
     private void prepSearch(BinaryValue searchBucketType, BinaryValue searchBucket) throws InterruptedException, ExecutionException
