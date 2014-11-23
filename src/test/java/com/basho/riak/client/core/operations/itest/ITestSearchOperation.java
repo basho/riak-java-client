@@ -121,20 +121,17 @@ public class ITestSearchOperation extends ITestBase
             assertTrue(map.containsKey("multi_ss"));
             assertEquals(2, map.get("multi_ss").size()); 
         }
+
         
+        SearchOperation searchOpWithString = new SearchOperation.Builder("test_index", "multi_ss:t*").build();
+        assertSame(searchOp, searchOpWithString);
+
         resetAndEmptyBucket(namespace);
-        
+
         YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_index").build();
         cluster.execute(delOp);
         delOp.await();
         assertTrue(delOp.isSuccess());
-
-        SearchOperation searchOpWithString = new SearchOperation.Builder("test_index", "multi_ss:t*").build();
-        cluster.execute(searchOpWithString);
-        searchOpWithString.await();
-        assertTrue(searchOpWithString.isSuccess());
-        SearchOperation.Response newResult = searchOpWithString.get();
-        assertSame(result, newResult);
     }
     
     private void prepSearch(BinaryValue searchBucketType, BinaryValue searchBucket) throws InterruptedException, ExecutionException
