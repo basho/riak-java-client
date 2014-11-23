@@ -134,6 +134,23 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
             reqBuilder.setQ(ByteString.copyFromUtf8(queryString));
         }
 
+        public Builder(String indexName, String queryString)
+        {
+            if (null == indexName || indexName.length() == 0)
+            {
+                throw new IllegalArgumentException("Index name cannot be null or zero length");
+            }
+            if (null == queryString || queryString.length() == 0)
+            {
+                throw new IllegalArgumentException("Query string cannot be null or zero length");
+            }
+
+            this.indexName = BinaryValue.create(indexName);
+            this.queryString = queryString;
+            reqBuilder.setIndex(ByteString.copyFromUtf8(indexName));
+            reqBuilder.setQ(ByteString.copyFromUtf8(queryString));
+        }
+
         /**
          * Specify the maximum number of results to return.
          * Riak defaults to 10 if this is not asSet.
