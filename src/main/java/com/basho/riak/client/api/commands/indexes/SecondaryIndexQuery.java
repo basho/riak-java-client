@@ -39,7 +39,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
 {
     public enum Type
     {
-        _INT("_int"), _BIN("_bin");
+        _INT("_int"), _BIN("_bin"), _BUCKET(""), _KEY("");
         
         private String suffix;
         

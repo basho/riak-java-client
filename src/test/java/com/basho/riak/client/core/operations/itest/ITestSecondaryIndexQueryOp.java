@@ -16,6 +16,7 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation.Response.Entry;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -25,6 +26,7 @@ import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.concurrent.ExecutionException;
+import junit.framework.Assert;
 import org.junit.Assume;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -510,6 +512,67 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         }
     }
 
+    @Test
+    public void testBucketIndexHack() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        String indexName = "test_index_bucket";
+        String keyBase = "my_key";
+        String value = "value";
+        
+        Namespace ns = new Namespace(bucketName.toString());    
+        
+        setupIndexTestData(ns, indexName, keyBase, value);
+        
+        SecondaryIndexQueryOperation.Query query = 
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate("$bucket".getBytes()))
+                .withIndexKey(bucketName)
+                .withReturnKeyAndIndex(true)
+                .build();
+        
+        SecondaryIndexQueryOperation queryOp = 
+            new SecondaryIndexQueryOperation.Builder(query)
+                .build();
+        
+        cluster.execute(queryOp);
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
+        
+        Assert.assertTrue(response.getEntryList().size() == 100);
+        
+        
+    }
+    
+    @Test
+    public void testKeyIndexHack() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        String indexName = "test_index_bucket";
+        String keyBase = "my_key";
+        String value = "value";
+        
+        Namespace ns = new Namespace(bucketName.toString());    
+        
+        setupIndexTestData(ns, indexName, keyBase, value);
+                
+        SecondaryIndexQueryOperation.Query query = 
+            new SecondaryIndexQueryOperation.Query.Builder(ns, BinaryValue.unsafeCreate("$key".getBytes()))
+                .withRangeStart(BinaryValue.create("my_key10"))
+                .withRangeEnd(BinaryValue.create("my_key19"))
+                .withReturnKeyAndIndex(true)
+                .build();
+        
+        SecondaryIndexQueryOperation queryOp = 
+            new SecondaryIndexQueryOperation.Builder(query)
+                .build();
+        
+        cluster.execute(queryOp);
+        SecondaryIndexQueryOperation.Response response = queryOp.get();
+        
+        Assert.assertTrue(response.getEntryList().size() == 10);
+        
+        
+    }
+    
     private void setupIndexTestData(Namespace ns, String indexName, String keyBase, String value)
             throws InterruptedException, ExecutionException
     {
