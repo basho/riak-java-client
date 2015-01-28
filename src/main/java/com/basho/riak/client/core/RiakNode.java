@@ -39,6 +39,7 @@ import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
@@ -71,6 +72,8 @@ public class RiakNode implements RiakResponseListener
     private final String username;
     private final String password;
     private final KeyStore trustStore;
+    private final KeyStore keyStore;
+    private final String keyPassword;
     private final AtomicLong consecutiveFailedOperations = new AtomicLong(0);
     private final AtomicLong consecutiveFailedConnectionAttempts = new AtomicLong(0);
     
@@ -182,6 +185,8 @@ public class RiakNode implements RiakResponseListener
         this.username = builder.username;
         this.password = builder.password;
         this.trustStore = builder.trustStore;
+        this.keyStore = builder.keyStore;
+        this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
         
         if (builder.bootstrap != null)
@@ -693,8 +698,16 @@ public class RiakNode implements RiakResponseListener
                 TrustManagerFactory tmf =
                     TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmf.init(trustStore);
-
-                context.init(null, tmf.getTrustManagers(), null);
+                if(keyStore!=null)
+                {
+                    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                    kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
+                    context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+                }
+                else
+                {
+                    context.init(null, tmf.getTrustManagers(), null);
+                }
                 
             }
             catch (Exception ex) 
@@ -1223,6 +1236,8 @@ public class RiakNode implements RiakResponseListener
         private String username;
         private String password;
         private KeyStore trustStore;
+        private KeyStore keyStore;
+        private String keyPassword;
 
 
         /**
@@ -1402,6 +1417,33 @@ public class RiakNode implements RiakResponseListener
             return this;
         }
         
+        /**
+         * Set the credentials for Riak security and authentication.
+         * <p>
+         * Riak supports authentication and authorization features.
+         * These credentials will be used for all connections.
+         * </p>
+         * <p>
+         * Note this requires Riak to have been configured with security enabled.
+         * </p>
+         *
+         * @param username the riak user name.
+         * @param password the password for this user.
+         * @param trustStore A Java KeyStore loaded with the CA certificate required for TLS/SSL
+         * @param keyStore A Java KeyStore loaded with User's Private certificate required for TLS/SSL
+         * @param keyPassword the password for User's Private certificate.
+         * @return a reference to this object.
+         */
+        public Builder withAuth(String username, String password, KeyStore trustStore, KeyStore keyStore, String keyPassword)
+        {
+            this.username = username;
+            this.password = password;
+            this.trustStore = trustStore;
+            this.keyStore = keyStore;
+            this.keyPassword = keyPassword;
+            return this;
+        }
+
         /**
          * Set the HealthCheckFactory used to determine if this RiakNode is healthy.
          * <p>
