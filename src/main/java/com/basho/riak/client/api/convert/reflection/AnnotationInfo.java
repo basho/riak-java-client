@@ -1311,7 +1311,7 @@ public class AnnotationInfo
 
         private void validateRiakLinksMethod(Method m)
         {
-            if (m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 1)
             {
                 // it's a setter, check the arg type
                 Type[] genericParameterTypes = m.getGenericParameterTypes();
@@ -1331,7 +1331,7 @@ public class AnnotationInfo
 
                 throw new IllegalArgumentException("@RiakLinks setter must take Collection<RiakLink>");
             }
-            else
+            else if (m.getParameterTypes().length == 0)
             {
                 // it's a getter, check return type
                 Type t = m.getGenericReturnType();
@@ -1363,7 +1363,7 @@ public class AnnotationInfo
 
         private void validateVClockMethod(Method m)
         {
-            if (m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 1)
             {
                 // It's a setter
                 Class<?> pType = m.getParameterTypes()[0];
@@ -1373,7 +1373,7 @@ public class AnnotationInfo
                     throw new IllegalArgumentException("@RiakVClock setter must take VClock or byte[]");
                 }
             }
-            else
+            else if (m.getParameterTypes().length == 0)
             {
                 Class<?> rType = m.getReturnType();
                 if (!(rType.isArray() && rType.getComponentType().equals(byte.class))
@@ -1395,7 +1395,7 @@ public class AnnotationInfo
 
         private void validateTombstoneMethod(Method m)
         {
-            if (m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 1)
             {
                 Class<?> pType = m.getParameterTypes()[0];
                 if (!pType.equals(Boolean.class) && !pType.equals(boolean.class))
@@ -1403,7 +1403,7 @@ public class AnnotationInfo
                     throw new IllegalArgumentException("@RiakTombstone setter must take boolean or Boolean");
                 }
             }
-            else
+            else if (m.getParameterTypes().length == 0)
             {
                 Class<?> rType = m.getReturnType();
                 if (!rType.equals(Boolean.class) && !rType.equals(boolean.class))
@@ -1423,14 +1423,14 @@ public class AnnotationInfo
         
         private void validateContentTypeMethod(Method m)
         {
-            if (m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 1)
             { 
                 if (!String.class.equals(m.getParameterTypes()[0]))
                 {
                     throw new IllegalArgumentException("@RiakContentType setter must take a String.");
                 }
             }
-            else
+            else if (m.getParameterTypes().length == 0)
             {
                 if (!m.getReturnType().equals(String.class))
                 {
@@ -1449,11 +1449,11 @@ public class AnnotationInfo
         
         private void validateLastModifiedMethod(Method m)
         {
-            if (!m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 0)
             {
                 throw new IllegalArgumentException("@RiakLastModified can only be applied to a setter method.");
             }
-            else
+            else if (m.getParameterTypes().length == 1)
             {
                 Class<?> pType = m.getParameterTypes()[0];
                 if (!pType.equals(Long.class) && !pType.equals(long.class))
@@ -1473,11 +1473,11 @@ public class AnnotationInfo
         
         private void validateVTagMethod(Method m)
         {
-            if (!m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 0)
             {
                 throw new IllegalArgumentException("@RiakVTag can only be applied to a setter method.");
             }
-            else
+            else if (m.getParameterTypes().length == 1)
             {
                 Class<?> pType = m.getParameterTypes()[0];
                 if (!pType.equals(String.class))
@@ -1498,7 +1498,7 @@ public class AnnotationInfo
         
         private void validateStringOrByteMethod(Method m, String annotation)
         {
-            if (m.getReturnType().equals(Void.TYPE))
+            if (m.getParameterTypes().length == 1)
             {
                 // It's a setter
                 Class<?> pType = m.getParameterTypes()[0];
@@ -1508,7 +1508,7 @@ public class AnnotationInfo
                     throw new IllegalArgumentException(annotation + " setter must take String or byte[]");
                 }
             }
-            else
+            else if (m.getParameterTypes().length == 0)
             {
                 Class<?> rType = m.getReturnType();
                 if (!(rType.isArray() && rType.getComponentType().equals(byte.class))
