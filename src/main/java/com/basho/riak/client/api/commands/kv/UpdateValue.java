@@ -49,6 +49,10 @@ import java.util.concurrent.TimeUnit;
  * object is then passed to your {@link com.basho.riak.client.api.commands.kv.UpdateValue.Update}
  * and the result stored back into Riak.
  * </p>
+ * <p>
+ * To create the mutation you wish to perform, you extend the 
+ * {@link com.basho.riak.client.api.commands.kv.UpdateValue.Update} class:
+ * </p>
  * <pre class="prettyprint">
  * {@code
  * class AppendUpdate extends UpdateValue.Update<MyPojo>
@@ -316,50 +320,8 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             return modified;
         }
 
-        /**
-         * Returns a no-op Update instance.
-         * <p>
-         * This can be used to simply resolve siblings that exist 
-         * in Riak without modifying the resolved object.
-         * <p>
-         * 
-         * @return An {@code Update} instance the does not modify anything.
-         */
-        public static <T> Update<T> noopUpdate()
-        {
-            return new Update<T>()
-            {
-                @Override
-                public T apply(T original)
-                {
-                    return original;
-                }
-            };
-        }
-        
-        /**
-         * Returns an Update that replaces whatever is in Riak.
-         * <p>
-         * This Update simply returns the supplied value, thus replacing 
-         * anything currently in Riak with that value.
-         * </p>
-         * @param newValue the obj to store in Riak.
-         * @return an Update instance.
-         */
-        public static <T> Update<T> clobberUpdate(final T newValue)
-        {
-            return new Update<T>()
-            {
-                @Override
-                public T apply(T original)
-                {
-                    return newValue;
-                }
-                
-            };
-        }
     }
-
+    
     /**
      * Used to construct an UpdateValue command.
      */
