@@ -36,7 +36,7 @@ import java.util.List;
  * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
- * ListKeys lk = ListKeys.Builder(ns).build();
+ * ListKeys lk = new ListKeys.Builder(ns).build();
  * ListKeys.Response response = client.execute(lk);
  * for (Location l : response)
  * {
