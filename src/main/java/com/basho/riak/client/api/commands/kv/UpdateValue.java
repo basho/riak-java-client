@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
@@ -468,17 +469,37 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         }
 
         @Override
-        public Response get() throws InterruptedException
+        public Response get() throws InterruptedException, ExecutionException
         {
             latch.await();
-            return updateResponse;
+            
+            if (exception != null)
+            {
+                throw new ExecutionException(exception);
+            }
+            else 
+            {
+                return updateResponse;
+            }
         }
 
         @Override
-        public Response get(long timeout, TimeUnit unit) throws InterruptedException
+        public Response get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
         {
-            latch.await(timeout, unit);
-            return updateResponse;
+            boolean succeed = latch.await(timeout, unit);
+            
+            if (!succeed)
+            {
+                throw new TimeoutException();
+            }
+            else if (exception != null)
+            {
+                throw new ExecutionException(exception);
+            }
+            else 
+            {
+                return updateResponse;
+            }
         }
 
         @Override
