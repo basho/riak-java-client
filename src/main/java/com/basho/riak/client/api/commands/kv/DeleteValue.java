@@ -37,7 +37,7 @@ import java.util.Map;
  * </p>
  * <p>
  * Note that this operation returns a {@code Void} type upon success. Any failure
- * will be thrown as an exception when calling {@DeleteValue} synchronously or
+ * will be thrown as an exception when calling {@code DeleteValue} synchronously or
  * when calling the future's get methods. 
  * </p>
  * <pre class="prettyprint">
