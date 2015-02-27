@@ -139,5 +139,73 @@ public class RiakClusterFixtureTest
         }
     }
     
+    @Test
+    public void testStateListener() throws UnknownHostException, InterruptedException, ExecutionException
+    {
+        List<RiakNode> list = new LinkedList<RiakNode>();
+        
+        for (int i = 5000; i < 8000; i += 1000)
+        {
+            RiakNode.Builder builder = new RiakNode.Builder()
+                                        .withMinConnections(10)
+                                        .withRemotePort(i + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN);
+            list.add(builder.build());
+        }
+        
+        RiakCluster cluster = new RiakCluster.Builder(list).build();
+        
+        StateListener listener = new StateListener();
+        cluster.registerNodeStateListener(listener);
+        
+        cluster.start();
+        
+        // Yeah, yeah, fragile ... whatever
+        Thread.sleep(3000);
+        
+        cluster.shutdown().get();
+        
+        
+        // Upon registering the initial node state of each node should be sent.
+        assertEquals(3, listener.stateCreated);
+        // All three nodes should go through all three states and notify.
+        assertEquals(3, listener.stateRunning);
+        assertEquals(3, listener.stateShuttingDown);
+        assertEquals(3, listener.stateShutdown);
+        
+        
+    }
+    
+    public static class StateListener implements NodeStateListener
+    {
+
+        public int stateCreated;
+        public int stateRunning;
+        public int stateShuttingDown;
+        public int stateShutdown;
+        
+        @Override
+        public void nodeStateChanged(RiakNode node, RiakNode.State state)
+        {
+            switch(state)
+            {
+                case CREATED:
+                    stateCreated++;
+                    break;
+                case RUNNING:
+                    stateRunning++;
+                    break;
+                case SHUTTING_DOWN:
+                    stateShuttingDown++;
+                    break;
+                case SHUTDOWN:
+                    stateShutdown++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+    }
+    
     
 }
