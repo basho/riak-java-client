@@ -30,10 +30,14 @@ import org.powermock.reflect.Whitebox;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -158,17 +162,14 @@ public class RiakNodeFixtureTest extends FixtureTest
                                .withIdleTimeout(1000)
                                .build();
         
-        NodeStateListener mockListener = mock(NodeStateListener.class);
+        StateListener listener = new StateListener(RiakNode.State.HEALTH_CHECKING);
         node.start();
-        node.addStateListener(mockListener);
+        node.addStateListener(listener);
         
         try
         {   
             fixture.shutdown();
-            // Heh, a future would sure be useful here
-            Thread.sleep(2000);
-
-            verify(mockListener).nodeStateChanged(node, RiakNode.State.HEALTH_CHECKING);
+            assertTrue(listener.get(10));
             assertEquals(node.getNodeState(), State.HEALTH_CHECKING);
 
             node.shutdown().get();
@@ -189,18 +190,19 @@ public class RiakNodeFixtureTest extends FixtureTest
                                .withIdleTimeout(1000)
                                .build();
         
-        NodeStateListener mockListener = mock(NodeStateListener.class);
+        StateListener listener = new StateListener(RiakNode.State.HEALTH_CHECKING);
         node.start();
-        node.addStateListener(mockListener);
+        node.addStateListener(listener);
         
         try
         {   
             fixture.shutdown();
         
-            Thread.sleep(2000);
-
-            verify(mockListener).nodeStateChanged(node, State.HEALTH_CHECKING);
+            assertTrue(listener.get(10));
             assertEquals(node.getNodeState(), State.HEALTH_CHECKING);
+            node.removeStateListener(listener);
+            listener = new StateListener(RiakNode.State.RUNNING);
+            node.addStateListener(listener);
 
         }
         finally
@@ -209,9 +211,7 @@ public class RiakNodeFixtureTest extends FixtureTest
             new Thread(fixture).start();
         }
         
-        Thread.sleep(1000);
-        
-        verify(mockListener).nodeStateChanged(node, State.RUNNING);
+        assertTrue(listener.get(10));
         assertEquals(node.getNodeState(), State.RUNNING);
         node.shutdown().get();
     }
@@ -277,14 +277,14 @@ public class RiakNodeFixtureTest extends FixtureTest
                         .build();
 
         node.start();
-        NodeStateListener mockListener = mock(NodeStateListener.class);
-        node.addStateListener(mockListener);
+        
+        StateListener listener = new StateListener(RiakNode.State.HEALTH_CHECKING);
+        node.addStateListener(listener);
         
         try
         {
             fixture.shutdown();
-            Thread.sleep(2000);
-            verify(mockListener).nodeStateChanged(node, RiakNode.State.HEALTH_CHECKING);
+            assertTrue(listener.get(10));
             assertEquals(RiakNode.State.HEALTH_CHECKING, node.getNodeState());
         }
         finally
@@ -294,6 +294,34 @@ public class RiakNodeFixtureTest extends FixtureTest
         }
         
         node.shutdown().get();
+        
+    }
+    
+    public static class StateListener implements NodeStateListener
+    {
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private final EnumSet<RiakNode.State> expected;
+        
+        
+        public StateListener(RiakNode.State... expected)
+        {
+            this.expected = EnumSet.copyOf(Arrays.asList(expected));
+        }
+        
+        @Override
+        public void nodeStateChanged(RiakNode node, State state)
+        {
+            expected.remove(state);
+            if (expected.size() == 0)
+            {
+                latch.countDown();
+            }
+        }
+        
+        public boolean get(int timeout) throws InterruptedException 
+        {
+            return latch.await(timeout, TimeUnit.SECONDS);
+        }
         
     }
     
