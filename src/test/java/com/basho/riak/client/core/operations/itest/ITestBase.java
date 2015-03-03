@@ -93,19 +93,19 @@ public abstract class ITestBase
          * 
          * You need to create a bucket type in Riak for YZ:
          * 
-         * riak-admin bucket-type create yz_search '{"props":{}}'
-         * riak-admin bucket-type activate yz_search
+         * riak-admin bucket-type create jvtest_yz_search '{"props":{}}'
+         * riak-admin bucket-type activate jvtest_yz_search
          */
-        yokozunaBucketType = BinaryValue.create("yz_search");
+        yokozunaBucketType = BinaryValue.create("jvtest_yz_search");
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
         
         /**
          * Bucket type
          * 
-         * you must create the type 'test_type' to use this:
-         * 
-         * riak-admin bucket-type create test_type '{"props":{}}'
-         * riak-admin bucket-type activate test_type
+         * you must create the type 'jvtest_test_type' to use this:
+         *
+         * riak-admin bucket-type create jvtest_test_type '{"props":{}}'
+         * riak-admin bucket-type activate jvtest_test_type
          */
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
         bucketType = BinaryValue.unsafeCreate("test_type".getBytes());
@@ -126,16 +126,16 @@ public abstract class ITestBase
          * create the following bucket types in your riak instance
          * with the corresponding bucket properties.
          *
-         * riak-admin bucket-type create maps '{"props":{"allow_mult":true, "datatype": "map"}}'
-         * riak-admin bucket-type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
-         * riak-admin bucket-type create counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
-         * riak-admin bucket-type activate maps
-         * riak-admin bucket-type activate sets
-         * riak-admin bucket-type activate counters
+         * riak-admin bucket-type create jvtest_maps '{"props":{"allow_mult":true, "datatype": "map"}}'
+         * riak-admin bucket-type create jvtest_sets '{"props":{"allow_mult":true, "datatype": "set"}}'
+         * riak-admin bucket-type create jvtest_counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
+         * riak-admin bucket-type activate jvtest_maps
+         * riak-admin bucket-type activate jvtest_sets
+         * riak-admin bucket-type activate jvtest_counters
          */
-        counterBucketType = BinaryValue.create("counters");
-        setBucketType = BinaryValue.create("sets");
-        mapBucketType = BinaryValue.create("maps");
+        counterBucketType = BinaryValue.create("jvtest_counters");
+        setBucketType = BinaryValue.create("jvtest_sets");
+        mapBucketType = BinaryValue.create("jvtest_maps");
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
 
         RiakNode.Builder builder = new RiakNode.Builder()
