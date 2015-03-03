@@ -13,14 +13,16 @@ preconfigure:
 	echo "ssl.cacertfile = ${CERTS_DIR}/cacert.pem" >> ${RIAK_CONF}
 
 configure:
-	${RIAK_ADMIN} bucket-type create test_type '{"props":{}}'
-	${RIAK_ADMIN} bucket-type create counters '{"props":{"datatype":"counter"}}'
-	${RIAK_ADMIN} bucket-type create sets '{"props":{"datatype":"set"}}'
-	${RIAK_ADMIN} bucket-type create maps '{"props":{"datatype":"map"}}'
-	${RIAK_ADMIN} bucket-type activate test_type
-	${RIAK_ADMIN} bucket-type activate counters
-	${RIAK_ADMIN} bucket-type activate sets
-	${RIAK_ADMIN} bucket-type activate maps
+	${RIAK_ADMIN} bucket-type create jvtest_yz_search '{"props":{}}'
+	${RIAK_ADMIN} bucket-type create jvtest_test_type '{"props":{}}'
+	${RIAK_ADMIN} bucket-type create jvtest_counters '{"props":{"datatype":"counter"}}'
+	${RIAK_ADMIN} bucket-type create jvtest_sets '{"props":{"datatype":"set"}}'
+	${RIAK_ADMIN} bucket-type create jvtest_maps '{"props":{"datatype":"map"}}'
+	${RIAK_ADMIN} bucket-type activate jvtest_yz_search
+	${RIAK_ADMIN} bucket-type activate jvtest_test_type
+	${RIAK_ADMIN} bucket-type activate jvtest_counters
+	${RIAK_ADMIN} bucket-type activate jvtest_sets
+	${RIAK_ADMIN} bucket-type activate jvtest_maps
 
 compile:
 	@cd ..; mvn clean compile
