@@ -17,17 +17,22 @@
 package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.util.concurrent.DefaultPromise;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +42,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class HealthCheckDecoder extends ByteToMessageDecoder 
 {
-    private volatile CountDownLatch promiseLatch = new CountDownLatch(1);
     private final Logger logger = LoggerFactory.getLogger(HealthCheckDecoder.class);
-    private volatile DefaultPromise<RiakMessage> promise;
+    private final HealthCheckFuture future = new HealthCheckFuture();
     
     protected abstract FutureOperation<?,?,?> buildOperation();
     
@@ -67,23 +71,20 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
                 if (code == RiakMessageCodes.MSG_ErrorResp)
                 {
                     logger.debug("Received MSG_ErrorResp reply to healthcheck");
-                    promise.tryFailure((riakErrorToException(protobuf)));
+                    future.setException((riakErrorToException(protobuf)));
                 }
                 else
                 {
                     logger.debug("Healthcheck op successful; returned code {}", code);
-                    promise.trySuccess(new RiakMessage(code,protobuf));
+                    future.setMessage(new RiakMessage(code,protobuf));
                 }
             }
         }
     }
     
-    private void init(ChannelHandlerContext ctx)
+    private void init(ChannelHandlerContext ctx) throws InterruptedException
     {
-        promise = new DefaultPromise<RiakMessage>(ctx.executor());
-        
-        promiseLatch.countDown();
-        ctx.channel().writeAndFlush(buildOperation().channelMessage());
+        ChannelFuture writeAndFlush = ctx.channel().writeAndFlush(buildOperation().channelMessage());
     }
     
     @Override
@@ -93,6 +94,10 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         if (ctx.channel().isActive())
         {
             init(ctx);
+        }
+        else
+        {
+            future.setException(new IOException("HealthCheckDecoder added to inactive channel"));
         }
     }
     
@@ -105,7 +110,8 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
-        promise.tryFailure(new IOException("Channel closed while performing health check op."));
+        logger.debug("Healthcheck channel went inactive");
+        future.setException(new IOException("Channel closed while performing health check op."));
         ctx.fireChannelInactive();
     }
     
@@ -113,12 +119,11 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception 
     {
-        promise.tryFailure(new IOException("Exception in channel while performing health check op.", cause));
+        future.setException(new IOException("Exception in channel while performing health check op.", cause));
     }
     
-    public DefaultPromise<RiakMessage> getPromise() throws InterruptedException {
-        promiseLatch.await();
-        return promise;
+    public RiakFuture<RiakMessage, Void> getFuture() {
+        return future;
     }
     
     private RiakResponseException riakErrorToException(byte[] protobuf)
@@ -132,5 +137,125 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         {
             return null;
         }
+    }
+    
+    public static class HealthCheckFuture implements RiakFuture<RiakMessage, Void>
+    {
+
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private volatile Throwable exception;
+        private volatile RiakMessage message;
+        
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isDone()
+        {
+            return latch.getCount() != 1;
+        }
+
+        @Override
+        public RiakMessage get() throws InterruptedException, ExecutionException
+        {
+            latch.await();
+
+            if (exception != null)
+            {
+                throw new ExecutionException(exception);
+            }
+            else
+            {
+                return message;
+            }
+        }
+
+        @Override
+        public RiakMessage get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
+        {
+            boolean succeed = latch.await(timeout, unit);
+            if (!succeed)
+            {
+                throw new TimeoutException();
+            }
+            else if (exception != null)
+            {
+                throw new ExecutionException(exception);
+            }
+            else
+            {
+                return message;
+            }
+        }
+        
+        public void setException(Throwable e)
+        {
+            exception = e;
+            latch.countDown();
+        }
+        
+        public void setMessage(RiakMessage m)
+        {
+            message = m;
+            latch.countDown();
+        }
+
+        @Override
+        public void await() throws InterruptedException
+        {
+            latch.await();
+        }
+
+        @Override
+        public void await(long timeout, TimeUnit unit) throws InterruptedException
+        {
+            latch.await(timeout, unit);
+        }
+
+        @Override
+        public RiakMessage getNow()
+        {
+            return message;
+        }
+
+        @Override
+        public boolean isSuccess()
+        {
+            return isDone() && exception == null;
+        }
+
+        @Override
+        public Throwable cause()
+        {
+            return exception;
+        }
+
+        @Override
+        public Void getQueryInfo()
+        {
+            return null;
+        }
+
+        @Override
+        public void addListener(RiakFutureListener<RiakMessage, Void> listener)
+        {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void removeListener(RiakFutureListener<RiakMessage, Void> listener)
+        {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
     }
 }

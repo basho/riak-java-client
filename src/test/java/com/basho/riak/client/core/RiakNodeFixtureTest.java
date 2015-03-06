@@ -22,10 +22,6 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import io.netty.channel.Channel;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import java.io.IOException;
@@ -43,30 +39,28 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(RiakNode.class)
 public class RiakNodeFixtureTest extends FixtureTest
 {
     
     @Test
     public void closedConnectionsTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
     {
-        RiakNode node = PowerMockito.spy(new RiakNode.Builder()
+        RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
                                .withMinConnections(10)
-                               .build());
+                               .build();
+        StateListener listener = new StateListener(RiakNode.State.HEALTH_CHECKING);
         node.start();
-        Thread.sleep(3000);
-        node.shutdown();
+        node.addStateListener(listener);
+        assertTrue(listener.get(10));
+        node.shutdown().get();
         
-        PowerMockito.verifyPrivate(node, atLeastOnce()).invoke("checkHealth", new Object[0]);
         
     }
     
@@ -79,9 +73,10 @@ public class RiakNodeFixtureTest extends FixtureTest
                                .withConnectionTimeout(10)
                                .build();
         
+        StateListener listener = new StateListener(RiakNode.State.HEALTH_CHECKING);
+        node.addStateListener(listener);
         node.start();
-        Thread.sleep(3000);
-        assertEquals(State.HEALTH_CHECKING, node.getNodeState());
+        assertTrue(listener.get(10));
         node.shutdown().get();
     }
         
@@ -94,6 +89,8 @@ public class RiakNodeFixtureTest extends FixtureTest
                         .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_ERROR_STAY_OPEN)
                         .build();
         
+        StateListener listener = new StateListener(RiakNode.State.HEALTH_CHECKING);
+        node.addStateListener(listener);
         node.start();
         
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
@@ -111,8 +108,7 @@ public class RiakNodeFixtureTest extends FixtureTest
             assertFalse(operation.isSuccess());
         }
         
-        Thread.sleep(2000);
-        assertEquals(State.HEALTH_CHECKING, node.getNodeState());
+        assertTrue(listener.get(10));
         node.shutdown().get();
     }
     
@@ -199,7 +195,6 @@ public class RiakNodeFixtureTest extends FixtureTest
             fixture.shutdown();
         
             assertTrue(listener.get(10));
-            assertEquals(node.getNodeState(), State.HEALTH_CHECKING);
             node.removeStateListener(listener);
             listener = new StateListener(RiakNode.State.RUNNING);
             node.addStateListener(listener);
