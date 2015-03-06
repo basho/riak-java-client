@@ -30,6 +30,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Promise;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1046,62 +1047,56 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    private void checkHealth()
+        private void checkHealth()
     {
         try
         {
             HealthCheckDecoder healthCheck = healthCheckFactory.makeDecoder();
+            RiakFuture<RiakMessage, Void> future = healthCheck.getFuture();
             // See: doGetConnection() - this will purge closed
             // connections from the available queue and either 
             // return/create a new one (meaning the node is up) or throw
             // an exception if a connection can't be made.
             Channel c = doGetConnection();
+            logger.debug("Healthcheck channel: {} isOpen: {} handlers:{}", c.hashCode(), c.isOpen(), c.pipeline().names());
 
-            Promise<RiakMessage> promise;
             
-            if (c.pipeline().names().contains(Constants.SSL_HANDLER))
-            {
-                c.pipeline().addAfter(Constants.SSL_HANDLER, Constants.HEALTHCHECK_CODEC, healthCheck);
-            }
-            else
-            {
-                c.pipeline().addBefore(Constants.MESSAGE_CODEC, Constants.HEALTHCHECK_CODEC, healthCheck);
-            }
-            logger.debug("healthCheck added to pipeline.");
+            
+            // If the channel closes between when we got it and now, the pipeline is emptied. If the handlers
+            // aren't there we fail the healthcheck
             
             try
             {
-                promise = healthCheck.getPromise();
-                promise.await();
-                if (promise.isSuccess())
+                if (c.pipeline().names().contains(Constants.SSL_HANDLER))
                 {
-                    if (state == State.HEALTH_CHECKING)
-                    {
-                        logger.info("RiakNode recovered; {}:{}", remoteAddress, port);
-                        state = State.RUNNING;
-                        notifyStateListeners();
-                    }
+                    c.pipeline().addAfter(Constants.SSL_HANDLER, Constants.HEALTHCHECK_CODEC, healthCheck);
+                }
+                else 
+                {
+                    c.pipeline().addBefore(Constants.MESSAGE_CODEC, Constants.HEALTHCHECK_CODEC, healthCheck);
+                }
+                
+                logger.debug("healthCheck added to pipeline.");
+                
+                //future.await(5, TimeUnit.SECONDS);
+                future.await();
+                if (future.isSuccess())
+                {
+                    healthCheckSucceeded();
                 }
                 else
                 {
-                    if (state == State.RUNNING)
-                    {
-                        logger.error("RiakNode failed healthcheck operation; health checking; {}:{} {}",
-                            remoteAddress, port, promise.cause());
-                        state = State.HEALTH_CHECKING;
-                        notifyStateListeners();
-                    }
-                    else
-                    {
-                        logger.error("RiakNode failed healthcheck operation; {}:{} {}",
-                            remoteAddress, port, promise.cause());
-                    }
+                    healthCheckFailed(future.cause());
                 }
                 
             }
             catch (InterruptedException ex)
             {
                 logger.error("Thread interrupted performing healthcheck.");
+            }
+            catch (NoSuchElementException e)
+            {
+                healthCheckFailed(new IOException("Channel closed during health check"));
             }
             finally
             {
@@ -1110,28 +1105,45 @@ public class RiakNode implements RiakResponseListener
         }
         catch (ConnectionFailedException ex)
         {
-            if (state == State.RUNNING)
-            {
-                logger.error("RiakNode connection failed; health checking; {}:{} {}",
-                    remoteAddress, port, ex);
-                state = State.HEALTH_CHECKING;
-                notifyStateListeners();
-            }
-            else
-            {
-                logger.error("RiakNode connection failed during healthcheck; {}:{} {}",
-                    remoteAddress, port, ex);
-            }
+            healthCheckFailed(ex);
         }
         catch (IllegalStateException e)
         {
             // no-op; there's a race condition where the bootstrap is shutting down
             // right when a healthcheck occurs and netty will throw this
             logger.debug("Illegal state exception during healthcheck.");
+            logger.debug("Stack: {}", e);
         }
         catch (RuntimeException e)
         {
             logger.error("Runtime exception during healthcheck: {}",e);
+        }
+        
+    }
+
+    private void healthCheckFailed(Throwable cause)
+    {
+        if (state == State.RUNNING)
+        {
+            logger.error("RiakNode failed healthcheck operation; health checking; {}:{} {}",
+                remoteAddress, port, cause);
+            state = State.HEALTH_CHECKING;
+            notifyStateListeners();
+        }
+        else
+        {
+            logger.error("RiakNode failed healthcheck operation; {}:{} {}",
+                remoteAddress, port, cause);
+        }
+    }
+    
+    private void healthCheckSucceeded()
+    {
+        if (state == State.HEALTH_CHECKING)
+        {
+            logger.info("RiakNode recovered; {}:{}", remoteAddress, port);
+            state = State.RUNNING;
+            notifyStateListeners();
         }
     }
 
