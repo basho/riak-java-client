@@ -24,9 +24,11 @@ import com.basho.riak.client.api.commands.kv.FetchValue.Option;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.annotations.RiakVClock;
+import com.basho.riak.client.api.cap.DefaultResolver;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.api.convert.JSONConverter;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -205,8 +207,13 @@ public class ITestFetchValue extends ITestBase
         FetchValue.Response fResp = client.execute(fv);
          
         assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
-
         
+        JSONConverter<Pojo> converter = new JSONConverter<Pojo>(Pojo.class);
+        ConflictResolver<Pojo> resolver = new DefaultResolver<Pojo>();
+        
+        assertEquals(pojo.value, fResp.getValues(converter).get(0).value);
+        assertEquals(pojo.value, fResp.getValue(converter, resolver).value);
+
     }
     
     @Test

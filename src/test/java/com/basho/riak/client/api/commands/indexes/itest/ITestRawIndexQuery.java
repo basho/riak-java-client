@@ -27,8 +27,11 @@ import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.api.commands.indexes.RawIndexQuery;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertArrayEquals;
@@ -77,6 +80,69 @@ public class ITestRawIndexQuery extends ITestBase
         
     }
     
+    @Test
+    public void testKeyIndexHack() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        RiakClient client = new RiakClient(cluster);
+        
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        
+        for (long i = 0; i < 100; i++)
+        {
+            RiakObject obj = new RiakObject().setValue(BinaryValue.create("some_value"));
+
+            Location location = new Location(ns, "my_key" + i);
+            StoreOperation storeOp =
+                    new StoreOperation.Builder(location)
+                            .withContent(obj)
+                            .build();
+
+            cluster.execute(storeOp);
+            storeOp.get();
+        }
+        
+        RawIndexQuery biq  =
+            new RawIndexQuery.Builder(ns, "$key", Type._KEY, BinaryValue.create("my_key10"), BinaryValue.create("my_key19"))
+                .withKeyAndIndex(true).build();
+        RawIndexQuery.Response iResp = client.execute(biq);
+        assertTrue(iResp.hasEntries());
+        assertEquals(iResp.getEntries().size(), 10);
+        
+        
+    }
+    
+    @Test
+    public void testBucketIndexHack() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        RiakClient client = new RiakClient(cluster);
+        
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        
+        for (long i = 0; i < 100; i++)
+        {
+            RiakObject obj = new RiakObject().setValue(BinaryValue.create("some_value"));
+
+            Location location = new Location(ns, "my_key" + i);
+            StoreOperation storeOp =
+                    new StoreOperation.Builder(location)
+                            .withContent(obj)
+                            .build();
+
+            cluster.execute(storeOp);
+            storeOp.get();
+        }
+        
+        RawIndexQuery biq  =
+            new RawIndexQuery.Builder(ns, "$bucket", Type._BUCKET, bucketName)
+                .withKeyAndIndex(true).build();
+        
+        RawIndexQuery.Response iResp = client.execute(biq);
+        assertTrue(iResp.hasEntries());
+        assertEquals(100, iResp.getEntries().size());
+        
+    }
     
     
     public static class IndexedPojo

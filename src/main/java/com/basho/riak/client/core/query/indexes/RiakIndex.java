@@ -360,6 +360,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
         
         protected Name(String name, IndexType type)
         {
+            name = name.toLowerCase();
             this.name = stripSuffix(name, type);
             this.type = type;
         }

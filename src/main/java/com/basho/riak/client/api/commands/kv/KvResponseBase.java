@@ -127,6 +127,59 @@ abstract class KvResponseBase
     }
 
     /**
+     * Get all the objects returned in this response.
+     * <p>
+     * If siblings were present in Riak for the object you were fetching, 
+     * this method will return all of them to you.
+     * </p>
+     * <p>
+     * The values will be converted to an object using the supplied
+     * {@link com.basho.riak.client.api.convert.Converter} rather than one 
+     * registered with the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * </p>
+     * @param converter The converter to use.
+     * @return a list of values, converted to the supplied class.
+     * @see Converter
+     */ 
+    public <T> List<T> getValues(Converter<T> converter)
+    {
+        return convertValues(converter);
+    }
+    
+    /**
+     * Get a single, resolved object from this response.
+     * <p>
+     * The values will be converted to objects using the supplied
+     * {@link com.basho.riak.client.api.convert.Converter} rather than one registered 
+     * with the {@link com.basho.riak.client.api.convert.ConverterFactory}. 
+     * </p>
+     * <p>If there are multiple 
+     * values present (siblings), they will then be resolved using the supplied
+     * {@link com.basho.riak.client.api.cap.ConflictResolver} rather than one 
+     * registered with the {@link com.basho.riak.client.api.cap.ConflictResolverFactory}.  
+     * </p>
+     * @param converter The converter to use.
+     * @param resolver The conflict resolver to use. 
+     * @return the single, resolved value.
+     * @throws UnresolvedConflictException if the resolver fails to resolve siblings.
+     * @see Converter
+     * @see ConflictResolver
+     */ 
+    public <T> T getValue(Converter<T> converter, ConflictResolver<T> resolver) throws UnresolvedConflictException
+    {
+        List<T> convertedValues = convertValues(converter);
+        T resolved = resolver.resolve(convertedValues);
+        
+        if (hasValues() && resolved != null)
+        {
+            VClock vclock = values.get(0).getVClock();
+            AnnotationUtil.setVClock(resolved, vclock);
+        }
+        
+        return resolved;
+    }
+    
+    /**
      * Get a single, resolved object from this response.
      * <p>
      * The values will be converted to the supplied class using the 

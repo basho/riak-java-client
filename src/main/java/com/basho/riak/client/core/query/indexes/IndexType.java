@@ -35,7 +35,15 @@ public enum IndexType
     /**
      * Encapsulates the {@code "_bin"} suffix for Riak index names.
      */
-    BIN("_bin");
+    BIN("_bin"),
+    /**
+     * Used for the special $bucket index
+     */
+    BUCKET(""),
+    /**
+     * Used for the special $key index
+     */
+    KEY("");
     
     private final String suffix;
     
@@ -68,19 +76,30 @@ public enum IndexType
      */
     public static IndexType typeFromFullname(String fullname)
     {
-        int i = fullname.lastIndexOf('_');
-        if (i != -1)
+        if (fullname.equalsIgnoreCase("$bucket"))
         {
-            String suffix = fullname.substring(i);
-            for (IndexType t : IndexType.values())
+            return IndexType.BUCKET;
+        }
+        else if (fullname.equalsIgnoreCase("$key"))
+        {
+            return IndexType.KEY;
+        }
+        else
+        {
+            int i = fullname.lastIndexOf('_');
+            if (i != -1)
             {
-                if (t.suffix().equalsIgnoreCase(suffix))
+                String suffix = fullname.substring(i);
+                for (IndexType t : IndexType.values())
                 {
-                    return t;
+                    if (t.suffix().equalsIgnoreCase(suffix))
+                    {
+                        return t;
+                    }
                 }
             }
-        }
 
-        throw new IllegalArgumentException("Indexname does not end with valid suffix");
+            throw new IllegalArgumentException("Indexname does not end with valid suffix");
+        }
     }
 }

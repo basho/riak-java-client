@@ -61,9 +61,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
              * list of object keys and you have to have
              * preserved the index key if you want to return it to the user
              * with the results. 
+             * 
+             * Also, the $key index queries just ignore return_terms altogether.
              */
             
-            if (pbReq.getReturnTerms())
+            if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase("$key"))
             {
                 if (pbReq.hasRangeMin())
                 {
