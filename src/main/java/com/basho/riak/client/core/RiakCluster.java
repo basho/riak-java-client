@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,6 +56,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final ReentrantReadWriteLock nodeListLock = new ReentrantReadWriteLock();
     private final LinkedBlockingQueue<FutureOperation> retryQueue =
         new LinkedBlockingQueue<FutureOperation>();
+    private final List<NodeStateListener> stateListeners =
+        Collections.synchronizedList(new LinkedList<NodeStateListener>());
     
     
     private volatile ScheduledFuture<?> shutdownFuture;
@@ -215,6 +219,10 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             nodeListLock.writeLock().lock();
             nodeList.add(node);
+            for (NodeStateListener listener : stateListeners)
+            {
+                node.addStateListener(listener);
+            }
         }
         finally
         {
@@ -237,6 +245,10 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             nodeListLock.writeLock().lock();
             removed = nodeList.remove(node);
+            for (NodeStateListener listener : stateListeners)
+            {
+                node.removeStateListener(listener);
+            }
         }
         finally
         {
@@ -326,6 +338,62 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     {
         FutureOperation operation = retryQueue.take();
         execute(operation, operation.getLastNode());
+    }
+    
+    /**
+     * Register a NodeStateListener.
+     * <p>
+     * Any state change by any of the nodes in the cluster will be sent to 
+     * the registered NodeStateListener. 
+     * </p>
+     * <p>When registering, the current state of all the nodes is sent to the
+     * listener.
+     * </p>
+     * @param listener The NodeStateListener to register.
+     */
+    public void registerNodeStateListener(NodeStateListener listener)
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        try
+        {
+            stateListeners.add(listener);
+            nodeListLock.readLock().lock();
+            for (RiakNode node : nodeList)
+            {
+                node.addStateListener(listener);
+                listener.nodeStateChanged(node, node.getNodeState());
+            }
+        }
+        finally
+        {
+            nodeListLock.readLock().unlock();
+        }
+    }
+    
+    /**
+     * Remove a NodeStateListener.
+     * <p>
+     * The supplied NodeStateListener will be unregistered and no longer
+     * receive state updates.
+     * </p>
+     * @param listener The NodeStateListener to unregister. 
+     */
+    public void removeNodeStateListener(NodeStateListener listener)
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        try
+        {
+            stateListeners.remove(listener);
+            nodeListLock.readLock().lock();
+            for (RiakNode node : nodeList)
+            {
+                node.removeStateListener(listener);
+            }
+        }
+        finally
+        {
+            nodeListLock.readLock().unlock();
+        }
     }
     
     private class RetryTask implements Runnable

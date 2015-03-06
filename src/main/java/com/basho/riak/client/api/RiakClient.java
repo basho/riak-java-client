@@ -323,4 +323,16 @@ public class RiakClient
 	{
 		return cluster.shutdown();
 	}
+    
+    /**
+     * Get the RiakCluster being used by this client.
+     * <p>
+     * Allows for adding/removing nodes, etc.
+     * </p>
+     * @return The RiakCluster instance being used by this client.
+     */
+    public RiakCluster getRiakCluster()
+    {
+        return cluster;
+    }
 }
