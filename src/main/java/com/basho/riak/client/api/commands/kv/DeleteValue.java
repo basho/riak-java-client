@@ -34,19 +34,25 @@ import java.util.Map;
  * <p>
  * Deleting an object from Riak is a simple matter of supplying a {@link com.basho.riak.client.core.query.Location}
  * and executing the operation.
+ * </p>
+ * <p>
+ * Note that this operation returns a {@code Void} type upon success. Any failure
+ * will be thrown as an exception when calling {@code DeleteValue} synchronously or
+ * when calling the future's get methods. 
+ * </p>
  * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");
  * DeleteValue dv = new DeleteValue.Builder(loc).build();
- * DeleteValue.Response resp = client.execute(dv);}</pre>
+ * client.execute(dv);}</pre>
  * </p>
  * <p>
  * All operations can called async as well.
  * <pre class="prettyprint">
  * {@code
  * ...
- * RiakFuture<DeleveValue.Response, Location> future = client.executeAsync(dv);
+ * RiakFuture<Void, Location> future = client.executeAsync(dv);
  * ...
  * future.await();
  * if (future.isSuccess())
