@@ -108,7 +108,7 @@ public abstract class ITestBase
          * riak-admin bucket-type activate jvtest_test_type
          */
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
-        bucketType = BinaryValue.unsafeCreate("test_type".getBytes());
+        bucketType = BinaryValue.unsafeCreate("jvtest_test_type".getBytes());
         
         /**
          * Secondary indexes
