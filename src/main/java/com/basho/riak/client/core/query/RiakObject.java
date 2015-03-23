@@ -298,14 +298,22 @@ public final class RiakObject
      * @return the {@link RiakIndexes} that encapsulates any/all indexes for this RiakObject
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
-    public synchronized RiakIndexes getIndexes()
+    public RiakIndexes getIndexes()
     {
         // Lazy initialization of the internal container.
-        if (null == riakIndexes)
+        RiakIndexes result = this.riakIndexes;
+        if (null == result)
         {
-            riakIndexes = new RiakIndexes();
+            synchronized(this)
+            {
+                result = this.riakIndexes;
+                if(null == result)
+                {
+                    this.riakIndexes = result = new RiakIndexes();
+                }
+            }
         }
-        return riakIndexes;
+        return result;
     }
     
     // Links
@@ -325,15 +333,23 @@ public final class RiakObject
      * are directly applied to this <code>RiakObject</code>.
      * @return the {@link RiakIndexes} that encapsulates all/any links for this {@code RiakObject}
      */
-    public synchronized RiakLinks getLinks()
+    public RiakLinks getLinks()
     {
-        // Lazy initialization of container
-        if (null == links)
+        // Lazy initialization of comtainer
+        RiakLinks result = this.links;
+        if (null == result)
         {
-            links = new RiakLinks();
+            synchronized (this)
+            {
+                result = this.links;
+                if(null == result)
+                {
+                    this.links = result = new RiakLinks();
+                }
+            }
         }
         
-        return links;
+        return result;
     }
     
     // User Meta
@@ -355,15 +371,21 @@ public final class RiakObject
      * are directly applied to this <code>RiakObject</code>.
      * @return the {@code RiakUserMetadata} that containsKeyKey any/all User Meta entries for this {@code RiakObject}
      */
-    public synchronized RiakUserMetadata getUserMeta()
+    public RiakUserMetadata getUserMeta()
     {
-        // Lazy initialization of container. 
-        if (null == userMeta)
+        // Lazy initialization of container.
+        RiakUserMetadata result = this.userMeta;
+        if (null == result)
         {
-            userMeta = new RiakUserMetadata();
+            synchronized (this)
+            {
+                result = this.userMeta;
+                if(null == result) {
+                    this.userMeta = result = new RiakUserMetadata();
+                }
+            }
         }
-        
-        return userMeta;
+        return result;
     }
     
     /**
