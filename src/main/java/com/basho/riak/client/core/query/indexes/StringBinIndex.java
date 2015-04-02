@@ -64,7 +64,7 @@ public class StringBinIndex extends RiakIndex<String>
         return value.toString(charset);
     }
     
-    public static RiakIndex.Name<StringBinIndex> named(String name)
+    public static Name named(String name)
     {
         return named(name, Charset.defaultCharset());
     }
