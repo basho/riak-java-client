@@ -76,15 +76,48 @@ public abstract class ITestBase
         
         /**
          * Riak security.
+         *
+         * If you want to test SSL/AUTH, you need to:
+         *  1) configure riak with the certs included in test/resources
+         *      ssl.certfile = $(platform_etc_dir)/cert.pem
+         *      ssl.keyfile = $(platform_etc_dir)/key.pem
+         *      ssl.cacertfile = $(platform_etc_dir)/cacert.pem
+         *
+         *  2) create a user "riak_cert_user" with the password "riak_cert_user" and configure it with certificate as a source
+         *      riak-admin security add-user riak_cert_user password=riak_cert_user
+         *      riak-admin security add-source riak_cert_user 0.0.0.0/0 certificate
+         *
+         *  3) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
+         *      riak-admin security add-user riak_trust_user password=riak_trust_user
+         *      riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
+         *
+         *  4) create a user "riak_passwd_user" with the password "riak_passwd_user" and configure it with password as a source
+         *      riak-admin security add-user riak_passwd_user password=riak_passwd_user
+         *      riak-admin security add-source riak_passwd_user 0.0.0.0/0 password
          * 
-         * If you want to test SSL/AUTH you need to:
-         *  1) configure riak with the certs included in test/resources and 
-         *  2) create a user "tester" with the password "tester"
-         *  3) grant all permissions to tester on any:
-         *     riak-admin security grant riak_kv.get,riak_kv.put,riak_kv.delete,riak_kv.index,riak_kv.list_keys,riak_kv.list_buckets,riak_core.get_bucket,riak_core.set_bucket,riak_core.get_bucket_type,riak_core.set_bucket_type ON ANY TO tester
+         *      grant all permissions to tester on any:
+         *      riak-admin security grant riak_kv.get,riak_kv.put,riak_kv.delete,riak_kv.index,riak_kv.list_keys,riak_kv.list_buckets,riak_core.get_bucket,riak_core.set_bucket,riak_core.get_bucket_type,riak_core.set_bucket_type,riak_kv.mapreduce on any to riak_passwd_user
          * 
-         *  You can override the default cert included in resources using -Dcom.basho.riak.secutiry.cacert=file
+         *  5) Import cacert.pem and cert.pem as a Trusted Certs in truststore.jks
+         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore truststore.jks -file cacert.pem -alias cacert -storepass riak123
+         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore truststore.jks -file cert.pem -alias servercert -storepass riak123
+         * 
+         *  6) For Certificate Based Authentication, create user certificate and sign it using cacert.pem
+         *      openssl genrsa -out riak_cert_user_key.pem 2048
+         *      openssl req -new -key riak_cert_user_key.pem -out riak_cert_user.csr -subj "/C=US/ST=New York/L=Metropolis/O=The Sample Company/OU=rjc test/CN=riak_cert_user/emailAddress=riak_cert_user@basho.com"
+         *
+         *      #Sign the cert with CA.
+         *      openssl x509 -req -days 3650 -in riak_cert_user.csr -CA cacert.pem -CAkey cacert.key -CAcreateserial -out riak_cert_user_cert.pem
+         *
+         *      openssl pkcs8 -topk8 -inform PEM -outform PEM -in riak_cert_user_key.pem -out riak_cert_user_key_pkcs8.pem -nocrypt
+         *      
+         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore riak_cert_user.jks -file cacert.pem -alias cacert -storepass riak123
+         *      $JAVA_HOME/bin/keytool -import -keystore riak_cert_user.jks -file riak_cert_user.pem -alias riak_cert_user -storepass riak123 -keypass riak_cert_user
+         *
+         *  7) Run the Test suit
          */
+        
+        
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         overrideCert = System.getProperty("com.basho.riak.security.cacert");
         

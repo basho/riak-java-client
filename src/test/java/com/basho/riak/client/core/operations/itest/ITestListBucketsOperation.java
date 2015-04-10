@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -151,7 +152,7 @@ public class ITestListBucketsOperation extends ITestBase
             cluster.execute(storeOp);
         }
         
-        latch.await();
+        latch.await(2, TimeUnit.MINUTES);
         
         ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                                         .withBucketType(BinaryValue.createFromUtf8(bucketType))
