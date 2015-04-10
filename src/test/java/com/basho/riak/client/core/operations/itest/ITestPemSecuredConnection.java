@@ -8,9 +8,13 @@ import org.powermock.reflect.Whitebox;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
+import org.junit.Assume;
 
 public class ITestPemSecuredConnection {
 
+    private static boolean security;
+    private static boolean securityClientCert;
+    
     @BeforeClass
     public static void setUp() {
 
@@ -46,10 +50,14 @@ public class ITestPemSecuredConnection {
          *
          *  6) Run the Test suit
          */
+        security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
+        securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
+
     }
 
     @Test
     public void testCetificateBasedAuthentication() throws Exception {
+        Assume.assumeTrue(securityClientCert);
         RiakCluster cluster = RiakPemConnection.getRiakCluster("riak_cert_user","riak_cert_user","riak_cert_user_key_pkcs8.pem", "riak_cert_user_cert.pem");
 
         for (RiakNode node : cluster.getNodes()){
@@ -61,6 +69,7 @@ public class ITestPemSecuredConnection {
 
     @Test
     public void testTrustBasedAuthentication() throws Exception {
+        Assume.assumeTrue(security);
         RiakCluster cluster = RiakPemConnection.getRiakCluster("riak_trust_user","riak_trust_user");
 
         for (RiakNode node : cluster.getNodes()){
@@ -72,6 +81,7 @@ public class ITestPemSecuredConnection {
 
     @Test
     public void testPasswordBasedAuthentication() throws Exception {
+        Assume.assumeTrue(security);
         RiakCluster cluster = RiakPemConnection.getRiakCluster("riak_passwd_user","riak_passwd_user");
 
         for (RiakNode node : cluster.getNodes()){
