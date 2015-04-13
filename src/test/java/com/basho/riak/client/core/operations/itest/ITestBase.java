@@ -68,6 +68,7 @@ public abstract class ITestBase
     protected static BinaryValue bucketType;
     protected static BinaryValue yokozunaBucketType;
     protected static String overrideCert;
+    protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
 
     @BeforeClass
     public static void setUp() throws UnknownHostException, FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
@@ -171,8 +172,16 @@ public abstract class ITestBase
         mapBucketType = BinaryValue.create("jvtest_maps");
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
 
+        /**
+         * Riak PBC port
+         *
+         * In case you want/need to use a custom PBC port you may pass it by using the following system property
+         */
+        final int testRiakPort = Integer.getInteger("com.basho.riak.pbсport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+
         RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withMinConnections(10);
+                                        .withRemotePort(testRiakPort)
+                                        .withMinConnections(NUMBER_OF_PARALLEL_REQUESTS);
 
         if (security)
         {
@@ -212,7 +221,7 @@ public abstract class ITestBase
         resetAndEmptyBucket(bucketName);
         if (testBucketType)
         {
-            resetAndEmptyBucket(new Namespace(bucketType, bucketName));
+            resetAndEmptyBucket(defaultNamespace());
         }
     }
     
@@ -236,14 +245,10 @@ public abstract class ITestBase
         ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
         List<BinaryValue> keyList = keysOp.get().getKeys();
-        final int totalKeys = keyList.size();
-        final Semaphore semaphore = new Semaphore(10);
-        final CountDownLatch latch = new CountDownLatch(1);
+        final Semaphore semaphore = new Semaphore(NUMBER_OF_PARALLEL_REQUESTS);
+        final CountDownLatch latch = new CountDownLatch(keyList.size());
         
         RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
-
-            private final AtomicInteger received = new AtomicInteger();
-            
             @Override
             public void handle(RiakFuture<Void, Location> f)
             {
@@ -251,21 +256,16 @@ public abstract class ITestBase
                 {
                     f.get();
                 }
-                catch (InterruptedException ex)
+                catch (Exception ex)
                 {
+                    if (ex instanceof RuntimeException)
+                    {
+                        throw (RuntimeException)ex;
+                    }
                     throw new RuntimeException(ex);
                 }
-                catch (ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
-                
                 semaphore.release();
-                received.incrementAndGet();
-                if (received.intValue() == totalKeys)
-                {
-                    latch.countDown();
-                }
+                latch.countDown();
             }
             
         };
@@ -280,11 +280,8 @@ public abstract class ITestBase
             cluster.execute(delOp);
         }
 
-        if (!keyList.isEmpty())
-        {
-            latch.await();
-        }
-        
+        latch.await();
+
         ResetBucketPropsOperation.Builder resetOpBuilder = 
             new ResetBucketPropsOperation.Builder(namespace);
         
@@ -309,5 +306,9 @@ public abstract class ITestBase
         }
         
         return false;
+    }
+
+    public static Namespace defaultNamespace() {
+        return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
     }
 }

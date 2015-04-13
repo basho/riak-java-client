@@ -425,7 +425,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             return loc;
         }
                 
-        protected abstract List<?> getEntries();
+        public abstract List<?> getEntries();
         
         public abstract static class Entry<T>
         {
