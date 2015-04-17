@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc
+ * Copyright 2015 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ import java.util.Map;
 public class GetCoverage extends RiakCommand<GetCoverage.Response, String>{
     private final Namespace namespace;
     private final BinaryValue key;
-    private final boolean forceUpdte;
+    private final boolean forceUpdate;
 
     private GetCoverage(Builder builder){
         this.namespace = builder.namespace;
         this.key = builder.key;
-        this.forceUpdte = builder.forceUpdate;
+        this.forceUpdate = builder.forceUpdate;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class GetCoverage extends RiakCommand<GetCoverage.Response, String>{
                     @Override
                     protected Response convertResponse(GetCoverageOperation.Response coreResponse)
                     {
-                        return new Response(coreResponse.geEntryPoints());
+                        return new Response(coreResponse.getEntryPoints());
                     }
 
                     @Override
@@ -98,7 +98,7 @@ public class GetCoverage extends RiakCommand<GetCoverage.Response, String>{
             coreBuilder = new GetCoverageOperation.Builder();
         }
 
-        if(forceUpdte)
+        if(forceUpdate)
         {
             coreBuilder.withForcedUpdate();
         }

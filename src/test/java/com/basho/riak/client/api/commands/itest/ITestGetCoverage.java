@@ -3,7 +3,6 @@ package com.basho.riak.client.api.commands.itest;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.GetCoverage;
 import com.basho.riak.client.api.commands.kv.StoreValue;
-import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.PingOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
@@ -82,22 +81,25 @@ public class ITestGetCoverage extends ITestBase {
 
     private static void verifyThatAllNodesAreAvailable(Collection<Map.Entry<String,Integer>> nodes) throws UnknownHostException, InterruptedException {
         for(Map.Entry<String,Integer> e: nodes){
-            final RiakNode.Builder builder = new RiakNode.Builder()
-                    .withRemoteAddress(e.getKey())
-                    .withRemotePort(e.getValue())
-                    .withMinConnections(1);
-
             logger.info("Sending ping to EP {}:{}", e.getKey(), e.getValue());
 
-            final RiakCluster c = new RiakCluster.Builder(builder.build()).build();
-            c.start();
+            final RiakNode node = new RiakNode.Builder()
+                    .withRemoteAddress(e.getKey())
+                    .withRemotePort(e.getValue())
+                    .withMinConnections(1)
+                    .build()
+                        .start();
+
             try{
-                PingOperation ping = new PingOperation();
-                c.execute(ping).await();
+                final PingOperation ping = new PingOperation();
+                assertTrue(node.execute(ping));
+
+                ping.await();
+
                 assertTrue(ping.isSuccess());
                 logger.info("EP Ping {}:{}: succeeded", e.getKey(), e.getValue());
             }finally{
-                c.shutdown();
+                node.shutdown();
             }
         }
     }
