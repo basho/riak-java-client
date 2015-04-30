@@ -30,9 +30,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -47,17 +45,21 @@ public class ITestMapReduceOperation extends ITestBase
     {
         // This will currently fail as the 4 arity input in broken in Riak. Specifying 
         // "default" doesn't work. I've worked around this in the User API. 
-        testBasicMR(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
+        Map<String, Integer> resultMap = testBasicMR(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
+        assertNotNull(resultMap.containsKey("the"));
+        assertNull(resultMap.get("the"));
     }
     
     @Test
     public void testBasicMRTestType() throws InterruptedException, ExecutionException, IOException
     {
         assumeTrue(testBucketType);
-        testBasicMR(new Namespace(bucketType, bucketName));
+        Map<String, Integer> resultMap = testBasicMR(new Namespace(bucketType, bucketName));
+        assertNotNull(resultMap.containsKey("the"));
+        assertEquals(Integer.valueOf(8), resultMap.get("the"));
     }
     
-    private void testBasicMR(Namespace namespace) throws InterruptedException, ExecutionException, IOException
+    private Map<String, Integer> testBasicMR(Namespace namespace) throws InterruptedException, ExecutionException, IOException
     {
         RiakObject obj = new RiakObject();
                             
@@ -134,10 +136,8 @@ public class ITestMapReduceOperation extends ITestBase
         @SuppressWarnings("unchecked")
         Map<String, Integer> resultMap = oMapper.readValue(json, Map.class);
         
-        assertNotNull(resultMap.containsKey("the"));
-        assertEquals(Integer.valueOf(8),resultMap.get("the"));
-        
         resetAndEmptyBucket(namespace);
-        
+
+        return resultMap;
     }
 }
