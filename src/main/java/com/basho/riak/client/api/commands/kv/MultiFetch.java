@@ -243,7 +243,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
 	}
 
 	/**
-	 * The response from Raik for a MultiFetch command.
+	 * The response from Riak for a MultiFetch command.
 	 *
 	 */
 	public static final class Response implements Iterable<RiakFuture<FetchValue.Response, Location>>

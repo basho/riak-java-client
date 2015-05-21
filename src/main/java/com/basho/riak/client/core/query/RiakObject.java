@@ -220,7 +220,7 @@ public final class RiakObject
     }
 
     /**
-     * Set the content type of the data payload (value) of the this RaikObject
+     * Set the content type of the data payload (value) of the this RiakObject
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header. 
@@ -294,7 +294,7 @@ public final class RiakObject
      * </p>
      * <br/><b>Thread Safety:</b><br/> The returned <code>RiakIndexes</code> object encapsulates any/all
      * indexes for this <code>RiakObject}</code>, is mutable, and thread safe. Any changes
-     * are directly applied to this <code>RaikObject</code>.
+     * are directly applied to this <code>RiakObject</code>.
      * @return the {@link RiakIndexes} that encapsulates any/all indexes for this RiakObject
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
@@ -321,8 +321,8 @@ public final class RiakObject
     /**
      * Returns the RiakLinks for this RiakObject.
      * <br/><b>Thread Safety:</b><br/> The returned <code>RiakLinks</code> object encapsulates any/all
-     * links for this <code>RaikObject</code>, is mutable, and thread safe. Any changes
-     * are directly applied to this <code>RaikObject</code>.
+     * links for this <code>RiakObject</code>, is mutable, and thread safe. Any changes
+     * are directly applied to this <code>RiakObject</code>.
      * @return the {@link RiakIndexes} that encapsulates all/any links for this {@code RiakObject}
      */
     public synchronized RiakLinks getLinks()
@@ -351,8 +351,8 @@ public final class RiakObject
      * Returns the User Meta for this RiakObject
      * <br/><b>Thread Safety:</b><br/>
      * The returned <code>RiakUserMetadata</code> encapsulates any/all
-     * user meta entries for this <code>RaikObject</code>, is mutable, and thread safe. Any changes
-     * are directly applied to this <code>RaikObject</code>.
+     * user meta entries for this <code>RiakObject</code>, is mutable, and thread safe. Any changes
+     * are directly applied to this <code>RiakObject</code>.
      * @return the {@code RiakUserMetadata} that containsKeyKey any/all User Meta entries for this {@code RiakObject}
      */
     public synchronized RiakUserMetadata getUserMeta()

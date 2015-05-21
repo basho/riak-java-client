@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * An update to a Raik map datatype.
+ * An update to a Riak map datatype.
  * <p>
  * When building an {@link UpdateMap} command
  * this class is used to encapsulate the update to be performed on a 
