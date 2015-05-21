@@ -38,7 +38,8 @@ import java.nio.charset.Charset;
  * {@code RiakObject} and methods are provided to access them. 
  * </p>
  * <p>
- * @riak.threadsafety RiakObject is designed to be thread safe. All methods 
+ * <br/><b>Thread Safety:</b><br/>
+ * RiakObject is designed to be thread safe. All methods
  * which update the object do so via a thread safe mechanism. The only caveat is
  * that if you use any of the methods prefixed with "unsafe" you need to
  * understand the ramifications as noted in their Javadoc.
@@ -114,7 +115,8 @@ public final class RiakObject
      * Note that if {@link RiakObject#setContentType(java.lang.String)} is not 
      * called a value of {@value #DEFAULT_CONTENT_TYPE} is used.
      * </p>
-     * @riak.threadsafety Unsafe modifications to the supplied BinaryValue's
+     * <br/><b>Thread Safety:</b><br/>
+     * Unsafe modifications to the supplied BinaryValue's
      * underlying byte[] would be a bad thing.
      * @param value the value to be stored in Riak.
      * @return a reference to this object.
@@ -290,7 +292,7 @@ public final class RiakObject
      * <p>
      * Any/all indexes for this {@code RiakObject} are encapsulated in the returned {@code RiakIndexes} object.
      * </p>
-     * @riak.threadsafety The returned <code>RiakIndexes</code> object encapsulates any/all 
+     * <br/><b>Thread Safety:</b><br/> The returned <code>RiakIndexes</code> object encapsulates any/all
      * indexes for this <code>RiakObject}</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RaikObject</code>.
      * @return the {@link RiakIndexes} that encapsulates any/all indexes for this RiakObject
@@ -317,15 +319,15 @@ public final class RiakObject
     }
     
     /**
-     * Returns the RiakLinks for this RiakObject
-     * @riak.threadsafety The returned <code>RiakLinks</code> object encapsulates any/all 
+     * Returns the RiakLinks for this RiakObject.
+     * <br/><b>Thread Safety:</b><br/> The returned <code>RiakLinks</code> object encapsulates any/all
      * links for this <code>RaikObject</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RaikObject</code>.
      * @return the {@link RiakIndexes} that encapsulates all/any links for this {@code RiakObject}
      */
     public synchronized RiakLinks getLinks()
     {
-        // Lazy initialization of comtainer
+        // Lazy initialization of container
         if (null == links)
         {
             links = new RiakLinks();
@@ -347,7 +349,8 @@ public final class RiakObject
     
     /**
      * Returns the User Meta for this RiakObject
-     * @riak.threadsafety The returned <code>RiakUserMetadata}</code> encapsulates any/all 
+     * <br/><b>Thread Safety:</b><br/>
+     * The returned <code>RiakUserMetadata</code> encapsulates any/all
      * user meta entries for this <code>RaikObject</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RaikObject</code>.
      * @return the {@code RiakUserMetadata} that containsKeyKey any/all User Meta entries for this {@code RiakObject}

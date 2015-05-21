@@ -309,9 +309,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             return generatedKey;
         }
         
-        /**
-         * @ExcludeFromJavadoc 
-         */
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private BinaryValue generatedKey;

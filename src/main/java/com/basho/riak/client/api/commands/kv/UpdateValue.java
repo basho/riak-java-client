@@ -250,9 +250,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             return wasUpdated;
         }
 
-        /**
-         * @ExcludeFromJavadoc 
-         */
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private boolean wasUpdated;

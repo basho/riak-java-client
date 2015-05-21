@@ -303,9 +303,6 @@ abstract class KvResponseBase
     }
     
 
-    /**
-     * @ExcludeFromJavadoc 
-     */
     protected static abstract class Init<T extends Init<T>>
     {
         private Location location;
