@@ -209,9 +209,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 			return unchanged;
 		}
 
-        /**
-         * @ExcludeFromJavadoc 
-         */
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private boolean notFound;

@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * {@code RiakIndex} instances are created and managed via the {@link RiakIndexes}
  * container.
  * </p>
- * @riak.threadsafety This class is designed to be thread safe.
+ * <br/><b>Thread Safety:</b><br/> This class is designed to be thread safe.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes

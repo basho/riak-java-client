@@ -170,17 +170,19 @@ public class ITestFetchValue extends ITestBase
     @Test
     public void resolveSiblingsDefaultType() throws ExecutionException, InterruptedException
     {
-        resolveSiblings(Namespace.DEFAULT_BUCKET_TYPE);
+        ConflictResolver<Pojo> resolver = new DefaultResolver<Pojo>();
+        resolveSiblings(Namespace.DEFAULT_BUCKET_TYPE, resolver);
     }
     
     @Test
     public void resolveSiblingsTestType() throws ExecutionException, InterruptedException
     {
         Assume.assumeTrue(testBucketType);
-        resolveSiblings(bucketType.toString());
+        ConflictResolver<Pojo> resolver = new MyResolver();
+        resolveSiblings(bucketType.toString(), resolver);
     }
     
-    private void resolveSiblings(String bucketType) throws ExecutionException, InterruptedException
+    private void resolveSiblings(String bucketType, ConflictResolver<Pojo> resolver) throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(bucketType, bucketName.toString());
@@ -209,8 +211,7 @@ public class ITestFetchValue extends ITestBase
         assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
         
         JSONConverter<Pojo> converter = new JSONConverter<Pojo>(Pojo.class);
-        ConflictResolver<Pojo> resolver = new DefaultResolver<Pojo>();
-        
+
         assertEquals(pojo.value, fResp.getValues(converter).get(0).value);
         assertEquals(pojo.value, fResp.getValue(converter, resolver).value);
 

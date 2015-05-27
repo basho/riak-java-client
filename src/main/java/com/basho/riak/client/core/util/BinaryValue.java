@@ -29,7 +29,7 @@ import java.util.Arrays;
  * and allow access to those bytes by the user when the data is generally
  * representative of a {@code String} so that any character asSet may be used.
  * </p>
- * @riak.threadsafety If you are using this class directly keep in mind that any modification to the 
+ * <br/><b>Thread Safety:</b><br/> If you are using this class directly keep in mind that any modification to the
  * wrapped <code>byte[]</code> post creation via either a retained reference to the 
  * array after calling <code>unsafeCreate()</code> or accessing the array directly via 
  * <code>unsafeGetValue()</code> will lead to undefined behavior in regard to thread
@@ -115,7 +115,7 @@ public final class BinaryValue
      * <p>
      * @param data the {@code byte[]} to wrap
      * @return a new {@code BinaryValue}
-     * @riak.threadsafety The supplied <code>byte[]</code> is not copied and the reference is used
+     * <br/><b>Thread Safety:</b><br/> The supplied <code>byte[]</code> is not copied and the reference is used
      * directly. Retaining a reference to this array and making subsequent
      * changes will lead to undefined behavior in regard to thread safety and
      * visibility. 
@@ -147,7 +147,7 @@ public final class BinaryValue
     /**
      * Return the wrapped {@code byte[]}
      * @return the internal {@code byte[]}
-     * @riak.threadsafety This method exposes the internal <code>byte[]</code> directly.
+     * <br/><b>Thread Safety:</b><br/> This method exposes the internal <code>byte[]</code> directly.
      * Modifying the contents of this array will lead to undefined behavior in 
      * regard to thread safety and visibility.
      */

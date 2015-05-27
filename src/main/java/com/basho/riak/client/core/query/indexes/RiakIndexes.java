@@ -87,7 +87,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *     assertFalse(index.hasValue(baw));
  * }
  * </pre></blockquote>
- * @riak.threadsafety This is a thread safe container. 
+ * <br/><b>Thread Safety:</b><br/> This is a thread safe container.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakObject#getIndexes() 

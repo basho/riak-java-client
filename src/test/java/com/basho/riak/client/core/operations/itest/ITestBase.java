@@ -177,7 +177,7 @@ public abstract class ITestBase
          *
          * In case you want/need to use a custom PBC port you may pass it by using the following system property
          */
-        final int testRiakPort = Integer.getInteger("com.basho.riak.pbсport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+        final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
 
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withRemotePort(testRiakPort)
