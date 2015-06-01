@@ -20,6 +20,8 @@ import com.basho.riak.client.core.util.Constants;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 /**
  *
@@ -39,6 +41,7 @@ public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
     public void initChannel(SocketChannel ch) throws Exception
     {
         ChannelPipeline p = ch.pipeline();
+        p.addLast(new LoggingHandler(LogLevel.DEBUG));
         p.addLast(Constants.MESSAGE_CODEC, new RiakMessageCodec());
         p.addLast(Constants.OPERATION_ENCODER, new RiakOperationEncoder());
         p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler(listener));
