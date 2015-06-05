@@ -28,11 +28,15 @@ import io.netty.channel.socket.SocketChannel;
  */
 public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
 {
+
     private final RiakResponseListener listener;
-    public RiakChannelInitializer(RiakResponseListener listener)
+    private final long readTimeout;
+
+    public RiakChannelInitializer(RiakResponseListener listener, long readTimeout)
     {
         super();
         this.listener = listener;
+        this.readTimeout = readTimeout;
     }
 
     @Override
@@ -41,7 +45,11 @@ public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
         ChannelPipeline p = ch.pipeline();
         p.addLast(Constants.MESSAGE_CODEC, new RiakMessageCodec());
         p.addLast(Constants.OPERATION_ENCODER, new RiakOperationEncoder());
+        if (readTimeout > 0)
+        {
+            p.addLast(Constants.READTIMEOUT_HANDLER, new RiakReadTimeoutHandler(readTimeout));
+        }
         p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler(listener));
     }
-    
+
 }

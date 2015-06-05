@@ -83,6 +83,7 @@ public class RiakNode implements RiakResponseListener
     private volatile int minConnections;
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
+    private volatile int readTimeout;
     private volatile boolean blockOnMaxConnections;
 
     private HealthCheckFactory healthCheckFactory;
@@ -173,6 +174,7 @@ public class RiakNode implements RiakResponseListener
     {
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
+        this.readTimeout = builder.readTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
         this.minConnections = builder.minConnections;
         this.port = builder.port;
@@ -250,7 +252,7 @@ public class RiakNode implements RiakResponseListener
             throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
         }
 
-        bootstrap.handler(new RiakChannelInitializer(this)).remoteAddress(socketAddress);
+        bootstrap.handler(new RiakChannelInitializer(this, readTimeout)).remoteAddress(socketAddress);
 
         if (connectionTimeout > 0)
         {
@@ -521,6 +523,17 @@ public class RiakNode implements RiakResponseListener
     {
         stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
         return connectionTimeout;
+    }
+    /**
+     * Returns the read timeout in milliseconds.
+     *
+     * @return the readTimeout
+     * @see Builder#withReadTimeout(int)
+     */
+    public int getReadTimeout()
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
+        return readTimeout;
     }
 
     /**
@@ -1223,7 +1236,12 @@ public class RiakNode implements RiakResponseListener
          * @see #withConnectionTimeout(int)
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
-
+         /**
+          * The default read timeout in milliseconds if not specified: {@value #DEFAULT_READ_TIMEOUT}
+          *
+          * @see #withReadTimeout(int)
+          */
+         public final static int DEFAULT_READ_TIMEOUT = 0;
         /**
          * The default HealthCheckFactory.
          * <p>
@@ -1240,6 +1258,7 @@ public class RiakNode implements RiakResponseListener
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+        private int readTimeout = DEFAULT_READ_TIMEOUT;
         private HealthCheckFactory healthCheckFactory = DEFAULT_HEALTHCHECK_FACTORY;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
@@ -1356,7 +1375,18 @@ public class RiakNode implements RiakResponseListener
             this.connectionTimeout = connectionTimeoutInMillis;
             return this;
         }
-
+        /**
+         * Set the read timeout used when waiting response from a server
+         *
+         * @param readTimeoutInMillis
+         * @return this
+         * @see #DEFAULT_READ_TIMEOUT
+         */
+        public Builder withReadTimeout(int readTimeoutInMillis)
+        {
+            this.readTimeout = readTimeoutInMillis;
+            return this;
+        }
         /**
          * Provides an executor for this node to use for internal maintenance tasks.
          * If not provided one will be created via

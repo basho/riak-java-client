@@ -91,6 +91,7 @@ public class RiakNodeTest
         RiakNode node = new RiakNode.Builder()
             .withIdleTimeout(IDLE_TIMEOUT)
             .withConnectionTimeout(CONNECTION_TIMEOUT)
+            .withReadTimeout(READ_TIMEOUT)
             .withMinConnections(MIN_CONNECTIONS)
             .withMaxConnections(MAX_CONNECTIONS)
             .withRemotePort(PORT)
@@ -104,6 +105,7 @@ public class RiakNodeTest
         assertEquals(node.getNodeState(), RiakNode.State.CREATED);
         assertEquals(node.getMaxConnections(), MAX_CONNECTIONS);
         assertEquals(node.getConnectionTimeout(), CONNECTION_TIMEOUT);
+        assertEquals(node.getReadTimeout(), READ_TIMEOUT);
         assertEquals(node.getIdleTimeout(), IDLE_TIMEOUT);
         assertEquals(node.getMinConnections(), MIN_CONNECTIONS);
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
