@@ -37,11 +37,13 @@ import static org.junit.Assert.*;
  */
 public class ITestBucketProps extends ITestBase
 {
+    private final String propsBucketName = bucketName.toString() + "_props";
+
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, propsBucketName);
 
         // set Nval = 4 and R = 1
         StoreBucketProperties storeProps = new StoreBucketProperties.Builder(ns)
@@ -69,5 +71,36 @@ public class ITestBucketProps extends ITestBase
         // assert that it took
         assertEquals(bp.getNVal(), Integer.valueOf(3));
         assertEquals(bp.getR(), Quorum.quorumQuorum());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void fetchBucketPropsIllegalArgumentException() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        FetchBucketProperties fetchProps = new FetchBucketProperties.Builder(null).build();
+        FetchBucketPropsOperation.Response fetchResponse = client.execute(fetchProps);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void storeBucketPropsIllegalArgumentException() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        StoreBucketProperties storeProps = new StoreBucketProperties.Builder(null)
+                .withNVal(4)
+                .withR(1)
+                .build();
+        client.execute(storeProps);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void resetBucketPropsIllegalArgumentException() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        // reset back to type defaults
+        ResetBucketProperties resetProps = new ResetBucketProperties.Builder(null).build();
+        client.execute(resetProps);
     }
 }
