@@ -139,9 +139,10 @@ public class ITestFetchOperation extends ITestBase
             new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
+        assertTrue(storeOp.isSuccess());
         
         storeOp = 
             new StoreOperation.Builder(location)
@@ -150,7 +151,8 @@ public class ITestFetchOperation extends ITestBase
         
         cluster.execute(storeOp);
         storeOp.get();
-        
+        assertTrue(storeOp.isSuccess());
+
         FetchOperation fetchOp = 
             new FetchOperation.Builder(location).build();
                 
