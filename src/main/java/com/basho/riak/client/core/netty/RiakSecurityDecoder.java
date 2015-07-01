@@ -49,14 +49,18 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     private final String username;
     private final String password;
     private final Logger logger = LoggerFactory.getLogger(RiakSecurityDecoder.class);
-    private volatile DefaultPromise<Void> promise;
+	private final String remoteAddr;
+	private final int remotePort;
+	private volatile DefaultPromise<Void> promise;
     
     private enum State { TLS_START, TLS_WAIT, SSL_WAIT, AUTH_WAIT }
     
     private volatile State state = State.TLS_START;
     
-    public RiakSecurityDecoder(SSLEngine engine, String username, String password)
+    public RiakSecurityDecoder(String remoteAddress, int port, SSLEngine engine, String username, String password)
     {
+		this.remoteAddr = remoteAddress;
+		this.remotePort = port;
         this.sslEngine = engine;
         this.username = username;
         this.password = password;
@@ -88,7 +92,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                         switch(code)
                         {
                             case RiakMessageCodes.MSG_StartTls:
-                                logger.debug("Received MSG_RpbStartTls reply");
+                                logger.debug("Received MSG_RpbStartTls reply from {}:{}", remoteAddr, remotePort);
                                 // change state
                                 this.state = State.SSL_WAIT;
                                 // insert SSLHandler
@@ -101,10 +105,11 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                                 chc.channel().pipeline().addFirst(Constants.SSL_HANDLER, sslHandler);
                                 break;
                             case RiakMessageCodes.MSG_ErrorResp:
-                                logger.debug("Received MSG_ErrorResp reply to startTls");
+                                logger.debug("Received MSG_ErrorResp reply to startTls from {}:{}", remoteAddr, remotePort);
                                 promise.tryFailure((riakErrorToException(protobuf)));
                                 break;
                             default:
+				logger.debug("Invalid return code during StartTLS from {}:{} code", remoteAddr, remotePort, code);
                                 promise.tryFailure(new RiakResponseException(0,
                                     "Invalid return code during StartTLS; " + code));
                         }
@@ -114,21 +119,22 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                         switch(code)
                         {
                             case RiakMessageCodes.MSG_AuthResp:
-                                logger.debug("Received MSG_RpbAuthResp reply");
+                                logger.debug("Received MSG_RpbAuthResp reply from {}:{}", remoteAddr, remotePort);
                                 promise.trySuccess(null);
                                 break;
                             case RiakMessageCodes.MSG_ErrorResp:
-                                logger.debug("Received MSG_ErrorResp reply to auth");
+                                logger.debug("Received MSG_ErrorResp reply to Auth from {}:{}", remoteAddr, remotePort);
                                 promise.tryFailure(riakErrorToException(protobuf));
                                 break;
                             default:
+                                logger.debug("Invalid return code during Auth from {}:{}", remoteAddr, remotePort);
                                 promise.tryFailure(new RiakResponseException(0,
                                     "Invalid return code during Auth; " + code));
                         }
                         break;
                     default:
                         // WTF?
-                        logger.error("Received message while not in TLS_WAIT or AUTH_WAIT");
+                        logger.error("Received message while not in TLS_WAIT or AUTH_WAIT from {}:{}", remoteAddr, remotePort);
                         promise.tryFailure(new IllegalStateException("Received message while not in TLS_WAIT or AUTH_WAIT"));
                 }
             }
@@ -208,6 +214,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         {
             if (future.isSuccess())
             {
+                logger.debug("SSLHandshake Completed with {}:{}. Authenticating.", remoteAddr, remotePort);
                 Channel c = future.getNow();
                 state = State.AUTH_WAIT;
                 RiakPB.RpbAuthReq authReq = 
@@ -221,6 +228,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
             else
             {
+                logger.warn("SSLHandshake Failed with {}:{}.", remoteAddr, remotePort, future.cause());
                 promise.tryFailure(future.cause());
             }
         }

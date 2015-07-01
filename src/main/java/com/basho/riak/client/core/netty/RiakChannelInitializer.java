@@ -20,6 +20,10 @@ import com.basho.riak.client.core.util.Constants;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -29,10 +33,13 @@ import io.netty.channel.socket.SocketChannel;
 public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
 {
     private final RiakResponseListener listener;
-    public RiakChannelInitializer(RiakResponseListener listener)
+	private volatile int readTimeout;
+
+	public RiakChannelInitializer(RiakResponseListener listener, int readTimeoutMillis)
     {
         super();
         this.listener = listener;
+		this.readTimeout = readTimeoutMillis;
     }
 
     @Override
@@ -42,6 +49,16 @@ public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
         p.addLast(Constants.MESSAGE_CODEC, new RiakMessageCodec());
         p.addLast(Constants.OPERATION_ENCODER, new RiakOperationEncoder());
         p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler(listener));
+        p.addLast(Constants.READ_TIMEOUT_HANDLER, new ReadTimeoutHandler(readTimeout, TimeUnit.MILLISECONDS));
     }
-    
+
+    public int getReadTimeout()
+    {
+        return readTimeout;
+    }
+
+    public void setReadTimeout(int readTimeoutMillis)
+    {
+        readTimeout = readTimeoutMillis;
+    }
 }

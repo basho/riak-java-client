@@ -80,6 +80,7 @@ public class RiakNode implements RiakResponseListener
     
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
+    private volatile RiakChannelInitializer riakChannelInitializer;
     private volatile ScheduledExecutorService executor;
     private volatile boolean ownsExecutor;
     private volatile State state;
@@ -88,6 +89,7 @@ public class RiakNode implements RiakResponseListener
     private volatile int minConnections;
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
+    private volatile int readTimeout;
     private volatile boolean blockOnMaxConnections;
 
     private HealthCheckFactory healthCheckFactory;
@@ -179,6 +181,7 @@ public class RiakNode implements RiakResponseListener
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
         this.idleTimeoutInNanos = TimeUnit.NANOSECONDS.convert(builder.idleTimeout, TimeUnit.MILLISECONDS);
+        this.readTimeout = builder.readTimeout;
         this.minConnections = builder.minConnections;
         this.port = builder.port;
         this.remoteAddress = builder.remoteAddress;
@@ -248,7 +251,9 @@ public class RiakNode implements RiakResponseListener
             ownsBootstrap = true;
         }
 
-        bootstrap.handler(new RiakChannelInitializer(this))
+
+        riakChannelInitializer = new RiakChannelInitializer(this, readTimeout);
+        bootstrap.handler(riakChannelInitializer)
             .remoteAddress(new InetSocketAddress(remoteAddress, port));
 
         if (connectionTimeout > 0)
@@ -523,6 +528,33 @@ public class RiakNode implements RiakResponseListener
     }
 
     /**
+     * Sets the read timeout in milliseconds.
+     *
+     * @param readTimeoutInMillis the read timeout to set
+     * @return a reference to this RiakNode
+     * @see Builder#withReadTimeout(int)
+     */
+    public RiakNode setReadTimeout(int readTimeoutInMillis)
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
+        this.readTimeout = readTimeoutInMillis;
+		riakChannelInitializer.setReadTimeout(readTimeout);
+        return this;
+    }
+
+    /**
+     * Returns the read timeout in milliseconds.
+     *
+     * @return the readTimeout
+     * @see Builder#withReadTimeout(int)
+     */
+    public int getReadTimeout()
+    {
+        stateCheck(State.CREATED, State.RUNNING, State.HEALTH_CHECKING);
+        return readTimeout;
+    }
+
+    /**
      * Returns the number of permits currently available.
      * The number of available permits indicates how many additional
      * connections can be made without blocking.
@@ -669,6 +701,7 @@ public class RiakNode implements RiakResponseListener
         
         try
         {
+            logger.debug("Waiting for new connection from channel future to {}:{}", remoteAddress, port);
             f.await();
         }
         catch (InterruptedException ex)
@@ -686,12 +719,15 @@ public class RiakNode implements RiakResponseListener
             consecutiveFailedConnectionAttempts.incrementAndGet();
             throw new ConnectionFailedException(f.cause());
         }
+
+        logger.debug("Connection to {}:{} successful", remoteAddress, port);
         
         consecutiveFailedConnectionAttempts.set(0);
         Channel c = f.channel();
         
         if (trustStore != null) 
         {
+			logger.debug("trustStore set starting TLS");
             SSLContext context;
             try 
             {
@@ -734,11 +770,12 @@ public class RiakNode implements RiakResponseListener
             }
 
             engine.setUseClientMode(true);
-            RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
+            RiakSecurityDecoder decoder = new RiakSecurityDecoder(remoteAddress, port, engine, username, password);
             c.pipeline().addFirst(decoder);
                 
             try
             {
+                logger.debug("Waiting for authentication to complete with {}:{}", remoteAddress, port);
                 DefaultPromise<Void> promise = decoder.getPromise();
                 promise.await();
                 
@@ -1224,6 +1261,12 @@ public class RiakNode implements RiakResponseListener
          * @see #withConnectionTimeout(int)
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
+        /**
+         * The default so timeout in milliseconds if not specified: {@value #DEFAULT_READ_TIMEOUT}
+         *
+         * @see #withReadTimeout(int)
+         */
+        public final static int DEFAULT_READ_TIMEOUT = 0;
         
         /**
          * The default HealthCheckFactory.
@@ -1241,6 +1284,7 @@ public class RiakNode implements RiakResponseListener
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+        private int readTimeout = DEFAULT_READ_TIMEOUT;
         private HealthCheckFactory healthCheckFactory = DEFAULT_HEALTHCHECK_FACTORY;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
@@ -1355,6 +1399,19 @@ public class RiakNode implements RiakResponseListener
         public Builder withConnectionTimeout(int connectionTimeoutInMillis)
         {
             this.connectionTimeout = connectionTimeoutInMillis;
+            return this;
+        }
+
+        /**
+         * Set the read timeout used when waiting for a response on the underlying sockets
+         *
+         * @param readTimeoutMillis
+         * @return this
+         * @see #DEFAULT_READ_TIMEOUT
+         */
+        public Builder withReadTimeout(int readTimeoutMillis)
+        {
+            this.readTimeout = readTimeoutMillis;
             return this;
         }
 
