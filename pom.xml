@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.basho.riak</groupId>
-    <artifactId>riak-client</artifactId>
+    <artifactId>dataplatform-riak-client</artifactId>
     <packaging>jar</packaging>
     <version>2.0.2-SNAPSHOT</version>
     <name>Riak Client for Java</name>
@@ -39,9 +39,9 @@
     </developers>
     
     <scm>
-        <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
-        <url>http://github.com/basho/riak-java-client</url>
+        <connection>scm:git:ssh://github.com/basho/data_platform_riak_java_client.git</connection>
+        <developerConnection>scm:git:ssh://github.com/basho/data_platform_riak_java_client.git</developerConnection>
+        <url>https://github.com/basho/data_platform_riak_java_client</url>
     </scm>
 
     <properties>
