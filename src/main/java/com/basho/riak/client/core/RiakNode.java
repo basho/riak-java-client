@@ -562,7 +562,10 @@ public class RiakNode implements RiakResponseListener
 
     /**
      * Submits the operation to be executed on this node.
-     *
+     * <p>
+     * Now supports operation queueing if the max # channels has been reached and blockOnMaxConnections = false. It
+     * will queue the operation to be executed when the next channel is released back to the pool as available.
+     * </p>
      * @param operation The operation to perform
      * @return {@code true} if this operation was accepted, {@code false} if there
      *         were no available connections.
@@ -1237,7 +1240,8 @@ public class RiakNode implements RiakResponseListener
          */
         public final static int DEFAULT_MAX_CONNECTIONS = 0;
         /**
-         * The default maximum number of queued operations allowed if not specified: {@value #DEFAULT_MAX_OPERATION_QUEUE}
+         * The default maximum number of queued operations allowed if not specified:
+         * {@value #DEFAULT_MAX_OPERATION_QUEUE}
          *
          * @see #withMaxOperationQueue(int)
          */
@@ -1361,10 +1365,10 @@ public class RiakNode implements RiakResponseListener
         }
 
         /**
-         * Set the maximum number of operations to queue allowed.
-         * A value of 0 sets the operation queue to disabled.
+         * Set the maximum number of operations to queue allowed. A value of 0 sets the operation queue to disabled.
+         * Also the operations queue is not utilized if {@link #withBlockOnMaxConnections(boolean) }set to true.
          *
-         * @param maxOperationQueue - maximum number of connections to allow
+         * @param maxOperationQueue - maximum number of operations in the queue to allow
          * @return this
          * @see #DEFAULT_MAX_OPERATION_QUEUE
          */
@@ -1393,7 +1397,7 @@ public class RiakNode implements RiakResponseListener
         /**
          * Set the connection timeout used when making new connections
          *
-         * @param connectionTimeoutInMillis
+         * @param connectionTimeoutInMillis - connection timeout in milliseconds
          * @return this
          * @see #DEFAULT_CONNECTION_TIMEOUT
          */
