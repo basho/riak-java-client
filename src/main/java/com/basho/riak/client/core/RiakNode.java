@@ -21,6 +21,7 @@ import com.basho.riak.client.core.netty.RiakChannelInitializer;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.netty.RiakSecurityDecoder;
 import com.basho.riak.client.core.util.Constants;
+import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -1259,6 +1260,18 @@ public class RiakNode implements RiakResponseListener
         public Builder()
         {
 
+        }
+
+        /**
+         * Sets the remote host and port for this RiakNode.
+         *
+         * @param hostAndPOrt
+         * @return this
+         */
+        public Builder withRemoteHost(HostAndPort hostAndPOrt){
+            this.withRemoteAddress(hostAndPOrt.getHost());
+            this.withRemotePort(hostAndPOrt.getPort());
+            return this;
         }
 
         /**
