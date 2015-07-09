@@ -29,40 +29,33 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
 */
-public final class HostAndPort implements Serializable
-{
+public final class HostAndPort implements Serializable {
     private static final long serialVersionUID = 0;
     private final int port;
     private final String host;
     private transient InetSocketAddress inetAddress;
 
-    private HostAndPort(String host, int port)
-    {
+    private HostAndPort(String host, int port){
         this.host = host;
         this.port = port;
     }
 
-    public boolean hasPort()
-    {
+    public boolean hasPort() {
         return port >= 0;
     }
 
-    public int getPort()
-    {
+    public int getPort() {
         return port;
     }
 
-    public int getPortOrDefault(int defaultPort)
-    {
-        if(!hasPort())
-        {
+    public int getPortOrDefault(int defaultPort) {
+        if(!hasPort()) {
             return defaultPort;
         }
         return port;
     }
 
-    public String getHost()
-    {
+    public String getHost() {
         return host;
     }
 
@@ -76,85 +69,72 @@ public final class HostAndPort implements Serializable
         return inetAddress;
     }
 
-    public static List<HostAndPort> hostsFromString(String hostPortStr, int defaultPort)
-    {
+    public static List<HostAndPort> hostsFromString(String hostPortStr, int defaultPort) {
         checkHost(hostPortStr);
         String rawHosts[] = hostPortStr.split(",");
 
         List<HostAndPort> retVal = new ArrayList<HostAndPort>(rawHosts.length);
 
-        for( String s: rawHosts)
-        {
+        for( String s: rawHosts){
             retVal.add(HostAndPort.fromString(s, defaultPort));
         }
 
         return retVal;
     }
 
-    public static HostAndPort fromString(String hostPortStr, int defaultPort)
-    {
+    public static HostAndPort fromString(String hostPortStr, int defaultPort) {
         hostPortStr = hostPortStr.trim();
         checkHost(hostPortStr);
 
         final int idx = hostPortStr.indexOf(':');
         final HostAndPort retVal;
 
-        if( idx == -1 )
-        {
+        if( idx == -1 ){
             retVal = fromParts(hostPortStr, defaultPort);
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 retVal = fromParts(
                         hostPortStr.substring(0, idx),
                         Integer.parseInt(hostPortStr.substring(idx + 1))
                 );
-            }
-            catch (NumberFormatException ex)
-            {
+            }catch (NumberFormatException ex){
                 throw new IllegalArgumentException("Unparseable port number: " + hostPortStr);
             }
         }
         return retVal;
     }
 
-    public static HostAndPort fromParts(String host, int port)
-    {
+    public static HostAndPort fromParts(String host, int port) {
         checkHost(host);
         return new HostAndPort(host, port);
     }
 
-    private static void checkHost(String host) throws IllegalArgumentException
-    {
-        if(host == null || host.isEmpty())
-        {
+    private static void checkHost(String host) throws IllegalArgumentException{
+        if(host == null || host.isEmpty()){
             throw new IllegalArgumentException("Host must be provided, it can't be null or empty");
         }
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         HostAndPort that = (HostAndPort) o;
-        return getPort()==that.getPort() && getHost().equals(that.getHost());
+
+        if (getPort() != that.getPort()) return false;
+        return getHost().equals(that.getHost());
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = getPort();
         result = 31 * result + getHost().hashCode();
         return result;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "HostAndPort{" +
                 "host='" + host + '\'' +
                 ", port=" + port +

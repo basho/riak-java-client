@@ -70,6 +70,10 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
             @Override
             public BinaryValue convert(BigInteger input)
             {
+                if (input == null)
+                {
+                    return null;
+                }
                 return BinaryValue.createFromUtf8(input.toString());
             }
         };
@@ -119,7 +123,12 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         {
             super(namespace, indexName + Type._INT, match);
         }
-        
+
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName + Type._INT, coverContext);
+        }
+
         @Override
         public T withRegexTermFilter(String filter)
         {
@@ -132,6 +141,20 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
      */
     public static class Builder extends Init<BigInteger, Builder>
     {
+        /**
+         * Construct a Builder for a BigIntIndexQuery with a cover context.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param coverContext cover context.
+         */
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName, coverContext);
+        }
 
         /**
          * Construct a Builder for a BigIntIndexQuery with a range.
