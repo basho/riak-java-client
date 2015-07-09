@@ -167,11 +167,18 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
                             .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
-            else
+            else if(query.getRangeStart() != null)
             {
                 pbReqBuilder.setRangeMin(ByteString.copyFrom(query.rangeStart.unsafeGetValue()))
                             .setRangeMax(ByteString.copyFrom(query.rangeEnd.unsafeGetValue()))
                             .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
+            }
+            else
+            {
+                assert query.coverContext != null;
+                pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverContext))
+                    //TODO: set proper IndexQueryType (QType is mandory)
+                    .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
 
             if (query.maxResults != null)
@@ -223,7 +230,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final Boolean paginationSort;
         private final BinaryValue termFilter;
         private final Integer timeout;
-
+        private final byte[] coverContext;
+        
         private Query(Builder builder)
         {
             this.indexName = builder.indexName;
@@ -237,6 +245,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.termFilter = builder.termFilter;
             this.namespace = builder.namespace;
             this.timeout = builder.timeout;
+            this.coverContext = builder.coverContext;
         }
 
         /**
@@ -328,6 +337,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return timeout;
         }
 
+        /**
+         * @return the cover context value, or null if not set.
+         */
+        public byte[] getCoverContext() {
+            return coverContext;
+        }
 
         public static class Builder
         {
@@ -342,7 +357,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private Boolean paginationSort;
             private BinaryValue termFilter;
             private Integer timeout;
-
+            private byte[] coverContext;
+            
             /**
             * Constructs a builder for a (2i) Query.
             * The index name must be the complete name with the _int or _bin suffix.
@@ -481,12 +497,22 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                return this;
            }
 
+           /**
+            * Set the cover context for the query
+            * @param coverContext
+            * @return a reference to this object.
+            */
+           public Builder withCoverContext(byte[] coverContext) {
+               this.coverContext = coverContext;
+               return this;
+           }
+
            public Query build()
             {
                 // sanity checks
-                if ( rangeStart == null && rangeEnd == null && indexKey == null)
+                if ( rangeStart == null && rangeEnd == null && indexKey == null && coverContext == null)
                 {
-                    throw new IllegalArgumentException("An index key or range must be supplied");
+                    throw new IllegalArgumentException("An index key or range or coverContext must be supplied");
                 }
                 else if ( (rangeStart != null && rangeEnd == null) ||
                      (rangeEnd != null && rangeStart == null ) )
