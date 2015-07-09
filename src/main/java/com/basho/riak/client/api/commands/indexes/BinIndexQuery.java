@@ -66,6 +66,10 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             @Override
             public BinaryValue convert(String input)
             {
+                if (input == null )
+                {
+                    return null;
+                }
                 return BinaryValue.create(input, charset);
             }
         };
@@ -122,6 +126,11 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             super(namespace, indexName + Type._BIN, match);
         }
 
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName + Type._INT, coverContext);
+        }
+
         T withCharacterSet(Charset charset)
         {
             this.charset = charset;
@@ -135,6 +144,20 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
      */
     public static class Builder extends Init<String, Builder>
     {
+        /**
+         * Construct a Builder for a BinIndexQuery with a cover context.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param coverContext cover context.
+         */
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName, coverContext);
+        }
 
         /**
          * Construct a Builder for a BinIndexQuery with a range.

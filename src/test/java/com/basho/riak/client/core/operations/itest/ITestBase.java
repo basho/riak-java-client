@@ -284,4 +284,8 @@ public class ITestBase
 
         return false;
     }
+
+    public static Namespace defaultNamespace() {
+        return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+    }
 }

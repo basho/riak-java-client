@@ -163,7 +163,7 @@ public class RiakNode implements RiakResponseListener
                     }
                     else
                     {
-                        inProgress.setException(new Exception("Connection closed unexpectedly"));
+                        inProgress.setException(new Exception("Connection closed unexpectantly"));
                     }
                 }
 
@@ -1327,6 +1327,18 @@ public class RiakNode implements RiakResponseListener
         public Builder()
         {
 
+        }
+
+        /**
+         * Sets the remote host and port for this RiakNode.
+         *
+         * @param hostAndPOrt
+         * @return this
+         */
+        public Builder withRemoteHost(HostAndPort hostAndPOrt){
+            this.withRemoteAddress(hostAndPOrt.getHost());
+            this.withRemotePort(hostAndPOrt.getPort());
+            return this;
         }
 
         /**
