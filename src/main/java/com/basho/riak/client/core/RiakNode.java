@@ -75,7 +75,8 @@ public class RiakNode implements RiakResponseListener
     private final String keyPassword;
     private final AtomicLong consecutiveFailedOperations = new AtomicLong(0);
     private final AtomicLong consecutiveFailedConnectionAttempts = new AtomicLong(0);
-    
+    private final boolean enableOperationQueue;
+
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
     private volatile ScheduledExecutorService executor;
@@ -87,7 +88,6 @@ public class RiakNode implements RiakResponseListener
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
     private volatile boolean blockOnMaxConnections;
-    private volatile boolean enableOperationQueue;
 
     private HealthCheckFactory healthCheckFactory;
     
@@ -187,7 +187,6 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
-        this.enableOperationQueue = false;
 
         if (builder.bootstrap != null)
         {
@@ -207,6 +206,8 @@ public class RiakNode implements RiakResponseListener
         {
             this.enableOperationQueue = true;
             this.operationQueue = new LinkedBlockingDeque<FutureOperation>(builder.maxOperationQueue);
+        } else {
+            this.enableOperationQueue = false;
         }
 
         this.state = State.CREATED;
@@ -588,9 +589,8 @@ public class RiakNode implements RiakResponseListener
         }
         else if (this.getMaxConnections() > 0 && !this.blockOnMaxConnections && this.enableOperationQueue)
         {
-            if (this.operationQueue.remainingCapacity() > 0)
-            {
-                this.operationQueue.add(operation);
+            boolean queued = this.operationQueue.offer(operation);
+            if (queued) {
                 logger.debug("Operation queued for later execution due to connection availability Riaknode {}:{};",
                         remoteAddress, port);
                 return true;
@@ -828,10 +828,11 @@ public class RiakNode implements RiakResponseListener
                     logger.debug("Released pool permit");
                     permits.release();
 
-                    if (this.operationQueue.size() > 0)
+                    FutureOperation operation = this.operationQueue.poll();
+                    if (operation != null)
                     {
                         logger.debug("Connection released, attempting execution of operation from queue Riaknode {}:{};", remoteAddress, port);
-                        this.execute(this.operationQueue.pop());
+                        this.execute(operation);
                     }
                 }
             }
