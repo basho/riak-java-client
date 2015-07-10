@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Basho Technologies Inc.
+ * Copyright 2013 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ public final class HostAndPort implements Serializable {
         return port;
     }
 
-    public int getPortOrDefault(int defaultPort) {
-        if(!hasPort()) {
+    public int getPortOrDefault(int defaultPort){
+        if(!hasPort()){
             return defaultPort;
         }
         return port;
@@ -59,10 +59,8 @@ public final class HostAndPort implements Serializable {
         return host;
     }
 
-    public InetSocketAddress asInetSocketAddress()
-    {
-        if(inetAddress == null)
-        {
+    public InetSocketAddress asInetSocketAddress(){
+        if(inetAddress == null){
             inetAddress = new InetSocketAddress(getHost(), getPort());
         }
 
