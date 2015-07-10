@@ -27,18 +27,32 @@ public class SearchMapReduce extends MapReduce
 			return this;
 		}
 
+        /**
+         * Set the index to search.
+         * @param index The index to run the search on
+         * @return a reference to this object.
+         */
 		public Builder withIndex(String index)
 		{
 			this.index = index;
 			return this;
 		}
 
+        /**
+         * Set the query to run.
+         * @param query The query to run
+         * @return a reference to this object.
+         */
 		public Builder withQuery(String query)
 		{
 			this.query = query;
 			return this;
 		}
 
+        /**
+         * Construct a new SearchMapReduce operation.
+         * @return the new SearchMapReduce operation.
+         */
 		public SearchMapReduce build()
 		{
 			if (index == null)

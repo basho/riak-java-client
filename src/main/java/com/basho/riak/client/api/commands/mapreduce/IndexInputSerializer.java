@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
+/**
+ * Serializes a {@link IndexInput} to a Riak MapReduce JSON format.
+ */
 public class IndexInputSerializer extends JsonSerializer<IndexInput>
 {
 	@Override
