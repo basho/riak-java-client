@@ -103,6 +103,7 @@ public class RiakNodeTest
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
         assertEquals(node.availablePermits(), MAX_CONNECTIONS);
         assertEquals(node.getPort(), PORT);
+
     }
 
     @Test
@@ -153,7 +154,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void nodeRespectsMax() throws InterruptedException, UnknownHostException, Exception
+    public void NodeRespectsMax() throws InterruptedException, UnknownHostException, Exception
     {
         final int MAX_CONNECTIONS = 2;
 
@@ -189,62 +190,6 @@ public class RiakNodeTest
     }
 
     @Test
-    public void nodeOperationQueue() throws Exception
-    {
-        final int MAX_CONNECTIONS = 2;
-        final int OPERATION_QUEUE = 2;
-
-        Channel channel = mock(Channel.class);
-        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
-        ChannelFuture future = mock(ChannelFuture.class);
-        FutureOperation operation = PowerMockito.spy(new FutureOperationImpl());
-        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
-
-        doReturn(future).when(channel).closeFuture();
-        doReturn(true).when(channel).isOpen();
-        doReturn(channelPipeline).when(channel).pipeline();
-        doReturn(future).when(channel).writeAndFlush(operation);
-        doReturn(future).when(future).await();
-        doReturn(true).when(future).isSuccess();
-        doReturn(channel).when(future).channel();
-        doReturn(future).when(bootstrap).connect();
-        doReturn(bootstrap).when(bootstrap).clone();
-
-        RiakNode node = new RiakNode.Builder()
-                .withBootstrap(bootstrap)
-                .withMaxConnections(MAX_CONNECTIONS)
-                .withMaxOperationQueue(OPERATION_QUEUE)
-                .withBlockOnMaxConnections(false)
-                .build();
-        node.start();
-
-        // first get all of our available connections
-        Channel[] channelArray = new Channel[6];
-        for (int i = 0; i < MAX_CONNECTIONS; i++)
-        {
-            channelArray[i] = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
-            assertNotNull(channelArray[i]);
-        }
-
-        // confirm no more connections are available
-        assertNull(Whitebox.invokeMethod(node, "getConnection"));
-        assertEquals(0, node.availablePermits());
-
-        // then queue up operations to max operation queue value
-        for (int i = 0; i < OPERATION_QUEUE; i++)
-        {
-            assertTrue(node.execute(operation));
-        }
-
-        // since the max operation queue is 2, this should fail to queue the operation
-        assertFalse(node.execute(operation));
-        Whitebox.invokeMethod(node, "returnConnection", channelArray[0]);
-
-        assertTrue(node.execute(operation));
-        assertFalse(node.execute(operation));
-    }
-
-    @Test
     public void channelsReturnedCorrectly() throws InterruptedException, UnknownHostException, Exception
     {
         final int MAX_CONNECTIONS = 1;
@@ -267,16 +212,17 @@ public class RiakNodeTest
             .build();
         node.start();
 
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
-        assertNull(Whitebox.invokeMethod(node, "getConnection"));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
         Whitebox.invokeMethod(node, "returnConnection", c);
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(1, available.size());
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
     }
 
     @Test
-    public void healthCheckChangesState() throws InterruptedException, UnknownHostException, Exception
+    public void healthCheckChangesState()
+        throws InterruptedException, UnknownHostException, Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
