@@ -58,12 +58,16 @@ public class RiakNode implements RiakResponseListener
 
     private final Logger logger = LoggerFactory.getLogger(RiakNode.class);
 
-    private final LinkedBlockingDeque<ChannelWithIdleTime> available = new LinkedBlockingDeque<ChannelWithIdleTime>();
-    private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed = new ConcurrentLinkedQueue<ChannelWithIdleTime>();
-    private LinkedBlockingDeque<FutureOperation> operationQueue = new LinkedBlockingDeque<FutureOperation>();
-    private final Map<Channel, FutureOperation> inProgressMap = new ConcurrentHashMap<Channel, FutureOperation>();
+    private final LinkedBlockingDeque<ChannelWithIdleTime> available =
+        new LinkedBlockingDeque<ChannelWithIdleTime>();
+    private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed =
+        new ConcurrentLinkedQueue<ChannelWithIdleTime>();
+    private LinkedBlockingDeque<FutureOperation> operationQueue =
+        new LinkedBlockingDeque<FutureOperation>(0);
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
+    private final Map<Channel, FutureOperation> inProgressMap =
+        new ConcurrentHashMap<Channel, FutureOperation>();
 
     private final Sync permits;
     private final String remoteAddress;
@@ -87,7 +91,6 @@ public class RiakNode implements RiakResponseListener
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
     private volatile boolean blockOnMaxConnections;
-    private volatile boolean enableOperationQueue;
 
     private HealthCheckFactory healthCheckFactory;
     
@@ -187,8 +190,7 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
-        this.enableOperationQueue = false;
-
+        
         if (builder.bootstrap != null)
         {
             this.bootstrap = builder.bootstrap.clone();
@@ -205,7 +207,6 @@ public class RiakNode implements RiakResponseListener
 
         if (builder.maxOperationQueue > 0)
         {
-            this.enableOperationQueue = true;
             this.operationQueue = new LinkedBlockingDeque<FutureOperation>(builder.maxOperationQueue);
         }
 
@@ -583,7 +584,7 @@ public class RiakNode implements RiakResponseListener
             logger.debug("Operation being executed on RiakNode {}:{}", remoteAddress, port);
             return true;
         }
-        else if (this.getMaxConnections() > 0 && !this.blockOnMaxConnections && this.enableOperationQueue)
+        else if (this.getMaxConnections() > 0 && !this.blockOnMaxConnections)
         {
             if (this.operationQueue.remainingCapacity() > 0)
             {
