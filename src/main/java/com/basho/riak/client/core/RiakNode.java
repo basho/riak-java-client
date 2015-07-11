@@ -62,8 +62,6 @@ public class RiakNode implements RiakResponseListener
         new LinkedBlockingDeque<ChannelWithIdleTime>();
     private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed =
         new ConcurrentLinkedQueue<ChannelWithIdleTime>();
-    private LinkedBlockingDeque<FutureOperation> operationQueue =
-        new LinkedBlockingDeque<FutureOperation>(0);
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
     private final Map<Channel, FutureOperation> inProgressMap =
@@ -169,6 +167,7 @@ public class RiakNode implements RiakResponseListener
                         inProgress.setException(new Exception("Connection closed unexpectantly"));
                     }
                 }
+                
             }
         };
 
@@ -205,10 +204,6 @@ public class RiakNode implements RiakResponseListener
             permits = new Sync(builder.maxConnections);
         }
 
-        if (builder.maxOperationQueue > 0)
-        {
-            this.operationQueue = new LinkedBlockingDeque<FutureOperation>(builder.maxOperationQueue);
-        }
 
         this.state = State.CREATED;
     }
@@ -339,7 +334,9 @@ public class RiakNode implements RiakResponseListener
             {
                 return shutdownLatch.getCount() <= 0;
             }
+                
         };
+        
     }
 
     /**
@@ -584,22 +581,6 @@ public class RiakNode implements RiakResponseListener
             logger.debug("Operation being executed on RiakNode {}:{}", remoteAddress, port);
             return true;
         }
-        else if (this.getMaxConnections() > 0 && !this.blockOnMaxConnections)
-        {
-            if (this.operationQueue.remainingCapacity() > 0)
-            {
-                this.operationQueue.add(operation);
-                logger.debug("Operation queued for later execution due to connection availability Riaknode {}:{};",
-                        remoteAddress, port);
-                return true;
-            }
-            else
-            {
-                logger.debug("Operation not being executed Riaknode {}:{}; no connections available and queue is full",
-                        remoteAddress, port);
-                return false;
-            }
-        }
         else
         {
             logger.debug("Operation not being executed Riaknode {}:{}; no connections available",
@@ -665,7 +646,6 @@ public class RiakNode implements RiakResponseListener
                 permits.release();
             }
         }
-
         return channel;
     }
 
@@ -772,7 +752,8 @@ public class RiakNode implements RiakResponseListener
                     logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
                     throw new ConnectionFailedException(promise.cause());
                 }
-
+                
+            
             }
             catch (InterruptedException e)
             {
@@ -825,12 +806,6 @@ public class RiakNode implements RiakResponseListener
                     }
                     logger.debug("Released pool permit");
                     permits.release();
-
-                    if (this.operationQueue.size() > 0)
-                    {
-                        logger.debug("Connection released, attempting execution of operation from queue Riaknode {}:{};", remoteAddress, port);
-                        this.execute(this.operationQueue.pop());
-                    }
                 }
             }
     }
@@ -1238,12 +1213,6 @@ public class RiakNode implements RiakResponseListener
          */
         public final static int DEFAULT_MAX_CONNECTIONS = 0;
         /**
-         * The default maximum number of queued operations allowed if not specified: {@value #DEFAULT_MAX_OPERATION_QUEUE}
-         *
-         * @see #withMaxOperationQueue(int)
-         */
-        public final static int DEFAULT_MAX_OPERATION_QUEUE = 0;
-        /**
          * The default idle timeout in milliseconds for connections if not specified: {@value #DEFAULT_IDLE_TIMEOUT}
          *
          * @see #withIdleTimeout(int)
@@ -1270,7 +1239,6 @@ public class RiakNode implements RiakResponseListener
         private String remoteAddress = DEFAULT_REMOTE_ADDRESS;
         private int minConnections = DEFAULT_MIN_CONNECTIONS;
         private int maxConnections = DEFAULT_MAX_CONNECTIONS;
-        private int maxOperationQueue = DEFAULT_MAX_OPERATION_QUEUE;
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
         private HealthCheckFactory healthCheckFactory = DEFAULT_HEALTHCHECK_FACTORY;
@@ -1358,20 +1326,6 @@ public class RiakNode implements RiakResponseListener
             {
                 throw new IllegalArgumentException("Max connections less than min connections");
             }
-            return this;
-        }
-
-        /**
-         * Set the maximum number of operations to queue allowed.
-         * A value of 0 sets the operation queue to disabled.
-         *
-         * @param maxOperationQueue - maximum number of connections to allow
-         * @return this
-         * @see #DEFAULT_MAX_OPERATION_QUEUE
-         */
-        public Builder withMaxOperationQueue(int maxOperationQueue)
-        {
-            this.maxOperationQueue = maxOperationQueue;
             return this;
         }
 
