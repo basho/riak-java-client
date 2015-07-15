@@ -9,6 +9,7 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.Serializable;
 import java.util.*;
 
 public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation.Response, RiakKvPB.RpbCoverageResp, Namespace> {
@@ -115,7 +116,8 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
     public static class Response implements Iterable<Response.CoverageEntry>{
 
-        public static class CoverageEntry {
+        public static class CoverageEntry implements Serializable{
+            private static final long serialVersionUID = 0;
             private String host;
             private int port;
 
