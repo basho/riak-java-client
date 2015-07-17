@@ -128,7 +128,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
         public Init(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, indexName + Type._INT, coverContext);
+            super(namespace, indexName + Type._BIN, coverContext);
         }
 
         T withCharacterSet(Charset charset)
