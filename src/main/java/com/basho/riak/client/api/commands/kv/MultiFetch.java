@@ -436,4 +436,45 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
  
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + locations.hashCode();
+        result = prime * result + options.hashCode();
+        result = prime * result + maxInFlight;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof FetchValue)) {
+            return false;
+        }
+
+        final MultiFetch other = (MultiFetch) obj;
+        if (this.locations != other.locations && (this.locations == null || !this.locations.equals(other.locations))) {
+            return false;
+        }
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+            return false;
+        }
+        if (this.maxInFlight != other.maxInFlight) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("{locations: %s, options: %s, maxInFlight: %s}",
+                locations, options, maxInFlight);
+    }
 }

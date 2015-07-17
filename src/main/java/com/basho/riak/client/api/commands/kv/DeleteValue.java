@@ -282,4 +282,44 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
 	}
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + location.hashCode();
+        result = prime * result + options.hashCode();
+        result = prime * result + vClock.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof DeleteValue)) {
+            return false;
+        }
+
+        final DeleteValue other = (DeleteValue) obj;
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+            return false;
+        }
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+            return false;
+        }
+        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{location: %s, options: %s, vClock: %s}",
+                location, options, vClock);
+    }
 }

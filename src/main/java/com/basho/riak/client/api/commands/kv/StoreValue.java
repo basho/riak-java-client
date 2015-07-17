@@ -474,4 +474,58 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 			return new StoreValue(this);
 		}
 	}
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + namespace.hashCode();
+        result = prime * result + key.hashCode();
+        result = prime * result + options.hashCode();
+        result = prime * result + value.hashCode();
+        result = prime * result + typeReference.hashCode();
+        result = prime * result + vclock.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof StoreValue)) {
+            return false;
+        }
+
+        final StoreValue other = (StoreValue) obj;
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace))) {
+            return false;
+        }
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+            return false;
+        }
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+            return false;
+        }
+        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+            return false;
+        }
+        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference))) {
+            return false;
+        }
+        if (this.vclock != other.vclock && (this.vclock == null || !this.vclock.equals(other.vclock))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{namespace: %s, key: %s, options: %s, value: %s,"
+                + " typeReference: %s, vclock: %s}", namespace, key, options,
+                value, typeReference, vclock);
+    }
 }
