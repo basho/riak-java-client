@@ -164,7 +164,7 @@ public class RiakNode implements RiakResponseListener
                     }
                     else
                     {
-                        inProgress.setException(new Exception("Connection closed unexpectantly"));
+                        inProgress.setException(new Exception("Connection closed unexpectedly"));
                     }
                 }
                 
