@@ -177,8 +177,10 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 assert query.coverContext != null;
                 pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverContext))
+                    .setRangeMin(ByteString.EMPTY)
+                    //.setRangeMax(ByteString.EMPTY)
                     //TODO: set proper IndexQueryType (QType is mandory)
-                    .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
+                    .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
             }
 
             if (query.maxResults != null)
