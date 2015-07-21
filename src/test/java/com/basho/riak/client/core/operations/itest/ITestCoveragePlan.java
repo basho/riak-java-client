@@ -2,7 +2,7 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
-import com.basho.riak.client.api.commands.indexes.IntIndexQuery;
+import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
@@ -76,8 +76,8 @@ public class ITestCoveragePlan extends ITestBase {
             logger.info(sbld.toString());
         }
 
-        final Map<CoverageEntry, List<IntIndexQuery.Response.Entry>> chunkedKeys
-                = new HashMap<CoverageEntry, List<IntIndexQuery.Response.Entry>>();
+        final Map<CoverageEntry, List<BinIndexQuery.Response.Entry>> chunkedKeys
+                = new HashMap<CoverageEntry, List<BinIndexQuery.Response.Entry>>();
 
         for(HostAndPort host: response.hosts()) {
             final RiakNode node= new RiakNode.Builder()
@@ -93,13 +93,14 @@ public class ITestCoveragePlan extends ITestBase {
             final RiakClient rc = new RiakClient(cl);
             try {
                 for(CoverageEntry ce: response.hostEntries(host)) {
-                    final IntIndexQuery query = new IntIndexQuery.Builder(defaultNamespace(), indexName, ce.getCoverContext())
+//                    final IntIndexQuery query = new IntIndexQuery.Builder(defaultNamespace(), indexName, ce.getCoverContext())
+                    final BinIndexQuery query = new BinIndexQuery.Builder(defaultNamespace(), indexName, ce.getCoverContext())
                     //final IntIndexQuery query = new IntIndexQuery.Builder(defaultNamespace(), indexName, 0L, 10000L)
                             .withCoverContext(ce.getCoverContext())
                             .withTimeout(2000)
                             .build();
 
-                    final IntIndexQuery.Response readResponse = rc.execute(query);
+                    final BinIndexQuery.Response readResponse = rc.execute(query);
 
                     chunkedKeys.put(ce, readResponse.getEntries());
                     assertNotNull(readResponse);
@@ -110,14 +111,14 @@ public class ITestCoveragePlan extends ITestBase {
         }
 
         final Set<String> keys = new HashSet<String>(100);
-        for(Map.Entry<CoverageEntry, List<IntIndexQuery.Response.Entry>> e: chunkedKeys.entrySet()){
+        for(Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet()){
             final CoverageEntry ce = e.getKey();
             if(e.getValue().isEmpty()){
                 logger.debug("Nothing was returned for CE {}", ce);
             } else {
                 final List<String> lst = new ArrayList<String>(e.getValue().size());
 
-                for(IntIndexQuery.Response.Entry re: e.getValue()){
+                for(BinIndexQuery.Response.Entry re: e.getValue()){
                     lst.add(re.getRiakObjectLocation().getKeyAsString());
                 }
 
