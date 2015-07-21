@@ -102,7 +102,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         }
         else
         {
-            // Retry Task, Heathcheck Task, (optional) Queue Task
+            // Retry Task, Shutdown Task, (optional) Queue Task
             Integer poolSize = this.queueOperations ? 3 : 2;
 
             // We still need an executor if none was provided. 
@@ -253,7 +253,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private void executeWithQueueStrategy(FutureOperation operation, RiakNode previousNode)
     {
-        if(operationQueue.size() >= operationQueueMaxDepth) {
+        if(operationQueue.size() >= operationQueueMaxDepth)
+        {
             logger.warn("No Nodes Available, and Operation Queue at Max Depth");
             operation.setRetrier(this, 1);
             operation.setException(new NoNodesAvailableException("No Nodes Available, and Operation Queue at Max Depth"));
@@ -316,6 +317,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      * Adds a {@link RiakNode} to this cluster. 
      * The node can not have been started nor have its Bootstrap or Executor
      * asSet.
+     * The node will be started as part of this process.
      * @param node the RiakNode to add
      * @throws java.net.UnknownHostException if the RiakNode's hostname cannot be resolved
      * @throws IllegalArgumentException if the node's Bootstrap or Executor are already asSet.
@@ -325,7 +327,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         stateCheck(State.CREATED, State.RUNNING, State.QUEUING);
         node.setExecutor(executor);
         node.setBootstrap(bootstrap);
-        
+
         try
         {
             nodeListLock.writeLock().lock();
@@ -339,10 +341,12 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             nodeListLock.writeLock().unlock();
         }
-        
+
+        node.start();
+
         nodeManager.addNode(node);
     }
-    
+
     /**
      * Removes the provided node from the cluster. 
      * @param node

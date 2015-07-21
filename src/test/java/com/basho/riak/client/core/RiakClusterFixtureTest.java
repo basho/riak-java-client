@@ -24,6 +24,8 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingDeque;
+
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,6 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.internal.util.reflection.Whitebox;
 
 
 /**
@@ -171,6 +174,62 @@ public class RiakClusterFixtureTest
         assertEquals(3, listener.stateRunning);
         assertEquals(3, listener.stateShuttingDown);
         assertEquals(3, listener.stateShutdown);
+    }
+
+
+    @Test
+    public void testOperationQueue() throws Exception {
+        List<RiakNode> list = new LinkedList<RiakNode>();
+
+        RiakNode.Builder goodNodeBuilder = new RiakNode.Builder()
+                .withMinConnections(1)
+                .withMaxConnections(1)
+                .withRemotePort(5000 + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN);
+        RiakNode goodNode = goodNodeBuilder.build();
+
+        // Pass in 0 nodes, cause a queue backup.
+        RiakCluster cluster = new RiakCluster.Builder(list).withOperationQueueMaxDepth(2).build();
+
+        cluster.start();
+
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "test_bucket");
+        Location location = new Location(ns, "test_key2");
+        FetchOperation.Builder opBuilder = new FetchOperation.Builder(location);
+
+        FetchOperation operation1 = opBuilder.build();
+        FetchOperation operation2 = opBuilder.build();
+        FetchOperation operation3 = opBuilder.build();
+        FetchOperation operation4 = opBuilder.build();
+
+        RiakFuture<FetchOperation.Response, Location> future1 = cluster.execute(operation1);
+        RiakFuture<FetchOperation.Response, Location> future2 = cluster.execute(operation2);
+        RiakFuture<FetchOperation.Response, Location> future3 = cluster.execute(operation3);
+
+        try
+        {
+            assertFalse(operation3.isSuccess());
+            assertNotNull(operation3.cause());
+
+            // Add a node to process the queue backlog
+            cluster.addNode(goodNode);
+
+            // Process the first queue item
+            assertEquals(future1.get().getObjectList().get(0).getValue().toString(), "This is a value!");
+            assertTrue(!future1.get().isNotFound());
+
+            // Add another to fill it back up
+            RiakFuture<FetchOperation.Response, Location> future4 = cluster.execute(operation4);
+            
+            assertEquals(future2.get().getObjectList().get(0).getValue().toString(), "This is a value!");
+            assertTrue(!future2.get().isNotFound());
+            assertEquals(future4.get().getObjectList().get(0).getValue().toString(), "This is a value!");
+            assertTrue(!future4.get().isNotFound());
+        }
+        finally
+        {
+            cluster.shutdown().get();
+        }
+
     }
 
     public static class StateListener implements NodeStateListener
