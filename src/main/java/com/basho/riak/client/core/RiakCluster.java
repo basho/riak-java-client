@@ -255,8 +255,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     {
         if(operationQueue.size() >= operationQueueMaxDepth) {
             logger.warn("No Nodes Available, and Operation Queue at Max Depth");
+            operation.setRetrier(this, 1);
             operation.setException(new NoNodesAvailableException("No Nodes Available, and Operation Queue at Max Depth"));
-            inFlightCount.decrementAndGet();
             return;
         }
 
@@ -305,7 +305,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 state = State.RUNNING;
             }
         }
-
     }
     
     private boolean execute(FutureOperation operation, RiakNode previousNode)

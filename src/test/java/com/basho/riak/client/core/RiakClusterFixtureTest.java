@@ -171,10 +171,8 @@ public class RiakClusterFixtureTest
         assertEquals(3, listener.stateRunning);
         assertEquals(3, listener.stateShuttingDown);
         assertEquals(3, listener.stateShutdown);
-        
-        
     }
-    
+
     public static class StateListener implements NodeStateListener
     {
 
