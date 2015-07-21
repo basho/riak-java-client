@@ -124,7 +124,7 @@ public class RiakClusterTest
     @Test
     public void nodeOperationQueue() throws Exception
     {
-        final int OPERATION_QUEUE = 2;
+        final int OPERATION_QUEUE_MAX_SIZE = 2;
 
         NodeManager nodeManager = mock(NodeManager.class);
         FutureOperation operation1 = new FutureOperationImpl();
@@ -135,22 +135,21 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
 
-        doReturn(false).when(nodeManager).executeOnNode(operation1, null);
+        doReturn(false).when(nodeManager).executeOnNode(any(FutureOperation.class), isNull(RiakNode.class));
 
         // Build cluster, check our initial states
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build())
                                     .withNodeManager(nodeManager)
-                                    .withOperationQueueMaxDepth(OPERATION_QUEUE).build();
+                                    .withOperationQueueMaxDepth(OPERATION_QUEUE_MAX_SIZE).build();
         Whitebox.setInternalState(cluster, "state", RiakCluster.State.RUNNING);
 
-        boolean queueEnabled = Whitebox.getInternalState(cluster, "queueOperations");
-        assertTrue(queueEnabled);
+        assertQueueStatus(cluster, 0, RiakCluster.State.RUNNING, null);
 
         // Run our operations, fill up queue
         // 3rd operation should fail, and first 2 should register as in-flight.
 
-        RiakFuture future1 = cluster.execute(operation1);
-        RiakFuture future2 = cluster.execute(operation2);
+        cluster.execute(operation1);
+        cluster.execute(operation2);
         RiakFuture future3 = cluster.execute(operation3);
 
         assertEquals(2, cluster.inFlightCount());
@@ -160,50 +159,48 @@ public class RiakClusterTest
         verify(nodeManager, times(0)).executeOnNode(operation2, null);
         verify(nodeManager, times(0)).executeOnNode(operation3, null);
 
-        LinkedBlockingDeque < FutureOperation > operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
-        RiakCluster.State state = Whitebox.getInternalState(cluster, "state");
-        assertEquals(2, operationQueue.size());
-        assertEquals(RiakCluster.State.QUEUING, state);
+        assertQueueStatus(cluster, OPERATION_QUEUE_MAX_SIZE, RiakCluster.State.QUEUING, operation1);
 
         assertEquals(NoNodesAvailableException.class, future3.cause().getClass());
         assertEquals("No Nodes Available, and Operation Queue at Max Depth", future3.cause().getMessage());
 
-
         // Come back from a full queue
-        doReturn(true).when(nodeManager).executeOnNode(operation1, null);
-        doReturn(true).when(nodeManager).executeOnNode(operation2, null);
+        doReturn(true).when(nodeManager).executeOnNode(any(FutureOperation.class), isNull(RiakNode.class));
 
         // Act like the Queue Drain Thread
         Whitebox.invokeMethod(cluster, "queueDrainOperation");
-
-        operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
-        state = Whitebox.getInternalState(cluster, "state");
-        assertEquals(1, operationQueue.size());
-        assertEquals(RiakCluster.State.QUEUING, state);
+        assertQueueStatus(cluster, 1, RiakCluster.State.QUEUING, operation2);
         verify(nodeManager, times(4)).executeOnNode(operation1, null);
 
         // Run a new operation to ensure it gets queued after the old work
         FutureOperation operation4 = new FutureOperationImpl();
-        doReturn(true).when(node).execute(operation4);
-        doReturn(true).when(nodeManager).executeOnNode(operation4, null);
-        RiakFuture future4 = cluster.execute(operation4);
+        cluster.execute(operation4);
 
-        operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
-        state = Whitebox.getInternalState(cluster, "state");
-        assertEquals(1, operationQueue.size());
-        assertEquals(RiakCluster.State.QUEUING, state);
-        assertEquals(operation4, operationQueue.peek());
+        assertQueueStatus(cluster, 1, RiakCluster.State.QUEUING, operation4);
+
         verify(nodeManager, times(1)).executeOnNode(operation2, null);
 
         // Run remainder of Queue Drain operations.
         Whitebox.invokeMethod(cluster, "queueDrainOperation");
 
-        operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
-        state = Whitebox.getInternalState(cluster, "state");
-        assertEquals(0, operationQueue.size());
-        assertEquals(RiakCluster.State.RUNNING, state);
+        assertQueueStatus(cluster, 0, RiakCluster.State.RUNNING, null);
         verify(nodeManager, times(1)).executeOnNode(operation4, null);
+    }
 
+    private void assertQueueStatus(RiakCluster cluster, Integer expectedQueueSize,
+                                                        RiakCluster.State expectedClusterState,
+                                                        FutureOperation expectedQueueHead)
+    {
+        boolean queueEnabled = Whitebox.getInternalState(cluster, "queueOperations");
+        LinkedBlockingDeque< FutureOperation > operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
+        RiakCluster.State state = Whitebox.getInternalState(cluster, "state");
+        assertTrue(queueEnabled);
+        assertEquals((long)expectedQueueSize, operationQueue.size());
+        assertEquals(expectedClusterState, state);
+        if(expectedQueueHead != null)
+        {
+            assertEquals(expectedQueueHead, operationQueue.peek());
+        }
     }
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>
