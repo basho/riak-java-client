@@ -15,7 +15,8 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.netty.PingHealthCheck;
+import com.basho.riak.client.core.netty.*;
+import com.basho.riak.client.core.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -24,6 +25,9 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.DefaultPromise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -32,42 +36,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.basho.riak.client.core.netty.HealthCheckDecoder;
-import com.basho.riak.client.core.netty.PingHealthCheck;
-import com.basho.riak.client.core.netty.RiakChannelInitializer;
-import com.basho.riak.client.core.netty.RiakResponseException;
-import com.basho.riak.client.core.netty.RiakSecurityDecoder;
-import com.basho.riak.client.core.util.Constants;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -254,7 +225,7 @@ public class RiakNode implements RiakResponseListener
         return inProgressMap.size();
     }
 
-	public synchronized RiakNode start() throws UnknownHostException
+    public synchronized RiakNode start() throws UnknownHostException
     {
         stateCheck(State.CREATED);
 
@@ -272,10 +243,14 @@ public class RiakNode implements RiakResponseListener
             ownsBootstrap = true;
         }
 
-		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
-		if (socketAddress.isUnresolved())
-		    throw new UnknownHostException("failed resolving host " + remoteAddress);
-		bootstrap.handler(new RiakChannelInitializer(this)).remoteAddress(socketAddress);
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
+
+        if (socketAddress.isUnresolved())
+        {
+            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
+        }
+
+        bootstrap.handler(new RiakChannelInitializer(this)).remoteAddress(socketAddress);
 
         if (connectionTimeout > 0)
         {

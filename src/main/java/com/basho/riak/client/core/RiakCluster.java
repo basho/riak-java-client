@@ -152,7 +152,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     }
 
     public synchronized void start()
-     {
+    {
         stateCheck(State.CREATED);
 
         // Completely unneeded *right now* but operating on a copy
@@ -160,11 +160,14 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         // if a callback were to try and modify the list.
         for (RiakNode node : getNodes())
         {
-			try {
-				node.start();
-			} catch (UnknownHostException e) {
-				logger.error("Failed starting node: {}", e.getMessage());
-			}
+            try
+            {
+                node.start();
+            }
+            catch (UnknownHostException e)
+            {
+                logger.error("RiakCluster::start - Failed starting node: {}", e.getMessage());
+            }
         }
 
         retrierFuture = executor.schedule(new RetryTask(), 0, TimeUnit.SECONDS);
@@ -612,15 +615,15 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     }
 
 
-		public static Builder builder(List<RiakNode> nodes)
-		{
-			return new Builder(nodes);
-		}
+        public static Builder builder(List<RiakNode> nodes)
+        {
+            return new Builder(nodes);
+        }
 
-		public static Builder builder(RiakNode node)
-		{
-			return new Builder(node);
-		}
+        public static Builder builder(RiakNode node)
+        {
+            return new Builder(node);
+        }
 
     /**
      * Builder used to create {@link RiakCluster} instances.
