@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
+/**
+ * Serializes a {@link FunctionPhase} to a Riak MapReduce JSON format.
+ */
 class FunctionPhaseSerializer extends JsonSerializer<FunctionPhase>
 {
 

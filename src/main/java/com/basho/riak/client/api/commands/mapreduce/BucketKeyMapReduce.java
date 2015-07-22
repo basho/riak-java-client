@@ -13,48 +13,69 @@ import java.util.List;
 public class BucketKeyMapReduce extends MapReduce
 {
 
-	public BucketKeyMapReduce(BucketKeyInput input, Builder builder)
-	{
-		super(input, builder);
-	}
+    /**
+     * Creates a new BucketKeyMapReduce operation from the supplied configuration.
+     * @param input the input to use for the BucketKeyMapReduce input phase.
+     * @param builder the builder to use for the BucketKeyMapReduce input phase.
+     */
+    public BucketKeyMapReduce(BucketKeyInput input, Builder builder)
+    {
+        super(input, builder);
+    }
 
     /**
      * Builder for a BucketKeyMapReduce command.
      */
-	public static class Builder extends MapReduce.Builder<Builder>
-	{
+    public static class Builder extends MapReduce.Builder<Builder>
+    {
 
-		private List<BucketKeyInput.IndividualInput> input =
-				new ArrayList<BucketKeyInput.IndividualInput>();
+        private List<BucketKeyInput.IndividualInput> input =
+                new ArrayList<BucketKeyInput.IndividualInput>();
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
-		public Builder withLocation(Location location)
-		{
-			input.add(new BucketKeyInput.IndividualInput(location));
-			return this;
-		}
+        /**
+         * Adds a new location to the collection of MapReduce inputs.
+         * @param location the location to add to the inputs.
+         * @return a reference to this object.
+         */
+        public Builder withLocation(Location location)
+        {
+            input.add(new BucketKeyInput.IndividualInput(location));
+            return this;
+        }
 
-		public Builder withLocation(Location location, String keyData)
-		{
-			input.add(new BucketKeyInput.IndividualInput(location, keyData));
-			return this;
-		}
+        /**
+         * Adds a new location + key to the collection of MapReduce inputs.
+         * @param location the location to add to the inputs.
+         * @param keyData metadata which will be passed as an argument to a map function
+         *                when evaluated on the object stored under the provided location.
+         * @return a reference to this object.
+         */
+        public Builder withLocation(Location location, String keyData)
+        {
+            input.add(new BucketKeyInput.IndividualInput(location, keyData));
+            return this;
+        }
 
-		public BucketKeyMapReduce build()
-		{
-			if (input == null)
-			{
-				throw new IllegalStateException("At least one location must be specified");
-			}
+        /**
+         * Construct a new BucketKeyMapReduce operation.
+         * @return the new BucketKeyMapReduce operation.
+         */
+        public BucketKeyMapReduce build()
+        {
+            if (input == null)
+            {
+                throw new IllegalStateException("At least one location must be specified");
+            }
 
-			return new BucketKeyMapReduce(new BucketKeyInput(input), this);
-		}
+            return new BucketKeyMapReduce(new BucketKeyInput(input), this);
+        }
 
-	}
+    }
 
 }

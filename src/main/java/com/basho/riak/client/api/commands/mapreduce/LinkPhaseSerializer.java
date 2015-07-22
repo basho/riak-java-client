@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
+/**
+ * Serializes a {@link LinkPhase} to a Riak MapReduce JSON format.
+ */
 class LinkPhaseSerializer extends JsonSerializer<LinkPhase>
 {
 	@Override
