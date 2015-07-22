@@ -72,7 +72,7 @@ public class RiakNode implements RiakResponseListener
     private final String keyPassword;
     private final AtomicLong consecutiveFailedOperations = new AtomicLong(0);
     private final AtomicLong consecutiveFailedConnectionAttempts = new AtomicLong(0);
-    
+
     private volatile Bootstrap bootstrap;
     private volatile boolean ownsBootstrap;
     private volatile ScheduledExecutorService executor;
@@ -86,7 +86,7 @@ public class RiakNode implements RiakResponseListener
     private volatile boolean blockOnMaxConnections;
 
     private HealthCheckFactory healthCheckFactory;
-    
+
     private final ChannelFutureListener writeListener =
         new ChannelFutureListener()
         {
@@ -94,12 +94,12 @@ public class RiakNode implements RiakResponseListener
             public void operationComplete(ChannelFuture future) throws Exception
             {
                 // If there's a write failure, we yank the operation, close
-                // the channel, and set the exception. Returning the closed 
+                // the channel, and set the exception. Returning the closed
                 // channel to the pool discards it and records a disconnect
-                // for the health check. 
+                // for the health check.
                 if (!future.isSuccess())
                 {
-                    logger.error("Write failed on RiakNode {}:{} id: {}; cause: {}", 
+                    logger.error("Write failed on RiakNode {}:{} id: {}; cause: {}",
                                 remoteAddress, port, future.channel().hashCode(),
                                 future.cause());
                     FutureOperation inProgress = inProgressMap.remove(future.channel());
@@ -113,7 +113,7 @@ public class RiakNode implements RiakResponseListener
                 }
                 else
                 {
-                    // On a successful write we add the in-progress close listener 
+                    // On a successful write we add the in-progress close listener
                     // and let it handle a disco during an op.
                     future.channel().closeFuture().addListener(inProgressCloseListener);
                 }
@@ -127,16 +127,16 @@ public class RiakNode implements RiakResponseListener
             @Override
             public void operationComplete(ChannelFuture future) throws Exception
             {
-                // Rather than having to do an O(n) search here, we just leave 
+                // Rather than having to do an O(n) search here, we just leave
                 // the channel in available. Because it's closed it'll be discarded
-                // the next time it's pulled from the pool. 
-                // We record the disco for the health check. 
+                // the next time it's pulled from the pool.
+                // We record the disco for the health check.
                 recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-                logger.error("inAvailable channel closed; id:{} {}:{}", 
+                logger.error("inAvailable channel closed; id:{} {}:{}",
                              future.channel().hashCode(), remoteAddress, port);
             }
         };
-    
+
     private final ChannelFutureListener inProgressCloseListener =
         new ChannelFutureListener()
         {
@@ -144,13 +144,13 @@ public class RiakNode implements RiakResponseListener
             public void operationComplete(ChannelFuture future) throws Exception
             {
                 FutureOperation inProgress = inProgressMap.remove(future.channel());
-                logger.error("Channel closed while operation in progress; id:{} {}:{}", 
+                logger.error("Channel closed while operation in progress; id:{} {}:{}",
                              future.channel().hashCode(), remoteAddress, port);
                 if (inProgress != null)
                 {
                     returnConnection(future.channel()); // to release permit
                     recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-                    
+
                     // Netty seems to not bother telling you *why* the connection
                     // was closed.
                     if (future.cause() != null)
@@ -162,13 +162,13 @@ public class RiakNode implements RiakResponseListener
                         inProgress.setException(new Exception("Connection closed unexpectedly"));
                     }
                 }
-                
+
             }
         };
 
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
-    
+
     private RiakNode(Builder builder) throws UnknownHostException
     {
         this.executor = builder.executor;
@@ -184,7 +184,7 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
-        
+
         if (builder.bootstrap != null)
         {
             this.bootstrap = builder.bootstrap.clone();
@@ -225,10 +225,10 @@ public class RiakNode implements RiakResponseListener
         return inProgressMap.size();
     }
 
-    public synchronized RiakNode start()
+    public synchronized RiakNode start() throws UnknownHostException
     {
         stateCheck(State.CREATED);
-        
+
         if (executor == null)
         {
             executor = Executors.newSingleThreadScheduledExecutor();
@@ -243,8 +243,14 @@ public class RiakNode implements RiakResponseListener
             ownsBootstrap = true;
         }
 
-        bootstrap.handler(new RiakChannelInitializer(this))
-            .remoteAddress(new InetSocketAddress(remoteAddress, port));
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
+
+        if (socketAddress.isUnresolved())
+        {
+            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
+        }
+
+        bootstrap.handler(new RiakChannelInitializer(this)).remoteAddress(socketAddress);
 
         if (connectionTimeout > 0)
         {
@@ -301,7 +307,7 @@ public class RiakNode implements RiakResponseListener
         }
 
         executor.schedule(new ShutdownTask(), 0, TimeUnit.SECONDS);
-        
+
         return new Future<Boolean>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
@@ -329,9 +335,9 @@ public class RiakNode implements RiakResponseListener
             {
                 return shutdownLatch.getCount() <= 0;
             }
-                
+
         };
-        
+
     }
 
     /**
@@ -394,7 +400,7 @@ public class RiakNode implements RiakResponseListener
         {
             throw new IllegalArgumentException("Max connections less than min connections");
         }
-        // TODO: reap delta? 
+        // TODO: reap delta?
         return this;
     }
 
@@ -447,23 +453,23 @@ public class RiakNode implements RiakResponseListener
     /**
      * Set whether to block when all connections are in use.
      * @param block true to block.
-     * @see Builder#withBlockOnMaxConnections(boolean) 
+     * @see Builder#withBlockOnMaxConnections(boolean)
      */
     public void setBlockOnMaxConnections(boolean block)
     {
         this.blockOnMaxConnections = block;
     }
-    
+
     /**
      * Returns if this node is set to block when all connections are in use.
      * @return true if set to block, false otherwise.
-     * @see Builder#withBlockOnMaxConnections(boolean) 
+     * @see Builder#withBlockOnMaxConnections(boolean)
      */
     public boolean getBlockOnMaxConnections()
     {
         return blockOnMaxConnections;
     }
-    
+
     /**
      * Sets the connection idle timeout for connections.
      *
@@ -545,9 +551,7 @@ public class RiakNode implements RiakResponseListener
     {
         synchronized (stateListeners)
         {
-            for (Iterator<NodeStateListener> it = stateListeners.iterator(); it.hasNext(); )
-            {
-                NodeStateListener listener = it.next();
+            for (NodeStateListener listener : stateListeners) {
                 listener.nodeStateChanged(this, state);
             }
         }
@@ -589,18 +593,18 @@ public class RiakNode implements RiakResponseListener
     /**
      * Get a Netty channel from the pool.
      * <p>
-     * The first thing this method does is attempt to acquire a permit from the 
-     * Semaphore that controls the pool's behavior. Depending on whether 
+     * The first thing this method does is attempt to acquire a permit from the
+     * Semaphore that controls the pool's behavior. Depending on whether
      * {@code blockOnMaxConnections} is set, this will either block until one
      * becomes available or return null.
      * </p>
      * <p>
-     * Once a permit has been acquired, a channel from the pool or a newly 
+     * Once a permit has been acquired, a channel from the pool or a newly
      * created one will be returned. If an attempt to create a new connection
-     * fails, null will then be returned. 
+     * fails, null will then be returned.
      * </p>
-     * @return a connected channel or {@code null} 
-     * @see Builder#withBlockOnMaxConnections(boolean) 
+     * @return a connected channel or {@code null}
+     * @see Builder#withBlockOnMaxConnections(boolean)
      */
     private Channel getConnection()
     {
@@ -612,7 +616,7 @@ public class RiakNode implements RiakResponseListener
             {
                 if (!permits.tryAcquire())
                 {
-                    logger.info("All connections in use for {}; had to wait for one.", 
+                    logger.info("All connections in use for {}; had to wait for one.",
                                 remoteAddress);
                     permits.acquire();
                 }
@@ -627,7 +631,7 @@ public class RiakNode implements RiakResponseListener
         {
             acquired = permits.tryAcquire();
         }
-        
+
         Channel channel = null;
         if (acquired)
         {
@@ -661,7 +665,7 @@ public class RiakNode implements RiakResponseListener
         }
 
         ChannelFuture f = bootstrap.connect();
-        
+
         try
         {
             f.await();
@@ -673,7 +677,7 @@ public class RiakNode implements RiakResponseListener
             Thread.currentThread().interrupt();
             throw new ConnectionFailedException(ex);
         }
-        
+
         if (!f.isSuccess())
         {
             logger.error("Connection attempt failed: {}:{}; {}",
@@ -681,14 +685,14 @@ public class RiakNode implements RiakResponseListener
             consecutiveFailedConnectionAttempts.incrementAndGet();
             throw new ConnectionFailedException(f.cause());
         }
-        
+
         consecutiveFailedConnectionAttempts.set(0);
         Channel c = f.channel();
-        
-        if (trustStore != null) 
+
+        if (trustStore != null)
         {
             SSLContext context;
-            try 
+            try
             {
                 context = SSLContext.getInstance("TLS");
                 TrustManagerFactory tmf =
@@ -704,15 +708,15 @@ public class RiakNode implements RiakResponseListener
                 {
                     context.init(null, tmf.getTrustManagers(), null);
                 }
-                
+
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 c.close();
                 logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
                 throw new ConnectionFailedException(ex);
             }
-             
+
             SSLEngine engine = context.createSSLEngine();
 
             Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
@@ -731,12 +735,12 @@ public class RiakNode implements RiakResponseListener
             engine.setUseClientMode(true);
             RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
             c.pipeline().addFirst(decoder);
-                
+
             try
             {
                 DefaultPromise<Void> promise = decoder.getPromise();
                 promise.await();
-                
+
                 if (promise.isSuccess())
                 {
                     logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
@@ -747,8 +751,8 @@ public class RiakNode implements RiakResponseListener
                     logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
                     throw new ConnectionFailedException(promise.cause());
                 }
-                
-            
+
+
             }
             catch (InterruptedException e)
             {
@@ -758,9 +762,9 @@ public class RiakNode implements RiakResponseListener
                 Thread.currentThread().interrupt();
                 throw new ConnectionFailedException(e);
             }
-            
+
         }
-        
+
         return c;
 
     }
@@ -824,10 +828,10 @@ public class RiakNode implements RiakResponseListener
             remoteAddress, port);
         consecutiveFailedOperations.set(0);
         final FutureOperation inProgress = inProgressMap.get(channel);
-        
+
         // Especially with a streaming op, the close listener may trigger causing
-        // a race. This check guards that. 
-        if (inProgress != null)  
+        // a race. This check guards that.
+        if (inProgress != null)
         {
             inProgress.setResponse(response);
 
@@ -851,18 +855,18 @@ public class RiakNode implements RiakResponseListener
             returnConnection(channel); // release permit
         }
     }
-    
+
     @Override
     public void onException(Channel channel, final Throwable t)
     {
         logger.error("Operation onException() channel: id:{} {}:{} {}",
             channel.hashCode(), remoteAddress, port, t);
-        
+
         final FutureOperation inProgress = inProgressMap.remove(channel);
-        // There are fail cases where multiple exceptions are thrown from 
-        // the pipeline. In that case we'll get an exception from the 
+        // There are fail cases where multiple exceptions are thrown from
+        // the pipeline. In that case we'll get an exception from the
         // handler but will not have an entry in inProgress because it's
-        // already been handled. 
+        // already been handled.
         if (inProgress != null)
         {
             inProgress.setException(t);
@@ -978,7 +982,7 @@ public class RiakNode implements RiakResponseListener
 
     private void reapIdleConnections()
     {
-        // with all the concurrency there's really no reason to keep 
+        // with all the concurrency there's really no reason to keep
         // checking the sizes. This is really just a "best guess"
         int currentNum = inProgressMap.size() + available.size();
         if (currentNum > minConnections)
@@ -986,7 +990,7 @@ public class RiakNode implements RiakResponseListener
             // Note this will not throw a ConncurrentModificationException
             // and if hasNext() returns true you are guaranteed that
             // the next() will return a value (even if it has already
-            // been removed from the Deque between those calls). 
+            // been removed from the Deque between those calls).
             Iterator<ChannelWithIdleTime> i = available.descendingIterator();
             while (i.hasNext() && currentNum > minConnections)
             {
@@ -1004,8 +1008,8 @@ public class RiakNode implements RiakResponseListener
                 }
                 else
                 {
-                    // Since we are descending and this is a LIFO, 
-                    // if the current connection hasn't been idle beyond 
+                    // Since we are descending and this is a LIFO,
+                    // if the current connection hasn't been idle beyond
                     // the threshold, there's no reason to descend further
                     break;
                 }
@@ -1032,18 +1036,18 @@ public class RiakNode implements RiakResponseListener
             // sliding window should be larger than the
             // frequency of this task
             long current = System.nanoTime();
-            long window = 3000000000L; // 3 seconds 
+            long window = 3000000000L; // 3 seconds
             for (ChannelWithIdleTime cwi = recentlyClosed.peek();
                  cwi != null && current - cwi.getIdleStart() > window;
                  cwi = recentlyClosed.peek())
             {
                 recentlyClosed.poll();
             }
-            
+
             // If we more than 5 recently closed in 3 seconds, more than 1 consecutive failed
             // connection attempts, more than 5 consecutive error responses from Riak,
             // or we failed a healthcheck
-            if ((state == State.RUNNING && 
+            if ((state == State.RUNNING &&
                     (recentlyClosed.size() > 5 ||
                      consecutiveFailedConnectionAttempts.get() > 1 ||
                      consecutiveFailedOperations.get() > 5)
@@ -1062,30 +1066,30 @@ public class RiakNode implements RiakResponseListener
             HealthCheckDecoder healthCheck = healthCheckFactory.makeDecoder();
             RiakFuture<RiakMessage, Void> future = healthCheck.getFuture();
             // See: doGetConnection() - this will purge closed
-            // connections from the available queue and either 
+            // connections from the available queue and either
             // return/create a new one (meaning the node is up) or throw
             // an exception if a connection can't be made.
             Channel c = doGetConnection();
             logger.debug("Healthcheck channel: {} isOpen: {} handlers:{}", c.hashCode(), c.isOpen(), c.pipeline().names());
 
-            
-            
+
+
             // If the channel closes between when we got it and now, the pipeline is emptied. If the handlers
             // aren't there we fail the healthcheck
-            
+
             try
             {
                 if (c.pipeline().names().contains(Constants.SSL_HANDLER))
                 {
                     c.pipeline().addAfter(Constants.SSL_HANDLER, Constants.HEALTHCHECK_CODEC, healthCheck);
                 }
-                else 
+                else
                 {
                     c.pipeline().addBefore(Constants.MESSAGE_CODEC, Constants.HEALTHCHECK_CODEC, healthCheck);
                 }
-                
+
                 logger.debug("healthCheck added to pipeline.");
-                
+
                 //future.await(5, TimeUnit.SECONDS);
                 future.await();
                 if (future.isSuccess())
@@ -1096,7 +1100,7 @@ public class RiakNode implements RiakResponseListener
                 {
                     healthCheckFailed(future.cause());
                 }
-                
+
             }
             catch (InterruptedException ex)
             {
@@ -1126,7 +1130,7 @@ public class RiakNode implements RiakResponseListener
         {
             logger.error("Runtime exception during healthcheck: {}",e);
         }
-        
+
     }
 
     private void healthCheckFailed(Throwable cause)
@@ -1144,7 +1148,7 @@ public class RiakNode implements RiakResponseListener
                 remoteAddress, port, cause);
         }
     }
-    
+
     private void healthCheckSucceeded()
     {
         if (state == State.HEALTH_CHECKING)
@@ -1219,7 +1223,7 @@ public class RiakNode implements RiakResponseListener
          * @see #withConnectionTimeout(int)
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
-        
+
         /**
          * The default HealthCheckFactory.
          * <p>
@@ -1384,14 +1388,14 @@ public class RiakNode implements RiakResponseListener
         /**
          * Set whether to block if all connections are in use.
          * <p>
-         * If a maximum number of connections is specified and all those 
-         * connections are in use, the default 
-         * behavior when an operation is submitted to a node is to 
-         * fail-fast and return. Setting this to true will cause the 
+         * If a maximum number of connections is specified and all those
+         * connections are in use, the default
+         * behavior when an operation is submitted to a node is to
+         * fail-fast and return. Setting this to true will cause the
          * call to block (fair-scheduled, FIFO) until a connection becomes
-         * available. 
+         * available.
          * </p>
-         * @param block whether to block when an operation is submitted and 
+         * @param block whether to block when an operation is submitted and
          * all connections are in use.
          * @return this
          */
@@ -1400,17 +1404,17 @@ public class RiakNode implements RiakResponseListener
             this.blockOnMaxConnections = block;
             return this;
         }
-        
+
         /**
-         * Set the credentials for Riak security and authentication. 
+         * Set the credentials for Riak security and authentication.
          * <p>
-         * Riak supports authentication and authorization features. 
+         * Riak supports authentication and authorization features.
          * These credentials will be used for all connections.
          * </p>
          * <p>
          * Note this requires Riak to have been configured with security enabled.
          * </p>
-         * 
+         *
          * @param username the riak user name.
          * @param password the password for this user.
          * @param trustStore A Java KeyStore loaded with the CA certificate required for TLS/SSL
@@ -1423,7 +1427,7 @@ public class RiakNode implements RiakResponseListener
             this.trustStore = trustStore;
             return this;
         }
-        
+
         /**
          * Set the credentials for Riak security and authentication.
          * <p>
@@ -1465,7 +1469,7 @@ public class RiakNode implements RiakResponseListener
             this.healthCheckFactory = factory;
             return this;
         }
-        
+
         /**
          * Builds a RiakNode.
          * If a Netty {@code Bootstrap} and/or a {@code ScheduledExecutorService} has not been provided they
