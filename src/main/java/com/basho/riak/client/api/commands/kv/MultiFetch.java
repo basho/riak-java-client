@@ -87,17 +87,17 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     public static final int DEFAULT_MAX_IN_FLIGHT = 10;
     
     private final ArrayList<Location> locations = new ArrayList<Location>();
-	private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
     private final int maxInFlight;
 
-	private MultiFetch(Builder builder)
-	{
-		this.locations.addAll(builder.keys);
-		this.options.putAll(builder.options);
+    private MultiFetch(Builder builder)
+    {
+        this.locations.addAll(builder.keys);
+        this.options.putAll(builder.options);
         this.maxInFlight = builder.maxInFlight;
     }
 
-	@Override
+    @Override
     protected RiakFuture<Response, List<Location>> executeAsync(final RiakCluster cluster)
     {
         List<FetchValue> fetchOperations = buildFetchOperations();
@@ -119,15 +119,15 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
             new LinkedList<FetchValue>();
         
         for (Location location : locations)
-		{
+        {
             FetchValue.Builder builder = new FetchValue.Builder(location);
-			
-			for (Option<?> option : options.keySet())
-			{
-				builder.withOption((Option<Object>) option, options.get(option));
-			}
 
-			fetchValueOperations.add(builder.build());
+            for (Option<?> option : options.keySet())
+            {
+                builder.withOption((Option<Object>) option, options.get(option));
+            }
+
+            fetchValueOperations.add(builder.build());
         }
         
         return fetchValueOperations;
@@ -135,55 +135,55 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     }
     
     /**
-	 * Used to construct a MutiFetch command.
-	 */
-	public static class Builder
-	{
-		private ArrayList<Location> keys = new ArrayList<Location>();
-		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+     * Used to construct a MutiFetch command.
+     */
+    public static class Builder
+    {
+        private ArrayList<Location> keys = new ArrayList<Location>();
+        private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
         private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
         
         /**
-		 * Add a location to the list of locations to retrieve as part of 
+         * Add a location to the list of locations to retrieve as part of
          * this multifetch operation.
-		 *
+         *
          * @param location the location to add.
-		 * @return this
-		 */
-		public Builder addLocation(Location location)
-		{
-			keys.add(location);
-			return this;
-		}
+         * @return this
+         */
+        public Builder addLocation(Location location)
+        {
+            keys.add(location);
+            return this;
+        }
 
-		/**
-		 * Add a list of Locations to the list of locations to retrieve as part of 
+        /**
+         * Add a list of Locations to the list of locations to retrieve as part of
          * this multifetch operation.
-		 *
+         *
          * @param location a list of Locations
-		 * @return a reference to this object
-		 */
-		public Builder addLocations(Location... location)
-		{
-			keys.addAll(Arrays.asList(location));
-			return this;
-		}
+         * @return a reference to this object
+         */
+        public Builder addLocations(Location... location)
+        {
+            keys.addAll(Arrays.asList(location));
+            return this;
+        }
 
-		/**
-		 * Add a set of keys to the list of Locations to retrieve as part of 
+        /**
+         * Add a set of keys to the list of Locations to retrieve as part of
          * this multifetch operation.
-		 *
+         *
          * @param location an Iterable set of Locations.
-		 * @return a reference to this object
-		 */
-		public Builder addLocations(Iterable<Location> location)
-		{
-			for (Location loc : location)
-			{
-				keys.add(loc);
-			}
-			return this;
-		}
+         * @return a reference to this object
+         */
+        public Builder addLocations(Iterable<Location> location)
+        {
+            for (Location loc : location)
+            {
+                keys.add(loc);
+            }
+            return this;
+        }
 
         /**
          * Set the maximum number of requests to be in progress simultaneously.
@@ -202,18 +202,18 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
         
         /**
-		 * A {@link Option} to use with each fetch operation.
-		 *
-		 * @param option an option
-		 * @param value  the option's associated value
-		 * @param <U>    the type of the option's value
-		 * @return a reference to this object.
-		 */
-		public <U> Builder withOption(Option<U> option, U value)
-		{
-			this.options.put(option, value);
-			return this;
-		}
+         * A {@link Option} to use with each fetch operation.
+         *
+         * @param option an option
+         * @param value  the option's associated value
+         * @param <U>    the type of the option's value
+         * @return a reference to this object.
+         */
+        public <U> Builder withOption(Option<U> option, U value)
+        {
+            this.options.put(option, value);
+            return this;
+        }
 
         /**
          * Set the Riak-side timeout value.
@@ -230,44 +230,44 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
             return this;
         }
         
-		/**
-		 * Build a {@link MultiFetch} operation from this builder
-		 *
-		 * @return an initialized {@link MultiFetch} operation
-		 */
-		public MultiFetch build()
-		{
-			return new MultiFetch(this);
-		}
+        /**
+         * Build a {@link MultiFetch} operation from this builder
+         *
+         * @return an initialized {@link MultiFetch} operation
+         */
+        public MultiFetch build()
+        {
+            return new MultiFetch(this);
+        }
 
-	}
+    }
 
-	/**
-	 * The response from Riak for a MultiFetch command.
-	 *
-	 */
-	public static final class Response implements Iterable<RiakFuture<FetchValue.Response, Location>>
-	{
+    /**
+     * The response from Riak for a MultiFetch command.
+     *
+     */
+    public static final class Response implements Iterable<RiakFuture<FetchValue.Response, Location>>
+    {
 
-		private final List<RiakFuture<FetchValue.Response, Location>> responses;
+        private final List<RiakFuture<FetchValue.Response, Location>> responses;
 
-		Response(List<RiakFuture<FetchValue.Response, Location>> responses)
-		{
-			this.responses = responses;
-		}
+        Response(List<RiakFuture<FetchValue.Response, Location>> responses)
+        {
+            this.responses = responses;
+        }
 
-		@Override
-		public Iterator<RiakFuture<FetchValue.Response, Location>> iterator()
-		{
-			return unmodifiableList(responses).iterator();
-		}
+        @Override
+        public Iterator<RiakFuture<FetchValue.Response, Location>> iterator()
+        {
+            return unmodifiableList(responses).iterator();
+        }
         
         public List<RiakFuture<FetchValue.Response, Location>> getResponses()
         {
             return responses;
         }
         
-	}
+    }
 
     private class Submitter implements Runnable, RiakFutureListener<FetchValue.Response, Location>
     {

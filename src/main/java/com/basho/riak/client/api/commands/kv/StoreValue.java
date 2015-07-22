@@ -74,7 +74,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     private final Namespace namespace;
     private final BinaryValue key;
     private final Map<Option<?>, Object> options =
-	    new HashMap<Option<?>, Object>();
+        new HashMap<Option<?>, Object>();
     private final Object value;
     private final TypeReference<?> typeReference;
     private final VClock vclock;
@@ -340,12 +340,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     /**
      * Used to construct a StoreValue command.
      */
-	public static class Builder
-	{
+    public static class Builder
+    {
 
-		private final Map<Option<?>, Object> options =
-			new HashMap<Option<?>, Object>();
-		private final Object value;
+        private final Map<Option<?>, Object> options =
+            new HashMap<Option<?>, Object>();
+        private final Object value;
         private Namespace namespace;
         private BinaryValue key;
         private TypeReference<?> typeReference;
@@ -395,7 +395,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * @param location the location to store the object in Riak.
          * @return a reference to this object.
          */
-		public Builder withLocation(Location location)
+        public Builder withLocation(Location location)
         {
             this.namespace = location.getNamespace();
             this.key = location.getKey();
@@ -434,19 +434,19 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         }
         
         /**
-		 * Add an optional setting for this command. 
+         * Add an optional setting for this command.
          * This will be passed along with the request to Riak to tell it how
-		 * to behave when servicing the request.
-		 *
-		 * @param option the option
-		 * @param value the value for the option
-		 * @return a reference to this object.
-		 */
-		public <T> Builder withOption(Option<T> option, T value)
-		{
-			options.put(option, value);
-			return this;
-		}
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
+         */
+        public <T> Builder withOption(Option<T> option, T value)
+        {
+            options.put(option, value);
+            return this;
+        }
 
         /**
          * Set the vector clock.
@@ -469,11 +469,11 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * Construct the StoreValue command.
          * @return the new StoreValue command.
          */
-		public StoreValue build()
-		{
-			return new StoreValue(this);
-		}
-	}
+        public StoreValue build()
+        {
+            return new StoreValue(this);
+        }
+    }
 
     @Override
     public int hashCode() {
