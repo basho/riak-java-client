@@ -36,6 +36,12 @@
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
+        <developer>
+            <name>Chris Mancini</name>
+            <email>cmancini@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
     </developers>
     
     <scm>
