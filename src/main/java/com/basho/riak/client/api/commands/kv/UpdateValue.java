@@ -593,4 +593,54 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             return location;
         }
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + location.hashCode();
+        result = prime * result + update.hashCode();
+        result = prime * result + typeReference.hashCode();
+        result = prime * result + fetchOptions.hashCode();
+        result = prime * result + storeOptions.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof UpdateValue)) {
+            return false;
+        }
+
+        final UpdateValue other = (UpdateValue) obj;
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+            return false;
+        }
+        if (this.update != other.update && (this.update == null || !this.update.equals(other.update))) {
+            return false;
+        }
+        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference))) {
+            return false;
+        }
+        if (this.fetchOptions != other.fetchOptions && (this.fetchOptions == null || !this.fetchOptions.equals(other.fetchOptions))) {
+            return false;
+        }
+        if (this.storeOptions != other.storeOptions && (this.storeOptions == null || !this.storeOptions.equals(other.storeOptions))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{location: %s, update: %s, typeReference: %s,"
+                + " fetchOptions: %s, storeOptions: %s}", location, update,
+                typeReference, fetchOptions, storeOptions);
+    }
 }
