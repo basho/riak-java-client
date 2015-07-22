@@ -18,6 +18,7 @@ package com.basho.riak.client.core;
 import java.util.LinkedList;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,12 +86,12 @@ public class DefaultNodeManagerTest
         FutureOperation operation = PowerMockito.mock(FutureOperation.class);
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
-        nodeManager.executeOnNode(operation, null);
+        boolean executed = nodeManager.executeOnNode(operation, null);
         for (int i = 0; i < mockNodes.size(); i++)
         {
             verify(mockNodes.get(i)).execute(operation);
         }
-        verify(operation).setException(argThat(new IsException()));
+        assertFalse(executed);
     }
     
     @Test

@@ -389,7 +389,6 @@ public class RiakNodeTest
             return null;
         }
 
-
     }
 
 }

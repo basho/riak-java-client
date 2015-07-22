@@ -15,11 +15,7 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.netty.HealthCheckDecoder;
-import com.basho.riak.client.core.netty.PingHealthCheck;
-import com.basho.riak.client.core.netty.RiakChannelInitializer;
-import com.basho.riak.client.core.netty.RiakResponseException;
-import com.basho.riak.client.core.netty.RiakSecurityDecoder;
+import com.basho.riak.client.core.netty.*;
 import com.basho.riak.client.core.util.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -29,21 +25,20 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.Promise;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManagerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -164,7 +159,7 @@ public class RiakNode implements RiakResponseListener
                     }
                     else
                     {
-                        inProgress.setException(new Exception("Connection closed unexpectantly"));
+                        inProgress.setException(new Exception("Connection closed unexpectedly"));
                     }
                 }
                 

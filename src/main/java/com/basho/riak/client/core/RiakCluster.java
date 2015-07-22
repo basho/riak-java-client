@@ -45,9 +45,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class  RiakCluster implements OperationRetrier, NodeStateListener
 {
-    enum State { CREATED, RUNNING, SHUTTING_DOWN, SHUTDOWN }
+    enum State { CREATED, RUNNING, QUEUING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;
+    private final int operationQueueMaxDepth;
     private final NodeManager nodeManager;
     private final AtomicInteger inFlightCount = new AtomicInteger();
     private final ScheduledExecutorService executor;
@@ -56,12 +57,15 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final ReentrantReadWriteLock nodeListLock = new ReentrantReadWriteLock();
     private final LinkedBlockingQueue<FutureOperation> retryQueue =
         new LinkedBlockingQueue<FutureOperation>();
+    private final boolean queueOperations;
+    private final LinkedBlockingDeque<FutureOperation> operationQueue;
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
     
     
     private volatile ScheduledFuture<?> shutdownFuture;
     private volatile ScheduledFuture<?> retrierFuture;
+    private volatile ScheduledFuture<?> queueDrainFuture;
     
     private volatile State state;
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
@@ -69,6 +73,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private RiakCluster(Builder builder) throws UnknownHostException
     {
         this.executionAttempts = builder.executionAttempts;
+        this.queueOperations =  builder.operationQueueMaxDepth > 0;
         
         if (null == builder.nodeManager)
         {
@@ -89,15 +94,19 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 .group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class);
         }
-        
+
+
         if (builder.executor != null)
         {
             executor = builder.executor;
         }
         else
         {
+            // Retry Task, Shutdown Task, (optional) Queue Task
+            Integer poolSize = this.queueOperations ? 3 : 2;
+
             // We still need an executor if none was provided. 
-            executor = new ScheduledThreadPoolExecutor(2);
+            executor = new ScheduledThreadPoolExecutor(poolSize);
         }
         
         nodeList = new ArrayList<RiakNode>(builder.riakNodes.size());
@@ -108,7 +117,22 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             node.addStateListener(nodeManager);
             nodeList.add(node);
         }
-        
+
+        if(this.queueOperations)
+        {
+            this.operationQueueMaxDepth = builder.operationQueueMaxDepth;
+            this.operationQueue = new LinkedBlockingDeque<FutureOperation>();
+
+            for (RiakNode node : nodeList) {
+                node.setBlockOnMaxConnections(false);
+            }
+        }
+        else
+        {
+            this.operationQueueMaxDepth = 0;
+            this.operationQueue = null;
+        }
+
         // Pass a *copy* of the list to the NodeManager
         nodeManager.init(new ArrayList<RiakNode>(nodeList));
         state = State.CREATED;
@@ -127,7 +151,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     }
     
     public synchronized void start()
-    {
+     {
         stateCheck(State.CREATED);
         
         // Completely unneeded *right now* but operating on a copy
@@ -139,13 +163,19 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         }
         
         retrierFuture = executor.schedule(new RetryTask(), 0, TimeUnit.SECONDS);
+
+        if(this.queueOperations)
+        {
+            queueDrainFuture = executor.schedule(new QueueDrainTask(), 0, TimeUnit.SECONDS);
+        }
+
         logger.info("RiakCluster is starting.");
         state = State.RUNNING;
     }
 
     public synchronized Future<Boolean> shutdown()
     {
-        stateCheck(State.RUNNING);
+        stateCheck(State.RUNNING, State.QUEUING);
         logger.info("RiakCluster is shutting down.");
         state = State.SHUTTING_DOWN;
         
@@ -189,32 +219,115 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     
     public <V,S> RiakFuture<V,S> execute(FutureOperation<V, ?, S> operation)
     {
-        stateCheck(State.RUNNING);
-        operation.setRetrier(this, executionAttempts); 
+        stateCheck(State.RUNNING, State.QUEUING);
+        operation.setRetrier(this, executionAttempts);
         inFlightCount.incrementAndGet();
-        this.execute(operation, null);
+
+        boolean gotConnection = false;
+
+        // Avoid queue if we're not using it, or it's currently empty
+        if(notQueuingOrQueueIsEmpty())
+        {
+            gotConnection = this.execute(operation, null);
+        }
+
+        if(!gotConnection) // Operation didn't run
+        {
+            // Queue it up, run next from queue
+            if(this.queueOperations)
+            {
+                executeWithQueueStrategy(operation, null);
+            }
+            else // Out of connections, retrier will pick it up later.
+            {
+                operation.setException(new NoNodesAvailableException());
+            }
+        }
+
         return operation;
     }
-    
-    private void execute(FutureOperation operation, RiakNode previousNode) 
+
+    private boolean notQueuingOrQueueIsEmpty() {
+        return !this.queueOperations || this.operationQueue.size() == 0;
+    }
+
+    private void executeWithQueueStrategy(FutureOperation operation, RiakNode previousNode)
     {
-        nodeManager.executeOnNode(operation, previousNode);
+        if(operationQueue.size() >= operationQueueMaxDepth)
+        {
+            logger.warn("No Nodes Available, and Operation Queue at Max Depth");
+            operation.setRetrier(this, 1);
+            operation.setException(new NoNodesAvailableException("No Nodes Available, and Operation Queue at Max Depth"));
+            return;
+        }
+
+        operationQueue.offer(operation);
+        verifyQueueStatus();
+
+        // Get next queued operation
+        FutureOperation operationNext = operationQueue.poll();
+        if (operationNext == null)
+        {
+            return;
+        }
+
+        executeWithRequeueOnNoConnection(operationNext);
+    }
+
+    private boolean executeWithRequeueOnNoConnection(FutureOperation operation)
+    {
+        // Attempt to run
+        boolean gotConnection = this.execute(operation, null);
+
+        // If we can't get a connection, put it back at the beginning of the queue
+        if(!gotConnection) {
+            operationQueue.offerFirst(operation);
+        }
+
+        verifyQueueStatus();
+
+        return gotConnection;
+    }
+
+    private void verifyQueueStatus()
+    {
+        Integer queueSize = operationQueue.size();
+
+        if(queueSize > 0 && state == State.RUNNING)
+        {
+            state = State.QUEUING;
+            logger.debug("RiakCluster queuing operations.");
+        }
+        else if(queueSize == 0 && (state == State.QUEUING || state == State.SHUTTING_DOWN))
+        {
+            logger.debug("RiakCluster cleared operation queue.");
+            if(state == State.QUEUING)
+            {
+                state = State.RUNNING;
+            }
+        }
+    }
+    
+    private boolean execute(FutureOperation operation, RiakNode previousNode)
+    {
+        return nodeManager.executeOnNode(operation, previousNode);
     }
     
     /**
      * Adds a {@link RiakNode} to this cluster. 
      * The node can not have been started nor have its Bootstrap or Executor
      * asSet.
+     * The node will be started as part of this process.
      * @param node the RiakNode to add
      * @throws java.net.UnknownHostException if the RiakNode's hostname cannot be resolved
      * @throws IllegalArgumentException if the node's Bootstrap or Executor are already asSet.
      */
     public void addNode(RiakNode node) throws UnknownHostException
     {
-        stateCheck(State.CREATED, State.RUNNING);
+        stateCheck(State.CREATED, State.RUNNING, State.QUEUING);
         node.setExecutor(executor);
         node.setBootstrap(bootstrap);
-        
+
         try
         {
             nodeListLock.writeLock().lock();
@@ -228,10 +341,12 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             nodeListLock.writeLock().unlock();
         }
-        
+
+        node.start();
+
         nodeManager.addNode(node);
     }
-    
+
     /**
      * Removes the provided node from the cluster. 
      * @param node
@@ -239,7 +354,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      */
     public boolean removeNode(RiakNode node)
     {
-        stateCheck(State.CREATED, State.RUNNING);
+        stateCheck(State.CREATED, State.RUNNING, State.QUEUING);
         boolean removed = false;
         try
         {
@@ -264,7 +379,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      */
     public List<RiakNode> getNodes()
     {
-        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN, State.QUEUING);
         try
         {
             nodeListLock.readLock().lock();
@@ -337,7 +452,29 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private void retryOperation() throws InterruptedException
     {
         FutureOperation operation = retryQueue.take();
-        execute(operation, operation.getLastNode());
+
+        Boolean gotConnection = execute(operation, operation.getLastNode());
+
+        if(!gotConnection)
+        {
+            operation.setException(new NoNodesAvailableException());
+        }
+    }
+
+    private void queueDrainOperation() throws InterruptedException
+    {
+        FutureOperation operation = operationQueue.take();
+
+        boolean connectionSuccess = executeWithRequeueOnNoConnection(operation);
+
+        // If we didn't get a connection here, then we are thrashing on connections
+        // Sleep for a bit so we don't spinwait our CPUs to death
+        if(!connectionSuccess)
+        {
+            // TODO: should this timeout be configurable, or based on an
+            // average command execution time?
+            Thread.sleep(50);
+        }
     }
     
     /**
@@ -353,7 +490,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      */
     public void registerNodeStateListener(NodeStateListener listener)
     {
-        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN, State.QUEUING);
         try
         {
             stateListeners.add(listener);
@@ -380,7 +517,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
      */
     public void removeNodeStateListener(NodeStateListener listener)
     {
-        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN);
+        stateCheck(State.CREATED, State.RUNNING, State.SHUTTING_DOWN, State.QUEUING);
         try
         {
             stateListeners.remove(listener);
@@ -417,6 +554,27 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         }
         
     }
+
+    private class QueueDrainTask implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            while (!Thread.interrupted())
+            {
+                try
+                {
+                    queueDrainOperation();
+                }
+                catch (InterruptedException ex)
+                {
+                    break;
+                }
+            }
+
+            logger.info("Queue Worker shutting down.");
+        }
+    }
     
     private class ShutdownTask implements Runnable
     {
@@ -428,6 +586,11 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 logger.info("All operations have completed");
 
                 retrierFuture.cancel(true);
+
+                if(queueOperations)
+                {
+                    queueDrainFuture.cancel(true);
+                }
                 
                 // Copying the list avoids any potential deadlocks on the callbacks.
                 for (RiakNode node : getNodes())
@@ -460,14 +623,18 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     public static class Builder
     {
         public final static int DEFAULT_EXECUTION_ATTEMPTS = 3;
+        public final static int DEFAULT_OPERATION_QUEUE_DEPTH = 0;
         
         private final List<RiakNode> riakNodes;
         
         private int executionAttempts = DEFAULT_EXECUTION_ATTEMPTS;
+        private int operationQueueMaxDepth = DEFAULT_OPERATION_QUEUE_DEPTH;
+
         private NodeManager nodeManager;
         private ScheduledExecutorService executor;
         private Bootstrap bootstrap;
-        
+
+
         /**
          * Instantiate a Builder containing the supplied {@link RiakNode}s
          * @param riakNodes - a List of unstarted RiakNode objects
@@ -542,6 +709,21 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         public Builder withBootstrap(Bootstrap bootstrap)
         {
             this.bootstrap = bootstrap;
+            return this;
+        }
+
+        /**
+         * Set the maximum number of operations to queue.
+         * A value of 0 disables the command queue.
+         * <b>Setting this will override any of this clusters @{link RiakNode}s blockOnMaxConnection settings.</b>
+         *
+         * @param operationQueueMaxDepth - maximum number of operations to queue if all connections are busy
+         * @return this
+         * @see #DEFAULT_OPERATION_QUEUE_DEPTH
+         */
+        public Builder withOperationQueueMaxDepth(int operationQueueMaxDepth)
+        {
+            this.operationQueueMaxDepth = operationQueueMaxDepth;
             return this;
         }
         
