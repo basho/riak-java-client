@@ -60,11 +60,20 @@ public final class DeleteIndex extends RiakCommand<Void, String>
 
 		private final String index;
 
+        /**
+         * Construct a Builder for a DeleteIndex command.
+         *
+         * @param index The name of the search index to delete from Riak.
+         */
 		public Builder(String index)
 		{
 			this.index = index;
 		}
 
+        /**
+         * Construct the DeleteIndex command.
+         * @return the new DeleteIndex command.
+         */
 		public DeleteIndex build()
 		{
 			return new DeleteIndex(this);
