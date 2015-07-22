@@ -39,8 +39,8 @@ import java.nio.charset.Charset;
 public final class Location
 {
     
-	private final Namespace namespace;
-	private final BinaryValue key;
+    private final Namespace namespace;
+    private final BinaryValue key;
     
     /**
      * Construct a new Location with the provided Namespace and key.
@@ -176,10 +176,10 @@ public final class Location
         return true;
     }
 
-	@Override
-	public String toString()
-	{
-		return "{namespace: " + namespace + ", key: " + key + "}";
-	}
+    @Override
+    public String toString()
+    {
+        return "{namespace: " + namespace + ", key: " + key + "}";
+    }
     
 }
