@@ -262,7 +262,7 @@ public class RiakClient
         List<RiakNode> nodes = new LinkedList<RiakNode>();
         for (InetSocketAddress addy : addresses)
         {
-            builder.withRemoteAddress(addy.getHostString())
+            builder.withRemoteAddress(addy.getHostName())
                    .withRemotePort(addy.getPort());
             nodes.add(builder.build());
         }
