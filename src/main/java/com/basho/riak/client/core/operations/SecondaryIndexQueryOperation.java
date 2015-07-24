@@ -177,8 +177,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             else
             {
                 // Full Bucket Read
-                assert query.coverContext != null;
-                pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverContext))
+                assert query.coverageContext != null;
+
+                pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverageContext))
                     .setKey(ByteString.EMPTY)
                     .setIndex(ByteString.copyFromUtf8("$bucket"))
                     .clearReturnTerms()
@@ -234,7 +235,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final Boolean paginationSort;
         private final BinaryValue termFilter;
         private final Integer timeout;
-        private final byte[] coverContext;
+        private final byte[] coverageContext;
         
         private Query(Builder builder)
         {
@@ -249,7 +250,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.termFilter = builder.termFilter;
             this.namespace = builder.namespace;
             this.timeout = builder.timeout;
-            this.coverContext = builder.coverContext;
+            this.coverageContext = builder.coverageContext;
         }
 
         /**
@@ -344,8 +345,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         /**
          * @return the cover context value, or null if not set.
          */
-        public byte[] getCoverContext() {
-            return coverContext;
+        public byte[] getCoverageContext() {
+            return coverageContext;
         }
 
         public static class Builder
@@ -361,7 +362,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private Boolean paginationSort;
             private BinaryValue termFilter;
             private Integer timeout;
-            private byte[] coverContext;
+            private byte[] coverageContext;
             
             /**
             * Constructs a builder for a (2i) Query. 
@@ -502,21 +503,21 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
            }
 
            /**
-            * Set the cover context for the query
-            * @param coverContext
+            * Set the coverage context for the query
+            * @param coverageContext
             * @return a reference to this object.
             */
-           public Builder withCoverContext(byte[] coverContext) {
-               this.coverContext = coverContext;
+           public Builder withCoverageContext(byte[] coverageContext) {
+               this.coverageContext = coverageContext;
                return this;
            }
 
            public Query build()
             {
                 // sanity checks
-                if ( rangeStart == null && rangeEnd == null && indexKey == null && coverContext == null)
+                if ( rangeStart == null && rangeEnd == null && indexKey == null && coverageContext == null)
                 {
-                    throw new IllegalArgumentException("An index key or range or coverContext must be supplied");
+                    throw new IllegalArgumentException("An index key or range or coverageContext must be supplied");
                 }
                 else if ( (rangeStart != null && rangeEnd == null) ||
                      (rangeEnd != null && rangeStart == null ) )
