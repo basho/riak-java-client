@@ -30,7 +30,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             for (RiakKvPB.RpbCoverageEntry e: resp.getEntriesList())
             {
                 final Response.CoverageEntry ce = new Response.CoverageEntry();
-                ce.coverContext = e.getCoverContext().toByteArray();
+                ce.coverageContext = e.getCoverContext().toByteArray();
                 ce.description = e.getKeyspaceDesc().toStringUtf8();
                 ce.host = e.getIp().toStringUtf8();
                 ce.port = e.getPort();
@@ -84,20 +84,20 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             return this;
         }
 
-        public AbstractBuilder<R> withReplaceCoverContext(String coverContext){
-            reqBuilder.setReplaceCover(ByteString.copyFrom(coverContext.getBytes()));
+        public AbstractBuilder<R> withReplaceCoverageContext(String coverageContext){
+            reqBuilder.setReplaceCover(ByteString.copyFrom(coverageContext.getBytes()));
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableHost(Iterable<byte[]> coverContext){
-            for(Iterator<byte[]> iterator=coverContext.iterator(); iterator.hasNext();){
-                withUnavailableHost(iterator.next());
+        public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext){
+            for(Iterator<byte[]> iterator=coverageContext.iterator(); iterator.hasNext();){
+                withUnavailableCoverageContext(iterator.next());
             }
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableHost(byte[]...coverContext){
-            for(byte[] cc: coverContext){
+        public AbstractBuilder<R> withUnavailableCoverageContext(byte[]...coverageContext){
+            for(byte[] cc: coverageContext){
                 reqBuilder.addUnavailableCover(ByteString.copyFrom(cc));
             }
             return this;
@@ -129,7 +129,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             /**
              *  Opaque context to pass into 2I query
              */
-            private byte[] coverContext;
+            private byte[] coverageContext;
 
             public String getHost() {
                 return host;
@@ -143,8 +143,8 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 return description;
             }
 
-            public byte[] getCoverContext() {
-                return coverContext;
+            public byte[] getCoverageContext() {
+                return coverageContext;
             }
 
             @Override
@@ -156,7 +156,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
                 if (getPort() != that.getPort()) return false;
                 if (!getHost().equals(that.getHost())) return false;
-                return Arrays.equals(getCoverContext(), that.getCoverContext());
+                return Arrays.equals(getCoverageContext(), that.getCoverageContext());
 
             }
 
@@ -164,7 +164,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             public int hashCode() {
                 int result = getHost().hashCode();
                 result = 31 * result + getPort();
-                result = 31 * result + Arrays.hashCode(getCoverContext());
+                result = 31 * result + Arrays.hashCode(getCoverageContext());
                 return result;
             }
 
