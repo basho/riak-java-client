@@ -176,6 +176,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             }
             else
             {
+                // Full Bucket Read
                 assert query.coverContext != null;
                 pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverContext))
                     .setKey(ByteString.EMPTY)
