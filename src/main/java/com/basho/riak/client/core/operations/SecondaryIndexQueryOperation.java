@@ -209,6 +209,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 pbReqBuilder.setTimeout(query.timeout);
             }
+
+            if (query.coverageContext != null)
+            {
+                pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverageContext));
+            }
         }
 
         /**
