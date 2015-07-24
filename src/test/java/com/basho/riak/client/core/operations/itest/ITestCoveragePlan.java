@@ -93,9 +93,7 @@ public class ITestCoveragePlan extends ITestBase {
             final RiakClient rc = new RiakClient(cl);
             try {
                 for(CoverageEntry ce: response.hostEntries(host)) {
-//                    final IntIndexQuery query = new IntIndexQuery.Builder(defaultNamespace(), indexName, ce.getCoverContext())
                     final BinIndexQuery query = new BinIndexQuery.Builder(defaultNamespace(), indexName, ce.getCoverContext())
-                    //final IntIndexQuery query = new IntIndexQuery.Builder(defaultNamespace(), indexName, 0L, 10000L)
                             .withCoverContext(ce.getCoverContext())
                             .withTimeout(2000)
                             .build();
