@@ -237,6 +237,11 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                     assert subIterator != null;
                     return subIterator.next();
                 }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
             };
         }
 
