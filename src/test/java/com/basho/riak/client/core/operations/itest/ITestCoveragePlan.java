@@ -51,7 +51,7 @@ public class ITestCoveragePlan extends ITestBase {
     }
 
     @Test
-    public void fetchAllDataByUsingCoverContext() throws ExecutionException, InterruptedException, UnknownHostException {
+    public void fetchAllDataByUsingCoverageContext() throws ExecutionException, InterruptedException, UnknownHostException {
         String indexName = "test_coverctx_index";
         String keyBase = "k";
         String value = "v";
@@ -93,8 +93,9 @@ public class ITestCoveragePlan extends ITestBase {
             final RiakClient rc = new RiakClient(cl);
             try {
                 for(CoverageEntry ce: response.hostEntries(host)) {
-                    final BinIndexQuery query = new BinIndexQuery.Builder(defaultNamespace(), indexName, ce.getCoverContext())
-                            .withCoverContext(ce.getCoverContext())
+                    // The only "$bucket" Binary Index may be used for Full Bucket Reads
+                    final BinIndexQuery query = new BinIndexQuery.Builder(defaultNamespace(), "$bucket", ce.getCoverageContext())
+                            .withCoverageContext(ce.getCoverageContext())
                             .withTimeout(2000)
                             .build();
 
