@@ -67,7 +67,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     protected final boolean paginationSort;
     protected final String termFilter;
     protected Integer timeout;
-    protected final byte[] coverContext;
+    protected final byte[] coverageContext;
 
     protected abstract IndexConverter<T> getConverter();
 
@@ -84,7 +84,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         this.paginationSort = builder.paginationSort;
         this.termFilter = builder.termFilter;
         this.timeout = builder.timeout;
-        this.coverContext = builder.coverContext;
+        this.coverageContext = builder.coverageContext;
     }
 
     /**
@@ -221,9 +221,9 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             coreQueryBuilder.withTimeout(timeout);
         }
 
-        if (coverContext != null)
+        if (coverageContext != null)
         {
-            coreQueryBuilder.withCoverContext(coverContext);
+            coreQueryBuilder.withCoverageContext(coverageContext);
         }
         return coreQueryBuilder.build();
     }
@@ -256,7 +256,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         private volatile boolean paginationSort;
         private volatile String termFilter;
         private volatile Integer timeout;
-        private volatile byte[] coverContext;
+        private volatile byte[] coverageContext;
 
         protected abstract T self();
 
@@ -296,21 +296,21 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             this.match = match;
         }
 
-        // TODO: Documentation should provide more details about coverContext
+        // TODO: Documentation should provide more details about coverageContext
         /**
          * Build a cover query.
          * <p>
-         * Returns all objects in Riak related to the provided coverContext.
+         * Returns all objects in Riak related to the provided coverageContext.
          * </p>
          * @param namespace the namespace for this query
          * @param indexName the index name
-         * @param coverContext the cover context.
+         * @param coverageContext the cover context.
          */
-        public Init(Namespace namespace, String indexName, byte[] coverContext)
+        public Init(Namespace namespace, String indexName, byte[] coverageContext)
         {
             this.namespace = namespace;
             this.indexName = indexName;
-            this.coverContext = coverContext;
+            this.coverageContext = coverageContext;
         }
 
         /**
@@ -399,11 +399,11 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
 
         /**
          * Set the cover context for the local read
-         * @param coverContext
+         * @param coverageContext
          * @return
          */
-        public T withCoverContext(byte[] coverContext){
-            this.coverContext = coverContext;
+        public T withCoverageContext(byte[] coverageContext){
+            this.coverageContext = coverageContext;
             return self();
         }
     }
