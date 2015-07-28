@@ -19,11 +19,12 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -44,6 +45,7 @@ public class ITestListBucketsOperation extends ITestBase
     public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
     {
         testListBuckets(Namespace.DEFAULT_BUCKET_TYPE);
+        testListBucketsStreamed(Namespace.DEFAULT_BUCKET_TYPE);
     }
     
     @Test
@@ -51,6 +53,7 @@ public class ITestListBucketsOperation extends ITestBase
     {
         assumeTrue(testBucketType);
         testListBuckets(bucketType.toString());
+        testListBucketsStreamed(bucketType.toString());
     }
     
     private void testListBuckets(String bucketType) throws InterruptedException, ExecutionException
@@ -87,7 +90,53 @@ public class ITestListBucketsOperation extends ITestBase
         
         assertTrue(found);
     }
-    
+
+    private void testListBucketsStreamed(String bucketType) throws InterruptedException, ExecutionException
+    {
+        // Empty buckets do not show up
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
+        final String value = "{\"value\":\"value\"}";
+
+        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
+        Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
+        StoreOperation storeOp =
+                new StoreOperation.Builder(location)
+                        .withContent(rObj)
+                        .build();
+
+        cluster.execute(storeOp);
+        storeOp.get();
+
+        ListBucketsOperation.ResultStreamListener streamListener = new ListBucketsOperation.ResultStreamListener() {
+            public volatile List<ListBucketsOperation.Response> responses = new LinkedList<ListBucketsOperation.Response>();
+
+            @Override
+            public void handle(ListBucketsOperation.Response response) {
+
+            }
+        };
+
+        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
+                .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                .withResultStreamListener(streamListener)
+                .build();
+
+        cluster.execute(listOp);
+        List<BinaryValue> bucketList = listOp.get().getBuckets();
+        assertTrue(bucketList.size() > 0);
+
+        boolean found = false;
+        for (BinaryValue baw : bucketList)
+        {
+            if (baw.toString().equals(bucketName.toString()))
+            {
+                found = true;
+            }
+        }
+
+        assertTrue(found);
+    }
+
     @Test
     public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException
     {

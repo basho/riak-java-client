@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations;
 
+import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.query.Namespace;
@@ -31,11 +32,15 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
+    private final boolean streamResults;
+    private final ListBuckets.ResultStreamListener streamListener;
     
     private ListBucketsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.bucketType = builder.bucketType;
+        this.streamResults = builder.streamResults;
+        this.streamListener = builder.streamListener;
     }
 
     @Override
@@ -56,6 +61,19 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             }
         }
         return new Response(bucketType, buckets);
+    }
+
+    @Override
+    public synchronized final void setResponse(RiakMessage rawResponse)
+    {
+        RiakKvPB.RpbListBucketsResp decodedMessage = decode(rawResponse);
+        List<RiakKvPB.RpbListBucketsResp> messageList = new ArrayList<RiakKvPB.RpbListBucketsResp>(1);
+        messageList.add(decodedMessage);
+        if (this.streamResults && !done(decodedMessage)) {
+            this.streamListener.handle(convert(messageList));
+        } else {
+            super.setResponse(rawResponse);
+        }
     }
 
     @Override
@@ -87,10 +105,11 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     
     public static class Builder
     {
-        private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = 
-            RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
+        private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
         private BinaryValue bucketType = BinaryValue.create(Namespace.DEFAULT_BUCKET_TYPE);
-        
+        private boolean streamResults = false;
+        private ListBuckets.ResultStreamListener streamListener = null;
+
         /**
          * Create a Builder for a ListBucketsOperation.
          */
@@ -128,14 +147,21 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             this.bucketType = bucketType;
             return this;
         }
-        
+
+        public Builder withResultStreamListener(ListBuckets.ResultStreamListener listener)
+        {
+            this.streamListener = listener;
+            this.streamResults = true;
+            return this;
+        }
+
         public ListBucketsOperation build()
         {
             return new ListBucketsOperation(this);
         }
         
     }
-    
+
     public static class Response
     {
         private final BinaryValue bucketType;
@@ -157,5 +183,4 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             return buckets;
         }
     }
-    
 }

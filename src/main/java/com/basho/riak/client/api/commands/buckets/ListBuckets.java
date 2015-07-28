@@ -46,11 +46,13 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 {
     private final int timeout;
     private final BinaryValue type;
+    private final ResultStreamListener streamListener;
 
     ListBuckets(Builder builder)
     {
 		this.timeout = builder.timeout;
 	    this.type = builder.type;
+        this.streamListener = builder.streamListener;
     }
 
     @Override
@@ -85,6 +87,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         {
             builder.withTimeout(timeout);
         }
+        builder.withResultStreamListener(streamListener);
         return builder.build();
     }
 
@@ -158,6 +161,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 	{
 		private int timeout;
 		private final BinaryValue type;
+        private ResultStreamListener streamListener = null;
 
         /**
          * Construct a Builder for a ListBuckets command.
@@ -192,6 +196,12 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 			return this;
 		}
 
+        public Builder withResultStreamListener(ResultStreamListener listener)
+        {
+            this.streamListener = listener;
+            return this;
+        }
+
         /**
          * Construct a new ListBuckets command.
          * @return a new ListBuckets command.
@@ -202,4 +212,10 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 		}
 	}
 
+    public interface ResultStreamListener
+    {
+
+        public void handle(Response response);
+
+    }
 }

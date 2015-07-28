@@ -152,7 +152,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
 
     // Exposed for testing.
-    public synchronized final void setResponse(RiakMessage rawResponse)
+    public synchronized void setResponse(RiakMessage rawResponse)
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         U decodedMessage = decode(rawResponse);
@@ -262,7 +262,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         else if(null == converted)
         {
             converted = convert(rawResponse);
-            
         }
 
         return converted;
