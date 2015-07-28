@@ -50,8 +50,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 
     ListBuckets(Builder builder)
     {
-		this.timeout = builder.timeout;
-	    this.type = builder.type;
+        this.timeout = builder.timeout;
+        this.type = builder.type;
         this.streamListener = builder.streamListener;
     }
 
