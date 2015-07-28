@@ -69,10 +69,21 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         RiakKvPB.RpbListBucketsResp decodedMessage = decode(rawResponse);
         List<RiakKvPB.RpbListBucketsResp> messageList = new ArrayList<RiakKvPB.RpbListBucketsResp>(1);
         messageList.add(decodedMessage);
-        if (this.streamResults && !done(decodedMessage)) {
-            Response opResponse = convert(messageList);
-            this.streamListener.handle(new ListBuckets.Response(opResponse.getBucketType(), opResponse.getBuckets()));
-        } else {
+        boolean isDone = done(decodedMessage);
+        if (this.streamResults && !isDone)
+        {
+            if (!isDone)
+            {
+                Response opResponse = convert(messageList);
+                this.streamListener.handle(new ListBuckets.Response(opResponse.getBucketType(), opResponse.getBuckets()));
+            }
+            else
+            {
+                this.streamListener.complete(true);
+            }
+        }
+        else
+        {
             super.setResponse(rawResponse);
         }
     }

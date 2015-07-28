@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.commands.buckets.ListBuckets;
+
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
@@ -107,12 +109,35 @@ public class ITestListBucketsOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
 
-        ListBucketsOperation.ResultStreamListener streamListener = new ListBucketsOperation.ResultStreamListener() {
-            public volatile List<ListBucketsOperation.Response> responses = new LinkedList<ListBucketsOperation.Response>();
+        ListBuckets.ResultStreamListener streamListener = new ListBuckets.ResultStreamListener() {
+            public boolean found = false;
+            public boolean complete = false;
 
             @Override
-            public void handle(ListBucketsOperation.Response response) {
+            public void handle(ListBuckets.Response response) {
+                for (Namespace namespace : response)
+                {
+                    if (namespace.getBucketName().toString().equals(bucketName.toString()))
+                    {
+                        this.found = true;
+                    }
+                }
+            }
 
+            @Override
+            public void complete(boolean complete)
+            {
+                this.complete = complete;
+            }
+
+            public boolean isFound()
+            {
+                return this.found;
+            }
+
+            public boolean isComplete()
+            {
+                return this.complete;
             }
         };
 
@@ -122,19 +147,11 @@ public class ITestListBucketsOperation extends ITestBase
                 .build();
 
         cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get().getBuckets();
-        assertTrue(bucketList.size() > 0);
 
-        boolean found = false;
-        for (BinaryValue baw : bucketList)
-        {
-            if (baw.toString().equals(bucketName.toString()))
-            {
-                found = true;
-            }
-        }
+        // TODO: poll streamListener till streaming is complete
 
-        assertTrue(found);
+        // streaming complete, assert that the bucket was found
+        assertTrue(streamListener.isFound());
     }
 
     @Test

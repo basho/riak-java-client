@@ -214,8 +214,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 
     public interface ResultStreamListener
     {
-
         public void handle(Response response);
 
+        public void complete(boolean done);
     }
 }
