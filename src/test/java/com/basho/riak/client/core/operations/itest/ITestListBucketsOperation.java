@@ -26,12 +26,10 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -99,6 +97,8 @@ public class ITestListBucketsOperation extends ITestBase
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
 
+        final LinkedBlockingQueue<BinaryValue> results = new LinkedBlockingQueue<BinaryValue>();
+
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
         StoreOperation storeOp =
@@ -109,35 +109,10 @@ public class ITestListBucketsOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
 
-        ListBuckets.ResultStreamListener streamListener = new ListBuckets.ResultStreamListener() {
-            public boolean found = false;
-            public boolean complete = false;
-
+        ListBucketsOperation.ResultStreamListener streamListener = new ListBucketsOperation.ResultStreamListener() {
             @Override
-            public void handle(ListBuckets.Response response) {
-                for (Namespace namespace : response)
-                {
-                    if (namespace.getBucketName().toString().equals(bucketName.toString()))
-                    {
-                        this.found = true;
-                    }
-                }
-            }
-
-            @Override
-            public void complete(boolean complete)
-            {
-                this.complete = complete;
-            }
-
-            public boolean isFound()
-            {
-                return this.found;
-            }
-
-            public boolean isComplete()
-            {
-                return this.complete;
+            public void handle(ListBucketsOperation.Response response) {
+                results.addAll(response.getBuckets());
             }
         };
 
@@ -146,12 +121,22 @@ public class ITestListBucketsOperation extends ITestBase
                 .withResultStreamListener(streamListener)
                 .build();
 
-        cluster.execute(listOp);
+        RiakFuture<ListBucketsOperation.Response, BinaryValue> responseFuture = cluster.execute(listOp);
 
-        // TODO: poll streamListener till streaming is complete
+        responseFuture.await();
 
         // streaming complete, assert that the bucket was found
-        assertTrue(streamListener.isFound());
+        boolean found = false;
+        for (BinaryValue baw : results)
+        {
+            if (baw.toString().equals(bucketName.toString()))
+            {
+                found = true;
+            }
+        }
+
+        assertTrue(found);
+
     }
 
     @Test

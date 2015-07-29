@@ -27,13 +27,14 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.Response, RiakKvPB.RpbListBucketsResp, BinaryValue>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
     private final boolean streamResults;
-    private final ListBuckets.ResultStreamListener streamListener;
+    private final ResultStreamListener streamListener;
     
     private ListBucketsOperation(Builder builder)
     {
@@ -70,17 +71,11 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         List<RiakKvPB.RpbListBucketsResp> messageList = new ArrayList<RiakKvPB.RpbListBucketsResp>(1);
         messageList.add(decodedMessage);
         boolean isDone = done(decodedMessage);
+
         if (this.streamResults && !isDone)
         {
-            if (!isDone)
-            {
-                Response opResponse = convert(messageList);
-                this.streamListener.handle(new ListBuckets.Response(opResponse.getBucketType(), opResponse.getBuckets()));
-            }
-            else
-            {
-                this.streamListener.complete(true);
-            }
+            Response opResponse = convert(messageList);
+            this.streamListener.handle(opResponse);
         }
         else
         {
@@ -120,7 +115,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
         private BinaryValue bucketType = BinaryValue.create(Namespace.DEFAULT_BUCKET_TYPE);
         private boolean streamResults = false;
-        private ListBuckets.ResultStreamListener streamListener = null;
+        private ResultStreamListener streamListener = null;
 
         /**
          * Create a Builder for a ListBucketsOperation.
@@ -160,10 +155,13 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             return this;
         }
 
-        public Builder withResultStreamListener(ListBuckets.ResultStreamListener listener)
+        public Builder withResultStreamListener(ResultStreamListener resultStreamListener)
         {
-            this.streamListener = listener;
-            this.streamResults = true;
+            if(resultStreamListener != null)
+            {
+                this.streamListener = resultStreamListener;
+                this.streamResults = true;
+            }
             return this;
         }
 
@@ -194,5 +192,9 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         {
             return buckets;
         }
+    }
+
+    public interface ResultStreamListener {
+        void handle(Response response);
     }
 }

@@ -67,7 +67,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
                 @Override
                 protected Response convertResponse(ListBucketsOperation.Response coreResponse)
                 {
-                    return new Response(type, coreResponse.getBuckets());
+                    return convertOperationResponse(coreResponse);
                 }
 
                 @Override
@@ -80,15 +80,37 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         return future;
     }
 
+    private Response convertOperationResponse(ListBucketsOperation.Response coreResponse)
+    {
+        return new Response(type, coreResponse.getBuckets());
+    }
+
     private ListBucketsOperation buildCoreOperation()
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
+
         if (timeout > 0)
         {
             builder.withTimeout(timeout);
         }
-        builder.withResultStreamListener(streamListener);
+
+        if(this.streamListener != null){
+            ListBucketsOperation.ResultStreamListener convertingListener =
+                    new ListBucketsOperation.ResultStreamListener() {
+                        @Override
+                        public void handle(ListBucketsOperation.Response response) {
+                            final Response buckets = convertOperationResponse(response);
+                            streamListener.handle(buckets);
+                        }
+                    };
+            builder.withResultStreamListener(convertingListener);
+        }
+
         return builder.build();
+    }
+
+    public interface ResultStreamListener {
+        void handle(Response response);
     }
 
     /**
@@ -196,9 +218,14 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 			return this;
 		}
 
-        public Builder withResultStreamListener(ResultStreamListener listener)
+        /**
+         *
+         * @param resultStreamListener
+         * @return
+         */
+        public Builder withResultStreamListener(ResultStreamListener resultStreamListener)
         {
-            this.streamListener = listener;
+            this.streamListener = resultStreamListener;
             return this;
         }
 
@@ -211,11 +238,4 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 			return new ListBuckets(this);
 		}
 	}
-
-    public interface ResultStreamListener
-    {
-        public void handle(Response response);
-
-        public void complete(boolean done);
-    }
 }
