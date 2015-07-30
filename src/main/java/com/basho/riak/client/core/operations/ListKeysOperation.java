@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -31,11 +32,15 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
 {
     private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
+    private final boolean streamResults;
+    private final RiakResultStreamListener<Response> streamListener;
     
     private ListKeysOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
+        this.streamResults = builder.streamResults;
+        this.streamListener = builder.streamListener;
     }
 
     @Override
@@ -50,6 +55,25 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             }
         }
         return builder.build();
+    }
+
+    @Override
+    public synchronized final void setResponse(RiakMessage rawResponse)
+    {
+        RiakKvPB.RpbListKeysResp decodedMessage = decode(rawResponse);
+        List<RiakKvPB.RpbListKeysResp> messageList = new ArrayList<RiakKvPB.RpbListKeysResp>(1);
+        messageList.add(decodedMessage);
+        boolean isDone = done(decodedMessage);
+
+        if (this.streamResults && !isDone)
+        {
+            Response opResponse = convert(messageList);
+            this.streamListener.handle(opResponse);
+        }
+        else
+        {
+            super.setResponse(rawResponse);
+        }
     }
 
     @Override
@@ -89,6 +113,8 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
         private final Namespace namespace;
+        private boolean streamResults = false;
+        private RiakResultStreamListener<Response> streamListener = null;
         
         /**
          * Construct a builder for a ListKeysOperaiton.
@@ -112,6 +138,16 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
                 throw new IllegalArgumentException("Timeout can not be zero or less");
             }
             reqBuilder.setTimeout(timeout);
+            return this;
+        }
+
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
+        {
+            if(resultStreamListener != null)
+            {
+                this.streamListener = resultStreamListener;
+                this.streamResults = true;
+            }
             return this;
         }
         
@@ -156,6 +192,5 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             }
             
         }
-
     }
 }

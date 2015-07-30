@@ -18,6 +18,7 @@ package com.basho.riak.client.api.commands.kv;
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.Location;
@@ -55,11 +56,13 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 
     private final Namespace namespace;
     private final int timeout;
+    private final RiakResultStreamListener<Response> streamListener;
 
     ListKeys(Builder builder)
     {
         this.namespace = builder.namespace;
         this.timeout = builder.timeout;
+        this.streamListener = builder.streamListener;
     }
 
     @Override
@@ -74,7 +77,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
                 @Override
                 protected Response convertResponse(ListKeysOperation.Response coreResponse)
                 {
-                    return new Response(namespace, coreResponse.getKeys());
+                    return convertOperationResponse(coreResponse);
                 }
 
                 @Override
@@ -86,6 +89,11 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         coreFuture.addListener(future);
         return future;
     }
+
+    private Response convertOperationResponse(ListKeysOperation.Response coreResponse)
+    {
+        return new Response(namespace, coreResponse.getKeys());
+    }
     
     private ListKeysOperation buildCoreOperation()
     {
@@ -94,6 +102,18 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         if (timeout > 0)
         {
             builder.withTimeout(timeout);
+        }
+
+        if(this.streamListener != null){
+            RiakResultStreamListener<ListKeysOperation.Response> convertingListener =
+                    new RiakResultStreamListener<ListKeysOperation.Response>() {
+                        @Override
+                        public void handle(ListKeysOperation.Response response) {
+                            final Response buckets = convertOperationResponse(response);
+                            streamListener.handle(buckets);
+                        }
+                    };
+            builder.withResultStreamListener(convertingListener);
         }
 
         return builder.build();
@@ -156,6 +176,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     {
         private final Namespace namespace;
         private int timeout;
+        private RiakResultStreamListener<Response> streamListener;
 
         /**
          * Constructs a Builder for a ListKeys command.
@@ -182,6 +203,20 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         public Builder withTimeout(int timeout)
         {
             this.timeout = timeout;
+            return this;
+        }
+
+        /**
+         *
+         * @param resultStreamListener
+         * @return
+         */
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
+        {
+            if(resultStreamListener != null)
+            {
+                this.streamListener = resultStreamListener;
+            }
             return this;
         }
 
