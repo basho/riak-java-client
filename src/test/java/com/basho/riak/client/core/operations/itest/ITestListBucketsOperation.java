@@ -15,23 +15,23 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.api.commands.buckets.ListBuckets;
-
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
-import org.junit.Test;
 
 /**
  *
@@ -107,12 +107,13 @@ public class ITestListBucketsOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
 
-        ListBucketsOperation.ResultStreamListener streamListener = new ListBucketsOperation.ResultStreamListener() {
-            @Override
-            public void handle(ListBucketsOperation.Response response) {
-                results.addAll(response.getBuckets());
-            }
-        };
+        RiakResultStreamListener<ListBucketsOperation.Response> streamListener =
+                new RiakResultStreamListener<ListBucketsOperation.Response>() {
+                    @Override
+                    public void handle(ListBucketsOperation.Response response) {
+                        results.addAll(response.getBuckets());
+                    }
+                };
 
         ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                 .withBucketType(BinaryValue.createFromUtf8(bucketType))

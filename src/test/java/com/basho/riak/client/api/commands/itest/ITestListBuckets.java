@@ -19,6 +19,8 @@ package com.basho.riak.client.api.commands.itest;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
+import com.basho.riak.client.core.RiakResultStreamListener;
+import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -56,15 +58,16 @@ public class ITestListBuckets extends ITestBase
 
         client.execute(sv);
 
-        ListBuckets.ResultStreamListener streamListener = new ListBuckets.ResultStreamListener() {
-            @Override
-            public void handle(ListBuckets.Response response) {
-                for(Namespace bucket : response)
-                {
-                    results.add(bucket);
-                }
-            }
-        };
+        RiakResultStreamListener<ListBuckets.Response> streamListener =
+                new RiakResultStreamListener<ListBuckets.Response>() {
+                    @Override
+                    public void handle(ListBuckets.Response response) {
+                        for(Namespace bucket : response)
+                        {
+                            results.add(bucket);
+                        }
+                    }
+                };
 
         ListBuckets listCom = new ListBuckets.Builder(bucketType.toString())
                 .withResultStreamListener(streamListener)

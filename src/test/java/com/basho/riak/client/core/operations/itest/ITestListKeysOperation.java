@@ -20,19 +20,20 @@ import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.After;
+import org.junit.Test;
+
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
-import org.junit.After;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
@@ -129,8 +130,6 @@ public class ITestListKeysOperation extends ITestBase
     {
         final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_2_streaming");
         final BinaryValue key = generateObject(ns);
-
-        final LinkedBlockingQueue<BinaryValue> results = new LinkedBlockingQueue<BinaryValue>();
 
         ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).withResultStreamListener(streamListener).build();
         RiakFuture<ListKeysOperation.Response, Namespace> future = cluster.execute(klistOp);

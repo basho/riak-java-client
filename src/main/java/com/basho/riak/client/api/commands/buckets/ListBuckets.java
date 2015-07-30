@@ -19,6 +19,7 @@ import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -46,7 +47,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 {
     private final int timeout;
     private final BinaryValue type;
-    private final ResultStreamListener streamListener;
+    private final RiakResultStreamListener<Response> streamListener;
 
     ListBuckets(Builder builder)
     {
@@ -95,8 +96,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         }
 
         if(this.streamListener != null){
-            ListBucketsOperation.ResultStreamListener convertingListener =
-                    new ListBucketsOperation.ResultStreamListener() {
+            RiakResultStreamListener<ListBucketsOperation.Response> convertingListener =
+                    new RiakResultStreamListener<ListBucketsOperation.Response>() {
                         @Override
                         public void handle(ListBucketsOperation.Response response) {
                             final Response buckets = convertOperationResponse(response);
@@ -107,10 +108,6 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         }
 
         return builder.build();
-    }
-
-    public interface ResultStreamListener {
-        void handle(Response response);
     }
 
     /**
@@ -183,7 +180,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 	{
 		private int timeout;
 		private final BinaryValue type;
-        private ResultStreamListener streamListener = null;
+        private RiakResultStreamListener<Response> streamListener = null;
 
         /**
          * Construct a Builder for a ListBuckets command.
@@ -223,7 +220,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
          * @param resultStreamListener
          * @return
          */
-        public Builder withResultStreamListener(ResultStreamListener resultStreamListener)
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
         {
             this.streamListener = resultStreamListener;
             return this;

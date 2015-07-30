@@ -15,26 +15,25 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.Response, RiakKvPB.RpbListBucketsResp, BinaryValue>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
     private final boolean streamResults;
-    private final ResultStreamListener streamListener;
+    private final RiakResultStreamListener<Response> streamListener;
     
     private ListBucketsOperation(Builder builder)
     {
@@ -115,7 +114,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
         private BinaryValue bucketType = BinaryValue.create(Namespace.DEFAULT_BUCKET_TYPE);
         private boolean streamResults = false;
-        private ResultStreamListener streamListener = null;
+        private RiakResultStreamListener<Response> streamListener = null;
 
         /**
          * Create a Builder for a ListBucketsOperation.
@@ -155,7 +154,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             return this;
         }
 
-        public Builder withResultStreamListener(ResultStreamListener resultStreamListener)
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
         {
             if(resultStreamListener != null)
             {
@@ -192,9 +191,5 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         {
             return buckets;
         }
-    }
-
-    public interface ResultStreamListener {
-        void handle(Response response);
     }
 }
