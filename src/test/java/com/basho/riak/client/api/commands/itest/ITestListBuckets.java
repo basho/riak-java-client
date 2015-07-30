@@ -73,15 +73,9 @@ public class ITestListBuckets extends ITestBase
         ListBuckets.Response response = client.execute(listCom);
 
         // streaming complete, assert that the bucket was found
-        boolean matches = true;
         for (Namespace ns : response)
         {
-            if (results.contains(ns))
-            {
-                matches = false;
-            }
+            assertTrue(results.contains(ns));
         }
-
-        assertTrue(matches);
     }
 }
