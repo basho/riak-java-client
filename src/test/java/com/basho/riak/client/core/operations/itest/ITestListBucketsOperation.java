@@ -26,8 +26,6 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -136,7 +134,6 @@ public class ITestListBucketsOperation extends ITestBase
         }
 
         assertTrue(found);
-
     }
 
     @Test
