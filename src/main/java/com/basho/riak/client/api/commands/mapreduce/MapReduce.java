@@ -15,11 +15,13 @@ package com.basho.riak.client.api.commands.mapreduce;
 
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.RiakException;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.convert.ConversionException;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakResultStreamListener;
+import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.MapReduceOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -33,7 +35,10 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Base abstract class for all MapReduce commands.
@@ -44,309 +49,343 @@ import java.util.*;
  */
 public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryValue>
 {
-	private final MapReduceSpec spec;
+    private final MapReduceSpec spec;
+    private final RiakResultStreamListener<Response> streamListener;
 
     @SuppressWarnings("unchecked")
-	protected MapReduce(MapReduceInput input, Builder builder)
-	{
-		this.spec = new MapReduceSpec(input, builder.phases, builder.timeout);
-	}
+    protected MapReduce(MapReduceInput input, Builder builder)
+    {
+        this.spec = new MapReduceSpec(input, builder.phases, builder.timeout);
+        this.streamListener = builder.streamListener;
+    }
 
-	@Override
-	protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
-	{
-		
+    @Override
+    protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
+    {
+
         BinaryValue jobSpec;
-		try
-		{
-			String spec = writeSpec();
-            //System.out.println(spec);
+        try
+        {
+            String spec = writeSpec();
             jobSpec = BinaryValue.create(spec);
-		} catch (RiakException e)
-		{
-			throw new RuntimeException(e);
-		}
+        } catch (RiakException e)
+        {
+            throw new RuntimeException(e);
+        }
 
-		MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec).build();
+        MapReduceOperation.Builder builder = new MapReduceOperation.Builder(jobSpec);
 
-		final RiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
+        if(this.streamListener != null){
+            RiakResultStreamListener<MapReduceOperation.Response> convertingListener =
+                    new RiakResultStreamListener<MapReduceOperation.Response>() {
+                        @Override
+                        public void handle(MapReduceOperation.Response response) {
+                            final Response commandResponse  = convertOperationResponse(response);
+                            streamListener.handle(commandResponse);
+                        }
+                    };
+            builder.withResultStreamListener(convertingListener);
+        }
 
-		CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue> future =
-				new CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue>(coreFuture)
-				{
-					@Override
-					protected Response convertResponse(MapReduceOperation.Response coreResponse)
-					{
-						return new Response(coreResponse.getResults());
-					}
+        MapReduceOperation operation = builder.build();
 
-					@Override
-					protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
-					{
-						return coreQueryInfo;
-					}
-				};
+        final RiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
 
-		coreFuture.addListener(future);
+        CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue> future =
+                new CoreFutureAdapter<Response, BinaryValue, MapReduceOperation.Response, BinaryValue>(coreFuture)
+                {
+                    @Override
+                    protected Response convertResponse(MapReduceOperation.Response coreResponse)
+                    {
+                        return convertOperationResponse(coreResponse);
+                    }
 
-		return future;
+                    @Override
+                    protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
+                    {
+                        return coreQueryInfo;
+                    }
+                };
 
-	}
+        coreFuture.addListener(future);
 
-	/**
-	 * Creates the JSON string of the M/R job for submitting to the client
-	 * <p/>
-	 * Uses Jackson to write out the JSON string. I'm not very happy with this method, it is a candidate for change.
-	 * <p/>
-	 * TODO re-evaluate this method, look for something smaller and more elegant.
-	 *
-	 * @return a String of JSON
-	 * @throws RiakException if, for some reason, we can't create a JSON string.
-	 */
-	String writeSpec() throws RiakException
-	{
+        return future;
 
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    }
 
-		try
-		{
-			JsonGenerator jg = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
+    private Response convertOperationResponse(MapReduceOperation.Response coreResponse) {
+        return new Response(coreResponse.getResults());
+    }
 
-			ObjectMapper objectMapper = new ObjectMapper();
-			SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-			specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
-			specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
-			specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
-			specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
-			specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
-			specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
-			objectMapper.registerModule(specModule);
+    /**
+     * Creates the JSON string of the M/R job for submitting to the client
+     * <p/>
+     * Uses Jackson to write out the JSON string. I'm not very happy with this method, it is a candidate for change.
+     * <p/>
+     * TODO re-evaluate this method, look for something smaller and more elegant.
+     *
+     * @return a String of JSON
+     * @throws RiakException if, for some reason, we can't create a JSON string.
+     */
+    String writeSpec() throws RiakException
+    {
 
-			jg.setCodec(objectMapper);
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-			List<MapReducePhase> phases = spec.getPhases();
-			phases.get(phases.size() - 1).setKeep(true);
-			jg.writeObject(spec);
+        try
+        {
+            JsonGenerator jg = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 
-			jg.flush();
+            ObjectMapper objectMapper = new ObjectMapper();
+            SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
+            specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
+            specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
+            specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
+            specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
+            specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
+            specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
+            objectMapper.registerModule(specModule);
 
-			return out.toString("UTF8");
+            jg.setCodec(objectMapper);
 
-		} catch (IOException e)
-		{
-			throw new RiakException(e);
-		}
-	}
+            List<MapReducePhase> phases = spec.getPhases();
+            phases.get(phases.size() - 1).setKeep(true);
+            jg.writeObject(spec);
+
+            jg.flush();
+
+            return out.toString("UTF8");
+
+        } catch (IOException e)
+        {
+            throw new RiakException(e);
+        }
+    }
 
     /**
      * Base abstract class for all MapReduce command builders.
      */
-	protected static abstract class Builder<T extends Builder<T>>
-	{
+    protected static abstract class Builder<T extends Builder<T>>
+    {
 
-		protected final List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
-		protected Long timeout;
+        protected final List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+        protected Long timeout;
+        protected RiakResultStreamListener<Response> streamListener;
 
-		/**
-		 * Set the operations timeout
-		 *
-		 * @param timeout
-		 * @return this
-		 */
-		public T timeout(long timeout)
-		{
-			this.timeout = timeout;
-			return self();
-		}
+        /**
+         * Set the operations timeout
+         *
+         * @param timeout
+         * @return this
+         */
+        public T timeout(long timeout)
+        {
+            this.timeout = timeout;
+            return self();
+        }
 
-		/**
-		 * Add {@link MapPhase} to the query
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @param keep          keep the results and return them with the query results?
-		 * @return a reference to this object.
-		 */
-		public T withMapPhase(Function phaseFunction, boolean keep)
-		{
-			synchronized (phases)
-			{
-				phases.add(new MapPhase(phaseFunction, keep));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a MapPhase
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
-		 * @param keep          if the result should be returned or merely provide input for the next phase.
-		 * @return a reference to this object.
-		 */
-		public T withMapPhase(Function phaseFunction, Object arg, boolean keep)
-		{
-			synchronized (phases)
-			{
-				phases.add(new MapPhase(phaseFunction, arg, keep));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a MapPhase
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
-		 * @return a reference to this object.
-		 */
-		public T withMapPhase(Function phaseFunction, Object arg)
-		{
-			synchronized (phases)
-			{
-				phases.add(new MapPhase(phaseFunction, arg));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a MapPhase
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @return a reference to this object.
-		 */
-		public T withMapPhase(Function phaseFunction)
-		{
-			synchronized (phases)
-			{
-				phases.add(new MapPhase(phaseFunction));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add {@link ReducePhase} to the query
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @param keep          keep the results and return them with the query results?
-		 * @return a reference to this object.
-		 */
-		public T withReducePhase(Function phaseFunction, boolean keep)
-		{
-			synchronized (phases)
-			{
-				phases.add(new ReducePhase(phaseFunction, keep));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a {@link ReducePhase}
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
-		 * @param keep          if the result should be returned or merely provide input for the next phase.
-		 * @return a reference to this object.
-		 */
-		public T withReducePhase(Function phaseFunction, Object arg, boolean keep)
-		{
-			synchronized (phases)
-			{
-				phases.add(new ReducePhase(phaseFunction, arg, keep));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a {@link ReducePhase}
-		 *
-		 * @param phaseFunction the {@link Function}
-		 * @param arg           an argument that will be passed to the phase verbatim
-		 * @return a reference to this object.
-		 */
-		public T withReducePhase(Function phaseFunction, Object arg)
-		{
-			synchronized (phases)
-			{
-				phases.add(new ReducePhase(phaseFunction, arg));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a {@link ReducePhase}
-		 *
-		 * @param phaseFunction
-		 * @return a reference to this object.
-		 */
-		public T withReducePhase(Function phaseFunction)
-		{
-			synchronized (phases)
-			{
-				phases.add(new ReducePhase(phaseFunction));
-			}
-
-			return self();
-		}
-
-		/**
-		 * Add a Link Phase that points to <code>bucket</code> / <code>tag</code> .
-		 *
-		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
-		 * @param tag    the tag (or ("_", or "" for wildcard)
-		 * @param keep   to keep the result of this phase and return it at the end of the operation
+        /**
+         * Add {@link MapPhase} to the query
+         *
+         * @param phaseFunction the {@link Function}
+         * @param keep          keep the results and return them with the query results?
          * @return a reference to this object.
-		 */
-		public T withLinkPhase(String bucket, String tag, boolean keep)
-		{
-			synchronized (phases)
-			{
-				phases.add(new LinkPhase(bucket, tag, keep));
-			}
+         */
+        public T withMapPhase(Function phaseFunction, boolean keep)
+        {
+            synchronized (phases)
+            {
+                phases.add(new MapPhase(phaseFunction, keep));
+            }
 
-			return self();
-		}
+            return self();
+        }
 
-		/**
-		 * Create a Link Phase that points to <code>bucket</code> / <code>tag</code> <code>keep</code> will be
-		 * <code>false</code>
-		 *
-		 * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
-		 * @param tag    the tag (or ("_", or "" for wildcard)
+        /**
+         * Add a MapPhase
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
+         * @param keep          if the result should be returned or merely provide input for the next phase.
          * @return a reference to this object.
-		 */
-		public T withLinkPhase(String bucket, String tag)
-		{
-			synchronized (phases)
-			{
-				phases.add(new LinkPhase(bucket, tag));
-			}
+         */
+        public T withMapPhase(Function phaseFunction, Object arg, boolean keep)
+        {
+            synchronized (phases)
+            {
+                phases.add(new MapPhase(phaseFunction, arg, keep));
+            }
 
-			return self();
-		}
+            return self();
+        }
 
-		protected abstract T self();
+        /**
+         * Add a MapPhase
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
+         * @return a reference to this object.
+         */
+        public T withMapPhase(Function phaseFunction, Object arg)
+        {
+            synchronized (phases)
+            {
+                phases.add(new MapPhase(phaseFunction, arg));
+            }
 
-	}
+            return self();
+        }
+
+        /**
+         * Add a MapPhase
+         *
+         * @param phaseFunction the {@link Function}
+         * @return a reference to this object.
+         */
+        public T withMapPhase(Function phaseFunction)
+        {
+            synchronized (phases)
+            {
+                phases.add(new MapPhase(phaseFunction));
+            }
+
+            return self();
+        }
+
+        /**
+         * Add {@link ReducePhase} to the query
+         *
+         * @param phaseFunction the {@link Function}
+         * @param keep          keep the results and return them with the query results?
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction, boolean keep)
+        {
+            synchronized (phases)
+            {
+                phases.add(new ReducePhase(phaseFunction, keep));
+            }
+
+            return self();
+        }
+
+        /**
+         * Add a {@link ReducePhase}
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
+         * @param keep          if the result should be returned or merely provide input for the next phase.
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction, Object arg, boolean keep)
+        {
+            synchronized (phases)
+            {
+                phases.add(new ReducePhase(phaseFunction, arg, keep));
+            }
+
+            return self();
+        }
+
+        /**
+         * Add a {@link ReducePhase}
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction, Object arg)
+        {
+            synchronized (phases)
+            {
+                phases.add(new ReducePhase(phaseFunction, arg));
+            }
+
+            return self();
+        }
+
+        /**
+         * Add a {@link ReducePhase}
+         *
+         * @param phaseFunction
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction)
+        {
+            synchronized (phases)
+            {
+                phases.add(new ReducePhase(phaseFunction));
+            }
+
+            return self();
+        }
+
+        /**
+         * Add a Link Phase that points to <code>bucket</code> / <code>tag</code> .
+         *
+         * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
+         * @param tag    the tag (or ("_", or "" for wildcard)
+         * @param keep   to keep the result of this phase and return it at the end of the operation
+         * @return a reference to this object.
+         */
+        public T withLinkPhase(String bucket, String tag, boolean keep)
+        {
+            synchronized (phases)
+            {
+                phases.add(new LinkPhase(bucket, tag, keep));
+            }
+
+            return self();
+        }
+
+        /**
+         * Create a Link Phase that points to <code>bucket</code> / <code>tag</code> <code>keep</code> will be
+         * <code>false</code>
+         *
+         * @param bucket the bucket at the end of the link (or "_" or "" for wildcard)
+         * @param tag    the tag (or ("_", or "" for wildcard)
+         * @return a reference to this object.
+         */
+        public T withLinkPhase(String bucket, String tag)
+        {
+            synchronized (phases)
+            {
+                phases.add(new LinkPhase(bucket, tag));
+            }
+
+            return self();
+        }
+
+        /**
+         *
+         * @param resultStreamListener
+         * @return
+         */
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
+        {
+            if(resultStreamListener != null)
+            {
+                this.streamListener = resultStreamListener;
+            }
+            return this;
+        }
+
+        protected abstract T self();
+
+    }
 
     /**
      * Response from a MapReduce command.
      */
-	public static class Response
-	{
+    public static class Response
+    {
 
-		private final Map<Integer, ArrayNode> results;
+        private final Map<Integer, ArrayNode> results;
 
-		public Response(Map<Integer, ArrayNode> results)
-		{
-			this.results = results;
-		}
+        public Response(Map<Integer, ArrayNode> results)
+        {
+            this.results = results;
+        }
 
         public boolean hasResultForPhase(int i)
         {
@@ -387,6 +426,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
             }
             return flatArray;
         }
-		
-	}
+
+    }
 }

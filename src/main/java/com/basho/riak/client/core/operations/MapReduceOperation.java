@@ -17,6 +17,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -28,6 +29,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +44,16 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
 {
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     private final BinaryValue mapReduce;
+    private final boolean chunkResults;
+    private final RiakResultStreamListener<Response> streamListener;
     private final Logger logger = LoggerFactory.getLogger(MapReduceOperation.class);
     
     private MapReduceOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.mapReduce = builder.mapReduce;
+        this.chunkResults = builder.chunkResults;
+        this.streamListener = builder.streamListener;
     }
 
     @Override
@@ -107,6 +113,32 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     }
 
     @Override
+    public synchronized final void setResponse(RiakMessage rawResponse)
+    {
+        if (this.chunkResults)
+        {
+            RiakKvPB.RpbMapRedResp decodedMessage = decode(rawResponse);
+            List<RiakKvPB.RpbMapRedResp> messageList = new ArrayList<RiakKvPB.RpbMapRedResp>(1);
+            messageList.add(decodedMessage);
+            boolean isDone = done(decodedMessage);
+
+            if (!isDone)
+            {
+                Response opResponse = convert(messageList);
+                this.streamListener.handle(opResponse);
+            }
+            else
+            {
+                super.setResponse(rawResponse);
+            }
+        }
+        else
+        {
+            super.setResponse(rawResponse);
+        }
+    }
+
+    @Override
     protected RiakMessage createChannelMessage()
     {
         RiakKvPB.RpbMapRedReq request = reqBuilder.build();
@@ -144,6 +176,8 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
         private final RiakKvPB.RpbMapRedReq.Builder reqBuilder =
             RiakKvPB.RpbMapRedReq.newBuilder();
         private final BinaryValue mapReduce;
+        private boolean chunkResults = false;
+        private RiakResultStreamListener<Response> streamListener;
         
         /**
          * Create a MapReduce operation builder with the given function.
@@ -162,6 +196,21 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
                         .setContentType(ByteString.copyFromUtf8("application/json"));
             this.mapReduce = mapReduce;
         
+        }
+
+        /**
+         *
+         * @param resultStreamListener
+         * @return
+         */
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
+        {
+            if(resultStreamListener != null)
+            {
+                this.chunkResults = true;
+                this.streamListener = resultStreamListener;
+            }
+            return this;
         }
         
         public MapReduceOperation build()
