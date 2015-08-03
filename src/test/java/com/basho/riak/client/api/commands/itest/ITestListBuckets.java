@@ -21,7 +21,6 @@ import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakResultStreamListener;
-import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -34,7 +33,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -78,9 +76,16 @@ public class ITestListBuckets extends ITestBase
 
         RiakFuture<ListBuckets.Response, BinaryValue> future = client.executeAsync(listCom);
 
+        // wait for stream to complete
         future.await();
-        // streaming complete, assert that the bucket was found
+
+        // assert that the execution does not return any iterable results
         assertFalse(future.get().iterator().hasNext());
+
+        // assert that we only accumulate one result from the streaming listener
         assertEquals(1, results.size());
+
+        // assert that the result we got back the bucket we created a value for
+        assertEquals(results.peek(), location.getNamespace());
     }
 }
