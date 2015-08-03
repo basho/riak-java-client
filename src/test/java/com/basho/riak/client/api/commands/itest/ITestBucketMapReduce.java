@@ -34,6 +34,7 @@ import com.basho.riak.client.api.commands.mapreduce.filters.StringToIntFilter;
 import com.basho.riak.client.api.commands.mapreduce.filters.TokenizeFilter;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.util.concurrent.ExecutionException;
@@ -222,12 +223,15 @@ public class ITestBucketMapReduce extends ITestBase
     {
         initValues(Namespace.DEFAULT_BUCKET_TYPE);
 
-        final LinkedBlockingQueue<ArrayNode> results = new LinkedBlockingQueue<ArrayNode>();
+        final LinkedBlockingQueue<JsonNode> results = new LinkedBlockingQueue<JsonNode>();
 
         RiakResultStreamListener<MapReduce.Response> listener = new RiakResultStreamListener<MapReduce.Response>(){
             @Override
             public void handle(MapReduce.Response response) {
-                results.add(response.getResultsFromAllPhases());
+                for (final JsonNode objNode : response.getResultsFromAllPhases())
+                {
+                    results.add(objNode);
+                }
             }
         };
 
@@ -249,7 +253,7 @@ public class ITestBucketMapReduce extends ITestBase
 
         // The query should return two phase results, each a JSON array containing
         // all the values, 0 - 199
-        assertEquals(results.size(), response.getResultsFromAllPhases().size());
+        assertEquals(400, results.size());
 
         //assertEquals(42, results.element().asInt());
         //assertEquals(199, results.contains(42));
