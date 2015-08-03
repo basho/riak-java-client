@@ -254,9 +254,7 @@ public class ITestBucketMapReduce extends ITestBase
         // The query should return two phase results, each a JSON array containing
         // all the values, 0 - 199
         assertEquals(400, results.size());
-
-        //assertEquals(42, results.element().asInt());
-        //assertEquals(199, results.contains(42));
+        assertEquals(0, response.getResultsFromAllPhases().size());
 
         resetAndEmptyBucket(ns);
     }
