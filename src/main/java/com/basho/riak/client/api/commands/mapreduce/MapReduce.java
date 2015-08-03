@@ -361,13 +361,14 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
          * @param resultStreamListener
          * @return
          */
-        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
+        public T withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
         {
             if(resultStreamListener != null)
             {
                 this.streamListener = resultStreamListener;
             }
-            return this;
+
+            return self();
         }
 
         protected abstract T self();
