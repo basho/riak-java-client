@@ -19,6 +19,7 @@ package com.basho.riak.client.api.commands.itest;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
@@ -31,6 +32,8 @@ import org.junit.Test;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -69,16 +72,15 @@ public class ITestListBuckets extends ITestBase
                     }
                 };
 
-        ListBuckets listCom = new ListBuckets.Builder(bucketType.toString())
+        ListBuckets listCom = new ListBuckets.Builder(bucketType)
                 .withResultStreamListener(streamListener)
                 .build();
 
-        ListBuckets.Response response = client.execute(listCom);
+        RiakFuture<ListBuckets.Response, BinaryValue> future = client.executeAsync(listCom);
 
+        future.await();
         // streaming complete, assert that the bucket was found
-        for (Namespace ns : response)
-        {
-            assertTrue(results.contains(ns));
-        }
+        assertFalse(future.get().iterator().hasNext());
+        assertEquals(1, results.size());
     }
 }

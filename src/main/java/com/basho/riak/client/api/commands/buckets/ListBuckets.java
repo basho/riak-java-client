@@ -95,6 +95,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
             builder.withTimeout(timeout);
         }
 
+        builder.withBucketType(type);
+
         if(this.streamListener != null){
             RiakResultStreamListener<ListBucketsOperation.Response> convertingListener =
                     new RiakResultStreamListener<ListBucketsOperation.Response>() {
