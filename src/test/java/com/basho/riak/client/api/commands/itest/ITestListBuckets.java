@@ -33,6 +33,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -53,9 +54,7 @@ public class ITestListBuckets extends ITestBase
 
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         Location location = new Location(new Namespace(bucketType.toString(), bucketName.toString()), key);
-        StoreValue sv =
-                new StoreValue.Builder(rObj).withLocation(location)
-                        .build();
+        StoreValue sv = new StoreValue.Builder(rObj).withLocation(location).build();
 
         client.execute(sv);
 
@@ -76,8 +75,9 @@ public class ITestListBuckets extends ITestBase
 
         RiakFuture<ListBuckets.Response, BinaryValue> future = client.executeAsync(listCom);
 
-        // wait for stream to complete
+        // wait for stream to complete, test if succeded
         future.await();
+        assertTrue(future.isSuccess());
 
         // assert that the execution does not return any iterable results
         assertFalse(future.get().iterator().hasNext());
@@ -87,5 +87,7 @@ public class ITestListBuckets extends ITestBase
 
         // assert that the result we got back the bucket we created a value for
         assertEquals(results.peek(), location.getNamespace());
+
+        resetAndEmptyBucket(location.getNamespace());
     }
 }

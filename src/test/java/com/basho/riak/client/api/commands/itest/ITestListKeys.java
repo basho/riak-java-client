@@ -17,7 +17,7 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.commands.buckets.ListBuckets;
+import com.basho.riak.client.api.commands.kv.ListKeys;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakResultStreamListener;
@@ -32,6 +32,7 @@ import org.junit.Test;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -65,43 +66,37 @@ public class ITestListKeys extends ITestBase
     {
         generateKeys();
 
-        // Empty buckets do not show up
-        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
-        final String value = "{\"value\":\"value\"}";
+        final LinkedBlockingQueue<Location> results = new LinkedBlockingQueue<Location>();
 
-        final LinkedBlockingQueue<Namespace> results = new LinkedBlockingQueue<Namespace>();
-
-        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(new Namespace(bucketType.toString(), bucketName.toString()), key);
-        StoreValue sv =
-                new StoreValue.Builder(rObj).withLocation(location)
-                        .build();
-
-        client.execute(sv);
-
-        RiakResultStreamListener<ListBuckets.Response> streamListener =
-                new RiakResultStreamListener<ListBuckets.Response>() {
+        RiakResultStreamListener<ListKeys.Response> streamListener =
+                new RiakResultStreamListener<ListKeys.Response>() {
                     @Override
-                    public void handle(ListBuckets.Response response) {
-                        for(Namespace bucket : response)
+                    public void handle(ListKeys.Response response) {
+                        for(Location location : response)
                         {
-                            results.add(bucket);
+                            results.add(location);
                         }
                     }
                 };
 
-        ListBuckets listCom = new ListBuckets.Builder(bucketType.toString())
+        Namespace ns = new Namespace(bucketType.toString(), bucketName.toString());
+        ListKeys listCom = new ListKeys.Builder(ns)
                 .withResultStreamListener(streamListener)
                 .build();
 
-        RiakFuture<ListBuckets.Response, BinaryValue> future = client.executeAsync(listCom);
+        RiakFuture<ListKeys.Response, Namespace> future = client.executeAsync(listCom);
 
+        // wait for stream to complete, test if succeded
         future.await();
         assertTrue(future.isSuccess());
 
-        ListBuckets.Response response = future.get();
+        // assert that the execution does not return any iterable results
+        assertFalse(future.get().iterator().hasNext());
 
+        // assert result size is what we expect
         assertTrue(results.size() > 0);
-        assertFalse(response.iterator().hasNext());
+        assertEquals(200, results.size());
+
+        resetAndEmptyBucket(ns);
     }
 }
