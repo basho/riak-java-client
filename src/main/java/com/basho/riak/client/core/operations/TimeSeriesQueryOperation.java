@@ -25,7 +25,7 @@ public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakK
 
     private final RiakKvPB.TsQueryReq.Builder reqBuilder;
 
-    private final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
+    private final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
 
     private TimeSeriesQueryOperation(Builder builder)
     {
@@ -104,29 +104,20 @@ public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakK
             this.interpolationBuilder.setBase(ByteString.copyFrom(queryText.unsafeGetValue()));
         }
 
-        public Builder setParameter(String key, String value)
+        private void addInterpolationAt(int index, BinaryValue key, BinaryValue value)
         {
-            int i = this.interpolationBuilder.getInterpolationsCount();
-            addInterpolationAt(i, key, value);
-            return this;
-        }
-
-        private void addInterpolationAt(int index, String key, String value)
-        {
-            ByteString bsKey = ByteString.copyFrom(
-                    BinaryValue.create(key.getBytes()).unsafeGetValue());
-            ByteString bsValue = ByteString.copyFrom(
-                    BinaryValue.create(value.getBytes()).unsafeGetValue());
+            ByteString bsKey = ByteString.copyFrom(key.unsafeGetValue());
+            ByteString bsValue = ByteString.copyFrom(value.unsafeGetValue());
 
             RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder().setKey(bsKey).setValue(bsValue);
             this.interpolationBuilder.setInterpolations(index, pair);
         }
 
-        public Builder setParameters(Map<String, String> interpolations)
+        public Builder setInterpolations(Map<BinaryValue, BinaryValue> interpolations)
         {
             int i = this.interpolationBuilder.getInterpolationsCount();
 
-            for (Map.Entry<String, String> interpolation : interpolations.entrySet())
+            for (Map.Entry<BinaryValue, BinaryValue> interpolation : interpolations.entrySet())
             {
                 addInterpolationAt(i, interpolation.getKey(), interpolation.getValue());
                 i++;
