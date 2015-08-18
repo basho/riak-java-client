@@ -63,7 +63,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     }
 
     @Override
-    public void executeOnNode(FutureOperation operation, RiakNode previousNode)
+    public boolean executeOnNode(FutureOperation operation, RiakNode previousNode)
     {
         try
         {
@@ -90,10 +90,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                 executed = healthy.get(0).execute(operation);
             }
             
-            if (!executed)
-            {
-                operation.setException(new NoNodesAvailableException());
-            }
+            return executed;
         }
         finally
         {

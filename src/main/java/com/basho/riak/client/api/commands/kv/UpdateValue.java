@@ -95,17 +95,17 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
     private final Update<?> update;
     private final TypeReference<?> typeReference;
     private final Map<FetchValue.Option<?>, Object> fetchOptions =
-	    new HashMap<FetchValue.Option<?>, Object>();
+        new HashMap<FetchValue.Option<?>, Object>();
     private final Map<StoreValue.Option<?>, Object> storeOptions =
-	    new HashMap<StoreValue.Option<?>, Object>();
+        new HashMap<StoreValue.Option<?>, Object>();
 
     UpdateValue(Builder builder)
     {
         this.location = builder.location;
         this.update = builder.update;
         this.typeReference = builder.typeReference;
-	    this.fetchOptions.putAll(builder.fetchOptions);
-	    this.storeOptions.putAll(builder.storeOptions);
+        this.fetchOptions.putAll(builder.fetchOptions);
+        this.storeOptions.putAll(builder.storeOptions);
     }
 
     @SuppressWarnings("unchecked")
@@ -323,52 +323,52 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
     /**
      * Used to construct an UpdateValue command.
      */
-	public static class Builder
-	{
-		private final Location location;
-		private Update<?> update;
+    public static class Builder
+    {
+        private final Location location;
+        private Update<?> update;
         private TypeReference<?> typeReference;
-		private final Map<FetchValue.Option<?>, Object> fetchOptions =
-			new HashMap<FetchValue.Option<?>, Object>();
-		private final Map<StoreValue.Option<?>, Object> storeOptions =
-			new HashMap<StoreValue.Option<?>, Object>();
+        private final Map<FetchValue.Option<?>, Object> fetchOptions =
+            new HashMap<FetchValue.Option<?>, Object>();
+        private final Map<StoreValue.Option<?>, Object> storeOptions =
+            new HashMap<StoreValue.Option<?>, Object>();
 
         /**
          * Construct a Builder for an UpdateValue command.
          * @param location the location of the object in Riak to update.
          */
-		public Builder(Location location)
-		{
-			this.location = location;
-		}
+        public Builder(Location location)
+        {
+            this.location = location;
+        }
 
         /**
-		 * Add an option for the fetch phase of the update.
-		 *
-		 * @param option the option
-		 * @param value  the option's value
-		 * @param <U>    the type of the option's value
-		 * @return this
-		 */
-		public <U> Builder withFetchOption(FetchValue.Option<U> option, U value)
-		{
-			fetchOptions.put(option, value);
-			return this;
-		}
+         * Add an option for the fetch phase of the update.
+         *
+         * @param option the option
+         * @param value  the option's value
+         * @param <U>    the type of the option's value
+         * @return this
+         */
+        public <U> Builder withFetchOption(FetchValue.Option<U> option, U value)
+        {
+            fetchOptions.put(option, value);
+            return this;
+        }
 
-		/**
-		 * Add an option for the store phase of the update.
-		 *
-		 * @param option the option
-		 * @param value  the option's value
-		 * @param <U>    the type of the option's value
-		 * @return this
-		 */
-		public <U> Builder withStoreOption(StoreValue.Option<U> option, U value)
-		{
-			storeOptions.put(option, value);
-			return this;
-		}
+        /**
+         * Add an option for the store phase of the update.
+         *
+         * @param option the option
+         * @param value  the option's value
+         * @param <U>    the type of the option's value
+         * @return this
+         */
+        public <U> Builder withStoreOption(StoreValue.Option<U> option, U value)
+        {
+            storeOptions.put(option, value);
+            return this;
+        }
 
         /**
          * Supply the Update.
@@ -390,10 +390,10 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
          * @see com.basho.riak.client.api.cap.ConflictResolverFactory
          */
         public Builder withUpdate(Update<?> update)
-		{
-			this.update = update;
-			return this;
-		}
+        {
+            this.update = update;
+            return this;
+        }
 
         /**
          * Supply the Update with a TypeReference.
@@ -440,11 +440,11 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
          * Construct the UpdateValue command.
          * @return a new UpdateValue command.
          */
-		public UpdateValue build()
-		{
-			return new UpdateValue(this);
-		}
-	}
+        public UpdateValue build()
+        {
+            return new UpdateValue(this);
+        }
+    }
     
     private class UpdateValueFuture extends ListenableFuture<UpdateValue.Response, Location>
         implements RiakFutureListener<StoreValue.Response, Location>
@@ -592,5 +592,55 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         {
             return location;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + location.hashCode();
+        result = prime * result + update.hashCode();
+        result = prime * result + typeReference.hashCode();
+        result = prime * result + fetchOptions.hashCode();
+        result = prime * result + storeOptions.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof UpdateValue)) {
+            return false;
+        }
+
+        final UpdateValue other = (UpdateValue) obj;
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+            return false;
+        }
+        if (this.update != other.update && (this.update == null || !this.update.equals(other.update))) {
+            return false;
+        }
+        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference))) {
+            return false;
+        }
+        if (this.fetchOptions != other.fetchOptions && (this.fetchOptions == null || !this.fetchOptions.equals(other.fetchOptions))) {
+            return false;
+        }
+        if (this.storeOptions != other.storeOptions && (this.storeOptions == null || !this.storeOptions.equals(other.storeOptions))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{location: %s, update: %s, typeReference: %s,"
+                + " fetchOptions: %s, storeOptions: %s}", location, update,
+                typeReference, fetchOptions, storeOptions);
     }
 }

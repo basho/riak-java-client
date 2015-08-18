@@ -18,7 +18,7 @@ package com.basho.riak.client.core.query.indexes;
 /**
  * Enum that encapsulates the suffix used to determine and index type in Riak.
  * <p>
- * There are two types of Seconrady Indexes (2i) in Riak; "Integer" and 
+ * There are two types of Secondary Indexes (2i) in Riak; "Integer" and
  * "Binary". The current server API distinguishes between them via a 
  * suffix ({@code "_int"} and {@code "_bin"} respectively).
  * <p>
@@ -63,7 +63,7 @@ public enum IndexType
     
     /**
      * Returns the index type from its fully qualified name <p> There are two
-     * types of Seconrady Indexes (2i) in Riak; "Integer" and "Binary". The
+     * types of Secondary Indexes (2i) in Riak; "Integer" and "Binary". The
      * current server API distinguishes between them via a suffix ({@code _int}
      * and {@code _bin} respectively). This method takes a "fully qualified" 2i
      * name (e.g. "my_index_int") and returns an enum that represents the type.

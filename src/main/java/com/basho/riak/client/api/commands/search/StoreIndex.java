@@ -10,6 +10,11 @@ import com.basho.riak.client.core.query.search.YokozunaIndex;
 
 /**
  * Command used to store a search index in Riak.
+ * <p>
+ * To store/create an index for Solr/Yokozuna in Riak, you must supply a
+ * {@link com.basho.riak.client.core.query.search.YokozunaIndex} that defines the index and it's properties.
+ * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -59,11 +64,20 @@ public final class StoreIndex extends RiakCommand<Void, YokozunaIndex>
 	{
 		private final YokozunaIndex index;
 
+        /**
+         * Construct a Builder for a StoreIndex command.
+         *
+         * @param index The index to create or edit in Riak.
+         */
 		public Builder(YokozunaIndex index)
 		{
 			this.index = index;
 		}
 
+        /**
+         * Construct the StoreIndex command.
+         * @return the new StoreIndex command.
+         */
 		public StoreIndex build()
 		{
 			return new StoreIndex(this);

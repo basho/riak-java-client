@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+/**
+ * MapReduce Job Model / Specification
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class MapReduceSpec
 {

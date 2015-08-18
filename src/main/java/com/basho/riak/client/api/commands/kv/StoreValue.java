@@ -74,7 +74,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     private final Namespace namespace;
     private final BinaryValue key;
     private final Map<Option<?>, Object> options =
-	    new HashMap<Option<?>, Object>();
+        new HashMap<Option<?>, Object>();
     private final Object value;
     private final TypeReference<?> typeReference;
     private final VClock vclock;
@@ -340,12 +340,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     /**
      * Used to construct a StoreValue command.
      */
-	public static class Builder
-	{
+    public static class Builder
+    {
 
-		private final Map<Option<?>, Object> options =
-			new HashMap<Option<?>, Object>();
-		private final Object value;
+        private final Map<Option<?>, Object> options =
+            new HashMap<Option<?>, Object>();
+        private final Object value;
         private Namespace namespace;
         private BinaryValue key;
         private TypeReference<?> typeReference;
@@ -395,7 +395,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * @param location the location to store the object in Riak.
          * @return a reference to this object.
          */
-		public Builder withLocation(Location location)
+        public Builder withLocation(Location location)
         {
             this.namespace = location.getNamespace();
             this.key = location.getKey();
@@ -434,19 +434,19 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         }
         
         /**
-		 * Add an optional setting for this command. 
+         * Add an optional setting for this command.
          * This will be passed along with the request to Riak to tell it how
-		 * to behave when servicing the request.
-		 *
-		 * @param option the option
-		 * @param value the value for the option
-		 * @return a reference to this object.
-		 */
-		public <T> Builder withOption(Option<T> option, T value)
-		{
-			options.put(option, value);
-			return this;
-		}
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
+         */
+        public <T> Builder withOption(Option<T> option, T value)
+        {
+            options.put(option, value);
+            return this;
+        }
 
         /**
          * Set the vector clock.
@@ -469,9 +469,63 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * Construct the StoreValue command.
          * @return the new StoreValue command.
          */
-		public StoreValue build()
-		{
-			return new StoreValue(this);
-		}
-	}
+        public StoreValue build()
+        {
+            return new StoreValue(this);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + namespace.hashCode();
+        result = prime * result + key.hashCode();
+        result = prime * result + options.hashCode();
+        result = prime * result + value.hashCode();
+        result = prime * result + typeReference.hashCode();
+        result = prime * result + vclock.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof StoreValue)) {
+            return false;
+        }
+
+        final StoreValue other = (StoreValue) obj;
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace))) {
+            return false;
+        }
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+            return false;
+        }
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+            return false;
+        }
+        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+            return false;
+        }
+        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference))) {
+            return false;
+        }
+        if (this.vclock != other.vclock && (this.vclock == null || !this.vclock.equals(other.vclock))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{namespace: %s, key: %s, options: %s, value: %s,"
+                + " typeReference: %s, vclock: %s}", namespace, key, options,
+                value, typeReference, vclock);
+    }
 }
