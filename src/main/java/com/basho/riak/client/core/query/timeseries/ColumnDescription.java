@@ -66,5 +66,10 @@ public class ColumnDescription
         {
             return map.get(columnType);
         }
+
+        public int getId()
+        {
+            return this.id;
+        }
     }
 }

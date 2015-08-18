@@ -94,7 +94,7 @@ public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakK
 
         public Builder(BinaryValue queryText)
         {
-            if (queryText == null)
+            if (queryText == null || queryText.length() == 0)
             {
                 throw new IllegalArgumentException("QueryText can not be null or empty");
             }
