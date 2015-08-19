@@ -2,6 +2,8 @@ package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.util.BinaryValue;
 
+import java.nio.ByteBuffer;
+
 /**
  *
  * @author Alex Moore <amoore at basho dot com>
@@ -91,11 +93,32 @@ public class Cell
         return cell;
     }
 
+    public static Cell newBinaryCell(String value)
+    {
+        Cell cell = new Cell();
+        cell.binaryValue = BinaryValue.createFromUtf8(value);
+        return cell;
+    }
+
     public static Cell newIntegerCell(long value)
     {
         Cell cell = new Cell();
         cell.integerValue = value;
         cell.isIntegerCell = true;
+        return cell;
+    }
+
+    public static Cell newNumericCell(float value)
+    {
+        Cell cell = new Cell();
+        cell.numericValue = ByteBuffer.allocate(4).putFloat(value).array();
+        return cell;
+    }
+
+    public static Cell newNumericCell(double value)
+    {
+        Cell cell = new Cell();
+        cell.numericValue = ByteBuffer.allocate(8).putDouble(value).array();
         return cell;
     }
 
