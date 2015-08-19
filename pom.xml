@@ -3,7 +3,7 @@
     <groupId>com.basho.riak</groupId>
     <artifactId>dataplatform-riak-client</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>1.0.0.beta2</version>
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
