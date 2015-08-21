@@ -42,7 +42,7 @@ public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, Stri
     {
         RiakFuture<YzFetchIndexOperation.Response, String> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<YzFetchIndexOperation.Response, String, YzFetchIndexOperation.Response, String> future =
             new CoreFutureAdapter<YzFetchIndexOperation.Response, String, YzFetchIndexOperation.Response, String>(coreFuture)
             {
@@ -61,7 +61,7 @@ public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, Stri
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private YzFetchIndexOperation buildCoreOperation()
     {
         return new YzFetchIndexOperation.Builder().withIndexName(index).build();
@@ -74,11 +74,20 @@ public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, Stri
 	{
 		private final String index;
 
+        /**
+         * Construct a Builder for a FetchIndex command.
+         *
+         * @param index The name of the search index to fetch from Riak.
+         */
 		public Builder(String index)
 		{
 			this.index = index;
 		}
 
+        /**
+         * Construct the FetchIndex command.
+         * @return the new FetchIndex command.
+         */
 		public FetchIndex build()
 		{
 			return new FetchIndex(this);

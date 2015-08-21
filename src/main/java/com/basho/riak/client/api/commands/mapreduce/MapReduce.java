@@ -336,7 +336,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	}
 
     /**
-     * Response from a Map Reduce command.
+     * Response from a MapReduce command.
      */
 	public static class Response
 	{

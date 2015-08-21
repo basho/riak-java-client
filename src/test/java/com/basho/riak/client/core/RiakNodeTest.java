@@ -15,19 +15,21 @@
  */
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.RiakNode.State;
-import com.google.protobuf.Message;
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.fieldIn;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 
 import java.net.UnknownHostException;
 import java.util.Deque;
@@ -37,11 +39,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.fieldIn;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
+
+import com.basho.riak.client.core.RiakNode.State;
+import com.google.protobuf.Message;
 
 
 /**
@@ -115,6 +121,7 @@ public class RiakNodeTest
         boolean removed = node.removeStateListener(listener);
         assertTrue(removed);
     }
+
 
     @Test
     public void nodeNotifiesListeners() throws UnknownHostException, Exception
@@ -362,6 +369,12 @@ public class RiakNodeTest
         await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
     }
 
+    @Test(expected = UnknownHostException.class )
+    public void failsResolvingHostname() throws UnknownHostException {
+    	RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name.com").build();
+    	node.start();
+    }
+
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>
     {
 
@@ -388,7 +401,6 @@ public class RiakNodeTest
         {
             return null;
         }
-
 
     }
 

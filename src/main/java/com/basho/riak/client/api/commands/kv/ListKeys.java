@@ -53,16 +53,16 @@ import java.util.List;
 public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 {
 
-	private final Namespace namespace;
-	private final int timeout;
+    private final Namespace namespace;
+    private final int timeout;
 
-	ListKeys(Builder builder)
-	{
-		this.namespace = builder.namespace;
-		this.timeout = builder.timeout;
-	}
+    ListKeys(Builder builder)
+    {
+        this.namespace = builder.namespace;
+        this.timeout = builder.timeout;
+    }
 
-	@Override 
+    @Override
     protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
     {
         RiakFuture<ListKeysOperation.Response, Namespace> coreFuture = 
@@ -91,84 +91,84 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
 
-		if (timeout > 0)
-		{
-			builder.withTimeout(timeout);
-		}
+        if (timeout > 0)
+        {
+            builder.withTimeout(timeout);
+        }
 
-		return builder.build(); 
+        return builder.build();
     }
     
-	public static class Response implements Iterable<Location>
-	{
+    public static class Response implements Iterable<Location>
+    {
 
-		private final Namespace namespace;
-		private final List<BinaryValue> keys;
+        private final Namespace namespace;
+        private final List<BinaryValue> keys;
 
-		public Response(Namespace namespace, List<BinaryValue> keys)
-		{
-			this.namespace = namespace;
+        public Response(Namespace namespace, List<BinaryValue> keys)
+        {
+            this.namespace = namespace;
             this.keys = keys;
         }
 
-		@Override
-		public Iterator<Location> iterator()
-		{
-			return new Itr(namespace, keys.iterator());
-		}
-	}
+        @Override
+        public Iterator<Location> iterator()
+        {
+            return new Itr(namespace, keys.iterator());
+        }
+    }
 
-	private static class Itr implements Iterator<Location>
-	{
-		private final Iterator<BinaryValue> iterator;
-		private final Namespace namespace;
+    private static class Itr implements Iterator<Location>
+    {
+        private final Iterator<BinaryValue> iterator;
+        private final Namespace namespace;
 
-		private Itr(Namespace namespace, Iterator<BinaryValue> iterator)
-		{
-			this.iterator = iterator;
-			this.namespace = namespace;
-		}
+        private Itr(Namespace namespace, Iterator<BinaryValue> iterator)
+        {
+            this.iterator = iterator;
+            this.namespace = namespace;
+        }
 
-		@Override
-		public boolean hasNext()
-		{
-			return iterator.hasNext();
-		}
+        @Override
+        public boolean hasNext()
+        {
+            return iterator.hasNext();
+        }
 
-		@Override
-		public Location next()
-		{
-			BinaryValue key = iterator.next();
-			return new Location(namespace, key);
-		}
+        @Override
+        public Location next()
+        {
+            BinaryValue key = iterator.next();
+            return new Location(namespace, key);
+        }
 
-		@Override
-		public void remove()
-		{
-			iterator.remove();
-		}
-	}
+        @Override
+        public void remove()
+        {
+            iterator.remove();
+        }
+    }
 
     /**
      * Used to construct a ListKeys command.
      */
-	public static class Builder
-	{
-		private final Namespace namespace;
-		private int timeout;
+    public static class Builder
+    {
+        private final Namespace namespace;
+        private int timeout;
 
         /**
          * Constructs a Builder for a ListKeys command.
          * @param namespace the namespace from which to list keys.
          */
-		public Builder(Namespace namespace)
-		{
-			if (namespace == null)
+        public Builder(Namespace namespace)
+        {
+            if (namespace == null)
             {
                 throw new IllegalArgumentException("Namespace cannot be null");
             }
             this.namespace = namespace;
-		}
+        }
 
         /**
          * Set the Riak-side timeout value.
@@ -179,20 +179,55 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
          * @param timeout the timeout in milliseconds to be sent to riak.
          * @return a reference to this object.
          */
-		public Builder withTimeout(int timeout)
-		{
-			this.timeout = timeout;
-			return this;
-		}
+        public Builder withTimeout(int timeout)
+        {
+            this.timeout = timeout;
+            return this;
+        }
 
         /**
          * Construct the ListKeys command.
          * @return A ListKeys command.
          */
-		public ListKeys build()
-		{
-			return new ListKeys(this);
-		}
-	}
+        public ListKeys build()
+        {
+            return new ListKeys(this);
+        }
+    }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + namespace.hashCode();
+        result = prime * result + timeout;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof ListKeys)) {
+            return false;
+        }
+
+        final ListKeys other = (ListKeys) obj;
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace))) {
+            return false;
+        }
+        if (this.timeout != other.timeout) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{namespace: %s, timeout: %s}", namespace, timeout);
+    }
 }

@@ -74,11 +74,20 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
 	{
 		private final String schema;
 
+        /**
+         * Construct a Builder for a FetchSchema command.
+         *
+         * @param schema The name of the schema to fetch.
+         */
 		public Builder(String schema)
 		{
 			this.schema = schema;
 		}
 
+        /**
+         * Construct the FetchSchema command.
+         * @return the new FetchSchema command.
+         */
 		public FetchSchema build()
 		{
 			return new FetchSchema(this);

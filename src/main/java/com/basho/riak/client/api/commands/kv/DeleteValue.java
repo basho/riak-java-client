@@ -69,7 +69,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
     private final Location location;
     private final Map<Option<?>, Object> options =
-	    new HashMap<Option<?>, Object>();
+        new HashMap<Option<?>, Object>();
     private final VClock vClock;
 
     public DeleteValue(Builder builder)
@@ -209,52 +209,52 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     /**
      * Used to construct a DeleteValue command.
      */
-	public static class Builder
-	{
+    public static class Builder
+    {
 
-		private final Location location;
-		private final Map<Option<?>, Object> options =
-			new HashMap<Option<?>, Object>();
-		private VClock vClock;
+        private final Location location;
+        private final Map<Option<?>, Object> options =
+            new HashMap<Option<?>, Object>();
+        private VClock vClock;
 
         /**
          * Construct a Builder for a DeleteValue command.
          * @param location the location of the object in Riak
          */
-		public Builder(Location location)
-		{
-			if (location == null)
+        public Builder(Location location)
+        {
+            if (location == null)
             {
                 throw new IllegalArgumentException("Location cannot be null");
             }
             this.location = location;
-		}
+        }
 
-		/**
-		 * Specify the VClock to use when deleting the object from Riak.
-		 *
-		 * @param vClock the vclock
-		 * @return this
-		 */
-		public Builder withVClock(VClock vClock)
-		{
-			this.vClock = vClock;
-			return this;
-		}
+        /**
+         * Specify the VClock to use when deleting the object from Riak.
+         *
+         * @param vClock the vclock
+         * @return this
+         */
+        public Builder withVClock(VClock vClock)
+        {
+            this.vClock = vClock;
+            return this;
+        }
 
-		/**
-		 * Add a delete option.
-		 *
-		 * @param option the option
-		 * @param value  the value associated with the option
-		 * @param <T>    the type required by the option
-		 * @return a reference to this object
-		 */
-		public <T> Builder withOption(Option<T> option, T value)
-		{
-			options.put(option, value);
-			return this;
-		}
+        /**
+         * Add a delete option.
+         *
+         * @param option the option
+         * @param value  the value associated with the option
+         * @param <T>    the type required by the option
+         * @return a reference to this object
+         */
+        public <T> Builder withOption(Option<T> option, T value)
+        {
+            options.put(option, value);
+            return this;
+        }
 
         /**
          * Set the Riak-side timeout value.
@@ -275,11 +275,51 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          * Construct a DeleteValue object.
          * @return a new DeleteValue instance.
          */
-		public DeleteValue build()
-		{
-			return new DeleteValue(this);
-		}
+        public DeleteValue build()
+        {
+            return new DeleteValue(this);
+        }
 
-	}
+    }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + location.hashCode();
+        result = prime * result + options.hashCode();
+        result = prime * result + vClock.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof DeleteValue)) {
+            return false;
+        }
+
+        final DeleteValue other = (DeleteValue) obj;
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+            return false;
+        }
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+            return false;
+        }
+        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{location: %s, options: %s, vClock: %s}",
+                location, options, vClock);
+    }
 }
