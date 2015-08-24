@@ -3,14 +3,66 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
- *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
 public class Cell
 {
+    private Cell() {}
+
+    public Cell(String value)
+    {
+        this.binaryValue = BinaryValue.createFromUtf8(value);
+    }
+
+    public Cell(BinaryValue value)
+    {
+        this.binaryValue = value;
+    }
+
+    public Cell(int value)
+    {
+        this.integerValue = (long) value;
+    }
+
+    public Cell(long value)
+    {
+        this.integerValue = value;
+    }
+
+    public Cell(float value)
+    {
+        this.numericValue = ByteBuffer.allocate(4).putFloat(value).array();
+    }
+
+    public Cell(double value)
+    {
+        this.numericValue = ByteBuffer.allocate(8).putDouble(value).array();
+    }
+
+    public Cell(boolean value)
+    {
+        this.booleanValue = value;
+    }
+
+    public Cell(Calendar value)
+    {
+        this.timestampValue = value.getTimeInMillis();
+    }
+
+    public Cell(Date value)
+    {
+        this.timestampValue = value.getTime();
+    }
+
+    // set?
+    // map?
+
     protected BinaryValue binaryValue;
     protected long integerValue;
     protected byte[] numericValue;
@@ -23,104 +75,119 @@ public class Cell
     private boolean isTimestampCell = false;
     private boolean isBooleanCell = false;
 
-    public boolean hasBinaryValue() {
-        return binaryValue != null;
+    public boolean hasString()
+    {
+        return hasBinaryValue();
     }
 
-    public boolean hasIntegerValue() {
+    public boolean hasBinaryValue()
+    {
+        return this.binaryValue != null;
+    }
+
+    public boolean hasInt()
+    {
+        return this.isIntegerCell &&
+               this.integerValue < Integer.MAX_VALUE &&
+               this.integerValue > Integer.MIN_VALUE;
+    }
+
+    public boolean hasLong()
+    {
         return this.isIntegerCell;
     }
 
-    public boolean hasNumericValue() {
-        return this.numericValue != null;
+    public boolean hasRawNumericValue()
+    {
+        return this.numericValue != null && this.numericValue.length > 0;
     }
 
-    public boolean hasTimestampValue() {
+    public boolean hasFloat()
+    {
+        return hasRawNumericValue() && this.numericValue.length == 2;
+    }
+
+    public boolean hasDouble()
+    {
+        return hasRawNumericValue() && this.numericValue.length == 4;
+    }
+
+    public boolean hasTimestamp()
+    {
         return this.isTimestampCell;
     }
 
-    public boolean hasBooleanValue() {
+    public boolean hasBoolean()
+    {
         return this.isBooleanCell;
     }
 
-    public boolean hasSetValue() {
+    public boolean hasSet()
+    {
         return this.setValue != null;
     }
 
-    public boolean hasMapValue() {
+    public boolean hasMap()
+    {
         return this.mapValue != null;
     }
-    
-    public BinaryValue getBinaryValue() {
-        return binaryValue;
+
+
+    public String getUtf8String()
+    {
+        return this.binaryValue.toStringUtf8();
     }
 
-    public long getIntegerValue() {
-        return integerValue;
+    public BinaryValue getBinary()
+    {
+        return this.binaryValue;
     }
 
-    public byte[] getNumericValue() {
-        return numericValue;
+    public long getLong()
+    {
+        return this.integerValue;
     }
 
-    public long getTimestampValue() {
+    public int getInt()
+    {
+        return (int) this.integerValue;
+    }
+
+    public byte[] getRawNumeric()
+    {
+        return this.numericValue;
+    }
+
+    public float getFloat()
+    {
+        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+    }
+
+    public double getDouble()
+    {
+        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.LITTLE_ENDIAN).getDouble();
+    }
+
+    public long getTimestamp()
+    {
         return timestampValue;
     }
 
-    public boolean getBooleanValue() {
+    public boolean getBoolean()
+    {
         return booleanValue;
     }
 
-    public byte[][] getSetValue() {
+    public byte[][] getSet()
+    {
         return setValue;
     }
 
-    public byte[] getMapValue() {
+    public byte[] getMap()
+    {
         return mapValue;
     }
 
-    public static Cell newBinaryCell(byte[] value)
-    {
-        Cell cell = new Cell();
-        cell.binaryValue = BinaryValue.unsafeCreate(value);
-        return cell;
-    }
-
-    public static Cell newBinaryCell(BinaryValue value)
-    {
-        Cell cell = new Cell();
-        cell.binaryValue = value;
-        return cell;
-    }
-
-    public static Cell newBinaryCell(String value)
-    {
-        Cell cell = new Cell();
-        cell.binaryValue = BinaryValue.createFromUtf8(value);
-        return cell;
-    }
-
-    public static Cell newIntegerCell(long value)
-    {
-        Cell cell = new Cell();
-        cell.integerValue = value;
-        cell.isIntegerCell = true;
-        return cell;
-    }
-
-    public static Cell newNumericCell(float value)
-    {
-        Cell cell = new Cell();
-        cell.numericValue = ByteBuffer.allocate(4).putFloat(value).array();
-        return cell;
-    }
-
-    public static Cell newNumericCell(double value)
-    {
-        Cell cell = new Cell();
-        cell.numericValue = ByteBuffer.allocate(8).putDouble(value).array();
-        return cell;
-    }
 
     public static Cell newNumericCell(byte[] value)
     {
@@ -137,14 +204,6 @@ public class Cell
         return cell;
     }
 
-    public static Cell newBooleanCell(boolean value)
-    {
-        Cell cell = new Cell();
-        cell.booleanValue = value;
-        cell.isBooleanCell = true;
-        return cell;
-    }
-
     public static Cell newSetCell(byte[][] value)
     {
         Cell cell = new Cell();
@@ -158,6 +217,7 @@ public class Cell
         cell.mapValue = value;
         return cell;
     }
+
 }
 
 

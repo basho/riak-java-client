@@ -51,8 +51,8 @@ public class ITestTimeSeriesQueryOperations extends ITestBase
         List<Cell> cells = rows.get(0).getCells();
         assertEquals(1, cells.size());
         Cell cell = cells.get(0);
-        assertTrue(cell.hasBinaryValue());
-        assertEquals("jkl;", cell.getBinaryValue().toStringUtf8());
+        assertTrue(cell.hasString());
+        assertEquals("jkl;", cell.getUtf8String());
     }
 
 }

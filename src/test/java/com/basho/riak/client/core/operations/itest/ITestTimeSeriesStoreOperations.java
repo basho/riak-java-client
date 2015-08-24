@@ -28,17 +28,24 @@ public class ITestTimeSeriesStoreOperations extends ITestBase
     {
         final String tableName = "time_series";
         final BinaryValue tableNameBV = BinaryValue.create(tableName);
-        final List<Row> rows =
-                Arrays.asList(new Row(Arrays.asList(Cell.newTimestampCell(new Date().getTime() - 10),
-                                                    Cell.newBinaryCell("bryce"),
-                                                    Cell.newNumericCell(305.37))),
+        final Calendar date1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        date1.add(Calendar.MILLISECOND, -10);
+        final Calendar date2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        date1.add(Calendar.MILLISECOND, -5);
+        final Calendar date3 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 
-                              new Row(Arrays.asList(Cell.newTimestampCell(new Date().getTime() - 5), Cell.newBinaryCell(
-                                      "bryce"), Cell.newNumericCell(300.12))),
+        final List<Row> rows = Arrays.asList(
+                new Row(new Cell(date1),
+                        new Cell("bryce"),
+                        new Cell(305.37)),
 
-                              new Row(Arrays.asList(Cell.newTimestampCell(new Date().getTime()), Cell.newBinaryCell(
-                                      "bryce"), Cell.newNumericCell(295.95))));
+                new Row(new Cell(date2),
+                        new Cell("bryce"),
+                        new Cell(300.12)),
 
+                new Row(new Cell(date3),
+                        new Cell("bryce"),
+                        new Cell(295.95)));
 
         TimeSeriesStoreOperation storeOp = new TimeSeriesStoreOperation.Builder(tableNameBV).withRows(rows).build();
         RiakFuture<Void, BinaryValue> future = cluster.execute(storeOp);

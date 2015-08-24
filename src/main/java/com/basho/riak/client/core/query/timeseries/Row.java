@@ -1,8 +1,6 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import com.basho.riak.client.core.util.BinaryValue;
-
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,12 +18,13 @@ public class Row
         this.cells = cells;
     }
 
-    public List<Cell> getCells() {
-        return cells;
+    public Row(Cell... cells)
+    {
+        this.cells = Arrays.asList(cells);
     }
 
-    public Iterator<Cell> iterator()
+    public List<Cell> getCells()
     {
-        return this.cells.iterator();
+        return cells;
     }
 }

@@ -4,6 +4,7 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 
@@ -30,15 +31,15 @@ public class TimeSeriesConverter
             {
                 if (pbCell.hasBinaryValue())
                 {
-                    cells.add(Cell.newBinaryCell(pbCell.getBinaryValue().toByteArray()));
+                    cells.add(new Cell(BinaryValue.unsafeCreate(pbCell.getBinaryValue().toByteArray())));
                 }
                 else if (pbCell.hasBooleanValue())
                 {
-                    cells.add(Cell.newBooleanCell(pbCell.getBooleanValue()));
+                    cells.add(new Cell(pbCell.getBooleanValue()));
                 }
                 else if (pbCell.hasIntegerValue())
                 {
-                    cells.add(Cell.newIntegerCell(pbCell.getIntegerValue()));
+                    cells.add(new Cell(pbCell.getIntegerValue()));
                 }
                 else if (pbCell.hasMapValue())
                 {
@@ -145,32 +146,32 @@ public class TimeSeriesConverter
 
         if(cell.hasBinaryValue())
         {
-            cellBuilder.setBinaryValue(ByteString.copyFrom(cell.getBinaryValue().unsafeGetValue()));
+            cellBuilder.setBinaryValue(ByteString.copyFrom(cell.getBinary().unsafeGetValue()));
         }
-        else if(cell.hasBooleanValue())
+        else if(cell.hasBoolean())
         {
-            cellBuilder.setBooleanValue(cell.getBooleanValue());
+            cellBuilder.setBooleanValue(cell.getBoolean());
         }
-        else if(cell.hasIntegerValue())
+        else if(cell.hasRawNumericValue())
         {
-            cellBuilder.setIntegerValue(cell.getIntegerValue());
+            cellBuilder.setIntegerValue(cell.getLong());
         }
-        else if(cell.hasMapValue())
+        else if(cell.hasMap())
         {
-            cellBuilder.setMapValue(ByteString.copyFrom(cell.getMapValue()));
+            cellBuilder.setMapValue(ByteString.copyFrom(cell.getMap()));
         }
-        else if(cell.hasNumericValue())
+        else if(cell.hasRawNumericValue())
         {
-            cellBuilder.setNumericValue(ByteString.copyFrom(cell.getNumericValue()));
+            cellBuilder.setNumericValue(ByteString.copyFrom(cell.getRawNumeric()));
         }
-        else if(cell.hasTimestampValue())
+        else if(cell.hasTimestamp())
         {
-            cellBuilder.setTimestampValue(cell.getTimestampValue());
+            cellBuilder.setTimestampValue(cell.getTimestamp());
         }
         else // Set
         {
             int i = cellBuilder.getSetValueCount();
-            for (byte[] setMember : cell.getSetValue())
+            for (byte[] setMember : cell.getSet())
             {
                 cellBuilder.setSetValue(i, ByteString.copyFrom(setMember));
                 i++;
