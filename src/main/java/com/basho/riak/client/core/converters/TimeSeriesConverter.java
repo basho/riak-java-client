@@ -146,7 +146,7 @@ public class TimeSeriesConverter
 
         if(cell.hasBinaryValue())
         {
-            cellBuilder.setBinaryValue(ByteString.copyFrom(cell.getBinary().unsafeGetValue()));
+            cellBuilder.setBinaryValue(ByteString.copyFrom(cell.getBinaryValue().unsafeGetValue()));
         }
         else if(cell.hasBoolean())
         {

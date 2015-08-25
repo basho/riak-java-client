@@ -39,12 +39,12 @@ public class Cell
 
     public Cell(float value)
     {
-        this.numericValue = ByteBuffer.allocate(4).putFloat(value).array();
+        this.numericValue = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(value).array();
     }
 
     public Cell(double value)
     {
-        this.numericValue = ByteBuffer.allocate(8).putDouble(value).array();
+        this.numericValue = ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).putDouble(value).array();
     }
 
     public Cell(boolean value)
@@ -109,12 +109,12 @@ public class Cell
 
     public boolean hasFloat()
     {
-        return hasRawNumericValue() && this.numericValue.length == 2;
+        return hasRawNumericValue() && this.numericValue.length == 4;
     }
 
     public boolean hasDouble()
     {
-        return hasRawNumericValue() && this.numericValue.length == 4;
+        return hasRawNumericValue() && this.numericValue.length == 8;
     }
 
     public boolean hasTimestamp()
@@ -137,13 +137,12 @@ public class Cell
         return this.mapValue != null;
     }
 
-
     public String getUtf8String()
     {
         return this.binaryValue.toStringUtf8();
     }
 
-    public BinaryValue getBinary()
+    public BinaryValue getBinaryValue()
     {
         return this.binaryValue;
     }
@@ -165,12 +164,12 @@ public class Cell
 
     public float getFloat()
     {
-        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.BIG_ENDIAN).getFloat();
     }
 
     public double getDouble()
     {
-        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.LITTLE_ENDIAN).getDouble();
+        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.BIG_ENDIAN).getDouble();
     }
 
     public long getTimestamp()
