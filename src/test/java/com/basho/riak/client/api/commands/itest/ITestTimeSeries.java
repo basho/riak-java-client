@@ -79,7 +79,7 @@ public class ITestTimeSeries extends ITestBase
                         "primary key (time))";
 
         Query.Builder query = new Query.Builder(queryText);
-        query.addStringParameter("foo", "123");
+        query.addStringParameter(":foo", "123");
     }
 
 
