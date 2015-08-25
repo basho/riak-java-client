@@ -104,43 +104,43 @@ public class TimeSeriesConverter
         return new QueryResult(columnDescriptions, rows);
     }
 
-    public Collection<RiakKvPB.TsColumnDescription> convert(Collection<ColumnDescription> columns)
+    public Collection<RiakKvPB.TsColumnDescription> convertColumns(Collection<ColumnDescription> columns)
     {
         ArrayList<RiakKvPB.TsColumnDescription> pbColumns = new ArrayList<RiakKvPB.TsColumnDescription>(columns.size());
 
         for (ColumnDescription column : columns)
         {
-            pbColumns.add(convert(column));
+            pbColumns.add(convertColumn(column));
         }
 
         return pbColumns;
     }
 
-    public Collection<RiakKvPB.TsRow> convert(List<Row> rows)
+    public Collection<RiakKvPB.TsRow> convertRows(Collection<Row> rows)
     {
         ArrayList<RiakKvPB.TsRow> pbRows = new ArrayList<RiakKvPB.TsRow>(rows.size());
 
         for (Row row : rows)
         {
-            pbRows.add(convert(row));
+            pbRows.add(convertRow(row));
         }
 
         return pbRows;
     }
 
-    public RiakKvPB.TsRow convert(Row row)
+    public RiakKvPB.TsRow convertRow(Row row)
     {
         RiakKvPB.TsRow.Builder rowBuilder = RiakKvPB.TsRow.newBuilder();
 
         for (Cell cell : row.getCells())
         {
-            rowBuilder.addCells(convert(cell));
+            rowBuilder.addCells(convertCell(cell));
         }
 
         return rowBuilder.build();
     }
 
-    private RiakKvPB.TsCell convert(Cell cell)
+    private RiakKvPB.TsCell convertCell(Cell cell)
     {
         RiakKvPB.TsCell.Builder cellBuilder = RiakKvPB.TsCell.newBuilder();
 
@@ -181,7 +181,7 @@ public class TimeSeriesConverter
         return cellBuilder.build();
     }
 
-    public RiakKvPB.TsColumnDescription convert(ColumnDescription column)
+    public RiakKvPB.TsColumnDescription convertColumn(ColumnDescription column)
     {
         RiakKvPB.TsColumnDescription.Builder columnBuilder = RiakKvPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));

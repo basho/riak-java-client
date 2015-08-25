@@ -13,6 +13,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -91,15 +92,15 @@ public class TimeSeriesStoreOperation  extends FutureOperation<Void, RiakKvPB.Ts
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.unsafeGetValue()));
         }
 
-        public Builder withColumns(List<ColumnDescription> columns)
+        public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            this.reqBuilder.addAllColumns(this.converter.convert(columns));
+            this.reqBuilder.addAllColumns(this.converter.convertColumns(columns));
             return this;
         }
 
-        public Builder withRows(List<Row> rows)
+        public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(this.converter.convert(rows));
+            this.reqBuilder.addAllRows(this.converter.convertRows(rows));
             return this;
         }
 

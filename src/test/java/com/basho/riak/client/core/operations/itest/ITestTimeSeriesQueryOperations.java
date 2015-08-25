@@ -2,13 +2,14 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.TimeSeriesQueryOperation;
+import com.basho.riak.client.core.operations.TimeSeriesStoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -54,5 +55,4 @@ public class ITestTimeSeriesQueryOperations extends ITestBase
         assertTrue(cell.hasString());
         assertEquals("jkl;", cell.getUtf8String());
     }
-
 }

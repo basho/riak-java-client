@@ -28,11 +28,13 @@ public class Cell
     public Cell(int value)
     {
         this.integerValue = (long) value;
+        this.isIntegerCell = true;
     }
 
     public Cell(long value)
     {
         this.integerValue = value;
+        this.isIntegerCell = true;
     }
 
     public Cell(float value)
@@ -48,16 +50,19 @@ public class Cell
     public Cell(boolean value)
     {
         this.booleanValue = value;
+        this.isBooleanCell = true;
     }
 
     public Cell(Calendar value)
     {
         this.timestampValue = value.getTimeInMillis();
+        this.isTimestampCell = true;
     }
 
     public Cell(Date value)
     {
         this.timestampValue = value.getTime();
+        this.isTimestampCell = true;
     }
 
     // set?
