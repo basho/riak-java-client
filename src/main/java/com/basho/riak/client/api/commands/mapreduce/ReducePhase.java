@@ -23,42 +23,48 @@ import com.basho.riak.client.core.query.functions.Function;
 class ReducePhase extends FunctionPhase
 {
 
-	/**
-	 * Create a Reduce Phase
-	 *
-	 * @param phaseFunction
-	 * @param arg
-	 * @param keepResult
-	 */
-	public ReducePhase(Function phaseFunction, Object arg, boolean keepResult)
-	{
-		super(PhaseType.REDUCE, phaseFunction, arg, keepResult);
-	}
+    /**
+     * Create a Reduce Phase
+     *
+     * @param phaseFunction the function to run for this reduce phase
+     * @param arg any arguments to pass to this reduce phase
+     * @param keepResult the option to keep the results of this reduce phase for the final result set
+     */
+    public ReducePhase(Function phaseFunction, Object arg, boolean keepResult)
+    {
+        super(PhaseType.REDUCE, phaseFunction, arg, keepResult);
+    }
 
-	/**
-	 * @param phaseFunction
-	 * @param arg
-	 */
-	public ReducePhase(Function phaseFunction, Object arg)
-	{
-		this(phaseFunction, arg, false);
-	}
+    /**
+     * Create a Reduce Phase
+     *
+     * @param phaseFunction the function to run for this reduce phase
+     * @param arg any arguments to pass to this reduce phase
+     */
+    public ReducePhase(Function phaseFunction, Object arg)
+    {
+        this(phaseFunction, arg, false);
+    }
 
-	/**
-	 * @param phaseFunction
-	 * @param keep
-	 */
-	public ReducePhase(Function phaseFunction, boolean keep)
-	{
-		this(phaseFunction, null, keep);
-	}
+    /**
+     * Create a Reduce Phase
+     *
+     * @param phaseFunction the function to run for this reduce phase
+     * @param keep the option to keep the results of this reduce phase for the final result set
+     */
+    public ReducePhase(Function phaseFunction, boolean keep)
+    {
+        this(phaseFunction, null, keep);
+    }
 
-	/**
-	 * @param phaseFunction
-	 */
-	public ReducePhase(Function phaseFunction)
-	{
-		this(phaseFunction, null, false);
-	}
+    /**
+     * Create a Reduce Phase
+     *
+     * @param phaseFunction the function to run for this reduce phase
+     */
+    public ReducePhase(Function phaseFunction)
+    {
+        this(phaseFunction, null, false);
+    }
 
 }

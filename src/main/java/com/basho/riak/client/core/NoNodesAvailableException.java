@@ -22,5 +22,8 @@ package com.basho.riak.client.core;
  */
 public class NoNodesAvailableException extends Exception
 {
-    
+    public NoNodesAvailableException() { super(); }
+    public NoNodesAvailableException(String s) {
+        super(s);
+    }
 }

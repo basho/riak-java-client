@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
+/**
+ * Serializes a {@link BucketKeyInput} to a Riak MapReduce JSON format.
+ */
 public class BucketKeyInputSerializer extends JsonSerializer<BucketKeyInput>
 {
 

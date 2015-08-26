@@ -22,7 +22,7 @@ public abstract class MapReducePhase
 {
 
 	/**
-	 * Possible phase typess.
+	 * Possible phase types.
 	 */
 	public enum PhaseType
 	{
@@ -59,7 +59,7 @@ public abstract class MapReducePhase
 	}
 
 	/**
-	 * set whether this should be kept
+	 * Set whether this should be kept.
 	 *
 	 * @param keep
 	 */

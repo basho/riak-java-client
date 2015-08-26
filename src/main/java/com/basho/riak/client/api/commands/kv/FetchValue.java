@@ -74,17 +74,17 @@ import java.util.Map;
 public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
 
-	private final Location location;
-	private final Map<Option<?>, Object> options =
-			new HashMap<Option<?>, Object>();
+    private final Location location;
+    private final Map<Option<?>, Object> options =
+            new HashMap<Option<?>, Object>();
 
-	FetchValue(Builder builder)
-	{
-		this.location = builder.location;
-		this.options.putAll(builder.options);
-	}
+    FetchValue(Builder builder)
+    {
+        this.location = builder.location;
+        this.options.putAll(builder.options);
+    }
 
-	@Override
+    @Override
     protected final RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<FetchOperation.Response, Location> coreFuture = 
@@ -114,100 +114,100 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
         
     }
 
-	private FetchOperation buildCoreOperation()
-	{
-		FetchOperation.Builder builder = new FetchOperation.Builder(location);
+    private FetchOperation buildCoreOperation()
+    {
+        FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
-		for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
-		{
+        for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
+        {
 
-			RiakOption<?> option = opPair.getKey();
+            RiakOption<?> option = opPair.getKey();
 
-			if (option == Option.R)
-			{
-				builder.withR(((Quorum) opPair.getValue()).getIntValue());
-			} else if (option == Option.DELETED_VCLOCK)
-			{
-				builder.withReturnDeletedVClock((Boolean) opPair.getValue());
-			} else if (option == Option.TIMEOUT)
-			{
-				builder.withTimeout((Integer) opPair.getValue());
-			} else if (option == Option.HEAD)
-			{
-				builder.withHeadOnly((Boolean) opPair.getValue());
-			} else if (option == Option.BASIC_QUORUM)
-			{
-				builder.withBasicQuorum((Boolean) opPair.getValue());
-			} else if (option == Option.IF_MODIFIED)
-			{
-				VClock clock = (VClock) opPair.getValue();
-				builder.withIfNotModified(clock.getBytes());
-			} else if (option == Option.N_VAL)
-			{
-				builder.withNVal((Integer) opPair.getValue());
-			} else if (option == Option.PR)
-			{
-				builder.withPr(((Quorum) opPair.getValue()).getIntValue());
-			} else if (option == Option.SLOPPY_QUORUM)
-			{
-				builder.withSloppyQuorum((Boolean) opPair.getValue());
-			} else if (option == Option.NOTFOUND_OK)
-			{
-				builder.withNotFoundOK((Boolean) opPair.getValue());
-			}
+            if (option == Option.R)
+            {
+                builder.withR(((Quorum) opPair.getValue()).getIntValue());
+            } else if (option == Option.DELETED_VCLOCK)
+            {
+                builder.withReturnDeletedVClock((Boolean) opPair.getValue());
+            } else if (option == Option.TIMEOUT)
+            {
+                builder.withTimeout((Integer) opPair.getValue());
+            } else if (option == Option.HEAD)
+            {
+                builder.withHeadOnly((Boolean) opPair.getValue());
+            } else if (option == Option.BASIC_QUORUM)
+            {
+                builder.withBasicQuorum((Boolean) opPair.getValue());
+            } else if (option == Option.IF_MODIFIED)
+            {
+                VClock clock = (VClock) opPair.getValue();
+                builder.withIfNotModified(clock.getBytes());
+            } else if (option == Option.N_VAL)
+            {
+                builder.withNVal((Integer) opPair.getValue());
+            } else if (option == Option.PR)
+            {
+                builder.withPr(((Quorum) opPair.getValue()).getIntValue());
+            } else if (option == Option.SLOPPY_QUORUM)
+            {
+                builder.withSloppyQuorum((Boolean) opPair.getValue());
+            } else if (option == Option.NOTFOUND_OK)
+            {
+                builder.withNotFoundOK((Boolean) opPair.getValue());
+            }
 
-		}
+        }
 
-		return builder.build();
-	}
+        return builder.build();
+    }
 
-	/**
-	 * A response from Riak containing results from a FetchValue command.
-	 * <p>
+    /**
+     * A response from Riak containing results from a FetchValue command.
+     * <p>
      * The Response, unless marked not found or unchanged, will contain one or
      * more objects returned from Riak (all siblings are returned if present).
      * </p>
      */
-	public static class Response extends KvResponseBase
-	{
-		private final boolean notFound;
-		private final boolean unchanged;
+    public static class Response extends KvResponseBase
+    {
+        private final boolean notFound;
+        private final boolean unchanged;
 
-		Response(Init<?> builder)
-		{
-			super(builder);
-			this.notFound = builder.notFound;
-			this.unchanged = builder.unchanged;
-		}
+        Response(Init<?> builder)
+        {
+            super(builder);
+            this.notFound = builder.notFound;
+            this.unchanged = builder.unchanged;
+        }
 
-		/**
-		 * Determine if there was a value in Riak.
-		 * <p>
-		 * If there was no value present at the supplied {@code Location} in
-		 * Riak, this will be true.
-		 * </p>
-		 *
-		 * @return true if there was no value in Riak.
-		 */
-		public boolean isNotFound()
-		{
-			return notFound;
-		}
+        /**
+         * Determine if there was a value in Riak.
+         * <p>
+         * If there was no value present at the supplied {@code Location} in
+         * Riak, this will be true.
+         * </p>
+         *
+         * @return true if there was no value in Riak.
+         */
+        public boolean isNotFound()
+        {
+            return notFound;
+        }
 
-		/**
-		 * Determine if the value is unchanged.
-		 * <p/>
-		 * If the fetch request set {@link com.basho.riak.client.api.commands.kv.FetchValue.Option#IF_MODIFIED}
-		 * this indicates if the value in Riak has been modified.
-		 * <p/>
-		 *
-		 * @return true if the vector clock for the object in Riak matched the
-		 * supplied vector clock, false otherwise.
-		 */
-		public boolean isUnchanged()
-		{
-			return unchanged;
-		}
+        /**
+         * Determine if the value is unchanged.
+         * <p/>
+         * If the fetch request set {@link com.basho.riak.client.api.commands.kv.FetchValue.Option#IF_MODIFIED}
+         * this indicates if the value in Riak has been modified.
+         * <p/>
+         *
+         * @return true if the vector clock for the object in Riak matched the
+         * supplied vector clock, false otherwise.
+         */
+        public boolean isUnchanged()
+        {
+            return unchanged;
+        }
 
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
@@ -244,7 +244,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             
         }
 
-	}
+    }
 
     /**
     * Options for controlling how Riak performs the fetch operation.
@@ -318,40 +318,40 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     /**
      * Used to construct a FetchValue command. 
      */
-	public static class Builder
-	{
+    public static class Builder
+    {
 
-		private final Location location;
-		private final Map<Option<?>, Object> options =
-				new HashMap<Option<?>, Object>();
+        private final Location location;
+        private final Map<Option<?>, Object> options =
+                new HashMap<Option<?>, Object>();
 
         /**
          * Constructs a builder for a FetchValue operation using the supplied location.
          * @param location the location of the object you want to fetch from Riak. 
          */
-		public Builder(Location location)
-		{
-			if (location == null)
+        public Builder(Location location)
+        {
+            if (location == null)
             {
                 throw new IllegalArgumentException("Location cannot be null");
             }
             this.location = location;
-		}
+        }
 
-		/**
-		 * Add an optional setting for this command. 
+        /**
+         * Add an optional setting for this command.
          * This will be passed along with the request to Riak to tell it how
-		 * to behave when servicing the request.
-		 *
-		 * @param option the option
-		 * @param value the value for the option
-		 * @return a reference to this object.
-		 */
-		public <U> Builder withOption(Option<U> option, U value)
-		{
-			options.put(option, value);
-			return this;
-		}
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
+         */
+        public <U> Builder withOption(Option<U> option, U value)
+        {
+            options.put(option, value);
+            return this;
+        }
 
         /**
          * Set the Riak-side timeout value.
@@ -368,14 +368,50 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             return this;
         }
         
-		/**
-		 * Build a {@link FetchValue} object
-		 *
-		 * @return a FetchValue command
-		 */
-		public FetchValue build()
-		{
-			return new FetchValue(this);
-		}
-	}
+        /**
+         * Build a {@link FetchValue} object
+         *
+         * @return a FetchValue command
+         */
+        public FetchValue build()
+        {
+            return new FetchValue(this);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + location.hashCode();
+        result = prime * result + options.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof FetchValue)) {
+            return false;
+        }
+
+        final FetchValue other = (FetchValue) obj;
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+            return false;
+        }
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{location: %s, options: %s}", location, options);
+    }
 }
