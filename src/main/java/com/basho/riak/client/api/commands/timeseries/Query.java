@@ -46,7 +46,6 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
     {
         private final Logger logger = LoggerFactory.getLogger(Query.Builder.class);
 
-        // TODO: Double check valid param syntax
         private final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
         private final BinaryValue queryText;
         private final Map<BinaryValue, BinaryValue> interpolations = new HashMap<BinaryValue, BinaryValue>();
