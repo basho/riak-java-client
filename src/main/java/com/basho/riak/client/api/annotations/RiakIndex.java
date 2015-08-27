@@ -75,5 +75,5 @@ import java.lang.annotation.Target;
     /**
      * @return the index name
      */
-    String name() default "";
+    String name();
 }
