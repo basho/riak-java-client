@@ -24,7 +24,6 @@ public class TimeSeriesConverter
 
         for (RiakKvPB.TsRow pbRow : pbRows)
         {
-
             List<Cell> cells = new ArrayList<Cell>();
 
             for (RiakKvPB.TsCell pbCell : pbRow.getCellsList())
@@ -43,15 +42,15 @@ public class TimeSeriesConverter
                 }
                 else if (pbCell.hasMapValue())
                 {
-                    cells.add(Cell.newMapCell(pbCell.getMapValue().toByteArray()));
+                    cells.add(Cell.newMap(pbCell.getMapValue().toByteArray()));
                 }
                 else if (pbCell.hasNumericValue())
                 {
-                    cells.add(Cell.newNumericCell(pbCell.getNumericValue().toByteArray()));
+                    cells.add(Cell.newNumeric(pbCell.getNumericValue().toByteArray()));
                 }
                 else if (pbCell.hasTimestampValue())
                 {
-                    cells.add(Cell.newTimestampCell(pbCell.getTimestampValue()));
+                    cells.add(Cell.newTimestamp(pbCell.getTimestampValue()));
                 }
                 else // Set
                 {
@@ -63,7 +62,7 @@ public class TimeSeriesConverter
                         set[i] = pbCell.getSetValue(i).toByteArray();
                     }
 
-                    Cell.newSetCell(set);
+                    Cell.newSet(set);
                 }
             }
 

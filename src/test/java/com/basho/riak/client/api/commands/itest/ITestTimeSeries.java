@@ -4,13 +4,11 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.api.commands.timeseries.Store;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.TimeSeriesQueryOperation;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.junit.Test;
 
 import java.util.*;

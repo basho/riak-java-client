@@ -121,7 +121,7 @@ public class CellTest
     public void TestRawNumeric()
     {
         byte[] ba = new byte[] {0xD, 0xE, 0xA, 0xD, 0xB, 0xE, 0xE, 0xF};
-        Cell c = Cell.newNumericCell(ba);
+        Cell c = Cell.newNumeric(ba);
         assertTrue(c.hasRawNumericValue());
         assertEquals(c.getRawNumeric(), ba);
     }
@@ -129,7 +129,7 @@ public class CellTest
     public void TestRawTimestamps()
     {
         long t = new Date().getTime();
-        Cell c = Cell.newTimestampCell(t);
+        Cell c = Cell.newTimestamp(t);
         assertTrue(c.hasTimestamp());
         assertEquals(c.getTimestamp(), t);
     }

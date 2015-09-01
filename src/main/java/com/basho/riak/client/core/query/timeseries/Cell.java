@@ -13,7 +13,7 @@ import java.util.Date;
  */
 public class Cell
 {
-    private Cell() {}
+    Cell() {}
 
     public Cell(String value)
     {
@@ -64,9 +64,6 @@ public class Cell
         this.timestampValue = value.getTime();
         this.isTimestampCell = true;
     }
-
-    // set?
-    // map?
 
     protected BinaryValue binaryValue;
     protected long integerValue;
@@ -192,15 +189,14 @@ public class Cell
         return mapValue;
     }
 
-
-    public static Cell newNumericCell(byte[] value)
+    public static Cell newNumeric(byte[] value)
     {
         Cell cell = new Cell();
         cell.numericValue = value;
         return cell;
     }
 
-    public static Cell newTimestampCell(long value)
+    public static Cell newTimestamp(long value)
     {
         Cell cell = new Cell();
         cell.timestampValue = value;
@@ -208,20 +204,19 @@ public class Cell
         return cell;
     }
 
-    public static Cell newSetCell(byte[][] value)
+    public static Cell newSet(byte[][] value)
     {
         Cell cell = new Cell();
         cell.setValue = value;
         return cell;
     }
 
-    public static Cell newMapCell(byte[] value)
+    public static Cell newMap(byte[] value)
     {
         Cell cell = new Cell();
         cell.mapValue = value;
         return cell;
     }
-
 }
 
 
