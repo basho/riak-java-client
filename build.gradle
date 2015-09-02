@@ -96,6 +96,7 @@ shadowJar {
     classifier = ''
     dependencies {
         include(dependency('com.basho.riak.protobuf:riak-pb'))
+        include(dependency('com.google.protobuf:protobuf-java'))
         relocate 'com.google.protobuf', 'shaded.com.google.protobuf'
         relocate 'com.basho.riak.protobuf', 'shaded.com.basho.riak.protobuf'
     }
