@@ -46,13 +46,37 @@ public class SetCellTest
 
         Set<Pojo> set1 = SetCell.getSet(setCell, new TypeReference<Pojo>() {});
 
-        assertTrue(set.contains(p1));
-        assertTrue(set.contains(p2));
-        assertTrue(set.contains(p3));
+        assertTrue(set1.contains(p1));
+        assertTrue(set1.contains(p2));
+        assertTrue(set1.contains(p3));
     }
 }
 
 class Pojo
 {
     public String value;
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Pojo pojo = (Pojo) o;
+
+        return !(value != null ? !value.equals(pojo.value) : pojo.value != null);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return value != null ? value.hashCode() : 0;
+    }
 }
