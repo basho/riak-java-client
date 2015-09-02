@@ -46,7 +46,7 @@ public class TimeSeriesConverter
                 }
                 else if (pbCell.hasNumericValue())
                 {
-                    cells.add(Cell.newNumeric(pbCell.getNumericValue().toByteArray()));
+                    cells.add(Cell.newRawNumeric(pbCell.getNumericValue().toByteArray()));
                 }
                 else if (pbCell.hasTimestampValue())
                 {
@@ -151,7 +151,7 @@ public class TimeSeriesConverter
         {
             cellBuilder.setBooleanValue(cell.getBoolean());
         }
-        else if(cell.hasRawNumericValue())
+        else if(cell.hasInt())
         {
             cellBuilder.setIntegerValue(cell.getLong());
         }
@@ -159,7 +159,7 @@ public class TimeSeriesConverter
         {
             cellBuilder.setMapValue(ByteString.copyFrom(cell.getMap()));
         }
-        else if(cell.hasRawNumericValue())
+        else if(cell.hasNumeric())
         {
             cellBuilder.setNumericValue(ByteString.copyFrom(cell.getRawNumeric()));
         }

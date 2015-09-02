@@ -4,6 +4,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -13,6 +14,8 @@ import java.util.Date;
  */
 public class Cell
 {
+    public static final Charset ASCII_Charset = Charset.forName("US-ASCII");
+
     Cell() {}
 
     public Cell(String value)
@@ -39,12 +42,14 @@ public class Cell
 
     public Cell(float value)
     {
-        this.numericValue = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(value).array();
+        byte[] rawFloat = Float.toString(value).getBytes(ASCII_Charset);
+        this.numericValue = ByteBuffer.allocate(rawFloat.length).order(ByteOrder.BIG_ENDIAN).put(rawFloat).array();
     }
 
     public Cell(double value)
     {
-        this.numericValue = ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).putDouble(value).array();
+        byte[] rawDouble = Double.toString(value).getBytes(ASCII_Charset);
+        this.numericValue = ByteBuffer.allocate(rawDouble.length).order(ByteOrder.BIG_ENDIAN).put(rawDouble).array();
     }
 
     public Cell(boolean value)
@@ -99,20 +104,7 @@ public class Cell
         return this.isIntegerCell;
     }
 
-    public boolean hasRawNumericValue()
-    {
-        return this.numericValue != null && this.numericValue.length > 0;
-    }
-
-    public boolean hasFloat()
-    {
-        return hasRawNumericValue() && this.numericValue.length == 4;
-    }
-
-    public boolean hasDouble()
-    {
-        return hasRawNumericValue() && this.numericValue.length == 8;
-    }
+    public boolean hasNumeric() { return this.numericValue != null && this.numericValue.length > 0; }
 
     public boolean hasTimestamp()
     {
@@ -159,14 +151,19 @@ public class Cell
         return this.numericValue;
     }
 
+    public String getRawNumericString()
+    {
+        return new String(this.getRawNumeric(), ASCII_Charset);
+    }
+
     public float getFloat()
     {
-        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.BIG_ENDIAN).getFloat();
+        return Float.parseFloat(getRawNumericString());
     }
 
     public double getDouble()
     {
-        return ByteBuffer.wrap(this.numericValue).order(ByteOrder.BIG_ENDIAN).getDouble();
+        return Double.parseDouble(getRawNumericString());
     }
 
     public long getTimestamp()
@@ -189,7 +186,15 @@ public class Cell
         return mapValue;
     }
 
-    public static Cell newNumeric(byte[] value)
+    public static Cell newNumeric(String value)
+    {
+        Cell cell = new Cell();
+        byte[] rawNumeric = value.getBytes(ASCII_Charset);
+        cell.numericValue = ByteBuffer.allocate(rawNumeric.length).order(ByteOrder.BIG_ENDIAN).put(rawNumeric).array();
+        return cell;
+    }
+
+    public static Cell newRawNumeric(byte[] value)
     {
         Cell cell = new Cell();
         cell.numericValue = value;

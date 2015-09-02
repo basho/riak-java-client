@@ -19,8 +19,11 @@ package com.basho.riak.client.core.query.timeseries;
 import static junit.framework.Assert.*;
 
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.Constants;
 import org.junit.Test;
+import sun.nio.cs.US_ASCII;
 
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -80,8 +83,7 @@ public class CellTest
     {
         float f = 42.01f;
         Cell c = new Cell(f);
-        assertTrue(c.hasFloat());
-        assertFalse(c.hasDouble());
+        assertFalse(c.hasNumeric());
         assertEquals(c.getFloat(), f);
     }
     @Test
@@ -89,8 +91,7 @@ public class CellTest
     {
         double d = 42.0123456789d;
         Cell c = new Cell(d);
-        assertTrue(c.hasDouble());
-        assertFalse(c.hasFloat());
+        assertTrue(c.hasNumeric());
         assertEquals(c.getDouble(), d);
     }
     @Test
@@ -120,9 +121,9 @@ public class CellTest
     @Test
     public void TestRawNumeric()
     {
-        byte[] ba = new byte[] {0xD, 0xE, 0xA, 0xD, 0xB, 0xE, 0xE, 0xF};
-        Cell c = Cell.newNumeric(ba);
-        assertTrue(c.hasRawNumericValue());
+        byte[] ba = "-42.02".getBytes();
+        Cell c = Cell.newRawNumeric(ba);
+        assertTrue(c.hasNumeric());
         assertEquals(c.getRawNumeric(), ba);
     }
     @Test
@@ -132,5 +133,21 @@ public class CellTest
         Cell c = Cell.newTimestamp(t);
         assertTrue(c.hasTimestamp());
         assertEquals(c.getTimestamp(), t);
+    }
+
+    @Test
+    public void TestBCDEdgeCases()
+    {
+        Cell c = new Cell(-42.02f);
+
+        String floatString = c.getRawNumericString();
+        assertEquals('-', floatString.charAt(0));
+        assertEquals('.', floatString.charAt(3));
+
+
+        c = Cell.newRawNumeric("9.18E+09".getBytes(Charset.forName("US-ASCII")));
+        float f = c.getFloat();
+        assertEquals(9180000000f, f);
+
     }
 }
