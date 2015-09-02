@@ -1,0 +1,104 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'maven'
+    id 'com.jfrog.bintray' version '1.3.1'
+    id 'com.github.johnrengelman.shadow' version '1.2.2'
+}
+
+ext {
+    gradleVersion = '2.6'
+    gradleScriptDir = "${rootProject.projectDir}/gradle"
+
+    slf4jVersion = '1.7.2'
+    logbackVersion = '1.1.3'
+    jacksonVersion = '2.2.2'
+    nettyVersion = '4.0.17.Final'
+
+    riakPbVersion = '2.0.0.17.beta2'
+
+    bdpRiakClientVersion = '1.0.0'
+
+    mockitoVersion = '1.10.19'
+    powermockVersion = '1.6.2'
+}
+
+project.archivesBaseName = 'dataplatform-riak-client'
+
+[compileJava]*.options*.compilerArgs = [
+        //"-Xlint:varargs",
+        //"-Xlint:cast",
+        //"-Xlint:classfile",
+        //"-Xlint:dep-ann",
+        //"-Xlint:divzero",
+        //"-Xlint:empty",
+        //"-Xlint:finally",
+        //"-Xlint:overrides",
+        //"-Xlint:path",
+        //"-Xlint:processing",
+        //"-Xlint:static",
+        //"-Xlint:try",
+        "-Xlint:deprecation",
+        "-Xlint:unchecked",
+        "-Xlint:-serial",      // intentionally disabled
+        "-Xlint:-options",     // intentionally disabled
+        "-Xlint:-fallthrough", // intentionally disabled
+        "-Xlint:-rawtypes"     // TODO enable and fix warnings
+]
+
+compileJava {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
+
+compileTestJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    // SLF4J Logging
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
+
+    // Jackson JSON
+    compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            "com.fasterxml.jackson.datatype:jackson-datatype-joda:$jacksonVersion"
+
+    // Netty
+    compile "io.netty:netty-all:$nettyVersion"
+
+    // Riak Protobuf
+    compile "com.basho.riak.protobuf:riak-pb:$riakPbVersion"
+
+    // Copy all compile deps except for the shaded protobuf stuff
+    shadow configurations.compile.allDependencies.findAll { it.name != 'riak-pb' }
+
+    // Testing
+    testCompile "org.mockito:mockito-core:$mockitoVersion",
+            "org.powermock:powermock-api-mockito:$powermockVersion",
+            "org.powermock:powermock-module-junit4:$powermockVersion",
+            "com.jayway.awaitility:awaitility:1.5.0"
+    testRuntime "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+shadowJar {
+    baseName = 'dataplatform-riak-client'
+    classifier = ''
+    dependencies {
+        include(dependency('com.basho.riak.protobuf:riak-pb'))
+        relocate 'com.google.protobuf', 'shaded.com.google.protobuf'
+        relocate 'com.basho.riak.protobuf', 'shaded.com.basho.riak.protobuf'
+    }
+}
+
+apply from: "$gradleScriptDir/publishing.gradle"
