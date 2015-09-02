@@ -1,8 +1,5 @@
 package com.basho.riak.client.core.query.timeseries;
 
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Test;
 
