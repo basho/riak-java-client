@@ -83,7 +83,7 @@ public class CellTest
     {
         float f = 42.01f;
         Cell c = new Cell(f);
-        assertFalse(c.hasNumeric());
+        assertTrue(c.hasNumeric());
         assertEquals(c.getFloat(), f);
     }
     @Test
