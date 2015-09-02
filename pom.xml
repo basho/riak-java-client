@@ -51,6 +51,12 @@
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
+        <developer>
+            <name>Sergey Galkin</name>
+            <email>sgalkin@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
     </developers>
 
     <scm>

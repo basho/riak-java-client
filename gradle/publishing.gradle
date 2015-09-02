@@ -1,0 +1,108 @@
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        BintrayPublication(MavenPublication) {
+            groupId 'com.basho.riak'
+            artifactId 'dataplatform-riak-client'
+            version bdpRiakClientVersion
+
+            from components.shadow
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+
+            pom.withXml {
+                // add all items necessary for maven central publication
+                asNode().children().last() + {
+                    resolveStrategy = Closure.DELEGATE_FIRST
+                    name 'Riak Client for Java'
+                    description 'Java client for Riak 2.0'
+                    url 'https://github.com/basho/riak-java-client'
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                            comments 'A business-friendly OSS license'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name 'Brian Roach'
+                            email 'roach@basho.com'
+                            organization 'Basho Technologies, Inc'
+                            organizationUrl 'http://www.basho.com'
+                        }
+                        developer {
+                            name 'David Rusek'
+                            email 'drusek@basho.com'
+                            organization 'Basho Technologies, Inc'
+                            organizationUrl 'http://www.basho.com'
+                        }
+                        developer {
+                            name 'Alex Moore'
+                            email 'amoore@basho.com'
+                            organization 'Basho Technologies, Inc'
+                            organizationUrl 'http://www.basho.com'
+                        }
+                        developer {
+                            name 'Chris Mancini'
+                            email 'cmancini@basho.com'
+                            organization 'Basho Technologies, Inc'
+                            organizationUrl 'http://www.basho.com'
+                        }
+                        developer {
+                            name 'Sergey Galkin'
+                            email 'sgalkin@basho.com'
+                            organization 'Basho Technologies, Inc'
+                            organizationUrl 'http://www.basho.com'
+                        }
+                    }
+
+                    scm {
+                        connection 'scm:git:ssh://github.com/basho/data_platform_riak_java_client.git'
+                        developerConnection 'scm:git:ssh://github.com/basho/data_platform_riak_java_client.git'
+                        url 'https://github.com/basho/data_platform_riak_java_client'
+                        tag 'HEAD'
+                    }
+                }
+            }
+        }
+    }
+}
+
+//model {
+//    tasks.generatePomFileForBintrayPublicationPublication {
+//        destination = file("$buildDir/classes/main/META-INF/maven/com.basho.riak/dataplatform-riak-client/pom.xml")
+//    }
+//}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_API_KEY')
+
+    publications = ['BintrayPublication']
+
+    dryRun = false
+
+    pkg {
+        repo = 'data-platform'
+        name = 'com.basho.riak'
+        userOrg = 'basho'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/basho/riak-java-client.git'
+
+        version {
+            name = bdpRiakClientVersion
+            desc = 'Basho Data Platform 1.0'
+        }
+    }
+}
