@@ -7,11 +7,16 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.Constants;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
 public class SetCell<T> extends Cell
 {
+    private static final Type StringType = new TypeReference<String>() {}.getType();
+    private static final Namespace GenericNamespace = new Namespace("T");
+    private static final BinaryValue GenericValue = BinaryValue.create("");
+
     public static <T> SetCell<T> fromSet(Set<T> value, TypeReference<T> typeReference)
     {
         SetCell<T> cell = new SetCell<T>();
@@ -22,7 +27,7 @@ public class SetCell<T> extends Cell
 
         for (T t : value)
         {
-            Converter.OrmExtracted encodedValue = converter.fromDomain(t, new Namespace("T"), BinaryValue.create(""));
+            Converter.OrmExtracted encodedValue = converter.fromDomain(t, GenericNamespace, GenericValue);
             cell.setValue[i] = encodedValue.getRiakObject().getValue().getValue();
             i++;
         }
@@ -37,7 +42,7 @@ public class SetCell<T> extends Cell
 
         for (byte[] entry : cell.getSet())
         {
-            if(typeReference.getType() == new TypeReference<String>(){}.getType())
+            if(typeReference.getType() == StringType)
             {
                 set.add((T) BinaryValue.create(entry).toString());
             }
