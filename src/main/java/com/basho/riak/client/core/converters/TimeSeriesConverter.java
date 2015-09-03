@@ -20,11 +20,11 @@ public class TimeSeriesConverter
 {
     private List<Row> parseRows(List<RiakKvPB.TsRow> pbRows)
     {
-        ArrayList<Row> rows = new ArrayList<Row>();
+        ArrayList<Row> rows = new ArrayList<Row>(pbRows.size());
 
         for (RiakKvPB.TsRow pbRow : pbRows)
         {
-            List<Cell> cells = new ArrayList<Cell>();
+            List<Cell> cells = new ArrayList<Cell>(pbRow.getCellsCount());
 
             for (RiakKvPB.TsCell pbCell : pbRow.getCellsList())
             {
@@ -74,7 +74,7 @@ public class TimeSeriesConverter
 
     private List<ColumnDescription> parseColumnDescriptions(List<RiakKvPB.TsColumnDescription> pbColumns)
     {
-        ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>();
+        ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
 
         for (RiakKvPB.TsColumnDescription pbColumn : pbColumns)
         {
@@ -82,7 +82,7 @@ public class TimeSeriesConverter
             String name = pbColumn.getName().toStringUtf8();
 
             ColumnDescription.ColumnType type = ColumnDescription.ColumnType.valueOf(pbColumn.getType().getNumber());
-            List<ColumnDescription.ColumnType> complexType = new ArrayList<ColumnDescription.ColumnType>();
+            List<ColumnDescription.ColumnType> complexType = new ArrayList<ColumnDescription.ColumnType>(pbColumn.getComplexTypeCount());
 
             for (RiakKvPB.TsColumnType pbComplexType : pbColumn.getComplexTypeList())
             {

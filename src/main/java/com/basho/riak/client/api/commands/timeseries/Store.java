@@ -10,8 +10,8 @@ import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -19,8 +19,10 @@ import java.util.List;
  */
 public class Store extends RiakCommand<Void,BinaryValue>
 {
+    private static final Logger logger = LoggerFactory.getLogger(Store.class);
+
     private final Builder builder;
-    private final Logger logger = LoggerFactory.getLogger(Query.class);
+
     private Store (Builder builder)
     {
         this.builder = builder;
@@ -46,8 +48,8 @@ public class Store extends RiakCommand<Void,BinaryValue>
     public static class Builder
     {
         private final BinaryValue tableName;
-        private final List<Row> rows = new ArrayList<Row>();
-        private final List<ColumnDescription> columns = new ArrayList<ColumnDescription>();
+        private final List<Row> rows = new LinkedList<Row>();
+        private final List<ColumnDescription> columns = new LinkedList<ColumnDescription>();
 
         public Builder(BinaryValue tableName)
         {

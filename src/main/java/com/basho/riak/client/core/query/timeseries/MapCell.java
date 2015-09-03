@@ -10,15 +10,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.lang.reflect.Type;
 
 
-public class MapCell<T> extends Cell
+public class MapCell extends Cell
 {
     private static final Type StringType = new TypeReference<String>() {}.getType();
     private static final Namespace GenericNamespace = new Namespace("T");
     private static final BinaryValue GenericValue = BinaryValue.create("");
 
-    public static <T> MapCell<T> fromObject(T value, TypeReference<T> typeReference)
+    public static <T> MapCell fromObject(T value, TypeReference<T> typeReference)
     {
-        MapCell<T> cell = new MapCell<T>();
+        MapCell cell = new MapCell();
         Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
 
         Converter.OrmExtracted encodedValue = converter.fromDomain(value, GenericNamespace, GenericValue);
@@ -27,6 +27,7 @@ public class MapCell<T> extends Cell
         return cell;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T getObject(Cell cell, TypeReference<T> typeReference)
     {
         T obj;

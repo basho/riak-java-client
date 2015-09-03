@@ -11,15 +11,15 @@ import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetCell<T> extends Cell
+public class SetCell extends Cell
 {
     private static final Type StringType = new TypeReference<String>() {}.getType();
     private static final Namespace GenericNamespace = new Namespace("T");
     private static final BinaryValue GenericValue = BinaryValue.create("");
 
-    public static <T> SetCell<T> fromSet(Set<T> value, TypeReference<T> typeReference)
+    public static <T> SetCell fromSet(Set<T> value, TypeReference<T> typeReference)
     {
-        SetCell<T> cell = new SetCell<T>();
+        SetCell cell = new SetCell();
         Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
 
         cell.setValue = new byte[value.size()][];
@@ -35,6 +35,7 @@ public class SetCell<T> extends Cell
         return cell;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Set<T> getSet(Cell cell, TypeReference<T> typeReference)
     {
         Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);

@@ -23,7 +23,7 @@ public class MapCellTest
         pojo1.iVal = 42;
         pojo1.fVal = 2.5f;
 
-        MapCell<ComplexPojo> mapCell = MapCell.fromObject(pojo1, new TypeReference<ComplexPojo>() {});
+        MapCell mapCell = MapCell.fromObject(pojo1, new TypeReference<ComplexPojo>() {});
 
         assertTrue(mapCell.hasMap());
 

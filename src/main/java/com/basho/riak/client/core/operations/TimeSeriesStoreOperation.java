@@ -21,9 +21,9 @@ import java.util.List;
  */
 public class TimeSeriesStoreOperation  extends FutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
-    private final RiakKvPB.TsPutReq.Builder reqBuilder;
+    private final Logger logger = LoggerFactory.getLogger(TimeSeriesStoreOperation.class);
 
-    private final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
+    private final RiakKvPB.TsPutReq.Builder reqBuilder;
 
     private TimeSeriesStoreOperation(Builder builder)
     {

@@ -20,8 +20,10 @@ import java.util.regex.Pattern;
  */
 public class Query extends RiakCommand<QueryResult, BinaryValue>
 {
+    private static final Logger logger = LoggerFactory.getLogger(Query.class);
+
     private final Builder builder;
-    private final Logger logger = LoggerFactory.getLogger(Query.class);
+
     private Query(Builder builder)
     {
         this.builder = builder;
@@ -44,9 +46,9 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
     public static class Builder
     {
-        private final Logger logger = LoggerFactory.getLogger(Query.Builder.class);
+        private static final Logger logger = LoggerFactory.getLogger(Query.Builder.class);
+        private static final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
 
-        private final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
         private final BinaryValue queryText;
         private final Map<BinaryValue, BinaryValue> interpolations = new HashMap<BinaryValue, BinaryValue>();
         private final HashSet<String> knownParams = new HashSet<String>();

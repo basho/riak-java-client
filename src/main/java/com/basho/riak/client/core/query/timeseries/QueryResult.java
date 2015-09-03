@@ -9,8 +9,8 @@ import java.util.List;
  */
 public class QueryResult
 {
-    private List<ColumnDescription> columnDescriptions;
-    private List<Row> rows;
+    private final List<ColumnDescription> columnDescriptions;
+    private final List<Row> rows;
 
     public QueryResult(List<ColumnDescription> columnDescriptions, List<Row> rows) {
         this.columnDescriptions = columnDescriptions;

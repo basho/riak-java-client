@@ -15,7 +15,7 @@ public class SetCellTest
     public void TestStringSet()
     {
         HashSet<String> set = new HashSet<String>(Arrays.asList("foo", "bar", "baz"));
-        SetCell<String> setCell = SetCell.fromSet(set, new TypeReference<String>() {});
+        SetCell setCell = SetCell.fromSet(set, new TypeReference<String>() {});
 
         assertTrue(setCell.hasSet());
 
@@ -37,7 +37,7 @@ public class SetCellTest
         p3.value = "baz";
         HashSet<Pojo> set = new HashSet<Pojo>(Arrays.asList(p1, p2, p3));
 
-        SetCell<Pojo> setCell = SetCell.fromSet(set, new TypeReference<Pojo>() {});
+        SetCell setCell = SetCell.fromSet(set, new TypeReference<Pojo>() {});
 
         assertTrue(setCell.hasSet());
 

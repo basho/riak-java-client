@@ -23,9 +23,9 @@ import java.util.Map;
  */
 public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue> {
 
-    private final RiakKvPB.TsQueryReq.Builder reqBuilder;
+    private static final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
 
-    private final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
+    private final RiakKvPB.TsQueryReq.Builder reqBuilder;
 
     private TimeSeriesQueryOperation(Builder builder)
     {
@@ -90,16 +90,12 @@ public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakK
         private final RiakKvPB.TsInterpolation.Builder interpolationBuilder =
                 RiakKvPB.TsInterpolation.newBuilder();
 
-        private final BinaryValue queryText;
-
         public Builder(BinaryValue queryText)
         {
             if (queryText == null || queryText.length() == 0)
             {
                 throw new IllegalArgumentException("QueryText can not be null or empty");
             }
-
-            this.queryText = queryText;
 
             this.interpolationBuilder.setBase(ByteString.copyFrom(queryText.unsafeGetValue()));
         }

@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public class ColumnDescription
 {
-    private String name;
-    private ColumnType type;
-    private Collection<ColumnType> complexType;
+    private final String name;
+    private final ColumnType type;
+    private final Collection<ColumnType> complexType;
 
     public ColumnDescription(String name, ColumnType type, Collection<ColumnType> complexType)
     {
@@ -55,9 +55,9 @@ public class ColumnDescription
             }
         }
 
-        private int id;
+        private final int id;
 
-        private ColumnType(int id)
+        ColumnType(int id)
         {
             this.id = id;
         }
