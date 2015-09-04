@@ -1,7 +1,5 @@
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.TimeSeriesConverter;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -9,7 +7,6 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,15 +18,14 @@ import java.util.Map;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue> {
+public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue> {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
 
-    private final RiakKvPB.TsQueryReq.Builder reqBuilder;
-
     private TimeSeriesQueryOperation(Builder builder)
     {
-        this.reqBuilder = RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder);
+        super(RiakMessageCodes.MSG_TsQueryReq, RiakMessageCodes.MSG_TsQueryResp,
+                RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder), RiakKvPB.TsQueryResp.PARSER);
     }
 
     @Override
@@ -48,35 +44,6 @@ public class TimeSeriesQueryOperation extends FutureOperation<QueryResult, RiakK
         QueryResult result = converter.convert(response);
 
         return result;
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage()
-    {
-        RiakKvPB.TsQueryReq req = reqBuilder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_TsQueryReq, req.toByteArray());
-    }
-
-    @Override
-    protected RiakKvPB.TsQueryResp decode(RiakMessage rawMessage) {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_TsQueryResp);
-
-        try
-        {
-            byte[] data = rawMessage.getData();
-
-            if (data.length == 0) // not found
-            {
-                return null;
-            }
-
-            return RiakKvPB.TsQueryResp.parseFrom(data);
-        }
-        catch (InvalidProtocolBufferException e)
-        {
-            logger.error("Invalid message received; {}", e);
-            throw new IllegalArgumentException("Invalid message received", e);
-        }
     }
 
     @Override

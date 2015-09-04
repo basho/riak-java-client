@@ -1,7 +1,5 @@
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.TimeSeriesConverter;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.Row;
@@ -9,7 +7,6 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +16,7 @@ import java.util.List;
 /**
  * Created by alex on 8/17/15.
  */
-public class TimeSeriesStoreOperation  extends FutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
+public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
     private final Logger logger = LoggerFactory.getLogger(TimeSeriesStoreOperation.class);
 
@@ -27,6 +24,7 @@ public class TimeSeriesStoreOperation  extends FutureOperation<Void, RiakKvPB.Ts
 
     private TimeSeriesStoreOperation(Builder builder)
     {
+        super(RiakMessageCodes.MSG_TsPutReq, RiakMessageCodes.MSG_TsPutResp, builder.reqBuilder, RiakKvPB.TsPutResp.PARSER);
         this.reqBuilder = builder.reqBuilder;
     }
 
@@ -40,34 +38,6 @@ public class TimeSeriesStoreOperation  extends FutureOperation<Void, RiakKvPB.Ts
         }
 
         return null;
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage() {
-        RiakKvPB.TsPutReq req = reqBuilder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_TsPutReq, req.toByteArray());
-    }
-
-    @Override
-    protected RiakKvPB.TsPutResp decode(RiakMessage rawMessage) {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_TsPutResp);
-
-        try
-        {
-            byte[] data = rawMessage.getData();
-
-            if (data.length == 0) // not found
-            {
-                return null;
-            }
-
-            return RiakKvPB.TsPutResp.parseFrom(data);
-        }
-        catch (InvalidProtocolBufferException e)
-        {
-            logger.error("Invalid message received; {}", e);
-            throw new IllegalArgumentException("Invalid message received", e);
-        }
     }
 
     @Override
