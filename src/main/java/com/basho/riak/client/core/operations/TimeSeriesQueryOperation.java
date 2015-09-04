@@ -40,7 +40,7 @@ public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, Ria
         RiakKvPB.TsQueryResp response = responses.get(0);
 
 
-        QueryResult result = TimeSeriesPBConverter.convert(response);
+        QueryResult result = TimeSeriesPBConverter.convertPbQueryResp(response);
 
         return result;
     }

@@ -63,13 +63,13 @@ public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            this.reqBuilder.addAllColumns(TimeSeriesPBConverter.convertColumns(columns));
+            this.reqBuilder.addAllColumns(TimeSeriesPBConverter.convertColumnDescriptionsToPb(columns));
             return this;
         }
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(TimeSeriesPBConverter.convertRows(rows));
+            this.reqBuilder.addAllRows(TimeSeriesPBConverter.convertRowsToPb(rows));
             return this;
         }
 
