@@ -16,9 +16,11 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class TimeSeriesConverter
+public final class TimeSeriesPBConverter
 {
-    private List<Row> parseRows(List<RiakKvPB.TsRow> pbRows)
+    private TimeSeriesPBConverter() {}
+
+    private static List<Row> parseRows(List<RiakKvPB.TsRow> pbRows)
     {
         ArrayList<Row> rows = new ArrayList<Row>(pbRows.size());
 
@@ -72,7 +74,7 @@ public class TimeSeriesConverter
         return rows;
     }
 
-    private List<ColumnDescription> parseColumnDescriptions(List<RiakKvPB.TsColumnDescription> pbColumns)
+    private static List<ColumnDescription> parseColumnDescriptions(List<RiakKvPB.TsColumnDescription> pbColumns)
     {
         ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
 
@@ -95,7 +97,7 @@ public class TimeSeriesConverter
         return columns;
     }
 
-    public QueryResult convert(RiakKvPB.TsQueryResp response)
+    public static QueryResult convert(RiakKvPB.TsQueryResp response)
     {
         List<ColumnDescription> columnDescriptions = parseColumnDescriptions(response.getColumnsList());
         List<Row> rows = parseRows(response.getRowsList());
@@ -103,7 +105,7 @@ public class TimeSeriesConverter
         return new QueryResult(columnDescriptions, rows);
     }
 
-    public Collection<RiakKvPB.TsColumnDescription> convertColumns(Collection<ColumnDescription> columns)
+    public static Collection<RiakKvPB.TsColumnDescription> convertColumns(Collection<ColumnDescription> columns)
     {
         ArrayList<RiakKvPB.TsColumnDescription> pbColumns = new ArrayList<RiakKvPB.TsColumnDescription>(columns.size());
 
@@ -115,7 +117,7 @@ public class TimeSeriesConverter
         return pbColumns;
     }
 
-    public Collection<RiakKvPB.TsRow> convertRows(Collection<Row> rows)
+    public static Collection<RiakKvPB.TsRow> convertRows(Collection<Row> rows)
     {
         ArrayList<RiakKvPB.TsRow> pbRows = new ArrayList<RiakKvPB.TsRow>(rows.size());
 
@@ -127,7 +129,7 @@ public class TimeSeriesConverter
         return pbRows;
     }
 
-    public RiakKvPB.TsRow convertRow(Row row)
+    public static RiakKvPB.TsRow convertRow(Row row)
     {
         RiakKvPB.TsRow.Builder rowBuilder = RiakKvPB.TsRow.newBuilder();
 
@@ -139,7 +141,7 @@ public class TimeSeriesConverter
         return rowBuilder.build();
     }
 
-    private RiakKvPB.TsCell convertCell(Cell cell)
+    private static RiakKvPB.TsCell convertCell(Cell cell)
     {
         RiakKvPB.TsCell.Builder cellBuilder = RiakKvPB.TsCell.newBuilder();
 
@@ -180,7 +182,7 @@ public class TimeSeriesConverter
         return cellBuilder.build();
     }
 
-    public RiakKvPB.TsColumnDescription convertColumn(ColumnDescription column)
+    public static RiakKvPB.TsColumnDescription convertColumn(ColumnDescription column)
     {
         RiakKvPB.TsColumnDescription.Builder columnBuilder = RiakKvPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));

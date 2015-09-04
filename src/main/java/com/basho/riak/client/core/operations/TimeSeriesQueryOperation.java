@@ -1,6 +1,6 @@
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.converters.TimeSeriesConverter;
+import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -40,8 +40,7 @@ public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, Ria
         RiakKvPB.TsQueryResp response = responses.get(0);
 
 
-        TimeSeriesConverter converter = new TimeSeriesConverter();
-        QueryResult result = converter.convert(response);
+        QueryResult result = TimeSeriesPBConverter.convert(response);
 
         return result;
     }

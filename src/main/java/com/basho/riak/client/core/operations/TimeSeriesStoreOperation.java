@@ -1,6 +1,6 @@
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.converters.TimeSeriesConverter;
+import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -14,7 +14,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by alex on 8/17/15.
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
  */
 public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
@@ -47,8 +48,6 @@ public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.
 
     public static class Builder
     {
-        private final TimeSeriesConverter converter = new TimeSeriesConverter();
-
         private final RiakKvPB.TsPutReq.Builder reqBuilder;
 
         public Builder(BinaryValue tableName)
@@ -64,13 +63,13 @@ public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            this.reqBuilder.addAllColumns(this.converter.convertColumns(columns));
+            this.reqBuilder.addAllColumns(TimeSeriesPBConverter.convertColumns(columns));
             return this;
         }
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(this.converter.convertRows(rows));
+            this.reqBuilder.addAllRows(TimeSeriesPBConverter.convertRows(rows));
             return this;
         }
 
