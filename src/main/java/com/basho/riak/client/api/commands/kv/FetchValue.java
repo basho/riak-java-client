@@ -383,7 +383,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + location.hashCode();
+        result = prime * result + (location != null ? location.hashCode() : 0);;
         result = prime * result + options.hashCode();
         return result;
     }

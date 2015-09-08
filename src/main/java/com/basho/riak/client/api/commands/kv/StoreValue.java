@@ -479,12 +479,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + namespace.hashCode();
-        result = prime * result + key.hashCode();
+        result = prime * result + (namespace != null ? namespace.hashCode() : 0);
+        result = prime * result + (key != null ? key.hashCode() : 0);
         result = prime * result + options.hashCode();
-        result = prime * result + value.hashCode();
-        result = prime * result + typeReference.hashCode();
-        result = prime * result + vclock.hashCode();
+        result = prime * result + (value != null ? value.hashCode() : 0);
+        result = prime * result + (typeReference != null ? typeReference.hashCode() : 0);
+        result = prime * result + (vclock != null ? vclock.hashCode() : 0);
         return result;
     }
 

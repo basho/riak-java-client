@@ -328,8 +328,8 @@ abstract class KvResponseBase
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + location.hashCode();
-        result = prime * result + values.hashCode();
+        result = prime * result + (location != null ? location.hashCode() : 0);
+        result = prime * result + (values != null ? values.hashCode() : 0);
         return result;
     }
 

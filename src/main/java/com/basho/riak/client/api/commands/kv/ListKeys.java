@@ -199,7 +199,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + namespace.hashCode();
+        result = prime * result + (namespace != null ? namespace.hashCode() : 0);
         result = prime * result + timeout;
         return result;
     }

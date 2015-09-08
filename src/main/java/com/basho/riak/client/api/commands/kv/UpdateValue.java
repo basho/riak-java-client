@@ -598,9 +598,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + location.hashCode();
-        result = prime * result + update.hashCode();
-        result = prime * result + typeReference.hashCode();
+        result = prime * result + (location != null ? location.hashCode() : 0);
+        result = prime * result + (update != null ? update.hashCode() : 0);
+        result = prime * result + (typeReference != null ? typeReference.hashCode() : 0);
         result = prime * result + fetchOptions.hashCode();
         result = prime * result + storeOptions.hashCode();
         return result;
