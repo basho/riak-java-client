@@ -283,12 +283,13 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
-        result = prime * result + location.hashCode();
+        result = prime * result + (location != null ? location.hashCode() : 0);
         result = prime * result + options.hashCode();
-        result = prime * result + vClock.hashCode();
+        result = prime * result + (vClock != null ? vClock.hashCode() : 0);
         return result;
     }
 
