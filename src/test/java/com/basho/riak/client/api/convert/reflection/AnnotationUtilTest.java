@@ -1248,11 +1248,11 @@ public class AnnotationUtilTest
         
         Object o = new Object()
         {
-            @RiakIndex
+            @RiakIndex(name = "")
             public void setIndex(Set<String> index)
             {}
             
-            @RiakIndex
+            @RiakIndex(name = "")
             public Set<String> getIndex() 
             {
                 return null;
@@ -1272,7 +1272,7 @@ public class AnnotationUtilTest
         
         o = new Object()
         {
-            @RiakIndex
+            @RiakIndex(name = "")
             private String index = null;
 
         };
