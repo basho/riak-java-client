@@ -35,8 +35,7 @@ public class SetCell extends Cell
         return cell;
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> Set<T> getSet(Cell cell, TypeReference<T> typeReference)
+        public static <T> Set<T> getSet(Cell cell, TypeReference<T> typeReference)
     {
         Converter<T> converter = ConverterFactory.getInstance().getConverter(typeReference);
         HashSet<T> set = new HashSet<T>(cell.getSet().length);

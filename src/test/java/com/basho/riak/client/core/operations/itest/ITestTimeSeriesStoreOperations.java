@@ -31,7 +31,7 @@ public class ITestTimeSeriesStoreOperations extends ITestBase
         final Calendar date1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         date1.add(Calendar.MILLISECOND, -10);
         final Calendar date2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        date1.add(Calendar.MILLISECOND, -5);
+        date2.add(Calendar.MILLISECOND, -5);
         final Calendar date3 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 
         final List<Row> rows = Arrays.asList(

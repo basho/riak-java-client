@@ -59,6 +59,7 @@ public class ITestTimeSeries extends ITestBase
         catch (ExecutionException ex)
         {
             System.out.println(ex.getCause().getCause());
+            Logger.getLogger(ITestFetchValue.class.getName()).log(Level.SEVERE, null, ex);
         }
         catch (InterruptedException ex)
         {
@@ -91,7 +92,7 @@ public class ITestTimeSeries extends ITestBase
         final Calendar date1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         date1.add(Calendar.MILLISECOND, -10);
         final Calendar date2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        date1.add(Calendar.MILLISECOND, -5);
+        date2.add(Calendar.MILLISECOND, -5);
         final Calendar date3 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 
         final List<Row> rows = Arrays.asList(new Row(new Cell(date1), new Cell("bryce"), new Cell(305.37)),

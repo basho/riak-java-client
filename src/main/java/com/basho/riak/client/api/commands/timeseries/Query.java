@@ -51,7 +51,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
         private final BinaryValue queryText;
         private final Map<BinaryValue, BinaryValue> interpolations = new HashMap<BinaryValue, BinaryValue>();
-        private final HashSet<String> knownParams = new HashSet<String>();
+        private final HashSet<String> knownParams;
 
         public Builder(String queryText)
         {
@@ -67,7 +67,15 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
             Matcher paramMatcher = paramPattern.matcher(queryText);
 
-            if(!paramMatcher.matches()) { return; }
+            if(!paramMatcher.matches())
+            {
+                knownParams = new HashSet<String>(0);
+                return;
+            }
+            else
+            {
+                knownParams = new HashSet<String>(paramMatcher.groupCount());
+            }
 
             for (int i = 0; i < paramMatcher.groupCount(); i++) {
                 knownParams.add(paramMatcher.group(i));
@@ -76,8 +84,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
         public Builder addStringParameter(String key, String value)
         {
-            checkParamValidity(key);
-            return this.addParameter(BinaryValue.createFromUtf8(key), BinaryValue.createFromUtf8(value));
+            return this.addParameter(key, BinaryValue.createFromUtf8(key), BinaryValue.createFromUtf8(value));
         }
 
         public Builder addStringParameters(Map<String, String> parameters)
@@ -89,6 +96,13 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
             return this;
         }
 
+        private Builder addParameter(String keyString, BinaryValue key, BinaryValue value)
+        {
+            checkParamValidity(keyString);
+            interpolations.put(key, value);
+            return this;
+        }
+
         private void checkParamValidity(String paramName)
         {
             if(!knownParams.contains(paramName))
@@ -97,12 +111,6 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
                 logger.error(msg);
                 throw new IllegalArgumentException(msg);
             }
-        }
-
-        private Builder addParameter(BinaryValue key, BinaryValue value)
-        {
-            interpolations.put(key, value);
-            return this;
         }
 
         public Query build()
