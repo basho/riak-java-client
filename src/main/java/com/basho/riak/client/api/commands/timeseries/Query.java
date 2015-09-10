@@ -9,9 +9,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,7 +49,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
         private final BinaryValue queryText;
         private final Map<BinaryValue, BinaryValue> interpolations = new HashMap<BinaryValue, BinaryValue>();
-        private final HashSet<String> knownParams;
+        private final Set<String> knownParams;
 
         public Builder(String queryText)
         {
@@ -69,13 +67,11 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
             if(!paramMatcher.matches())
             {
-                knownParams = new HashSet<String>(0);
+                knownParams = Collections.emptySet();
                 return;
             }
-            else
-            {
-                knownParams = new HashSet<String>(paramMatcher.groupCount());
-            }
+
+            knownParams = new HashSet<String>(paramMatcher.groupCount());
 
             for (int i = 0; i < paramMatcher.groupCount(); i++) {
                 knownParams.add(paramMatcher.group(i));
