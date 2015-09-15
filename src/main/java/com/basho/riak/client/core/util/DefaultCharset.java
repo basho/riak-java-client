@@ -1,5 +1,8 @@
 package com.basho.riak.client.core.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -8,8 +11,16 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class DefaultCharset
 {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCharset.class);
+    private final static DefaultCharset instance = initializeDefaultCharsetSingleton();
+
     private final AtomicReference<Charset> currentCharset;
-    private static DefaultCharset instance = initializeDefaultCharsetSingleton();
+
+    private DefaultCharset(Charset c)
+    {
+        LogCharsetChange(c);
+        this.currentCharset = new AtomicReference<Charset>(c);
+    }
 
     private static DefaultCharset initializeDefaultCharsetSingleton()
     {
@@ -25,11 +36,10 @@ public final class DefaultCharset
         return new DefaultCharset(charset);
     }
 
-    private DefaultCharset(Charset c)
+    private static void LogCharsetChange(Charset charset)
     {
-        this.currentCharset = new AtomicReference<Charset>(c);
+        logger.info("Setting client charset to: {}", charset.name());
     }
-
 
     public static Charset get()
     {
@@ -38,6 +48,7 @@ public final class DefaultCharset
 
     public static void set(Charset charset)
     {
+        LogCharsetChange(charset);
         instance.currentCharset.set(charset);
     }
 }
