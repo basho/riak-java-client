@@ -16,6 +16,8 @@
 package com.basho.riak.client.core.query.UserMetadata;
 
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class RiakUserMetadata
      */
     public boolean containsKey(String key)
     {
-        return containsKey(key, Charset.defaultCharset());
+        return containsKey(key, DefaultCharset.get());
     }
     
     /**
@@ -90,7 +92,7 @@ public class RiakUserMetadata
      */
     public String get(String key)
     {
-        return get(key, Charset.defaultCharset());
+        return get(key, DefaultCharset.get());
     }
     
     /**
@@ -155,7 +157,7 @@ public class RiakUserMetadata
      */
     public void put(String key, String value)
     {
-        put(key, value, Charset.defaultCharset());
+        put(key, value, DefaultCharset.get());
     }
     
     /**
@@ -201,7 +203,7 @@ public class RiakUserMetadata
     
     public void remove (String key)
     {
-        remove(key, Charset.defaultCharset());
+        remove(key, DefaultCharset.get());
     }
     
     // TODO: deal with charset. Should add to annotation

@@ -641,6 +641,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         private NodeManager nodeManager;
         private ScheduledExecutorService executor;
         private Bootstrap bootstrap;
+        private String defaultCharacterSet;
 
 
         /**
@@ -732,6 +733,12 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         public Builder withOperationQueueMaxDepth(int operationQueueMaxDepth)
         {
             this.operationQueueMaxDepth = operationQueueMaxDepth;
+            return this;
+        }
+
+        public Builder withDefaultCharacterSet(String contentType)
+        {
+            this.defaultCharacterSet = contentType;
             return this;
         }
 

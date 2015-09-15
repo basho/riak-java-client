@@ -17,6 +17,8 @@
 package com.basho.riak.client.core.query;
 
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
 import java.nio.charset.Charset;
 
 /**
@@ -98,7 +100,7 @@ public final class Location
      */
     public Location(Namespace namespace, String key)
     {
-        this(namespace, key, Charset.defaultCharset());
+        this(namespace, key, DefaultCharset.get());
     }
     
     /**
