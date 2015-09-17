@@ -49,7 +49,8 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
     protected final boolean paginationSort;
     protected final String termFilter;
     protected Integer timeout;
-    protected final byte[] coverContext;
+    protected final byte[] coverageContext;
+    protected final boolean returnBody;
     protected SecondaryIndexQuery(Init<T, ?> builder)
     {
         this.namespace = builder.namespace;
@@ -64,6 +65,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         this.termFilter = builder.termFilter;
         this.timeout = builder.timeout;
         this.coverageContext = builder.coverageContext;
+        this.returnBody = builder.returnBody;
     }
 
     protected abstract IndexConverter<T> getConverter();
@@ -186,7 +188,8 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
                 new SecondaryIndexQueryOperation.Query.Builder(namespace, BinaryValue.create(indexName))
                         .withContinuation(continuation)
                         .withReturnKeyAndIndex(returnTerms)
-                        .withPaginationSort(paginationSort);
+                        .withPaginationSort(paginationSort)
+                        .withReturnBody(returnBody);
 
         if (termFilter != null)
         {
@@ -363,6 +366,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         private volatile String termFilter;
         private volatile Integer timeout;
         private volatile byte[] coverageContext;
+        private volatile boolean returnBody;
 
         /**
          * Build a range query.
@@ -519,6 +523,18 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
             this.coverageContext = coverageContext;
             return self();
         }
+
+        /**
+         * Set whether to return the object values with the Riak object keys.
+         *
+         * It has protected access since, due to performance reasons, it might be used only for the Full Bucket Read
+         * @param returnBody
+         * @return
+         */
+        protected T withReturnBody(boolean returnBody){
+            this.returnBody = returnBody;
+            return self();
+        }
     }
 
     /**
@@ -528,10 +544,10 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
      */
     public abstract static class Response<T>
     {
-        final IndexConverter<T> converter;
-        final SecondaryIndexQueryOperation.Response coreResponse;
-        final Namespace queryLocation;
-
+        final protected IndexConverter<T> converter;
+        final protected SecondaryIndexQueryOperation.Response coreResponse;
+        final protected Namespace queryLocation;
+        
         protected Response(Namespace queryLocation,
                            SecondaryIndexQueryOperation.Response coreResponse,
                            IndexConverter<T> converter)
