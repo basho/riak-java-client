@@ -16,14 +16,11 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
-import com.basho.riak.client.core.query.RiakObject;
-import com.basho.riak.client.core.query.indexes.LongIntIndex;
-import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.Test;
 
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -51,19 +48,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
     private static final String keyBase = "my_key";
     private static final String value = "value";
-
-    @BeforeClass
-    public static void setupSiblingBuckets() throws ExecutionException, InterruptedException
-    {
-        Assume.assumeTrue(test2i);
-
-        setupIndexTestData(defaultTypeNamespace);
-
-        if(testBucketType)
-        {
-            setupIndexTestData(typedNamespace);
-        }
-    }
 
     @AfterClass
     public static void cleanupBuckets() throws ExecutionException, InterruptedException
@@ -499,28 +483,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         catch(IllegalArgumentException ex)
         {
             assertNotNull(ex);
-        }
-    }
-
-    private static void setupIndexTestData(Namespace ns)
-            throws InterruptedException, ExecutionException
-    {
-        for (long i = 0; i < 100; i++)
-        {
-            RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
-
-            obj.getIndexes().getIndex(LongIntIndex.named(incrementingIndexNameString)).add(i);
-            obj.getIndexes().getIndex(LongIntIndex.named(allFivesIndexNameString)).add(5L);
-            obj.getIndexes().getIndex(StringBinIndex.named(regexIndexNameString)).add("foo" + String.format("%02d", i));
-
-            Location location = new Location(ns, keyBase + i);
-            StoreOperation storeOp =
-                    new StoreOperation.Builder(location)
-                            .withContent(obj)
-                            .build();
-
-            cluster.execute(storeOp);
-            storeOp.get();
         }
     }
 
