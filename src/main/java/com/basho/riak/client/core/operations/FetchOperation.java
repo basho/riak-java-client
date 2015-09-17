@@ -16,7 +16,6 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.api.cap.BasicVClock;
-import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.RiakObjectConverter;
@@ -74,16 +73,19 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     }
 
     @Override
-    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) 
-    {
+    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
         {
             logger.error("Received {} responses when only one was expected.", responses.size());
         }
-        
-        RiakKvPB.RpbGetResp response = responses.get(0);
-        
+
+        final RiakKvPB.RpbGetResp response = responses.get(0);
+        return convert(response);
+    }
+
+    static FetchOperation.Response convert(RiakKvPB.RpbGetResp response)
+    {
         FetchOperation.Response.Builder responseBuilder = 
                 new FetchOperation.Response.Builder();
         
