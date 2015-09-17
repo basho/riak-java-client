@@ -23,7 +23,12 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +40,7 @@ import java.util.List;
  */
 public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp, SecondaryIndexQueryOperation.Query>
 {
+    private final static Logger logger = LoggerFactory.getLogger(SecondaryIndexQueryOperation.class);
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
 
@@ -82,16 +88,15 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                                                              BinaryValue.unsafeCreate(objKey.toByteArray())));
                     }
                 }
+                convertTerms(responseBuilder, pbEntry);
+            }
+            else if(pbReq.getReturnBody())
+            {
+                convertBodies(responseBuilder, pbEntry);
             }
             else
             {
-                /**
-                 * If return_terms wasn't specified only the object keys are returned
-                 */
-                for (ByteString objKey : pbEntry.getKeysList())
-                {
-                    responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(objKey.toByteArray())));
-                }
+                convertKeys(responseBuilder, pbEntry);
             }
 
             if (pbEntry.hasContinuation())
@@ -100,6 +105,71 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             }
         }
         return responseBuilder.build();
+    }
+
+    private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry){
+        /**
+         * If return_terms wasn't specified only the object keys are returned
+         */
+        for (ByteString objKey : pbEntry.getKeysList())
+        {
+            builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(objKey.toByteArray())));
+        }
+    }
+
+    private static void convertBodies(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry){
+        /**
+         * Full Bucket Read Query with return_body option set to true.
+         *
+         * Expected result is:  list of {Key, RpbGetResp} pairs
+         */
+        for (RpbPair pair : pbEntry.getResultsList())
+        {
+            RiakKvPB.RpbGetResp resp = null;
+            if(pair.getValue() != null && !pair.getValue().isEmpty()){
+                final CodedInputStream is = pair.getValue().newCodedInput();
+                //final byte[] data = pair.getValue().toByteArray();
+                try {
+                    /**
+                     * According to the message format, the first byte (Message code) should be skipped,
+                     * otherwise parsing will fail
+                     *
+                     * @see http://docs.basho.com/riak/latest/dev/references/protocol-buffers/#Protocol
+                     */
+                    final byte msgCode = is.readRawByte();
+                    assert msgCode == 10;
+                    resp = RiakKvPB.RpbGetResp.parseFrom( is );
+                } catch (IOException e) {
+                    final String msg = String.format("Can't parse response with Message Code '%s' as RpbGetResp",
+                            pair.getValue().byteAt(0));
+
+                    logger.error( msg, e);
+                    throw new IllegalArgumentException(msg, e);
+                }
+            }
+
+            final FetchOperation.Response fr = FetchOperation.convert(resp);
+            builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()), fr));
+        }
+    }
+
+    private void convertTerms(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry){
+        if (pbReq.hasRangeMin())
+        {
+            for (RpbPair pair : pbEntry.getResultsList())
+            {
+                builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),
+                        BinaryValue.unsafeCreate(pair.getValue().toByteArray())));
+            }
+        }
+        else
+        {
+            for (ByteString objKey : pbEntry.getKeysList())
+            {
+                builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pbReq.getKey().toByteArray()),
+                        BinaryValue.unsafeCreate(objKey.toByteArray())));
+            }
+        }
     }
 
     @Override
@@ -155,13 +225,22 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 throw new IllegalArgumentException("Query cannot be null.");
             }
 
+            /**
+             * Options 'returnBody' and 'returnKeyAndIndex' are contradictory because them both use the same field
+             * to store the results
+             */
+            if (query.returnBody && query.returnKeyAndIndex) {
+                throw new IllegalArgumentException("Contradictory query options: returnBody and returnKeyAndIndex");
+            }
+
             this.query = query;
 
             pbReqBuilder.setBucket(ByteString.copyFrom(query.namespace.getBucketName().unsafeGetValue()))
                         .setType(ByteString.copyFrom(query.namespace.getBucketType().unsafeGetValue()))
                         .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
-                        .setReturnTerms(query.returnKeyAndIndex);
-
+                        .setReturnTerms(query.returnKeyAndIndex)
+                        .setReturnBody(query.returnBody);
+            
             if (query.indexKey != null)
             {
                 pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
@@ -240,7 +319,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final BinaryValue termFilter;
         private final Integer timeout;
         private final byte[] coverageContext;
-        
+        private final boolean returnBody;
+
         private Query(Builder builder)
         {
             this.indexName = builder.indexName;
@@ -255,6 +335,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.namespace = builder.namespace;
             this.timeout = builder.timeout;
             this.coverageContext = builder.coverageContext;
+            this.returnBody = builder.returnBody;
         }
 
         /**
@@ -353,6 +434,13 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return coverageContext;
         }
 
+        /**
+         * @return the returnBody
+         */
+        public boolean isReturnBody() {
+            return returnBody;
+        }
+
         public static class Builder
         {
             private final Namespace namespace;
@@ -367,6 +455,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private BinaryValue termFilter;
             private Integer timeout;
             private byte[] coverageContext;
+            private boolean returnBody;
             
             /**
             * Constructs a builder for a (2i) Query.
@@ -516,6 +605,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                return this;
            }
 
+            public Builder withReturnBody(boolean returnBody) {
+                this.returnBody = returnBody;
+                return this;
+            }
+
            public Query build()
             {
                 // sanity checks
@@ -576,6 +670,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             private final BinaryValue indexKey;
             private final BinaryValue objectKey;
+            private final FetchOperation.Response fetchResponse;
+
+            Entry(BinaryValue objectKey, FetchOperation.Response fr)
+            {
+                this(null, objectKey, fr);
+            }
 
             Entry(BinaryValue objectKey)
             {
@@ -584,8 +684,13 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
             Entry(BinaryValue indexKey, BinaryValue objectKey)
             {
+                this(indexKey, objectKey, null);
+            }
+
+            Entry(BinaryValue indexKey, BinaryValue objectKey, FetchOperation.Response fr){
                 this.indexKey = indexKey;
                 this.objectKey = objectKey;
+                this.fetchResponse = fr;
             }
 
             public boolean hasIndexKey()
@@ -601,6 +706,16 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             public BinaryValue getObjectKey()
             {
                 return objectKey;
+            }
+
+            public boolean hasBody()
+            {
+                return fetchResponse != null;
+            }
+
+            public FetchOperation.Response getBody()
+            {
+                return fetchResponse;
             }
         }
 
