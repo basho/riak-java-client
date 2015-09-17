@@ -1,18 +1,11 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry;
-import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.query.Location;
-import com.basho.riak.client.core.query.Namespace;
-import com.basho.riak.client.core.query.RiakObject;
-import com.basho.riak.client.core.query.indexes.LongIntIndex;
-import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.HostAndPort;
 import org.junit.Assert;
 import org.junit.Test;
@@ -109,7 +102,7 @@ public class ITestCoveragePlan extends ITestBase {
             }
         }
 
-        final Set<String> keys = new HashSet<String>(100);
+        final Set<String> keys = new HashSet<String>(NUMBER_OF_TEST_VALUES);
         for(Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet()){
             final CoverageEntry ce = e.getKey();
             if(e.getValue().isEmpty()){
@@ -129,31 +122,6 @@ public class ITestCoveragePlan extends ITestBase {
             }
         }
 
-        assertEquals(100, keys.size());
-    }
-
-    /**
-     * Copy & pasted from ITestSecondaryIndexQueryOp
-     */
-    private void setupIndexTestData(Namespace ns, String indexName, String keyBase, String value)
-            throws InterruptedException, ExecutionException
-    {
-        for (long i = 0; i < 100; i++)
-        {
-            RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
-
-            obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(i);
-
-            Location location = new Location(ns, keyBase + i);
-            StoreOperation storeOp =
-                    new StoreOperation.Builder(location)
-                            .withPw(Quorum.allQuorum().getIntValue())
-                            .withContent(obj)
-                            .withTimeout(2000)
-                            .build();
-
-            cluster.execute(storeOp);
-            storeOp.get();
-        }
+        assertEquals(NUMBER_OF_TEST_VALUES, keys.size());
     }
 }
