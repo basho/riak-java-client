@@ -20,9 +20,9 @@ ext {
     jacksonVersion = '2.2.2'
     nettyVersion = '4.0.17.Final'
 
-    riakPbVersion = '2.0.0.17.beta2'
+    riakPbVersion = '2.0.0.17.beta3'
 
-    bdpRiakClientVersion = '1.0.0'
+    bdpRiakClientVersion = '1.1.0.beta1'
 
     mockitoVersion = '1.10.19'
     powermockVersion = '1.6.2'

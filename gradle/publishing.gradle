@@ -102,7 +102,7 @@ bintray {
 
         version {
             name = bdpRiakClientVersion
-            desc = 'Basho Data Platform 1.0'
+            desc = 'Basho Data Platform 1.1.0.beta1'
         }
     }
 }
