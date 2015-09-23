@@ -56,26 +56,37 @@ public final class DefaultCharset
 
     private DefaultCharset(Charset c)
     {
-        LogCharsetChange(c);
+        logger.info("Initializing client charset to: {}", c.name());
         this.currentCharset = new AtomicReference<Charset>(c);
     }
 
     private static DefaultCharset initializeDefaultCharsetSingleton()
     {
-        Charset charset = Charset.defaultCharset();
+        Charset charset;
+        final Charset systemDefault = Charset.defaultCharset();
+        final String declaredCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
 
-        String declaredCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
         if(declaredCharsetName != null && !declaredCharsetName.isEmpty())
         {
-            charset = Charset.forName(declaredCharsetName);
+            try
+            {
+                charset = Charset.forName(declaredCharsetName);
+            }
+            catch (Exception ex)
+            {
+                charset = systemDefault;
+                logger.warn("Requested charset '{}' is not available, the default charset '{}' will be used",
+                            declaredCharsetName,
+                            charset.name());
+            }
+        }
+        else
+        {
+            logger.info("No declared charset found, the default charset '{}' will be used", systemDefault.name());
+            charset = systemDefault;
         }
 
         return new DefaultCharset(charset);
-    }
-
-    private static void LogCharsetChange(Charset charset)
-    {
-        logger.info("Setting client charset to: {}", charset.name());
     }
 
     /**
@@ -93,7 +104,8 @@ public final class DefaultCharset
      */
     public static void set(Charset charset)
     {
-        LogCharsetChange(charset);
+        final Charset current = instance.currentCharset.get();
+        logger.info("Setting client charset from '{}' to '{}'", current.name(), charset.name());
         instance.currentCharset.set(charset);
     }
 }
