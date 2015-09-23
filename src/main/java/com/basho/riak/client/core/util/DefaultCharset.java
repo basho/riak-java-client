@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p>
- *     Holds an application-wide default charset, that
+ *     Holds an classloader-wide default charset, that
  *     is then used to encode/decode between Strings and
  *     Byte arrays for Riak's use (see {@link com.basho.riak.client.core.util.BinaryValue}).
  *</p>
@@ -79,8 +79,8 @@ public final class DefaultCharset
     }
 
     /**
-     * Get the current application-wide default Charset for the Riak client.
-     * @return The current application-wide default charset.
+     * Get the current classloader-wide default Charset for the Riak client.
+     * @return The current classloader-wide default charset.
      */
     public static Charset get()
     {
@@ -88,8 +88,8 @@ public final class DefaultCharset
     }
 
     /**
-     * Set the application-wide default Charset for the Riak client.
-     * @param charset The charset to set the application-wide default to.
+     * Set the classloader-wide default Charset for the Riak client.
+     * @param charset The charset to set the classloader-wide default to.
      */
     public static void set(Charset charset)
     {
