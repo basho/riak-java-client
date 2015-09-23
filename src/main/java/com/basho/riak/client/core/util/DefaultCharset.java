@@ -7,8 +7,46 @@ import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * <p>
+ *     Holds an application-wide default charset, that
+ *     is then used to encode/decode between Strings and
+ *     Byte arrays for Riak's use (see {@link com.basho.riak.client.core.util.BinaryValue}).
+ *</p>
  *
+ * <p>
+ *     Before 2.0.3, the system used the JRE's default Charset from the
+ *     {@link Charset#defaultCharset()} property.
+ *</p>
+ *
+ * <p>
+ *     With this class you may change the Riak client to use a different default.
+ *     You can set it at startup by providing the desired Charset name with the vm argument
+ *     {@code -Dcom.basho.riak.client.DefaultCharset="UTF-8"}, or at runtime
+ *     with the static method (see {@link #set(Charset)}).
+ * </p>
+ *
+ * <p>
+ *     As of 2.0.3 it still defaults to the value provided by
+ *     {@link Charset#defaultCharset()},
+ *     but the default is planned to change to "UTF-8" with 2.1.0.
+ * </p>
+ *
+ * <p>
+ *     If your JRE default charset is one of "<b>US-ASCII</b>",
+ *     "<b>UTF-8</b>", or "<b>ISO-8859-1</b>",
+ *     this change should <b>not</b> affect you.
+ * </p>
+ *
+ * <p>
+ *     If your JRE default charset is one of "<b>UTF-16</b>",
+ *     "<b>UTF-16BE</b>", or "<b>UTF-16LE</b>",
+ *     <b>you will need to set that default on the command line or
+ *     after application startup once you upgrade</b>.
+ * </p>
+ * @author Alex Moore <amoore AT basho dot com>
+ * @since 2.0.3
  */
+
 public final class DefaultCharset
 {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCharset.class);
@@ -29,8 +67,7 @@ public final class DefaultCharset
         String declaredCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
         if(declaredCharsetName != null && !declaredCharsetName.isEmpty())
         {
-            Charset declaredCharset = Charset.forName(declaredCharsetName);
-            charset = declaredCharset;
+            charset = Charset.forName(declaredCharsetName);
         }
 
         return new DefaultCharset(charset);
@@ -41,11 +78,19 @@ public final class DefaultCharset
         logger.info("Setting client charset to: {}", charset.name());
     }
 
+    /**
+     * Get the current application-wide default Charset for the Riak client.
+     * @return The current application-wide default charset.
+     */
     public static Charset get()
     {
         return instance.currentCharset.get();
     }
 
+    /**
+     * Set the application-wide default Charset for the Riak client.
+     * @param charset The charset to set the application-wide default to.
+     */
     public static void set(Charset charset)
     {
         LogCharsetChange(charset);
