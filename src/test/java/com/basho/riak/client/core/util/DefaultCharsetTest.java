@@ -80,6 +80,10 @@ public class DefaultCharsetTest
             {
                 System.setProperty(Constants.CLIENT_OPTION_CHARSET, definedCharsetName);
             }
+            else
+            {
+                System.clearProperty(Constants.CLIENT_OPTION_CHARSET);
+            }
         }
     }
 
@@ -117,6 +121,10 @@ public class DefaultCharsetTest
             if (definedCharsetName != null)
             {
                 System.setProperty(Constants.CLIENT_OPTION_CHARSET, definedCharsetName);
+            }
+            else
+            {
+                System.clearProperty(Constants.CLIENT_OPTION_CHARSET);
             }
         }
     }
