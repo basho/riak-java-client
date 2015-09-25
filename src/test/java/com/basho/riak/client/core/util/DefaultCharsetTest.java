@@ -1,5 +1,6 @@
 package com.basho.riak.client.core.util;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -9,144 +10,129 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertEquals;
 
 public class DefaultCharsetTest
 {
-    @Test
-    public void testDefaultIfNoPropertyDefined()
-    {
-        Charset systemDefault = Charset.defaultCharset();
-        Charset clientDefault = DefaultCharset.get();
+    private static final Charset SystemDefaultCharset = Charset.defaultCharset();
+    private static final String definedCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
 
-        String definedCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
+    @After
+    public void tearDown()
+    {
+        if (definedCharsetName != null)
+        {
+            System.setProperty(Constants.CLIENT_OPTION_CHARSET, definedCharsetName);
+        }
+        else
+        {
+            System.clearProperty(Constants.CLIENT_OPTION_CHARSET);
+        }
+    }
+
+    @Test
+    public void testSystemDefaultCharsetIsReturnedIfNoPropertyIsDefined()
+    {
+        Charset clientDefault = DefaultCharset.get();
 
         Boolean noCharsetPropertyDefined = definedCharsetName == null;
         Assume.assumeTrue(noCharsetPropertyDefined);
 
-        assertEquals(systemDefault, clientDefault);
+        assertEquals(SystemDefaultCharset.name(), clientDefault.name());
     }
 
     @Test
-    public void testDefinedCharset()
+    public void testDefinedCharsetIsReturnedIfPropertyIsDefined()
     {
         Charset clientDefault = DefaultCharset.get();
-
-        String definedCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
 
         Boolean charsetPropertyDefined = definedCharsetName != null && !definedCharsetName.isEmpty();
 
         Assume.assumeTrue(charsetPropertyDefined);
 
         Charset definedCharset = Charset.forName(definedCharsetName);
-        assertEquals(definedCharset, clientDefault);
+        assertEquals(definedCharset.name(), clientDefault.name());
     }
 
     @Test
-    public void testStaticInitializerValidDefinedCharset()
+    public void testIntializerProvidesTheRequestedCharsetIfItIsValid()
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException
     {
-        String definedCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
-        Charset systemDefault = Charset.defaultCharset();
         String goodCharsetName = "UTF-16";
+        Charset goodCharset = Charset.forName(goodCharsetName);
 
-        try
-        {
-            Charset goodCharset = Charset.forName(goodCharsetName);
+        // Open up the private static initializer
+        Method staticInitializer = getInitializeDefaultCharsetSingletonMethod();
 
-            // Open up the private static initializer
-            Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton",
-                                                                              null);
-            staticInitializer.setAccessible(true);
+        // Set system property for client charset to bad value
+        System.setProperty(Constants.CLIENT_OPTION_CHARSET, goodCharsetName);
 
-            // Set system property for client charset to bad value
-            System.setProperty(Constants.CLIENT_OPTION_CHARSET, goodCharsetName);
+        // Run static initializer to test good charset handling
+        DefaultCharset initializedDefaultCharset = (DefaultCharset) staticInitializer.invoke(null);
 
-            // Run static initializer to test good charset handling
-            DefaultCharset initializedDefaultCharset = (DefaultCharset) staticInitializer.invoke(null);
+        // Get initialized charset
+        AtomicReference<Charset> initializedCharset = getCurrentCharsetFromDefaultCharsetInstance(
+                initializedDefaultCharset);
 
-            // Get initialized charset
-            Field currentCharsetField = DefaultCharset.class.getDeclaredField("currentCharset");
-            currentCharsetField.setAccessible(true);
-            AtomicReference<Charset> initializedCharset =
-                    (AtomicReference<Charset>)currentCharsetField.get(initializedDefaultCharset);
-
-            assertEquals(goodCharset.name(), initializedCharset.get().name());
-        }
-        finally
-        {
-            // Cleanup
-            if (definedCharsetName != null)
-            {
-                System.setProperty(Constants.CLIENT_OPTION_CHARSET, definedCharsetName);
-            }
-            else
-            {
-                System.clearProperty(Constants.CLIENT_OPTION_CHARSET);
-            }
-        }
+        assertEquals(goodCharset.name(), initializedCharset.get().name());
     }
 
     @Test
-    public void testStaticInitializerInvalidDefinedCharset()
+    public void testIntializerProvidesTheDefaultSytemCharsetIfInvalidOneWasRequested()
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException
     {
-        String definedCharsetName = System.getProperty(Constants.CLIENT_OPTION_CHARSET);
-        Charset systemDefault = Charset.defaultCharset();
         String badCharsetName = "Foobar-16NE";
 
-        try
-        {
-            // Open up the private static initializer
-            Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton",
-                                                                              null);
-            staticInitializer.setAccessible(true);
+        // Open up the private static initializer
+        Method staticInitializer = getInitializeDefaultCharsetSingletonMethod();
 
-            // Set system property for client charset to bad value
-            System.setProperty(Constants.CLIENT_OPTION_CHARSET, badCharsetName);
+        // Set system property for client charset to bad value
+        System.setProperty(Constants.CLIENT_OPTION_CHARSET, badCharsetName);
 
-            // Run static initializer to test bad charset handling
-            DefaultCharset initializedDefaultCharset = (DefaultCharset) staticInitializer.invoke(null);
+        // Run static initializer to test bad charset handling
+        DefaultCharset initializedDefaultCharset = (DefaultCharset) staticInitializer.invoke(null);
 
-            Field currentCharsetField = DefaultCharset.class.getDeclaredField("currentCharset");
-            currentCharsetField.setAccessible(true);
-            AtomicReference<Charset> initializedCharset =
-                    (AtomicReference<Charset>)currentCharsetField.get(initializedDefaultCharset);
+        AtomicReference<Charset> initializedCharset = getCurrentCharsetFromDefaultCharsetInstance(
+                initializedDefaultCharset);
 
-            assertEquals(systemDefault.name(), initializedCharset.get().name());
-        }
-        finally
-        {
-            // Cleanup
-            if (definedCharsetName != null)
-            {
-                System.setProperty(Constants.CLIENT_OPTION_CHARSET, definedCharsetName);
-            }
-            else
-            {
-                System.clearProperty(Constants.CLIENT_OPTION_CHARSET);
-            }
-        }
+        assertEquals(SystemDefaultCharset.name(), initializedCharset.get().name());
+
     }
+
+    private Method getInitializeDefaultCharsetSingletonMethod() throws NoSuchMethodException
+    {
+        Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton", null);
+        staticInitializer.setAccessible(true);
+        return staticInitializer;
+    }
+
+    private AtomicReference<Charset> getCurrentCharsetFromDefaultCharsetInstance(DefaultCharset
+                                                                                         initializedDefaultCharset)
+            throws NoSuchFieldException, IllegalAccessException
+    {
+        Field currentCharsetField = DefaultCharset.class.getDeclaredField("currentCharset");
+        currentCharsetField.setAccessible(true);
+        return (AtomicReference<Charset>) currentCharsetField.get(initializedDefaultCharset);
+    }
+
 
     @Test
     public void testRuntimeSetCharset()
     {
-        Charset systemDefault = Charset.defaultCharset();
         Charset ascii = Charset.forName("US-ASCII");
         Charset utf8 = Charset.forName("UTF-8");
 
-        if (systemDefault != utf8)
+        if (SystemDefaultCharset != utf8)
         {
             DefaultCharset.set(utf8);
             Charset clientCharset = DefaultCharset.get();
-            assertEquals(utf8, clientCharset);
+            assertEquals(utf8.name(), clientCharset.name());
         }
         else
         {
             DefaultCharset.set(ascii);
             Charset clientCharset = DefaultCharset.get();
-            assertEquals(ascii, clientCharset);
+            assertEquals(ascii.name(), clientCharset.name());
         }
     }
 }
