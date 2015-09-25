@@ -642,7 +642,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         private ScheduledExecutorService executor;
         private Bootstrap bootstrap;
 
-
         /**
          * Instantiate a Builder containing the supplied {@link RiakNode}s
          * @param riakNodes - a List of unstarted RiakNode objects

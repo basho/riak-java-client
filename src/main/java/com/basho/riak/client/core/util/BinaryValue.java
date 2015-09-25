@@ -75,7 +75,7 @@ public final class BinaryValue
      */
     public static BinaryValue create(String data)
     {
-        return create(data, Charset.defaultCharset());
+        return create(data, DefaultCharset.get());
     }
     
     /**
@@ -185,7 +185,7 @@ public final class BinaryValue
     @Override
     public String toString()
     {
-        return toString(Charset.defaultCharset());
+        return toString(DefaultCharset.get());
     }
     
     /**
