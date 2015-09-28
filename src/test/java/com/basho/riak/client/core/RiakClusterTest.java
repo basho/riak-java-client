@@ -18,7 +18,6 @@ package com.basho.riak.client.core;
 import com.google.protobuf.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.verification.VerificationMode;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -26,7 +25,6 @@ import org.powermock.reflect.Whitebox;
 
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -45,7 +43,7 @@ import static org.mockito.Mockito.*;
 public class RiakClusterTest
 {
     @Test
-    public void builderCreatesCluster() throws UnknownHostException
+    public void builderCreatesCluster()
     {
         RiakNode.Builder nodeBuilder = new RiakNode.Builder();
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
@@ -67,7 +65,7 @@ public class RiakClusterTest
     }
     
     @Test
-    public void removeNodeFromCluster() throws UnknownHostException
+    public void removeNodeFromCluster()
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
@@ -82,7 +80,7 @@ public class RiakClusterTest
     }
     
     @Test
-    public void allNodesShutdownStopsCluster() throws UnknownHostException
+    public void allNodesShutdownStopsCluster()
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
@@ -98,7 +96,7 @@ public class RiakClusterTest
     
     @Test
     @SuppressWarnings("unchecked")
-    public void clusterExecutesOperation() throws UnknownHostException
+    public void clusterExecutesOperation()
     {
         NodeManager nodeManager = mock(NodeManager.class);
         FutureOperation operation = PowerMockito.mock(FutureOperation.class);

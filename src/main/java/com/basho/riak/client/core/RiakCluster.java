@@ -71,7 +71,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private volatile State state;
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
-    private RiakCluster(Builder builder) throws UnknownHostException
+    private RiakCluster(Builder builder)
     {
         this.executionAttempts = builder.executionAttempts;
         this.queueOperations =  builder.operationQueueMaxDepth > 0;
@@ -737,9 +737,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         /**
          * Instantiates the {@link RiakCluster}
          * @return a new RiakCluster
-         * @throws UnknownHostException if a node fails to start due to a DNS lookup
          */
-        public RiakCluster build() throws UnknownHostException
+        public RiakCluster build()
         {
             return new RiakCluster(this);
         }

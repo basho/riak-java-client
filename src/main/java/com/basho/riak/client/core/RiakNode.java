@@ -169,7 +169,7 @@ public class RiakNode implements RiakResponseListener
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
-    private RiakNode(Builder builder) throws UnknownHostException
+    private RiakNode(Builder builder)
     {
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
@@ -1476,9 +1476,8 @@ public class RiakNode implements RiakResponseListener
          * will be created.
          *
          * @return a new Riaknode
-         * @throws UnknownHostException if the DNS lookup fails for the supplied hostname
          */
-        public RiakNode build() throws UnknownHostException
+        public RiakNode build()
         {
             return new RiakNode(this);
         }
@@ -1492,10 +1491,8 @@ public class RiakNode implements RiakResponseListener
          * @param builder         a configured builder
          * @param remoteAddresses a list of IP addresses or FQDN
          * @return a list of constructed RiakNodes
-         * @throws UnknownHostException if a supplied FQDN can not be resolved.
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
-            throws UnknownHostException
         {
             List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.size());
             for (String remoteAddress : remoteAddresses)
