@@ -9,104 +9,100 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
+import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
+ *
+ * Schema for the Timeseries table we're using:
+ *
+ *   CREATE TABLE GeoCheckin
+ *   (
+ *      myfamily    varchar   not null,
+ *      myseries    varchar   not null,
+ *      time        timestamp not null,
+ *      weather     varchar   not null,
+ *      temperature float,
+ *      PRIMARY KEY (
+ *          (quantum(time, 15, 'm'), myfamily, myseries),
+ *          time, myfamily, myseries
+ *      )
+ *   )
  */
 public class ITestTimeSeries extends ITestBase
 {
-    @Test
-    public void creatingCollections()
-    {
-        try
-        {
-            RiakClient client = new RiakClient(cluster);
+    private boolean InsertedData = false;
 
-            final String queryText =
-                    "create table time_series (" +
-                            "time timestamp not null," +
-                            "user_id varchar not null," +
-                            "temperature_k float," +
-                            "primary key (time))";
-
-            Query query = new Query.Builder(queryText).build();
-
-            QueryResult queryResult = client.execute(query);
-
-            // These will change, putting test here to demonstrate that we are converting the types correctly.
-            assertEquals(1, queryResult.getColumnDescriptions().size());
-            assertEquals("asdf", queryResult.getColumnDescriptions().get(0).getName());
-
-            List<Row> rows = queryResult.getRows();
-            assertEquals(1, rows.size());
-            List<Cell> cells = rows.get(0).getCells();
-            assertEquals(1, cells.size());
-            Cell cell = cells.get(0);
-            assertTrue(cell.hasString());
-            assertEquals("jkl;", cell.getUtf8String());
-        }
-        catch (ExecutionException ex)
-        {
-            System.out.println(ex.getCause().getCause());
-            Logger.getLogger(ITestFetchValue.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(ITestFetchValue.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void ensureWeCatchInvalidParams()
     {
-        final String queryText =
-                "create table time_series (" +
-                        "time timestamp not null," +
-                        "user_id varchar not null," +
-                        "temperature_k float," +
-                        "primary key (time))";
+        final String queryText = "select * from GeoCheckin";
 
         Query.Builder query = new Query.Builder(queryText);
         query.addParameter(":foo", new Cell("123"));
     }
-
 
     @Test
     public void StoringData() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
-        final String tableName = "time_series";
+        final String tableName = "GeoCheckin";
 
-        final Calendar date1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        date1.add(Calendar.MILLISECOND, -10);
-        final Calendar date2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        date2.add(Calendar.MILLISECOND, -5);
-        final Calendar date3 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        final Calendar fifteenMinsAgo = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        fifteenMinsAgo.add(Calendar.MINUTE, -15);
+        final Calendar fiveMinsAgo = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        fiveMinsAgo.add(Calendar.MINUTE, -5);
+        final Calendar now = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 
-        final List<Row> rows = Arrays.asList(new Row(new Cell(date1), new Cell("bryce"), new Cell(305.37)),
-
-                                             new Row(new Cell(date2), new Cell("bryce"), new Cell(300.12)),
-
-                                             new Row(new Cell(date3), new Cell("bryce"), new Cell(295.95)));
+        final List<Row> rows = Arrays.asList(
+            new Row(new Cell("family1"), new Cell("series1"), new Cell(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0)),
+            new Row(new Cell("family1"), new Cell("series1"), new Cell(fiveMinsAgo),    new Cell("sunny"),  new Cell(80.5)),
+            new Row(new Cell("family1"), new Cell("series2"), new Cell(now),            new Cell("sunny"),  new Cell(81.0)));
 
         Store store = new Store.Builder(tableName).withRows(rows).build();
 
         RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
 
         execFuture.await();
-        assertTrue(execFuture.isSuccess());
+        Throwable cause = execFuture.cause();
+        assertEquals(cause.getMessage(), true, execFuture.isSuccess());
+        InsertedData = true;
+    }
+
+    @Test
+    public void QueryingData() throws ExecutionException, InterruptedException
+    {
+        Assert.assertTrue("No data inserted, skipping test", InsertedData);
+
+        RiakClient client = new RiakClient(cluster);
+
+        final Calendar sixteenMinutesAgo = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        sixteenMinutesAgo.add(Calendar.MINUTE, -16);
+        final Calendar now = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+
+        final String queryText = "select weather from GeoCheckin " +
+                                 "where myseries = :series and " +
+                                    "(time > :ts_lower and (time < :ts_upper))";
+
+        Query.Builder query = new Query.Builder(queryText);
+
+        query.addParameter(":series", new Cell("series1"));
+        query.addParameter(":ts_lower", new Cell(sixteenMinutesAgo));
+        query.addParameter(":ts_upper", new Cell(now));
+
+        QueryResult queryResult = client.execute(query.build());
+
+        assertEquals(1, queryResult.getColumnDescriptions().size());
+        assertEquals(2, queryResult.getRows().size());
     }
 
 }
