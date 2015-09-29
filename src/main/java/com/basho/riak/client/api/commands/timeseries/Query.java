@@ -4,7 +4,6 @@ import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.TimeSeriesQueryOperation;
-import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
@@ -49,7 +48,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
         private static final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
 
         private final BinaryValue queryText;
-        private final Map<BinaryValue, Cell> interpolations = new HashMap<BinaryValue, Cell>();
+        private final Map<BinaryValue, BinaryValue> interpolations = new HashMap<BinaryValue, BinaryValue>();
         private final Set<String> knownParams;
 
         public Builder(String queryText)
@@ -79,21 +78,21 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
             }
         }
 
-        public Builder addParameter(String key, Cell value)
+        public Builder addStringParameter(String key, String value)
         {
-            return this.addParameter(key, BinaryValue.createFromUtf8(key), value);
+            return this.addParameter(key, BinaryValue.createFromUtf8(key), BinaryValue.createFromUtf8(value));
         }
 
-        public Builder addParameters(Map<String, Cell> parameters)
+        public Builder addStringParameters(Map<String, String> parameters)
         {
-            for( Map.Entry<String, Cell> parameter : parameters.entrySet())
+            for( Map.Entry<String, String> parameter : parameters.entrySet())
             {
-                addParameter(parameter.getKey(), parameter.getValue());
+                addStringParameter(parameter.getKey(), parameter.getValue());
             }
             return this;
         }
 
-        private Builder addParameter(String keyString, BinaryValue key, Cell value)
+        private Builder addParameter(String keyString, BinaryValue key, BinaryValue value)
         {
             checkParamValidity(keyString);
             interpolations.put(key, value);

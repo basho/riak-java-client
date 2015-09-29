@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
-import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -15,20 +14,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
-{
+public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue> {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
 
     private TimeSeriesQueryOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsQueryReq,
-              RiakMessageCodes.MSG_TsQueryResp,
-              RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder),
-              RiakKvPB.TsQueryResp.PARSER);
+        super(RiakMessageCodes.MSG_TsQueryReq, RiakMessageCodes.MSG_TsQueryResp,
+                RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder), RiakKvPB.TsQueryResp.PARSER);
     }
 
     @Override
@@ -43,19 +40,21 @@ public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, Ria
         RiakKvPB.TsQueryResp response = responses.get(0);
 
 
-        return TimeSeriesPBConverter.convertPbQueryResp(response);
+        QueryResult result = TimeSeriesPBConverter.convertPbQueryResp(response);
+
+        return result;
     }
 
     @Override
-    public BinaryValue getQueryInfo()
-    {
+    public BinaryValue getQueryInfo() {
         return null;
     }
 
 
     public static class Builder
     {
-        private final RiakKvPB.TsInterpolation.Builder interpolationBuilder = RiakKvPB.TsInterpolation.newBuilder();
+        private final RiakKvPB.TsInterpolation.Builder interpolationBuilder =
+                RiakKvPB.TsInterpolation.newBuilder();
 
         public Builder(BinaryValue queryText)
         {
@@ -67,22 +66,20 @@ public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, Ria
             this.interpolationBuilder.setBase(ByteString.copyFrom(queryText.unsafeGetValue()));
         }
 
-        private void addInterpolationAt(int index, BinaryValue key, Cell value)
+        private void addInterpolationAt(int index, BinaryValue key, BinaryValue value)
         {
             ByteString bsKey = ByteString.copyFrom(key.unsafeGetValue());
-            RiakKvPB.TsKeyCell cell = RiakKvPB.TsKeyCell.newBuilder()
-                                                        .setKey(bsKey)
-                                                        .setValue(TimeSeriesPBConverter.convertCellToPb(value))
-                                                        .build();
+            ByteString bsValue = ByteString.copyFrom(value.unsafeGetValue());
 
-            this.interpolationBuilder.setInterpolations(index, cell);
+            RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder().setKey(bsKey).setValue(bsValue);
+            this.interpolationBuilder.setInterpolations(index, pair);
         }
 
-        public Builder setInterpolations(Map<BinaryValue, Cell> interpolations)
+        public Builder setInterpolations(Map<BinaryValue, BinaryValue> interpolations)
         {
             int i = this.interpolationBuilder.getInterpolationsCount();
 
-            for (Map.Entry<BinaryValue, Cell> interpolation : interpolations.entrySet())
+            for (Map.Entry<BinaryValue, BinaryValue> interpolation : interpolations.entrySet())
             {
                 addInterpolationAt(i, interpolation.getKey(), interpolation.getValue());
                 i++;

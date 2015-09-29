@@ -170,7 +170,7 @@ public final class TimeSeriesPBConverter
         return new ColumnDescription(name, type, complexType);
     }
 
-    public static RiakKvPB.TsCell convertCellToPb(Cell cell)
+    private static RiakKvPB.TsCell convertCellToPb(Cell cell)
     {
         RiakKvPB.TsCell.Builder cellBuilder = RiakKvPB.TsCell.newBuilder();
 

@@ -21,9 +21,9 @@ public class SetCellTest
 
         Set<String> set1 = SetCell.getSet(setCell, new TypeReference<String>() {});
 
-        assertTrue(set1.contains("foo"));
-        assertTrue(set1.contains("bar"));
-        assertTrue(set1.contains("baz"));
+        assertTrue(set.contains("foo"));
+        assertTrue(set.contains("bar"));
+        assertTrue(set.contains("baz"));
     }
 
     @Test

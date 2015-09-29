@@ -27,6 +27,7 @@ public class MapCell extends Cell
         return cell;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T getObject(Cell cell, TypeReference<T> typeReference)
     {
         T obj;
@@ -34,9 +35,7 @@ public class MapCell extends Cell
 
         if(typeReference.getType() == StringType)
         {
-            // If we've gotten this far, then the user is using the map to store a string object...
-            // Have to check this because the ConverterFactory always has a (String,StringConverter) entry,
-            // and StringConverter.toDomain will throw an UnsupportedOperationException if called.
+            // If we've gotten this far, then the user is using the map to store a string...
             obj = (T) BinaryValue.create(cell.getMap()).toString();
         }
         else
