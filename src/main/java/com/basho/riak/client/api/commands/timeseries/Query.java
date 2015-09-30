@@ -38,7 +38,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
     private TimeSeriesQueryOperation buildCoreOperation()
     {
         return new TimeSeriesQueryOperation.Builder(builder.queryText)
-                                           .setInterpolations(builder.interpolations)
+                                           //.setInterpolations(builder.interpolations)
                                            .build();
     }
 
@@ -78,19 +78,19 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
             }
         }
 
-        public Builder addStringParameter(String key, String value)
-        {
-            return this.addParameter(key, BinaryValue.createFromUtf8(key), BinaryValue.createFromUtf8(value));
-        }
-
-        public Builder addStringParameters(Map<String, String> parameters)
-        {
-            for( Map.Entry<String, String> parameter : parameters.entrySet())
-            {
-                addStringParameter(parameter.getKey(), parameter.getValue());
-            }
-            return this;
-        }
+//        public Builder addStringParameter(String key, String value)
+//        {
+//            return this.addParameter(key, BinaryValue.createFromUtf8(key), BinaryValue.createFromUtf8(value));
+//        }
+//
+//        public Builder addStringParameters(Map<String, String> parameters)
+//        {
+//            for( Map.Entry<String, String> parameter : parameters.entrySet())
+//            {
+//                addStringParameter(parameter.getKey(), parameter.getValue());
+//            }
+//            return this;
+//        }
 
         private Builder addParameter(String keyString, BinaryValue key, BinaryValue value)
         {
