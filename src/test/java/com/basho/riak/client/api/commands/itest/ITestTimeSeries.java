@@ -158,6 +158,29 @@ public class ITestTimeSeries extends ITestBase
         assertRowMatches(rows.get(2), queryResult.getRows().get(1));
     }
 
+    @Test
+    public void TestThatTimestampsComeBackInIntegerBuffer() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final String queryText = "select time from GeoCheckin " +
+                "where user = 'user1' and " +
+                "(time > " + tenMinsAgo +" and " +
+                "(time < "+ now + ")) ";
+
+        Query query = new Query.Builder(queryText).build();
+        QueryResult queryResult = client.execute(query);
+
+        assertEquals(1, queryResult.getColumnDescriptions().size());
+        assertEquals(1, queryResult.getRows().size());
+        assertEquals(1, queryResult.getRows().get(0).getCells().size());
+        Cell resultCell = queryResult.getRows().get(0).getCells().get(0);
+        assertFalse(resultCell.hasTimestamp());
+        assertTrue(resultCell.hasLong());
+        assertEquals(fiveMinsAgo, resultCell.getLong());
+        assertEquals(0, resultCell.getTimestamp());
+    }
+
     private void assertRowMatches(Row expected, Row actual)
     {
         List<Cell> expectedCells = expected.getCells();
