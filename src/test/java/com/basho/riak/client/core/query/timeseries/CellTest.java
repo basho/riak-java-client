@@ -106,7 +106,7 @@ public class CellTest
         Calendar ca = new GregorianCalendar();
         Cell c = new Cell(ca);
         assertTrue(c.hasTimestamp());
-        assertEquals(c.getTimestamp(), ca.getTimeInMillis()/1000);
+        assertEquals(c.getTimestamp(), ca.getTimeInMillis());
     }
     @Test
     public void TestDates()
@@ -114,7 +114,7 @@ public class CellTest
         Date d = new Date();
         Cell c = new Cell(d);
         assertTrue(c.hasTimestamp());
-        assertEquals(c.getTimestamp(), d.getTime()/1000);
+        assertEquals(c.getTimestamp(), d.getTime());
     }
     @Test
     public void TestRawNumeric()
