@@ -16,17 +16,15 @@
 
 package com.basho.riak.client.core.query.timeseries;
 
-import static junit.framework.Assert.*;
-
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.client.core.util.Constants;
 import org.junit.Test;
-import sun.nio.cs.US_ASCII;
 
 import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import static junit.framework.Assert.*;
 
 public class CellTest
 {
@@ -108,7 +106,7 @@ public class CellTest
         Calendar ca = new GregorianCalendar();
         Cell c = new Cell(ca);
         assertTrue(c.hasTimestamp());
-        assertEquals(c.getTimestamp(), ca.getTimeInMillis());
+        assertEquals(c.getTimestamp(), ca.getTimeInMillis()/1000);
     }
     @Test
     public void TestDates()
@@ -116,7 +114,7 @@ public class CellTest
         Date d = new Date();
         Cell c = new Cell(d);
         assertTrue(c.hasTimestamp());
-        assertEquals(c.getTimestamp(), d.getTime());
+        assertEquals(c.getTimestamp(), d.getTime()/1000);
     }
     @Test
     public void TestRawNumeric()

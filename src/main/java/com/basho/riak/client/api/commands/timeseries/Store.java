@@ -61,9 +61,21 @@ public class Store extends RiakCommand<Void,BinaryValue>
             this.tableName = BinaryValue.createFromUtf8(tableName);
         }
 
+        public Builder withColumn(ColumnDescription column)
+        {
+            this.columns.add(column);
+            return this;
+        }
+
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
             this.columns.addAll(columns);
+            return this;
+        }
+
+        public Builder withRow(Row row)
+        {
+            this.rows.add(row);
             return this;
         }
 

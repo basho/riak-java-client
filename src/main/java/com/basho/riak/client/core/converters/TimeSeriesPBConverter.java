@@ -10,6 +10,7 @@ import com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,6 +23,11 @@ public final class TimeSeriesPBConverter
 
     public static QueryResult convertPbQueryResp(RiakKvPB.TsQueryResp response)
     {
+        if(response == null)
+        {
+            return QueryResult.emptyResult();
+        }
+
         List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
         List<Row> rows = convertPbRows(response.getRowsList());
 
@@ -88,6 +94,11 @@ public final class TimeSeriesPBConverter
 
     private static List<Row> convertPbRows(List<RiakKvPB.TsRow> pbRows)
     {
+        if(pbRows == null)
+        {
+            return Collections.emptyList();
+        }
+
         ArrayList<Row> rows = new ArrayList<Row>(pbRows.size());
 
         for (RiakKvPB.TsRow pbRow : pbRows)
@@ -142,6 +153,11 @@ public final class TimeSeriesPBConverter
 
     private static List<ColumnDescription> convertPBColumnDescriptions(List<RiakKvPB.TsColumnDescription> pbColumns)
     {
+        if(pbColumns == null)
+        {
+            return Collections.emptyList();
+        }
+
         ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
 
         for (RiakKvPB.TsColumnDescription pbColumn : pbColumns)

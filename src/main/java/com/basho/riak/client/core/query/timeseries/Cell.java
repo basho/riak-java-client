@@ -5,6 +5,9 @@ import com.basho.riak.client.core.util.BinaryValue;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -60,15 +63,34 @@ public class Cell
 
     public Cell(Calendar value)
     {
-        this.timestampValue = value.getTimeInMillis();
+        this.timestampValue = value.getTimeInMillis() / 1000L;
         this.isTimestampCell = true;
     }
 
     public Cell(Date value)
     {
-        this.timestampValue = value.getTime();
+        this.timestampValue = value.getTime() / 1000L;
         this.isTimestampCell = true;
     }
+
+    // Someday, when we only support JDK8+...
+//    public Cell(ZonedDateTime value)
+//    {
+//        this.timestampValue = value.toEpochSecond();
+//        this.isTimestampCell = true;
+//    }
+//
+//    public Cell(OffsetDateTime value)
+//    {
+//        this.timestampValue = value.toEpochSecond();
+//        this.isTimestampCell = true;
+//    }
+//
+//    public Cell(Instant value)
+//    {
+//        this.timestampValue = value.getEpochSecond();
+//        this.isTimestampCell = true;
+//    }
 
     protected BinaryValue binaryValue;
     protected long integerValue;
