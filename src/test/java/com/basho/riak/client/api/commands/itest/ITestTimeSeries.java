@@ -93,10 +93,43 @@ public class ITestTimeSeries extends ITestBase
     }
 
     @Test
-    public void QueryingData() throws ExecutionException, InterruptedException
+    public void QueryingDataWithMinimumPredicate() throws ExecutionException, InterruptedException
     {
-        //Assert.assertTrue("No data inserted, skipping test", InsertedData);
+        RiakClient client = new RiakClient(cluster);
 
+        final long now = timestamp3;
+        final long tenMinsAgo = timestamp3 - 600;
+
+
+        // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
+        // Should only return the 2nd row (one from "5 mins ago")
+        // If we added 1 to the "now" time, we would get the third row back too.
+
+        final String queryText = "select * from GeoCheckin " +
+                "where user = 'user1' and " +
+                "(time > " + tenMinsAgo +" and " +
+                "(time < "+ now + ")) ";
+
+
+        System.out.println(queryText);
+
+        Query query = new Query.Builder(queryText).build();
+        QueryResult queryResult = client.execute(query);
+
+        assertEquals(5, queryResult.getColumnDescriptions().size());
+        assertEquals(1, queryResult.getRows().size());
+        List<Cell> cells = queryResult.getRows().get(0).getCells();
+
+        assertEquals("hash1", cells.get(0).getUtf8String());
+        assertEquals("user1", cells.get(1).getUtf8String());
+        assertEquals(timestamp2, cells.get(2).getLong());  // idiosyncrasy - need to document or fix
+        assertEquals("sunny", cells.get(3).getUtf8String());
+        assertEquals(Float.toString(80.5f), Float.toString(cells.get(4).getFloat()));
+    }
+
+    @Test
+    public void QueryingDataWithExtraPredicate() throws ExecutionException, InterruptedException
+    {
         RiakClient client = new RiakClient(cluster);
 
         final long now = timestamp3;
@@ -130,7 +163,6 @@ public class ITestTimeSeries extends ITestBase
         assertEquals(Float.toString(80.5f), Float.toString(cells.get(4).getFloat()));
     }
 
-    @Ignore("To be fixed in Ts-0.8-rc4")
     @Test
     public void QueryingDataAcrossManyQuantum() throws ExecutionException, InterruptedException
     {
@@ -146,7 +178,7 @@ public class ITestTimeSeries extends ITestBase
         final String queryText = "select * from GeoCheckin " +
                 "where user = 'user1' and " +
                 "time > " + tenMinsAgo +" and " +
-                "time < "+ now+1 + " ";
+                "time < "+ (now+1) + " ";
 
 
         System.out.println(queryText);
