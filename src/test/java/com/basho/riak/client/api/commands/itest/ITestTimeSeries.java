@@ -126,9 +126,6 @@ public class ITestTimeSeries extends ITestBase
                 "(time > " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-
-        System.out.println(queryText);
-
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
@@ -151,15 +148,11 @@ public class ITestTimeSeries extends ITestBase
                 "time > " + tenMinsAgo +" and " +
                 "time < "+ fifteenMinsInFuture + " ";
 
-
-        System.out.println(queryText);
-
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
         assertEquals(5, queryResult.getColumnDescriptions().size());
         assertEquals(2, queryResult.getRows().size());
-        Row row1 = queryResult.getRows().get(0);
 
         assertRowMatches(rows.get(1), queryResult.getRows().get(0));
         assertRowMatches(rows.get(2), queryResult.getRows().get(1));
