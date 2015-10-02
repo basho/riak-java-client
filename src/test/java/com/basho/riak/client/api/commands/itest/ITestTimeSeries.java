@@ -38,9 +38,20 @@ import static org.junit.Assert.*;
  */
 public class ITestTimeSeries extends ITestBase
 {
-    long timestamp3 = 1443796900000l; // "now"
-    long timestamp2 = 1443796600000l; // ts3 - 5 mins
-    long timestamp1 = 1443796000000l; // ts3 - 15 mins
+    final String tableName = "GeoCheckin";
+
+    final long now = 1443796900000l; // "now"
+    final long fiveMinsInMS = 5l * 60l * 1000l;
+    final long fiveMinsAgo = now - fiveMinsInMS;
+    final long tenMinsAgo = fiveMinsAgo - fiveMinsInMS;
+    final long fifteenMinsAgo = tenMinsAgo - fiveMinsInMS;
+    final long fifteenMinsInFuture = now + (fiveMinsInMS * 3l);
+
+    final List<Row> rows = Arrays.asList(
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0)),
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5)),
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)));
+
 
 //    @Test(expected = IllegalArgumentException.class)
 //    public void ensureWeCatchInvalidParams()
@@ -56,18 +67,7 @@ public class ITestTimeSeries extends ITestBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final String tableName = "GeoCheckin";
-
-        final List<Row> rows = Arrays.asList(
-                new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(timestamp1), new Cell("cloudy"), new Cell(79.0)),
-                new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(timestamp2), new Cell("sunny"),  new Cell(80.5)),
-                new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(timestamp3), new Cell("sunny"),  new Cell(81.0)));
-
         Store store = new Store.Builder(tableName).withRows(rows).build();
-
-        System.out.println("t1 = " + timestamp1);
-        System.out.println("t2 = " + timestamp2);
-        System.out.println("t3 = " + timestamp3);
 
         RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
 
@@ -93,10 +93,6 @@ public class ITestTimeSeries extends ITestBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final long now = timestamp3;
-        final long tenMinsAgo = timestamp3 - 600000l;
-
-
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
         // Should only return the 2nd row (one from "5 mins ago")
         // If we added 1 to the "now" time, we would get the third row back too.
@@ -106,31 +102,19 @@ public class ITestTimeSeries extends ITestBase
                 "(time > " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-
-        System.out.println(queryText);
-
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
         assertEquals(5, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRows().size());
-        List<Cell> cells = queryResult.getRows().get(0).getCells();
 
-        assertEquals("hash1", cells.get(0).getUtf8String());
-        assertEquals("user1", cells.get(1).getUtf8String());
-        assertEquals(timestamp2, cells.get(2).getLong());  // idiosyncrasy - need to document or fix
-        assertEquals("sunny", cells.get(3).getUtf8String());
-        assertEquals(Float.toString(80.5f), Float.toString(cells.get(4).getFloat()));
+        assertRowMatches(rows.get(1), queryResult.getRows().get(0));
     }
 
     @Test
     public void QueryingDataWithExtraPredicate() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-
-        final long now = timestamp3;
-        final long tenMinsAgo = timestamp3 - 600000l;
-
 
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
         // Should only return the 2nd row (one from "5 mins ago")
@@ -150,13 +134,8 @@ public class ITestTimeSeries extends ITestBase
 
         assertEquals(5, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRows().size());
-        List<Cell> cells = queryResult.getRows().get(0).getCells();
 
-        assertEquals("hash1", cells.get(0).getUtf8String());
-        assertEquals("user1", cells.get(1).getUtf8String());
-        assertEquals(timestamp2, cells.get(2).getLong());  // idiosyncrasy - need to document or fix
-        assertEquals("sunny", cells.get(3).getUtf8String());
-        assertEquals(Float.toString(80.5f), Float.toString(cells.get(4).getFloat()));
+        assertRowMatches(rows.get(1), queryResult.getRows().get(0));
     }
 
     @Test
@@ -164,17 +143,13 @@ public class ITestTimeSeries extends ITestBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final long now = timestamp3;
-        final long tenMinsAgo = timestamp3 - 600000l;
-
-
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
-        // Should return the 2nd & 3rd rows. Query should cover 2 quantums too.
+        // Should return the 2nd & 3rd rows. Query should cover 2 quantums at least.
 
         final String queryText = "select * from GeoCheckin " +
                 "where user = 'user1' and " +
                 "time > " + tenMinsAgo +" and " +
-                "time < "+ (now+1) + " ";
+                "time < "+ fifteenMinsInFuture + " ";
 
 
         System.out.println(queryText);
@@ -184,20 +159,22 @@ public class ITestTimeSeries extends ITestBase
 
         assertEquals(5, queryResult.getColumnDescriptions().size());
         assertEquals(2, queryResult.getRows().size());
-        List<Cell> cells = queryResult.getRows().get(0).getCells();
+        Row row1 = queryResult.getRows().get(0);
 
-        assertEquals("hash1", cells.get(0).getUtf8String());
-        assertEquals("user1", cells.get(1).getUtf8String());
-        assertEquals(timestamp2, cells.get(2).getLong());  // idiosyncrasy - need to document or fix
-        assertEquals("sunny", cells.get(3).getUtf8String());
-        assertEquals(Float.toString(80.5f), Float.toString(cells.get(4).getFloat()));
+        assertRowMatches(rows.get(1), queryResult.getRows().get(0));
+        assertRowMatches(rows.get(2), queryResult.getRows().get(1));
+    }
 
-        cells = queryResult.getRows().get(1).getCells();
-        assertEquals("hash1", cells.get(0).getUtf8String());
-        assertEquals("user1", cells.get(1).getUtf8String());
-        assertEquals(timestamp3, cells.get(2).getLong());  // idiosyncrasy - need to document or fix
-        assertEquals("sunny", cells.get(3).getUtf8String());
-        assertEquals(Float.toString(81.0f), Float.toString(cells.get(4).getFloat()));
+    private void assertRowMatches(Row expected, Row actual)
+    {
+        List<Cell> expectedCells = expected.getCells();
+        List<Cell> actualCells = actual.getCells();
+
+        assertEquals(expectedCells.get(0).getUtf8String(),  actualCells.get(0).getUtf8String());
+        assertEquals(expectedCells.get(1).getUtf8String(),  actualCells.get(1).getUtf8String());
+        assertEquals(expectedCells.get(2).getTimestamp(),   actualCells.get(2).getLong());  // idiosyncrasy - need to document or fix
+        assertEquals(expectedCells.get(3).getUtf8String(),  actualCells.get(3).getUtf8String());
+        assertEquals(Float.toString(expectedCells.get(4).getFloat()), Float.toString(actualCells.get(4).getFloat()));
     }
 
 }
