@@ -9,12 +9,10 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
-import junit.framework.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
@@ -40,10 +38,9 @@ import static org.junit.Assert.*;
  */
 public class ITestTimeSeries extends ITestBase
 {
-    private static boolean InsertedData = false;
-    long timestamp3 = 1443796900; // "now"
-    long timestamp2 = 1443796600; // ts3 - 5 mins
-    long timestamp1 = 1443796000; // ts3 - 15 mins
+    long timestamp3 = 1443796900000l; // "now"
+    long timestamp2 = 1443796600000l; // ts3 - 5 mins
+    long timestamp1 = 1443796000000l; // ts3 - 15 mins
 
 //    @Test(expected = IllegalArgumentException.class)
 //    public void ensureWeCatchInvalidParams()
@@ -77,7 +74,6 @@ public class ITestTimeSeries extends ITestBase
         execFuture.await();
         assertNull(execFuture.cause());
         assertEquals(true, execFuture.isSuccess());
-        InsertedData = true;
     }
 
     @Test
@@ -98,7 +94,7 @@ public class ITestTimeSeries extends ITestBase
         RiakClient client = new RiakClient(cluster);
 
         final long now = timestamp3;
-        final long tenMinsAgo = timestamp3 - 600;
+        final long tenMinsAgo = timestamp3 - 600000l;
 
 
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
@@ -133,7 +129,7 @@ public class ITestTimeSeries extends ITestBase
         RiakClient client = new RiakClient(cluster);
 
         final long now = timestamp3;
-        final long tenMinsAgo = timestamp3 - 600;
+        final long tenMinsAgo = timestamp3 - 600000l;
 
 
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
@@ -169,7 +165,7 @@ public class ITestTimeSeries extends ITestBase
         RiakClient client = new RiakClient(cluster);
 
         final long now = timestamp3;
-        final long tenMinsAgo = timestamp3 - 600;
+        final long tenMinsAgo = timestamp3 - 600000l;
 
 
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
