@@ -22,30 +22,24 @@ import static org.junit.Assert.assertTrue;
 
 public class ITestTimeSeriesStoreOperations extends ITestBase
 {
+    final String tableName = "GeoCheckin";
+
+    final long now = 1443706900000l; // "now"
+    final long fiveMinsInMS = 5l * 60l * 1000l;
+    final long fiveMinsAgo = now - fiveMinsInMS;
+    final long tenMinsAgo = fiveMinsAgo - fiveMinsInMS;
+    final long fifteenMinsAgo = tenMinsAgo - fiveMinsInMS;
+
+    final List<Row> rows = Arrays.asList(
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fifteenMinsAgo), new Cell("rain"), new Cell(79.0)),
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5)),
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0)));
+
 
     @Test
     public void writesDataWithoutError() throws ExecutionException, InterruptedException
     {
-        final String tableName = "time_series";
         final BinaryValue tableNameBV = BinaryValue.create(tableName);
-        final Calendar date1 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        date1.add(Calendar.MILLISECOND, -10);
-        final Calendar date2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        date2.add(Calendar.MILLISECOND, -5);
-        final Calendar date3 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-
-        final List<Row> rows = Arrays.asList(
-                new Row(new Cell(date1),
-                        new Cell("bryce"),
-                        new Cell(305.37)),
-
-                new Row(new Cell(date2),
-                        new Cell("bryce"),
-                        new Cell(300.12)),
-
-                new Row(new Cell(date3),
-                        new Cell("bryce"),
-                        new Cell(295.95)));
 
         TimeSeriesStoreOperation storeOp = new TimeSeriesStoreOperation.Builder(tableNameBV).withRows(rows).build();
         RiakFuture<Void, BinaryValue> future = cluster.execute(storeOp);
