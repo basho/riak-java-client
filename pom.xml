@@ -3,7 +3,7 @@
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>2.0.3-timeseries-beta-1</version>
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
@@ -48,7 +48,7 @@
         <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
         <url>http://github.com/basho/riak-java-client</url>
-      <tag>HEAD</tag>
+      <tag>riak-client-2.0.3-timeseries-beta-1</tag>
   </scm>
 
     <properties>
@@ -359,7 +359,7 @@
         <dependency>
             <groupId>com.basho.riak.protobuf</groupId>
             <artifactId>riak-pb</artifactId>
-            <version>2.0.0.17-SNAPSHOT</version>
+            <version>2.0.0.17-timeseries-beta-1</version>
         </dependency>
     </dependencies>
 </project>
