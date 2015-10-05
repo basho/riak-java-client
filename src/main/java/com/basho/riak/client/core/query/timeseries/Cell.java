@@ -25,10 +25,13 @@ import java.util.Date;
  * </ol>
  *
  * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
- * in the Integer register, instead of the Timestamp register.
- * Please use @{link #getLong()} instead of @{link #getTimestamp()} to fetch a value until further notice.
+ * in the Integer value, instead of the Timestamp value.
+ *
+ * Please use @{link #getLong()} instead of @{link #getTimestamp()},
+ * and @{link #hasLong()} instead of @{link #hasTimestamp()} to fetch/check a timestamp value until further notice.
+ *
  * To store a timestamp, please use the provided constructors for Date/Calendar,
- * or the static method to create one from a known timestamp.
+ * or the static method to create one from a known timestamp, these work correctly.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
@@ -185,6 +188,9 @@ public class Cell
 
     /**
      * Indicates whether this Cell contains a Timestamp value.
+     * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
+     * in the Integer value, instead of the Timestamp value.
+     * Please use @{link #hasLong()} instead of @{link #hasTimestamp()} to check if a value exists until further notice.
      * @return true if it contains a Timestamp value, false otherwise.
      */
     public boolean hasTimestamp()
@@ -294,6 +300,10 @@ public class Cell
 
     /**
      * Returns the raw "Timestamp" value.
+     * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
+     * in the Integer register, instead of the Timestamp register.
+     * Please use @{link #getLong()} instead of @{link #getTimestamp()} to fetch a value until further notice.
+     * @see #getLong()
      * @return The timestamp value.
      */
     public long getTimestamp()
