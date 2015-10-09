@@ -6,6 +6,7 @@ import com.basho.riak.client.api.commands.timeseries.Store;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -53,14 +54,14 @@ public class ITestTimeSeries extends ITestBase
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)));
 
 
-//    @Test(expected = IllegalArgumentException.class)
-//    public void ensureWeCatchInvalidParams()
-//    {
-//        final String queryText = "select * from GeoCheckin";
-//
-//        Query.Builder query = new Query.Builder(queryText);
-//        query.addStringParameter(":foo", "123");
-//    }
+    //    @Test(expected = IllegalArgumentException.class)
+    //    public void ensureWeCatchInvalidParams()
+    //    {
+    //        final String queryText = "select * from GeoCheckin";
+    //
+    //        Query.Builder query = new Query.Builder(queryText);
+    //        query.addStringParameter(":foo", "123");
+    //    }
 
     @Test
     public void StoringData() throws ExecutionException, InterruptedException

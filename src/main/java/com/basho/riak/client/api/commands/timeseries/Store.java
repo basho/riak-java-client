@@ -40,7 +40,6 @@ public class Store extends RiakCommand<Void,BinaryValue>
     private TimeSeriesStoreOperation buildCoreOperation()
     {
         return new TimeSeriesStoreOperation.Builder(BinaryValue.create(builder.tableName.unsafeGetValue()))
-                .withColumns(builder.columns)
                 .withRows(builder.rows)
                 .build();
     }
@@ -49,7 +48,6 @@ public class Store extends RiakCommand<Void,BinaryValue>
     {
         private final BinaryValue tableName;
         private final List<Row> rows = new LinkedList<Row>();
-        private final List<ColumnDescription> columns = new LinkedList<ColumnDescription>();
 
         public Builder(BinaryValue tableName)
         {
@@ -59,18 +57,6 @@ public class Store extends RiakCommand<Void,BinaryValue>
         public Builder(String tableName)
         {
             this.tableName = BinaryValue.createFromUtf8(tableName);
-        }
-
-        public Builder withColumn(ColumnDescription column)
-        {
-            this.columns.add(column);
-            return this;
-        }
-
-        public Builder withColumns(Collection<ColumnDescription> columns)
-        {
-            this.columns.addAll(columns);
-            return this;
         }
 
         public Builder withRow(Row row)
