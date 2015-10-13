@@ -23,12 +23,10 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +36,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp, SecondaryIndexQueryOperation.Query>
+public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, Object, SecondaryIndexQueryOperation.Query>
 {
     private final static Logger logger = LoggerFactory.getLogger(SecondaryIndexQueryOperation.class);
     private final RiakKvPB.RpbIndexReq pbReq;
@@ -53,13 +51,28 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse)
+    protected SecondaryIndexQueryOperation.Response convert(List<Object> rawResponse)
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder =
             new SecondaryIndexQueryOperation.Response.Builder();
 
-        for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
+        for (Object o : rawResponse)
         {
+            if (o instanceof RiakKvPB.RpbIndexBodyResp)
+            {
+                assert pbReq.getReturnBody();
+                final RiakKvPB.RpbIndexBodyResp bodyResp = (RiakKvPB.RpbIndexBodyResp)o;
+                convertBodies(responseBuilder, bodyResp);
+
+                if (bodyResp.hasContinuation())
+                {
+                    responseBuilder.withContinuation(BinaryValue.unsafeCreate(bodyResp.getContinuation().toByteArray()));
+                }
+                continue;
+            }
+
+            final RiakKvPB.RpbIndexResp pbEntry = (RiakKvPB.RpbIndexResp) o;
+
             /**
              * The 2i API is inconsistent on the Riak side. If it's not
              * a range query, return_terms is ignored it only returns the
@@ -90,10 +103,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 }
                 convertTerms(responseBuilder, pbEntry);
             }
-            else if(pbReq.getReturnBody())
-            {
-                convertBodies(responseBuilder, pbEntry);
-            }
             else
             {
                 convertKeys(responseBuilder, pbEntry);
@@ -117,39 +126,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         }
     }
 
-    private static void convertBodies(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry){
-        /**
-         * Full Bucket Read Query with return_body option set to true.
-         *
-         * Expected result is:  list of {Key, RpbGetResp} pairs
-         */
-        for (RpbPair pair : pbEntry.getResultsList())
+    private static void convertBodies(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexBodyResp resp)
+    {
+        for (RiakKvPB.RpbIndexObject io: resp.getObjectsList())
         {
-            RiakKvPB.RpbGetResp resp = null;
-            if(pair.getValue() != null && !pair.getValue().isEmpty()){
-                final CodedInputStream is = pair.getValue().newCodedInput();
-                //final byte[] data = pair.getValue().toByteArray();
-                try {
-                    /**
-                     * According to the message format, the first byte (Message code) should be skipped,
-                     * otherwise parsing will fail
-                     *
-                     * @see http://docs.basho.com/riak/latest/dev/references/protocol-buffers/#Protocol
-                     */
-                    final byte msgCode = is.readRawByte();
-                    assert msgCode == 10;
-                    resp = RiakKvPB.RpbGetResp.parseFrom( is );
-                } catch (IOException e) {
-                    final String msg = String.format("Can't parse response with Message Code '%s' as RpbGetResp",
-                            pair.getValue().byteAt(0));
-
-                    logger.error( msg, e);
-                    throw new IllegalArgumentException(msg, e);
-                }
-            }
-
-            final FetchOperation.Response fr = FetchOperation.convert(resp);
-            builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()), fr));
+            final FetchOperation.Response fr = FetchOperation.convert(io.getObject());
+            builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(io.getKey().toByteArray()), fr));
         }
     }
 
@@ -179,12 +161,21 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected RiakKvPB.RpbIndexResp decode(RiakMessage rawMessage)
+    protected Object decode(RiakMessage rawMessage)
     {
         try
         {
-            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_IndexResp);
-            return RiakKvPB.RpbIndexResp.parseFrom(rawMessage.getData());
+            if (rawMessage.getCode() == RiakMessageCodes.MSG_IndexResp)
+            {
+                return RiakKvPB.RpbIndexResp.parseFrom(rawMessage.getData());
+            }
+            else if (rawMessage.getCode() == RiakMessageCodes.MSG_IndexBodyResp)
+            {
+                return RiakKvPB.RpbIndexBodyResp.parseFrom(rawMessage.getData());
+            }
+            throw new IllegalArgumentException("Invalid message received: Wrong response; expected "
+                    + RiakMessageCodes.MSG_IndexResp + " or " + RiakMessageCodes.MSG_IndexBodyResp
+                    + " received " + rawMessage.getCode());
         }
         catch (InvalidProtocolBufferException e)
         {
@@ -193,9 +184,18 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected boolean done(RiakKvPB.RpbIndexResp msg)
+    protected boolean done(Object msg)
     {
-        return msg.getDone();
+        if (msg instanceof RiakKvPB.RpbIndexResp)
+        {
+            return ((RiakKvPB.RpbIndexResp)msg).getDone();
+        }
+        else if (msg instanceof RiakKvPB.RpbIndexBodyResp)
+        {
+            return ((RiakKvPB.RpbIndexBodyResp)msg).getDone();
+        }
+
+        throw new IllegalStateException("Unsupported response message type");
     }
 
     @Override
