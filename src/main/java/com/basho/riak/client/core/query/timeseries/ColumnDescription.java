@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Describes a column in a Riak Time Series table.
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -14,29 +14,68 @@ public class ColumnDescription
     private final String name;
     private final ColumnType type;
     private final Collection<ColumnType> complexType;
+    private final boolean nullable;
 
-    public ColumnDescription(String name, ColumnType type, Collection<ColumnType> complexType)
+    public ColumnDescription(String name, ColumnType type)
+    {
+        this(name, type, null, false);
+    }
+
+    public ColumnDescription(String name, ColumnType type, boolean nullable)
+    {
+       this(name, type, null, nullable);
+    }
+
+    ColumnDescription(String name,
+                             ColumnType type,
+                             Collection<ColumnType> complexType,
+                             boolean nullable)
     {
         this.name = name;
         this.type = type;
         this.complexType = complexType;
+        this.nullable = nullable;
     }
 
+    /**
+     * Get the name of the column.
+     * @return The name of the column.
+     */
     public String getName()
     {
         return name;
     }
 
+    /**
+     * Get the type of the column.
+     * @return The type of the column.
+     */
     public ColumnType getType()
     {
         return type;
     }
 
-    public Collection<ColumnType> getComplexType()
+//    /**
+//     * Get the complex type of the column.
+//     * @return The complex type of the column.
+//     */
+//    public Collection<ColumnType> getComplexType()
+//    {
+//        return complexType;
+//    }
+
+    /**
+     * Get whether the column is nullable.
+     * @return Whether these columns can be null or not.
+     */
+    public boolean isNullable()
     {
-        return complexType;
+        return nullable;
     }
 
+    /**
+     * A collection of Column Types.
+     */
     public enum ColumnType
     {
         BINARY(0),

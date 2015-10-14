@@ -211,7 +211,7 @@ public abstract class ITestBase
         
         
         
-        cluster = new RiakCluster.Builder(builder.build()).build();
+        cluster = new RiakCluster.Builder(builder.build()).withExecutionAttempts(1).build();
         cluster.start();
     }
     

@@ -60,7 +60,6 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
                 throw new IllegalArgumentException(msg);
             }
 
-
             this.queryText = BinaryValue.createFromUtf8(queryText);
 
             Matcher paramMatcher = paramPattern.matcher(queryText);

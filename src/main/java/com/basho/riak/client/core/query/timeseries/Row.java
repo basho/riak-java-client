@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
+ * Describes a row of data in a Riak Time Series table.
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -20,9 +20,13 @@ public class Row
 
     public Row(Cell... cells)
     {
-        this.cells = Arrays.asList(cells);
+        this(Arrays.asList(cells));
     }
 
+    /**
+     * Get the cells this row contains.
+     * @return The cells of this row.
+     */
     public List<Cell> getCells()
     {
         return cells;
