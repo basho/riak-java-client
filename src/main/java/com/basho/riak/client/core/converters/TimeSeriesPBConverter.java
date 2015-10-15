@@ -1,5 +1,6 @@
 package com.basho.riak.client.core.converters;
 
+import com.basho.riak.client.api.convert.PassThroughConverter;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
@@ -189,6 +190,11 @@ public final class TimeSeriesPBConverter
     private static RiakKvPB.TsCell convertCellToPb(Cell cell)
     {
         RiakKvPB.TsCell.Builder cellBuilder = RiakKvPB.TsCell.newBuilder();
+
+        if(cell == null)
+        {
+            return cellBuilder.build();
+        }
 
         if(cell.hasBinaryValue())
         {

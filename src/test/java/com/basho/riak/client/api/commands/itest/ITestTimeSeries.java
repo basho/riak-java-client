@@ -160,6 +160,22 @@ public class ITestTimeSeries extends ITestBase
     }
 
     @Test
+    public void TestStoringNullableColumns() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        Row noTemp = new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now + 1000), new Cell("cloudy"), null);
+
+        Store store = new Store.Builder(tableName).withRow(noTemp).build();
+
+        RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
+
+        execFuture.await();
+        assertNull(execFuture.cause().toString(),execFuture.cause());
+        assertEquals(true, execFuture.isSuccess());
+    }
+
+    @Test
     public void TestThatTimestampsComeBackInIntegerBuffer() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
