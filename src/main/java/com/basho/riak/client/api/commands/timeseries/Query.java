@@ -14,7 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by alex on 8/14/15.
+ * Time Series Query Command
+ * Allows you to query a Time Series table, with the given query string.
+ *
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
  */
 public class Query extends RiakCommand<QueryResult, BinaryValue>
 {

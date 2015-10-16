@@ -7,6 +7,8 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.*;
@@ -16,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Time Series Store Operation Integration Tests
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -35,6 +38,11 @@ public class ITestTimeSeriesStoreOperations extends ITestBase
             new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5)),
             new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0)));
 
+    @BeforeClass
+    public static void BeforeClass()
+    {
+        Assume.assumeTrue(testTimeSeries);
+    }
 
     @Test
     public void writesDataWithoutError() throws ExecutionException, InterruptedException

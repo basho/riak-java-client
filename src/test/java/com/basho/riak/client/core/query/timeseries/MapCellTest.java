@@ -11,7 +11,10 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 /**
- * Created by alex on 9/2/15.
+ * Time Series MapCell Unit Tests
+
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
  */
 public class MapCellTest
 {
