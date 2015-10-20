@@ -9,6 +9,7 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
+import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
+ * Time Series Query Operation Integration Tests
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -43,6 +44,7 @@ public class ITestTimeSeriesQueryOperations extends ITestBase
     @BeforeClass
     public static void InsertData() throws ExecutionException, InterruptedException
     {
+        Assert.assertTrue(testTimeSeries);
         final BinaryValue tableNameBV = BinaryValue.create(tableName);
 
         TimeSeriesStoreOperation storeOp = new TimeSeriesStoreOperation.Builder(tableNameBV).withRows(rows).build();

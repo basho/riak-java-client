@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Converts Time Series Protobuff message types to Java Client entity objects, and back.
+ *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -125,11 +127,19 @@ public final class TimeSeriesPBConverter
                 }
                 else if (pbCell.hasNumericValue())
                 {
-                    cells.add(Cell.newRawNumeric(pbCell.getNumericValue().toByteArray()));
+                    cells.add(Cell.newNumeric(pbCell.getNumericValue().toByteArray()));
                 }
                 else if (pbCell.hasTimestampValue())
                 {
                     cells.add(Cell.newTimestamp(pbCell.getTimestampValue()));
+                }
+                else if(pbCell.hasFloatValue())
+                {
+                    cells.add(new Cell(pbCell.getFloatValue()));
+                }
+                else if(pbCell.hasDoubleValue())
+                {
+                    cells.add(new Cell(pbCell.getDoubleValue()));
                 }
                 else // Set
                 {
@@ -214,7 +224,15 @@ public final class TimeSeriesPBConverter
         {
             cellBuilder.setTimestampValue(cell.getTimestamp());
         }
-        else // Set
+        else if(cell.hasFloat())
+        {
+            cellBuilder.setFloatValue(cell.getFloat());
+        }
+        else if(cell.hasDouble())
+        {
+            cellBuilder.setDoubleValue(cell.getDouble());
+        }
+        else if(cell.hasSet())// Set
         {
             int i = cellBuilder.getSetValueCount();
             for (byte[] setMember : cell.getSet())
@@ -222,6 +240,10 @@ public final class TimeSeriesPBConverter
                 cellBuilder.setSetValue(i, ByteString.copyFrom(setMember));
                 i++;
             }
+        }
+        else
+        {
+            throw new IllegalArgumentException("No valid cell type found.");
         }
 
         return cellBuilder.build();
