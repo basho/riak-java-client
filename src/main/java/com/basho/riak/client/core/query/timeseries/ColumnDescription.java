@@ -41,7 +41,7 @@ public class ColumnDescription
     {
         BINARY(0),
         INTEGER(1),
-        NUMERIC(2),
+        FLOAT(2),
         TIMESTAMP(3),
         BOOLEAN(4),
         SET(5),
