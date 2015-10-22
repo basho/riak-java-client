@@ -234,7 +234,30 @@ public class RiakUserMetadata
     {
         return meta.size();
     }
-    
-    
-    
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        RiakUserMetadata that = (RiakUserMetadata) o;
+        return meta.equals(that.meta);
+    }
+
+    @Override
+    public int hashCode() {
+        return meta.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "RiakUserMetadata{" +
+                "meta: " + meta +
+                '}';
+    }
 }
