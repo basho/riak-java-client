@@ -230,7 +230,87 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         
         return cluster.execute(builder.build());
     }
-                        
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SecondaryIndexQuery)) {
+            return false;
+        }
+
+        SecondaryIndexQuery<?, ?, ?> that = (SecondaryIndexQuery<?, ?, ?>) o;
+
+        if (returnTerms != that.returnTerms) {
+            return false;
+        }
+        if (paginationSort != that.paginationSort) {
+            return false;
+        }
+        if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) {
+            return false;
+        }
+        if (indexName != null ? !indexName.equals(that.indexName) : that.indexName != null) {
+            return false;
+        }
+        if (continuation != null ? !continuation.equals(that.continuation) : that.continuation != null) {
+            return false;
+        }
+        if (match != null ? !match.equals(that.match) : that.match != null) {
+            return false;
+        }
+        if (start != null ? !start.equals(that.start) : that.start != null) {
+            return false;
+        }
+        if (end != null ? !end.equals(that.end) : that.end != null) {
+            return false;
+        }
+        if (maxResults != null ? !maxResults.equals(that.maxResults) : that.maxResults != null) {
+            return false;
+        }
+        if (termFilter != null ? !termFilter.equals(that.termFilter) : that.termFilter != null) {
+            return false;
+        }
+        return !(timeout != null ? !timeout.equals(that.timeout) : that.timeout != null);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = namespace != null ? namespace.hashCode() : 0;
+        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
+        result = 31 * result + (continuation != null ? continuation.hashCode() : 0);
+        result = 31 * result + (match != null ? match.hashCode() : 0);
+        result = 31 * result + (start != null ? start.hashCode() : 0);
+        result = 31 * result + (end != null ? end.hashCode() : 0);
+        result = 31 * result + (maxResults != null ? maxResults.hashCode() : 0);
+        result = 31 * result + (returnTerms ? 1 : 0);
+        result = 31 * result + (paginationSort ? 1 : 0);
+        result = 31 * result + (termFilter != null ? termFilter.hashCode() : 0);
+        result = 31 * result + (timeout != null ? timeout.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SecondaryIndexQuery{" +
+                ", continuation: " + continuation +
+                ", namespace: " + namespace +
+                ", indexName: " + indexName +
+                ", match: " + match +
+                ", start: " + start +
+                ", end: " + end +
+                ", maxResults: " + maxResults +
+                ", returnTerms: " + returnTerms +
+                ", paginationSort: " + paginationSort +
+                ", termFilter: '" + termFilter + '\'' +
+                ", timeout: " + timeout +
+                '}';
+    }
+
     protected interface IndexConverter<T>
     {
         T convert(BinaryValue input);
