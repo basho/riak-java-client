@@ -78,7 +78,7 @@ public class RiakUserMetadata
      */
     public boolean containsKey(String key, Charset charset)
     {
-        return meta.containsKey(BinaryValue.unsafeCreate(key.getBytes()));
+        return meta.containsKey(BinaryValue.unsafeCreate(key.getBytes(charset)));
     }
     
     /**
