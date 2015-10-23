@@ -10,10 +10,12 @@ import java.util.Date;
 
 /**
  * Holds a piece of data for a Time Series @{link Row}.
- * A cell can hold 7 different types of raw data:
+ * A cell can hold 9 different types of raw data:
  * <ol>
  *     <li><b>BinaryValue</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
+ *     <li><b>Float</b>s, which can hold any 32-bit floating point numbers.</li>
+ *     <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
  *     <li><b>Numeric</b>s, which can hold any floating/fixed point number.
  *     A conversion to an ASCII-encoded decimal string under the covers is made to provide type/value flexibility.</li>
  *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
@@ -62,6 +64,7 @@ public class Cell
 
     /**
      * Creates a new "Integer" Cell from the provided int.
+     * This value will be cast to a long internally for storage.
      * @param value The int to store.
      */
     public Cell(int value)
@@ -81,23 +84,23 @@ public class Cell
     }
 
     /**
-     * Creates a new "Numeric" Cell from the provided float.
+     * Creates a new float cell.
      * @param value The float to store.
      */
     public Cell(float value)
     {
-        byte[] rawFloat = Float.toString(value).getBytes(ASCII_Charset);
-        this.numericValue = ByteBuffer.allocate(rawFloat.length).order(ByteOrder.BIG_ENDIAN).put(rawFloat).array();
+        this.floatValue = value;
+        this.isFloatCell = true;
     }
 
     /**
-     * Creates a new "Numeric" Cell from the provided double.
+     * Creates a new double cell.
      * @param value The double to store.
      */
     public Cell(double value)
     {
-        byte[] rawDouble = Double.toString(value).getBytes(ASCII_Charset);
-        this.numericValue = ByteBuffer.allocate(rawDouble.length).order(ByteOrder.BIG_ENDIAN).put(rawDouble).array();
+        this.doubleValue = value;
+        this.isDoubleCell = true;
     }
 
     /**
@@ -137,10 +140,14 @@ public class Cell
     protected boolean booleanValue;
     protected byte[][] setValue;
     protected byte[] mapValue;
+    protected float floatValue;
+    protected double doubleValue;
 
     private boolean isIntegerCell = false;
     private boolean isTimestampCell = false;
     private boolean isBooleanCell = false;
+    private boolean isFloatCell = false;
+    private boolean isDoubleCell = false;
 
     /**
      * Indicates whether this Cell contains a String/BinaryValue value.
@@ -162,7 +169,7 @@ public class Cell
 
     /**
      * Indicates whether this Cell contains a valid signed 32-bit integer value ({@link Integer}).
-     * @return true if it contains a java @{link Int} value, false otherwise.
+     * @return true if it contains a valid java @{link Int} value, false otherwise.
      */
     public boolean hasInt()
     {
@@ -225,6 +232,17 @@ public class Cell
         return this.mapValue != null;
     }
 
+    /**
+     * Indicates whether this Cell contains a Float value.
+     * @return true if it contains a Float value, false otherwise.
+     */
+    public boolean hasFloat() { return this.isFloatCell; }
+
+    /**
+     * Indicates whether this Cell contains a Double value.
+     * @return true if it contains a Double value, false otherwise.
+     */
+    public boolean hasDouble() { return this.isDoubleCell; }
 
     /**
      * Returns the BinaryValue value, decoded to a UTF8 String.
@@ -281,27 +299,27 @@ public class Cell
     }
 
     /**
-     * Returns the decoded "Numeric" value, converted to a Float.
+     * Returns the "Float" value.
      * @return The float value.
      */
     public float getFloat()
     {
-        return Float.parseFloat(getRawNumericString());
+        return this.floatValue;
     }
 
     /**
-     * Returns the decoded "Numeric" value, converted to a Double.
+     * Returns the the "Double" value.
      * @return The double value.
      */
     public double getDouble()
     {
-        return Double.parseDouble(getRawNumericString());
+        return this.doubleValue;
     }
 
     /**
      * Returns the raw "Timestamp" value.
      * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
-     * in the Integer register, instead of the Timestamp register.
+     * in the "Integer" register, instead of the Timestamp register.
      * Please use @{link #getLong()} instead of @{link #getTimestamp()} to fetch a value until further notice.
      * @see #getLong()
      * @return The timestamp value.
@@ -353,11 +371,11 @@ public class Cell
     }
 
     /**
-     * Creates a new "Numeric" Cell from the provided raw value.
+     * Creates a new "Numeric" Cell from the provided byte value.
      * @param value
      * @return The new Numeric Cell.
      */
-    public static Cell newRawNumeric(byte[] value)
+    public static Cell newNumeric(byte[] value)
     {
         Cell cell = new Cell();
         cell.numericValue = value;

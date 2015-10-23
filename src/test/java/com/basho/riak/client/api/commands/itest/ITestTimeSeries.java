@@ -11,6 +11,8 @@ import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -20,6 +22,8 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 
 /**
+ * Time Series Commands Integration Tests
+ *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  *
@@ -52,7 +56,13 @@ public class ITestTimeSeries extends ITestBase
     final List<Row> rows = Arrays.asList(
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0)),
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5)),
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)));
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)),
+
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1), new Cell("cloudy"), null),
+
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")));
 
 
     //    @Test(expected = IllegalArgumentException.class)
@@ -63,6 +73,12 @@ public class ITestTimeSeries extends ITestBase
     //        Query.Builder query = new Query.Builder(queryText);
     //        query.addStringParameter(":foo", "123");
     //    }
+
+    @BeforeClass
+    public static void BeforeClass()
+    {
+        Assume.assumeTrue(testTimeSeries);
+    }
 
     @Test
     public void StoringData() throws ExecutionException, InterruptedException
@@ -174,6 +190,7 @@ public class ITestTimeSeries extends ITestBase
         QueryResult queryResult = client.execute(query);
 
         assertEquals(1, queryResult.getColumnDescriptions().size());
+
         assertEquals(1, queryResult.getRows().size());
         assertEquals(1, queryResult.getRows().get(0).getCells().size());
         Cell resultCell = queryResult.getRows().get(0).getCells().get(0);
@@ -181,6 +198,35 @@ public class ITestTimeSeries extends ITestBase
         assertTrue(resultCell.hasLong());
         assertEquals(fiveMinsAgo, resultCell.getLong());
         assertEquals(0, resultCell.getTimestamp());
+    }
+
+    @Test
+    public void TestThatFloatsDoublesAndNumericsComeBackInDoubleBuffer() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final String queryText = "select temperature from GeoCheckin " +
+                "where user = 'user3' and " +
+                "(time > " + (fifteenMinsAgo - 1) +" and " +
+                "(time < "+ (now + 1) + ")) ";
+
+        Query query = new Query.Builder(queryText).build();
+        QueryResult queryResult = client.execute(query);
+
+        assertEquals(1, queryResult.getColumnDescriptions().size());
+        assertEquals(ColumnDescription.ColumnType.FLOAT, queryResult.getColumnDescriptions().get(0).getType());
+
+        assertEquals(3, queryResult.getRows().size());
+
+        for (Row row : queryResult.getRows())
+        {
+            assertEquals(1, row.getCells().size());
+            Cell resultCell = row.getCells().get(0);
+            assertFalse(resultCell.hasFloat());
+            assertFalse(resultCell.hasNumeric());
+            assertTrue(resultCell.hasDouble());
+            assertEquals(70d, resultCell.getDouble(), Double.MIN_VALUE);
+        }
     }
 
     @Test
