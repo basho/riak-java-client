@@ -4,6 +4,7 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.api.commands.timeseries.Store;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
@@ -226,6 +227,34 @@ public class ITestTimeSeries extends ITestBase
             assertTrue(resultCell.hasDouble());
             assertEquals(70d, resultCell.getDouble(), Double.MIN_VALUE);
         }
+    }
+
+    @Test
+    public void TestQueryingInvalidTableNameResultsInError() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final String queryText = "select time from GeoChicken";
+
+        Query query = new Query.Builder(queryText).build();
+        RiakFuture<QueryResult, BinaryValue> future = client.executeAsync(query);
+        future.await();
+        assertFalse(future.isSuccess());
+        assertEquals(future.cause().getClass(), RiakResponseException.class);
+    }
+
+    @Test
+    public void TestStoringDataOutOfOrderResultsInError() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        Row row = new Row(Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
+        Store store = new Store.Builder("GeoChicken").withRow(row).build();
+
+        RiakFuture<Void, BinaryValue> future = client.executeAsync(store);
+        future.await();
+        assertFalse(future.isSuccess());
+        assertEquals(future.cause().getClass(), RiakResponseException.class);
     }
 
     private void assertRowMatches(Row expected, Row actual)
