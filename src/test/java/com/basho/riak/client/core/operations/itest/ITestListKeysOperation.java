@@ -17,34 +17,52 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import org.junit.After;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  */
 public class ITestListKeysOperation extends ITestBase
 {
+    private final LinkedBlockingQueue<BinaryValue> streamingResults = new LinkedBlockingQueue<BinaryValue>();
+
+    private final RiakResultStreamListener<ListKeysOperation.Response> streamListener =
+            new RiakResultStreamListener<ListKeysOperation.Response>() {
+                @Override
+                public void handle(ListKeysOperation.Response response) {
+                    streamingResults.addAll(response.getKeys());
+                }
+            };
+
+    @After
+    public void clearStreamingResults()
+    {
+        streamingResults.clear();
+    }
     
     @Test
     public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException
     {
         testListNoKeys(Namespace.DEFAULT_BUCKET_TYPE);
+        testListNoKeysStreamed(Namespace.DEFAULT_BUCKET_TYPE);
     }
     
     @Test
@@ -52,6 +70,7 @@ public class ITestListKeysOperation extends ITestBase
     {
         assumeTrue(testBucketType);
         testListNoKeys(bucketType.toString());
+        testListNoKeysStreamed(bucketType.toString());
     }
     
     private void testListNoKeys(String bucketType) throws InterruptedException, ExecutionException
@@ -63,11 +82,25 @@ public class ITestListKeysOperation extends ITestBase
         assertTrue(kList.isEmpty());
         resetAndEmptyBucket(ns);
     }
+
+    private void testListNoKeysStreamed(String bucketType) throws InterruptedException, ExecutionException
+    {
+        Namespace ns = new Namespace(bucketType, bucketName.toString() + "_1_streaming");
+
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).withResultStreamListener(streamListener).build();
+        RiakFuture<ListKeysOperation.Response, Namespace> future = cluster.execute(klistOp);
+
+        future.await();
+
+        assertTrue(streamingResults.isEmpty());
+        resetAndEmptyBucket(ns);
+    }
     
     @Test
     public void testListKeyDefaultType() throws InterruptedException, ExecutionException
     {
         testListKey(Namespace.DEFAULT_BUCKET_TYPE);
+        testListKeysStreamed(Namespace.DEFAULT_BUCKET_TYPE);
     }
     
     @Test
@@ -75,23 +108,14 @@ public class ITestListKeysOperation extends ITestBase
     {
         assumeTrue(testBucketType);
         testListKey(bucketType.toString());
+        testListKeysStreamed(bucketType.toString());
+
     }
     
     private void testListKey(String bucketType) throws InterruptedException, ExecutionException
     {
         final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_2");
-        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
-        final String value = "{\"value\":\"value\"}";
-        
-        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(ns, key);
-        StoreOperation storeOp = 
-            new StoreOperation.Builder(location)
-                .withContent(rObj)
-                .build();
-        
-        cluster.execute(storeOp);
-        storeOp.get();
+        final BinaryValue key = generateObject(ns);
         
         ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
         cluster.execute(klistOp);
@@ -100,13 +124,44 @@ public class ITestListKeysOperation extends ITestBase
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), key);
         resetAndEmptyBucket(ns);
-
     }
-    
+
+    private void testListKeysStreamed(String bucketType) throws InterruptedException, ExecutionException
+    {
+        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_2_streaming");
+        final BinaryValue key = generateObject(ns);
+
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).withResultStreamListener(streamListener).build();
+        RiakFuture<ListKeysOperation.Response, Namespace> future = cluster.execute(klistOp);
+
+        future.await();
+
+        assertEquals(streamingResults.size(), 1);
+        assertEquals(streamingResults.take(), key);
+        resetAndEmptyBucket(ns);
+    }
+
+    private BinaryValue generateObject(Namespace ns) throws InterruptedException, ExecutionException {
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
+        final String value = "{\"value\":\"value\"}";
+
+        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
+        Location location = new Location(ns, key);
+        StoreOperation storeOp =
+                new StoreOperation.Builder(location)
+                        .withContent(rObj)
+                        .build();
+
+        cluster.execute(storeOp);
+        storeOp.get();
+        return key;
+    }
+
     @Test
     public void testLargeKeyListDefaultType() throws InterruptedException, ExecutionException
     {
         testLargeKeyList(Namespace.DEFAULT_BUCKET_TYPE);
+        testLargeKeyListStreamed(Namespace.DEFAULT_BUCKET_TYPE);
     }
     
     @Test
@@ -114,26 +169,56 @@ public class ITestListKeysOperation extends ITestBase
     {
         assumeTrue(testBucketType);
         testLargeKeyList(bucketType.toString());
+        testLargeKeyListStreamed(bucketType.toString());
     }
     
     private void testLargeKeyList(String bucketType) throws InterruptedException, ExecutionException
     {
+        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_3");
+
+        generateManyObjects(ns);
+
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
+        cluster.execute(klistOp);
+        List<BinaryValue> kList;
+        kList = klistOp.get().getKeys();
+        assertEquals(kList.size(), 1000);
+
+        ITestBase.resetAndEmptyBucket(ns);
+    }
+
+    private void testLargeKeyListStreamed(String bucketType) throws InterruptedException, ExecutionException
+    {
+        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_3");
+
+        generateManyObjects(ns);
+
+        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).withResultStreamListener(streamListener).build();
+        RiakFuture<ListKeysOperation.Response, Namespace> future = cluster.execute(klistOp);
+
+        future.await();
+
+        assertEquals(streamingResults.size(), 1000);
+
+        ITestBase.resetAndEmptyBucket(ns);
+    }
+
+    private void generateManyObjects(Namespace ns) throws InterruptedException {
         final String baseKey = "my_key";
         final String value = "{\"value\":\"value\"}";
-        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_3");
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
-        
+
         RiakFutureListener<StoreOperation.Response, Location> listener =
             new RiakFutureListener<StoreOperation.Response, Location>() {
-            
+
             private final int expected = 1000;
             private final AtomicInteger received = new AtomicInteger();
-            
+
             @Override
             public void handle(RiakFuture<StoreOperation.Response, Location> f)
             {
-                try 
+                try
                 {
                     f.get();
                     semaphore.release();
@@ -141,11 +226,6 @@ public class ITestListKeysOperation extends ITestBase
 
                     if (expected == received.intValue())
                     {
-                        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
-                        cluster.execute(klistOp);
-                        List<BinaryValue> kList;
-                        kList = klistOp.get().getKeys();
-                        assertEquals(kList.size(), 1000);
                         latch.countDown();
                     }
                 }
@@ -157,27 +237,25 @@ public class ITestListKeysOperation extends ITestBase
                 {
                     throw new RuntimeException(ex);
                 }
-                
+
             }
         };
-        
+
         for (int i = 0; i < 1000; i++)
         {
             semaphore.acquire();
             BinaryValue key = BinaryValue.unsafeCreate((baseKey + i).getBytes());
             RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
             Location location = new Location(ns, key);
-            StoreOperation storeOp = 
+            StoreOperation storeOp =
                 new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build();
-        
+
             storeOp.addListener(listener);
             cluster.execute(storeOp);
         }
-        
+
         latch.await(2, TimeUnit.MINUTES);
-        ITestBase.resetAndEmptyBucket(ns);
-        
     }
 }

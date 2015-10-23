@@ -19,6 +19,7 @@ import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -46,11 +47,13 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 {
     private final int timeout;
     private final BinaryValue type;
+    private final RiakResultStreamListener<Response> streamListener;
 
     ListBuckets(Builder builder)
     {
-		this.timeout = builder.timeout;
-	    this.type = builder.type;
+        this.timeout = builder.timeout;
+        this.type = builder.type;
+        this.streamListener = builder.streamListener;
     }
 
     @Override
@@ -65,7 +68,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
                 @Override
                 protected Response convertResponse(ListBucketsOperation.Response coreResponse)
                 {
-                    return new Response(type, coreResponse.getBuckets());
+                    return convertOperationResponse(coreResponse);
                 }
 
                 @Override
@@ -78,13 +81,34 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         return future;
     }
 
+    private Response convertOperationResponse(ListBucketsOperation.Response coreResponse)
+    {
+        return new Response(type, coreResponse.getBuckets());
+    }
+
     private ListBucketsOperation buildCoreOperation()
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
+
         if (timeout > 0)
         {
             builder.withTimeout(timeout);
         }
+
+        builder.withBucketType(type);
+
+        if(this.streamListener != null){
+            RiakResultStreamListener<ListBucketsOperation.Response> convertingListener =
+                    new RiakResultStreamListener<ListBucketsOperation.Response>() {
+                        @Override
+                        public void handle(ListBucketsOperation.Response response) {
+                            final Response buckets = convertOperationResponse(response);
+                            streamListener.handle(buckets);
+                        }
+                    };
+            builder.withResultStreamListener(convertingListener);
+        }
+
         return builder.build();
     }
 
@@ -158,6 +182,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 	{
 		private int timeout;
 		private final BinaryValue type;
+        private RiakResultStreamListener<Response> streamListener = null;
 
         /**
          * Construct a Builder for a ListBuckets command.
@@ -193,6 +218,17 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 		}
 
         /**
+         *
+         * @param resultStreamListener
+         * @return
+         */
+        public Builder withResultStreamListener(RiakResultStreamListener<Response> resultStreamListener)
+        {
+            this.streamListener = resultStreamListener;
+            return this;
+        }
+
+        /**
          * Construct a new ListBuckets command.
          * @return a new ListBuckets command.
          */
@@ -201,5 +237,4 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 			return new ListBuckets(this);
 		}
 	}
-
 }

@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.commands.mapreduce.MapReduce;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
@@ -29,6 +31,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -39,7 +42,9 @@ import static org.junit.Assume.assumeTrue;
  * @since 2.0
  */
 public class ITestMapReduceOperation extends ITestBase
-{    
+{
+    private final RiakResultStreamListener<MapReduceOperation.Response> NO_STREAMING = null;
+
     @Test
     public void testBasicMRDefaultType() throws InterruptedException, ExecutionException, IOException
     {
@@ -49,7 +54,7 @@ public class ITestMapReduceOperation extends ITestBase
         assertNotNull(resultMap.containsKey("the"));
         assertNull(resultMap.get("the"));
     }
-    
+
     @Test
     public void testBasicMRTestType() throws InterruptedException, ExecutionException, IOException
     {
@@ -58,73 +63,30 @@ public class ITestMapReduceOperation extends ITestBase
         assertNotNull(resultMap.containsKey("the"));
         assertEquals(Integer.valueOf(8), resultMap.get("the"));
     }
-    
-    private Map<String, Integer> testBasicMR(Namespace namespace) throws InterruptedException, ExecutionException, IOException
+
+    @Test
+    public void testBasicMRTestTypeStreaming() throws InterruptedException, ExecutionException, IOException
     {
-        RiakObject obj = new RiakObject();
-                            
-        obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
-                    "bank, and of having nothing to do: once or twice she had peeped into the " +
-                    "book her sister was reading, but it had no pictures or conversations in " +
-                    "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
-                    "conversation?'"));
-        Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
-        StoreOperation storeOp = 
-            new StoreOperation.Builder(location)
-                .withContent(obj)
-                .build();
-        
-        cluster.execute(storeOp);
-        storeOp.get();
-        
-        obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
-                    "hot day made her feel very sleepy and stupid), whether the pleasure " +
-                    "of making a daisy-chain would be worth the trouble of getting up and " +
-                    "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
-                    "close by her."));
-        
-        location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
-        storeOp = 
-            new StoreOperation.Builder(location)
-                .withContent(obj)
-                .build();
-        
-        cluster.execute(storeOp);
-        storeOp.get();
-        
-        obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
-                    "dipped suddenly down, so suddenly that Alice had not a moment to think " +
-                    "about stopping herself before she found herself falling down a very deep " +
-                    "well."));
-        location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
-        storeOp = 
-            new StoreOperation.Builder(location)
-                .withContent(obj)
-                .build();
-        
-        cluster.execute(storeOp);
-        storeOp.get();
-            
-        String bName = namespace.getBucketNameAsString();
-        String bType = namespace.getBucketTypeAsString();
-        
-        String query = "{\"inputs\":[[\"" + bName + "\",\"p1\",\"\",\"" + bType + "\"]," +
-            "[\"" + bName + "\",\"p2\",\"\",\"" + bType + "\"]," +
-            "[\"" + bName + "\",\"p3\",\"\",\"" + bType + "\"]]," +
-            "\"query\":[{\"map\":{\"language\":\"javascript\",\"source\":\"" +
-            "function(v) {var m = v.values[0].data.toLowerCase().match(/\\w*/g); var r = [];" +
-            "for(var i in m) {if(m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
-            "\"}},{\"reduce\":{\"language\":\"javascript\",\"source\":\"" +
-            "function(v) {var r = {};for(var i in v) {for(var w in v[i]) {if(w in r) r[w] += v[i][w];" +
-            "else r[w] = v[i][w];}}return [r];}\"}}]}";
-        
-        MapReduceOperation mrOp = 
-            new MapReduceOperation.Builder(BinaryValue.unsafeCreate(query.getBytes()))
-                .build();
-        
+        assumeTrue(testBucketType);
+
+        Map<String, Integer> resultMap = testBasicStreamingMR(new Namespace(bucketType, bucketName));
+        assertNotNull(resultMap.containsKey("the"));
+        assertEquals(Integer.valueOf(8), resultMap.get("the"));
+    }
+
+    
+    private Map<String, Integer> testBasicMR(Namespace namespace)
+            throws InterruptedException, ExecutionException, IOException
+    {
+        generateObjects(namespace);
+
+        MapReduceOperation mrOp = generateMapReduceOperation(namespace, NO_STREAMING);
+
         cluster.execute(mrOp);
         mrOp.await();
         assertTrue(mrOp.isSuccess());
+
+
         ArrayNode resultList = mrOp.get().getResults().get(1);
         
         // The query should return one result which is a JSON array containing a 
@@ -139,5 +101,114 @@ public class ITestMapReduceOperation extends ITestBase
         resetAndEmptyBucket(namespace);
 
         return resultMap;
+    }
+
+    private Map<String,Integer> testBasicStreamingMR(Namespace namespace)
+            throws InterruptedException, ExecutionException, IOException
+    {
+        generateObjects(namespace);
+
+        final LinkedBlockingQueue<Map<Integer, ArrayNode>> results = new LinkedBlockingQueue<Map<Integer, ArrayNode>>();
+
+        RiakResultStreamListener<MapReduceOperation.Response> listener = new RiakResultStreamListener<MapReduceOperation.Response>(){
+            @Override
+            public void handle(MapReduceOperation.Response response) {
+                Map<Integer, ArrayNode> opResults = response.getResults();
+                results.add(opResults);
+            }
+        };
+
+        MapReduceOperation mrOp = generateMapReduceOperation(namespace, listener);
+
+        cluster.execute(mrOp);
+        mrOp.await();
+        assertTrue(mrOp.isSuccess());
+
+        assertEquals(1, results.size());
+
+        ArrayNode resultList = results.take().get(1);
+
+        // The query should return one result which is a JSON array containing a
+        // single JSON object that is a asSet of word counts.
+        assertEquals(resultList.size(), 1);
+
+        String json = resultList.get(0).toString();
+        ObjectMapper oMapper = new ObjectMapper();
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> resultMap = oMapper.readValue(json, Map.class);
+
+        resetAndEmptyBucket(namespace);
+
+        return resultMap;
+    }
+
+    private MapReduceOperation generateMapReduceOperation(Namespace namespace, RiakResultStreamListener<MapReduceOperation.Response> streamListener) {
+        String bName = namespace.getBucketNameAsString();
+        String bType = namespace.getBucketTypeAsString();
+
+        String query = "{\"inputs\":[[\"" + bName + "\",\"p1\",\"\",\"" + bType + "\"]," +
+            "[\"" + bName + "\",\"p2\",\"\",\"" + bType + "\"]," +
+            "[\"" + bName + "\",\"p3\",\"\",\"" + bType + "\"]]," +
+            "\"query\":[{\"map\":{\"language\":\"javascript\",\"source\":\"" +
+            "function(v) {var m = v.values[0].data.toLowerCase().match(/\\w*/g); var r = [];" +
+            "for(var i in m) {if(m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
+            "\"}},{\"reduce\":{\"language\":\"javascript\",\"source\":\"" +
+            "function(v) {var r = {};for(var i in v) {for(var w in v[i]) {if(w in r) r[w] += v[i][w];" +
+            "else r[w] = v[i][w];}}return [r];}\"}}]}";
+
+        MapReduceOperation.Builder builder = new MapReduceOperation.Builder(BinaryValue.unsafeCreate(query.getBytes()));
+
+        if(streamListener != null)
+        {
+            builder.withResultStreamListener(streamListener);
+        }
+
+        return builder.build();
+    }
+
+    private void generateObjects(Namespace namespace) throws InterruptedException, ExecutionException {
+        RiakObject obj = new RiakObject();
+
+        obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
+                "bank, and of having nothing to do: once or twice she had peeped into the " +
+                "book her sister was reading, but it had no pictures or conversations in " +
+                "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
+                "conversation?'"));
+        Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
+        StoreOperation storeOp =
+            new StoreOperation.Builder(location)
+                .withContent(obj)
+                .build();
+
+        cluster.execute(storeOp);
+        storeOp.get();
+
+        obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
+                    "hot day made her feel very sleepy and stupid), whether the pleasure " +
+                    "of making a daisy-chain would be worth the trouble of getting up and " +
+                    "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
+                    "close by her."));
+
+        location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
+        storeOp =
+            new StoreOperation.Builder(location)
+                .withContent(obj)
+                .build();
+
+        cluster.execute(storeOp);
+        storeOp.get();
+
+        obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
+                    "dipped suddenly down, so suddenly that Alice had not a moment to think " +
+                    "about stopping herself before she found herself falling down a very deep " +
+                    "well."));
+        location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
+        storeOp =
+            new StoreOperation.Builder(location)
+                .withContent(obj)
+                .build();
+
+        cluster.execute(storeOp);
+        storeOp.get();
     }
 }

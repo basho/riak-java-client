@@ -18,6 +18,7 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakResultStreamListener;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -33,8 +34,12 @@ import com.basho.riak.client.api.commands.mapreduce.filters.StringToIntFilter;
 import com.basho.riak.client.api.commands.mapreduce.filters.TokenizeFilter;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.junit.After;
 import org.junit.Test;
 
@@ -77,13 +82,11 @@ public class ITestBucketMapReduce extends ITestBase
             ns = new Namespace(bucketType.toString(), mrBucketName);
             resetAndEmptyBucket(ns);
         }
-        
     }
     
     private void initValues(String bucketType) throws InterruptedException
     {
         // insert 200 items into a bucket
-       
         Namespace ns = new Namespace(bucketType, mrBucketName);
         
         String keyPrefix = "mr_test_";
@@ -125,7 +128,7 @@ public class ITestBucketMapReduce extends ITestBase
                 .build();
         
          MapReduce.Response response = client.execute(bmr);
-                
+
         // The query should return one phase result which is a JSON array containing
         // all the values, 0 - 199
         assertEquals(200, response.getResultsFromAllPhases().size());
@@ -178,7 +181,7 @@ public class ITestBucketMapReduce extends ITestBase
         
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
-               
+
         resetAndEmptyBucket(ns);
     }
     
@@ -214,7 +217,48 @@ public class ITestBucketMapReduce extends ITestBase
         
         resetAndEmptyBucket(ns);
     }
-    
+
+    @Test
+    public void multiPhaseResultStream() throws InterruptedException, ExecutionException
+    {
+        initValues(Namespace.DEFAULT_BUCKET_TYPE);
+
+        final LinkedBlockingQueue<JsonNode> results = new LinkedBlockingQueue<JsonNode>();
+
+        RiakResultStreamListener<MapReduce.Response> listener = new RiakResultStreamListener<MapReduce.Response>(){
+            @Override
+            public void handle(MapReduce.Response response) {
+                for (final JsonNode objNode : response.getResultsFromAllPhases())
+                {
+                    results.add(objNode);
+                }
+            }
+        };
+
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
+        BucketMapReduce bmr =
+                new BucketMapReduce.Builder()
+                        .withNamespace(ns)
+                        .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), true)
+                        .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
+                        .withResultStreamListener(listener)
+                        .build();
+
+        RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
+
+        future.await();
+        assertTrue(future.isSuccess());
+
+        MapReduce.Response response = future.get();
+
+        // The query should return two phase results, each a JSON array containing
+        // all the values, 0 - 199
+        assertEquals(400, results.size());
+        assertEquals(0, response.getResultsFromAllPhases().size());
+
+        resetAndEmptyBucket(ns);
+    }
+
     @Test
     public void keyFilter() throws InterruptedException, ExecutionException
     {
@@ -297,7 +341,5 @@ public class ITestBucketMapReduce extends ITestBase
         assertTrue(future.isSuccess());
         assertEquals(4, future.get().getResultsFromAllPhases().size());
         resetAndEmptyBucket(ns);
-
     }
-    
 }
