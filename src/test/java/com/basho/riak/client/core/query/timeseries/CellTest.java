@@ -26,6 +26,12 @@ import java.util.GregorianCalendar;
 
 import static junit.framework.Assert.*;
 
+/**
+ * Time Series Cell Unit Tests
+
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
+ */
 public class CellTest
 {
     @Test
@@ -81,15 +87,17 @@ public class CellTest
     {
         float f = 42.01f;
         Cell c = new Cell(f);
-        assertTrue(c.hasNumeric());
+        assertTrue(c.hasFloat());
+        assertFalse(c.hasNumeric());
         assertEquals(c.getFloat(), f);
     }
     @Test
     public void TestDoubles()
     {
-        double d = 42.0123456789d;
+        double d = 42.0123456789123456789d;
         Cell c = new Cell(d);
-        assertTrue(c.hasNumeric());
+        assertTrue(c.hasDouble());
+        assertFalse(c.hasNumeric());
         assertEquals(c.getDouble(), d);
     }
     @Test
@@ -120,7 +128,7 @@ public class CellTest
     public void TestRawNumeric()
     {
         byte[] ba = "-42.02".getBytes();
-        Cell c = Cell.newRawNumeric(ba);
+        Cell c = Cell.newNumeric(ba);
         assertTrue(c.hasNumeric());
         assertEquals(c.getRawNumeric(), ba);
     }
@@ -134,17 +142,17 @@ public class CellTest
     }
 
     @Test
-    public void TestBCDEdgeCases()
+    public void TestBCDEncoding()
     {
-        Cell c = new Cell(-42.02f);
+        Cell c = Cell.newNumeric("-42.02");
 
         String floatString = c.getRawNumericString();
         assertEquals('-', floatString.charAt(0));
         assertEquals('.', floatString.charAt(3));
 
 
-        c = Cell.newRawNumeric("9.18E+09".getBytes(Charset.forName("US-ASCII")));
-        float f = c.getFloat();
+        c = Cell.newNumeric("9.18E+09");
+        float f = Float.parseFloat(c.getRawNumericString());
         assertEquals(9180000000f, f);
 
     }

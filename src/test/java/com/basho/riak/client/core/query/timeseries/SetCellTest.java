@@ -9,6 +9,12 @@ import java.util.Set;
 
 import static junit.framework.Assert.assertTrue;
 
+/**
+ * Time Series SetCell Unit Tests
+
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
+ */
 public class SetCellTest
 {
     @Test
