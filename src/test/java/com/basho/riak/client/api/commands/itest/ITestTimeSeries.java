@@ -55,7 +55,13 @@ public class ITestTimeSeries extends ITestBase
     final List<Row> rows = Arrays.asList(
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0)),
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5)),
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)));
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)),
+
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1), new Cell("cloudy"), null),
+
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")));
 
 
     //    @Test(expected = IllegalArgumentException.class)
@@ -170,22 +176,6 @@ public class ITestTimeSeries extends ITestBase
     }
 
     @Test
-    public void TestStoringNullableColumns() throws ExecutionException, InterruptedException
-    {
-        RiakClient client = new RiakClient(cluster);
-
-        Row noTemp = new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now + 1000), new Cell("cloudy"), null);
-
-        Store store = new Store.Builder(tableName).withRow(noTemp).build();
-
-        RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
-
-        execFuture.await();
-        assertNull(execFuture.cause().toString(),execFuture.cause());
-        assertEquals(true, execFuture.isSuccess());
-    }
-
-    @Test
     public void TestThatTimestampsComeBackInIntegerBuffer() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
@@ -212,21 +202,7 @@ public class ITestTimeSeries extends ITestBase
     @Test
     public void TestThatFloatsDoublesAndNumericsComeBackInDoubleBuffer() throws ExecutionException, InterruptedException
     {
-
-        final List<Row> rows = Arrays.asList(
-                new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
-                new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
-                new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")));
-
         RiakClient client = new RiakClient(cluster);
-
-        Store store = new Store.Builder(tableName).withRows(rows).build();
-
-        RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
-
-        execFuture.await();
-        assertNull(execFuture.cause());
-        assertEquals(true, execFuture.isSuccess());
 
         final String queryText = "select temperature from GeoCheckin " +
                 "where user = 'user3' and " +
