@@ -1,6 +1,7 @@
-package com.basho.riak.client.core.operations;
+package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
+import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -17,13 +18,13 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
+public class StoreOperation extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
-    private final Logger logger = LoggerFactory.getLogger(TimeSeriesStoreOperation.class);
+    private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
 
     private final RiakKvPB.TsPutReq.Builder reqBuilder;
 
-    private TimeSeriesStoreOperation(Builder builder)
+    private StoreOperation(Builder builder)
     {
         super(RiakMessageCodes.MSG_TsPutReq, RiakMessageCodes.MSG_TsPutResp, builder.reqBuilder, RiakKvPB.TsPutResp.PARSER);
         this.reqBuilder = builder.reqBuilder;
@@ -73,9 +74,9 @@ public class TimeSeriesStoreOperation  extends PBFutureOperation<Void, RiakKvPB.
             return this;
         }
 
-        public TimeSeriesStoreOperation build()
+        public StoreOperation build()
         {
-            return new TimeSeriesStoreOperation(this);
+            return new StoreOperation(this);
         }
     }
 }

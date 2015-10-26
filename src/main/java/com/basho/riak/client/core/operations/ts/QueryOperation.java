@@ -1,28 +1,28 @@
-package com.basho.riak.client.core.operations;
+package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
+import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
-import com.basho.riak.protobuf.RiakPB;
 import com.google.protobuf.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue> {
+public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
+{
 
-    private static final Logger logger = LoggerFactory.getLogger(TimeSeriesQueryOperation.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueryOperation.class);
 
-    private TimeSeriesQueryOperation(Builder builder)
+    private QueryOperation(Builder builder)
     {
         super(RiakMessageCodes.MSG_TsQueryReq, RiakMessageCodes.MSG_TsQueryResp,
                 RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder), RiakKvPB.TsQueryResp.PARSER);
@@ -88,9 +88,9 @@ public class TimeSeriesQueryOperation extends PBFutureOperation<QueryResult, Ria
 //            return this;
 //        }
 
-        public TimeSeriesQueryOperation build()
+        public QueryOperation build()
         {
-            return new TimeSeriesQueryOperation(this);
+            return new QueryOperation(this);
         }
     }
 }
