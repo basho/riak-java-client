@@ -1,10 +1,8 @@
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.TimeSeriesQueryOperation;
-import com.basho.riak.client.core.operations.TimeSeriesStoreOperation;
+import com.basho.riak.client.core.operations.ts.StoreOperation;
+import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
@@ -13,12 +11,11 @@ import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Time Series Query Operation Integration Tests
@@ -47,7 +44,7 @@ public class ITestTimeSeriesQueryOperations extends ITestBase
         Assert.assertTrue(testTimeSeries);
         final BinaryValue tableNameBV = BinaryValue.create(tableName);
 
-        TimeSeriesStoreOperation storeOp = new TimeSeriesStoreOperation.Builder(tableNameBV).withRows(rows).build();
+        StoreOperation storeOp = new StoreOperation.Builder(tableNameBV).withRows(rows).build();
         RiakFuture<Void, BinaryValue> future = cluster.execute(storeOp);
 
         future.get();
@@ -64,7 +61,7 @@ public class ITestTimeSeriesQueryOperations extends ITestBase
 
         final BinaryValue queryTextBS = BinaryValue.create(queryText);
 
-        TimeSeriesQueryOperation queryOp = new TimeSeriesQueryOperation.Builder(queryTextBS).build();
+        QueryOperation queryOp = new QueryOperation.Builder(queryTextBS).build();
         RiakFuture<QueryResult, BinaryValue> future = cluster.execute(queryOp);
 
         QueryResult queryResult = future.get();
@@ -84,7 +81,7 @@ public class ITestTimeSeriesQueryOperations extends ITestBase
                                  "  and user ='user2'";
         final BinaryValue queryTextBS = BinaryValue.create(queryText);
 
-        TimeSeriesQueryOperation queryOp = new TimeSeriesQueryOperation.Builder(queryTextBS).build();
+        QueryOperation queryOp = new QueryOperation.Builder(queryTextBS).build();
         RiakFuture<QueryResult, BinaryValue> future = cluster.execute(queryOp);
 
         QueryResult queryResult = future.get();

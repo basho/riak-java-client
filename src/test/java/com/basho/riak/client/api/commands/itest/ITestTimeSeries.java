@@ -58,7 +58,7 @@ public class ITestTimeSeries extends ITestBase
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5)),
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)),
 
-            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1), new Cell("cloudy"), null),
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null),
 
             new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
             new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
@@ -74,11 +74,11 @@ public class ITestTimeSeries extends ITestBase
     //        query.addStringParameter(":foo", "123");
     //    }
 
-    @BeforeClass
-    public static void BeforeClass()
-    {
-        Assume.assumeTrue(testTimeSeries);
-    }
+//    @BeforeClass
+//    public static void BeforeClass()
+//    {
+//        Assume.assumeTrue(testTimeSeries);
+//    }
 
     @Test
     public void StoringData() throws ExecutionException, InterruptedException
@@ -177,27 +177,25 @@ public class ITestTimeSeries extends ITestBase
     }
 
     @Test
-    public void TestThatTimestampsComeBackInIntegerBuffer() throws ExecutionException, InterruptedException
+    public void TestThatNullsAreSavedAndFetchedCorrectly() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
-        final String queryText = "select time from GeoCheckin " +
-                "where user = 'user1' and " +
-                "(time > " + tenMinsAgo +" and " +
-                "(time < "+ now + ")) ";
+        final String queryText = "select temperature from GeoCheckin " +
+                "where user = 'user2' and " +
+                "(time > " + (fifteenMinsAgo - 1) +" and " +
+                "(time < "+ (now + 1) + ")) ";
 
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
         assertEquals(1, queryResult.getColumnDescriptions().size());
+        assertEquals(ColumnDescription.ColumnType.FLOAT, queryResult.getColumnDescriptions().get(0).getType());
 
         assertEquals(1, queryResult.getRows().size());
-        assertEquals(1, queryResult.getRows().get(0).getCells().size());
         Cell resultCell = queryResult.getRows().get(0).getCells().get(0);
-        assertFalse(resultCell.hasTimestamp());
-        assertTrue(resultCell.hasLong());
-        assertEquals(fiveMinsAgo, resultCell.getLong());
-        assertEquals(0, resultCell.getTimestamp());
+
+        assertNull(resultCell);
     }
 
     @Test
@@ -264,9 +262,20 @@ public class ITestTimeSeries extends ITestBase
 
         assertEquals(expectedCells.get(0).getUtf8String(),  actualCells.get(0).getUtf8String());
         assertEquals(expectedCells.get(1).getUtf8String(),  actualCells.get(1).getUtf8String());
-        assertEquals(expectedCells.get(2).getTimestamp(),   actualCells.get(2).getLong());  // idiosyncrasy - need to document or fix
+        assertEquals(expectedCells.get(2).getTimestamp(),   actualCells.get(2).getTimestamp());
         assertEquals(expectedCells.get(3).getUtf8String(),  actualCells.get(3).getUtf8String());
-        assertEquals(Float.toString(expectedCells.get(4).getFloat()), Float.toString(actualCells.get(4).getFloat()));
+
+        Cell expectedCell4 = expectedCells.get(4);
+        Cell actualCell4 = actualCells.get(4);
+
+        if(expectedCell4 == null)
+        {
+            assertNull(actualCell4);
+        }
+        else
+        {
+            assertEquals(Float.toString(expectedCells.get(4).getFloat()), Float.toString(actualCells.get(4).getFloat()));
+        }
     }
 
 }

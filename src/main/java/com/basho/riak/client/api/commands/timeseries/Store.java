@@ -3,7 +3,7 @@ package com.basho.riak.client.api.commands.timeseries;
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.TimeSeriesStoreOperation;
+import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
@@ -43,9 +43,9 @@ public class Store extends RiakCommand<Void,BinaryValue>
         return future;
     }
 
-    private TimeSeriesStoreOperation buildCoreOperation()
+    private StoreOperation buildCoreOperation()
     {
-        return new TimeSeriesStoreOperation.Builder(BinaryValue.create(builder.tableName.unsafeGetValue()))
+        return new StoreOperation.Builder(BinaryValue.create(builder.tableName.unsafeGetValue()))
                 .withRows(builder.rows)
                 .build();
     }

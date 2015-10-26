@@ -1,6 +1,5 @@
 package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.api.convert.PassThroughConverter;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
@@ -31,8 +30,8 @@ public final class TimeSeriesPBConverter
             return QueryResult.emptyResult();
         }
 
-        List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
-        List<Row> rows = convertPbRows(response.getRowsList());
+        final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
+        final List<Row> rows = convertPbRows(response.getRowsList(), columnDescriptions);
 
         return new QueryResult(columnDescriptions, rows);
     }
@@ -95,7 +94,7 @@ public final class TimeSeriesPBConverter
         return rowBuilder.build();
     }
 
-    private static List<Row> convertPbRows(List<RiakKvPB.TsRow> pbRows)
+    private static List<Row> convertPbRows(List<RiakKvPB.TsRow> pbRows, List<ColumnDescription> columnDescriptions)
     {
         if(pbRows == null)
         {
@@ -106,60 +105,81 @@ public final class TimeSeriesPBConverter
 
         for (RiakKvPB.TsRow pbRow : pbRows)
         {
-            List<Cell> cells = new ArrayList<Cell>(pbRow.getCellsCount());
+            final int numCells = pbRow.getCellsCount();
+            final List<Cell> cells = new ArrayList<Cell>(numCells);
+            final List<RiakKvPB.TsCell> pbCells = pbRow.getCellsList();
 
-            for (RiakKvPB.TsCell pbCell : pbRow.getCellsList())
+            for (int i = 0; i < numCells; i++)
             {
-                if (pbCell.hasBinaryValue())
-                {
-                    cells.add(new Cell(BinaryValue.unsafeCreate(pbCell.getBinaryValue().toByteArray())));
-                }
-                else if (pbCell.hasBooleanValue())
-                {
-                    cells.add(new Cell(pbCell.getBooleanValue()));
-                }
-                else if (pbCell.hasIntegerValue())
-                {
-                    cells.add(new Cell(pbCell.getIntegerValue()));
-                }
-                else if (pbCell.hasMapValue())
-                {
-                    cells.add(Cell.newMap(pbCell.getMapValue().toByteArray()));
-                }
-                else if (pbCell.hasNumericValue())
-                {
-                    cells.add(Cell.newNumeric(pbCell.getNumericValue().toByteArray()));
-                }
-                else if (pbCell.hasTimestampValue())
-                {
-                    cells.add(Cell.newTimestamp(pbCell.getTimestampValue()));
-                }
-                else if(pbCell.hasFloatValue())
-                {
-                    cells.add(new Cell(pbCell.getFloatValue()));
-                }
-                else if(pbCell.hasDoubleValue())
-                {
-                    cells.add(new Cell(pbCell.getDoubleValue()));
-                }
-                else // Set
-                {
-                    int size = pbCell.getSetValueCount();
-                    byte[][] set = new byte[size][];
-
-                    for (int i = 0; i < size; i++)
-                    {
-                        set[i] = pbCell.getSetValue(i).toByteArray();
-                    }
-
-                    Cell.newSet(set);
-                }
+                final ColumnDescription.ColumnType columnType = columnDescriptions.get(i).getType();
+                final RiakKvPB.TsCell pbCell = pbCells.get(i);
+                cells.add(convertPbCell(pbCell, columnType));
             }
 
             rows.add(new Row(cells));
         }
 
         return rows;
+    }
+
+    private static Cell convertPbCell(RiakKvPB.TsCell pbCell, ColumnDescription.ColumnType columnType)
+    {
+        Cell cell;
+
+        if (columnType == ColumnDescription.ColumnType.BINARY && pbCell.hasBinaryValue())
+        {
+            cell = new Cell(BinaryValue.unsafeCreate(pbCell.getBinaryValue().toByteArray()));
+        }
+        else if (columnType == ColumnDescription.ColumnType.BOOLEAN && pbCell.hasBooleanValue())
+        {
+            cell = new Cell(pbCell.getBooleanValue());
+        }
+        else if (columnType == ColumnDescription.ColumnType.INTEGER && pbCell.hasIntegerValue())
+        {
+            cell = new Cell(pbCell.getIntegerValue());
+        }
+        else if (columnType == ColumnDescription.ColumnType.MAP && pbCell.hasMapValue())
+        {
+            cell = Cell.newMap(pbCell.getMapValue().toByteArray());
+        }
+        else if (columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasNumericValue())
+        {
+            cell = Cell.newNumeric(pbCell.getNumericValue().toByteArray());
+        }
+        else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasIntegerValue())
+        {
+            cell = Cell.newTimestamp(pbCell.getIntegerValue());
+        }
+        else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasTimestampValue())
+        {
+            cell = Cell.newTimestamp(pbCell.getTimestampValue());
+        }
+        else if(columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasFloatValue())
+        {
+            cell = new Cell(pbCell.getFloatValue());
+        }
+        else if(columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasDoubleValue())
+        {
+            cell = new Cell(pbCell.getDoubleValue());
+        }
+        else if(columnType == ColumnDescription.ColumnType.SET) // Set
+        {
+            int size = pbCell.getSetValueCount();
+            byte[][] set = new byte[size][];
+
+            for (int setIdx = 0; setIdx < size; setIdx++)
+            {
+                set[setIdx] = pbCell.getSetValue(setIdx).toByteArray();
+            }
+
+            cell = Cell.newSet(set);
+        }
+        else // Null cell
+        {
+            cell = null;
+        }
+
+        return cell;
     }
 
     private static List<ColumnDescription> convertPBColumnDescriptions(List<RiakKvPB.TsColumnDescription> pbColumns)
