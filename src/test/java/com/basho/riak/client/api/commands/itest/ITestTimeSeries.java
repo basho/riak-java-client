@@ -1,6 +1,7 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.timeseries.Delete;
 import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.api.commands.timeseries.Store;
 import com.basho.riak.client.core.RiakFuture;
@@ -62,7 +63,11 @@ public class ITestTimeSeries extends ITestBase
 
             new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
             new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
-            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")));
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")),
+
+            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo), new Cell("rain"), new Cell(79.0)),
+            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5)),
+            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0)));
 
 
     //    @Test(expected = IllegalArgumentException.class)
@@ -253,6 +258,39 @@ public class ITestTimeSeries extends ITestBase
         future.await();
         assertFalse(future.isSuccess());
         assertEquals(future.cause().getClass(), RiakResponseException.class);
+    }
+
+    @Test
+    public void TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
+    {
+        final String queryText = "select * from GeoCheckin " +
+                "where user = 'user1' and " +
+                "geohash = 'hash1' and " +
+                "(time > " + tenMinsAgo +" and " +
+                "(time < "+ (now-1)+ ")) ";
+
+
+        RiakClient client = new RiakClient(cluster);
+
+        // Assert we have a row
+        Query query = new Query.Builder(queryText).build();
+        QueryResult queryResult = client.execute(query);
+        assertEquals(1, queryResult.getRows().size());
+
+        // Delete row
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo));
+        Delete delete = new Delete.Builder(tableName, keyCells).build();
+
+        final RiakFuture<Void, BinaryValue> future = client.executeAsync(delete);
+
+        future.await();
+        assertTrue(future.isSuccess());
+        assertNull(future.cause());
+
+        // Assert that the row is no longer with us
+        Query query2 = new Query.Builder(queryText).build();
+        QueryResult queryResult2 = client.execute(query2);
+        assertEquals(0, queryResult2.getRows().size());
     }
 
     private void assertRowMatches(Row expected, Row actual)
