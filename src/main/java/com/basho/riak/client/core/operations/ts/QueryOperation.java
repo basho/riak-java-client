@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
+ * An operation to query data from a Riak Time Series table.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
@@ -43,7 +44,6 @@ public class QueryOperation
         }
 
         RiakKvPB.TsQueryResp response = responses.get(0);
-
 
         QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
 

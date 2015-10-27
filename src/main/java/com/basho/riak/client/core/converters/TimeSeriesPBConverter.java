@@ -43,7 +43,7 @@ public final class TimeSeriesPBConverter
             return QueryResult.emptyResult();
         }
 
-        // TODO: Need the column Descriptions for this to work. 
+        // TODO: Need the column Descriptions for this to work.
         //final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
         final List<Row> rows = convertPbRows(response.getRowsList(), null);
 

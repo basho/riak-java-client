@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * An operation to store rows to a Riak Time Series table.
+ *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -32,8 +34,8 @@ public class StoreOperation
     }
 
     @Override
-    protected Void convert(List<RiakKvPB.TsPutResp> responses) {
-
+    protected Void convert(List<RiakKvPB.TsPutResp> responses)
+    {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
         {
