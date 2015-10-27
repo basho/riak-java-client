@@ -1,6 +1,7 @@
-package com.basho.riak.client.core.operations.itest;
+package com.basho.riak.client.core.operations.itest.ts;
 
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.Row;
@@ -21,7 +22,7 @@ import static org.junit.Assert.assertTrue;
  * @since 2.0.3
  */
 
-public class ITestTimeSeriesStoreOperations extends ITestBase
+public class ITestStoreOperation extends ITestBase
 {
     final String tableName = "GeoCheckin";
 
