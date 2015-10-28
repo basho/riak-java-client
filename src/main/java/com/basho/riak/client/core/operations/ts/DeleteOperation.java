@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp, BinaryValue>
 {
-    private final Builder builder;
     private static final Logger logger = LoggerFactory.getLogger(DeleteOperation.class);
+    private final Builder builder;
 
     private DeleteOperation(Builder builder)
     {

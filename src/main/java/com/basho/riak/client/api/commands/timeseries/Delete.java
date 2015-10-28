@@ -23,7 +23,6 @@ import java.util.List;
 public class Delete extends RiakCommand<Void, BinaryValue>
 {
     private static final Logger logger = LoggerFactory.getLogger(Delete.class);
-
     private final Builder builder;
 
     private Delete(Builder builder)

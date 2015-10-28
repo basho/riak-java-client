@@ -11,16 +11,18 @@ import com.google.protobuf.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by alex on 10/26/15.
+ * An operation to fetch a single row in a Riak Time Series table.
+ *
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
  */
 public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGetResp, BinaryValue>
 {
     private static final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
+    private final Builder builder;
 
     private FetchOperation(Builder builder)
     {
@@ -28,6 +30,8 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
               RiakMessageCodes.MSG_TsGetResp,
               builder.reqBuilder,
               RiakKvPB.TsGetResp.PARSER);
+
+        this.builder = builder;
     }
 
     @Override
@@ -50,7 +54,31 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
     @Override
     public BinaryValue getQueryInfo()
     {
-        return null;
+        StringBuilder sb = new StringBuilder("SELECT * FROM ");
+        sb.append(this.builder.tableName);
+        sb.append(" WHERE PRIMARY KEY = { ");
+
+        int numKeys = this.builder.keyValues.size();
+        for (int i = 0; i < numKeys; i++)
+        {
+            if(this.builder.keyValues.get(i) == null)
+            {
+                sb.append("NULL");
+            }
+            else
+            {
+                sb.append(this.builder.keyValues.get(i).toString());
+            }
+
+            if(i < numKeys-1)
+            {
+                sb.append(", ");
+            }
+        }
+
+        sb.append(" }");
+
+        return BinaryValue.create(sb.toString());
     }
 
     public static class Builder

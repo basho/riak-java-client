@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
 {
-    private final BinaryValue queryText;
     private static final Logger logger = LoggerFactory.getLogger(QueryOperation.class);
+    private final BinaryValue queryText;
 
     private QueryOperation(Builder builder)
     {
