@@ -19,7 +19,6 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
-import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;

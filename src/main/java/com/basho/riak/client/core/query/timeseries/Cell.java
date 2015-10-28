@@ -20,10 +20,6 @@ import java.util.Date;
  *     A conversion to an ASCII-encoded decimal string under the covers is made to provide type/value flexibility.</li>
  *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
  *     <li><b>Boolean</b>s, which can hold a true/false value. </li>
- *     <li><b>Map</b>s, which can hold an encoded Map as a byte array.
- *     Use the @{link MapCell} class to help in encoding/decoding these values.</li>
- *     <li><b>Sets</b>s, which can hold an encoded Set as an array of byte arrays.
- *     Use the @{link SetCell} class to help in encoding/decoding these values.  </li>
  * </ol>
  *
  * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
@@ -138,8 +134,6 @@ public class Cell
     protected byte[] numericValue;
     protected long timestampValue;
     protected boolean booleanValue;
-    protected byte[][] setValue;
-    protected byte[] mapValue;
     protected float floatValue;
     protected double doubleValue;
 
@@ -212,24 +206,6 @@ public class Cell
     public boolean hasBoolean()
     {
         return this.isBooleanCell;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Set value.
-     * @return true if it contains a Set value, false otherwise.
-     */
-    public boolean hasSet()
-    {
-        return this.setValue != null;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Map value.
-     * @return true if it contains a Map value, false otherwise.
-     */
-    public boolean hasMap()
-    {
-        return this.mapValue != null;
     }
 
     /**
@@ -339,25 +315,6 @@ public class Cell
     }
 
     /**
-     * Returns the raw "Set" value.
-     * @return The raw array of byte-arrays encoding the set values.
-     * Each value is it's own @{code byte[]}, and the outer array is the collection of them all (the set).
-     */
-    public byte[][] getSet()
-    {
-        return setValue;
-    }
-
-    /**
-     * Returns the raw "Map" value.
-     * @return The raw byte-array encoding the Map.
-     */
-    public byte[] getMap()
-    {
-        return mapValue;
-    }
-
-    /**
      * Creates a new "Numeric" Cell from the provided String .
      * @param value The string containing the numeric value, such as "123.456".  Negative numbers and scientific notation are allowed.
      * @return The new Numeric Cell.
@@ -392,32 +349,6 @@ public class Cell
         Cell cell = new Cell();
         cell.timestampValue = value;
         cell.isTimestampCell = true;
-        return cell;
-    }
-
-    /**
-     * Creates a new "Set" cell from the provided raw encoded value.
-     * Use the @{link SetCell} class to help in encoding/decoding these values.
-     * @param value The raw binary data for the set value.
-     * @return The new set Cell.
-     */
-    public static Cell newSet(byte[][] value)
-    {
-        Cell cell = new Cell();
-        cell.setValue = value;
-        return cell;
-    }
-
-    /**
-     * Creates a new "Map" cell from the provided raw encoded value.
-     * Use the @{link MapCell} class to help in encoding/decoding these values.
-     * @param value The raw binary data for the map value.
-     * @return The new map Cell.
-     */
-    public static Cell newMap(byte[] value)
-    {
-        Cell cell = new Cell();
-        cell.mapValue = value;
         return cell;
     }
 }

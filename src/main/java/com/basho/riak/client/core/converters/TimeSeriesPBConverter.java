@@ -153,10 +153,6 @@ public final class TimeSeriesPBConverter
         {
             cell = new Cell(pbCell.getIntegerValue());
         }
-        else if (columnType == ColumnDescription.ColumnType.MAP && pbCell.hasMapValue())
-        {
-            cell = Cell.newMap(pbCell.getMapValue().toByteArray());
-        }
         else if (columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasNumericValue())
         {
             cell = Cell.newNumeric(pbCell.getNumericValue().toByteArray());
@@ -176,18 +172,6 @@ public final class TimeSeriesPBConverter
         else if(columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasDoubleValue())
         {
             cell = new Cell(pbCell.getDoubleValue());
-        }
-        else if(columnType == ColumnDescription.ColumnType.SET) // Set
-        {
-            final int size = pbCell.getSetValueCount();
-            final byte[][] set = new byte[size][];
-
-            for (int setIdx = 0; setIdx < size; setIdx++)
-            {
-                set[setIdx] = pbCell.getSetValue(setIdx).toByteArray();
-            }
-
-            cell = Cell.newSet(set);
         }
         else // Null cell
         {
@@ -238,6 +222,7 @@ public final class TimeSeriesPBConverter
 
         if(cell == null)
         {
+            // Return empty cell
             return cellBuilder.build();
         }
 
@@ -252,10 +237,6 @@ public final class TimeSeriesPBConverter
         else if(cell.hasInt())
         {
             cellBuilder.setIntegerValue(cell.getLong());
-        }
-        else if(cell.hasMap())
-        {
-            cellBuilder.setMapValue(ByteString.copyFrom(cell.getMap()));
         }
         else if(cell.hasNumeric())
         {
@@ -272,15 +253,6 @@ public final class TimeSeriesPBConverter
         else if(cell.hasDouble())
         {
             cellBuilder.setDoubleValue(cell.getDouble());
-        }
-        else if(cell.hasSet())// Set
-        {
-            int i = cellBuilder.getSetValueCount();
-            for (byte[] setMember : cell.getSet())
-            {
-                cellBuilder.setSetValue(i, ByteString.copyFrom(setMember));
-                i++;
-            }
         }
         else
         {
