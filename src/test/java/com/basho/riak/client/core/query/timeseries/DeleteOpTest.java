@@ -11,8 +11,11 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by alex on 10/27/15.
+ * Time Series Delete Operation Unit Tests
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
  */
+
 public class DeleteOpTest
 {
     private final long now = 1443796900000l; // "now"
@@ -34,25 +37,25 @@ public class DeleteOpTest
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfTableNameIsMissing()
     {
-        DeleteOperation cmd = new DeleteOperation.Builder(null, keyValues).build();
+        new DeleteOperation.Builder(null, keyValues).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfTableNameIsBlank()
     {
-        DeleteOperation cmd = new DeleteOperation.Builder(BinaryValue.create(""), keyValues).build();
+        new DeleteOperation.Builder(BinaryValue.create(""), keyValues).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreNull()
     {
-        DeleteOperation cmd = new DeleteOperation.Builder(tableNameBV, null).build();
+        new DeleteOperation.Builder(tableNameBV, null).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreMissing()
     {
-        DeleteOperation cmd = new DeleteOperation.Builder(tableNameBV, new ArrayList<Cell>(0)).build();
+        new DeleteOperation.Builder(tableNameBV, new ArrayList<Cell>(0)).build();
     }
 
 }

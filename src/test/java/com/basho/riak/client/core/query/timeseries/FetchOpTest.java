@@ -1,19 +1,19 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by alex on 10/26/15.
+ * Time Series Query Operation Unit Tests
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.3
  */
 
 public class FetchOpTest
@@ -35,25 +35,25 @@ public class FetchOpTest
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfTableNameIsMissing()
     {
-        FetchOperation cmd = new FetchOperation.Builder(null, keyValues).build();
+        new FetchOperation.Builder(null, keyValues).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfTableNameIsBlank()
     {
-        FetchOperation cmd = new FetchOperation.Builder(BinaryValue.create(""), keyValues).build();
+        new FetchOperation.Builder(BinaryValue.create(""), keyValues).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreNull()
     {
-        FetchOperation cmd = new FetchOperation.Builder(tableNameBV, null).build();
+        new FetchOperation.Builder(tableNameBV, null).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreMissing()
     {
-        FetchOperation cmd = new FetchOperation.Builder(tableNameBV, new ArrayList<Cell>(0)).build();
+        new FetchOperation.Builder(tableNameBV, new ArrayList<Cell>(0)).build();
     }
 
 }
