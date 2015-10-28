@@ -18,8 +18,7 @@ import java.util.List;
 /**
  * Created by alex on 10/26/15.
  */
-public class FetchOperation
-        extends PBFutureOperation<QueryResult, RiakKvPB.TsGetResp, BinaryValue, RiakKvPB.TsGetReq.Builder>
+public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGetResp, BinaryValue>
 {
     private static final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
 
@@ -27,16 +26,8 @@ public class FetchOperation
     {
         super(RiakMessageCodes.MSG_TsGetReq,
               RiakMessageCodes.MSG_TsGetResp,
-              RiakKvPB.TsGetReq.newBuilder(),
+              builder.reqBuilder,
               RiakKvPB.TsGetResp.PARSER);
-
-        this.reqBuilder.setTable(ByteString.copyFrom(builder.tableName.getValue()));
-        this.reqBuilder.addAllKey(TimeSeriesPBConverter.convertCellsToPb(builder.keyValues));
-
-        if(builder.timeout != 0)
-        {
-            this.reqBuilder.setTimeout(builder.timeout);
-        }
     }
 
     @Override
@@ -65,18 +56,34 @@ public class FetchOperation
     public static class Builder
     {
         private final BinaryValue tableName;
-        private final ArrayList<Cell> keyValues;
+        private final List<Cell> keyValues;
         private int timeout = 0;
 
-        public Builder(String tableName, Collection<Cell> keyValues)
+        private final RiakKvPB.TsGetReq.Builder reqBuilder = RiakKvPB.TsGetReq.newBuilder();
+
+        public Builder(BinaryValue tableName, List<Cell> keyValues)
         {
-            this.tableName = BinaryValue.createFromUtf8(tableName);
-            this.keyValues = new ArrayList<Cell>(keyValues);
+            if (tableName == null || tableName.length() == 0)
+            {
+                throw new IllegalArgumentException("Table Name cannot be null or an empty string.");
+            }
+
+            if (keyValues == null || keyValues.size() == 0)
+            {
+                throw new IllegalArgumentException("Key Values cannot be null or an empty list.");
+            }
+
+            this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
+            this.reqBuilder.addAllKey(TimeSeriesPBConverter.convertCellsToPb(keyValues));
+
+            this.tableName = tableName;
+            this.keyValues = keyValues;
         }
 
         public Builder withTimeout(int timeout)
         {
             this.timeout = timeout;
+            this.reqBuilder.setTimeout(timeout);
             return this;
         }
 

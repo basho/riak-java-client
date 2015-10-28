@@ -1,6 +1,5 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
@@ -19,8 +18,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class DeleteOperation
-        extends PBFutureOperation<Void, RiakKvPB.TsDelResp, BinaryValue, RiakKvPB.TsDelReq.Builder>
+public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp, BinaryValue>
 {
     private final Builder builder;
     private static final Logger logger = LoggerFactory.getLogger(DeleteOperation.class);

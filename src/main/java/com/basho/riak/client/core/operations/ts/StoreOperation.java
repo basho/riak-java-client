@@ -21,7 +21,7 @@ import java.util.List;
  * @since 2.0.3
  */
 public class StoreOperation
-        extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue, RiakKvPB.TsPutReq.Builder>
+        extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
 

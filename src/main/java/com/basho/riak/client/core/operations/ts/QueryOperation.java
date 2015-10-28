@@ -18,8 +18,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class QueryOperation
-        extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue, RiakKvPB.TsQueryReq.Builder>
+public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
 {
     private final BinaryValue queryText;
     private static final Logger logger = LoggerFactory.getLogger(QueryOperation.class);
