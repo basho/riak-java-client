@@ -50,11 +50,6 @@ public class Delete extends RiakCommand<Void, BinaryValue>
             opBuilder.withTimeout(builder.timeout);
         }
 
-        if(builder.vClock != null)
-        {
-            opBuilder.withVClock(builder.vClock);
-        }
-
         return opBuilder.build();
     }
 
@@ -65,10 +60,7 @@ public class Delete extends RiakCommand<Void, BinaryValue>
     {
         private final String tableName;
         private final List<Cell> keyValues;
-
-        private final RiakKvPB.TsDelReq.Builder reqBuilder = RiakKvPB.TsDelReq.newBuilder();
         private int timeout;
-        private VClock vClock;
 
         /**
          * Construct a Builder for a Time Series Delete command.
@@ -105,18 +97,6 @@ public class Delete extends RiakCommand<Void, BinaryValue>
                 throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
             }
             this.timeout = timeout;
-            return this;
-        }
-
-        /**
-         *  Specify the VClock to use when deleting the row from Riak.
-         *
-         * @param vClock the vClock to match.
-         * @return a reference to this object.
-         */
-        public Builder withVClock(VClock vClock)
-        {
-            this.vClock = vClock;
             return this;
         }
 

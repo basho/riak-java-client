@@ -113,12 +113,6 @@ public class DeleteOperation
             return this;
         }
 
-        public Builder withVClock(VClock vClock)
-        {
-            reqBuilder.setVclock(ByteString.copyFrom(vClock.getBytes()));
-            return this;
-        }
-
         public DeleteOperation build()
         {
             return new DeleteOperation(this);
