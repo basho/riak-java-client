@@ -2,6 +2,7 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.timeseries.Delete;
+import com.basho.riak.client.api.commands.timeseries.Fetch;
 import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.api.commands.timeseries.Store;
 import com.basho.riak.client.core.RiakFuture;
@@ -256,6 +257,21 @@ public class ITestTimeSeries extends ITestBase
         future.await();
         assertFalse(future.isSuccess());
         assertEquals(future.cause().getClass(), RiakResponseException.class);
+    }
+
+    @Test
+    public void TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo));
+        Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
+
+        QueryResult queryResult = client.execute(fetch);
+        assertEquals(1, queryResult.getRows().size());
+        Row row = queryResult.getRows().get(0);
+        assertEquals("rain", row.getCells().get(4).getUtf8String());
+        assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }
 
     @Test

@@ -1,48 +1,47 @@
 package com.basho.riak.client.api.commands.timeseries;
 
 import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.ts.DeleteOperation;
+import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
- * Time Series Delete Command
- * Allows you to delete a single time series row by its key values.
+ * Time Series Fetch Command
+ * Allows you to fetch a single time series row by its key values.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class Delete extends RiakCommand<Void, BinaryValue>
+public class Fetch extends RiakCommand<QueryResult, BinaryValue>
 {
-    private static final Logger logger = LoggerFactory.getLogger(Delete.class);
+    private static final Logger logger = LoggerFactory.getLogger(Fetch.class);
     private final Builder builder;
 
-    private Delete(Builder builder)
+    private Fetch(Builder builder)
     {
         this.builder = builder;
     }
 
     @Override
-    protected RiakFuture<Void, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Void, BinaryValue> future =
+        RiakFuture<QueryResult, BinaryValue> future =
                 cluster.execute(buildCoreOperation());
 
         return future;
     }
 
-    private DeleteOperation buildCoreOperation()
+    private FetchOperation buildCoreOperation()
     {
-        final DeleteOperation.Builder opBuilder =
-                new DeleteOperation.Builder(BinaryValue.create(this.builder.tableName), builder.keyValues);
+        final FetchOperation.Builder opBuilder =
+                new FetchOperation.Builder(BinaryValue.create(this.builder.tableName), builder.keyValues);
 
         if(builder.timeout > 0)
         {
@@ -53,7 +52,7 @@ public class Delete extends RiakCommand<Void, BinaryValue>
     }
 
     /**
-     * Used to construct a Time Series Delete command.
+     * Used to construct a Time Series Fetch command.
      */
     public static class Builder
     {
@@ -62,9 +61,9 @@ public class Delete extends RiakCommand<Void, BinaryValue>
         private int timeout;
 
         /**
-         * Construct a Builder for a Time Series Delete command.
-         * @param tableName Required. The name of the table to delete from.
-         * @param keyValues Required. The cells that make up the key that identifies which row to delete.
+         * Construct a Builder for a Time Series Fetch command.
+         * @param tableName Required. The name of the table to fetch from.
+         * @param keyValues Required. The cells that make up the key that identifies which row to fetch.
          *                  Must be in the same order as the table definition.
          */
         public Builder(String tableName, List<Cell> keyValues)
@@ -100,12 +99,12 @@ public class Delete extends RiakCommand<Void, BinaryValue>
         }
 
         /**
-         * Construct a Time Series Delete object.
-         * @return a new Time Series Delete instance.
+         * Construct a Time Series Fetch object.
+         * @return a new Time Series Fetch instance.
          */
-        public Delete build()
+        public Fetch build()
         {
-            return new Delete(this);
+            return new Fetch(this);
         }
     }
 }
