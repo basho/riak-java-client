@@ -82,15 +82,6 @@ public class CellTest
     }
 
     @Test
-    public void TestFloats()
-    {
-        float f = 42.01f;
-        Cell c = new Cell(f);
-        assertTrue(c.hasFloat());
-        assertFalse(c.hasNumeric());
-        assertEquals(c.getFloat(), f);
-    }
-    @Test
     public void TestDoubles()
     {
         double d = 42.0123456789123456789d;

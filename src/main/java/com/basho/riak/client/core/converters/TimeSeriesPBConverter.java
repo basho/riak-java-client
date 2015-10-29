@@ -246,10 +246,6 @@ public final class TimeSeriesPBConverter
         {
             cellBuilder.setTimestampValue(cell.getTimestamp());
         }
-        else if(cell.hasFloat())
-        {
-            cellBuilder.setFloatValue(cell.getFloat());
-        }
         else if(cell.hasDouble())
         {
             cellBuilder.setDoubleValue(cell.getDouble());

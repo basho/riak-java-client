@@ -14,7 +14,6 @@ import java.util.Date;
  * <ol>
  *     <li><b>BinaryValue</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
- *     <li><b>Float</b>s, which can hold any 32-bit floating point numbers.</li>
  *     <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
  *     <li><b>Numeric</b>s, which can hold any floating/fixed point number.
  *     A conversion to an ASCII-encoded decimal string under the covers is made to provide type/value flexibility.</li>
@@ -80,16 +79,6 @@ public class Cell
     }
 
     /**
-     * Creates a new float cell.
-     * @param value The float to store.
-     */
-    public Cell(float value)
-    {
-        this.floatValue = value;
-        this.isFloatCell = true;
-    }
-
-    /**
      * Creates a new double cell.
      * @param value The double to store.
      */
@@ -134,13 +123,11 @@ public class Cell
     protected byte[] numericValue;
     protected long timestampValue;
     protected boolean booleanValue;
-    protected float floatValue;
     protected double doubleValue;
 
     private boolean isIntegerCell = false;
     private boolean isTimestampCell = false;
     private boolean isBooleanCell = false;
-    private boolean isFloatCell = false;
     private boolean isDoubleCell = false;
 
     /**
@@ -209,12 +196,6 @@ public class Cell
     }
 
     /**
-     * Indicates whether this Cell contains a Float value.
-     * @return true if it contains a Float value, false otherwise.
-     */
-    public boolean hasFloat() { return this.isFloatCell; }
-
-    /**
      * Indicates whether this Cell contains a Double value.
      * @return true if it contains a Double value, false otherwise.
      */
@@ -272,15 +253,6 @@ public class Cell
     public String getRawNumericString()
     {
         return new String(this.getRawNumeric(), ASCII_Charset);
-    }
-
-    /**
-     * Returns the "Float" value.
-     * @return The float value.
-     */
-    public float getFloat()
-    {
-        return this.floatValue;
     }
 
     /**

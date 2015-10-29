@@ -64,16 +64,6 @@ public class ITestTimeSeries extends ITestBase
             new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
             new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")));
 
-
-    //    @Test(expected = IllegalArgumentException.class)
-    //    public void ensureWeCatchInvalidParams()
-    //    {
-    //        final String queryText = "select * from GeoCheckin";
-    //
-    //        Query.Builder query = new Query.Builder(queryText);
-    //        query.addStringParameter(":foo", "123");
-    //    }
-
 //    @BeforeClass
 //    public static void BeforeClass()
 //    {
@@ -220,7 +210,6 @@ public class ITestTimeSeries extends ITestBase
         {
             assertEquals(1, row.getCells().size());
             Cell resultCell = row.getCells().get(0);
-            assertFalse(resultCell.hasFloat());
             assertFalse(resultCell.hasNumeric());
             assertTrue(resultCell.hasDouble());
             assertEquals(70d, resultCell.getDouble(), Double.MIN_VALUE);
@@ -274,7 +263,7 @@ public class ITestTimeSeries extends ITestBase
         }
         else
         {
-            assertEquals(Float.toString(expectedCells.get(4).getFloat()), Float.toString(actualCells.get(4).getFloat()));
+            assertEquals(Double.toString(expectedCells.get(4).getDouble()), Double.toString(actualCells.get(4).getDouble()));
         }
     }
 
