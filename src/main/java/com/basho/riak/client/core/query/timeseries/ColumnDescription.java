@@ -13,13 +13,11 @@ public class ColumnDescription
 {
     private final String name;
     private final ColumnType type;
-    private final Collection<ColumnType> complexType;
 
-    public ColumnDescription(String name, ColumnType type, Collection<ColumnType> complexType)
+    public ColumnDescription(String name, ColumnType type)
     {
         this.name = name;
         this.type = type;
-        this.complexType = complexType;
     }
 
     public String getName()
@@ -32,10 +30,6 @@ public class ColumnDescription
         return type;
     }
 
-    public Collection<ColumnType> getComplexType()
-    {
-        return complexType;
-    }
 
     public enum ColumnType
     {
@@ -43,9 +37,7 @@ public class ColumnDescription
         INTEGER(1),
         FLOAT(2),
         TIMESTAMP(3),
-        BOOLEAN(4),
-        SET(5),
-        MAP(6);
+        BOOLEAN(4);
 
         private static Map<Integer, ColumnType> map = new HashMap<Integer, ColumnType>();
 

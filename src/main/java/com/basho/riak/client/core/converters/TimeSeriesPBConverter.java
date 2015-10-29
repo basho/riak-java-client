@@ -67,19 +67,8 @@ public final class TimeSeriesPBConverter
         final RiakKvPB.TsColumnDescription.Builder columnBuilder = RiakKvPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));
 
-        if(column.getType() != null)
-        {
-            columnBuilder.setType(RiakKvPB.TsColumnType.valueOf(column.getType().getId()));
-        }
+        columnBuilder.setType(RiakKvPB.TsColumnType.valueOf(column.getType().getId()));
 
-        final Collection<ColumnDescription.ColumnType> complexType = column.getComplexType();
-        if(complexType != null)
-        {
-            for (ColumnDescription.ColumnType complexTypePart : complexType)
-            {
-                columnBuilder.addComplexType(RiakKvPB.TsColumnType.valueOf(complexTypePart.getId()));
-            }
-        }
         return columnBuilder.build();
     }
 
@@ -213,7 +202,7 @@ public final class TimeSeriesPBConverter
             complexType.add(ColumnDescription.ColumnType.valueOf(pbComplexType.getNumber()));
         }
 
-        return new ColumnDescription(name, type, complexType);
+        return new ColumnDescription(name, type);
     }
 
     private static RiakKvPB.TsCell convertCellToPb(Cell cell)
