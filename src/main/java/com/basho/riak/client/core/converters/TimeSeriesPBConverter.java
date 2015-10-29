@@ -23,7 +23,7 @@ public final class TimeSeriesPBConverter
 {
     private TimeSeriesPBConverter() {}
 
-    public static QueryResult convertPbQueryResp(RiakKvPB.TsQueryResp response)
+    public static QueryResult convertPbGetResp(RiakKvPB.TsQueryResp response)
     {
         if(response == null)
         {
@@ -39,7 +39,7 @@ public final class TimeSeriesPBConverter
     public static Collection<RiakKvPB.TsColumnDescription> convertColumnDescriptionsToPb(
             Collection<ColumnDescription> columns)
     {
-        ArrayList<RiakKvPB.TsColumnDescription> pbColumns = new ArrayList<RiakKvPB.TsColumnDescription>(columns.size());
+        final ArrayList<RiakKvPB.TsColumnDescription> pbColumns = new ArrayList<RiakKvPB.TsColumnDescription>(columns.size());
 
         for (ColumnDescription column : columns)
         {
@@ -49,49 +49,40 @@ public final class TimeSeriesPBConverter
         return pbColumns;
     }
 
-    public static RiakKvPB.TsColumnDescription convertColumnDescriptionToPb(ColumnDescription column)
+    private static RiakKvPB.TsColumnDescription convertColumnDescriptionToPb(ColumnDescription column)
     {
-        RiakKvPB.TsColumnDescription.Builder columnBuilder = RiakKvPB.TsColumnDescription.newBuilder();
+        final RiakKvPB.TsColumnDescription.Builder columnBuilder = RiakKvPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));
 
-        if(column.getType() != null)
-        {
-            columnBuilder.setType(RiakKvPB.TsColumnType.valueOf(column.getType().getId()));
-        }
+        columnBuilder.setType(RiakKvPB.TsColumnType.valueOf(column.getType().getId()));
 
-        Collection<ColumnDescription.ColumnType> complexType = column.getComplexType();
-        if(complexType != null)
-        {
-            for (ColumnDescription.ColumnType complexTypePart : complexType)
-            {
-                columnBuilder.addComplexType(RiakKvPB.TsColumnType.valueOf(complexTypePart.getId()));
-            }
-        }
         return columnBuilder.build();
     }
 
     public static Collection<RiakKvPB.TsRow> convertRowsToPb(Collection<Row> rows)
     {
-        ArrayList<RiakKvPB.TsRow> pbRows = new ArrayList<RiakKvPB.TsRow>(rows.size());
+        final ArrayList<RiakKvPB.TsRow> pbRows = new ArrayList<RiakKvPB.TsRow>(rows.size());
 
         for (Row row : rows)
         {
-            pbRows.add(convertRowToPb(row));
+            final RiakKvPB.TsRow.Builder rowBuilder = RiakKvPB.TsRow.newBuilder();
+            rowBuilder.addAllCells(convertCellsToPb(row.getCells()));
+            pbRows.add(rowBuilder.build());
         }
 
         return pbRows;
     }
 
-    public static RiakKvPB.TsRow convertRowToPb(Row row)
+    private static ArrayList<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
     {
-        RiakKvPB.TsRow.Builder rowBuilder = RiakKvPB.TsRow.newBuilder();
+        final ArrayList<RiakKvPB.TsCell> pbCells = new ArrayList<RiakKvPB.TsCell>(cells.size());
 
-        for (Cell cell : row.getCells())
+        for (Cell cell : cells)
         {
-            rowBuilder.addCells(convertCellToPb(cell));
+            pbCells.add(convertCellToPb(cell));
         }
 
-        return rowBuilder.build();
+        return pbCells;
     }
 
     private static List<Row> convertPbRows(List<RiakKvPB.TsRow> pbRows, List<ColumnDescription> columnDescriptions)
@@ -101,7 +92,7 @@ public final class TimeSeriesPBConverter
             return Collections.emptyList();
         }
 
-        ArrayList<Row> rows = new ArrayList<Row>(pbRows.size());
+        final ArrayList<Row> rows = new ArrayList<Row>(pbRows.size());
 
         for (RiakKvPB.TsRow pbRow : pbRows)
         {
@@ -138,14 +129,6 @@ public final class TimeSeriesPBConverter
         {
             cell = new Cell(pbCell.getIntegerValue());
         }
-        else if (columnType == ColumnDescription.ColumnType.MAP && pbCell.hasMapValue())
-        {
-            cell = Cell.newMap(pbCell.getMapValue().toByteArray());
-        }
-        else if (columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasNumericValue())
-        {
-            cell = Cell.newNumeric(pbCell.getNumericValue().toByteArray());
-        }
         else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasIntegerValue())
         {
             cell = Cell.newTimestamp(pbCell.getIntegerValue());
@@ -162,18 +145,6 @@ public final class TimeSeriesPBConverter
         {
             cell = new Cell(pbCell.getDoubleValue());
         }
-        else if(columnType == ColumnDescription.ColumnType.SET) // Set
-        {
-            int size = pbCell.getSetValueCount();
-            byte[][] set = new byte[size][];
-
-            for (int setIdx = 0; setIdx < size; setIdx++)
-            {
-                set[setIdx] = pbCell.getSetValue(setIdx).toByteArray();
-            }
-
-            cell = Cell.newSet(set);
-        }
         else // Null cell
         {
             cell = null;
@@ -189,7 +160,7 @@ public final class TimeSeriesPBConverter
             return Collections.emptyList();
         }
 
-        ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
+        final ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
 
         for (RiakKvPB.TsColumnDescription pbColumn : pbColumns)
         {
@@ -203,26 +174,20 @@ public final class TimeSeriesPBConverter
 
     private static ColumnDescription convertPBColumnDescription(RiakKvPB.TsColumnDescription pbColumn)
     {
-        String name = pbColumn.getName().toStringUtf8();
+        final String name = pbColumn.getName().toStringUtf8();
 
-        ColumnDescription.ColumnType type = ColumnDescription.ColumnType.valueOf(pbColumn.getType().getNumber());
-        List<ColumnDescription.ColumnType> complexType =
-                new ArrayList<ColumnDescription.ColumnType>(pbColumn.getComplexTypeCount());
+        final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.valueOf(pbColumn.getType().getNumber());
 
-        for (RiakKvPB.TsColumnType pbComplexType : pbColumn.getComplexTypeList())
-        {
-            complexType.add(ColumnDescription.ColumnType.valueOf(pbComplexType.getNumber()));
-        }
-
-        return new ColumnDescription(name, type, complexType);
+        return new ColumnDescription(name, type);
     }
 
     private static RiakKvPB.TsCell convertCellToPb(Cell cell)
     {
-        RiakKvPB.TsCell.Builder cellBuilder = RiakKvPB.TsCell.newBuilder();
+        final RiakKvPB.TsCell.Builder cellBuilder = RiakKvPB.TsCell.newBuilder();
 
         if(cell == null)
         {
+            // Return empty cell
             return cellBuilder.build();
         }
 
@@ -234,38 +199,17 @@ public final class TimeSeriesPBConverter
         {
             cellBuilder.setBooleanValue(cell.getBoolean());
         }
-        else if(cell.hasInt())
+        else if(cell.hasLong())
         {
             cellBuilder.setIntegerValue(cell.getLong());
-        }
-        else if(cell.hasMap())
-        {
-            cellBuilder.setMapValue(ByteString.copyFrom(cell.getMap()));
-        }
-        else if(cell.hasNumeric())
-        {
-            cellBuilder.setNumericValue(ByteString.copyFrom(cell.getRawNumeric()));
         }
         else if(cell.hasTimestamp())
         {
             cellBuilder.setTimestampValue(cell.getTimestamp());
         }
-        else if(cell.hasFloat())
-        {
-            cellBuilder.setFloatValue(cell.getFloat());
-        }
         else if(cell.hasDouble())
         {
             cellBuilder.setDoubleValue(cell.getDouble());
-        }
-        else if(cell.hasSet())// Set
-        {
-            int i = cellBuilder.getSetValueCount();
-            for (byte[] setMember : cell.getSet())
-            {
-                cellBuilder.setSetValue(i, ByteString.copyFrom(setMember));
-                i++;
-            }
         }
         else
         {

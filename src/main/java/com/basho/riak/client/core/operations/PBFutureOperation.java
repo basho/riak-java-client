@@ -11,17 +11,26 @@ import org.slf4j.LoggerFactory;
  * An abstract PB operation that introduces generic encoding/decoding
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
+ * @param <T> The type the operation returns
+ * @param <U> The protocol type returned
+ * @param <S> Query info type
+ * @param <B> The protocol buffer request builder type
+
  * @since 2.0.3
  */
-public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S> {
-    private final Builder<?> reqBuilder;
+public abstract class PBFutureOperation<T, U, S, B extends Builder> extends FutureOperation<T, U, S> {
+    protected final B reqBuilder;
     private final com.google.protobuf.Parser<U> respParser;
     private final byte reqMessageCode;
     private final byte respMessageCode;
 
 
-    protected PBFutureOperation(final byte reqMessageCode, final byte respMessageCode, Builder<?> reqBuilder,
-                                com.google.protobuf.Parser<U> respParser) {
+    protected PBFutureOperation(final byte reqMessageCode,
+                                final byte respMessageCode,
+                                final B reqBuilder,
+                                com.google.protobuf.Parser<U> respParser)
+    {
         this.reqBuilder = reqBuilder;
         this.respParser = respParser;
         this.reqMessageCode = reqMessageCode;

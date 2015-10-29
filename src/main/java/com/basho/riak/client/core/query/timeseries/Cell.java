@@ -14,16 +14,9 @@ import java.util.Date;
  * <ol>
  *     <li><b>BinaryValue</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
- *     <li><b>Float</b>s, which can hold any 32-bit floating point numbers.</li>
  *     <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
- *     <li><b>Numeric</b>s, which can hold any floating/fixed point number.
- *     A conversion to an ASCII-encoded decimal string under the covers is made to provide type/value flexibility.</li>
  *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
  *     <li><b>Boolean</b>s, which can hold a true/false value. </li>
- *     <li><b>Map</b>s, which can hold an encoded Map as a byte array.
- *     Use the @{link MapCell} class to help in encoding/decoding these values.</li>
- *     <li><b>Sets</b>s, which can hold an encoded Set as an array of byte arrays.
- *     Use the @{link SetCell} class to help in encoding/decoding these values.  </li>
  * </ol>
  *
  * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
@@ -40,8 +33,6 @@ import java.util.Date;
  */
 public class Cell
 {
-    public static final Charset ASCII_Charset = Charset.forName("US-ASCII");
-
     Cell() {}
 
     /**
@@ -63,17 +54,6 @@ public class Cell
     }
 
     /**
-     * Creates a new "Integer" Cell from the provided int.
-     * This value will be cast to a long internally for storage.
-     * @param value The int to store.
-     */
-    public Cell(int value)
-    {
-        this.integerValue = (long) value;
-        this.isIntegerCell = true;
-    }
-
-    /**
      * Creates a new "Integer" Cell from the provided long.
      * @param value The long to store.
      */
@@ -81,16 +61,6 @@ public class Cell
     {
         this.integerValue = value;
         this.isIntegerCell = true;
-    }
-
-    /**
-     * Creates a new float cell.
-     * @param value The float to store.
-     */
-    public Cell(float value)
-    {
-        this.floatValue = value;
-        this.isFloatCell = true;
     }
 
     /**
@@ -135,18 +105,13 @@ public class Cell
 
     protected BinaryValue binaryValue;
     protected long integerValue;
-    protected byte[] numericValue;
     protected long timestampValue;
     protected boolean booleanValue;
-    protected byte[][] setValue;
-    protected byte[] mapValue;
-    protected float floatValue;
     protected double doubleValue;
 
     private boolean isIntegerCell = false;
     private boolean isTimestampCell = false;
     private boolean isBooleanCell = false;
-    private boolean isFloatCell = false;
     private boolean isDoubleCell = false;
 
     /**
@@ -168,17 +133,6 @@ public class Cell
     }
 
     /**
-     * Indicates whether this Cell contains a valid signed 32-bit integer value ({@link Integer}).
-     * @return true if it contains a valid java @{link Int} value, false otherwise.
-     */
-    public boolean hasInt()
-    {
-        return this.isIntegerCell &&
-               this.integerValue < Integer.MAX_VALUE &&
-               this.integerValue > Integer.MIN_VALUE;
-    }
-
-    /**
      * Indicates whether this Cell contains a valid signed 64-bit long integer value ({@link Long}).
      * @return true if it contains a java @{link Long} value, false otherwise.
      */
@@ -186,12 +140,6 @@ public class Cell
     {
         return this.isIntegerCell;
     }
-
-    /**
-     * Indicates whether this Cell contains a Numeric value.
-     * @return true if it contains a Numeric value, false otherwise.
-     */
-    public boolean hasNumeric() { return this.numericValue != null && this.numericValue.length > 0; }
 
     /**
      * Indicates whether this Cell contains a Timestamp value.
@@ -213,30 +161,6 @@ public class Cell
     {
         return this.isBooleanCell;
     }
-
-    /**
-     * Indicates whether this Cell contains a Set value.
-     * @return true if it contains a Set value, false otherwise.
-     */
-    public boolean hasSet()
-    {
-        return this.setValue != null;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Map value.
-     * @return true if it contains a Map value, false otherwise.
-     */
-    public boolean hasMap()
-    {
-        return this.mapValue != null;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Float value.
-     * @return true if it contains a Float value, false otherwise.
-     */
-    public boolean hasFloat() { return this.isFloatCell; }
 
     /**
      * Indicates whether this Cell contains a Double value.
@@ -272,42 +196,6 @@ public class Cell
     }
 
     /**
-     * Returns the "Integer" value, cast to an int.
-     * @return The integer value, as a Java int.
-     */
-    public int getInt()
-    {
-        return (int) this.integerValue;
-    }
-
-    /**
-     * Returns the raw "Numeric" value.
-     * @return The @{code byte[]} of the ASCII encoded string containing the Numeric value.
-     */
-    public byte[] getRawNumeric()
-    {
-        return this.numericValue;
-    }
-
-    /**
-     * Returns the "Numeric" value, decoded to a String representation.
-     * @return The string of the Numeric value, such as "123.456".
-     */
-    public String getRawNumericString()
-    {
-        return new String(this.getRawNumeric(), ASCII_Charset);
-    }
-
-    /**
-     * Returns the "Float" value.
-     * @return The float value.
-     */
-    public float getFloat()
-    {
-        return this.floatValue;
-    }
-
-    /**
      * Returns the the "Double" value.
      * @return The double value.
      */
@@ -339,50 +227,6 @@ public class Cell
     }
 
     /**
-     * Returns the raw "Set" value.
-     * @return The raw array of byte-arrays encoding the set values.
-     * Each value is it's own @{code byte[]}, and the outer array is the collection of them all (the set).
-     */
-    public byte[][] getSet()
-    {
-        return setValue;
-    }
-
-    /**
-     * Returns the raw "Map" value.
-     * @return The raw byte-array encoding the Map.
-     */
-    public byte[] getMap()
-    {
-        return mapValue;
-    }
-
-    /**
-     * Creates a new "Numeric" Cell from the provided String .
-     * @param value The string containing the numeric value, such as "123.456".  Negative numbers and scientific notation are allowed.
-     * @return The new Numeric Cell.
-     */
-    public static Cell newNumeric(String value)
-    {
-        Cell cell = new Cell();
-        byte[] rawNumeric = value.getBytes(ASCII_Charset);
-        cell.numericValue = ByteBuffer.allocate(rawNumeric.length).order(ByteOrder.BIG_ENDIAN).put(rawNumeric).array();
-        return cell;
-    }
-
-    /**
-     * Creates a new "Numeric" Cell from the provided byte value.
-     * @param value
-     * @return The new Numeric Cell.
-     */
-    public static Cell newNumeric(byte[] value)
-    {
-        Cell cell = new Cell();
-        cell.numericValue = value;
-        return cell;
-    }
-
-    /**
      * Creates a new "Timestamp" cell from the provided raw value.
      * @param value The epoch timestamp, including milliseconds.
      * @return The new timestamp Cell.
@@ -392,32 +236,6 @@ public class Cell
         Cell cell = new Cell();
         cell.timestampValue = value;
         cell.isTimestampCell = true;
-        return cell;
-    }
-
-    /**
-     * Creates a new "Set" cell from the provided raw encoded value.
-     * Use the @{link SetCell} class to help in encoding/decoding these values.
-     * @param value The raw binary data for the set value.
-     * @return The new set Cell.
-     */
-    public static Cell newSet(byte[][] value)
-    {
-        Cell cell = new Cell();
-        cell.setValue = value;
-        return cell;
-    }
-
-    /**
-     * Creates a new "Map" cell from the provided raw encoded value.
-     * Use the @{link MapCell} class to help in encoding/decoding these values.
-     * @param value The raw binary data for the map value.
-     * @return The new map Cell.
-     */
-    public static Cell newMap(byte[] value)
-    {
-        Cell cell = new Cell();
-        cell.mapValue = value;
         return cell;
     }
 }

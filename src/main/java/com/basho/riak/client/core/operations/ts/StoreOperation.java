@@ -18,16 +18,17 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class StoreOperation extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
+public class StoreOperation
+        extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue, RiakKvPB.TsPutReq.Builder>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
 
-    private final RiakKvPB.TsPutReq.Builder reqBuilder;
-
     private StoreOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsPutReq, RiakMessageCodes.MSG_TsPutResp, builder.reqBuilder, RiakKvPB.TsPutResp.PARSER);
-        this.reqBuilder = builder.reqBuilder;
+        super(RiakMessageCodes.MSG_TsPutReq,
+              RiakMessageCodes.MSG_TsPutResp,
+              builder.reqBuilder,
+              RiakKvPB.TsPutResp.PARSER);
     }
 
     @Override

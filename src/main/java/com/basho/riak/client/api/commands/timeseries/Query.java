@@ -64,7 +64,6 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
                 throw new IllegalArgumentException(msg);
             }
 
-
             this.queryText = BinaryValue.createFromUtf8(queryText);
 
             Matcher paramMatcher = paramPattern.matcher(queryText);
@@ -81,20 +80,6 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
                 knownParams.add(paramMatcher.group(i));
             }
         }
-
-//        public Builder addStringParameter(String key, String value)
-//        {
-//            return this.addParameter(key, BinaryValue.createFromUtf8(key), BinaryValue.createFromUtf8(value));
-//        }
-//
-//        public Builder addStringParameters(Map<String, String> parameters)
-//        {
-//            for( Map.Entry<String, String> parameter : parameters.entrySet())
-//            {
-//                addStringParameter(parameter.getKey(), parameter.getValue());
-//            }
-//            return this;
-//        }
 
         private Builder addParameter(String keyString, BinaryValue key, BinaryValue value)
         {

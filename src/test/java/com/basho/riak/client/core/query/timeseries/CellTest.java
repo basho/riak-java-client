@@ -19,7 +19,6 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
-import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -53,22 +52,11 @@ public class CellTest
     }
 
     @Test
-    public void TestInts()
-    {
-        int i = 42;
-        Cell c = new Cell(i);
-        assertTrue(c.hasInt());
-        assertTrue(c.hasLong());
-        assertEquals(c.getInt(), i);
-    }
-
-    @Test
     public void TestLongs()
     {
         long l = 42l;
         Cell c = new Cell(l);
         assertTrue(c.hasLong());
-        assertTrue(c.hasInt());
         assertEquals(c.getLong(), l);
     }
 
@@ -78,26 +66,15 @@ public class CellTest
         long l = ((long)Integer.MAX_VALUE) + 1;
         Cell c = new Cell(l);
         assertTrue(c.hasLong());
-        assertFalse(c.hasInt());
         assertEquals(c.getLong(), l);
     }
 
-    @Test
-    public void TestFloats()
-    {
-        float f = 42.01f;
-        Cell c = new Cell(f);
-        assertTrue(c.hasFloat());
-        assertFalse(c.hasNumeric());
-        assertEquals(c.getFloat(), f);
-    }
     @Test
     public void TestDoubles()
     {
         double d = 42.0123456789123456789d;
         Cell c = new Cell(d);
         assertTrue(c.hasDouble());
-        assertFalse(c.hasNumeric());
         assertEquals(c.getDouble(), d);
     }
     @Test
@@ -125,35 +102,11 @@ public class CellTest
         assertEquals(c.getTimestamp(), d.getTime());
     }
     @Test
-    public void TestRawNumeric()
-    {
-        byte[] ba = "-42.02".getBytes();
-        Cell c = Cell.newNumeric(ba);
-        assertTrue(c.hasNumeric());
-        assertEquals(c.getRawNumeric(), ba);
-    }
-    @Test
     public void TestRawTimestamps()
     {
         long t = new Date().getTime();
         Cell c = Cell.newTimestamp(t);
         assertTrue(c.hasTimestamp());
         assertEquals(c.getTimestamp(), t);
-    }
-
-    @Test
-    public void TestBCDEncoding()
-    {
-        Cell c = Cell.newNumeric("-42.02");
-
-        String floatString = c.getRawNumericString();
-        assertEquals('-', floatString.charAt(0));
-        assertEquals('.', floatString.charAt(3));
-
-
-        c = Cell.newNumeric("9.18E+09");
-        float f = Float.parseFloat(c.getRawNumericString());
-        assertEquals(9180000000f, f);
-
     }
 }

@@ -17,15 +17,20 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
+public class QueryOperation
+        extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue, RiakKvPB.TsQueryReq.Builder>
 {
-
+    private final BinaryValue queryText;
     private static final Logger logger = LoggerFactory.getLogger(QueryOperation.class);
 
     private QueryOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsQueryReq, RiakMessageCodes.MSG_TsQueryResp,
-                RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder), RiakKvPB.TsQueryResp.PARSER);
+        super(RiakMessageCodes.MSG_TsQueryReq,
+              RiakMessageCodes.MSG_TsQueryResp,
+              RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder),
+              RiakKvPB.TsQueryResp.PARSER);
+
+        this.queryText = builder.queryText;
     }
 
     @Override
@@ -39,20 +44,20 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
 
         RiakKvPB.TsQueryResp response = responses.get(0);
 
-
-        QueryResult result = TimeSeriesPBConverter.convertPbQueryResp(response);
+        QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
 
         return result;
     }
 
     @Override
     public BinaryValue getQueryInfo() {
-        return null;
+        return queryText;
     }
 
 
     public static class Builder
     {
+        private final BinaryValue queryText;
         private final RiakKvPB.TsInterpolation.Builder interpolationBuilder =
                 RiakKvPB.TsInterpolation.newBuilder();
 
@@ -60,33 +65,11 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
         {
             if (queryText == null || queryText.length() == 0)
             {
-                throw new IllegalArgumentException("QueryText can not be null or empty");
+                throw new IllegalArgumentException("QueryText cannot be null or empty");
             }
-
+            this.queryText = queryText;
             this.interpolationBuilder.setBase(ByteString.copyFrom(queryText.unsafeGetValue()));
         }
-
-//        private void addInterpolationAt(int index, BinaryValue key, BinaryValue value)
-//        {
-//            ByteString bsKey = ByteString.copyFrom(key.unsafeGetValue());
-//            ByteString bsValue = ByteString.copyFrom(value.unsafeGetValue());
-//
-//            RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder().setKey(bsKey).setValue(bsValue);
-//            this.interpolationBuilder.setInterpolations(index, pair);
-//        }
-//
-//        public Builder setInterpolations(Map<BinaryValue, BinaryValue> interpolations)
-//        {
-//            int i = this.interpolationBuilder.getInterpolationsCount();
-//
-//            for (Map.Entry<BinaryValue, BinaryValue> interpolation : interpolations.entrySet())
-//            {
-//                addInterpolationAt(i, interpolation.getKey(), interpolation.getValue());
-//                i++;
-//            }
-//
-//            return this;
-//        }
 
         public QueryOperation build()
         {
