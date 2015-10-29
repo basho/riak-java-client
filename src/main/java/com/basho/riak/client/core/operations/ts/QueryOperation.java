@@ -72,28 +72,6 @@ public class QueryOperation
             this.interpolationBuilder.setBase(ByteString.copyFrom(queryText.unsafeGetValue()));
         }
 
-//        private void addInterpolationAt(int index, BinaryValue key, BinaryValue value)
-//        {
-//            ByteString bsKey = ByteString.copyFrom(key.unsafeGetValue());
-//            ByteString bsValue = ByteString.copyFrom(value.unsafeGetValue());
-//
-//            RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder().setKey(bsKey).setValue(bsValue);
-//            this.interpolationBuilder.setInterpolations(index, pair);
-//        }
-//
-//        public Builder setInterpolations(Map<BinaryValue, BinaryValue> interpolations)
-//        {
-//            int i = this.interpolationBuilder.getInterpolationsCount();
-//
-//            for (Map.Entry<BinaryValue, BinaryValue> interpolation : interpolations.entrySet())
-//            {
-//                addInterpolationAt(i, interpolation.getKey(), interpolation.getValue());
-//                i++;
-//            }
-//
-//            return this;
-//        }
-
         public QueryOperation build()
         {
             return new QueryOperation(this);
