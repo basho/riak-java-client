@@ -234,7 +234,7 @@ public final class TimeSeriesPBConverter
         {
             cellBuilder.setBooleanValue(cell.getBoolean());
         }
-        else if(cell.hasInt())
+        else if(cell.hasLong())
         {
             cellBuilder.setIntegerValue(cell.getLong());
         }

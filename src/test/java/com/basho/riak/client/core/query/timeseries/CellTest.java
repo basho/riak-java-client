@@ -52,22 +52,11 @@ public class CellTest
     }
 
     @Test
-    public void TestInts()
-    {
-        int i = 42;
-        Cell c = new Cell(i);
-        assertTrue(c.hasInt());
-        assertTrue(c.hasLong());
-        assertEquals(c.getInt(), i);
-    }
-
-    @Test
     public void TestLongs()
     {
         long l = 42l;
         Cell c = new Cell(l);
         assertTrue(c.hasLong());
-        assertTrue(c.hasInt());
         assertEquals(c.getLong(), l);
     }
 
@@ -77,7 +66,6 @@ public class CellTest
         long l = ((long)Integer.MAX_VALUE) + 1;
         Cell c = new Cell(l);
         assertTrue(c.hasLong());
-        assertFalse(c.hasInt());
         assertEquals(c.getLong(), l);
     }
 

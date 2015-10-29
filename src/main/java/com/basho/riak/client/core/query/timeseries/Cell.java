@@ -58,17 +58,6 @@ public class Cell
     }
 
     /**
-     * Creates a new "Integer" Cell from the provided int.
-     * This value will be cast to a long internally for storage.
-     * @param value The int to store.
-     */
-    public Cell(int value)
-    {
-        this.integerValue = (long) value;
-        this.isIntegerCell = true;
-    }
-
-    /**
      * Creates a new "Integer" Cell from the provided long.
      * @param value The long to store.
      */
@@ -149,17 +138,6 @@ public class Cell
     }
 
     /**
-     * Indicates whether this Cell contains a valid signed 32-bit integer value ({@link Integer}).
-     * @return true if it contains a valid java @{link Int} value, false otherwise.
-     */
-    public boolean hasInt()
-    {
-        return this.isIntegerCell &&
-               this.integerValue < Integer.MAX_VALUE &&
-               this.integerValue > Integer.MIN_VALUE;
-    }
-
-    /**
      * Indicates whether this Cell contains a valid signed 64-bit long integer value ({@link Long}).
      * @return true if it contains a java @{link Long} value, false otherwise.
      */
@@ -226,15 +204,6 @@ public class Cell
     public long getLong()
     {
         return this.integerValue;
-    }
-
-    /**
-     * Returns the "Integer" value, cast to an int.
-     * @return The integer value, as a Java int.
-     */
-    public int getInt()
-    {
-        return (int) this.integerValue;
     }
 
     /**
