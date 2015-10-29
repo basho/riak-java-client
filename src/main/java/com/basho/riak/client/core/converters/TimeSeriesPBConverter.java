@@ -181,13 +181,6 @@ public final class TimeSeriesPBConverter
         final String name = pbColumn.getName().toStringUtf8();
 
         final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.valueOf(pbColumn.getType().getNumber());
-        final List<ColumnDescription.ColumnType> complexType =
-                new ArrayList<ColumnDescription.ColumnType>(pbColumn.getComplexTypeCount());
-
-        for (RiakKvPB.TsColumnType pbComplexType : pbColumn.getComplexTypeList())
-        {
-            complexType.add(ColumnDescription.ColumnType.valueOf(pbComplexType.getNumber()));
-        }
 
         return new ColumnDescription(name, type);
     }

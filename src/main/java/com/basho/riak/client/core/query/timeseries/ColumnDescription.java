@@ -1,10 +1,11 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A Metadata description of a column in Riak Time Series.
+ * Contains a column name and column type.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
