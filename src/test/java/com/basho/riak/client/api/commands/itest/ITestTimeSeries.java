@@ -56,11 +56,7 @@ public class ITestTimeSeries extends ITestBase
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5)),
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)),
 
-            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null),
-
-            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
-            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
-            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")));
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null));
 
 //    @BeforeClass
 //    public static void BeforeClass()
@@ -184,34 +180,6 @@ public class ITestTimeSeries extends ITestBase
         Cell resultCell = queryResult.getRows().get(0).getCells().get(0);
 
         assertNull(resultCell);
-    }
-
-    @Test
-    public void TestThatFloatsDoublesAndNumericsComeBackInDoubleBuffer() throws ExecutionException, InterruptedException
-    {
-        RiakClient client = new RiakClient(cluster);
-
-        final String queryText = "select temperature from GeoCheckin " +
-                "where user = 'user3' and " +
-                "(time > " + (fifteenMinsAgo - 1) +" and " +
-                "(time < "+ (now + 1) + ")) ";
-
-        Query query = new Query.Builder(queryText).build();
-        QueryResult queryResult = client.execute(query);
-
-        assertEquals(1, queryResult.getColumnDescriptions().size());
-        assertEquals(ColumnDescription.ColumnType.FLOAT, queryResult.getColumnDescriptions().get(0).getType());
-
-        assertEquals(3, queryResult.getRows().size());
-
-        for (Row row : queryResult.getRows())
-        {
-            assertEquals(1, row.getCells().size());
-            Cell resultCell = row.getCells().get(0);
-            assertFalse(resultCell.hasNumeric());
-            assertTrue(resultCell.hasDouble());
-            assertEquals(70d, resultCell.getDouble(), Double.MIN_VALUE);
-        }
     }
 
     @Test

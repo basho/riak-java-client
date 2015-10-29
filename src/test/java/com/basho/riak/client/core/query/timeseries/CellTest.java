@@ -75,7 +75,6 @@ public class CellTest
         double d = 42.0123456789123456789d;
         Cell c = new Cell(d);
         assertTrue(c.hasDouble());
-        assertFalse(c.hasNumeric());
         assertEquals(c.getDouble(), d);
     }
     @Test
@@ -103,35 +102,11 @@ public class CellTest
         assertEquals(c.getTimestamp(), d.getTime());
     }
     @Test
-    public void TestRawNumeric()
-    {
-        byte[] ba = "-42.02".getBytes();
-        Cell c = Cell.newNumeric(ba);
-        assertTrue(c.hasNumeric());
-        assertEquals(c.getRawNumeric(), ba);
-    }
-    @Test
     public void TestRawTimestamps()
     {
         long t = new Date().getTime();
         Cell c = Cell.newTimestamp(t);
         assertTrue(c.hasTimestamp());
         assertEquals(c.getTimestamp(), t);
-    }
-
-    @Test
-    public void TestBCDEncoding()
-    {
-        Cell c = Cell.newNumeric("-42.02");
-
-        String floatString = c.getRawNumericString();
-        assertEquals('-', floatString.charAt(0));
-        assertEquals('.', floatString.charAt(3));
-
-
-        c = Cell.newNumeric("9.18E+09");
-        float f = Float.parseFloat(c.getRawNumericString());
-        assertEquals(9180000000f, f);
-
     }
 }

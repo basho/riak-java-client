@@ -15,8 +15,6 @@ import java.util.Date;
  *     <li><b>BinaryValue</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
  *     <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
- *     <li><b>Numeric</b>s, which can hold any floating/fixed point number.
- *     A conversion to an ASCII-encoded decimal string under the covers is made to provide type/value flexibility.</li>
  *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
  *     <li><b>Boolean</b>s, which can hold a true/false value. </li>
  * </ol>
@@ -35,8 +33,6 @@ import java.util.Date;
  */
 public class Cell
 {
-    public static final Charset ASCII_Charset = Charset.forName("US-ASCII");
-
     Cell() {}
 
     /**
@@ -109,7 +105,6 @@ public class Cell
 
     protected BinaryValue binaryValue;
     protected long integerValue;
-    protected byte[] numericValue;
     protected long timestampValue;
     protected boolean booleanValue;
     protected double doubleValue;
@@ -145,12 +140,6 @@ public class Cell
     {
         return this.isIntegerCell;
     }
-
-    /**
-     * Indicates whether this Cell contains a Numeric value.
-     * @return true if it contains a Numeric value, false otherwise.
-     */
-    public boolean hasNumeric() { return this.numericValue != null && this.numericValue.length > 0; }
 
     /**
      * Indicates whether this Cell contains a Timestamp value.
@@ -207,24 +196,6 @@ public class Cell
     }
 
     /**
-     * Returns the raw "Numeric" value.
-     * @return The @{code byte[]} of the ASCII encoded string containing the Numeric value.
-     */
-    public byte[] getRawNumeric()
-    {
-        return this.numericValue;
-    }
-
-    /**
-     * Returns the "Numeric" value, decoded to a String representation.
-     * @return The string of the Numeric value, such as "123.456".
-     */
-    public String getRawNumericString()
-    {
-        return new String(this.getRawNumeric(), ASCII_Charset);
-    }
-
-    /**
      * Returns the the "Double" value.
      * @return The double value.
      */
@@ -253,31 +224,6 @@ public class Cell
     public boolean getBoolean()
     {
         return booleanValue;
-    }
-
-    /**
-     * Creates a new "Numeric" Cell from the provided String .
-     * @param value The string containing the numeric value, such as "123.456".  Negative numbers and scientific notation are allowed.
-     * @return The new Numeric Cell.
-     */
-    public static Cell newNumeric(String value)
-    {
-        Cell cell = new Cell();
-        byte[] rawNumeric = value.getBytes(ASCII_Charset);
-        cell.numericValue = ByteBuffer.allocate(rawNumeric.length).order(ByteOrder.BIG_ENDIAN).put(rawNumeric).array();
-        return cell;
-    }
-
-    /**
-     * Creates a new "Numeric" Cell from the provided byte value.
-     * @param value
-     * @return The new Numeric Cell.
-     */
-    public static Cell newNumeric(byte[] value)
-    {
-        Cell cell = new Cell();
-        cell.numericValue = value;
-        return cell;
     }
 
     /**

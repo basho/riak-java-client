@@ -44,7 +44,6 @@ public class QueryOperation
 
         RiakKvPB.TsQueryResp response = responses.get(0);
 
-
         QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
 
         return result;

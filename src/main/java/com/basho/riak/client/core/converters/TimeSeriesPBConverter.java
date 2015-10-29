@@ -129,10 +129,6 @@ public final class TimeSeriesPBConverter
         {
             cell = new Cell(pbCell.getIntegerValue());
         }
-        else if (columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasNumericValue())
-        {
-            cell = Cell.newNumeric(pbCell.getNumericValue().toByteArray());
-        }
         else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasIntegerValue())
         {
             cell = Cell.newTimestamp(pbCell.getIntegerValue());
@@ -206,10 +202,6 @@ public final class TimeSeriesPBConverter
         else if(cell.hasLong())
         {
             cellBuilder.setIntegerValue(cell.getLong());
-        }
-        else if(cell.hasNumeric())
-        {
-            cellBuilder.setNumericValue(ByteString.copyFrom(cell.getRawNumeric()));
         }
         else if(cell.hasTimestamp())
         {
