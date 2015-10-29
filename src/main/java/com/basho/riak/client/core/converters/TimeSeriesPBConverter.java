@@ -36,19 +36,6 @@ public final class TimeSeriesPBConverter
         return new QueryResult(columnDescriptions, rows);
     }
 
-    public static QueryResult convertPbGetResp(RiakKvPB.TsGetResp response)
-    {
-        if(response == null)
-        {
-            return QueryResult.emptyResult();
-        }
-
-        //final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
-        final List<Row> rows = convertPbRows(response.getRowsList(), null);
-
-        return new QueryResult(null, rows);
-    }
-
     public static Collection<RiakKvPB.TsColumnDescription> convertColumnDescriptionsToPb(
             Collection<ColumnDescription> columns)
     {
@@ -62,7 +49,7 @@ public final class TimeSeriesPBConverter
         return pbColumns;
     }
 
-    public static RiakKvPB.TsColumnDescription convertColumnDescriptionToPb(ColumnDescription column)
+    private static RiakKvPB.TsColumnDescription convertColumnDescriptionToPb(ColumnDescription column)
     {
         final RiakKvPB.TsColumnDescription.Builder columnBuilder = RiakKvPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));
@@ -86,7 +73,7 @@ public final class TimeSeriesPBConverter
         return pbRows;
     }
 
-    public static ArrayList<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
+    private static ArrayList<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
     {
         final ArrayList<RiakKvPB.TsCell> pbCells = new ArrayList<RiakKvPB.TsCell>(cells.size());
 
