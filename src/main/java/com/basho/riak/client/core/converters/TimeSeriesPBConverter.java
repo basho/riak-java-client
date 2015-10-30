@@ -125,23 +125,19 @@ public final class TimeSeriesPBConverter
         {
             cell = new Cell(pbCell.getBooleanValue());
         }
-        else if (columnType == ColumnDescription.ColumnType.INTEGER && pbCell.hasIntegerValue())
+        else if (columnType == ColumnDescription.ColumnType.SINT64 && pbCell.hasSint64Value())
         {
-            cell = new Cell(pbCell.getIntegerValue());
+            cell = new Cell(pbCell.getSint64Value());
         }
-        else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasIntegerValue())
+        else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasSint64Value())
         {
-            cell = Cell.newTimestamp(pbCell.getIntegerValue());
+            cell = Cell.newTimestamp(pbCell.getSint64Value());
         }
         else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasTimestampValue())
         {
             cell = Cell.newTimestamp(pbCell.getTimestampValue());
         }
-        else if(columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasFloatValue())
-        {
-            cell = new Cell(pbCell.getFloatValue());
-        }
-        else if(columnType == ColumnDescription.ColumnType.FLOAT && pbCell.hasDoubleValue())
+        else if(columnType == ColumnDescription.ColumnType.DOUBLE && pbCell.hasDoubleValue())
         {
             cell = new Cell(pbCell.getDoubleValue());
         }
@@ -201,7 +197,7 @@ public final class TimeSeriesPBConverter
         }
         else if(cell.hasLong())
         {
-            cellBuilder.setIntegerValue(cell.getLong());
+            cellBuilder.setSint64Value(cell.getLong());
         }
         else if(cell.hasTimestamp())
         {

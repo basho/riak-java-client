@@ -174,7 +174,7 @@ public class ITestTimeSeries extends ITestBase
         QueryResult queryResult = client.execute(query);
 
         assertEquals(1, queryResult.getColumnDescriptions().size());
-        assertEquals(ColumnDescription.ColumnType.FLOAT, queryResult.getColumnDescriptions().get(0).getType());
+        assertEquals(ColumnDescription.ColumnType.DOUBLE, queryResult.getColumnDescriptions().get(0).getType());
 
         assertEquals(1, queryResult.getRows().size());
         Cell resultCell = queryResult.getRows().get(0).getCells().get(0);
