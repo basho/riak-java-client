@@ -35,8 +35,8 @@ public class ColumnDescription
     public enum ColumnType
     {
         BINARY(0),
-        INTEGER(1),
-        FLOAT(2),
+        SINT64(1),
+        DOUBLE(2),
         TIMESTAMP(3),
         BOOLEAN(4);
 
