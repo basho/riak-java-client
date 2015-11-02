@@ -1,10 +1,11 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A Metadata description of a column in Riak Time Series.
+ * Contains a column name and column type.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
@@ -13,13 +14,11 @@ public class ColumnDescription
 {
     private final String name;
     private final ColumnType type;
-    private final Collection<ColumnType> complexType;
 
-    public ColumnDescription(String name, ColumnType type, Collection<ColumnType> complexType)
+    public ColumnDescription(String name, ColumnType type)
     {
         this.name = name;
         this.type = type;
-        this.complexType = complexType;
     }
 
     public String getName()
@@ -32,20 +31,14 @@ public class ColumnDescription
         return type;
     }
 
-    public Collection<ColumnType> getComplexType()
-    {
-        return complexType;
-    }
 
     public enum ColumnType
     {
         BINARY(0),
-        INTEGER(1),
-        FLOAT(2),
+        SINT64(1),
+        DOUBLE(2),
         TIMESTAMP(3),
-        BOOLEAN(4),
-        SET(5),
-        MAP(6);
+        BOOLEAN(4);
 
         private static Map<Integer, ColumnType> map = new HashMap<Integer, ColumnType>();
 

@@ -54,18 +54,33 @@ public class ITestTimeSeries extends ITestBase
     final long fifteenMinsInFuture = now + (fiveMinsInMS * 3l);
 
     final List<Row> rows = Arrays.asList(
-            // "Normal" Data
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0)),
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5)),
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0)),
 
-            // Null Cell row
+<<<<<<< HEAD
             new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null),
 
-            // Data for single reads / deletes
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fifteenMinsAgo), new Cell("w"), new Cell(70d)),
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(fiveMinsAgo), new Cell("w"),  new Cell(70f)),
+            new Row(new Cell("hash1"), new Cell("user3"), Cell.newTimestamp(now), new Cell("w"),  Cell.newNumeric("70.0")),
+
             new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo), new Cell("rain"), new Cell(79.0)),
             new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5)),
             new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0)));
+
+
+    //    @Test(expected = IllegalArgumentException.class)
+    //    public void ensureWeCatchInvalidParams()
+    //    {
+    //        final String queryText = "select * from GeoCheckin";
+    //
+    //        Query.Builder query = new Query.Builder(queryText);
+    //        query.addStringParameter(":foo", "123");
+    //    }
+=======
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null));
+>>>>>>> timeseries
 
 //    @BeforeClass
 //    public static void BeforeClass()
@@ -230,23 +245,29 @@ public class ITestTimeSeries extends ITestBase
         QueryResult queryResult = client.execute(fetch);
         assertEquals(1, queryResult.getRows().size());
         Row row = queryResult.getRows().get(0);
-        assertEquals("rain", row.getCells().get(3).getUtf8String());
+        assertEquals("rain", row.getCells().get(4).getUtf8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }
 
     @Test
     public void TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
     {
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo));
+        final String queryText = "select * from GeoCheckin " +
+                "where user = 'user1' and " +
+                "geohash = 'hash1' and " +
+                "(time > " + tenMinsAgo +" and " +
+                "(time < "+ (now-1)+ ")) ";
+
 
         RiakClient client = new RiakClient(cluster);
 
         // Assert we have a row
-        Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
-        QueryResult queryResult = client.execute(fetch);
+        Query query = new Query.Builder(queryText).build();
+        QueryResult queryResult = client.execute(query);
         assertEquals(1, queryResult.getRows().size());
 
         // Delete row
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo));
         Delete delete = new Delete.Builder(tableName, keyCells).build();
 
         final RiakFuture<Void, BinaryValue> future = client.executeAsync(delete);
@@ -256,8 +277,8 @@ public class ITestTimeSeries extends ITestBase
         assertNull(future.cause());
 
         // Assert that the row is no longer with us
-        Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
-        QueryResult queryResult2 = client.execute(fetch2);
+        Query query2 = new Query.Builder(queryText).build();
+        QueryResult queryResult2 = client.execute(query2);
         assertEquals(0, queryResult2.getRows().size());
     }
 

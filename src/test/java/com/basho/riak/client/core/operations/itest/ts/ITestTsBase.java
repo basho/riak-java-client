@@ -34,9 +34,9 @@ public abstract class ITestTsBase extends ITestBase
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5)),
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0)));
 
-    @BeforeClass
-    public static void BeforeClass()
-    {
-        Assume.assumeTrue(testTimeSeries);
-    }
+    //@BeforeClass
+    //public static void BeforeClass()
+    //{
+    //    Assume.assumeTrue(testTimeSeries);
+    //}
 }

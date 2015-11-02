@@ -51,7 +51,7 @@ public class ITestFetchOperation extends ITestTsBase
         assertEquals(1, result.getRows().size());
 
         Row row = result.getRows().get(0);
-        assertEquals("rain", row.getCells().get(4).getUtf8String());
+        assertEquals("rain", row.getCells().get(3).getUtf8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }
 }

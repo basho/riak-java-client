@@ -36,6 +36,7 @@ public final class TimeSeriesPBConverter
         return new QueryResult(columnDescriptions, rows);
     }
 
+<<<<<<< HEAD
     public static QueryResult convertPbGetResp(RiakKvPB.TsGetResp response)
     {
         if(response == null)
@@ -48,6 +49,9 @@ public final class TimeSeriesPBConverter
 
         return new QueryResult(null, rows);
     }
+
+=======
+>>>>>>> timeseries
     public static Collection<RiakKvPB.TsColumnDescription> convertColumnDescriptionsToPb(
             Collection<ColumnDescription> columns)
     {
@@ -85,7 +89,7 @@ public final class TimeSeriesPBConverter
         return pbRows;
     }
 
-    public static ArrayList<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
+    private static ArrayList<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
     {
         final ArrayList<RiakKvPB.TsCell> pbCells = new ArrayList<RiakKvPB.TsCell>(cells.size());
 
