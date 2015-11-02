@@ -85,7 +85,7 @@ public final class TimeSeriesPBConverter
         return pbRows;
     }
 
-    public static ArrayList<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
+    public static List<RiakKvPB.TsCell> convertCellsToPb(Collection<Cell> cells)
     {
         final ArrayList<RiakKvPB.TsCell> pbCells = new ArrayList<RiakKvPB.TsCell>(cells.size());
 

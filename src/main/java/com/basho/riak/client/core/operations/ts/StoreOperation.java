@@ -24,6 +24,10 @@ public class StoreOperation
         extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
+    private final String tableName;
+    private final int rowCount;
+    private BinaryValue queryInfoMessage;
+
 
     private StoreOperation(Builder builder)
     {
@@ -31,6 +35,9 @@ public class StoreOperation
               RiakMessageCodes.MSG_TsPutResp,
               builder.reqBuilder,
               RiakKvPB.TsPutResp.PARSER);
+
+        this.tableName = builder.reqBuilder.getTable().toStringUtf8();
+        this.rowCount = builder.reqBuilder.getRowsCount();
     }
 
     @Override
@@ -46,8 +53,19 @@ public class StoreOperation
     }
 
     @Override
-    public BinaryValue getQueryInfo() {
-        return null;
+    public synchronized BinaryValue getQueryInfo()
+    {
+        if (this.queryInfoMessage == null)
+        {
+            this.queryInfoMessage = createQueryInfoMessage();
+        }
+
+        return this.queryInfoMessage;
+    }
+
+    private BinaryValue createQueryInfoMessage()
+    {
+        return BinaryValue.create("INSERT <" + this.rowCount + " rows> into " + this.tableName);
     }
 
     public static class Builder

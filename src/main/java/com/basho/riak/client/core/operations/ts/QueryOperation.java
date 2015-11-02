@@ -48,12 +48,11 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
 
         return result;
     }
-
     @Override
-    public BinaryValue getQueryInfo() {
-        return queryText;
+    public BinaryValue getQueryInfo()
+    {
+        return this.queryText;
     }
-
 
     public static class Builder
     {

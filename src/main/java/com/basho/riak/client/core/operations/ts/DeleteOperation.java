@@ -22,6 +22,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
 {
     private static final Logger logger = LoggerFactory.getLogger(DeleteOperation.class);
     private final Builder builder;
+    private BinaryValue queryInfoMessage;
 
     private DeleteOperation(Builder builder)
     {
@@ -46,7 +47,17 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
     }
 
     @Override
-    public BinaryValue getQueryInfo()
+    public synchronized BinaryValue getQueryInfo()
+    {
+        if (this.queryInfoMessage == null)
+        {
+            this.queryInfoMessage = createQueryInfoMessage();
+        }
+
+        return this.queryInfoMessage;
+    }
+
+    private BinaryValue createQueryInfoMessage()
     {
         StringBuilder sb = new StringBuilder("DELETE ");
         sb.append("{ ");
@@ -71,7 +82,6 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
 
         sb.append(" } FROM TABLE ");
         sb.append(this.builder.tableName.toStringUtf8());
-
         return BinaryValue.create(sb.toString());
     }
 

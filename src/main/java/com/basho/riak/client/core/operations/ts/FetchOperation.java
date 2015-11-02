@@ -23,6 +23,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
 {
     private static final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
     private final Builder builder;
+    private BinaryValue queryInfoMessage;
 
     private FetchOperation(Builder builder)
     {
@@ -52,7 +53,17 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
     }
 
     @Override
-    public BinaryValue getQueryInfo()
+    public synchronized BinaryValue getQueryInfo()
+    {
+        if (this.queryInfoMessage == null)
+        {
+            this.queryInfoMessage = createQueryInfoMessage();
+        }
+
+        return this.queryInfoMessage;
+    }
+
+    private BinaryValue createQueryInfoMessage()
     {
         StringBuilder sb = new StringBuilder("SELECT * FROM ");
         sb.append(this.builder.tableName);
