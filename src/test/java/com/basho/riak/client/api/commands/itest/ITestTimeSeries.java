@@ -34,9 +34,9 @@ import static org.junit.Assert.*;
  *      time        timestamp not null,
  *      weather     varchar   not null,
  *      temperature float,
- *      PRIMARY KEY (
- *          (quantum(time, 15, 'm'), user),
- *          time, user
+ *      PRIMARY KEY(
+ *          (geohash, user, quantum(time, 15, 'm')),
+ *           geohash, user, time)
  *      )
  *   )
  */
@@ -74,7 +74,8 @@ public class ITestTimeSeries extends ITestBase
         RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
 
         execFuture.await();
-        assertNull(execFuture.cause());
+        String errorMessage = execFuture.cause() != null? execFuture.cause().getMessage() : "";
+        assertNull(errorMessage, execFuture.cause());
         assertEquals(true, execFuture.isSuccess());
     }
 
@@ -82,7 +83,7 @@ public class ITestTimeSeries extends ITestBase
     public void QueryingDataNoMatches() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        final String queryText = "select * from GeoCheckin Where time > 1 and time < 10 and user ='user1'";
+        final String queryText = "select * from GeoCheckin Where time > 1 and time < 10 and user='user1' and geohash='hash1'";
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
         assertNotNull(queryResult);
@@ -101,7 +102,8 @@ public class ITestTimeSeries extends ITestBase
 
         final String queryText = "select * from GeoCheckin " +
                 "where user = 'user1' and " +
-                "(time > " + tenMinsAgo +" and " +
+                "geohash = 'hash1' and " +
+                "(time = " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
         Query query = new Query.Builder(queryText).build();
@@ -147,6 +149,7 @@ public class ITestTimeSeries extends ITestBase
 
         final String queryText = "select * from GeoCheckin " +
                 "where user = 'user1' and " +
+                "geohash = 'hash1' and " +
                 "time > " + tenMinsAgo +" and " +
                 "time < "+ fifteenMinsInFuture + " ";
 
@@ -167,6 +170,7 @@ public class ITestTimeSeries extends ITestBase
 
         final String queryText = "select temperature from GeoCheckin " +
                 "where user = 'user2' and " +
+                "geohash = 'hash1' and " +
                 "(time > " + (fifteenMinsAgo - 1) +" and " +
                 "(time < "+ (now + 1) + ")) ";
 
