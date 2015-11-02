@@ -7,8 +7,6 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -20,7 +18,6 @@ import java.util.List;
  */
 public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
 {
-    private static final Logger logger = LoggerFactory.getLogger(QueryOperation.class);
     private final BinaryValue queryText;
 
     private QueryOperation(Builder builder)
@@ -37,10 +34,8 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
     protected QueryResult convert(List<RiakKvPB.TsQueryResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        if (responses.size() > 1)
-        {
-            logger.error("Received {} responses when only one was expected.", responses.size());
-        }
+        int numResponses = responses.size();
+        logIfMoreThanOneResponse(numResponses);
 
         RiakKvPB.TsQueryResp response = responses.get(0);
 

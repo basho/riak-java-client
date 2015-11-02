@@ -7,8 +7,6 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -20,7 +18,6 @@ import java.util.List;
  */
 public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp, BinaryValue>
 {
-    private static final Logger logger = LoggerFactory.getLogger(DeleteOperation.class);
     private final Builder builder;
     private BinaryValue queryInfoMessage;
 
@@ -38,10 +35,8 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
     protected Void convert(List<RiakKvPB.TsDelResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        if (responses.size() > 1)
-        {
-            logger.error("Received {} responses when only one was expected.", responses.size());
-        }
+        int numResponses = responses.size();
+        logIfMoreThanOneResponse(numResponses);
 
         return null;
     }

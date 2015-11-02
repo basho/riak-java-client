@@ -21,7 +21,6 @@ import java.util.List;
  */
 public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGetResp, BinaryValue>
 {
-    private static final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
     private final Builder builder;
     private BinaryValue queryInfoMessage;
 
@@ -39,13 +38,10 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
     protected QueryResult convert(List<RiakKvPB.TsGetResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        if (responses.size() > 1)
-        {
-            logger.error("Received {} responses when only one was expected.", responses.size());
-        }
+        int numResponses = responses.size();
+        logIfMoreThanOneResponse(numResponses);
 
         final RiakKvPB.TsGetResp response = responses.get(0);
-
 
         QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
 

@@ -23,7 +23,6 @@ import java.util.List;
 public class StoreOperation
         extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
 {
-    private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
     private final String tableName;
     private final int rowCount;
     private BinaryValue queryInfoMessage;
@@ -44,10 +43,8 @@ public class StoreOperation
     protected Void convert(List<RiakKvPB.TsPutResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        if (responses.size() > 1)
-        {
-            logger.error("Received {} responses when only one was expected.", responses.size());
-        }
+        int numResponses = responses.size();
+        logIfMoreThanOneResponse(numResponses);
 
         return null;
     }
