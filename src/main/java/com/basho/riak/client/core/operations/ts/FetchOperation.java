@@ -61,7 +61,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
         int numKeys = this.builder.keyValues.size();
         for (int i = 0; i < numKeys; i++)
         {
-            if(this.builder.keyValues.get(i) == null)
+            if (this.builder.keyValues.get(i) == null)
             {
                 sb.append("NULL");
             }
@@ -70,7 +70,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
                 sb.append(this.builder.keyValues.get(i).toString());
             }
 
-            if(i < numKeys-1)
+            if (i < numKeys-1)
             {
                 sb.append(", ");
             }

@@ -286,7 +286,7 @@ public class ITestTimeSeries extends ITestBase
         Cell expectedCell4 = expectedCells.get(4);
         Cell actualCell4 = actualCells.get(4);
 
-        if(expectedCell4 == null)
+        if (expectedCell4 == null)
         {
             assertNull(actualCell4);
         }

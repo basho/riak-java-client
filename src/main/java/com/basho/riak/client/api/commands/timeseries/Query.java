@@ -57,7 +57,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
         public Builder(String queryText)
         {
-            if(queryText == null || queryText.isEmpty())
+            if (queryText == null || queryText.isEmpty())
             {
                 String msg = "Query Text must not be null or empty";
                 logger.error(msg);
@@ -68,7 +68,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
             Matcher paramMatcher = paramPattern.matcher(queryText);
 
-            if(!paramMatcher.matches())
+            if (!paramMatcher.matches())
             {
                 knownParams = Collections.emptySet();
                 return;
@@ -90,7 +90,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
 
         private void checkParamValidity(String paramName)
         {
-            if(!knownParams.contains(paramName))
+            if (!knownParams.contains(paramName))
             {
                 String msg = "Unknown query parameter: " + paramName;
                 logger.error(msg);

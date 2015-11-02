@@ -1,13 +1,11 @@
 package com.basho.riak.client.api.commands.timeseries;
 
 import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +42,7 @@ public class Delete extends RiakCommand<Void, BinaryValue>
         final DeleteOperation.Builder opBuilder =
                 new DeleteOperation.Builder(BinaryValue.create(this.builder.tableName), builder.keyValues);
 
-        if(builder.timeout > 0)
+        if (builder.timeout > 0)
         {
             opBuilder.withTimeout(builder.timeout);
         }
@@ -91,7 +89,7 @@ public class Delete extends RiakCommand<Void, BinaryValue>
          */
         public Builder withTimeout(int timeout)
         {
-            if(timeout < 0)
+            if (timeout < 0)
             {
                 throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
             }

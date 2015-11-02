@@ -43,7 +43,7 @@ public class Fetch extends RiakCommand<QueryResult, BinaryValue>
         final FetchOperation.Builder opBuilder =
                 new FetchOperation.Builder(BinaryValue.create(this.builder.tableName), builder.keyValues);
 
-        if(builder.timeout > 0)
+        if (builder.timeout > 0)
         {
             opBuilder.withTimeout(builder.timeout);
         }
@@ -90,7 +90,7 @@ public class Fetch extends RiakCommand<QueryResult, BinaryValue>
          */
         public Builder withTimeout(int timeout)
         {
-            if(timeout < 0)
+            if (timeout < 0)
             {
                 throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
             }

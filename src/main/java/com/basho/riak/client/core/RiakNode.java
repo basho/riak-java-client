@@ -698,7 +698,7 @@ public class RiakNode implements RiakResponseListener
                 TrustManagerFactory tmf =
                     TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmf.init(trustStore);
-                if(keyStore!=null)
+                if (keyStore!=null)
                 {
                     KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                     kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());

@@ -144,7 +144,7 @@ public class RiakPemConnection {
     public static RiakClient getRiakConnection(){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -175,7 +175,7 @@ public class RiakPemConnection {
     public static RiakClient getRiakConnection(String username, String password){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -211,7 +211,7 @@ public class RiakPemConnection {
     public static RiakClient getRiakConnection(String username, String password, String privateKeyPemPath, String publicCertPemPath){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password,privateKeyPemPath,publicCertPemPath);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;

@@ -243,10 +243,10 @@ public class Cell
     {
         final StringBuilder sb = new StringBuilder("Cell{ ");
 
-        if(this.hasBinaryValue())
+        if (this.hasBinaryValue())
         {
             final String value = this.getUtf8String();
-            if(value.length() > 32)
+            if (value.length() > 32)
             {
                 sb.append(value.substring(0,32));
                 sb.append("...");
@@ -256,19 +256,19 @@ public class Cell
                 sb.append(value);
             }
         }
-        else if(this.hasLong())
+        else if (this.hasLong())
         {
             sb.append(this.getLong());
         }
-        else if(this.hasDouble())
+        else if (this.hasDouble())
         {
             sb.append(this.getDouble());
         }
-        else if(this.hasTimestamp())
+        else if (this.hasTimestamp())
         {
             sb.append(this.getTimestamp());
         }
-        else if(this.hasBoolean())
+        else if (this.hasBoolean())
         {
             sb.append(this.getBoolean());
         }

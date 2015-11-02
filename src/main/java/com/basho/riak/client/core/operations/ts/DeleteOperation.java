@@ -54,7 +54,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
         int numKeys = this.builder.keyValues.size();
         for (int i = 0; i < numKeys; i++)
         {
-            if(this.builder.keyValues.get(i) == null)
+            if (this.builder.keyValues.get(i) == null)
             {
                 sb.append("NULL");
             }
@@ -63,7 +63,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
                 sb.append(this.builder.keyValues.get(i).toString());
             }
 
-            if(i < numKeys-1)
+            if (i < numKeys-1)
             {
                 sb.append(", ");
             }
@@ -103,7 +103,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
 
         public Builder withTimeout(int timeout)
         {
-            if(timeout < 0)
+            if (timeout < 0)
             {
                 throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
             }
