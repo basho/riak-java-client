@@ -66,12 +66,14 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
         }
     }
 
-    protected void checkIfMoreThanOneResponse(List<U> responses)
+    protected U checkAndGetSingleResponse(List<U> responses)
     {
         if (responses.size() > 1)
         {
             LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
                                                            responses.size());
         }
+
+        return responses.get(0);
     }
 }

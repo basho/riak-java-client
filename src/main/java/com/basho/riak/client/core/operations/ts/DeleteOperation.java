@@ -35,8 +35,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
     protected Void convert(List<RiakKvPB.TsDelResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        int numResponses = responses.size();
-        checkIfMoreThanOneResponse(responses);
+        checkAndGetSingleResponse(responses);
 
         return null;
     }

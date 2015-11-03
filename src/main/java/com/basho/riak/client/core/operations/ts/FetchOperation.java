@@ -36,9 +36,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
     protected QueryResult convert(List<RiakKvPB.TsGetResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        checkIfMoreThanOneResponse(responses);
-
-        final RiakKvPB.TsGetResp response = responses.get(0);
+        final RiakKvPB.TsGetResp response = checkAndGetSingleResponse(responses);
 
         return TimeSeriesPBConverter.convertPbGetResp(response);
     }
