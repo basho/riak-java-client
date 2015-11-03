@@ -86,7 +86,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
             builder.withTimeout(timeout);
         }
 
-        if (type != null) {
+        if (type != null)
+        {
             builder.withBucketType(type);
         }
 

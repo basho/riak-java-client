@@ -1,0 +1,86 @@
+package com.basho.riak.client.api.commands.buckets;
+
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.protobuf.RiakKvPB;
+import com.google.protobuf.ByteString;
+import junit.framework.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.internal.util.reflection.Whitebox;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+/**
+ * @author empovit
+ * @since 2.0.3
+ */
+public class ListBucketsTest
+{
+
+    @Mock RiakCluster mockCluster;
+    @Mock RiakFuture mockFuture;
+    @Mock ListBucketsOperation.Response mockResponse;
+    RiakClient client;
+
+    @Before
+    @SuppressWarnings("unchecked")
+    public void init() throws Exception
+    {
+        MockitoAnnotations.initMocks(this);
+        when(mockResponse.getBuckets()).thenReturn(new ArrayList<BinaryValue>());
+        when(mockFuture.get()).thenReturn(mockResponse);
+        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
+        when(mockFuture.getNow()).thenReturn(mockResponse);
+        when(mockFuture.isCancelled()).thenReturn(false);
+        when(mockFuture.isDone()).thenReturn(true);
+        when(mockFuture.isSuccess()).thenReturn(true);
+        when(mockCluster.<ListBucketsOperation, Location>execute(any(FutureOperation.class))).thenReturn(mockFuture);
+        client = new RiakClient(mockCluster);
+    }
+
+    private void testListBuckets(String bucketType) throws Exception
+    {
+
+        final BinaryValue type = BinaryValue.createFromUtf8(bucketType);
+        ListBuckets.Builder list = new ListBuckets.Builder(type);
+        client.execute(list.build());
+
+        ArgumentCaptor<ListBucketsOperation> captor =
+                ArgumentCaptor.forClass(ListBucketsOperation.class);
+        verify(mockCluster).execute(captor.capture());
+
+        ListBucketsOperation operation = captor.getValue();
+        RiakKvPB.RpbListBucketsReq.Builder builder =
+                (RiakKvPB.RpbListBucketsReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
+
+        Assert.assertEquals(ByteString.copyFrom(type.unsafeGetValue()), builder.getType());
+    }
+
+    @Test
+    public void bucketTypeBuiltCorrectly() throws Exception
+    {
+        testListBuckets("bucket_type");
+    }
+
+    @Test
+    public void defaultBucketTypeBuiltCorrectly() throws Exception
+    {
+        testListBuckets(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+}
