@@ -34,8 +34,7 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
     protected QueryResult convert(List<RiakKvPB.TsQueryResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        int numResponses = responses.size();
-        logIfMoreThanOneResponse(numResponses);
+        checkIfMoreThanOneResponse(responses);
 
         RiakKvPB.TsQueryResp response = responses.get(0);
 

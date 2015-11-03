@@ -41,8 +41,7 @@ public class StoreOperation
     protected Void convert(List<RiakKvPB.TsPutResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        int numResponses = responses.size();
-        logIfMoreThanOneResponse(numResponses);
+        checkIfMoreThanOneResponse(responses);
 
         return null;
     }

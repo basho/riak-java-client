@@ -7,6 +7,8 @@ import com.google.protobuf.GeneratedMessage.Builder;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * An abstract PB operation that introduces generic encoding/decoding
  *
@@ -64,11 +66,12 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
         }
     }
 
-    protected void logIfMoreThanOneResponse(int numResponses)
+    protected void checkIfMoreThanOneResponse(List<U> responses)
     {
-        if (numResponses > 1)
+        if (responses.size() > 1)
         {
-            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.", numResponses);
+            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
+                                                           responses.size());
         }
     }
 }
