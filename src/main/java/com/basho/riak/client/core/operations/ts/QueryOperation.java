@@ -7,21 +7,18 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
+ * An operation to query data from a Riak Time Series table.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class QueryOperation
-        extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue, RiakKvPB.TsQueryReq.Builder>
+public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
 {
     private final BinaryValue queryText;
-    private static final Logger logger = LoggerFactory.getLogger(QueryOperation.class);
 
     private QueryOperation(Builder builder)
     {
@@ -37,23 +34,15 @@ public class QueryOperation
     protected QueryResult convert(List<RiakKvPB.TsQueryResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        if (responses.size() > 1)
-        {
-            logger.error("Received {} responses when only one was expected.", responses.size());
-        }
+        final RiakKvPB.TsQueryResp response = checkAndGetSingleResponse(responses);
 
-        RiakKvPB.TsQueryResp response = responses.get(0);
-
-        QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
-
-        return result;
+        return TimeSeriesPBConverter.convertPbGetResp(response);
     }
-
     @Override
-    public BinaryValue getQueryInfo() {
-        return queryText;
+    public BinaryValue getQueryInfo()
+    {
+        return this.queryText;
     }
-
 
     public static class Builder
     {

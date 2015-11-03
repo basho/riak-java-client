@@ -76,7 +76,7 @@ public class RiakJKSConnection {
     public static RiakClient getRiakConnection(){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -107,7 +107,7 @@ public class RiakJKSConnection {
     public static RiakClient getRiakConnection(String username, String password){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -145,7 +145,7 @@ public class RiakJKSConnection {
     public static RiakClient getRiakConnection(String username, String password, String storePath, String storePasswd, String keyPasswd){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password,storePath,storePasswd,keyPasswd);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;

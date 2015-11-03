@@ -54,7 +54,7 @@ public class CellTest
     @Test
     public void TestLongs()
     {
-        long l = 42l;
+        long l = 42;
         Cell c = new Cell(l);
         assertTrue(c.hasLong());
         assertEquals(c.getLong(), l);

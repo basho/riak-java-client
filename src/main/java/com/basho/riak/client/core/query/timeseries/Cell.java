@@ -238,6 +238,44 @@ public class Cell
         cell.isTimestampCell = true;
         return cell;
     }
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder("Cell{ ");
+
+        if (this.hasBinaryValue())
+        {
+            final String value = this.getUtf8String();
+            if (value.length() > 32)
+            {
+                sb.append(value.substring(0,32));
+                sb.append("...");
+            }
+            else
+            {
+                sb.append(value);
+            }
+        }
+        else if (this.hasLong())
+        {
+            sb.append(this.getLong());
+        }
+        else if (this.hasDouble())
+        {
+            sb.append(this.getDouble());
+        }
+        else if (this.hasTimestamp())
+        {
+            sb.append(this.getTimestamp());
+        }
+        else if (this.hasBoolean())
+        {
+            sb.append(this.getBoolean());
+        }
+
+        sb.append(" }");
+        return sb.toString();
+    }
 }
 
 

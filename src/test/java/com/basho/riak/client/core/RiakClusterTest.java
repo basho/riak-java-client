@@ -197,7 +197,7 @@ public class RiakClusterTest
         assertTrue(queueEnabled);
         assertEquals((long)expectedQueueSize, operationQueue.size());
         assertEquals(expectedClusterState, state);
-        if(expectedQueueHead != null)
+        if (expectedQueueHead != null)
         {
             assertEquals(expectedQueueHead, operationQueue.peek());
         }
