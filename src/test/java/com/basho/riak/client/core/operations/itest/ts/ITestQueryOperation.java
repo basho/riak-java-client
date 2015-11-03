@@ -24,7 +24,6 @@ public class ITestQueryOperation extends ITestTsBase
     @BeforeClass
     public static void InsertData() throws ExecutionException, InterruptedException
     {
-        Assert.assertTrue(testTimeSeries);
         final BinaryValue tableNameBV = BinaryValue.create(tableName);
 
         StoreOperation storeOp = new StoreOperation.Builder(tableNameBV).withRows(rows).build();
@@ -40,7 +39,8 @@ public class ITestQueryOperation extends ITestTsBase
         final String queryText = "select * from GeoCheckin " +
                                  "where time > 0 " +
                                  "  and time < 10 " +
-                                 "  and user ='user1'";
+                                 "  and user ='user1'" +
+                                 "  and geohash ='hash1'";
 
         final BinaryValue queryTextBS = BinaryValue.create(queryText);
 
@@ -61,7 +61,8 @@ public class ITestQueryOperation extends ITestTsBase
         final String queryText = "select * from GeoCheckin " +
                                  "where time > " + tenMinsAgo +
                                  "  and time < "+ now +
-                                 "  and user ='user2'";
+                                 "  and user ='user2'" +
+                                 "  and geohash ='hash1'";
         final BinaryValue queryTextBS = BinaryValue.create(queryText);
 
         QueryOperation queryOp = new QueryOperation.Builder(queryTextBS).build();
@@ -71,7 +72,7 @@ public class ITestQueryOperation extends ITestTsBase
         assertTrue(future.isSuccess());
 
         assertNotNull(queryResult);
-        assertEquals(5, queryResult.getColumnDescriptions().size());
+        assertEquals(6, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRows().size());
     }
 }

@@ -8,8 +8,6 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -43,9 +41,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
 
         final RiakKvPB.TsGetResp response = responses.get(0);
 
-        QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
-
-        return result;
+        return TimeSeriesPBConverter.convertPbGetResp(response);
     }
 
     @Override
@@ -92,7 +88,6 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
     {
         private final BinaryValue tableName;
         private final List<Cell> keyValues;
-        private int timeout = 0;
 
         private final RiakKvPB.TsGetReq.Builder reqBuilder = RiakKvPB.TsGetReq.newBuilder();
 
@@ -117,7 +112,6 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
 
         public Builder withTimeout(int timeout)
         {
-            this.timeout = timeout;
             this.reqBuilder.setTimeout(timeout);
             return this;
         }

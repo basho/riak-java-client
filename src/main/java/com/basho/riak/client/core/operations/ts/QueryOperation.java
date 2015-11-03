@@ -39,9 +39,7 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
 
         RiakKvPB.TsQueryResp response = responses.get(0);
 
-        QueryResult result = TimeSeriesPBConverter.convertPbGetResp(response);
-
-        return result;
+        return TimeSeriesPBConverter.convertPbGetResp(response);
     }
     @Override
     public BinaryValue getQueryInfo()
