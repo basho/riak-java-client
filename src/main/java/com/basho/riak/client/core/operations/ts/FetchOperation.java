@@ -44,7 +44,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
     }
 
     @Override
-    public synchronized BinaryValue getQueryInfo()
+    public BinaryValue getQueryInfo()
     {
         if (this.queryInfoMessage == null)
         {
@@ -56,11 +56,11 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
 
     private BinaryValue createQueryInfoMessage()
     {
-        StringBuilder sb = new StringBuilder("SELECT * FROM ");
+        final StringBuilder sb = new StringBuilder("SELECT * FROM ");
         sb.append(this.builder.tableName);
         sb.append(" WHERE PRIMARY KEY = { ");
 
-        int numKeys = this.builder.keyValues.size();
+        final int numKeys = this.builder.keyValues.size();
         for (int i = 0; i < numKeys; i++)
         {
             if (this.builder.keyValues.get(i) == null)

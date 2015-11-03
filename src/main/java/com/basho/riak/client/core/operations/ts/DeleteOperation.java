@@ -42,7 +42,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
     }
 
     @Override
-    public synchronized BinaryValue getQueryInfo()
+    public BinaryValue getQueryInfo()
     {
         if (this.queryInfoMessage == null)
         {
@@ -54,10 +54,10 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
 
     private BinaryValue createQueryInfoMessage()
     {
-        StringBuilder sb = new StringBuilder("DELETE ");
+        final StringBuilder sb = new StringBuilder("DELETE ");
         sb.append("{ ");
 
-        int numKeys = this.builder.keyValues.size();
+        final int numKeys = this.builder.keyValues.size();
         for (int i = 0; i < numKeys; i++)
         {
             if (this.builder.keyValues.get(i) == null)

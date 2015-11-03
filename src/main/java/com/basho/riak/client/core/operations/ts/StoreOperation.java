@@ -47,7 +47,7 @@ public class StoreOperation
     }
 
     @Override
-    public synchronized BinaryValue getQueryInfo()
+    public BinaryValue getQueryInfo()
     {
         if (this.queryInfoMessage == null)
         {
