@@ -241,6 +241,18 @@ public class ITestTimeSeries extends ITestBase
     }
 
     @Test
+    public void TestFetchingWithNotFoundKeyReturnsNoRows() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
+        Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
+
+        QueryResult queryResult = client.execute(fetch);
+        assertEquals(0, queryResult.getRows().size());
+    }
+
+    @Test
     public void TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
     {
         final List<Cell> keyCells = Arrays.asList(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo));
@@ -273,6 +285,21 @@ public class ITestTimeSeries extends ITestBase
         assertFalse(fetchFuture.isSuccess());
         assertEquals(fetchFuture.cause().getClass(), RiakResponseException.class);
         assertEquals(fetchFuture.cause().getMessage(), "notfound");
+    }
+
+    @Test
+    public void TestDeletingWithNotFoundKeyDoesNotReturnError() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
+        Delete delete = new Delete.Builder(tableName, keyCells).build();
+
+        final RiakFuture<Void, BinaryValue> deleteFuture = client.executeAsync(delete);
+
+        deleteFuture.await();
+        assertTrue(deleteFuture.isSuccess());
+        assertNull(deleteFuture.cause());
     }
 
     private void assertRowMatches(Row expected, Row actual)
