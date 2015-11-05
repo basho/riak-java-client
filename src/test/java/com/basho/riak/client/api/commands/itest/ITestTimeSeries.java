@@ -236,7 +236,7 @@ public class ITestTimeSeries extends ITestBase
         QueryResult queryResult = client.execute(fetch);
         assertEquals(1, queryResult.getRows().size());
         Row row = queryResult.getRows().get(0);
-        assertEquals("rain", row.getCells().get(3).getUtf8String());
+        assertEquals("rain", row.getCells().get(3).getVarcharAsUTF8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }
 
@@ -280,10 +280,10 @@ public class ITestTimeSeries extends ITestBase
         List<Cell> expectedCells = expected.getCells();
         List<Cell> actualCells = actual.getCells();
 
-        assertEquals(expectedCells.get(0).getUtf8String(),  actualCells.get(0).getUtf8String());
-        assertEquals(expectedCells.get(1).getUtf8String(),  actualCells.get(1).getUtf8String());
+        assertEquals(expectedCells.get(0).getVarcharAsUTF8String(), actualCells.get(0).getVarcharAsUTF8String());
+        assertEquals(expectedCells.get(1).getVarcharAsUTF8String(), actualCells.get(1).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(2).getTimestamp(),   actualCells.get(2).getTimestamp());
-        assertEquals(expectedCells.get(3).getUtf8String(),  actualCells.get(3).getUtf8String());
+        assertEquals(expectedCells.get(3).getVarcharAsUTF8String(), actualCells.get(3).getVarcharAsUTF8String());
 
         Cell expectedCell4 = expectedCells.get(4);
         Cell actualCell4 = actualCells.get(4);

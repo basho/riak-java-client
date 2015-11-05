@@ -34,7 +34,7 @@ public class ColumnDescription
 
     public enum ColumnType
     {
-        BINARY(0),
+        VARCHAR(0),
         SINT64(1),
         DOUBLE(2),
         TIMESTAMP(3),

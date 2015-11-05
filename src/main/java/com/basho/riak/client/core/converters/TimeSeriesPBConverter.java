@@ -129,9 +129,9 @@ public final class TimeSeriesPBConverter
     {
         Cell cell;
 
-        if (columnType == ColumnDescription.ColumnType.BINARY && pbCell.hasBinaryValue())
+        if (columnType == ColumnDescription.ColumnType.VARCHAR && pbCell.hasVarcharValue())
         {
-            cell = new Cell(BinaryValue.unsafeCreate(pbCell.getBinaryValue().toByteArray()));
+            cell = new Cell(BinaryValue.unsafeCreate(pbCell.getVarcharValue().toByteArray()));
         }
         else if (columnType == ColumnDescription.ColumnType.BOOLEAN && pbCell.hasBooleanValue())
         {
@@ -199,9 +199,9 @@ public final class TimeSeriesPBConverter
             return cellBuilder.build();
         }
 
-        if (cell.hasBinaryValue())
+        if (cell.hasVarcharValue())
         {
-            cellBuilder.setBinaryValue(ByteString.copyFrom(cell.getBinaryValue().unsafeGetValue()));
+            cellBuilder.setVarcharValue(ByteString.copyFrom(cell.getVarcharValue().unsafeGetValue()));
         }
         else if (cell.hasBoolean())
         {
