@@ -36,7 +36,8 @@ import static org.junit.Assert.*;
  *      time        timestamp not null,
  *      weather     varchar   not null,
  *      temperature double,
- *      uv_index    sint64
+ *      uv_index    sint64,
+ *      observed    boolean not null,
  *      PRIMARY KEY(
  *          (geohash, user, quantum(time, 15, 'm')),
  *           geohash, user, time)
@@ -56,17 +57,17 @@ public class ITestTimeSeries extends ITestBase
 
     final List<Row> rows = Arrays.asList(
             // "Normal" Data
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0), new Cell(1)),
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5), new Cell(2)),
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0), new Cell(10)),
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true)),
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true)),
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false)),
 
             // Null Cell row
-            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null, null),
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null, null, new Cell(true)),
 
             // Data for single reads / deletes
-            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo), new Cell("rain"), new Cell(79.0), new Cell(2)),
-            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5), new Cell(3)),
-            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0), new Cell(11)));
+            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo), new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false)),
+            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true)),
+            new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
 
 //    @BeforeClass
 //    public static void BeforeClass()
@@ -119,7 +120,7 @@ public class ITestTimeSeries extends ITestBase
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
-        assertEquals(6, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRows().size());
 
         assertRowMatches(rows.get(1), queryResult.getRows().get(0));
@@ -143,7 +144,7 @@ public class ITestTimeSeries extends ITestBase
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
-        assertEquals(6, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRows().size());
 
         assertRowMatches(rows.get(1), queryResult.getRows().get(0));
@@ -166,7 +167,7 @@ public class ITestTimeSeries extends ITestBase
         Query query = new Query.Builder(queryText).build();
         QueryResult queryResult = client.execute(query);
 
-        assertEquals(6, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(2, queryResult.getRows().size());
 
         assertRowMatches(rows.get(1), queryResult.getRows().get(0));
@@ -307,6 +308,9 @@ public class ITestTimeSeries extends ITestBase
         {
             assertEquals(Double.toString(expectedCells.get(5).getLong()), Double.toString(actualCells.get(5).getLong()));
         }
+
+        assertEquals(expectedCells.get(6).getBoolean(),  actualCells.get(6).getBoolean());
+
     }
 
 }

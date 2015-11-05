@@ -46,7 +46,7 @@ public final class TimeSeriesPBConverter
         final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
         final List<Row> rows = convertPbRows(response.getRowsList(), columnDescriptions);
 
-        return new QueryResult(null, rows);
+        return new QueryResult(columnDescriptions, rows);
     }
     public static Collection<RiakKvPB.TsColumnDescription> convertColumnDescriptionsToPb(
             Collection<ColumnDescription> columns)

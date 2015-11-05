@@ -48,9 +48,12 @@ public class ITestFetchOperation extends ITestTsBase
         assertTrue(future.isSuccess());
         QueryResult result = future.get();
 
+
         assertEquals(1, result.getRows().size());
+        assertEquals(7, result.getColumnDescriptions().size());
 
         Row row = result.getRows().get(0);
+        assertEquals(7, row.getCells().size());
         assertEquals("rain", row.getCells().get(3).getUtf8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }

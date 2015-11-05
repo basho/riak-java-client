@@ -72,7 +72,7 @@ public class ITestQueryOperation extends ITestTsBase
         assertTrue(future.isSuccess());
 
         assertNotNull(queryResult);
-        assertEquals(6, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRows().size());
     }
 }
