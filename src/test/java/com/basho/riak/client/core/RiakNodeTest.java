@@ -377,10 +377,21 @@ public class RiakNodeTest
     public void warnsAboutDefaultHttpPort() throws UnknownHostException
     {
         TestLogger logger = TestLoggerFactory.getTestLogger(RiakNode.class);
-        RiakNode node = new RiakNode.Builder().withRemotePort(8098).build();
-        final ImmutableList<LoggingEvent> allLoggingEvents = logger.getAllLoggingEvents();
-        int lastMessage = allLoggingEvents.size() - 1;
-        assertEquals(logger.getLoggingEvents().get(lastMessage), LoggingEvent.warn("Default Riak HTTP port (8098) being used for Protocol Buffers TCP connection. Did you mean to use port 8087?"));
+
+        logger.clearAll();
+
+        new RiakNode.Builder().withRemotePort(8098).build();
+        assertEquals(logger.getLoggingEvents().get(0), LoggingEvent.warn("Known Riak HTTP port (8098) being used for Protocol Buffers TCP connection. Did you mean to use port 8087?"));
+
+        logger.clearAll();
+
+        new RiakNode.Builder().withRemotePort(10018).build();
+        assertEquals(logger.getLoggingEvents().get(0), LoggingEvent.warn("Known Riak HTTP port (10018) being used for Protocol Buffers TCP connection. Did you mean to use port 8087?"));
+
+        logger.clearAll();
+
+        new RiakNode.Builder().withRemotePort(8087).build();
+        assertEquals(logger.getLoggingEvents().size(), 0);
     }
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>

@@ -46,6 +46,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class RiakNode implements RiakResponseListener
 {
+    private static final HashSet<Integer> KNOWN_HTTP_PORTS =
+            new HashSet<Integer>(Arrays.asList(8098, 10018, 10028, 10038, 10048, 10058, 10068, 10078, 10088, 10098));
+
     public enum State
     {
         CREATED, RUNNING, HEALTH_CHECKING, SHUTTING_DOWN, SHUTDOWN;
@@ -185,9 +188,11 @@ public class RiakNode implements RiakResponseListener
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
 
-        if(this.port == 8098)
+        if(KNOWN_HTTP_PORTS.contains(this.port))
         {
-            logger.warn("Default Riak HTTP port (8098) being used for Protocol Buffers TCP connection. Did you mean to use port 8087?");
+            logger.warn("Known Riak HTTP port (" + this.port +
+                                ") being used for Protocol Buffers TCP connection. " +
+                                "Did you mean to use port 8087?");
         }
 
         if (builder.bootstrap != null)
