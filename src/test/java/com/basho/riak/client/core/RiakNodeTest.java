@@ -15,21 +15,23 @@
  */
 package com.basho.riak.client.core;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.fieldIn;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import com.basho.riak.client.core.RiakNode.State;
+import com.google.common.collect.ImmutableList;
+import com.google.protobuf.Message;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
+import uk.org.lidalia.slf4jtest.LoggingEvent;
+import uk.org.lidalia.slf4jtest.TestLogger;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 import java.net.UnknownHostException;
 import java.util.Deque;
@@ -39,15 +41,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
-
-import com.basho.riak.client.core.RiakNode.State;
-import com.google.protobuf.Message;
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.fieldIn;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -373,6 +371,16 @@ public class RiakNodeTest
     public void failsResolvingHostname() throws UnknownHostException {
     	RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name.com").build();
     	node.start();
+    }
+
+    @Test
+    public void warnsAboutDefaultHttpPort() throws UnknownHostException
+    {
+        TestLogger logger = TestLoggerFactory.getTestLogger(RiakNode.class);
+        RiakNode node = new RiakNode.Builder().withRemotePort(8098).build();
+        final ImmutableList<LoggingEvent> allLoggingEvents = logger.getAllLoggingEvents();
+        int lastMessage = allLoggingEvents.size() - 1;
+        assertEquals(logger.getLoggingEvents().get(lastMessage), LoggingEvent.warn("Default Riak HTTP port (8098) being used for Protocol Buffers TCP connection. Did you mean to use port 8087?"));
     }
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>

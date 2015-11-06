@@ -185,6 +185,11 @@ public class RiakNode implements RiakResponseListener
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
 
+        if(this.port == 8098)
+        {
+            logger.warn("Default Riak HTTP port (8098) being used for Protocol Buffers TCP connection. Did you mean to use port 8087?");
+        }
+
         if (builder.bootstrap != null)
         {
             this.bootstrap = builder.bootstrap.clone();
