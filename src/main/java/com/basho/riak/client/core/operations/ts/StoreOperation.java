@@ -5,7 +5,7 @@ import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2.0.3
  */
 public class StoreOperation
-        extends PBFutureOperation<Void, RiakKvPB.TsPutResp, BinaryValue>
+        extends PBFutureOperation<Void, RiakTsPB.TsPutResp, BinaryValue>
 {
     private final String tableName;
     private final int rowCount;
@@ -31,14 +31,14 @@ public class StoreOperation
         super(RiakMessageCodes.MSG_TsPutReq,
               RiakMessageCodes.MSG_TsPutResp,
               builder.reqBuilder,
-              RiakKvPB.TsPutResp.PARSER);
+              RiakTsPB.TsPutResp.PARSER);
 
         this.tableName = builder.reqBuilder.getTable().toStringUtf8();
         this.rowCount = builder.reqBuilder.getRowsCount();
     }
 
     @Override
-    protected Void convert(List<RiakKvPB.TsPutResp> responses)
+    protected Void convert(List<RiakTsPB.TsPutResp> responses)
     {
         // This is not a streaming op, there will only be one response
         checkAndGetSingleResponse(responses);
@@ -64,7 +64,7 @@ public class StoreOperation
 
     public static class Builder
     {
-        private final RiakKvPB.TsPutReq.Builder reqBuilder;
+        private final RiakTsPB.TsPutReq.Builder reqBuilder;
 
         public Builder(BinaryValue tableName)
         {
@@ -73,7 +73,7 @@ public class StoreOperation
                 throw new IllegalArgumentException("TableName can not be null or empty");
             }
 
-            this.reqBuilder = RiakKvPB.TsPutReq.newBuilder();
+            this.reqBuilder = RiakTsPB.TsPutReq.newBuilder();
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.unsafeGetValue()));
         }
 

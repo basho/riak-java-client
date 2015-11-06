@@ -263,16 +263,8 @@ public class ITestTimeSeries extends ITestBase
 
         // Assert that the row is no longer with us
         Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
-        //QueryResult queryResult2 = client.execute(fetch2);
-        //assertEquals(0, queryResult2.getRows().size());
-
-        // NB: This is the expected behavior as of 2015-11-02.
-        // Want to move it to return a normal response with 0 rows instead.
-        RiakFuture<QueryResult, BinaryValue> fetchFuture = client.executeAsync(fetch2);
-        fetchFuture.await();
-        assertFalse(fetchFuture.isSuccess());
-        assertEquals(fetchFuture.cause().getClass(), RiakResponseException.class);
-        assertEquals(fetchFuture.cause().getMessage(), "notfound");
+        QueryResult queryResult2 = client.execute(fetch2);
+        assertEquals(0, queryResult2.getRows().size());
     }
 
     private void assertRowMatches(Row expected, Row actual)

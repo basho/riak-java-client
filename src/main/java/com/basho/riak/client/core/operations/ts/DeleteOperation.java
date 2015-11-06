@@ -4,7 +4,7 @@ import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 
@@ -16,7 +16,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp, BinaryValue>
+public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp, BinaryValue>
 {
     private final Builder builder;
     private BinaryValue queryInfoMessage;
@@ -26,13 +26,13 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
         super(RiakMessageCodes.MSG_TsDelReq,
               RiakMessageCodes.MSG_TsDelResp,
               builder.reqBuilder,
-              RiakKvPB.TsDelResp.PARSER);
+              RiakTsPB.TsDelResp.PARSER);
 
         this.builder = builder;
     }
 
     @Override
-    protected Void convert(List<RiakKvPB.TsDelResp> responses)
+    protected Void convert(List<RiakTsPB.TsDelResp> responses)
     {
         // This is not a streaming op, there will only be one response
         checkAndGetSingleResponse(responses);
@@ -84,7 +84,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakKvPB.TsDelResp,
         private final BinaryValue tableName;
         private final List<Cell> keyValues;
 
-        private final RiakKvPB.TsDelReq.Builder reqBuilder = RiakKvPB.TsDelReq.newBuilder();
+        private final RiakTsPB.TsDelReq.Builder reqBuilder = RiakTsPB.TsDelReq.newBuilder();
 
         public Builder(BinaryValue tableName, List<Cell> keyValues)
         {
