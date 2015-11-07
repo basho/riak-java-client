@@ -5,7 +5,7 @@ import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 
@@ -17,7 +17,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGetResp, BinaryValue>
+public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGetResp, BinaryValue>
 {
     private final Builder builder;
     private BinaryValue queryInfoMessage;
@@ -27,16 +27,16 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
         super(RiakMessageCodes.MSG_TsGetReq,
               RiakMessageCodes.MSG_TsGetResp,
               builder.reqBuilder,
-              RiakKvPB.TsGetResp.PARSER);
+              RiakTsPB.TsGetResp.PARSER);
 
         this.builder = builder;
     }
 
     @Override
-    protected QueryResult convert(List<RiakKvPB.TsGetResp> responses)
+    protected QueryResult convert(List<RiakTsPB.TsGetResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        final RiakKvPB.TsGetResp response = checkAndGetSingleResponse(responses);
+        final RiakTsPB.TsGetResp response = checkAndGetSingleResponse(responses);
 
         return TimeSeriesPBConverter.convertPbGetResp(response);
     }
@@ -86,7 +86,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsGe
         private final BinaryValue tableName;
         private final List<Cell> keyValues;
 
-        private final RiakKvPB.TsGetReq.Builder reqBuilder = RiakKvPB.TsGetReq.newBuilder();
+        private final RiakTsPB.TsGetReq.Builder reqBuilder = RiakTsPB.TsGetReq.newBuilder();
 
         public Builder(BinaryValue tableName, List<Cell> keyValues)
         {

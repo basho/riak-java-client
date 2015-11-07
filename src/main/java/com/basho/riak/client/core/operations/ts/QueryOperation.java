@@ -4,8 +4,9 @@ import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQueryResp, BinaryValue>
+public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQueryResp, BinaryValue>
 {
     private final BinaryValue queryText;
 
@@ -24,17 +25,17 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
     {
         super(RiakMessageCodes.MSG_TsQueryReq,
               RiakMessageCodes.MSG_TsQueryResp,
-              RiakKvPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder),
-              RiakKvPB.TsQueryResp.PARSER);
+              RiakTsPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder),
+              RiakTsPB.TsQueryResp.PARSER);
 
         this.queryText = builder.queryText;
     }
 
     @Override
-    protected QueryResult convert(List<RiakKvPB.TsQueryResp> responses)
+    protected QueryResult convert(List<RiakTsPB.TsQueryResp> responses)
     {
         // This is not a streaming op, there will only be one response
-        final RiakKvPB.TsQueryResp response = checkAndGetSingleResponse(responses);
+        final RiakTsPB.TsQueryResp response = checkAndGetSingleResponse(responses);
 
         return TimeSeriesPBConverter.convertPbGetResp(response);
     }
@@ -47,8 +48,8 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakKvPB.TsQu
     public static class Builder
     {
         private final BinaryValue queryText;
-        private final RiakKvPB.TsInterpolation.Builder interpolationBuilder =
-                RiakKvPB.TsInterpolation.newBuilder();
+        private final RiakTsPB.TsInterpolation.Builder interpolationBuilder =
+                RiakTsPB.TsInterpolation.newBuilder();
 
         public Builder(BinaryValue queryText)
         {
