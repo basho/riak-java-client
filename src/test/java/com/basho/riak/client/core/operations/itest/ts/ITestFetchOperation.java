@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.operations.itest.ts;
 
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
@@ -54,7 +53,7 @@ public class ITestFetchOperation extends ITestTsBase
 
         Row row = result.getRows().get(0);
         assertEquals(7, row.getCells().size());
-        assertEquals("rain", row.getCells().get(3).getUtf8String());
+        assertEquals("rain", row.getCells().get(3).getVarcharAsUTF8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }
 }

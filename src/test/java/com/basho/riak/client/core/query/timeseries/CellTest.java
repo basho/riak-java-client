@@ -38,8 +38,8 @@ public class CellTest
     {
         String s = "foobar";
         Cell c = new Cell(s);
-        assertTrue(c.hasBinaryValue());
-        assertEquals(c.getUtf8String(), s);
+        assertTrue(c.hasVarcharValue());
+        assertEquals(c.getVarcharAsUTF8String(), s);
     }
 
     @Test
@@ -47,8 +47,8 @@ public class CellTest
     {
         BinaryValue bv = BinaryValue.createFromUtf8("foobar");
         Cell c = new Cell(bv);
-        assertTrue(c.hasBinaryValue());
-        assertEquals(c.getBinaryValue(), bv);
+        assertTrue(c.hasVarcharValue());
+        assertEquals(c.getVarcharValue(), bv);
     }
 
     @Test

@@ -2,9 +2,6 @@ package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.util.BinaryValue;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -12,7 +9,7 @@ import java.util.Date;
  * Holds a piece of data for a Time Series @{link Row}.
  * A cell can hold 9 different types of raw data:
  * <ol>
- *     <li><b>BinaryValue</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
+ *     <li><b>Varchar</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
  *     <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
  *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
@@ -36,21 +33,21 @@ public class Cell
     Cell() {}
 
     /**
-     * Creates a new "BinaryValue" Cell, based on the UTF8 binary encoding of the provided String.
+     * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
      * @param value The string to encode and store.
      */
     public Cell(String value)
     {
-        this.binaryValue = BinaryValue.createFromUtf8(value);
+        this.varcharValue = BinaryValue.createFromUtf8(value);
     }
 
     /**
-     * Creates a new "BinaryValue" cell from the provided BinaryValue.
+     * Creates a new "Varchar" cell from the provided BinaryValue.
      * @param value The BinaryValue to store.
      */
     public Cell(BinaryValue value)
     {
-        this.binaryValue = value;
+        this.varcharValue = value;
     }
 
     /**
@@ -103,7 +100,7 @@ public class Cell
         this.isTimestampCell = true;
     }
 
-    protected BinaryValue binaryValue;
+    protected BinaryValue varcharValue;
     protected long integerValue;
     protected long timestampValue;
     protected boolean booleanValue;
@@ -115,21 +112,12 @@ public class Cell
     private boolean isDoubleCell = false;
 
     /**
-     * Indicates whether this Cell contains a String/BinaryValue value.
-     * @return true if it contains a String value, false otherwise.
+     * Indicates whether this Cell contains a Varchar value.
+     * @return true if it contains a Varchar value, false otherwise.
      */
-    public boolean hasString()
+    public boolean hasVarcharValue()
     {
-        return hasBinaryValue();
-    }
-
-    /**
-     * Indicates whether this Cell contains a BinaryValue value.
-     * @return true if it contains a BinaryValue value, false otherwise.
-     */
-    public boolean hasBinaryValue()
-    {
-        return this.binaryValue != null;
+        return this.varcharValue != null;
     }
 
     /**
@@ -169,21 +157,21 @@ public class Cell
     public boolean hasDouble() { return this.isDoubleCell; }
 
     /**
-     * Returns the BinaryValue value, decoded to a UTF8 String.
-     * @return The BinaryValue value, decoded to a UTF8 String.
+     * Returns the Varchar value, decoded to a UTF8 String.
+     * @return The Varchar value, decoded to a UTF8 String.
      */
-    public String getUtf8String()
+    public String getVarcharAsUTF8String()
     {
-        return this.binaryValue.toStringUtf8();
+        return this.varcharValue.toStringUtf8();
     }
 
     /**
-     * Returns the raw BinaryValue value.
-     * @return The raw BinaryValue value.
+     * Returns the raw Varchar value as a BinaryValue object.
+     * @return The raw Varchar value as a BinaryValue object.
      */
-    public BinaryValue getBinaryValue()
+    public BinaryValue getVarcharValue()
     {
-        return this.binaryValue;
+        return this.varcharValue;
     }
 
     /**
@@ -243,9 +231,9 @@ public class Cell
     {
         final StringBuilder sb = new StringBuilder("Cell{ ");
 
-        if (this.hasBinaryValue())
+        if (this.hasVarcharValue())
         {
-            final String value = this.getUtf8String();
+            final String value = this.getVarcharAsUTF8String();
             if (value.length() > 32)
             {
                 sb.append(value.substring(0,32));

@@ -236,8 +236,20 @@ public class ITestTimeSeries extends ITestBase
         QueryResult queryResult = client.execute(fetch);
         assertEquals(1, queryResult.getRows().size());
         Row row = queryResult.getRows().get(0);
-        assertEquals("rain", row.getCells().get(3).getUtf8String());
+        assertEquals("rain", row.getCells().get(3).getVarcharAsUTF8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
+    }
+
+    @Test
+    public void TestFetchingWithNotFoundKeyReturnsNoRows() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
+        Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
+
+        QueryResult queryResult = client.execute(fetch);
+        assertEquals(0, queryResult.getRows().size());
     }
 
     @Test
@@ -263,16 +275,23 @@ public class ITestTimeSeries extends ITestBase
 
         // Assert that the row is no longer with us
         Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
-        //QueryResult queryResult2 = client.execute(fetch2);
-        //assertEquals(0, queryResult2.getRows().size());
+        QueryResult queryResult2 = client.execute(fetch2);
+        assertEquals(0, queryResult2.getRows().size());
+    }
 
-        // NB: This is the expected behavior as of 2015-11-02.
-        // Want to move it to return a normal response with 0 rows instead.
-        RiakFuture<QueryResult, BinaryValue> fetchFuture = client.executeAsync(fetch2);
-        fetchFuture.await();
-        assertFalse(fetchFuture.isSuccess());
-        assertEquals(fetchFuture.cause().getClass(), RiakResponseException.class);
-        assertEquals(fetchFuture.cause().getMessage(), "notfound");
+    @Test
+    public void TestDeletingWithNotFoundKeyDoesNotReturnError() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
+        Delete delete = new Delete.Builder(tableName, keyCells).build();
+
+        final RiakFuture<Void, BinaryValue> deleteFuture = client.executeAsync(delete);
+
+        deleteFuture.await();
+        assertTrue(deleteFuture.isSuccess());
+        assertNull(deleteFuture.cause());
     }
 
     private void assertRowMatches(Row expected, Row actual)
@@ -280,10 +299,10 @@ public class ITestTimeSeries extends ITestBase
         List<Cell> expectedCells = expected.getCells();
         List<Cell> actualCells = actual.getCells();
 
-        assertEquals(expectedCells.get(0).getUtf8String(),  actualCells.get(0).getUtf8String());
-        assertEquals(expectedCells.get(1).getUtf8String(),  actualCells.get(1).getUtf8String());
+        assertEquals(expectedCells.get(0).getVarcharAsUTF8String(), actualCells.get(0).getVarcharAsUTF8String());
+        assertEquals(expectedCells.get(1).getVarcharAsUTF8String(), actualCells.get(1).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(2).getTimestamp(),   actualCells.get(2).getTimestamp());
-        assertEquals(expectedCells.get(3).getUtf8String(),  actualCells.get(3).getUtf8String());
+        assertEquals(expectedCells.get(3).getVarcharAsUTF8String(), actualCells.get(3).getVarcharAsUTF8String());
 
         Cell expectedCell4 = expectedCells.get(4);
         Cell actualCell4 = actualCells.get(4);
