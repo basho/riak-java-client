@@ -18,10 +18,7 @@ package com.basho.riak.client.core;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Awaitility.fieldIn;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -302,6 +299,111 @@ public class RiakNodeTest
         Thread.sleep(10);
         Whitebox.invokeMethod(node, "reapIdleConnections", new Object[0]);
         assertEquals(1, available.size());
+    }
+
+    @Test
+    public void closedConnectionsOnReturnTest() throws InterruptedException, UnknownHostException, Exception
+    {
+        ChannelFuture future = mock(ChannelFuture.class);
+        Channel c = mock(Channel.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+
+        doReturn(future).when(c).closeFuture();
+        doReturn(true).when(c).isOpen();
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(c).when(future).channel();
+
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        RiakNode node = new RiakNode.Builder()
+                .withBootstrap(bootstrap)
+                .withMinConnections(1)
+                .withMaxConnections(6)
+                .build();
+
+        node.start();
+        Channel[] channelArray = new Channel[6];
+        for (int i = 0; i < 6; i++)
+        {
+            channelArray[i] = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+            assertNotNull(channelArray[i]);
+        }
+
+        doReturn(false).when(c).isOpen();
+
+        for (Channel channel : channelArray)
+        {
+            Whitebox.invokeMethod(node, "returnConnection", channel);
+        }
+
+        Deque<?> available = Whitebox.getInternalState(node, "available");
+        assertEquals(0, available.size());
+
+        assertEquals(6, node.availablePermits());
+
+        doReturn(true).when(c).isOpen();
+
+        Channel c1 = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+        assertEquals(0, available.size());
+        assertEquals(5, node.availablePermits());
+
+        Whitebox.invokeMethod(node, "returnConnection", c1);
+
+        assertEquals(1, available.size());
+        assertEquals(6, node.availablePermits());
+    }
+
+    @Test
+    public void deadConnectionsOnGetConnection() throws InterruptedException, UnknownHostException, Exception
+    {
+        ChannelFuture future = mock(ChannelFuture.class);
+        ChannelFuture future2 = mock(ChannelFuture.class);
+
+        Channel c = mock(Channel.class);
+        Channel c2 = mock(Channel.class);
+
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+
+        doReturn(future).when(c).closeFuture();
+        doReturn(true).when(c).isOpen();
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(c).when(future).channel();
+
+        doReturn(future2).when(c2).closeFuture();
+        doReturn(true).when(c2).isOpen();
+        doReturn(future2).when(future2).await();
+        doReturn(true).when(future2).isSuccess();
+        doReturn(c2).when(future2).channel();
+
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        RiakNode node = new RiakNode.Builder()
+                .withBootstrap(bootstrap)
+                .withMinConnections(1)
+                .withMaxConnections(1)
+                .build();
+
+        node.start();
+
+        Deque<?> available = Whitebox.getInternalState(node, "available");
+        assertEquals(1, available.size());
+        assertEquals(1, node.availablePermits());
+
+        doReturn(false).when(c).isOpen();
+        doReturn(future2).when(bootstrap).connect();
+
+        Channel fetchedChannel = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+
+        doReturn(true).when(c).isOpen();
+
+        assertEquals(0, available.size());
+        assertEquals(0, node.availablePermits());
+        assertNotSame(fetchedChannel, c);
+        assertSame(fetchedChannel, c2);
     }
 
     @Test

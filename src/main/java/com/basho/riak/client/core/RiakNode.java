@@ -691,82 +691,86 @@ public class RiakNode implements RiakResponseListener
 
         if (trustStore != null)
         {
-            SSLContext context;
-            try
-            {
-                context = SSLContext.getInstance("TLS");
-                TrustManagerFactory tmf =
-                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmf.init(trustStore);
-                if(keyStore!=null)
-                {
-                    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                    kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
-                    context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-                }
-                else
-                {
-                    context.init(null, tmf.getTrustManagers(), null);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                c.close();
-                logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
-                throw new ConnectionFailedException(ex);
-            }
-
-            SSLEngine engine = context.createSSLEngine();
-
-            Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
-
-            if (protocols.contains("TLSv1.2"))
-            {
-                engine.setEnabledProtocols(new String[] {"TLSv1.2"});
-                logger.debug("Using TLSv1.2");
-            }
-            else if (protocols.contains("TLSv1.1"))
-            {
-                engine.setEnabledProtocols(new String[] {"TLSv1.1"});
-                logger.debug("Using TLSv1.1");
-            }
-
-            engine.setUseClientMode(true);
-            RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
-            c.pipeline().addFirst(decoder);
-
-            try
-            {
-                DefaultPromise<Void> promise = decoder.getPromise();
-                promise.await();
-
-                if (promise.isSuccess())
-                {
-                    logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
-                }
-                else
-                {
-                    c.close();
-                    logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
-                    throw new ConnectionFailedException(promise.cause());
-                }
-
-
-            }
-            catch (InterruptedException e)
-            {
-                c.close();
-                logger.error("Thread interrupted during Auth; {}:{}",
-                    remoteAddress, port);
-                Thread.currentThread().interrupt();
-                throw new ConnectionFailedException(e);
-            }
-
+            setupTLSAndAuthenticate(c);
         }
 
         return c;
 
+    }
+
+    private void setupTLSAndAuthenticate(Channel c) throws ConnectionFailedException
+    {
+        SSLContext context;
+        try
+        {
+            context = SSLContext.getInstance("TLS");
+            TrustManagerFactory tmf =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(trustStore);
+            if(keyStore!=null)
+            {
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
+                context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            }
+            else
+            {
+                context.init(null, tmf.getTrustManagers(), null);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            c.close();
+            logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
+            throw new ConnectionFailedException(ex);
+        }
+
+        SSLEngine engine = context.createSSLEngine();
+
+        Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
+
+        if (protocols.contains("TLSv1.2"))
+        {
+            engine.setEnabledProtocols(new String[] {"TLSv1.2"});
+            logger.debug("Using TLSv1.2");
+        }
+        else if (protocols.contains("TLSv1.1"))
+        {
+            engine.setEnabledProtocols(new String[] {"TLSv1.1"});
+            logger.debug("Using TLSv1.1");
+        }
+
+        engine.setUseClientMode(true);
+        RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
+        c.pipeline().addFirst(decoder);
+
+        try
+        {
+            DefaultPromise<Void> promise = decoder.getPromise();
+            promise.await();
+
+            if (promise.isSuccess())
+            {
+                logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
+            }
+            else
+            {
+                c.close();
+                logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
+                throw new ConnectionFailedException(promise.cause());
+            }
+
+
+        }
+        catch (InterruptedException e)
+        {
+            c.close();
+            logger.error("Thread interrupted during Auth; {}:{}",
+                remoteAddress, port);
+            Thread.currentThread().interrupt();
+            throw new ConnectionFailedException(e);
+        }
     }
 
     /**
@@ -1059,7 +1063,7 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-        private void checkHealth()
+    private void checkHealth()
     {
         try
         {
