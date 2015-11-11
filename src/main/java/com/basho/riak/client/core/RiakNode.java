@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
+import java.security.Security;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -199,6 +200,7 @@ public class RiakNode implements RiakResponseListener
             permits = new Sync(builder.maxConnections);
         }
 
+        checkNetworkAddressCacheSettings();
 
         this.state = State.CREATED;
     }
@@ -893,6 +895,25 @@ public class RiakNode implements RiakResponseListener
         {
             inProgress.setException(t);
             returnConnection(channel); // release permit
+        }
+    }
+
+    private void checkNetworkAddressCacheSettings()
+    {
+        final String property = Security.getProperty("networkaddress.cache.ttl");
+        if (property == null)
+        {
+            return;
+        }
+
+        int cacheTTL = Integer.parseInt(property);
+
+        if (cacheTTL == -1)
+        {
+            logger.warn(
+                    "networkaddress.cache.ttl is currently set to cache DNS lookups forever. If you use domain names " +
+                            "for the Riak server connection, and an IP address changes (riak host or a load balancer)" +
+                            ", this will block the client from creating connections with the new IP addresses.");
         }
     }
 
