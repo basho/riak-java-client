@@ -243,14 +243,9 @@ public class RiakNode implements RiakResponseListener
             ownsBootstrap = true;
         }
 
-        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
+        bootstrap.handler(new RiakChannelInitializer(this));
 
-        if (socketAddress.isUnresolved())
-        {
-            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
-        }
-
-        bootstrap.handler(new RiakChannelInitializer(this)).remoteAddress(socketAddress);
+        refreshBootstrapRemoteAddress();
 
         if (connectionTimeout > 0)
         {
@@ -265,7 +260,7 @@ public class RiakNode implements RiakResponseListener
                 Channel channel;
                 try
                 {
-                    channel = doGetConnection();
+                    channel = doGetConnection(false);
                     minChannels.add(channel);
                 }
                 catch (ConnectionFailedException ex)
@@ -288,6 +283,19 @@ public class RiakNode implements RiakResponseListener
         logger.info("RiakNode started; {}:{}", remoteAddress, port);
         notifyStateListeners();
         return this;
+    }
+
+    private void refreshBootstrapRemoteAddress() throws UnknownHostException
+    {
+        // Refresh the address, hope their DNS TTL settings allow this.
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
+
+        if (socketAddress.isUnresolved())
+        {
+            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
+        }
+
+        bootstrap.remoteAddress(socketAddress);
     }
 
     public synchronized Future<Boolean> shutdown()
@@ -637,18 +645,23 @@ public class RiakNode implements RiakResponseListener
         {
             try
             {
-                channel = doGetConnection();
+                channel = doGetConnection(true);
                 channel.closeFuture().removeListener(inAvailableCloseListener);
             }
             catch (ConnectionFailedException ex)
             {
                 permits.release();
             }
+            catch (UnknownHostException ex)
+            {
+                permits.release();
+                logger.error("Unknown host encountered while trying to open connection; {}", ex);
+            }
         }
         return channel;
     }
 
-    private Channel doGetConnection() throws ConnectionFailedException
+    private Channel doGetConnection(boolean forceAddressRefresh) throws ConnectionFailedException, UnknownHostException
     {
         ChannelWithIdleTime cwi;
         while ((cwi = available.poll()) != null)
@@ -662,6 +675,11 @@ public class RiakNode implements RiakResponseListener
             {
                 return channel;
             }
+        }
+
+        if(forceAddressRefresh)
+        {
+            refreshBootstrapRemoteAddress();
         }
 
         ChannelFuture f = bootstrap.connect();
@@ -1073,7 +1091,7 @@ public class RiakNode implements RiakResponseListener
             // connections from the available queue and either
             // return/create a new one (meaning the node is up) or throw
             // an exception if a connection can't be made.
-            Channel c = doGetConnection();
+            Channel c = doGetConnection(true);
             logger.debug("Healthcheck channel: {} isOpen: {} handlers:{}", c.hashCode(), c.isOpen(), c.pipeline().names());
 
 
@@ -1123,18 +1141,21 @@ public class RiakNode implements RiakResponseListener
         {
             healthCheckFailed(ex);
         }
-        catch (IllegalStateException e)
+        catch (UnknownHostException ex)
+        {
+            healthCheckFailed(ex);
+        }
+        catch (IllegalStateException ex)
         {
             // no-op; there's a race condition where the bootstrap is shutting down
             // right when a healthcheck occurs and netty will throw this
             logger.debug("Illegal state exception during healthcheck.");
-            logger.debug("Stack: {}", e);
+            logger.debug("Stack: {}", ex);
         }
-        catch (RuntimeException e)
+        catch (RuntimeException ex)
         {
-            logger.error("Runtime exception during healthcheck: {}",e);
+            logger.error("Runtime exception during healthcheck: {}", ex);
         }
-
     }
 
     private void healthCheckFailed(Throwable cause)

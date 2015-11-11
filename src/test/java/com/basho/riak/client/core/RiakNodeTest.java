@@ -19,15 +19,15 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Awaitility.fieldIn;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
 
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.List;
@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -49,6 +50,7 @@ import com.google.protobuf.Message;
 
 /**
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Bootstrap.class, FutureOperation.class, RiakMessage.class})
@@ -78,7 +80,6 @@ public class RiakNodeTest
         final int MIN_CONNECTIONS = 2002;
         final int MAX_CONNECTIONS = 2003;
         final int PORT = 2004;
-        final int READ_TIMEOUT = 2005;
         final String REMOTE_ADDRESS = "localhost";
         final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
         final Bootstrap BOOTSTRAP = PowerMockito.spy(new Bootstrap());
@@ -121,12 +122,12 @@ public class RiakNodeTest
 
 
     @Test
-    public void nodeNotifiesListeners() throws UnknownHostException, Exception
+    public void nodeNotifiesListeners() throws Exception
     {
         RiakNode node = new RiakNode.Builder().build();
         NodeStateListener listener = mock(NodeStateListener.class);
         node.addStateListener(listener);
-        Whitebox.invokeMethod(node, "notifyStateListeners", new Object[0]);
+        Whitebox.invokeMethod(node, "notifyStateListeners");
         verify(listener).nodeStateChanged(node, RiakNode.State.CREATED);
     }
 
@@ -158,7 +159,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void NodeRespectsMax() throws InterruptedException, UnknownHostException, Exception
+    public void NodeRespectsMax() throws Exception
     {
         final int MAX_CONNECTIONS = 2;
 
@@ -182,19 +183,19 @@ public class RiakNodeTest
 
         for (int i = 0; i < MAX_CONNECTIONS; i++)
         {
-            assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+            assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
         }
 
-        assertNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNull(Whitebox.invokeMethod(node, "getConnection"));
         assertEquals(0, node.availablePermits());
 
         node.setMaxConnections(MAX_CONNECTIONS + 1);
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
         assertEquals(0, node.availablePermits());
     }
 
     @Test
-    public void channelsReturnedCorrectly() throws InterruptedException, UnknownHostException, Exception
+    public void channelsReturnedCorrectly() throws Exception
     {
         final int MAX_CONNECTIONS = 1;
 
@@ -216,17 +217,16 @@ public class RiakNodeTest
             .build();
         node.start();
 
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
-        assertNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
+        assertNull(Whitebox.invokeMethod(node, "getConnection"));
         Whitebox.invokeMethod(node, "returnConnection", c);
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(1, available.size());
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
     }
 
     @Test
-    public void healthCheckChangesState()
-        throws InterruptedException, UnknownHostException, Exception
+    public void healthCheckChangesState() throws Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
@@ -254,12 +254,12 @@ public class RiakNodeTest
         NodeStateListener listener = mock(NodeStateListener.class);
         node.addStateListener(listener);
         Whitebox.setInternalState(node, "state", State.RUNNING);
-        Whitebox.invokeMethod(node, "checkHealth", new Object[0]);
+        Whitebox.invokeMethod(node, "checkHealth");
         verify(listener).nodeStateChanged(node, State.HEALTH_CHECKING);
     }
 
     @Test
-    public void idleReaperTest() throws InterruptedException, UnknownHostException, Exception
+    public void idleReaperTest() throws Exception
     {
 
         ChannelFuture future = mock(ChannelFuture.class);
@@ -285,7 +285,7 @@ public class RiakNodeTest
         Channel[] channelArray = new Channel[6];
         for (int i = 0; i < 6; i++)
         {
-            channelArray[i] = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+            channelArray[i] = Whitebox.invokeMethod(node, "getConnection");
             assertNotNull(channelArray[i]);
         }
 
@@ -297,12 +297,12 @@ public class RiakNodeTest
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(6, available.size());
         Thread.sleep(10);
-        Whitebox.invokeMethod(node, "reapIdleConnections", new Object[0]);
+        Whitebox.invokeMethod(node, "reapIdleConnections");
         assertEquals(1, available.size());
     }
 
     @Test
-    public void closedConnectionsOnReturnTest() throws InterruptedException, UnknownHostException, Exception
+    public void closedConnectionsOnReturnTest() throws Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
@@ -327,7 +327,7 @@ public class RiakNodeTest
         Channel[] channelArray = new Channel[6];
         for (int i = 0; i < 6; i++)
         {
-            channelArray[i] = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+            channelArray[i] = Whitebox.invokeMethod(node, "getConnection");
             assertNotNull(channelArray[i]);
         }
 
@@ -345,7 +345,7 @@ public class RiakNodeTest
 
         doReturn(true).when(c).isOpen();
 
-        Channel c1 = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+        Channel c1 = Whitebox.invokeMethod(node, "getConnection");
         assertEquals(0, available.size());
         assertEquals(5, node.availablePermits());
 
@@ -356,7 +356,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void deadConnectionsOnGetConnection() throws InterruptedException, UnknownHostException, Exception
+    public void deadConnectionsOnGetConnection() throws Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         ChannelFuture future2 = mock(ChannelFuture.class);
@@ -396,7 +396,7 @@ public class RiakNodeTest
         doReturn(false).when(c).isOpen();
         doReturn(future2).when(bootstrap).connect();
 
-        Channel fetchedChannel = Whitebox.invokeMethod(node, "getConnection", new Object[0]);
+        Channel fetchedChannel = Whitebox.invokeMethod(node, "getConnection");
 
         doReturn(true).when(c).isOpen();
 
@@ -404,6 +404,45 @@ public class RiakNodeTest
         assertEquals(0, node.availablePermits());
         assertNotSame(fetchedChannel, c);
         assertSame(fetchedChannel, c2);
+    }
+
+    @Test
+    public void nodeRefreshesInetSocketAddressWhenConnectionsDie() throws Exception
+    {
+        ChannelFuture future = mock(ChannelFuture.class);
+        Channel c = mock(Channel.class);
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+
+        doReturn(future).when(c).closeFuture();
+        doReturn(true).when(c).isOpen();
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(c).when(future).channel();
+
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        ArgumentCaptor<InetSocketAddress> addressCaptor = ArgumentCaptor.forClass(InetSocketAddress.class);
+
+        RiakNode node = new RiakNode.Builder()
+                            .withBootstrap(bootstrap)
+                            .withMinConnections(1)
+                            .withMaxConnections(1)
+                            .build();
+
+        node.start();
+
+        Channel fetchedChannel = Whitebox.invokeMethod(node, "getConnection");
+        Whitebox.invokeMethod(node, "returnConnection", fetchedChannel);
+
+        doReturn(false).when(c).isOpen();
+
+        Whitebox.invokeMethod(node, "getConnection");
+
+        verify(bootstrap, times(2)).remoteAddress(addressCaptor.capture());
+
+        final List<InetSocketAddress> addressesUsed = addressCaptor.getAllValues();
+        assertNotSame(addressesUsed.get(0), addressesUsed.get(1));
     }
 
     @Test
@@ -473,8 +512,8 @@ public class RiakNodeTest
 
     @Test(expected = UnknownHostException.class )
     public void failsResolvingHostname() throws UnknownHostException {
-    	RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name.com").build();
-    	node.start();
+        RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name.com").build();
+        node.start();
     }
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>
