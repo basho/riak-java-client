@@ -7,7 +7,7 @@ import java.util.Date;
 
 /**
  * Holds a piece of data for a Time Series @{link Row}.
- * A cell can hold 9 different types of raw data:
+ * A cell can hold 5 different types of raw data:
  * <ol>
  *     <li><b>Varchar</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
@@ -15,15 +15,6 @@ import java.util.Date;
  *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
  *     <li><b>Boolean</b>s, which can hold a true/false value. </li>
  * </ol>
- *
- * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
- * in the Integer value, instead of the Timestamp value.
- *
- * Please use @{link #getLong()} instead of @{link #getTimestamp()},
- * and @{link #hasLong()} instead of @{link #hasTimestamp()} to fetch/check a timestamp value until further notice.
- *
- * To store a timestamp, please use the provided constructors for Date/Calendar,
- * or the static method to create one from a known timestamp, these work correctly.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
