@@ -141,10 +141,6 @@ public final class TimeSeriesPBConverter
         {
             cell = new Cell(pbCell.getSint64Value());
         }
-        else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasSint64Value())
-        {
-            cell = Cell.newTimestamp(pbCell.getSint64Value());
-        }
         else if (columnType == ColumnDescription.ColumnType.TIMESTAMP && pbCell.hasTimestampValue())
         {
             cell = Cell.newTimestamp(pbCell.getTimestampValue());
