@@ -13,6 +13,8 @@ import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -69,11 +71,11 @@ public class ITestTimeSeries extends ITestBase
             new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true)),
             new Row(new Cell("hash1"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
 
-//    @BeforeClass
-//    public static void BeforeClass()
-//    {
-//        Assume.assumeTrue(testTimeSeries);
-//    }
+    @BeforeClass
+    public static void BeforeClass()
+    {
+        Assume.assumeTrue(testTimeSeries);
+    }
 
     @Test
     public void StoringData() throws ExecutionException, InterruptedException
@@ -301,7 +303,7 @@ public class ITestTimeSeries extends ITestBase
 
         assertEquals(expectedCells.get(0).getVarcharAsUTF8String(), actualCells.get(0).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(1).getVarcharAsUTF8String(), actualCells.get(1).getVarcharAsUTF8String());
-        assertEquals(expectedCells.get(2).getTimestamp(),   actualCells.get(2).getTimestamp());
+        assertEquals(expectedCells.get(2).getTimestamp(),           actualCells.get(2).getTimestamp());
         assertEquals(expectedCells.get(3).getVarcharAsUTF8String(), actualCells.get(3).getVarcharAsUTF8String());
 
         Cell expectedCell4 = expectedCells.get(4);
