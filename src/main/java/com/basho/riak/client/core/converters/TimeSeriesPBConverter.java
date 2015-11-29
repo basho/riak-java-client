@@ -24,7 +24,7 @@ public final class TimeSeriesPBConverter
     {
         if (response == null)
         {
-            return QueryResult.emptyResult();
+            return QueryResult.EMPTY;
         }
 
         final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
@@ -37,7 +37,7 @@ public final class TimeSeriesPBConverter
     {
         if (response == null)
         {
-            return QueryResult.emptyResult();
+            return QueryResult.EMPTY;
         }
 
         final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
