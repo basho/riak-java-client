@@ -34,35 +34,13 @@ public class ColumnDescription
 
     public enum ColumnType
     {
-        VARCHAR(0),
-        SINT64(1),
-        DOUBLE(2),
-        TIMESTAMP(3),
-        BOOLEAN(4);
-
-        private static Map<Integer, ColumnType> map = new HashMap<Integer, ColumnType>();
-
-        static {
-            for (ColumnType cTypeEnum : ColumnType.values()) {
-                map.put(cTypeEnum.id, cTypeEnum);
-            }
-        }
-
-        private final int id;
-
-        ColumnType(int id)
-        {
-            this.id = id;
-        }
-
-        public static ColumnType valueOf(int columnType)
-        {
-            return map.get(columnType);
-        }
-
-        public int getId()
-        {
-            return this.id;
-        }
+        /**
+         * Values MUST BE IN THE SAME ORDER AS in the RiakTsPB.TsColumnType
+         */
+        VARCHAR,
+        SINT64,
+        DOUBLE,
+        TIMESTAMP,
+        BOOLEAN
     }
 }

@@ -63,7 +63,7 @@ public final class TimeSeriesPBConverter
         final RiakTsPB.TsColumnDescription.Builder columnBuilder = RiakTsPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));
 
-        columnBuilder.setType(RiakTsPB.TsColumnType.valueOf(column.getType().getId()));
+        columnBuilder.setType(RiakTsPB.TsColumnType.valueOf(column.getType().ordinal()));
 
         return columnBuilder.build();
     }
@@ -190,7 +190,7 @@ public final class TimeSeriesPBConverter
     {
         final String name = pbColumn.getName().toStringUtf8();
 
-        final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.valueOf(pbColumn.getType().getNumber());
+        final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.values()[pbColumn.getType().getNumber()];
 
         return new ColumnDescription(name, type);
     }
