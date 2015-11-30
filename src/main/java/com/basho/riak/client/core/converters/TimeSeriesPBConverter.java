@@ -14,6 +14,7 @@ import java.util.*;
  * Converts Time Series Protobuff message types to Java Client entity objects, and back.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
 public final class TimeSeriesPBConverter
@@ -90,7 +91,12 @@ public final class TimeSeriesPBConverter
         return pbRows;
     }
 
-    public static List<RiakTsPB.TsCell> convertCellsToPb(RiakTsPB.TsCell.Builder cellBuilder, Collection<Cell> cells)
+    public static List<RiakTsPB.TsCell> convertCellsToPb(Collection<Cell> cells)
+    {
+        return convertCellsToPb(RiakTsPB.TsCell.newBuilder(), cells);
+    }
+
+    private static List<RiakTsPB.TsCell> convertCellsToPb(RiakTsPB.TsCell.Builder cellBuilder, Collection<Cell> cells)
     {
         final ArrayList<RiakTsPB.TsCell> pbCells = new ArrayList<RiakTsPB.TsCell>(cells.size());
 
@@ -100,11 +106,6 @@ public final class TimeSeriesPBConverter
         }
 
         return pbCells;
-    }
-
-    public static List<RiakTsPB.TsCell> convertCellsToPb(Collection<Cell> cells)
-    {
-        return convertCellsToPb(RiakTsPB.TsCell.newBuilder(), cells);
     }
 
     private static List<Row> convertPbRows(List<RiakTsPB.TsRow> pbRows, List<ColumnDescription> columnDescriptions)
@@ -200,7 +201,8 @@ public final class TimeSeriesPBConverter
 
         if (cell == null) {
             return cellBuilder;
-        } else if (cell.hasVarcharValue())
+        }
+        else if (cell.hasVarcharValue())
         {
             cellBuilder.setVarcharValue(ByteString.copyFrom(cell.getVarcharValue().unsafeGetValue()));
         }
