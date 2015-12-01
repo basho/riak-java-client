@@ -12,7 +12,7 @@ public final class TimeSeriesPBLightConverter
 {
     private TimeSeriesPBLightConverter() {}
 
-    public static IQueryResult convertPbGetResp(RiakTsPB.TsQueryResp response)
+    public static IQueryResult convertPbQueryResp(RiakTsPB.TsQueryResp response)
     {
         return new QueryResultLight(response);
     }

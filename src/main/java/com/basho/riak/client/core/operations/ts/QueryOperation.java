@@ -42,7 +42,7 @@ public class QueryOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsQ
 
         if (shouldReturnImmutableResults)
         {
-            return TimeSeriesPBLightConverter.convertPbGetResp(response);
+            return TimeSeriesPBLightConverter.convertPbQueryResp(response);
         }
         else
         {
