@@ -8,15 +8,11 @@ import com.basho.riak.client.api.commands.timeseries.Store;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
-import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.query.timeseries.ColumnDescription;
-import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.client.core.query.timeseries.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
@@ -66,11 +62,11 @@ public class ITestTimeSeries extends ITestTsBase
     public void QueryingDataNoMatches() throws ExecutionException, InterruptedException
     {
         final String queryText = "select * from GeoCheckin Where time > 1 and time < 10 and user='user1' and geohash='hash1'";
-        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertNotNull(queryResult);
         assertEquals(0, queryResult.getColumnDescriptions().size());
-        assertEquals(0, queryResult.getRows().size());
+        assertEquals(0, queryResult.getRowsCount());
     }
 
     @Test
@@ -86,12 +82,12 @@ public class ITestTimeSeries extends ITestTsBase
                 "(time = " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(7, queryResult.getColumnDescriptions().size());
-        assertEquals(1, queryResult.getRows().size());
+        assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.getRows().get(0));
+        assertRowMatches(rows.get(1), queryResult.rows().next());
     }
 
     @Test
@@ -107,12 +103,12 @@ public class ITestTimeSeries extends ITestTsBase
                 "(time > " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(7, queryResult.getColumnDescriptions().size());
-        assertEquals(1, queryResult.getRows().size());
+        assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.getRows().get(0));
+        assertRowMatches(rows.get(1), queryResult.rows().next());
     }
 
     @Test
@@ -127,13 +123,14 @@ public class ITestTimeSeries extends ITestTsBase
                 "time > " + tenMinsAgo +" and " +
                 "time < "+ fifteenMinsInFuture + " ";
 
-        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(7, queryResult.getColumnDescriptions().size());
-        assertEquals(2, queryResult.getRows().size());
+        assertEquals(2, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.getRows().get(0));
-        assertRowMatches(rows.get(2), queryResult.getRows().get(1));
+        final Iterator<? extends IRow> itor = queryResult.rows();
+        assertRowMatches(rows.get(1), itor.next());
+        assertRowMatches(rows.get(2), itor.next());
     }
 
     @Test
@@ -145,13 +142,13 @@ public class ITestTimeSeries extends ITestTsBase
                 "(time > " + (fifteenMinsAgo - 1) +" and " +
                 "(time < "+ (now + 1) + ")) ";
 
-        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(1, queryResult.getColumnDescriptions().size());
         assertEquals(ColumnDescription.ColumnType.DOUBLE, queryResult.getColumnDescriptions().get(0).getType());
 
-        assertEquals(1, queryResult.getRows().size());
-        Cell resultCell = queryResult.getRows().get(0).getCells().get(0);
+        assertEquals(1, queryResult.getRowsCount());
+        final ICell resultCell = queryResult.rows().next().iterator().next();
 
         assertNull(resultCell);
     }
@@ -164,7 +161,7 @@ public class ITestTimeSeries extends ITestTsBase
         final String queryText = "select time from GeoChicken";
 
         Query query = new Query.Builder(queryText).build();
-        RiakFuture<QueryResult, BinaryValue> future = client.executeAsync(query);
+        RiakFuture<IQueryResult, BinaryValue> future = client.executeAsync(query);
         future.await();
         assertFalse(future.isSuccess());
         assertEquals(future.cause().getClass(), RiakResponseException.class);
@@ -253,18 +250,29 @@ public class ITestTimeSeries extends ITestTsBase
         assertNull(deleteFuture.cause());
     }
 
-    private void assertRowMatches(Row expected, Row actual)
+    private static <T> List<T> toList(Iterator<T> itor)
     {
-        List<Cell> expectedCells = expected.getCells();
-        List<Cell> actualCells = actual.getCells();
+        final List<T> r = new LinkedList<T>();
+
+        while(itor.hasNext())
+        {
+            r.add(itor.next());
+        }
+        return r;
+    }
+
+    private static <R1 extends IRow, R2 extends IRow> void assertRowMatches(R1 expected, R2 actual)
+    {
+        List<ICell> expectedCells = toList(expected.iterator());
+        List<ICell> actualCells = toList(actual.iterator());
 
         assertEquals(expectedCells.get(0).getVarcharAsUTF8String(), actualCells.get(0).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(1).getVarcharAsUTF8String(), actualCells.get(1).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(2).getTimestamp(),           actualCells.get(2).getTimestamp());
         assertEquals(expectedCells.get(3).getVarcharAsUTF8String(), actualCells.get(3).getVarcharAsUTF8String());
 
-        Cell expectedCell4 = expectedCells.get(4);
-        Cell actualCell4 = actualCells.get(4);
+        ICell expectedCell4 = expectedCells.get(4);
+        ICell actualCell4 = actualCells.get(4);
 
         if (expectedCell4 == null)
         {
@@ -275,8 +283,8 @@ public class ITestTimeSeries extends ITestTsBase
             assertEquals(Double.toString(expectedCells.get(4).getDouble()), Double.toString(actualCells.get(4).getDouble()));
         }
 
-        Cell expectedCell5 = expectedCells.get(5);
-        Cell actualCell5 = actualCells.get(5);
+        ICell expectedCell5 = expectedCells.get(5);
+        ICell actualCell5 = actualCells.get(5);
 
         if (expectedCell5 == null)
         {

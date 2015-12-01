@@ -17,9 +17,10 @@ import java.util.Date;
  * </ol>
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Cell
+public class Cell implements ICell
 {
     Cell() {}
 
@@ -106,6 +107,7 @@ public class Cell
      * Indicates whether this Cell contains a Varchar value.
      * @return true if it contains a Varchar value, false otherwise.
      */
+    @Override
     public boolean hasVarcharValue()
     {
         return this.varcharValue != null;
@@ -115,6 +117,7 @@ public class Cell
      * Indicates whether this Cell contains a valid signed 64-bit long integer value ({@link Long}).
      * @return true if it contains a java @{link Long} value, false otherwise.
      */
+    @Override
     public boolean hasLong()
     {
         return this.isIntegerCell;
@@ -127,6 +130,7 @@ public class Cell
      * Please use @{link #hasLong()} instead of @{link #hasTimestamp()} to check if a value exists until further notice.
      * @return true if it contains a Timestamp value, false otherwise.
      */
+    @Override
     public boolean hasTimestamp()
     {
         return this.isTimestampCell;
@@ -136,6 +140,7 @@ public class Cell
      * Indicates whether this Cell contains a Boolean value.
      * @return true if it contains a Boolean value, false otherwise.
      */
+    @Override
     public boolean hasBoolean()
     {
         return this.isBooleanCell;
@@ -145,12 +150,14 @@ public class Cell
      * Indicates whether this Cell contains a Double value.
      * @return true if it contains a Double value, false otherwise.
      */
+    @Override
     public boolean hasDouble() { return this.isDoubleCell; }
 
     /**
      * Returns the Varchar value, decoded to a UTF8 String.
      * @return The Varchar value, decoded to a UTF8 String.
      */
+    @Override
     public String getVarcharAsUTF8String()
     {
         return this.varcharValue.toStringUtf8();
@@ -160,6 +167,7 @@ public class Cell
      * Returns the raw Varchar value as a BinaryValue object.
      * @return The raw Varchar value as a BinaryValue object.
      */
+    @Override
     public BinaryValue getVarcharValue()
     {
         return this.varcharValue;
@@ -169,6 +177,7 @@ public class Cell
      * Returns the "Integer" value, as a Long.
      * @return The integer value, as a Java long.
      */
+    @Override
     public long getLong()
     {
         return this.integerValue;
@@ -178,6 +187,7 @@ public class Cell
      * Returns the the "Double" value.
      * @return The double value.
      */
+    @Override
     public double getDouble()
     {
         return this.doubleValue;
@@ -191,6 +201,7 @@ public class Cell
      * @see #getLong()
      * @return The timestamp value.
      */
+    @Override
     public long getTimestamp()
     {
         return timestampValue;
@@ -200,6 +211,7 @@ public class Cell
      * Returns the raw "Boolean" value.
      * @return The boolean value.
      */
+    @Override
     public boolean getBoolean()
     {
         return booleanValue;
