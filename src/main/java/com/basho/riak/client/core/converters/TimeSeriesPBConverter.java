@@ -8,15 +8,13 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Converts Time Series Protobuff message types to Java Client entity objects, and back.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
 public final class TimeSeriesPBConverter
@@ -27,7 +25,7 @@ public final class TimeSeriesPBConverter
     {
         if (response == null)
         {
-            return QueryResult.emptyResult();
+            return QueryResult.EMPTY;
         }
 
         final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
@@ -40,7 +38,7 @@ public final class TimeSeriesPBConverter
     {
         if (response == null)
         {
-            return QueryResult.emptyResult();
+            return QueryResult.EMPTY;
         }
 
         final List<ColumnDescription> columnDescriptions = convertPBColumnDescriptions(response.getColumnsList());
@@ -66,7 +64,7 @@ public final class TimeSeriesPBConverter
         final RiakTsPB.TsColumnDescription.Builder columnBuilder = RiakTsPB.TsColumnDescription.newBuilder();
         columnBuilder.setName(ByteString.copyFromUtf8(column.getName()));
 
-        columnBuilder.setType(RiakTsPB.TsColumnType.valueOf(column.getType().getId()));
+        columnBuilder.setType(RiakTsPB.TsColumnType.valueOf(column.getType().ordinal()));
 
         return columnBuilder.build();
     }
@@ -74,24 +72,37 @@ public final class TimeSeriesPBConverter
     public static Collection<RiakTsPB.TsRow> convertRowsToPb(Collection<Row> rows)
     {
         final ArrayList<RiakTsPB.TsRow> pbRows = new ArrayList<RiakTsPB.TsRow>(rows.size());
+        final RiakTsPB.TsRow.Builder rowBuilder = RiakTsPB.TsRow.newBuilder();
 
+        final RiakTsPB.TsCell.Builder cellBuilder = RiakTsPB.TsCell.newBuilder();
         for (Row row : rows)
         {
-            final RiakTsPB.TsRow.Builder rowBuilder = RiakTsPB.TsRow.newBuilder();
-            rowBuilder.addAllCells(convertCellsToPb(row.getCells()));
-            pbRows.add(rowBuilder.build());
-        }
+            final RiakTsPB.TsCell pbCells[] = new RiakTsPB.TsCell[row.getCells().size()];
+            int idx = 0;
+            for (Cell cell : row.getCells())
+            {
+                pbCells[idx++] = buildPBCell(cellBuilder, cell).build();
+            }
 
+            rowBuilder.addAllCells(Arrays.asList(pbCells));
+            pbRows.add(rowBuilder.build());
+            rowBuilder.clear();
+        }
         return pbRows;
     }
 
     public static List<RiakTsPB.TsCell> convertCellsToPb(Collection<Cell> cells)
     {
+        return convertCellsToPb(RiakTsPB.TsCell.newBuilder(), cells);
+    }
+
+    private static List<RiakTsPB.TsCell> convertCellsToPb(RiakTsPB.TsCell.Builder cellBuilder, Collection<Cell> cells)
+    {
         final ArrayList<RiakTsPB.TsCell> pbCells = new ArrayList<RiakTsPB.TsCell>(cells.size());
 
         for (Cell cell : cells)
         {
-            pbCells.add(convertCellToPb(cell));
+            pbCells.add(buildPBCell(cellBuilder, cell).build());
         }
 
         return pbCells;
@@ -180,22 +191,18 @@ public final class TimeSeriesPBConverter
     {
         final String name = pbColumn.getName().toStringUtf8();
 
-        final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.valueOf(pbColumn.getType().getNumber());
+        final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.values()[pbColumn.getType().getNumber()];
 
         return new ColumnDescription(name, type);
     }
 
-    private static RiakTsPB.TsCell convertCellToPb(Cell cell)
-    {
-        final RiakTsPB.TsCell.Builder cellBuilder = RiakTsPB.TsCell.newBuilder();
+    private static RiakTsPB.TsCell.Builder buildPBCell(RiakTsPB.TsCell.Builder cellBuilder, Cell cell) {
+        cellBuilder.clear();
 
-        if (cell == null)
-        {
-            // Return empty cell
-            return cellBuilder.build();
+        if (cell == null) {
+            return cellBuilder;
         }
-
-        if (cell.hasVarcharValue())
+        else if (cell.hasVarcharValue())
         {
             cellBuilder.setVarcharValue(ByteString.copyFrom(cell.getVarcharValue().unsafeGetValue()));
         }
@@ -219,7 +226,6 @@ public final class TimeSeriesPBConverter
         {
             throw new IllegalArgumentException("No valid cell type found.");
         }
-
-        return cellBuilder.build();
+        return cellBuilder;
     }
 }
