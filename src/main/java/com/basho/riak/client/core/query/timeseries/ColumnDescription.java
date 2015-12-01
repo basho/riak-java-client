@@ -8,9 +8,10 @@ import java.util.Map;
  * Contains a column name and column type.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class ColumnDescription
+public class ColumnDescription implements IColumnDescription
 {
     private final String name;
     private final ColumnType type;
@@ -21,26 +22,15 @@ public class ColumnDescription
         this.type = type;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public ColumnType getType()
     {
         return type;
-    }
-
-
-    public enum ColumnType
-    {
-        /**
-         * Values MUST BE IN THE SAME ORDER AS in the RiakTsPB.TsColumnType
-         */
-        VARCHAR,
-        SINT64,
-        DOUBLE,
-        TIMESTAMP,
-        BOOLEAN
     }
 }

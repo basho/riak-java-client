@@ -2,11 +2,11 @@ package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.QueryResult;
+import com.basho.riak.client.core.query.timeseries.IQueryResult;
+import com.basho.riak.client.core.query.timeseries.immutable.TimeSeriesPBLightConverter;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
-import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -15,11 +15,13 @@ import java.util.List;
  * An operation to query data from a Riak Time Series table.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQueryResp, BinaryValue>
+public class QueryOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsQueryResp, BinaryValue>
 {
     private final BinaryValue queryText;
+    private final boolean shouldReturnImmutableResults;
 
     private QueryOperation(Builder builder)
     {
@@ -29,15 +31,23 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
               RiakTsPB.TsQueryResp.PARSER);
 
         this.queryText = builder.queryText;
+        this.shouldReturnImmutableResults = builder.shouldReturnImmutableResults;
     }
 
     @Override
-    protected QueryResult convert(List<RiakTsPB.TsQueryResp> responses)
+    protected IQueryResult convert(List<RiakTsPB.TsQueryResp> responses)
     {
         // This is not a streaming op, there will only be one response
         final RiakTsPB.TsQueryResp response = checkAndGetSingleResponse(responses);
 
-        return TimeSeriesPBConverter.convertPbGetResp(response);
+        if (shouldReturnImmutableResults)
+        {
+            return TimeSeriesPBLightConverter.convertPbGetResp(response);
+        }
+        else
+        {
+            return TimeSeriesPBConverter.convertPbGetResp(response);
+        }
     }
     @Override
     public BinaryValue getQueryInfo()
@@ -48,8 +58,11 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
     public static class Builder
     {
         private final BinaryValue queryText;
+        private boolean shouldReturnImmutableResults = RETURN_IMMUTABLE_RESULTS;
         private final RiakTsPB.TsInterpolation.Builder interpolationBuilder =
                 RiakTsPB.TsInterpolation.newBuilder();
+
+        public static boolean RETURN_IMMUTABLE_RESULTS = false;
 
         public Builder(BinaryValue queryText)
         {
@@ -59,6 +72,12 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
             }
             this.queryText = queryText;
             this.interpolationBuilder.setBase(ByteString.copyFrom(queryText.unsafeGetValue()));
+        }
+
+        public Builder returnImmutableResults(boolean shouldReturnImmutableResults)
+        {
+            this.shouldReturnImmutableResults = shouldReturnImmutableResults;
+            return this;
         }
 
         public QueryOperation build()

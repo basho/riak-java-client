@@ -121,12 +121,11 @@ public final class TimeSeriesPBConverter
         {
             final int numCells = pbRow.getCellsCount();
             final List<Cell> cells = new ArrayList<Cell>(numCells);
-            final List<RiakTsPB.TsCell> pbCells = pbRow.getCellsList();
 
-            for (int i = 0; i < numCells; i++)
+            for (int i = 0; i < numCells; ++i)
             {
                 final ColumnDescription.ColumnType columnType = columnDescriptions.get(i).getType();
-                final RiakTsPB.TsCell pbCell = pbCells.get(i);
+                final RiakTsPB.TsCell pbCell = pbRow.getCells(i);
                 cells.add(convertPbCell(pbCell, columnType));
             }
 
@@ -168,7 +167,7 @@ public final class TimeSeriesPBConverter
         return cell;
     }
 
-    private static List<ColumnDescription> convertPBColumnDescriptions(List<RiakTsPB.TsColumnDescription> pbColumns)
+    public static List<ColumnDescription> convertPBColumnDescriptions(List<RiakTsPB.TsColumnDescription> pbColumns)
     {
         if (pbColumns == null)
         {
