@@ -1,16 +1,20 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
- */
-public class QueryResult
+*/
+public class QueryResult implements IQueryResult
 {
+    @SuppressWarnings("unchecked")
+    public static final QueryResult EMPTY = new QueryResult(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+
     private final List<ColumnDescription> columnDescriptions;
     private final List<Row> rows;
 
@@ -19,18 +23,29 @@ public class QueryResult
         this.rows = rows;
     }
 
-    public static QueryResult emptyResult()
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<IColumnDescription> getColumnDescriptions()
     {
-        return new QueryResult(new ArrayList<ColumnDescription>(0), new ArrayList<Row>(0));
-    }
-
-    public List<ColumnDescription> getColumnDescriptions()
-    {
-        return this.columnDescriptions;
+        return (List)this.columnDescriptions;
     }
 
     public List<Row> getRows()
     {
-        return this.rows;
+        return rows;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Iterator<IRow> rows()
+    {
+        return (Iterator)this.rows.iterator();
+    }
+
+    @Override
+    public int getRowsCount()
+    {
+        return this.rows.size();
     }
 }

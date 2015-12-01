@@ -8,9 +8,10 @@ import java.util.Map;
  * Contains a column name and column type.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class ColumnDescription
+public class ColumnDescription implements IColumnDescription
 {
     private final String name;
     private final ColumnType type;
@@ -21,48 +22,15 @@ public class ColumnDescription
         this.type = type;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public ColumnType getType()
     {
         return type;
-    }
-
-
-    public enum ColumnType
-    {
-        VARCHAR(0),
-        SINT64(1),
-        DOUBLE(2),
-        TIMESTAMP(3),
-        BOOLEAN(4);
-
-        private static Map<Integer, ColumnType> map = new HashMap<Integer, ColumnType>();
-
-        static {
-            for (ColumnType cTypeEnum : ColumnType.values()) {
-                map.put(cTypeEnum.id, cTypeEnum);
-            }
-        }
-
-        private final int id;
-
-        ColumnType(int id)
-        {
-            this.id = id;
-        }
-
-        public static ColumnType valueOf(int columnType)
-        {
-            return map.get(columnType);
-        }
-
-        public int getId()
-        {
-            return this.id;
-        }
     }
 }
