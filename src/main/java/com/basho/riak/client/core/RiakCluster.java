@@ -655,6 +655,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
         /**
          * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * The RiakNode.Builder is used for setting common properties among the nodes.
          * @since 2.0.3
          * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, int, String...)
          */

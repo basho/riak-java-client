@@ -1508,7 +1508,7 @@ public class RiakNode implements RiakResponseListener
          * The provided builder will be used to construct a set of RiakNodes
          * using the supplied addresses.
          *
-         * @param builder         a configured builder
+         * @param builder         a configured builder, used for common properties among the nodes
          * @param remoteAddresses a list of IP addresses or FQDN
          * @return a list of constructed RiakNodes
          * @throws UnknownHostException if a supplied FQDN can not be resolved.
@@ -1529,7 +1529,7 @@ public class RiakNode implements RiakResponseListener
          * Build a set of RiakNodes.
          * The provided builder will be used to construct a set of RiakNodes using the supplied addresses.
          *
-         * @param builder a configured builder
+         * @param builder a configured builder, used for common properties among the nodes
          * @param defaultPort port that will be used by default
          * @param remoteAddresses a comma separated list of FQDN or IP addresses, each of them may contains remote port
          *                        delimited by ':'.
