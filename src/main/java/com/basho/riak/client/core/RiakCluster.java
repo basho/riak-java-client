@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
 public class  RiakCluster implements OperationRetrier, NodeStateListener
@@ -651,6 +652,16 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             this.riakNodes = new ArrayList<RiakNode>(riakNodes);
         }
+
+        /**
+         * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * @since 2.0.3
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, int, String...)
+         */
+        public Builder(RiakNode.Builder nodeBuilder, int defaultPort, String... remoteAddresses) throws UnknownHostException {
+            riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, defaultPort, remoteAddresses );
+        }
+
 
         /**
          * Instantiate a Builder containing a single {@link RiakNode}
