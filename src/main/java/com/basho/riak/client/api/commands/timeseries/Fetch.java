@@ -5,6 +5,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.IQueryResult;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class Fetch extends RiakCommand<QueryResult, BinaryValue>
+public class Fetch extends RiakCommand<IQueryResult, BinaryValue>
 {
     private static final Logger logger = LoggerFactory.getLogger(Fetch.class);
     private final Builder builder;
@@ -30,9 +31,9 @@ public class Fetch extends RiakCommand<QueryResult, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<IQueryResult, BinaryValue> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<QueryResult, BinaryValue> future =
+        RiakFuture<IQueryResult, BinaryValue> future =
                 cluster.execute(buildCoreOperation());
 
         return future;

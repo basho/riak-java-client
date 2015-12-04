@@ -15,10 +15,10 @@ public class QueryResult implements IQueryResult
     @SuppressWarnings("unchecked")
     public static final QueryResult EMPTY = new QueryResult(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
 
-    private final List<ColumnDescription> columnDescriptions;
-    private final List<Row> rows;
+    private final List<IColumnDescription> columnDescriptions;
+    private final List<IRow> rows;
 
-    public QueryResult(List<ColumnDescription> columnDescriptions, List<Row> rows) {
+    public QueryResult(List<IColumnDescription> columnDescriptions, List<IRow> rows) {
         this.columnDescriptions = columnDescriptions;
         this.rows = rows;
     }
@@ -30,15 +30,14 @@ public class QueryResult implements IQueryResult
         return (List)this.columnDescriptions;
     }
 
-    public List<Row> getRows()
+    public List<IRow> getRows()
     {
         return rows;
     }
 
-
     @SuppressWarnings("unchecked")
     @Override
-    public Iterator<IRow> rows()
+    public Iterator<IRow> iterator()
     {
         return (Iterator)this.rows.iterator();
     }

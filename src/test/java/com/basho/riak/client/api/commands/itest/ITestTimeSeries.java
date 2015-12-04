@@ -79,7 +79,7 @@ public class ITestTimeSeries extends ITestTsBase
         final String queryText = "select * from GeoCheckin " +
                 "where user = 'user1' and " +
                 "geohash = 'hash1' and " +
-                "(time = " + tenMinsAgo +" and " +
+                "(time > " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
         final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
@@ -87,7 +87,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.rows().next());
+        assertRowMatches(rows.get(1), queryResult.iterator().next());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.rows().next());
+        assertRowMatches(rows.get(1), queryResult.iterator().next());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(2, queryResult.getRowsCount());
 
-        final Iterator<? extends IRow> itor = queryResult.rows();
+        final Iterator<? extends IRow> itor = queryResult.iterator();
         assertRowMatches(rows.get(1), itor.next());
         assertRowMatches(rows.get(2), itor.next());
     }
@@ -148,7 +148,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(ColumnDescription.ColumnType.DOUBLE, queryResult.getColumnDescriptions().get(0).getType());
 
         assertEquals(1, queryResult.getRowsCount());
-        final ICell resultCell = queryResult.rows().next().iterator().next();
+        final ICell resultCell = queryResult.iterator().next().iterator().next();
 
         assertNull(resultCell);
     }
@@ -189,9 +189,9 @@ public class ITestTimeSeries extends ITestTsBase
         final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
-        QueryResult queryResult = client.execute(fetch);
+        IQueryResult queryResult = client.execute(fetch);
         assertEquals(1, queryResult.getRows().size());
-        Row row = queryResult.getRows().get(0);
+        IRow row = queryResult.getRows().get(0);
         assertEquals("rain", row.getCells().get(3).getVarcharAsUTF8String());
         assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
     }
@@ -204,7 +204,7 @@ public class ITestTimeSeries extends ITestTsBase
         final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
-        QueryResult queryResult = client.execute(fetch);
+        IQueryResult queryResult = client.execute(fetch);
         assertEquals(0, queryResult.getRows().size());
     }
 
@@ -217,7 +217,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         // Assert we have a row
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
-        QueryResult queryResult = client.execute(fetch);
+        IQueryResult queryResult = client.execute(fetch);
         assertEquals(1, queryResult.getRows().size());
 
         // Delete row
@@ -231,7 +231,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         // Assert that the row is no longer with us
         Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
-        QueryResult queryResult2 = client.execute(fetch2);
+        IQueryResult queryResult2 = client.execute(fetch2);
         assertEquals(0, queryResult2.getRows().size());
     }
 

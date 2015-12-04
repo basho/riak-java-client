@@ -17,6 +17,71 @@ import java.util.List;
  */
 class QueryResult implements IQueryResult
 {
+    public static final QueryResult EmptyResult = new QueryResult();
+
+    private final List<RiakTsPB.TsRow> pbRows;
+    private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
+    private final transient List<IRow> rows;
+    private transient List<IColumnDescription> columns;
+
+    private QueryResult()
+    {
+        this.pbRows = Collections.emptyList();
+        this.pbColumnDescriptions = Collections.emptyList();
+        this.rows = Collections.emptyList();
+    }
+
+    public QueryResult(List<RiakTsPB.TsRow> tsRows)
+    {
+        this(Collections.<RiakTsPB.TsColumnDescription>emptyList(), tsRows);
+    }
+
+    public QueryResult(List<RiakTsPB.TsColumnDescription> columnsList, List<RiakTsPB.TsRow> rowsList)
+    {
+        this.pbColumnDescriptions = columnsList;
+        this.pbRows = rowsList;
+        this.rows = new ArrayList<IRow>(this.pbRows.size());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<IColumnDescription> getColumnDescriptions()
+    {
+        if (columns == null)
+        {
+            columns =
+                    Collections.unmodifiableList((List) TimeSeriesPBConverter.convertPBColumnDescriptions(this.pbColumnDescriptions));
+        }
+        return columns;
+    }
+
+    @Override
+    public Iterator<IRow> iterator()
+    {
+        return new ImmutableRowIterator(this.pbRows);
+    }
+
+    @Override
+    public int getRowsCount()
+    {
+        return this.pbRows.size();
+    }
+
+    @Override
+    public List<IRow> getRows()
+    {
+        if (this.rows.size() != this.getRowsCount())
+        {
+            final Iterator<IRow> iter = this.iterator();
+            while (iter.hasNext())
+            {
+                this.rows.add(iter.next());
+            }
+        }
+
+        return this.rows;
+    }
+
     private static class ImmutableRowIterator implements Iterator<IRow>
     {
         private Iterator<RiakTsPB.TsRow> itor;
@@ -43,63 +108,5 @@ class QueryResult implements IQueryResult
         {
             throw new UnsupportedOperationException();
         }
-    }
-
-    private final List<RiakTsPB.TsRow> pbRows;
-    private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
-    private transient List<IColumnDescription> columns;
-
-    public QueryResult(List<RiakTsPB.TsListKeysResp> responseChunks)
-    {
-        int size = 0;
-        for (RiakTsPB.TsListKeysResp resp : responseChunks)
-        {
-            size += resp.getKeysCount();
-        }
-
-        this.pbRows = new ArrayList<RiakTsPB.TsRow>(size);
-
-        for (RiakTsPB.TsListKeysResp resp : responseChunks)
-        {
-            this.pbRows.addAll(resp.getKeysList());
-        }
-
-        this.pbColumnDescriptions = null;
-    }
-
-    public QueryResult(RiakTsPB.TsQueryResp queryResp)
-    {
-        this.pbRows = queryResp.getRowsList();
-        this.pbColumnDescriptions = queryResp.getColumnsList();
-    }
-
-    public QueryResult(RiakTsPB.TsGetResp getResp)
-    {
-        this.pbRows = getResp.getRowsList();
-        this.pbColumnDescriptions = getResp.getColumnsList();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<IColumnDescription> getColumnDescriptions()
-    {
-        if (columns == null)
-        {
-            columns = Collections.unmodifiableList(
-                    (List)TimeSeriesPBConverter.convertPBColumnDescriptions(this.pbColumnDescriptions));
-        }
-        return columns;
-    }
-
-    @Override
-    public Iterator<IRow> rows()
-    {
-        return new ImmutableRowIterator(this.pbRows);
-    }
-
-    @Override
-    public int getRowsCount()
-    {
-        return this.pbRows.size();
     }
 }

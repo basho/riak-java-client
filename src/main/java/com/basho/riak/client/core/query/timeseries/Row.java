@@ -12,19 +12,19 @@ import java.util.List;
  */
 public class Row implements IRow
 {
-    private final List<Cell> cells;
+    private final List<ICell> cells;
 
-    public Row(List<Cell> cells)
+    public Row(List<ICell> cells)
     {
         this.cells = cells;
     }
 
-    public Row(Cell... cells)
+    public Row(ICell... cells)
     {
         this.cells = Arrays.asList(cells);
     }
 
-    public List<Cell> getCells()
+    public List<ICell> getCells()
     {
         return cells;
     }

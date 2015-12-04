@@ -42,7 +42,7 @@ public class QueryOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsQ
 
         if (shouldReturnImmutableResults)
         {
-            return ImmutablePbResultFactory.convertPbGetResp(response);
+            return ImmutablePbResultFactory.convertPbQueryResp(response);
         }
         else
         {
