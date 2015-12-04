@@ -59,6 +59,7 @@ public abstract class ITestBase
     protected static boolean test2i;
     protected static boolean testBucketType;
     protected static boolean testCrdt;
+    protected static boolean testTimeSeries;
     protected static boolean legacyRiakSearch;
     protected static boolean security;
     protected static BinaryValue bucketName;
@@ -171,6 +172,7 @@ public abstract class ITestBase
         setBucketType = BinaryValue.create("jvtest_sets");
         mapBucketType = BinaryValue.create("jvtest_maps");
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
+        testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries"));
 
         /**
          * Riak PBC port
