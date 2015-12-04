@@ -2,14 +2,11 @@ package com.basho.riak.client.api.commands.timeseries;
 
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.ListKeysOperation;
-import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.client.core.query.timeseries.IQueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
-
-import java.util.List;
 
 /**
  * Time Series List Keys Command
@@ -18,7 +15,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class ListKeys extends RiakCommand<ListKeys.Response, BinaryValue>
+public class ListKeys extends RiakCommand<IQueryResult, BinaryValue>
 {
     private final BinaryValue tableName;
     private final int timeout;
@@ -30,18 +27,18 @@ public class ListKeys extends RiakCommand<ListKeys.Response, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<IQueryResult, BinaryValue> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<ListKeysOperation.Response, BinaryValue> coreFuture =
+        RiakFuture<IQueryResult, BinaryValue> coreFuture =
                 cluster.execute(buildCoreOperation());
 
-        CoreFutureAdapter<Response, BinaryValue, ListKeysOperation.Response, BinaryValue> future =
-                new CoreFutureAdapter<ListKeys.Response, BinaryValue, ListKeysOperation.Response, BinaryValue>(coreFuture)
+        CoreFutureAdapter<IQueryResult, BinaryValue, IQueryResult, BinaryValue> future =
+                new CoreFutureAdapter<IQueryResult, BinaryValue, IQueryResult, BinaryValue>(coreFuture)
                 {
                     @Override
-                    protected Response convertResponse(ListKeysOperation.Response coreResponse)
+                    protected IQueryResult convertResponse(IQueryResult coreResponse)
                     {
-                        return new Response(tableName, coreResponse.getRows());
+                        return coreResponse;
                     }
 
                     @Override
@@ -64,17 +61,6 @@ public class ListKeys extends RiakCommand<ListKeys.Response, BinaryValue>
         }
 
         return builder.build();
-    }
-
-    public class Response {
-        private final BinaryValue tableName;
-        private final List<Row> rows;
-
-        public Response(BinaryValue tableName, List<Row> rows)
-        {
-            this.tableName = tableName;
-            this.rows = rows;
-        }
     }
 
     public class Builder

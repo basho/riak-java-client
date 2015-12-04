@@ -1,19 +1,19 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.client.core.query.timeseries.IQueryResult;
+import com.basho.riak.client.core.query.timeseries.immutable.pb.ImmutablePbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by alex on 12/3/15.
  */
-public class ListKeysOperation extends PBFutureOperation<ListKeysOperation.Response, RiakTsPB.TsListKeysResp, BinaryValue>
+public class ListKeysOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsListKeysResp, BinaryValue>
 {
     private final Builder builder;
     private BinaryValue queryInfoMessage;
@@ -29,18 +29,9 @@ public class ListKeysOperation extends PBFutureOperation<ListKeysOperation.Respo
     }
 
     @Override
-    protected Response convert(List<RiakTsPB.TsListKeysResp> rawResponse)
+    protected IQueryResult convert(List<RiakTsPB.TsListKeysResp> rawResponses)
     {
-        Response.Builder builder = new Response.Builder();
-        for (RiakTsPB.TsListKeysResp resp : rawResponse)
-        {
-            for (RiakTsPB.TsRow tsRow : resp.getKeysList())
-            {
-                // TODO: Convert row
-                //builder.addRow();
-            }
-        }
-        return builder.build();
+        return ImmutablePbResultFactory.convertPbListKeysResp(rawResponses);
     }
 
     @Override
@@ -101,42 +92,6 @@ public class ListKeysOperation extends PBFutureOperation<ListKeysOperation.Respo
         public ListKeysOperation build()
         {
             return new ListKeysOperation(this);
-        }
-    }
-
-    public static class Response
-    {
-        private final List<Row> rows;
-        private Response(Builder builder)
-        {
-            this.rows = builder.rows;
-        }
-
-        public List<Row> getRows()
-        {
-            return rows;
-        }
-
-        static class Builder
-        {
-            private List<Row> rows = new ArrayList<Row>();
-
-            Builder addRows(List<Row> rows)
-            {
-                this.rows.addAll(rows);
-                return this;
-            }
-
-            Builder addRow(Row row)
-            {
-                this.rows.add(row);
-                return this;
-            }
-
-            Response build()
-            {
-                return new Response(this);
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ import com.basho.riak.client.core.query.timeseries.IQueryResult;
 import com.basho.riak.client.core.query.timeseries.IRow;
 import com.basho.riak.protobuf.RiakTsPB;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -44,12 +45,38 @@ class QueryResult implements IQueryResult
         }
     }
 
-    private final RiakTsPB.TsQueryResp pbResponse;
+    private final List<RiakTsPB.TsRow> pbRows;
+    private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
     private transient List<IColumnDescription> columns;
 
-    public QueryResult(RiakTsPB.TsQueryResp response)
+    public QueryResult(List<RiakTsPB.TsListKeysResp> responseChunks)
     {
-        this.pbResponse = response;
+        int size = 0;
+        for (RiakTsPB.TsListKeysResp resp : responseChunks)
+        {
+            size += resp.getKeysCount();
+        }
+
+        this.pbRows = new ArrayList<RiakTsPB.TsRow>(size);
+
+        for (RiakTsPB.TsListKeysResp resp : responseChunks)
+        {
+            this.pbRows.addAll(resp.getKeysList());
+        }
+
+        this.pbColumnDescriptions = null;
+    }
+
+    public QueryResult(RiakTsPB.TsQueryResp queryResp)
+    {
+        this.pbRows = queryResp.getRowsList();
+        this.pbColumnDescriptions = queryResp.getColumnsList();
+    }
+
+    public QueryResult(RiakTsPB.TsGetResp getResp)
+    {
+        this.pbRows = getResp.getRowsList();
+        this.pbColumnDescriptions = getResp.getColumnsList();
     }
 
     @SuppressWarnings("unchecked")
@@ -59,7 +86,7 @@ class QueryResult implements IQueryResult
         if (columns == null)
         {
             columns = Collections.unmodifiableList(
-                    (List)TimeSeriesPBConverter.convertPBColumnDescriptions(pbResponse.getColumnsList()));
+                    (List)TimeSeriesPBConverter.convertPBColumnDescriptions(this.pbColumnDescriptions));
         }
         return columns;
     }
@@ -67,12 +94,12 @@ class QueryResult implements IQueryResult
     @Override
     public Iterator<IRow> rows()
     {
-        return new ImmutableRowIterator(pbResponse.getRowsList());
+        return new ImmutableRowIterator(this.pbRows);
     }
 
     @Override
     public int getRowsCount()
     {
-        return pbResponse.getRowsCount();
+        return this.pbRows.size();
     }
 }
