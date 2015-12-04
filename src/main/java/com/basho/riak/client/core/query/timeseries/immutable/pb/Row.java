@@ -1,4 +1,4 @@
-package com.basho.riak.client.core.query.timeseries.immutable;
+package com.basho.riak.client.core.query.timeseries.immutable.pb;
 
 import com.basho.riak.client.core.query.timeseries.ICell;
 import com.basho.riak.client.core.query.timeseries.IRow;
@@ -11,7 +11,7 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-class RowLight implements IRow
+class Row implements IRow
 {
     private static class ImmutableCellIterator implements Iterator<ICell>
     {
@@ -31,7 +31,7 @@ class RowLight implements IRow
         @Override
         public ICell next()
         {
-            return new CellLight(itor.next());
+            return new Cell(itor.next());
         }
 
         @Override
@@ -42,7 +42,7 @@ class RowLight implements IRow
     }
     private final RiakTsPB.TsRow pbRow;
 
-    public RowLight(RiakTsPB.TsRow pbRow)
+    public Row(RiakTsPB.TsRow pbRow)
     {
         this.pbRow = pbRow;
     }

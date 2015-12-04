@@ -3,7 +3,7 @@ package com.basho.riak.client.core.operations.ts;
 import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.IQueryResult;
-import com.basho.riak.client.core.query.timeseries.immutable.TimeSeriesPBLightConverter;
+import com.basho.riak.client.core.query.timeseries.immutable.pb.ImmutablePbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -42,7 +42,7 @@ public class QueryOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsQ
 
         if (shouldReturnImmutableResults)
         {
-            return TimeSeriesPBLightConverter.convertPbGetResp(response);
+            return ImmutablePbResultFactory.convertPbGetResp(response);
         }
         else
         {
