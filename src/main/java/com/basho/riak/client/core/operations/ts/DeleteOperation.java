@@ -2,10 +2,10 @@ package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
+import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -68,7 +68,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
                 sb.append(this.builder.keyValues.get(i).toString());
             }
 
-            if (i < numKeys-1)
+            if (i < numKeys - 1)
             {
                 sb.append(", ");
             }
@@ -99,7 +99,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
             }
 
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(ImmutablePbResultFactory.convertCellsToPb(keyValues));
+            this.reqBuilder.addAllKey(CollectionConverters.convertCellsToPb(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;

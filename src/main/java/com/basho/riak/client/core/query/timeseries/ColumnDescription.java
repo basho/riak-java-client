@@ -1,7 +1,5 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import com.basho.riak.protobuf.RiakTsPB;
-
 /**
  * A Metadata description of a column in Riak Time Series.
  * Contains a column name and column type.
@@ -34,7 +32,8 @@ public class ColumnDescription
     /**
      * Values MUST BE IN THE SAME ORDER AS in the RiakTsPB.TsColumnType
      */
-    public enum ColumnType {
+    public enum ColumnType
+    {
         VARCHAR,
         SINT64,
         DOUBLE,

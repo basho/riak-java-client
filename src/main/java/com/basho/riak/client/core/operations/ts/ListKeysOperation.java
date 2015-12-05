@@ -2,7 +2,7 @@ package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
+import com.basho.riak.client.core.query.timeseries.PbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
@@ -31,7 +31,7 @@ public class ListKeysOperation extends PBFutureOperation<QueryResult, RiakTsPB.T
     @Override
     protected QueryResult convert(List<RiakTsPB.TsListKeysResp> rawResponses)
     {
-        return ImmutablePbResultFactory.convertPbListKeysResp(rawResponses);
+        return PbResultFactory.convertPbListKeysResp(rawResponses);
     }
 
     @Override

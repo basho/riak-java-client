@@ -9,51 +9,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * @author Alex Moore <amoore at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public final class ImmutablePbResultFactory
+public final class CollectionConverters
 {
-    private ImmutablePbResultFactory() {}
-
-    public static QueryResult convertPbQueryResp(RiakTsPB.TsQueryResp response)
-    {
-        return response == null ?
-                QueryResult.EMPTY :
-                new QueryResult(response.getColumnsList(), response.getRowsList());
-    }
-
-    public static QueryResult convertPbGetResp(RiakTsPB.TsGetResp response)
-    {
-        return response == null ?
-                QueryResult.EMPTY :
-                new QueryResult(response.getColumnsList(), response.getRowsList());
-    }
-
-    public static QueryResult convertPbListKeysResp(List<RiakTsPB.TsListKeysResp> responseChunks)
-    {
-        if(responseChunks == null)
-        {
-            return QueryResult.EMPTY;
-        }
-
-        int size = 0;
-        for (RiakTsPB.TsListKeysResp resp : responseChunks)
-        {
-            size += resp.getKeysCount();
-        }
-
-        final ArrayList<RiakTsPB.TsRow> pbRows = new ArrayList<RiakTsPB.TsRow>(size);
-
-        for (RiakTsPB.TsListKeysResp resp : responseChunks)
-        {
-            pbRows.addAll(resp.getKeysList());
-        }
-
-        return new QueryResult(pbRows);
-    }
+    private CollectionConverters() {}
 
     public static List<RiakTsPB.TsRow> convertRowsToPb(Collection<Row> rows)
     {
@@ -75,10 +37,11 @@ public final class ImmutablePbResultFactory
         return tsCells;
     }
 
-    public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb(
-            Collection<ColumnDescription> columns)
+    public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb
+            (Collection<ColumnDescription> columns)
     {
-        final ArrayList<RiakTsPB.TsColumnDescription> pbColumns = new ArrayList<RiakTsPB.TsColumnDescription>(columns.size());
+        final ArrayList<RiakTsPB.TsColumnDescription> pbColumns =
+                new ArrayList<RiakTsPB.TsColumnDescription>(columns.size());
 
         for (ColumnDescription column : columns)
         {
@@ -109,7 +72,6 @@ public final class ImmutablePbResultFactory
 
         for (RiakTsPB.TsColumnDescription pbColumn : pbColumns)
         {
-
             ColumnDescription columnDescription = convertPBColumnDescription(pbColumn);
             columns.add(columnDescription);
         }

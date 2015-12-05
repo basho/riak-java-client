@@ -2,8 +2,9 @@ package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
+import com.basho.riak.client.core.query.timeseries.PbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -38,7 +39,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
         // This is not a streaming op, there will only be one response
         final RiakTsPB.TsGetResp response = checkAndGetSingleResponse(responses);
 
-        return ImmutablePbResultFactory.convertPbGetResp(response);
+        return PbResultFactory.convertPbGetResp(response);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
             }
 
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(ImmutablePbResultFactory.convertCellsToPb(keyValues));
+            this.reqBuilder.addAllKey(CollectionConverters.convertCellsToPb(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;

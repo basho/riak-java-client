@@ -1,12 +1,12 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
+import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
-import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.Collection;
@@ -18,8 +18,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class StoreOperation
-        extends PBFutureOperation<Void, RiakTsPB.TsPutResp, BinaryValue>
+public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, BinaryValue>
 {
     private final String tableName;
     private final int rowCount;
@@ -79,13 +78,13 @@ public class StoreOperation
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            this.reqBuilder.addAllColumns(ImmutablePbResultFactory.convertColumnDescriptionsToPb(columns));
+            this.reqBuilder.addAllColumns(CollectionConverters.convertColumnDescriptionsToPb(columns));
             return this;
         }
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(ImmutablePbResultFactory.convertRowsToPb(rows));
+            this.reqBuilder.addAllRows(CollectionConverters.convertRowsToPb(rows));
             return this;
         }
 

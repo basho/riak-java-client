@@ -1,11 +1,11 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
+import com.basho.riak.client.core.query.timeseries.PbResultFactory;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -36,8 +36,9 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
     {
         // This is not a streaming op, there will only be one response
         final RiakTsPB.TsQueryResp response = checkAndGetSingleResponse(responses);
-        return ImmutablePbResultFactory.convertPbQueryResp(response);
+        return PbResultFactory.convertPbQueryResp(response);
     }
+
     @Override
     public BinaryValue getQueryInfo()
     {
@@ -47,8 +48,7 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
     public static class Builder
     {
         private final BinaryValue queryText;
-        private final RiakTsPB.TsInterpolation.Builder interpolationBuilder =
-                RiakTsPB.TsInterpolation.newBuilder();
+        private final RiakTsPB.TsInterpolation.Builder interpolationBuilder = RiakTsPB.TsInterpolation.newBuilder();
 
         public Builder(BinaryValue queryText)
         {

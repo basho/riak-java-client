@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Time Series Fetch Operation Integration Tests
+ *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -38,7 +39,9 @@ public class ITestFetchOperation extends ITestTsBase
     @Test
     public void testSingleFetch() throws ExecutionException, InterruptedException
     {
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"),
+                                                  new Cell("user4"),
+                                                  Cell.newTimestamp(fifteenMinsAgo));
         FetchOperation fetchOp = new FetchOperation.Builder(tableNameBV, keyCells).build();
 
         final RiakFuture<QueryResult, BinaryValue> future = cluster.execute(fetchOp);

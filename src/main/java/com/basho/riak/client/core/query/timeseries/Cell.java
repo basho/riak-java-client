@@ -11,11 +11,11 @@ import java.util.Date;
  * Holds a piece of data for a Time Series @{link Row}.
  * A cell can hold 5 different types of raw data:
  * <ol>
- *     <li><b>Varchar</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
- *     <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
- *     <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
- *     <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
- *     <li><b>Boolean</b>s, which can hold a true/false value. </li>
+ * <li><b>Varchar</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
+ * <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
+ * <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
+ * <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
+ * <li><b>Boolean</b>s, which can hold a true/false value. </li>
  * </ol>
  *
  * @author Alex Moore <amoore at basho dot com>
@@ -29,11 +29,12 @@ public class Cell
 
     /**
      * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
+     *
      * @param value The string to encode and store.
      */
     public Cell(String value)
     {
-        if(value == null)
+        if (value == null)
         {
             throw new IllegalArgumentException("String value cannot be NULL.");
         }
@@ -44,11 +45,12 @@ public class Cell
 
     /**
      * Creates a new "Varchar" cell from the provided BinaryValue.
+     *
      * @param value The BinaryValue to store.
      */
     public Cell(BinaryValue value)
     {
-        if(value == null)
+        if (value == null)
         {
             throw new IllegalArgumentException("BinaryValue value cannot be NULL.");
         }
@@ -59,6 +61,7 @@ public class Cell
 
     /**
      * Creates a new "Integer" Cell from the provided long.
+     *
      * @param value The long to store.
      */
     public Cell(long value)
@@ -68,6 +71,7 @@ public class Cell
 
     /**
      * Creates a new double cell.
+     *
      * @param value The double to store.
      */
     public Cell(double value)
@@ -77,6 +81,7 @@ public class Cell
 
     /**
      * Creates a new "Boolean" Cell from the provided boolean.
+     *
      * @param value The boolean to store.
      */
     public Cell(boolean value)
@@ -86,11 +91,12 @@ public class Cell
 
     /**
      * Creates a new "Timestamp" Cell from the provided Calendar, by fetching the current time in milliseconds.
+     *
      * @param value The Calendar to fetch the timestamp from.
      */
     public Cell(Calendar value)
     {
-        if(value == null)
+        if (value == null)
         {
             throw new IllegalArgumentException("Calendar object for timestamp value cannot be NULL.");
         }
@@ -100,11 +106,12 @@ public class Cell
 
     /**
      * Creates a new "Timestamp" Cell from the provided Date, by fetching the current time in milliseconds.
+     *
      * @param value The Date to fetch the timestamp from.
      */
     public Cell(Date value)
     {
-        if(value == null)
+        if (value == null)
         {
             throw new IllegalArgumentException("Date object for timestamp value cannot be NULL.");
         }
@@ -119,6 +126,7 @@ public class Cell
 
     /**
      * Creates a new "Timestamp" cell from the provided raw value.
+     *
      * @param value The epoch timestamp, including milliseconds.
      * @return The new timestamp Cell.
      */
@@ -198,7 +206,7 @@ public class Cell
             final String value = this.getVarcharAsUTF8String();
             if (value.length() > 32)
             {
-                sb.append(value.substring(0,32));
+                sb.append(value.substring(0, 32));
                 sb.append("...");
             }
             else
