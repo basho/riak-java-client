@@ -63,6 +63,8 @@ public class QueryResult
     {
         if (this.rows == null)
         {
+            this.rows = new ArrayList<Row>(this.getRowsCount());
+
             final Iterator<Row> iter = this.iterator();
             while (iter.hasNext())
             {
@@ -77,9 +79,9 @@ public class QueryResult
     {
         private Iterator<RiakTsPB.TsRow> itor;
 
-        public ImmutableRowIterator(List<RiakTsPB.TsRow> cells)
+        public ImmutableRowIterator(List<RiakTsPB.TsRow> rows)
         {
-            this.itor = cells.iterator();
+            this.itor = rows.iterator();
         }
 
         @Override

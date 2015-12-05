@@ -32,7 +32,14 @@ public final class CollectionConverters
         ArrayList<RiakTsPB.TsCell> tsCells = new ArrayList<RiakTsPB.TsCell>(cells.size());
         for (Cell cell : cells)
         {
-            tsCells.add(cell.getPbCell());
+            if(cell == null)
+            {
+                tsCells.add(Cell.NullCell.getPbCell());
+            }
+            else
+            {
+                tsCells.add(cell.getPbCell());
+            }
         }
         return tsCells;
     }

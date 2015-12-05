@@ -25,6 +25,8 @@ import java.util.Date;
 
 public class Cell
 {
+    static final Cell NullCell = new Cell(RiakTsPB.TsCell.newBuilder().build());
+
     private final RiakTsPB.TsCell pbCell;
 
     /**

@@ -72,6 +72,7 @@ public class Row
 
     private static class ImmutableCellIterator implements Iterator<Cell>
     {
+        private static RiakTsPB.TsCell NullPbCell = Cell.NullCell.getPbCell();
         private Iterator<RiakTsPB.TsCell> itor;
 
         public ImmutableCellIterator(List<RiakTsPB.TsCell> cells)
@@ -88,7 +89,14 @@ public class Row
         @Override
         public Cell next()
         {
-            return new Cell(itor.next());
+            final RiakTsPB.TsCell next = itor.next();
+
+            if( next.equals(NullPbCell))
+            {
+                return null;
+            }
+
+            return new Cell(next);
         }
 
         @Override
