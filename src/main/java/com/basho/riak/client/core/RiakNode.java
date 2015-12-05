@@ -1504,47 +1504,35 @@ public class RiakNode implements RiakResponseListener
 
 
         /**
+         * Static factory method to create a new builder instance.
+         *
+         * @return a new Builder instance.
+         * @since 2.0.3
+         */
+        public static Builder create()
+        {
+            return new Builder();
+        }
+
+        /**
          * Build a set of RiakNodes.
          * The provided builder will be used to construct a set of RiakNodes
          * using the supplied addresses.
          *
          * @param builder         a configured builder, used for common properties among the nodes
-         * @param remoteAddresses a list of IP addresses or FQDN
+         * @param remoteAddresses a list of IP addresses or FQDN.
+         *                        Since 2.0.3 each of list item is treated as a comma separated list
+         *                        of FQDN or IP addresses with the optional remote port delimited by ':'.
          * @return a list of constructed RiakNodes
          * @throws UnknownHostException if a supplied FQDN can not be resolved.
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
             throws UnknownHostException
         {
-            List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.size());
-            for (String remoteAddress : remoteAddresses)
+            final Set<HostAndPort> hps = new HashSet<HostAndPort>();
+            for (String remoteAddress: remoteAddresses)
             {
-                builder.withRemoteAddress(remoteAddress);
-                nodes.add(builder.build());
-            }
-            return nodes;
-        }
-
-        /**
-         * Build a set of RiakNodes.
-         * The provided builder will be used to construct a set of RiakNodes using the supplied addresses.
-         *
-         * @param builder a configured builder, used for common properties among the nodes
-         * @param defaultPort port that will be used by default
-         * @param remoteAddresses a comma separated list of FQDN or IP addresses, each of them may contains remote port
-         *                        delimited by ':'.
-         * @return a list of constructed RiakNodes
-         * @throws UnknownHostException if a supplied FQDN can not be resolved.
-         * @see #DEFAULT_REMOTE_PORT
-         * @since 2.0.3
-         */
-        public static List<RiakNode> buildNodes(Builder builder, int defaultPort, String... remoteAddresses)
-                throws UnknownHostException
-        {
-            final LinkedList<HostAndPort> hps = new LinkedList<HostAndPort>();
-            for (String raddr: remoteAddresses)
-            {
-                hps.addAll( HostAndPort.hostsFromString(raddr, defaultPort) );
+                hps.addAll( HostAndPort.hostsFromString(remoteAddress, builder.port) );
             }
 
             final List<RiakNode> nodes = new ArrayList<RiakNode>(hps.size());
@@ -1554,6 +1542,19 @@ public class RiakNode implements RiakResponseListener
                 nodes.add(builder.build());
             }
             return nodes;
+        }
+
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes using the supplied addresses.
+         *
+         * @see #buildNodes(Builder, List)
+         * @since 2.0.3
+         */
+        public static List<RiakNode> buildNodes(Builder builder, String... remoteAddresses)
+                throws UnknownHostException
+        {
+            return buildNodes(builder, Arrays.asList(remoteAddresses));
         }
     }
 }

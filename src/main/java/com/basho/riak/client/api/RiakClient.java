@@ -20,8 +20,8 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import java.util.concurrent.ExecutionException;
@@ -151,6 +151,7 @@ import java.util.concurrent.Future;
  * </ul>
  * @author Dave Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
 public class RiakClient
@@ -240,13 +241,9 @@ public class RiakClient
      */
     public static RiakClient newClient(int port, List<String> remoteAddresses) throws UnknownHostException
     {
-        RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withRemotePort(port)
-                                        .withMinConnections(10);
-        List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, remoteAddresses);
-        RiakCluster cluster = new RiakCluster.Builder(nodes).build();
-        cluster.start();
-        return new RiakClient(cluster);
+        RiakNode.Builder builder = createDefaultNodeBuilder()
+                                        .withRemotePort(port);
+        return newClient(builder, remoteAddresses);
     }
     
     /**
@@ -258,19 +255,57 @@ public class RiakClient
      */
     public static RiakClient newClient(InetSocketAddress... addresses) throws UnknownHostException
     {
-        RiakNode.Builder builder = new RiakNode.Builder().withMinConnections(10);
-        List<RiakNode> nodes = new LinkedList<RiakNode>();
+        final List<String> remoteAddresses = new ArrayList<String>(addresses.length);
+
         for (InetSocketAddress addy : addresses)
         {
-            builder.withRemoteAddress(addy.getHostName())
-                   .withRemotePort(addy.getPort());
-            nodes.add(builder.build());
+            remoteAddresses.add(
+                    String.format("%s:%s", addy.getHostName(), addy.getPort())
+                );
         }
-        RiakCluster cluster = new RiakCluster.Builder(nodes).build();
+
+        return newClient(createDefaultNodeBuilder(), remoteAddresses);
+    }
+
+    /**
+     * Static factory method to create a new client instance.
+     * This method produces a client connected to the supplied addresses and containing the {@link RiakNode}s
+     * that will be build by using provided builder.
+     * @param addresses one or more addresses to connect to.
+     * @return a new RiakClient instance.
+     * @throws java.net.UnknownHostException if a supplied hostname cannot be resolved.
+     * @since 2.0.3
+     * @see com.basho.riak.client.core.RiakCluster.Builder#Builder(RiakNode.Builder, List)
+     */
+    public static RiakClient newClient(RiakNode.Builder nodeBuilder,  List<String> addresses) throws UnknownHostException
+    {
+        final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, addresses).build();
         cluster.start();
+
         return new RiakClient(cluster);
     }
-    
+
+    /**
+     * Static factory method to create a new client instance.
+     *
+     * @since 2.0.3
+     * @see #newClient(RiakNode.Builder, List)
+     */
+    public static RiakClient newClient(RiakNode.Builder nodeBuilder, String... addresses) throws UnknownHostException
+    {
+        return newClient(nodeBuilder, Arrays.asList(addresses));
+    }
+
+    /**
+     *
+     * @since 2.0.3
+     */
+    public static RiakNode.Builder createDefaultNodeBuilder()
+    {
+        return RiakNode.Builder.create()
+                .withMinConnections(10);
+    }
+
 	/**
 	 * Execute a RiakCommand synchronously.
      * <p>

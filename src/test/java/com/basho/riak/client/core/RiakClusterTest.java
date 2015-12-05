@@ -63,11 +63,12 @@ public class RiakClusterTest
         final int nonDefaultPort = 8888;
 
         final RiakNode.Builder nodeBuilder = new RiakNode.Builder()
+                .withRemotePort(defaultPort)
                 .withMinConnections(minConnections)
                 .withMaxConnections(maxConnections);
 
 
-        final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, defaultPort, "localhost:"+ nonDefaultPort +", 10.0.0.1").build();
+        final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, "localhost:"+ nonDefaultPort +", 10.0.0.1").build();
 
         final List<RiakNode> nodes = cluster.getNodes();
         assertEquals(2, nodes.size());

@@ -657,12 +657,23 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
          * The RiakNode.Builder is used for setting common properties among the nodes.
          * @since 2.0.3
-         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, int, String...)
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, List)
          */
-        public Builder(RiakNode.Builder nodeBuilder, int defaultPort, String... remoteAddresses) throws UnknownHostException {
-            riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, defaultPort, remoteAddresses );
+        public Builder(RiakNode.Builder nodeBuilder, List<String> remoteAddresses) throws UnknownHostException
+        {
+            riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, remoteAddresses );
         }
 
+        /**
+         * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * The RiakNode.Builder is used for setting common properties among the nodes.
+         * @since 2.0.3
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, String...)
+         */
+        public Builder(RiakNode.Builder nodeBuilder, String... remoteAddresses) throws UnknownHostException
+        {
+            riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, remoteAddresses );
+        }
 
         /**
          * Instantiate a Builder containing a single {@link RiakNode}
