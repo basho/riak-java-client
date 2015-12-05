@@ -6,7 +6,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.query.timeseries.IQueryResult;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
@@ -74,17 +74,17 @@ public abstract class ITestTsBase extends ITestBase
         Assume.assumeTrue(testTimeSeries);
     }
 
-    protected static IQueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException
+    protected static QueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException
     {
-        final RiakFuture<IQueryResult, BinaryValue> future = cluster.execute(builder.build());
-        final IQueryResult queryResult = future.get();
+        final RiakFuture<QueryResult, BinaryValue> future = cluster.execute(builder.build());
+        final QueryResult queryResult = future.get();
 
         assertTrue(future.isSuccess());
 
         return queryResult;
     }
 
-    protected static IQueryResult executeQuery(Query.Builder builder) throws ExecutionException, InterruptedException
+    protected static QueryResult executeQuery(Query.Builder builder) throws ExecutionException, InterruptedException
     {
         final RiakClient client = new RiakClient(cluster);
         return client.execute(builder.build());

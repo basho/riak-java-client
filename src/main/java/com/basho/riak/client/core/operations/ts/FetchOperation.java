@@ -1,10 +1,9 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.query.timeseries.IQueryResult;
-import com.basho.riak.client.core.query.timeseries.immutable.pb.ImmutablePbResultFactory;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
+import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -18,7 +17,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class FetchOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsGetResp, BinaryValue>
+public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGetResp, BinaryValue>
 {
     private final Builder builder;
     private BinaryValue queryInfoMessage;
@@ -34,7 +33,7 @@ public class FetchOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsG
     }
 
     @Override
-    protected IQueryResult convert(List<RiakTsPB.TsGetResp> responses)
+    protected QueryResult convert(List<RiakTsPB.TsGetResp> responses)
     {
         // This is not a streaming op, there will only be one response
         final RiakTsPB.TsGetResp response = checkAndGetSingleResponse(responses);
@@ -102,7 +101,7 @@ public class FetchOperation extends PBFutureOperation<IQueryResult, RiakTsPB.TsG
             }
 
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(TimeSeriesPBConverter.convertCellsToPb(keyValues));
+            this.reqBuilder.addAllKey(ImmutablePbResultFactory.convertCellsToPb(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;

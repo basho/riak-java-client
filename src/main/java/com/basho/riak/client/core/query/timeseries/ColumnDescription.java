@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.basho.riak.protobuf.RiakTsPB;
 
 /**
  * A Metadata description of a column in Riak Time Series.
@@ -11,7 +10,7 @@ import java.util.Map;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class ColumnDescription implements IColumnDescription
+public class ColumnDescription
 {
     private final String name;
     private final ColumnType type;
@@ -22,15 +21,24 @@ public class ColumnDescription implements IColumnDescription
         this.type = type;
     }
 
-    @Override
     public String getName()
     {
         return name;
     }
 
-    @Override
     public ColumnType getType()
     {
         return type;
+    }
+
+    /**
+     * Values MUST BE IN THE SAME ORDER AS in the RiakTsPB.TsColumnType
+     */
+    public enum ColumnType {
+        VARCHAR,
+        SINT64,
+        DOUBLE,
+        TIMESTAMP,
+        BOOLEAN
     }
 }

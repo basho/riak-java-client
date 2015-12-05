@@ -62,7 +62,7 @@ public class ITestTimeSeries extends ITestTsBase
     public void QueryingDataNoMatches() throws ExecutionException, InterruptedException
     {
         final String queryText = "select * from GeoCheckin Where time > 1 and time < 10 and user='user1' and geohash='hash1'";
-        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertNotNull(queryResult);
         assertEquals(0, queryResult.getColumnDescriptions().size());
@@ -82,7 +82,7 @@ public class ITestTimeSeries extends ITestTsBase
                 "(time > " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRowsCount());
@@ -103,7 +103,7 @@ public class ITestTimeSeries extends ITestTsBase
                 "(time > " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(1, queryResult.getRowsCount());
@@ -123,12 +123,12 @@ public class ITestTimeSeries extends ITestTsBase
                 "time > " + tenMinsAgo +" and " +
                 "time < "+ fifteenMinsInFuture + " ";
 
-        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(7, queryResult.getColumnDescriptions().size());
         assertEquals(2, queryResult.getRowsCount());
 
-        final Iterator<? extends IRow> itor = queryResult.iterator();
+        final Iterator<? extends Row> itor = queryResult.iterator();
         assertRowMatches(rows.get(1), itor.next());
         assertRowMatches(rows.get(2), itor.next());
     }
@@ -142,13 +142,13 @@ public class ITestTimeSeries extends ITestTsBase
                 "(time > " + (fifteenMinsAgo - 1) +" and " +
                 "(time < "+ (now + 1) + ")) ";
 
-        final IQueryResult queryResult = executeQuery(new Query.Builder(queryText));
+        final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertEquals(1, queryResult.getColumnDescriptions().size());
         assertEquals(ColumnDescription.ColumnType.DOUBLE, queryResult.getColumnDescriptions().get(0).getType());
 
         assertEquals(1, queryResult.getRowsCount());
-        final ICell resultCell = queryResult.iterator().next().iterator().next();
+        final Cell resultCell = queryResult.iterator().next().iterator().next();
 
         assertNull(resultCell);
     }
@@ -161,7 +161,7 @@ public class ITestTimeSeries extends ITestTsBase
         final String queryText = "select time from GeoChicken";
 
         Query query = new Query.Builder(queryText).build();
-        RiakFuture<IQueryResult, BinaryValue> future = client.executeAsync(query);
+        RiakFuture<QueryResult, BinaryValue> future = client.executeAsync(query);
         future.await();
         assertFalse(future.isSuccess());
         assertEquals(future.cause().getClass(), RiakResponseException.class);
@@ -172,7 +172,7 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        Row row = new Row(Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
+        Row row = new Row(com.basho.riak.client.core.query.timeseries.Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
         Store store = new Store.Builder("GeoChicken").withRow(row).build();
 
         RiakFuture<Void, BinaryValue> future = client.executeAsync(store);
@@ -186,14 +186,16 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core
+                .query.timeseries.Cell
+                .newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
-        IQueryResult queryResult = client.execute(fetch);
-        assertEquals(1, queryResult.getRows().size());
-        IRow row = queryResult.getRows().get(0);
-        assertEquals("rain", row.getCells().get(3).getVarcharAsUTF8String());
-        assertEquals(79.0, row.getCells().get(4).getDouble(), Double.MIN_VALUE);
+        QueryResult queryResult = client.execute(fetch);
+        assertEquals(1, queryResult.getRowsCount());
+        Row row = queryResult.getRowsListCopy().get(0);
+        assertEquals("rain", row.getCellsListCopy().get(3).getVarcharAsUTF8String());
+        assertEquals(79.0, row.getCellsListCopy().get(4).getDouble(), Double.MIN_VALUE);
     }
 
     @Test
@@ -201,24 +203,26 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), com.basho.riak.client.core.query.timeseries.Cell
+                .newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
-        IQueryResult queryResult = client.execute(fetch);
-        assertEquals(0, queryResult.getRows().size());
+        QueryResult queryResult = client.execute(fetch);
+        assertEquals(0, queryResult.getRowsCount());
     }
 
     @Test
     public void TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
     {
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core.query.timeseries.Cell
+                .newTimestamp(fiveMinsAgo));
 
         RiakClient client = new RiakClient(cluster);
 
         // Assert we have a row
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
-        IQueryResult queryResult = client.execute(fetch);
-        assertEquals(1, queryResult.getRows().size());
+        QueryResult queryResult = client.execute(fetch);
+        assertEquals(1, queryResult.getRowsCount());
 
         // Delete row
         Delete delete = new Delete.Builder(tableName, keyCells).build();
@@ -231,8 +235,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         // Assert that the row is no longer with us
         Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
-        IQueryResult queryResult2 = client.execute(fetch2);
-        assertEquals(0, queryResult2.getRows().size());
+        QueryResult queryResult2 = client.execute(fetch2);
+        assertEquals(0, queryResult2.getRowsCount());
     }
 
     @Test
@@ -240,7 +244,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell.newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), com.basho.riak.client.core.query.timeseries.Cell
+                .newTimestamp(fifteenMinsAgo));
         Delete delete = new Delete.Builder(tableName, keyCells).build();
 
         final RiakFuture<Void, BinaryValue> deleteFuture = client.executeAsync(delete);
@@ -261,18 +266,18 @@ public class ITestTimeSeries extends ITestTsBase
         return r;
     }
 
-    private static <R1 extends IRow, R2 extends IRow> void assertRowMatches(R1 expected, R2 actual)
+    private static <R1 extends Row, R2 extends Row> void assertRowMatches(R1 expected, R2 actual)
     {
-        List<ICell> expectedCells = toList(expected.iterator());
-        List<ICell> actualCells = toList(actual.iterator());
+        List<Cell> expectedCells = toList(expected.iterator());
+        List<Cell> actualCells = toList(actual.iterator());
 
         assertEquals(expectedCells.get(0).getVarcharAsUTF8String(), actualCells.get(0).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(1).getVarcharAsUTF8String(), actualCells.get(1).getVarcharAsUTF8String());
         assertEquals(expectedCells.get(2).getTimestamp(),           actualCells.get(2).getTimestamp());
         assertEquals(expectedCells.get(3).getVarcharAsUTF8String(), actualCells.get(3).getVarcharAsUTF8String());
 
-        ICell expectedCell4 = expectedCells.get(4);
-        ICell actualCell4 = actualCells.get(4);
+        Cell expectedCell4 = expectedCells.get(4);
+        Cell actualCell4 = actualCells.get(4);
 
         if (expectedCell4 == null)
         {
@@ -283,8 +288,8 @@ public class ITestTimeSeries extends ITestTsBase
             assertEquals(Double.toString(expectedCells.get(4).getDouble()), Double.toString(actualCells.get(4).getDouble()));
         }
 
-        ICell expectedCell5 = expectedCells.get(5);
-        ICell actualCell5 = actualCells.get(5);
+        Cell expectedCell5 = expectedCells.get(5);
+        Cell actualCell5 = actualCells.get(5);
 
         if (expectedCell5 == null)
         {

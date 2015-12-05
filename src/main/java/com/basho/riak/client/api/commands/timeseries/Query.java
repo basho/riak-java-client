@@ -4,7 +4,6 @@ import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
-import com.basho.riak.client.core.query.timeseries.IQueryResult;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ import java.util.regex.Pattern;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Query extends RiakCommand<IQueryResult, BinaryValue>
+public class Query extends RiakCommand<QueryResult, BinaryValue>
 {
     private static final Logger logger = LoggerFactory.getLogger(Query.class);
 
@@ -34,7 +33,7 @@ public class Query extends RiakCommand<IQueryResult, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<IQueryResult, BinaryValue> executeAsync(RiakCluster cluster) {
+    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster) {
         return cluster.execute(buildCoreOperation());
     }
 

@@ -1,6 +1,8 @@
 package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.protobuf.RiakTsPB;
+import com.google.protobuf.ByteString;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -20,9 +22,10 @@ import java.util.Date;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Cell implements ICell
+
+public class Cell
 {
-    Cell() {}
+    private final RiakTsPB.TsCell pbCell;
 
     /**
      * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
@@ -30,7 +33,13 @@ public class Cell implements ICell
      */
     public Cell(String value)
     {
-        this.varcharValue = BinaryValue.createFromUtf8(value);
+        if(value == null)
+        {
+            throw new IllegalArgumentException("String value cannot be NULL.");
+        }
+
+        final ByteString varcharByteString = ByteString.copyFrom(BinaryValue.createFromUtf8(value).getValue());
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
     }
 
     /**
@@ -39,7 +48,13 @@ public class Cell implements ICell
      */
     public Cell(BinaryValue value)
     {
-        this.varcharValue = value;
+        if(value == null)
+        {
+            throw new IllegalArgumentException("BinaryValue value cannot be NULL.");
+        }
+
+        final ByteString varcharByteString = ByteString.copyFrom(value.getValue());
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
     }
 
     /**
@@ -48,8 +63,7 @@ public class Cell implements ICell
      */
     public Cell(long value)
     {
-        this.integerValue = value;
-        this.isIntegerCell = true;
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setSint64Value(value).build();
     }
 
     /**
@@ -58,8 +72,7 @@ public class Cell implements ICell
      */
     public Cell(double value)
     {
-        this.doubleValue = value;
-        this.isDoubleCell = true;
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setDoubleValue(value).build();
     }
 
     /**
@@ -68,8 +81,7 @@ public class Cell implements ICell
      */
     public Cell(boolean value)
     {
-        this.booleanValue = value;
-        this.isBooleanCell = true;
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setBooleanValue(value).build();
     }
 
     /**
@@ -78,8 +90,12 @@ public class Cell implements ICell
      */
     public Cell(Calendar value)
     {
-        this.timestampValue = value.getTimeInMillis();
-        this.isTimestampCell = true;
+        if(value == null)
+        {
+            throw new IllegalArgumentException("Calendar object for timestamp value cannot be NULL.");
+        }
+
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(value.getTimeInMillis()).build();
     }
 
     /**
@@ -88,133 +104,17 @@ public class Cell implements ICell
      */
     public Cell(Date value)
     {
-        this.timestampValue = value.getTime();
-        this.isTimestampCell = true;
+        if(value == null)
+        {
+            throw new IllegalArgumentException("Date object for timestamp value cannot be NULL.");
+        }
+
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(value.getTime()).build();
     }
 
-    protected BinaryValue varcharValue;
-    protected long integerValue;
-    protected long timestampValue;
-    protected boolean booleanValue;
-    protected double doubleValue;
-
-    private boolean isIntegerCell = false;
-    private boolean isTimestampCell = false;
-    private boolean isBooleanCell = false;
-    private boolean isDoubleCell = false;
-
-    /**
-     * Indicates whether this Cell contains a Varchar value.
-     * @return true if it contains a Varchar value, false otherwise.
-     */
-    @Override
-    public boolean hasVarcharValue()
+    Cell(RiakTsPB.TsCell pbCell)
     {
-        return this.varcharValue != null;
-    }
-
-    /**
-     * Indicates whether this Cell contains a valid signed 64-bit long integer value ({@link Long}).
-     * @return true if it contains a java @{link Long} value, false otherwise.
-     */
-    @Override
-    public boolean hasLong()
-    {
-        return this.isIntegerCell;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Timestamp value.
-     * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
-     * in the Integer value, instead of the Timestamp value.
-     * Please use @{link #hasLong()} instead of @{link #hasTimestamp()} to check if a value exists until further notice.
-     * @return true if it contains a Timestamp value, false otherwise.
-     */
-    @Override
-    public boolean hasTimestamp()
-    {
-        return this.isTimestampCell;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Boolean value.
-     * @return true if it contains a Boolean value, false otherwise.
-     */
-    @Override
-    public boolean hasBoolean()
-    {
-        return this.isBooleanCell;
-    }
-
-    /**
-     * Indicates whether this Cell contains a Double value.
-     * @return true if it contains a Double value, false otherwise.
-     */
-    @Override
-    public boolean hasDouble() { return this.isDoubleCell; }
-
-    /**
-     * Returns the Varchar value, decoded to a UTF8 String.
-     * @return The Varchar value, decoded to a UTF8 String.
-     */
-    @Override
-    public String getVarcharAsUTF8String()
-    {
-        return this.varcharValue.toStringUtf8();
-    }
-
-    /**
-     * Returns the raw Varchar value as a BinaryValue object.
-     * @return The raw Varchar value as a BinaryValue object.
-     */
-    @Override
-    public BinaryValue getVarcharValue()
-    {
-        return this.varcharValue;
-    }
-
-    /**
-     * Returns the "Integer" value, as a Long.
-     * @return The integer value, as a Java long.
-     */
-    @Override
-    public long getLong()
-    {
-        return this.integerValue;
-    }
-
-    /**
-     * Returns the the "Double" value.
-     * @return The double value.
-     */
-    @Override
-    public double getDouble()
-    {
-        return this.doubleValue;
-    }
-
-    /**
-     * Returns the raw "Timestamp" value.
-     * Please note that as of Riak TimeSeries Beta 1, any timestamp values returned from Riak will appear
-     * in the "Integer" register, instead of the Timestamp register.
-     * Please use @{link #getLong()} instead of @{link #getTimestamp()} to fetch a value until further notice.
-     * @see #getLong()
-     * @return The timestamp value.
-     */
-    @Override
-    public long getTimestamp()
-    {
-        return timestampValue;
-    }
-
-    /**
-     * Returns the raw "Boolean" value.
-     * @return The boolean value.
-     */
-    @Override
-    public boolean getBoolean()
-    {
-        return booleanValue;
+        this.pbCell = pbCell;
     }
 
     /**
@@ -224,11 +124,70 @@ public class Cell implements ICell
      */
     public static Cell newTimestamp(long value)
     {
-        Cell cell = new Cell();
-        cell.timestampValue = value;
-        cell.isTimestampCell = true;
-        return cell;
+        final RiakTsPB.TsCell tsCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(value).build();
+        return new Cell(tsCell);
     }
+
+    public boolean hasVarcharValue()
+    {
+        return pbCell.hasVarcharValue();
+    }
+
+    public boolean hasLong()
+    {
+        return pbCell.hasSint64Value();
+    }
+
+    public boolean hasTimestamp()
+    {
+        return pbCell.hasTimestampValue();
+    }
+
+    public boolean hasBoolean()
+    {
+        return pbCell.hasBooleanValue();
+    }
+
+    public boolean hasDouble()
+    {
+        return pbCell.hasDoubleValue();
+    }
+
+    public String getVarcharAsUTF8String()
+    {
+        return pbCell.getVarcharValue().toStringUtf8();
+    }
+
+    public BinaryValue getVarcharValue()
+    {
+        return BinaryValue.unsafeCreate(pbCell.getVarcharValue().toByteArray());
+    }
+
+    public long getLong()
+    {
+        return pbCell.getSint64Value();
+    }
+
+    public double getDouble()
+    {
+        return pbCell.getDoubleValue();
+    }
+
+    public long getTimestamp()
+    {
+        return pbCell.getTimestampValue();
+    }
+
+    public boolean getBoolean()
+    {
+        return pbCell.getBooleanValue();
+    }
+
+    RiakTsPB.TsCell getPbCell()
+    {
+        return pbCell;
+    }
+
     @Override
     public String toString()
     {
@@ -268,5 +227,3 @@ public class Cell implements ICell
         return sb.toString();
     }
 }
-
-

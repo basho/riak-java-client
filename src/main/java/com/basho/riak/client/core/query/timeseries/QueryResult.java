@@ -1,5 +1,8 @@
 package com.basho.riak.client.core.query.timeseries;
 
+import com.basho.riak.protobuf.RiakTsPB;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -9,42 +12,95 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
-*/
-public class QueryResult implements IQueryResult
+ */
+public class QueryResult
 {
-    @SuppressWarnings("unchecked")
-    public static final QueryResult EMPTY = new QueryResult(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+    public static final QueryResult EMPTY = new QueryResult();
 
-    private final List<IColumnDescription> columnDescriptions;
-    private final List<IRow> rows;
-
-    public QueryResult(List<IColumnDescription> columnDescriptions, List<IRow> rows) {
-        this.columnDescriptions = columnDescriptions;
-        this.rows = rows;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<IColumnDescription> getColumnDescriptions()
+    private static class ImmutableRowIterator implements Iterator<Row>
     {
-        return (List)this.columnDescriptions;
+        private Iterator<RiakTsPB.TsRow> itor;
+
+        public ImmutableRowIterator(List<RiakTsPB.TsRow> cells)
+        {
+            this.itor = cells.iterator();
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return itor.hasNext();
+        }
+
+        @Override
+        public Row next()
+        {
+            return new Row(itor.next());
+        }
+
+        @Override
+        public void remove() throws UnsupportedOperationException
+        {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    public List<IRow> getRows()
+    private final List<RiakTsPB.TsRow> pbRows;
+    private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
+    private final transient List<Row> rows;
+    private transient List<ColumnDescription> columns;
+
+    private QueryResult()
     {
-        return rows;
+        this.pbRows = Collections.emptyList();
+        this.pbColumnDescriptions = Collections.emptyList();
+        this.rows = Collections.emptyList();
+    }
+
+    public QueryResult(List<RiakTsPB.TsRow> tsRows)
+    {
+        this(Collections.<RiakTsPB.TsColumnDescription>emptyList(), tsRows);
+    }
+
+    public QueryResult(List<RiakTsPB.TsColumnDescription> columnsList, List<RiakTsPB.TsRow> rowsList)
+    {
+        this.pbColumnDescriptions = columnsList;
+        this.pbRows = rowsList;
+        this.rows = new ArrayList<Row>(this.pbRows.size());
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public Iterator<IRow> iterator()
+    public List<ColumnDescription> getColumnDescriptions()
     {
-        return (Iterator)this.rows.iterator();
+        if (columns == null)
+        {
+            columns =
+                    Collections.unmodifiableList((List) ImmutablePbResultFactory.convertPBColumnDescriptions(this.pbColumnDescriptions));
+        }
+        return columns;
     }
 
-    @Override
+    public Iterator<Row> iterator()
+    {
+        return new ImmutableRowIterator(this.pbRows);
+    }
+
     public int getRowsCount()
     {
-        return this.rows.size();
+        return this.pbRows.size();
+    }
+
+    public List<Row> getRowsListCopy()
+    {
+        if (this.rows.size() != this.getRowsCount())
+        {
+            final Iterator<Row> iter = this.iterator();
+            while (iter.hasNext())
+            {
+                this.rows.add(iter.next());
+            }
+        }
+
+        return this.rows;
     }
 }

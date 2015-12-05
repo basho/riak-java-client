@@ -1,6 +1,8 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.Arrays;
+import com.basho.riak.protobuf.RiakTsPB;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,35 +12,98 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Row implements IRow
+public class Row
 {
-    private final List<ICell> cells;
-
-    public Row(List<ICell> cells)
+    private static class ImmutableCellIterator implements Iterator<Cell>
     {
-        this.cells = cells;
+        private Iterator<RiakTsPB.TsCell> itor;
+
+        public ImmutableCellIterator(List<RiakTsPB.TsCell> cells)
+        {
+            this.itor = cells.iterator();
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return itor.hasNext();
+        }
+
+        @Override
+        public Cell next()
+        {
+            return new Cell(itor.next());
+        }
+
+        @Override
+        public void remove() throws UnsupportedOperationException
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
+    private final RiakTsPB.TsRow pbRow;
+
+    private transient List<Cell> cells;
+
+    public Row(List<Cell> cells)
+    {
+        final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
+
+        for (Cell cell : cells)
+        {
+            builder.addCells(cell.getPbCell());
+        }
+
+        this.pbRow = builder.build();
     }
 
-    public Row(ICell... cells)
+    public Row(Cell... cells)
     {
-        this.cells = Arrays.asList(cells);
+        final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
+
+        for (Cell cell : cells)
+        {
+            builder.addCells(cell.getPbCell());
+        }
+
+        this.pbRow = builder.build();
     }
 
-    public List<ICell> getCells()
+    Row(RiakTsPB.TsRow pbRow)
     {
-        return cells;
+        this.pbRow = pbRow;
+        this.cells = new ArrayList<Cell>(pbRow.getCellsCount());
     }
 
-    @Override
     public int getCellsCount()
     {
-        return cells.size();
+        return pbRow.getCellsCount();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Iterator<ICell> iterator()
+    public List<Cell> getCellsListCopy()
     {
-        return (Iterator)cells.iterator();
+        if (this.cells == null)
+        {
+            this.cells = new ArrayList<Cell>(this.getCellsCount());
+
+            final Iterator<Cell> iter = this.iterator();
+            while (iter.hasNext())
+            {
+                this.cells.add(iter.next());
+            }
+        }
+        
+        return this.cells;
+    }
+
+    RiakTsPB.TsRow getPbRow()
+    {
+        return pbRow;
+    }
+
+    public Iterator<Cell> iterator()
+    {
+        return new ImmutableCellIterator(pbRow.getCellsList());
     }
 }

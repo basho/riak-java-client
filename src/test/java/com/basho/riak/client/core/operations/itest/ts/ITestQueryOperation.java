@@ -3,7 +3,7 @@ package com.basho.riak.client.core.operations.itest.ts;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
-import com.basho.riak.client.core.query.timeseries.IQueryResult;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,9 +42,9 @@ public class ITestQueryOperation extends ITestTsBase
                                  "  and user ='user1'" +
                                  "  and geohash ='hash1'";
 
-        final IQueryResult queryResult = executeQuery(
+        final QueryResult queryResult = executeQuery(
                 new QueryOperation.Builder(BinaryValue.create(queryText))
-            );
+                                                    );
 
         assertNotNull(queryResult);
         assertEquals(0, queryResult.getColumnDescriptions().size());
@@ -60,9 +60,9 @@ public class ITestQueryOperation extends ITestTsBase
                                  "  and user ='user2'" +
                                  "  and geohash ='hash1'";
 
-        final IQueryResult queryResult = executeQuery(
+        final QueryResult queryResult = executeQuery(
                 new QueryOperation.Builder(BinaryValue.create(queryText))
-        );
+                                                    );
 
         assertNotNull(queryResult);
         assertEquals(7, queryResult.getColumnDescriptions().size());

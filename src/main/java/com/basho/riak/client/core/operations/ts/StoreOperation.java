@@ -1,8 +1,8 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
+import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
@@ -79,13 +79,13 @@ public class StoreOperation
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            this.reqBuilder.addAllColumns(TimeSeriesPBConverter.convertColumnDescriptionsToPb(columns));
+            this.reqBuilder.addAllColumns(ImmutablePbResultFactory.convertColumnDescriptionsToPb(columns));
             return this;
         }
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(TimeSeriesPBConverter.convertRowsToPb(rows));
+            this.reqBuilder.addAllRows(ImmutablePbResultFactory.convertRowsToPb(rows));
             return this;
         }
 

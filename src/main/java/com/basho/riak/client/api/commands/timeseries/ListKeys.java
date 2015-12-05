@@ -5,7 +5,7 @@ import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.ListKeysOperation;
-import com.basho.riak.client.core.query.timeseries.IQueryResult;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
 
 /**
@@ -15,7 +15,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public class ListKeys extends RiakCommand<IQueryResult, BinaryValue>
+public class ListKeys extends RiakCommand<QueryResult, BinaryValue>
 {
     private final BinaryValue tableName;
     private final int timeout;
@@ -27,16 +27,16 @@ public class ListKeys extends RiakCommand<IQueryResult, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<IQueryResult, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<IQueryResult, BinaryValue> coreFuture =
+        RiakFuture<QueryResult, BinaryValue> coreFuture =
                 cluster.execute(buildCoreOperation());
 
-        CoreFutureAdapter<IQueryResult, BinaryValue, IQueryResult, BinaryValue> future =
-                new CoreFutureAdapter<IQueryResult, BinaryValue, IQueryResult, BinaryValue>(coreFuture)
+        CoreFutureAdapter<QueryResult, BinaryValue, QueryResult, BinaryValue> future =
+                new CoreFutureAdapter<QueryResult, BinaryValue, QueryResult, BinaryValue>(coreFuture)
                 {
                     @Override
-                    protected IQueryResult convertResponse(IQueryResult coreResponse)
+                    protected QueryResult convertResponse(QueryResult coreResponse)
                     {
                         return coreResponse;
                     }

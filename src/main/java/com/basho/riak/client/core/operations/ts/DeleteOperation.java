@@ -1,8 +1,8 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.ImmutablePbResultFactory;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -99,7 +99,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
             }
 
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(TimeSeriesPBConverter.convertCellsToPb(keyValues));
+            this.reqBuilder.addAllKey(ImmutablePbResultFactory.convertCellsToPb(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;
