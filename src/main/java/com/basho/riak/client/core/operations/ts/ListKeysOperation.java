@@ -18,7 +18,7 @@ public class ListKeysOperation extends PBFutureOperation<QueryResult, RiakTsPB.T
     private final Builder builder;
     private BinaryValue queryInfoMessage;
 
-    ListKeysOperation(Builder builder)
+    private ListKeysOperation(Builder builder)
     {
         super(RiakMessageCodes.MSG_TsListKeysReq,
               RiakMessageCodes.MSG_TsListKeysResp,
