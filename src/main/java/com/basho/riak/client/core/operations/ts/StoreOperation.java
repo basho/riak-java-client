@@ -16,6 +16,7 @@ import java.util.List;
  * An operation to store rows to a Riak Time Series table.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
 public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, BinaryValue>
@@ -84,7 +85,7 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(CollectionConverters.convertRowsToPb(rows));
+            this.reqBuilder.addAllRows(CollectionConverters.wrapAsIterablePBRow(rows.iterator()));
             return this;
         }
 

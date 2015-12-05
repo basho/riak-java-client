@@ -3,10 +3,7 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
@@ -17,31 +14,32 @@ public final class CollectionConverters
 {
     private CollectionConverters() {}
 
-    public static List<RiakTsPB.TsRow> convertRowsToPb(Collection<Row> rows)
-    {
-        ArrayList<RiakTsPB.TsRow> tsRows = new ArrayList<RiakTsPB.TsRow>(rows.size());
-        for (Row row : rows)
-        {
-            tsRows.add(row.getPbRow());
+    private static class WrappedIterable< S, D, Itor extends ConvertibleIterator<S,D>> implements Iterable<D> {
+        private Itor iterator;
+
+        public WrappedIterable(Itor iterator) {
+            this.iterator = iterator;
         }
-        return tsRows;
+
+        @Override
+        public Iterator<D> iterator() {
+            return iterator;
+        }
+
+        public static <S, D, Itor extends ConvertibleIterator<S,D>> WrappedIterable<S,D,Itor> wrap(Itor iterator)
+        {
+            return new WrappedIterable<S, D, Itor>(iterator);
+        }
     }
 
-    public static List<RiakTsPB.TsCell> convertCellsToPb(Collection<Cell> cells)
+    public static Iterable<RiakTsPB.TsRow> wrapAsIterablePBRow(Iterator<Row> rows)
     {
-        ArrayList<RiakTsPB.TsCell> tsCells = new ArrayList<RiakTsPB.TsCell>(cells.size());
-        for (Cell cell : cells)
-        {
-            if(cell == null)
-            {
-                tsCells.add(Cell.NullCell.getPbCell());
-            }
-            else
-            {
-                tsCells.add(cell.getPbCell());
-            }
-        }
-        return tsCells;
+        return WrappedIterable.wrap( ConvertibleIterator.iterateAsPbRow(rows) );
+    }
+
+    public static Iterable<RiakTsPB.TsCell> wrapAsIterablePBCell(Iterator<Cell> cells)
+    {
+        return WrappedIterable.wrap(ConvertibleIterator.iterateAsPbCell(cells));
     }
 
     public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb

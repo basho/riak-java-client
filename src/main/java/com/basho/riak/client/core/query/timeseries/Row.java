@@ -2,26 +2,22 @@ package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.protobuf.RiakTsPB;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Row
+public class Row implements Iterable<Cell>
 {
     private final RiakTsPB.TsRow pbRow;
-    private transient List<Cell> cells;
 
-    public Row(List<Cell> cells)
+    public Row(Collection<Cell> cells)
     {
         final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
 
-        builder.addAllCells(CollectionConverters.convertCellsToPb(cells));
+        builder.addAllCells(CollectionConverters.wrapAsIterablePBCell(cells.iterator()));
 
         this.pbRow = builder.build();
     }
@@ -29,7 +25,8 @@ public class Row
     public Row(Cell... cells)
     {
         final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
-        builder.addAllCells(CollectionConverters.convertCellsToPb(Arrays.asList(cells)));
+        // TODO: consider avoiding ArrayList creation under the hood of Arrays.asList
+        builder.addAllCells(CollectionConverters.wrapAsIterablePBCell(Arrays.asList(cells).iterator()));
 
         this.pbRow = builder.build();
     }
@@ -44,20 +41,19 @@ public class Row
         return pbRow.getCellsCount();
     }
 
+    /**
+     *
+     * @return a shallow copy
+     */
     public List<Cell> getCellsListCopy()
     {
-        if (this.cells == null)
+        final ArrayList<Cell> cells = new ArrayList<Cell>(this.getCellsCount());
+
+        for (Cell c: this)
         {
-            this.cells = new ArrayList<Cell>(this.getCellsCount());
-
-            final Iterator<Cell> iter = this.iterator();
-            while (iter.hasNext())
-            {
-                this.cells.add(iter.next());
-            }
+            cells.add(c);
         }
-
-        return this.cells;
+        return cells;
     }
 
     RiakTsPB.TsRow getPbRow()
@@ -65,44 +61,9 @@ public class Row
         return pbRow;
     }
 
+    @Override
     public Iterator<Cell> iterator()
     {
-        return new ImmutableCellIterator(pbRow.getCellsList());
-    }
-
-    private static class ImmutableCellIterator implements Iterator<Cell>
-    {
-        private static RiakTsPB.TsCell NullPbCell = Cell.NullCell.getPbCell();
-        private Iterator<RiakTsPB.TsCell> itor;
-
-        public ImmutableCellIterator(List<RiakTsPB.TsCell> cells)
-        {
-            this.itor = cells.iterator();
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return itor.hasNext();
-        }
-
-        @Override
-        public Cell next()
-        {
-            final RiakTsPB.TsCell next = itor.next();
-
-            if( next.equals(NullPbCell))
-            {
-                return null;
-            }
-
-            return new Cell(next);
-        }
-
-        @Override
-        public void remove() throws UnsupportedOperationException
-        {
-            throw new UnsupportedOperationException();
-        }
+        return ConvertibleIterator.iterateAsCell(pbRow.getCellsList().iterator());
     }
 }
