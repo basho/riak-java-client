@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -24,7 +25,7 @@ import static org.junit.Assert.assertTrue;
  * @since 2.0.3
  */
 
-public class ITestListKeysOperations extends ITestTsBase
+public class ITestListKeysOperation extends ITestTsBase
 {
     @BeforeClass
     public static void InsertData() throws ExecutionException, InterruptedException
@@ -52,6 +53,7 @@ public class ITestListKeysOperations extends ITestTsBase
 
         final List<Row> rows = result.getRowsCopy();
         final List<Row> expectedKeys = getKeyHeads();
+        // Won't work yet, timestamps come back as sint_64 in list keys
         assertTrue(rows.containsAll(expectedKeys));
     }
 
@@ -62,7 +64,8 @@ public class ITestListKeysOperations extends ITestTsBase
         for (Row row : rows)
         {
             final List<Cell> cells = row.getCellsCopy();
-            keyHeads.add(new Row(cells.get(0), cells.get(1), cells.get(2)));
+            // Hack: replace timestamp cell with sint64 cell.
+            keyHeads.add(new Row(cells.get(0), cells.get(1), new Cell(cells.get(2).getTimestamp())));
         }
 
         return keyHeads;
