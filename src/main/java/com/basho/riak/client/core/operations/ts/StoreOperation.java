@@ -85,7 +85,7 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(CollectionConverters.wrapAsIterablePBRow(rows.iterator()));
+            this.reqBuilder.addAllRows(CollectionConverters.wrapAsIterablePBRow(rows));
             return this;
         }
 

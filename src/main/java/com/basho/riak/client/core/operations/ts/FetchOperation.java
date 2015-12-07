@@ -94,7 +94,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
             }
 
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(CollectionConverters.wrapAsIterablePBCell(keyValues.iterator()));
+            this.reqBuilder.addAllKey(CollectionConverters.wrapAsIterablePBCell(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;

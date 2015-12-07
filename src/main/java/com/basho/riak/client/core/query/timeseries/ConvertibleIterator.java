@@ -45,9 +45,9 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
 
         @Override
         protected RiakTsPB.TsCell convert(Cell cell) {
-            if( cell.equals(Cell.NullCell))
+            if (cell == null)
             {
-                return null;
+                return Cell.NullCell.getPbCell();
             }
 
             return cell.getPbCell();
@@ -73,15 +73,14 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
 
         @Override
         protected Cell convert(RiakTsPB.TsCell pbCell) {
-            if( pbCell == null)
+            if (pbCell.equals(Cell.NullCell.getPbCell()))
             {
-                return Cell.NullCell;
+                return null;
             }
 
             return new Cell(pbCell);
         }
     }
-
 
     public static ConvertibleIterator<Row, RiakTsPB.TsRow> iterateAsPbRow(Iterator<Row> iterator)
     {

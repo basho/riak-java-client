@@ -14,32 +14,14 @@ public final class CollectionConverters
 {
     private CollectionConverters() {}
 
-    private static class WrappedIterable< S, D, Itor extends ConvertibleIterator<S,D>> implements Iterable<D> {
-        private Itor iterator;
-
-        public WrappedIterable(Itor iterator) {
-            this.iterator = iterator;
-        }
-
-        @Override
-        public Iterator<D> iterator() {
-            return iterator;
-        }
-
-        public static <S, D, Itor extends ConvertibleIterator<S,D>> WrappedIterable<S,D,Itor> wrap(Itor iterator)
-        {
-            return new WrappedIterable<S, D, Itor>(iterator);
-        }
+    public static Iterable<RiakTsPB.TsRow> wrapAsIterablePBRow(Iterable<Row> rows)
+    {
+        return ConvertibleIterable.iterateAsPbRow(rows);
     }
 
-    public static Iterable<RiakTsPB.TsRow> wrapAsIterablePBRow(Iterator<Row> rows)
+    public static Iterable<RiakTsPB.TsCell> wrapAsIterablePBCell(Iterable<Cell> cells)
     {
-        return WrappedIterable.wrap( ConvertibleIterator.iterateAsPbRow(rows) );
-    }
-
-    public static Iterable<RiakTsPB.TsCell> wrapAsIterablePBCell(Iterator<Cell> cells)
-    {
-        return WrappedIterable.wrap(ConvertibleIterator.iterateAsPbCell(cells));
+        return ConvertibleIterable.iterateAsPbCell(cells);
     }
 
     public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb
