@@ -41,7 +41,7 @@ public class Cell
             throw new IllegalArgumentException("String value cannot be NULL.");
         }
 
-        final ByteString varcharByteString = ByteString.copyFrom(BinaryValue.createFromUtf8(value).getValue());
+        final ByteString varcharByteString = ByteString.copyFromUtf8(value);
         this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
     }
 
@@ -171,6 +171,11 @@ public class Cell
     public BinaryValue getVarcharValue()
     {
         return BinaryValue.unsafeCreate(pbCell.getVarcharValue().toByteArray());
+    }
+
+    public byte[] getVarcharUnsafe()
+    {
+        return pbCell.getVarcharValue().toByteArray();
     }
 
     public long getLong()

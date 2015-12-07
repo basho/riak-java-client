@@ -8,7 +8,6 @@ import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 
@@ -44,7 +43,6 @@ import static org.junit.Assert.assertTrue;
 public abstract class ITestTsBase extends ITestBase
 {
     protected final static String tableName = "GeoCheckin";
-    protected final static BinaryValue tableNameBV = BinaryValue.createFromUtf8(tableName);
 
     protected final static long now = 1443806900000L; // "now"
     protected final static long fiveMinsInMS = 5L * 60L * 1000L;
@@ -76,7 +74,7 @@ public abstract class ITestTsBase extends ITestBase
 
     protected static QueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException
     {
-        final RiakFuture<QueryResult, BinaryValue> future = cluster.execute(builder.build());
+        final RiakFuture<QueryResult, String> future = cluster.execute(builder.build());
         final QueryResult queryResult = future.get();
 
         assertTrue(future.isSuccess());

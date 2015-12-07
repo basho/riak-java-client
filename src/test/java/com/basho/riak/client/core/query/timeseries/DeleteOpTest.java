@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.operations.ts.DeleteOperation;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,9 +17,8 @@ import static org.junit.Assert.assertEquals;
 
 public class DeleteOpTest
 {
-    private final long now = 1443796900000l; // "now"
+    private final long now = 1443796900000L; // "now"
     private final String tableName = "my_table";
-    private final BinaryValue tableNameBV = BinaryValue.createFromUtf8(tableName);
     private final List<Cell> keyValues = Arrays.asList(new Cell("my_family"),
                                                              new Cell("my_series"),
                                                              Cell.newTimestamp(now),
@@ -30,8 +28,8 @@ public class DeleteOpTest
     public void shouldBuildADescriptiveQueryInfoString()
     {
         String expectedInfo = "DELETE { Cell{ my_family }, Cell{ my_series }, Cell{ 1443796900000 }, NULL } FROM TABLE my_table";
-        DeleteOperation cmd = new DeleteOperation.Builder(tableNameBV, keyValues).build();
-        assertEquals(expectedInfo, cmd.getQueryInfo().toStringUtf8());
+        DeleteOperation cmd = new DeleteOperation.Builder(tableName, keyValues).build();
+        assertEquals(expectedInfo, cmd.getQueryInfo());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -43,19 +41,19 @@ public class DeleteOpTest
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfTableNameIsBlank()
     {
-        new DeleteOperation.Builder(BinaryValue.create(""), keyValues).build();
+        new DeleteOperation.Builder("", keyValues).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreNull()
     {
-        new DeleteOperation.Builder(tableNameBV, null).build();
+        new DeleteOperation.Builder(tableName, null).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreMissing()
     {
-        new DeleteOperation.Builder(tableNameBV, new ArrayList<Cell>(0)).build();
+        new DeleteOperation.Builder(tableName, new ArrayList<Cell>(0)).build();
     }
 
 }
