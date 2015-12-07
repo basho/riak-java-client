@@ -17,7 +17,7 @@ public class Row implements Iterable<Cell>
     {
         final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
 
-        builder.addAllCells(CollectionConverters.wrapAsIterablePBCell(cells));
+        builder.addAllCells(ConvertibleIterable.asIterablePbCell(cells));
 
         this.pbRow = builder.build();
     }
@@ -26,7 +26,7 @@ public class Row implements Iterable<Cell>
     {
         final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
         // TODO: consider avoiding ArrayList creation under the hood of Arrays.asList
-        builder.addAllCells(CollectionConverters.wrapAsIterablePBCell(Arrays.asList(cells)));
+        builder.addAllCells(ConvertibleIterable.asIterablePbCell(Arrays.asList(cells)));
 
         this.pbRow = builder.build();
     }
@@ -45,7 +45,7 @@ public class Row implements Iterable<Cell>
      *
      * @return a shallow copy
      */
-    public List<Cell> getCellsListCopy()
+    public List<Cell> getCellsCopy()
     {
         final ArrayList<Cell> cells = new ArrayList<Cell>(this.getCellsCount());
 

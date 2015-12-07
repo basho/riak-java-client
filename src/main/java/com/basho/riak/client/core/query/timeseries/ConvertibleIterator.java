@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 /**
  * @author Sergey Galkin <srggal at gmail dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
 public abstract class ConvertibleIterator<S,D> implements Iterator<D>
@@ -82,9 +83,26 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
         }
     }
 
+    private static class ImmutableRowIterator extends ConvertibleIterator<RiakTsPB.TsRow,Row>
+    {
+        public ImmutableRowIterator(Iterator<RiakTsPB.TsRow> iterator) {
+            super(iterator);
+        }
+
+        @Override
+        protected Row convert(RiakTsPB.TsRow source) {
+            return new Row(source);
+        }
+    }
+
     public static ConvertibleIterator<Row, RiakTsPB.TsRow> iterateAsPbRow(Iterator<Row> iterator)
     {
         return new ImmutablePBRowIterator(iterator);
+    }
+
+    public static ConvertibleIterator<RiakTsPB.TsRow, Row> iterateAsRow(Iterator<RiakTsPB.TsRow> iterator)
+    {
+        return new ImmutableRowIterator(iterator);
     }
 
     public static ConvertibleIterator<Cell, RiakTsPB.TsCell> iterateAsPbCell(Iterator<Cell> iterator)

@@ -52,11 +52,11 @@ public class ITestFetchOperation extends ITestTsBase
 
 
         assertEquals(1, result.getRowsCount());
-        assertEquals(7, result.getColumnDescriptions().size());
+        assertEquals(7, result.getColumnDescriptionsCopy().size());
 
-        Row row = result.getRowsListCopy().get(0);
+        Row row = result.getRowsCopy().get(0);
         assertEquals(7, row.getCellsCount());
-        assertEquals("rain", row.getCellsListCopy().get(3).getVarcharAsUTF8String());
-        assertEquals(79.0, row.getCellsListCopy().get(4).getDouble(), Double.MIN_VALUE);
+        assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
+        assertEquals(79.0, row.getCellsCopy().get(4).getDouble(), Double.MIN_VALUE);
     }
 }

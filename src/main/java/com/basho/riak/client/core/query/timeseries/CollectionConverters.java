@@ -14,16 +14,6 @@ public final class CollectionConverters
 {
     private CollectionConverters() {}
 
-    public static Iterable<RiakTsPB.TsRow> wrapAsIterablePBRow(Iterable<Row> rows)
-    {
-        return ConvertibleIterable.iterateAsPbRow(rows);
-    }
-
-    public static Iterable<RiakTsPB.TsCell> wrapAsIterablePBCell(Iterable<Cell> cells)
-    {
-        return ConvertibleIterable.iterateAsPbCell(cells);
-    }
-
     public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb
             (Collection<ColumnDescription> columns)
     {

@@ -48,9 +48,9 @@ public class ITestListKeysOperations extends ITestTsBase
         QueryResult result = future.get();
 
         assertEquals(7, result.getRowsCount());
-        assertEquals(0, result.getColumnDescriptions().size());
+        assertEquals(0, result.getColumnDescriptionsCopy().size());
 
-        final List<Row> rows = result.getRowsListCopy();
+        final List<Row> rows = result.getRowsCopy();
         final List<Row> expectedKeys = getKeyHeads();
         assertTrue(rows.containsAll(expectedKeys));
     }
@@ -61,7 +61,7 @@ public class ITestListKeysOperations extends ITestTsBase
 
         for (Row row : rows)
         {
-            final List<Cell> cells = row.getCellsListCopy();
+            final List<Cell> cells = row.getCellsCopy();
             keyHeads.add(new Row(cells.get(0), cells.get(1), cells.get(2)));
         }
 

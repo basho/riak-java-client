@@ -3,6 +3,7 @@ package com.basho.riak.client.core.operations.ts;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
+import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -85,7 +86,7 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
 
         public Builder withRows(Collection<Row> rows)
         {
-            this.reqBuilder.addAllRows(CollectionConverters.wrapAsIterablePBRow(rows));
+            this.reqBuilder.addAllRows(ConvertibleIterable.asIterablePbRow(rows));
             return this;
         }
 

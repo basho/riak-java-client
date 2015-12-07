@@ -47,7 +47,7 @@ public class ITestQueryOperation extends ITestTsBase
                                                     );
 
         assertNotNull(queryResult);
-        assertEquals(0, queryResult.getColumnDescriptions().size());
+        assertEquals(0, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(0, queryResult.getRowsCount());
     }
 
@@ -65,7 +65,7 @@ public class ITestQueryOperation extends ITestTsBase
                                                     );
 
         assertNotNull(queryResult);
-        assertEquals(7, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
     }
 }

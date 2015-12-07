@@ -1,10 +1,7 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.query.timeseries.CollectionConverters;
-import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.query.timeseries.PbResultFactory;
+import com.basho.riak.client.core.query.timeseries.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -69,7 +66,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
         }
 
         return BinaryValue.create(
-                String.format("SELECT * FROM %s  WHERE PRIMARY KEY = { %s }",
+                String.format("SELECT * FROM %s WHERE PRIMARY KEY = { %s }",
                         this.builder.tableName, sb.toString())
             );
     }
@@ -94,7 +91,7 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
             }
 
             this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(CollectionConverters.wrapAsIterablePBCell(keyValues));
+            this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;

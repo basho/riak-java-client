@@ -79,7 +79,7 @@ public class ITestTimeSeries extends ITestTsBase
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertNotNull(queryResult);
-        assertEquals(0, queryResult.getColumnDescriptions().size());
+        assertEquals(0, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(0, queryResult.getRowsCount());
     }
 
@@ -98,7 +98,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
         assertRowMatches(rows.get(1), queryResult.iterator().next());
@@ -119,7 +119,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
         assertRowMatches(rows.get(1), queryResult.iterator().next());
@@ -139,7 +139,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptions().size());
+        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(2, queryResult.getRowsCount());
 
         final Iterator<? extends Row> itor = queryResult.iterator();
@@ -158,8 +158,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(1, queryResult.getColumnDescriptions().size());
-        assertEquals(ColumnDescription.ColumnType.DOUBLE, queryResult.getColumnDescriptions().get(0).getType());
+        assertEquals(1, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(ColumnDescription.ColumnType.DOUBLE, queryResult.getColumnDescriptionsCopy().get(0).getType());
 
         assertEquals(1, queryResult.getRowsCount());
         final Cell resultCell = queryResult.iterator().next().iterator().next();
@@ -207,9 +207,9 @@ public class ITestTimeSeries extends ITestTsBase
 
         QueryResult queryResult = client.execute(fetch);
         assertEquals(1, queryResult.getRowsCount());
-        Row row = queryResult.getRowsListCopy().get(0);
-        assertEquals("rain", row.getCellsListCopy().get(3).getVarcharAsUTF8String());
-        assertEquals(79.0, row.getCellsListCopy().get(4).getDouble(), Double.MIN_VALUE);
+        Row row = queryResult.getRowsCopy().get(0);
+        assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
+        assertEquals(79.0, row.getCellsCopy().get(4).getDouble(), Double.MIN_VALUE);
     }
 
     @Test

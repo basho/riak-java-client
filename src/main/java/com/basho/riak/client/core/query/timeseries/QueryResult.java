@@ -17,14 +17,11 @@ public class QueryResult
     public static final QueryResult EMPTY = new QueryResult();
     private final List<RiakTsPB.TsRow> pbRows;
     private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
-    private transient List<Row> rows;
-    private transient List<ColumnDescription> columns;
 
     private QueryResult()
     {
         this.pbRows = Collections.emptyList();
         this.pbColumnDescriptions = Collections.emptyList();
-        this.rows = Collections.emptyList();
     }
 
     public QueryResult(List<RiakTsPB.TsRow> tsRows)
@@ -38,20 +35,18 @@ public class QueryResult
         this.pbRows = rowsList;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<ColumnDescription> getColumnDescriptions()
+    /**
+     *
+     * @return a deep copy
+     */
+    public List<ColumnDescription> getColumnDescriptionsCopy()
     {
-        if (columns == null)
-        {
-            columns =
-                    Collections.unmodifiableList((List) CollectionConverters.convertPBColumnDescriptions(this.pbColumnDescriptions));
-        }
-        return columns;
+        return CollectionConverters.convertPBColumnDescriptions(this.pbColumnDescriptions);
     }
 
     public Iterator<Row> iterator()
     {
-        return new ImmutableRowIterator(this.pbRows);
+        return ConvertibleIterator.iterateAsRow(this.pbRows.iterator());
     }
 
     public int getRowsCount()
@@ -59,47 +54,20 @@ public class QueryResult
         return this.pbRows.size();
     }
 
-    public List<Row> getRowsListCopy()
+    /**
+     *
+     * @return a shallow copy
+     */
+    public List<Row> getRowsCopy()
     {
-        if (this.rows == null)
-        {
-            this.rows = new ArrayList<Row>(this.getRowsCount());
+        final List<Row> rows = new ArrayList<Row>(this.getRowsCount());
 
-            final Iterator<Row> iter = this.iterator();
-            while (iter.hasNext())
-            {
-                this.rows.add(iter.next());
-            }
+        final Iterator<Row> iter = this.iterator();
+        while (iter.hasNext())
+        {
+            rows.add(iter.next());
         }
 
-        return this.rows;
-    }
-
-    private static class ImmutableRowIterator implements Iterator<Row>
-    {
-        private Iterator<RiakTsPB.TsRow> itor;
-
-        public ImmutableRowIterator(List<RiakTsPB.TsRow> rows)
-        {
-            this.itor = rows.iterator();
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return itor.hasNext();
-        }
-
-        @Override
-        public Row next()
-        {
-            return new Row(itor.next());
-        }
-
-        @Override
-        public void remove() throws UnsupportedOperationException
-        {
-            throw new UnsupportedOperationException();
-        }
+        return rows;
     }
 }
