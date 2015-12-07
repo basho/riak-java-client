@@ -66,4 +66,28 @@ public class Row implements Iterable<Cell>
     {
         return ConvertibleIterator.iterateAsCell(pbRow.getCellsList().iterator());
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Row cells = (Row) o;
+
+        return !(pbRow != null ? !pbRow.equals(cells.pbRow) : cells.pbRow != null);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return pbRow != null ? pbRow.hashCode() : 0;
+    }
 }

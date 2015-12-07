@@ -236,4 +236,28 @@ public class Cell
         sb.append(" }");
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        Cell cell = (Cell) o;
+
+        return !(pbCell != null ? !pbCell.equals(cell.pbCell) : cell.pbCell != null);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return pbCell != null ? pbCell.hashCode() : 0;
+    }
 }

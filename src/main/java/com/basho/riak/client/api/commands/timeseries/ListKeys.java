@@ -63,7 +63,7 @@ public class ListKeys extends RiakCommand<QueryResult, BinaryValue>
         return builder.build();
     }
 
-    public class Builder
+    public static class Builder
     {
         private final BinaryValue tableName;
         private int timeout;

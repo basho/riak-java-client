@@ -1,10 +1,7 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.commands.timeseries.Delete;
-import com.basho.riak.client.api.commands.timeseries.Fetch;
-import com.basho.riak.client.api.commands.timeseries.Query;
-import com.basho.riak.client.api.commands.timeseries.Store;
+import com.basho.riak.client.api.commands.timeseries.*;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
@@ -56,6 +53,23 @@ public class ITestTimeSeries extends ITestTsBase
         String errorMessage = execFuture.cause() != null? execFuture.cause().getMessage() : "";
         assertNull(errorMessage, execFuture.cause());
         assertEquals(true, execFuture.isSuccess());
+    }
+
+    @Test
+    public void TestListingKeysReturnsThem() throws ExecutionException, InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        ListKeys listKeys = new ListKeys.Builder(tableName).build();
+
+        final RiakFuture<QueryResult, BinaryValue> listKeysFuture = client.executeAsync(listKeys);
+
+        listKeysFuture.await();
+        assertTrue(listKeysFuture.isSuccess());
+        assertNull(listKeysFuture.cause());
+
+        final QueryResult queryResult = listKeysFuture.get();
+        assertEquals(7, queryResult.getRowsCount());
     }
 
     @Test
