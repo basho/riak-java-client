@@ -4,7 +4,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,8 +23,8 @@ public class ITestDeleteOperation extends ITestTsBase
     @BeforeClass
     public static void InsertData() throws ExecutionException, InterruptedException
     {
-        StoreOperation storeOp = new StoreOperation.Builder(tableNameBV).withRows(rows).build();
-        RiakFuture<Void, BinaryValue> future = cluster.execute(storeOp);
+        StoreOperation storeOp = new StoreOperation.Builder(tableName).withRows(rows).build();
+        RiakFuture<Void, String> future = cluster.execute(storeOp);
 
         future.get();
         assertTrue(future.isSuccess());
@@ -35,9 +34,9 @@ public class ITestDeleteOperation extends ITestTsBase
     public void testSingleDelete() throws ExecutionException, InterruptedException
     {
         final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo));
-        DeleteOperation deleteOp = new DeleteOperation.Builder(tableNameBV, keyCells).build();
+        DeleteOperation deleteOp = new DeleteOperation.Builder(tableName, keyCells).build();
 
-        final RiakFuture<Void, BinaryValue> future = cluster.execute(deleteOp);
+        final RiakFuture<Void, String> future = cluster.execute(deleteOp);
 
         future.get();
         assertTrue(future.isSuccess());

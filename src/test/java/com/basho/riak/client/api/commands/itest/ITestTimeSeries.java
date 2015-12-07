@@ -6,7 +6,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.timeseries.*;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
 import java.util.*;
@@ -47,7 +46,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         Store store = new Store.Builder(tableName).withRows(rows).build();
 
-        RiakFuture<Void, BinaryValue> execFuture = client.executeAsync(store);
+        RiakFuture<Void, String> execFuture = client.executeAsync(store);
 
         execFuture.await();
         String errorMessage = execFuture.cause() != null? execFuture.cause().getMessage() : "";
@@ -62,7 +61,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         ListKeys listKeys = new ListKeys.Builder(tableName).build();
 
-        final RiakFuture<QueryResult, BinaryValue> listKeysFuture = client.executeAsync(listKeys);
+        final RiakFuture<QueryResult, String> listKeysFuture = client.executeAsync(listKeys);
 
         listKeysFuture.await();
         assertTrue(listKeysFuture.isSuccess());
@@ -175,7 +174,7 @@ public class ITestTimeSeries extends ITestTsBase
         final String queryText = "select time from GeoChicken";
 
         Query query = new Query.Builder(queryText).build();
-        RiakFuture<QueryResult, BinaryValue> future = client.executeAsync(query);
+        RiakFuture<QueryResult, String> future = client.executeAsync(query);
         future.await();
         assertFalse(future.isSuccess());
         assertEquals(future.cause().getClass(), RiakResponseException.class);
@@ -189,7 +188,7 @@ public class ITestTimeSeries extends ITestTsBase
         Row row = new Row(com.basho.riak.client.core.query.timeseries.Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
         Store store = new Store.Builder("GeoChicken").withRow(row).build();
 
-        RiakFuture<Void, BinaryValue> future = client.executeAsync(store);
+        RiakFuture<Void, String> future = client.executeAsync(store);
         future.await();
         assertFalse(future.isSuccess());
         assertEquals(future.cause().getClass(), RiakResponseException.class);
@@ -241,7 +240,7 @@ public class ITestTimeSeries extends ITestTsBase
         // Delete row
         Delete delete = new Delete.Builder(tableName, keyCells).build();
 
-        final RiakFuture<Void, BinaryValue> deleteFuture = client.executeAsync(delete);
+        final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
         assertTrue(deleteFuture.isSuccess());
@@ -262,7 +261,7 @@ public class ITestTimeSeries extends ITestTsBase
                 .newTimestamp(fifteenMinsAgo));
         Delete delete = new Delete.Builder(tableName, keyCells).build();
 
-        final RiakFuture<Void, BinaryValue> deleteFuture = client.executeAsync(delete);
+        final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
         assertTrue(deleteFuture.isSuccess());

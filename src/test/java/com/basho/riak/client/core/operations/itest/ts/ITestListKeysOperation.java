@@ -6,7 +6,6 @@ import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,8 +29,8 @@ public class ITestListKeysOperation extends ITestTsBase
     @BeforeClass
     public static void InsertData() throws ExecutionException, InterruptedException
     {
-        StoreOperation storeOp = new StoreOperation.Builder(tableNameBV).withRows(rows).build();
-        RiakFuture<Void, BinaryValue> future = cluster.execute(storeOp);
+        StoreOperation storeOp = new StoreOperation.Builder(tableName).withRows(rows).build();
+        RiakFuture<Void, String> future = cluster.execute(storeOp);
 
         future.get();
         assertTrue(future.isSuccess());
@@ -40,9 +39,9 @@ public class ITestListKeysOperation extends ITestTsBase
     @Test
     public void testSingleFetch() throws ExecutionException, InterruptedException
     {
-        ListKeysOperation listKeysOp = new ListKeysOperation.Builder(tableNameBV).build();
+        ListKeysOperation listKeysOp = new ListKeysOperation.Builder(tableName).build();
 
-        final RiakFuture<QueryResult, BinaryValue> future = cluster.execute(listKeysOp);
+        final RiakFuture<QueryResult, String> future = cluster.execute(listKeysOp);
 
         future.get();
         assertTrue(future.isSuccess());

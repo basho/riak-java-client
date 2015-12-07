@@ -3,7 +3,6 @@ package com.basho.riak.client.core.operations.ts;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
-import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
@@ -18,10 +17,10 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp, BinaryValue>
+public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp, String>
 {
     private final Builder builder;
-    private BinaryValue queryInfoMessage;
+    private String queryInfoMessage;
 
     private DeleteOperation(Builder builder)
     {
@@ -43,7 +42,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
     }
 
     @Override
-    public BinaryValue getQueryInfo()
+    public String getQueryInfo()
     {
         if (this.queryInfoMessage == null)
         {
@@ -53,7 +52,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
         return this.queryInfoMessage;
     }
 
-    private BinaryValue createQueryInfoMessage()
+    private String createQueryInfoMessage()
     {
         final StringBuilder sb = new StringBuilder();
         for (Cell cell: this.builder.keyValues)
@@ -66,21 +65,19 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
             sb.append( cell == null ? "NULL" : cell.toString());
         }
 
-        return BinaryValue.create(
-                String.format("DELETE { %s } FROM TABLE %s",
-                        sb.toString(), this.builder.tableName)
-        );
+        return String.format("DELETE { %s } FROM TABLE %s",
+                sb.toString(), this.builder.tableName);
 
     }
 
     public static class Builder
     {
-        private final BinaryValue tableName;
+        private final String tableName;
         private final Collection<Cell> keyValues;
 
         private final RiakTsPB.TsDelReq.Builder reqBuilder = RiakTsPB.TsDelReq.newBuilder();
 
-        public Builder(BinaryValue tableName, Collection<Cell> keyValues)
+        public Builder(String tableName, Collection<Cell> keyValues)
         {
             if (tableName == null || tableName.length() == 0)
             {
@@ -92,7 +89,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
                 throw new IllegalArgumentException("Key Values cannot be null or an empty list.");
             }
 
-            this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
+            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
             this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
 
             this.tableName = tableName;

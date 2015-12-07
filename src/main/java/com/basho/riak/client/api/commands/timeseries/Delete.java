@@ -5,7 +5,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,9 +15,10 @@ import java.util.List;
  * Allows you to delete a single time series row by its key values.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Delete extends RiakCommand<Void, BinaryValue>
+public class Delete extends RiakCommand<Void, String>
 {
     private static final Logger logger = LoggerFactory.getLogger(Delete.class);
     private final Builder builder;
@@ -29,9 +29,9 @@ public class Delete extends RiakCommand<Void, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<Void, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<Void, String> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Void, BinaryValue> future =
+        RiakFuture<Void, String> future =
                 cluster.execute(buildCoreOperation());
 
         return future;
@@ -40,7 +40,7 @@ public class Delete extends RiakCommand<Void, BinaryValue>
     private DeleteOperation buildCoreOperation()
     {
         final DeleteOperation.Builder opBuilder =
-                new DeleteOperation.Builder(BinaryValue.create(this.builder.tableName), builder.keyValues);
+                new DeleteOperation.Builder(this.builder.tableName, builder.keyValues);
 
         if (builder.timeout > 0)
         {

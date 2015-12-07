@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.operations.ts.FetchOperation;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,9 +17,8 @@ import static org.junit.Assert.assertEquals;
 
 public class FetchOpTest
 {
-    private final long now = 1443796900000l; // "now"
+    private final long now = 1443796900000L; // "now"
     private final String tableName = "my_table";
-    private final BinaryValue tableNameBV = BinaryValue.createFromUtf8(tableName);
     private final List<Cell> keyValues = Arrays.asList(
             new Cell("my_family"), new Cell("my_series"), Cell.newTimestamp(now), null);
 
@@ -28,8 +26,8 @@ public class FetchOpTest
     public void shouldBuildADescriptiveQueryInfoString()
     {
         String expectedInfo = "SELECT * FROM my_table WHERE PRIMARY KEY = { Cell{ my_family }, Cell{ my_series }, Cell{ 1443796900000 }, NULL }";
-        FetchOperation cmd = new FetchOperation.Builder(tableNameBV, keyValues).build();
-        assertEquals(expectedInfo, cmd.getQueryInfo().toStringUtf8());
+        FetchOperation cmd = new FetchOperation.Builder(tableName, keyValues).build();
+        assertEquals(expectedInfo, cmd.getQueryInfo());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -41,19 +39,19 @@ public class FetchOpTest
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfTableNameIsBlank()
     {
-        new FetchOperation.Builder(BinaryValue.create(""), keyValues).build();
+        new FetchOperation.Builder("", keyValues).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreNull()
     {
-        new FetchOperation.Builder(tableNameBV, null).build();
+        new FetchOperation.Builder(tableName, null).build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreMissing()
     {
-        new FetchOperation.Builder(tableNameBV, new ArrayList<Cell>(0)).build();
+        new FetchOperation.Builder(tableName, new ArrayList<Cell>(0)).build();
     }
 
 }

@@ -6,18 +6,18 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.ListKeysOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.util.BinaryValue;
 
 /**
  * Time Series List Keys Command
  * Allows you to List the Primary Keys in a Time Series Table.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class ListKeys extends RiakCommand<QueryResult, BinaryValue>
+public class ListKeys extends RiakCommand<QueryResult, String>
 {
-    private final BinaryValue tableName;
+    private final String tableName;
     private final int timeout;
 
     private ListKeys(ListKeys.Builder builder)
@@ -27,13 +27,13 @@ public class ListKeys extends RiakCommand<QueryResult, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<QueryResult, BinaryValue> coreFuture =
+        RiakFuture<QueryResult, String> coreFuture =
                 cluster.execute(buildCoreOperation());
 
-        CoreFutureAdapter<QueryResult, BinaryValue, QueryResult, BinaryValue> future =
-                new CoreFutureAdapter<QueryResult, BinaryValue, QueryResult, BinaryValue>(coreFuture)
+        CoreFutureAdapter<QueryResult, String, QueryResult, String> future =
+                new CoreFutureAdapter<QueryResult, String, QueryResult, String>(coreFuture)
                 {
                     @Override
                     protected QueryResult convertResponse(QueryResult coreResponse)
@@ -42,7 +42,7 @@ public class ListKeys extends RiakCommand<QueryResult, BinaryValue>
                     }
 
                     @Override
-                    protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
+                    protected String convertQueryInfo(String coreQueryInfo)
                     {
                         return coreQueryInfo;
                     }
@@ -65,15 +65,10 @@ public class ListKeys extends RiakCommand<QueryResult, BinaryValue>
 
     public static class Builder
     {
-        private final BinaryValue tableName;
+        private final String tableName;
         private int timeout;
 
         public Builder(String tableName)
-        {
-            this.tableName = BinaryValue.createFromUtf8(tableName);
-        }
-
-        public Builder(BinaryValue tableName)
         {
             this.tableName = tableName;
         }

@@ -6,9 +6,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.util.BinaryValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -17,11 +14,11 @@ import java.util.List;
  * Allows you to fetch a single time series row by its key values.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Fetch extends RiakCommand<QueryResult, BinaryValue>
+public class Fetch extends RiakCommand<QueryResult, String>
 {
-    private static final Logger logger = LoggerFactory.getLogger(Fetch.class);
     private final Builder builder;
 
     private Fetch(Builder builder)
@@ -30,9 +27,9 @@ public class Fetch extends RiakCommand<QueryResult, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<QueryResult, BinaryValue> future =
+        RiakFuture<QueryResult, String> future =
                 cluster.execute(buildCoreOperation());
 
         return future;
@@ -41,7 +38,7 @@ public class Fetch extends RiakCommand<QueryResult, BinaryValue>
     private FetchOperation buildCoreOperation()
     {
         final FetchOperation.Builder opBuilder =
-                new FetchOperation.Builder(BinaryValue.create(this.builder.tableName), builder.keyValues);
+                new FetchOperation.Builder(this.builder.tableName, builder.keyValues);
 
         if (builder.timeout > 0)
         {

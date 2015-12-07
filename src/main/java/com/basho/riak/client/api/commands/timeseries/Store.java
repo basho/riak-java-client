@@ -5,7 +5,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +20,10 @@ import java.util.List;
  * on any Riak node in the cluster.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Store extends RiakCommand<Void,BinaryValue>
+public class Store extends RiakCommand<Void,String>
 {
     private static final Logger logger = LoggerFactory.getLogger(Store.class);
 
@@ -35,9 +35,9 @@ public class Store extends RiakCommand<Void,BinaryValue>
     }
 
     @Override
-    protected RiakFuture<Void, BinaryValue> executeAsync(RiakCluster cluster)
+    protected RiakFuture<Void, String> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Void, BinaryValue> future =
+        RiakFuture<Void, String> future =
                 cluster.execute(buildCoreOperation());
 
         return future;
@@ -45,24 +45,19 @@ public class Store extends RiakCommand<Void,BinaryValue>
 
     private StoreOperation buildCoreOperation()
     {
-        return new StoreOperation.Builder(BinaryValue.create(builder.tableName.unsafeGetValue()))
+        return new StoreOperation.Builder(builder.tableName)
                 .withRows(builder.rows)
                 .build();
     }
 
     public static class Builder
     {
-        private final BinaryValue tableName;
+        private final String tableName;
         private final List<Row> rows = new LinkedList<Row>();
-
-        public Builder(BinaryValue tableName)
-        {
-            this.tableName = tableName;
-        }
 
         public Builder(String tableName)
         {
-            this.tableName = BinaryValue.createFromUtf8(tableName);
+            this.tableName = tableName;
         }
 
         public Builder withRow(Row row)

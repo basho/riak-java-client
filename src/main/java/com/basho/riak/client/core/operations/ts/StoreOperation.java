@@ -5,7 +5,6 @@ import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
@@ -20,11 +19,11 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, BinaryValue>
+public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, String>
 {
     private final String tableName;
     private final int rowCount;
-    private BinaryValue queryInfoMessage;
+    private String queryInfoMessage;
 
 
     private StoreOperation(Builder builder)
@@ -48,7 +47,7 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
     }
 
     @Override
-    public BinaryValue getQueryInfo()
+    public String getQueryInfo()
     {
         if (this.queryInfoMessage == null)
         {
@@ -58,16 +57,16 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
         return this.queryInfoMessage;
     }
 
-    private BinaryValue createQueryInfoMessage()
+    private String createQueryInfoMessage()
     {
-        return BinaryValue.create("INSERT <" + this.rowCount + " rows> into " + this.tableName);
+        return "INSERT <" + this.rowCount + " rows> into " + this.tableName;
     }
 
     public static class Builder
     {
         private final RiakTsPB.TsPutReq.Builder reqBuilder;
 
-        public Builder(BinaryValue tableName)
+        public Builder(String tableName)
         {
             if (tableName == null || tableName.length() == 0)
             {
@@ -75,7 +74,7 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
             }
 
             this.reqBuilder = RiakTsPB.TsPutReq.newBuilder();
-            this.reqBuilder.setTable(ByteString.copyFrom(tableName.unsafeGetValue()));
+            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
         }
 
         public Builder withColumns(Collection<ColumnDescription> columns)
