@@ -17,6 +17,7 @@ package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.*;
 import com.basho.riak.client.core.util.Constants;
+import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -42,6 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Brian Roach <roach at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
 public class RiakNode implements RiakResponseListener
@@ -1263,13 +1265,13 @@ public class RiakNode implements RiakResponseListener
         /**
          * Sets the remote address for this RiakNode.
          *
-         * @param remoteAddress Can either be a FQDN or IP address
+         * @param remoteAddress Can either be a FQDN or IP address. Since 2.0.3 it may contain port delimited by ':'.
          * @return this
          * @see #DEFAULT_REMOTE_ADDRESS
          */
         public Builder withRemoteAddress(String remoteAddress)
         {
-            this.remoteAddress = remoteAddress;
+            withRemoteAddress(HostAndPort.fromString(remoteAddress, this.port));
             return this;
         }
 
@@ -1283,6 +1285,23 @@ public class RiakNode implements RiakResponseListener
         public Builder withRemotePort(int port)
         {
             this.port = port;
+            return this;
+        }
+
+        /**
+         * Specifies the remote host and remote port for this RiakNode.
+         *
+         * @param hp - host and port
+         * @return this
+         * @see #DEFAULT_REMOTE_PORT
+         *
+         * @since 2.0.3
+         * @see HostAndPort
+         */
+        public Builder withRemoteAddress(HostAndPort hp)
+        {
+            this.port = hp.getPortOrDefault(DEFAULT_REMOTE_PORT);
+            this.remoteAddress = hp.getHost();
             return this;
         }
 
@@ -1483,27 +1502,47 @@ public class RiakNode implements RiakResponseListener
             return new RiakNode(this);
         }
 
-
         /**
          * Build a set of RiakNodes.
          * The provided builder will be used to construct a set of RiakNodes
          * using the supplied addresses.
          *
-         * @param builder         a configured builder
-         * @param remoteAddresses a list of IP addresses or FQDN
+         * @param builder         a configured builder, used for common properties among the nodes
+         * @param remoteAddresses a list of IP addresses or FQDN.
+         *                        Since 2.0.3 each of list item is treated as a comma separated list
+         *                        of FQDN or IP addresses with the optional remote port delimited by ':'.
          * @return a list of constructed RiakNodes
          * @throws UnknownHostException if a supplied FQDN can not be resolved.
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
             throws UnknownHostException
         {
-            List<RiakNode> nodes = new ArrayList<RiakNode>(remoteAddresses.size());
-            for (String remoteAddress : remoteAddresses)
+            final Set<HostAndPort> hps = new HashSet<HostAndPort>();
+            for (String remoteAddress: remoteAddresses)
             {
-                builder.withRemoteAddress(remoteAddress);
+                hps.addAll( HostAndPort.hostsFromString(remoteAddress, builder.port) );
+            }
+
+            final List<RiakNode> nodes = new ArrayList<RiakNode>(hps.size());
+            for (HostAndPort hp : hps)
+            {
+                builder.withRemoteAddress(hp);
                 nodes.add(builder.build());
             }
             return nodes;
+        }
+
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes using the supplied addresses.
+         *
+         * @see #buildNodes(Builder, List)
+         * @since 2.0.3
+         */
+        public static List<RiakNode> buildNodes(Builder builder, String... remoteAddresses)
+                throws UnknownHostException
+        {
+            return buildNodes(builder, Arrays.asList(remoteAddresses));
         }
     }
 }

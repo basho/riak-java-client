@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
 public class  RiakCluster implements OperationRetrier, NodeStateListener
@@ -650,6 +651,28 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         public Builder(List<RiakNode> riakNodes)
         {
             this.riakNodes = new ArrayList<RiakNode>(riakNodes);
+        }
+
+        /**
+         * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * The RiakNode.Builder is used for setting common properties among the nodes.
+         * @since 2.0.3
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, List)
+         */
+        public Builder(RiakNode.Builder nodeBuilder, List<String> remoteAddresses) throws UnknownHostException
+        {
+            riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, remoteAddresses );
+        }
+
+        /**
+         * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * The RiakNode.Builder is used for setting common properties among the nodes.
+         * @since 2.0.3
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(RiakNode.Builder, String...)
+         */
+        public Builder(RiakNode.Builder nodeBuilder, String... remoteAddresses) throws UnknownHostException
+        {
+            riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, remoteAddresses );
         }
 
         /**
