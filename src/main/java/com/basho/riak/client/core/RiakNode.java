@@ -1502,18 +1502,6 @@ public class RiakNode implements RiakResponseListener
             return new RiakNode(this);
         }
 
-
-        /**
-         * Static factory method to create a new builder instance.
-         *
-         * @return a new Builder instance.
-         * @since 2.0.3
-         */
-        public static Builder create()
-        {
-            return new Builder();
-        }
-
         /**
          * Build a set of RiakNodes.
          * The provided builder will be used to construct a set of RiakNodes

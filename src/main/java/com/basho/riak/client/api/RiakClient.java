@@ -302,7 +302,7 @@ public class RiakClient
      */
     public static RiakNode.Builder createDefaultNodeBuilder()
     {
-        return RiakNode.Builder.create()
+        return new RiakNode.Builder()
                 .withMinConnections(10);
     }
 
