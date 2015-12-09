@@ -88,6 +88,7 @@ public class RiakNode implements RiakResponseListener
     private volatile boolean blockOnMaxConnections;
 
     private HealthCheckFactory healthCheckFactory;
+    private boolean useTTB;
 
     private final ChannelFutureListener writeListener =
         new ChannelFutureListener()
@@ -186,6 +187,7 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
+        this.useTTB = builder.useTTB;
 
         if (builder.bootstrap != null)
         {
@@ -252,7 +254,14 @@ public class RiakNode implements RiakResponseListener
             throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
         }
 
-        bootstrap.handler(new RiakChannelInitializer(this)).remoteAddress(socketAddress);
+        final RiakChannelInitializer initialize;
+        if (useTTB) {
+            initialize = new RiakTTBChannelInitializer(this);
+        } else {
+            initialize = new RiakChannelInitializer(this);
+        }
+
+        bootstrap.handler(initialize).remoteAddress(socketAddress);
 
         if (connectionTimeout > 0)
         {
@@ -1243,6 +1252,7 @@ public class RiakNode implements RiakResponseListener
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
         private HealthCheckFactory healthCheckFactory = DEFAULT_HEALTHCHECK_FACTORY;
+        private boolean useTTB = false;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
         private boolean blockOnMaxConnections;
@@ -1486,6 +1496,12 @@ public class RiakNode implements RiakResponseListener
         public Builder withHealthCheck(HealthCheckFactory factory)
         {
             this.healthCheckFactory = factory;
+            return this;
+        }
+
+        public Builder useTTB()
+        {
+            this.useTTB = true;
             return this;
         }
 
