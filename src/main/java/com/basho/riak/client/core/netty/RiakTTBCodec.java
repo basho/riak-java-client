@@ -2,18 +2,20 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakPB;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.concurrent.Exchanger;
 
 /**
- * Created by srg on 12/9/15.
+ * @author Sergey Galkin <srggal at gmail dot com>
  */
 public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
@@ -28,13 +30,33 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception {
+        final OtpErlangTuple t;
+
         switch (msg.getCode()) {
             case RiakMessageCodes.MSG_TsPutReq:
-                encodeTsPut(msg, out);
+                t = encodeTsPut(msg);
                 break;
             default:
-                throw new IllegalStateException("Unsupported message with code " + msg.getCode());
+                throw new IllegalStateException("Can't encode TTB request, unsupported message with code " + msg.getCode());
         }
+
+        final OtpOutputStream os = new OtpOutputStream(t);
+        byte data[] = os.toByteArray();
+
+        int length = data.length+1;
+        out.writeInt(length);
+
+        /**
+         * DO A TOP SECRET HACK
+         *
+         * It seems that the message is missing the 131 tag required by term_to_binary.
+         * As is evident from the Java output, this tag is not being added by jinterface encode.
+         * If I simply add 131 to the beginning of the binary it decodes correctly.
+         *
+         * http://stackoverflow.com/questions/15189447/jinterface-to-create-external-erlang-term
+         */
+        out.writeByte(131);
+        out.writeBytes(data);
     }
 
     private static OtpErlangTuple pbCellToTtb(RiakTsPB.TsCell c) {
@@ -85,7 +107,11 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         return new OtpErlangTuple(new OtpErlangObject[] {tsrow, l});
     }
 
-    private static OtpErlangTuple encodeTsPut(RiakMessage msg, ByteBuf out) throws InvalidProtocolBufferException {
+    private static OtpErlangBinary pbStrToTtb(ByteString bs) {
+        return new OtpErlangBinary(bs.toByteArray());
+    }
+
+    private static OtpErlangTuple encodeTsPut(RiakMessage msg) throws InvalidProtocolBufferException, UnsupportedEncodingException {
         final RiakTsPB.TsPutReq req = RiakTsPB.TsPutReq.parseFrom(msg.getData());
         assert req != null;
 
@@ -97,21 +123,11 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         }
 
         OtpErlangObject[] elems = new OtpErlangObject[]
-                {tsputreq, new OtpErlangString(req.getTable().toStringUtf8()),
+                {tsputreq, pbStrToTtb(req.getTable()),
                         new OtpErlangList(),
                         new OtpErlangList(rows)};
 
-        final OtpErlangTuple request = new OtpErlangTuple(elems);
-
-
-        OtpOutputStream os = new OtpOutputStream(request);
-        byte data[] = os.toByteArray();
-
-        int length = data.length;
-        out.writeInt(length);
-        out.writeBytes(data);
-
-        return request;
+        return new OtpErlangTuple(elems);
     }
 
     @Override
@@ -119,8 +135,6 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         // Make sure we have 4 bytes
         if (in.readableBytes() >= 4) {
             in.markReaderIndex();
-
-            int i = in.readableBytes();
 
             int length = in.readInt();
             // See if we have the full frame.
@@ -143,22 +157,29 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 return;
             }
 
-
-
-
-
-//            // See if we have the full frame.
-//            if (in.readableBytes() < length) {
-//                in.resetReaderIndex();
-//                return;
-//            } else {
-//                byte code = in.readByte();
-//                byte[] array = new byte[length - 1];
-//                in.readBytes(array);
-//                out.add(new RiakMessage(code, array));
-//            }
-
             assert o != null;
+            if (o instanceof OtpErlangTuple && ((OtpErlangTuple)o).elementAt(0) instanceof OtpErlangAtom) {
+                final OtpErlangTuple t = ((OtpErlangTuple)o);
+                final OtpErlangAtom resp = (OtpErlangAtom) ((OtpErlangTuple)o).elementAt(0);
+                final String v = resp.atomValue();
+
+                if ("tsputresp".equals(v)) {
+                    final RiakTsPB.TsPutResp r = RiakTsPB.TsPutResp.newBuilder().build();
+                    out.add(new RiakMessage(RiakMessageCodes.MSG_TsPutResp, r.toByteArray()));
+                } else if ("rpberrorresp".equals(v)) {
+                    final OtpErlangString errMsg = (OtpErlangString) t.elementAt(1);
+                    final OtpErlangLong errCode = (OtpErlangLong) t.elementAt(2);
+                    final RiakPB.RpbErrorResp r = RiakPB.RpbErrorResp.newBuilder()
+                            .setErrcode(errCode.intValue())
+                            .setErrmsg(ByteString.copyFromUtf8(errMsg.stringValue()))
+                            .build();
+                    out.add(new RiakMessage(RiakMessageCodes.MSG_ErrorResp, r.toByteArray()));
+                } else {
+                    throw new IllegalStateException("Can't decode TTB response, unsupported atom '"+ v + "'");
+                }
+            } else {
+                throw new IllegalStateException("Can't decode TTB response");
+            }
         }
     }
 }

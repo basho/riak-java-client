@@ -1,6 +1,5 @@
 package com.basho.riak.client.core.netty;
 
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
@@ -14,10 +13,11 @@ import org.junit.Test;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Created by srg on 12/9/15.
+ * @author Sergey Galkin <srggal at gmail dot com>
  */
 public class ITestTTBNode {
 
@@ -31,6 +31,10 @@ public class ITestTTBNode {
     protected final static long fifteenMinsInFuture = now + (fiveMinsInMS * 3l);
 
     private RiakNode riakNode;
+    private final List<Row> rows = Arrays.asList(
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo),
+                    new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true))
+        );
 
 
     @Before
@@ -52,14 +56,8 @@ public class ITestTTBNode {
     }
 
     @Test
-    public void test() throws InterruptedException, ExecutionException {
-        final List<Row> rows = Arrays.asList(
-                // "Normal" Data
-                new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true))
-//            new Row(new Cell("hash1"))
-        );
-
-        final StoreOperation store = new StoreOperation.Builder(BinaryValue.create(tableName + 112)).withRows(rows).build();
+    public void storeData() throws InterruptedException, ExecutionException {
+        final StoreOperation store = new StoreOperation.Builder(BinaryValue.create(tableName)).withRows(rows).build();
 
         if (!riakNode.execute(store)) {
             Assert.fail("Cant store data");
@@ -67,6 +65,27 @@ public class ITestTTBNode {
 
         store.get();
         assert store != null;
+    }
 
+    @Test
+    public void storeDatatoNoneExistentTable() throws InterruptedException, ExecutionException {
+        final StoreOperation store = new StoreOperation.Builder(BinaryValue.create(UUID.randomUUID().toString()))
+                .withRows(rows).build();
+
+        if (!riakNode.execute(store)) {
+            Assert.fail("Cant store data");
+        }
+
+        try {
+            store.get();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RiakResponseException
+                    && e.getCause().getMessage().startsWith("Bucket type")
+                    && e.getCause().getMessage().endsWith("is missing.")) {
+                // It's OK
+                return;
+            }
+            throw e;
+        }
     }
 }

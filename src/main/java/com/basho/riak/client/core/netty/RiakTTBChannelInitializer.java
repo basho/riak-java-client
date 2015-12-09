@@ -8,7 +8,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 /**
- * Created by srg on 12/9/15.
+ * @author Sergey Galkin <srggal at gmail dot com>
  */
 public class RiakTTBChannelInitializer extends RiakChannelInitializer {
     public RiakTTBChannelInitializer(RiakResponseListener listener) {
