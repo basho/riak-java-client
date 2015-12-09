@@ -15,12 +15,14 @@ import java.util.List;
 public class QueryResult
 {
     public static final QueryResult EMPTY = new QueryResult();
-    private final List<RiakTsPB.TsRow> pbRows;
+    private final Iterable<RiakTsPB.TsRow> pbRows;
+    private final int pbRowsCount;
     private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
 
     private QueryResult()
     {
         this.pbRows = Collections.emptyList();
+        this.pbRowsCount = 0;
         this.pbColumnDescriptions = Collections.emptyList();
     }
 
@@ -29,10 +31,18 @@ public class QueryResult
         this(Collections.<RiakTsPB.TsColumnDescription>emptyList(), tsRows);
     }
 
+    public QueryResult(Iterable<RiakTsPB.TsRow> tsRowsIterator, int rowCount)
+    {
+        this.pbColumnDescriptions = null;
+        this.pbRows = tsRowsIterator;
+        this.pbRowsCount = rowCount;
+    }
+
     public QueryResult(List<RiakTsPB.TsColumnDescription> columnsList, List<RiakTsPB.TsRow> rowsList)
     {
         this.pbColumnDescriptions = columnsList;
         this.pbRows = rowsList;
+        this.pbRowsCount = rowsList.size();
     }
 
     /**
@@ -51,7 +61,7 @@ public class QueryResult
 
     public int getRowsCount()
     {
-        return this.pbRows.size();
+        return this.pbRowsCount;
     }
 
     /**

@@ -3,6 +3,7 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.protobuf.RiakTsPB;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -33,20 +34,25 @@ public final class PbResultFactory
             return QueryResult.EMPTY;
         }
 
-        int size = 0;
-        for (RiakTsPB.TsListKeysResp resp : responseChunks)
+        int totalKeyCount = 0;
+
+        for (RiakTsPB.TsListKeysResp responseChunk : responseChunks)
         {
-            size += resp.getKeysCount();
+            totalKeyCount += responseChunk.getKeysCount();
         }
 
-        final ArrayList<RiakTsPB.TsRow> pbRows = new ArrayList<RiakTsPB.TsRow>(size);
+        FlatteningIterable<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow> flatIterable =
+                new FlatteningIterable<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow>(responseChunks,
+                    new FlatteningIterable.InnerIterableProvider<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow>()
+                    {
+                        @Override
+                        public Iterator<RiakTsPB.TsRow> getInnerIterator(RiakTsPB.TsListKeysResp provider)
+                        {
+                            return provider.getKeysList().iterator();
+                        }
+                    });
 
-        for (RiakTsPB.TsListKeysResp resp : responseChunks)
-        {
-            pbRows.addAll(resp.getKeysList());
-        }
-
-        return new QueryResult(pbRows);
+        return new QueryResult(flatIterable, totalKeyCount);
     }
 
 }

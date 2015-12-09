@@ -39,6 +39,7 @@ public class ITestListKeysOperation extends ITestTsBase
     @Test
     public void testSingleFetch() throws ExecutionException, InterruptedException
     {
+
         ListKeysOperation listKeysOp = new ListKeysOperation.Builder(tableName).build();
 
         final RiakFuture<QueryResult, String> future = cluster.execute(listKeysOp);
@@ -52,19 +53,17 @@ public class ITestListKeysOperation extends ITestTsBase
 
         final List<Row> rows = result.getRowsCopy();
         final List<Row> expectedKeys = getKeyHeads();
-        // Won't work yet, timestamps come back as sint_64 in list keys
         assertTrue(rows.containsAll(expectedKeys));
     }
 
-    private List<Row> getKeyHeads()
+    private static List<Row> getKeyHeads()
     {
         List<Row> keyHeads = new ArrayList<Row>(rows.size());
 
         for (Row row : rows)
         {
             final List<Cell> cells = row.getCellsCopy();
-            // Hack: replace timestamp cell with sint64 cell.
-            keyHeads.add(new Row(cells.get(0), cells.get(1), new Cell(cells.get(2).getTimestamp())));
+            keyHeads.add(new Row(cells.get(0), cells.get(1), cells.get(2)));
         }
 
         return keyHeads;
