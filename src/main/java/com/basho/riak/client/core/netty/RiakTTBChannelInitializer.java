@@ -19,7 +19,7 @@ public class RiakTTBChannelInitializer extends RiakChannelInitializer {
     public void initChannel(SocketChannel ch) throws Exception
     {
         ChannelPipeline p = ch.pipeline();
-        p.addLast(new LoggingHandler(LogLevel.WARN));
+        p.addLast(new LoggingHandler(LogLevel.ERROR));
         super.initChannel(ch);
         p.replace(Constants.MESSAGE_CODEC, Constants.MESSAGE_CODEC, new RiakTTBCodec());
     }
