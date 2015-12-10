@@ -4,7 +4,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,10 +23,8 @@ public class ITestQueryOperation extends ITestTsBase
     @BeforeClass
     public static void InsertData() throws ExecutionException, InterruptedException
     {
-        final BinaryValue tableNameBV = BinaryValue.create(tableName);
-
-        StoreOperation storeOp = new StoreOperation.Builder(tableNameBV).withRows(rows).build();
-        RiakFuture<Void, BinaryValue> future = cluster.execute(storeOp);
+        StoreOperation storeOp = new StoreOperation.Builder(tableName).withRows(rows).build();
+        RiakFuture<Void, String> future = cluster.execute(storeOp);
 
         future.get();
         assertTrue(future.isSuccess());
@@ -43,12 +40,12 @@ public class ITestQueryOperation extends ITestTsBase
                                  "  and geohash ='hash1'";
 
         final QueryResult queryResult = executeQuery(
-                new QueryOperation.Builder(BinaryValue.create(queryText))
+                new QueryOperation.Builder(queryText)
             );
 
         assertNotNull(queryResult);
-        assertEquals(0, queryResult.getColumnDescriptions().size());
-        assertEquals(0, queryResult.getRows().size());
+        assertEquals(0, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(0, queryResult.getRowsCount());
     }
 
     @Test
@@ -61,11 +58,11 @@ public class ITestQueryOperation extends ITestTsBase
                                  "  and geohash ='hash1'";
 
         final QueryResult queryResult = executeQuery(
-                new QueryOperation.Builder(BinaryValue.create(queryText))
-        );
+                new QueryOperation.Builder(queryText)
+            );
 
         assertNotNull(queryResult);
-        assertEquals(7, queryResult.getColumnDescriptions().size());
-        assertEquals(1, queryResult.getRows().size());
+        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(1, queryResult.getRowsCount());
     }
 }

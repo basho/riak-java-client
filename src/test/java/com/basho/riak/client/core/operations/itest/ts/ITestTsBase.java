@@ -8,7 +8,6 @@ import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 
@@ -44,14 +43,13 @@ import static org.junit.Assert.assertTrue;
 public abstract class ITestTsBase extends ITestBase
 {
     protected final static String tableName = "GeoCheckin";
-    protected final static BinaryValue tableNameBV = BinaryValue.createFromUtf8(tableName);
 
-    protected final static long now = 1443806900000l; // "now"
-    protected final static long fiveMinsInMS = 5l * 60l * 1000l;
+    protected final static long now = 1443806900000L; // "now"
+    protected final static long fiveMinsInMS = 5L * 60L * 1000L;
     protected final static long fiveMinsAgo = now - fiveMinsInMS;
     protected final static long tenMinsAgo = fiveMinsAgo - fiveMinsInMS;
     protected final static long fifteenMinsAgo = tenMinsAgo - fiveMinsInMS;
-    protected final static long fifteenMinsInFuture = now + (fiveMinsInMS * 3l);
+    protected final static long fifteenMinsInFuture = now + (fiveMinsInMS * 3L);
 
 
     protected final static List<Row> rows = Arrays.asList(
@@ -74,8 +72,9 @@ public abstract class ITestTsBase extends ITestBase
         Assume.assumeTrue(testTimeSeries);
     }
 
-    protected static QueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException {
-        final RiakFuture<QueryResult, BinaryValue> future = cluster.execute(builder.build());
+    protected static QueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException
+    {
+        final RiakFuture<QueryResult, String> future = cluster.execute(builder.build());
         final QueryResult queryResult = future.get();
 
         assertTrue(future.isSuccess());
@@ -83,7 +82,8 @@ public abstract class ITestTsBase extends ITestBase
         return queryResult;
     }
 
-    protected static QueryResult executeQuery(Query.Builder builder) throws ExecutionException, InterruptedException {
+    protected static QueryResult executeQuery(Query.Builder builder) throws ExecutionException, InterruptedException
+    {
         final RiakClient client = new RiakClient(cluster);
         return client.execute(builder.build());
     }

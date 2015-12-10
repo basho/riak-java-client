@@ -18,12 +18,11 @@ import java.util.regex.Pattern;
  * Allows you to query a Time Series table, with the given query string.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Query extends RiakCommand<QueryResult, BinaryValue>
+public class Query extends RiakCommand<QueryResult, String>
 {
-    private static final Logger logger = LoggerFactory.getLogger(Query.class);
-
     private final Builder builder;
 
     private Query(Builder builder)
@@ -32,11 +31,8 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
     }
 
     @Override
-    protected RiakFuture<QueryResult, BinaryValue> executeAsync(RiakCluster cluster) {
-        RiakFuture<QueryResult, BinaryValue> future =
-                cluster.execute(buildCoreOperation());
-
-        return future;
+    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster) {
+        return cluster.execute(buildCoreOperation());
     }
 
     private QueryOperation buildCoreOperation()
@@ -51,8 +47,8 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
         private static final Logger logger = LoggerFactory.getLogger(Query.Builder.class);
         private static final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
 
-        private final BinaryValue queryText;
-        private final Map<BinaryValue, BinaryValue> interpolations = new HashMap<BinaryValue, BinaryValue>();
+        private final String queryText;
+        private final Map<String, BinaryValue> interpolations = new HashMap<String, BinaryValue>();
         private final Set<String> knownParams;
 
         public Builder(String queryText)
@@ -64,7 +60,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
                 throw new IllegalArgumentException(msg);
             }
 
-            this.queryText = BinaryValue.createFromUtf8(queryText);
+            this.queryText = queryText;
 
             Matcher paramMatcher = paramPattern.matcher(queryText);
 
@@ -81,7 +77,7 @@ public class Query extends RiakCommand<QueryResult, BinaryValue>
             }
         }
 
-        private Builder addParameter(String keyString, BinaryValue key, BinaryValue value)
+        private Builder addParameter(String keyString, String key, BinaryValue value)
         {
             checkParamValidity(keyString);
             interpolations.put(key, value);

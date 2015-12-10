@@ -1,13 +1,11 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * A Metadata description of a column in Riak Time Series.
  * Contains a column name and column type.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
 public class ColumnDescription
@@ -31,12 +29,11 @@ public class ColumnDescription
         return type;
     }
 
-
+    /**
+     * Values MUST BE IN THE SAME ORDER AS in the RiakTsPB.TsColumnType
+     */
     public enum ColumnType
     {
-        /**
-         * Values MUST BE IN THE SAME ORDER AS in the RiakTsPB.TsColumnType
-         */
         VARCHAR,
         SINT64,
         DOUBLE,

@@ -1,26 +1,25 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.converters.TimeSeriesPBConverter;
 import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.Cell;
-import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.query.timeseries.*;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * An operation to fetch a single row in a Riak Time Series table.
  *
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGetResp, BinaryValue>
+public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGetResp, String>
 {
     private final Builder builder;
-    private BinaryValue queryInfoMessage;
+    private String queryInfoMessage;
 
     private FetchOperation(Builder builder)
     {
@@ -38,11 +37,11 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
         // This is not a streaming op, there will only be one response
         final RiakTsPB.TsGetResp response = checkAndGetSingleResponse(responses);
 
-        return TimeSeriesPBConverter.convertPbGetResp(response);
+        return PbResultFactory.convertPbGetResp(response);
     }
 
     @Override
-    public BinaryValue getQueryInfo()
+    public String getQueryInfo()
     {
         if (this.queryInfoMessage == null)
         {
@@ -52,43 +51,31 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
         return this.queryInfoMessage;
     }
 
-    private BinaryValue createQueryInfoMessage()
+    private String createQueryInfoMessage()
     {
-        final StringBuilder sb = new StringBuilder("SELECT * FROM ");
-        sb.append(this.builder.tableName);
-        sb.append(" WHERE PRIMARY KEY = { ");
+        final StringBuilder sb = new StringBuilder();
 
-        final int numKeys = this.builder.keyValues.size();
-        for (int i = 0; i < numKeys; i++)
+        for (Cell cell: this.builder.keyValues)
         {
-            if (this.builder.keyValues.get(i) == null)
-            {
-                sb.append("NULL");
-            }
-            else
-            {
-                sb.append(this.builder.keyValues.get(i).toString());
-            }
-
-            if (i < numKeys-1)
+            if (sb.length() > 0)
             {
                 sb.append(", ");
             }
+            sb.append( cell == null ? "NULL" : cell.toString());
         }
 
-        sb.append(" }");
-
-        return BinaryValue.create(sb.toString());
+        return String.format("SELECT * FROM %s WHERE PRIMARY KEY = { %s }",
+                this.builder.tableName, sb.toString());
     }
 
     public static class Builder
     {
-        private final BinaryValue tableName;
-        private final List<Cell> keyValues;
+        private final String tableName;
+        private final Collection<Cell> keyValues;
 
         private final RiakTsPB.TsGetReq.Builder reqBuilder = RiakTsPB.TsGetReq.newBuilder();
 
-        public Builder(BinaryValue tableName, List<Cell> keyValues)
+        public Builder(String tableName, Collection<Cell> keyValues)
         {
             if (tableName == null || tableName.length() == 0)
             {
@@ -100,8 +87,8 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
                 throw new IllegalArgumentException("Key Values cannot be null or an empty list.");
             }
 
-            this.reqBuilder.setTable(ByteString.copyFrom(tableName.getValue()));
-            this.reqBuilder.addAllKey(TimeSeriesPBConverter.convertCellsToPb(keyValues));
+            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
+            this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;
