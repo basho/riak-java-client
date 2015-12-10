@@ -12,6 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,11 +23,14 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     private static final OtpErlangAtom tscell = new OtpErlangAtom("tscell");
     private static final OtpErlangAtom tsrow = new OtpErlangAtom("tsrow");
     private static final OtpErlangAtom tsputreq = new OtpErlangAtom("tsputreq");
-    private static final OtpErlangString geoCheckin = //new OtpErlangBinary(
-            new OtpErlangString("GeoCheckin"); //);
+    private static final OtpErlangAtom tsqueryreq = new OtpErlangAtom("tsqueryreq");
+    private static final OtpErlangAtom tsinterpolation = new OtpErlangAtom("tsinterpolation");
+    private static final OtpErlangAtom tsgetreq = new OtpErlangAtom("tsgetreq");
 
-    private final OtpErlangBinary family1 = new OtpErlangBinary(new OtpErlangString("family1"));
-
+    private static final OtpErlangAtom _false = new OtpErlangAtom("false");
+    private static final OtpErlangList EMPTY_ERLANG_LIST = new OtpErlangList();
+    private static final OtpErlangTuple EMPTY_ERLANG_TSCELL = new OtpErlangTuple(new OtpErlangObject[]{
+            tscell, undefined, undefined, undefined, undefined, undefined});
 
     @Override
     protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception {
@@ -36,6 +40,12 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
             case RiakMessageCodes.MSG_TsPutReq:
                 t = encodeTsPut(msg);
                 break;
+            case RiakMessageCodes.MSG_TsGetReq:
+                t = encodeTsGet(msg);
+                break;
+//            case RiakMessageCodes.MSG_TsQueryReq:
+//                t = encodeTsQuery(msg);
+//                break;
             default:
                 throw new IllegalStateException("Can't encode TTB request, unsupported message with code " + msg.getCode());
         }
@@ -65,7 +75,7 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         if (c.hasVarcharValue()) {
             o = new OtpErlangObject[]
                     {tscell,
-                            new OtpErlangBinary(new OtpErlangString(c.getVarcharValue().toStringUtf8())),
+                            pbStrToTtb(c.getVarcharValue()),
                             undefined, undefined, undefined, undefined};
         } else if (c.hasSint64Value()) {
             o = new OtpErlangObject[]
@@ -90,25 +100,32 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                             undefined, undefined, undefined, undefined,
                             new OtpErlangDouble(c.getDoubleValue())};
         } else {
-            throw new IllegalStateException("Unsupported type");
+            return EMPTY_ERLANG_TSCELL;
         }
 
         return new OtpErlangTuple(o);
     }
 
-    private static OtpErlangTuple pbRowToTtb(RiakTsPB.TsRow r) {
-        final OtpErlangObject cells[] = new OtpErlangObject[r.getCellsCount()];
+    private static OtpErlangList pbCellsToTtb(List<RiakTsPB.TsCell> pbCells) {
+        final OtpErlangObject cells[] = new OtpErlangObject[pbCells.size()];
         for (int i = 0; i < cells.length; ++i) {
-            final RiakTsPB.TsCell c = r.getCells(i);
+            final RiakTsPB.TsCell c = pbCells.get(i);
             cells[i] = pbCellToTtb(c);
         }
 
-        final OtpErlangList l = new OtpErlangList(cells);
-        return new OtpErlangTuple(new OtpErlangObject[] {tsrow, l});
+        return new OtpErlangList(cells);
+    }
+
+    private static OtpErlangTuple pbRowToTtb(RiakTsPB.TsRow r) {
+        return new OtpErlangTuple(new OtpErlangObject[] {tsrow, pbCellsToTtb(r.getCellsList())});
     }
 
     private static OtpErlangBinary pbStrToTtb(ByteString bs) {
         return new OtpErlangBinary(bs.toByteArray());
+    }
+
+    private static OtpErlangTuple pbInterpolationToTtb(RiakTsPB.TsInterpolation interpolation) {
+        return new OtpErlangTuple(new OtpErlangObject[] {tsinterpolation, pbStrToTtb(interpolation.getBase()), EMPTY_ERLANG_LIST});
     }
 
     private static OtpErlangTuple encodeTsPut(RiakMessage msg) throws InvalidProtocolBufferException, UnsupportedEncodingException {
@@ -122,12 +139,101 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
             rows[i] = pbRowToTtb(r);
         }
 
-        OtpErlangObject[] elems = new OtpErlangObject[]
+        final OtpErlangObject[] elems = new OtpErlangObject[]
                 {tsputreq, pbStrToTtb(req.getTable()),
                         new OtpErlangList(),
                         new OtpErlangList(rows)};
 
         return new OtpErlangTuple(elems);
+    }
+
+    private OtpErlangTuple encodeTsQuery(RiakMessage msg) throws InvalidProtocolBufferException {
+        final RiakTsPB.TsQueryReq req = RiakTsPB.TsQueryReq.parseFrom(msg.getData());
+
+        final OtpErlangObject[] elems = new OtpErlangObject[]
+                {tsqueryreq, pbInterpolationToTtb(req.getQuery()), _false};
+
+        return new OtpErlangTuple(elems);
+    }
+
+    private static OtpErlangTuple encodeTsGet(RiakMessage msg) throws InvalidProtocolBufferException {
+        final RiakTsPB.TsGetReq req = RiakTsPB.TsGetReq.parseFrom(msg.getData());
+
+        final OtpErlangObject[] elems = new OtpErlangObject[]
+                {tsgetreq, pbStrToTtb(req.getTable()),
+                        pbCellsToTtb(req.getKeyList()),
+                        undefined};
+
+        return new OtpErlangTuple(elems);
+    }
+
+    private static ByteString ttbBinaryToPb(OtpErlangBinary b) {
+        return ByteString.copyFromUtf8(new String(b.binaryValue()));
+    }
+
+    private static List<RiakTsPB.TsRow> ttbRowsToPb(OtpErlangList ttbRows) {
+        final RiakTsPB.TsRow rows[] = new RiakTsPB.TsRow[ttbRows.arity()];
+
+        for (int i=0; i<rows.length; ++i){
+            final OtpErlangTuple r = (OtpErlangTuple) ttbRows.elementAt(i);
+            final OtpErlangList ttbCells = (OtpErlangList) r.elementAt(1);
+
+            final RiakTsPB.TsCell cells[] = new RiakTsPB.TsCell[ttbCells.arity()];
+            for (int j=0; j<cells.length; ++j){
+                final OtpErlangTuple c = (OtpErlangTuple) ttbCells.elementAt(j);
+                cells[j] = ttbCellToPb(c);
+            }
+
+            rows[i] = RiakTsPB.TsRow.newBuilder().addAllCells(Arrays.asList(cells)).build();
+        }
+        return Arrays.asList(rows);
+    }
+
+    private static List<RiakTsPB.TsColumnDescription> ttbColumnDescriptionToPb(OtpErlangList ttbDescrs) {
+        final RiakTsPB.TsColumnDescription descrs[] = new RiakTsPB.TsColumnDescription[ttbDescrs.arity()];
+        for (int i=0; i<descrs.length; ++i){
+            final OtpErlangTuple d = (OtpErlangTuple) ttbDescrs.elementAt(i);
+            final OtpErlangAtom a = (OtpErlangAtom) d.elementAt(2);
+            final RiakTsPB.TsColumnType ct = RiakTsPB.TsColumnType.valueOf(a.atomValue());
+
+            descrs[i] = RiakTsPB.TsColumnDescription.newBuilder()
+                    .setName( ttbBinaryToPb((OtpErlangBinary)d.elementAt(1)))
+                    .setType(ct)
+                    .build();
+        }
+
+        return Arrays.asList(descrs);
+    }
+
+    private static RiakTsPB.TsCell ttbCellToPb(OtpErlangTuple c) {
+        final RiakTsPB.TsCell.Builder builder = RiakTsPB.TsCell.newBuilder();
+
+        for (int i=1; i< c.arity(); ++i) {
+            final OtpErlangObject o = c.elementAt(i);
+            if (!(o instanceof OtpErlangAtom) || !((OtpErlangAtom)o).atomValue().equals(undefined.atomValue()) ){
+
+                switch (i) {
+                    case 1:
+                        builder.setVarcharValue( ttbBinaryToPb((OtpErlangBinary)o));
+                        break;
+                    case 2:
+                        builder.setSint64Value( ((OtpErlangLong)o).longValue());
+                        break;
+                    case 3:
+                        builder.setTimestampValue(((OtpErlangLong)o).longValue());
+                        break;
+                    case 4:
+                        builder.setBooleanValue(((OtpErlangAtom)o).booleanValue());
+                        break;
+                    case 5:
+                        builder.setDoubleValue(((OtpErlangDouble)o).doubleValue());
+                        break;
+                    default:
+                        throw new IllegalStateException("Unsupported cell value type");
+                }
+            }
+        }
+        return builder.build();
     }
 
     @Override
@@ -160,7 +266,7 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
             assert o != null;
             if (o instanceof OtpErlangTuple && ((OtpErlangTuple)o).elementAt(0) instanceof OtpErlangAtom) {
                 final OtpErlangTuple t = ((OtpErlangTuple)o);
-                final OtpErlangAtom resp = (OtpErlangAtom) ((OtpErlangTuple)o).elementAt(0);
+                final OtpErlangAtom resp = (OtpErlangAtom)t.elementAt(0);
                 final String v = resp.atomValue();
 
                 if ("tsputresp".equals(v)) {
@@ -174,6 +280,17 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                             .setErrmsg(ByteString.copyFromUtf8(errMsg.stringValue()))
                             .build();
                     out.add(new RiakMessage(RiakMessageCodes.MSG_ErrorResp, r.toByteArray()));
+                } else if ("tsgetresp".equals(v)) {
+                    final RiakTsPB.TsGetResp r = RiakTsPB.TsGetResp.newBuilder()
+                            .addAllColumns(ttbColumnDescriptionToPb((OtpErlangList)t.elementAt(1)))
+                            .addAllRows(ttbRowsToPb((OtpErlangList)t.elementAt(2)))
+                            .build();
+
+                    out.add(new RiakMessage(RiakMessageCodes.MSG_TsGetResp, r.toByteArray()));
+
+//                } else if ("tsqueryresp".equals(v)) {
+//                    final RiakTsPB.TsQueryResp r = tsqueryrespToPB();
+//                    out.add(new RiakMessage(RiakMessageCodes.MSG_TsQueryResp, r.toByteArray()));
                 } else {
                     throw new IllegalStateException("Can't decode TTB response, unsupported atom '"+ v + "'");
                 }
