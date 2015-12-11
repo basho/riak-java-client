@@ -56,8 +56,8 @@ public class Store extends RiakCommand<Void,String>
     public static class Builder
     {
         private final String tableName;
-        // TODO: Think about introducing kinda flatteringItarable
-        private final List<Row> rows = new LinkedList<Row>();
+        // TODO: Think about using a flattening iterable here. 
+        private final List<Row> rows = new LinkedList<>();
 
         /**
          * Construct a Builder for a Time Series Store command.
@@ -89,7 +89,9 @@ public class Store extends RiakCommand<Void,String>
             if (rows instanceof Collection)
             {
                 this.rows.addAll((Collection<Row>) rows);
-            } else {
+            }
+            else
+            {
                 // A bit weird but have no other ideas
                 for (Row r : rows) {
                     this.rows.add(r);
