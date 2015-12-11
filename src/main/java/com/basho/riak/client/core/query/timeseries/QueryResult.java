@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Holds a result set from a query, keylist, or fetch command.
+ * Immutable once created.
  * @author Alex Moore <amoore at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
@@ -46,27 +48,35 @@ public class QueryResult
     }
 
     /**
-     *
-     * @return a deep copy
+     * Provides a deep copy of the ColumnDescription List, if one was returned from the operation.
+     * @return a deep copy of the ColumnDescriptions
      */
     public List<ColumnDescription> getColumnDescriptionsCopy()
     {
         return CollectionConverters.convertPBColumnDescriptions(this.pbColumnDescriptions);
     }
 
+    /**
+     * An iterator of the Rows in this QueryResult.
+     * @return an iterator.
+     */
     public Iterator<Row> iterator()
     {
         return ConvertibleIterator.iterateAsRow(this.pbRows.iterator());
     }
 
+    /**
+     * Get the number of rows in this query result.
+     * @return the count of rows in this query result.
+     */
     public int getRowsCount()
     {
         return this.pbRowsCount;
     }
 
     /**
-     *
-     * @return a shallow copy
+     * Get a shallow copy of the rows in this query result.
+     * @return a List&lt;Row&gt; shallow copy of the rows in this query result.
      */
     public List<Row> getRowsCopy()
     {

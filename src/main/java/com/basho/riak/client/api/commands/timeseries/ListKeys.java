@@ -63,11 +63,18 @@ public class ListKeys extends RiakCommand<QueryResult, String>
         return builder.build();
     }
 
+    /**
+     * Used to construct a Time Series ListKeys command.
+     */
     public static class Builder
     {
         private final String tableName;
         private int timeout;
 
+        /**
+         * Construct a Builder for a Time Series ListKeys command.
+         * @param tableName Required. The name of the table to list keys from.
+         */
         public Builder(String tableName)
         {
             this.tableName = tableName;
@@ -88,11 +95,13 @@ public class ListKeys extends RiakCommand<QueryResult, String>
             return this;
         }
 
+        /**
+         * Construct a Time Series ListKeys object.
+         * @return a new Time Series ListKeys instance.
+         */
         public ListKeys build()
         {
             return new ListKeys(this);
         }
-
-
     }
 }

@@ -50,28 +50,49 @@ public class Store extends RiakCommand<Void,String>
                 .build();
     }
 
+    /**
+     * Used to construct a Time Series Store command.
+     */
     public static class Builder
     {
         private final String tableName;
         private final List<Row> rows = new LinkedList<Row>();
 
+        /**
+         * Construct a Builder for a Time Series Store command.
+         * @param tableName Required. The name of the table to store data to.
+         */
         public Builder(String tableName)
         {
             this.tableName = tableName;
         }
 
+        /**
+         * Add a single Row object to the store command.
+         * @param row Required. The row to add.
+         * @return a reference to this object.
+         */
         public Builder withRow(Row row)
         {
             this.rows.add(row);
             return this;
         }
 
+        /**
+         * Add a collection of Row objects to the store command.
+         * @param rows Required. The rows to add.
+         * @return a reference to this object.
+         */
         public Builder withRows(Collection<Row> rows)
         {
             this.rows.addAll(rows);
             return this;
         }
 
+        /**
+         * Construct a Time Series Store object.
+         * @return a new Time Series Store instance.
+         */
         public Store build()
         {
             return new Store(this);

@@ -12,11 +12,12 @@ import java.util.Date;
  * A cell can hold 5 different types of raw data:
  * <ol>
  * <li><b>Varchar</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
- * <li><b>Integer</b>s, which can hold any signed 64-bit integers.</li>
+ * <li><b>SInt64</b>s, which can hold any signed 64-bit integers.</li>
  * <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
  * <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
  * <li><b>Boolean</b>s, which can hold a true/false value. </li>
  * </ol>
+ * Immutable once created.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
@@ -32,93 +33,93 @@ public class Cell
     /**
      * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
      *
-     * @param value The string to encode and store.
+     * @param varcharValue The string to encode and store.
      */
-    public Cell(String value)
+    public Cell(String varcharValue)
     {
-        if (value == null)
+        if (varcharValue == null)
         {
             throw new IllegalArgumentException("String value cannot be NULL.");
         }
 
-        final ByteString varcharByteString = ByteString.copyFromUtf8(value);
+        final ByteString varcharByteString = ByteString.copyFromUtf8(varcharValue);
         this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
     }
 
     /**
      * Creates a new "Varchar" cell from the provided BinaryValue.
      *
-     * @param value The BinaryValue to store.
+     * @param varcharValue The BinaryValue to store.
      */
-    public Cell(BinaryValue value)
+    public Cell(BinaryValue varcharValue)
     {
-        if (value == null)
+        if (varcharValue == null)
         {
             throw new IllegalArgumentException("BinaryValue value cannot be NULL.");
         }
 
-        final ByteString varcharByteString = ByteString.copyFrom(value.getValue());
+        final ByteString varcharByteString = ByteString.copyFrom(varcharValue.getValue());
         this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
     }
 
     /**
      * Creates a new "Integer" Cell from the provided long.
      *
-     * @param value The long to store.
+     * @param sint64Value The long to store.
      */
-    public Cell(long value)
+    public Cell(long sint64Value)
     {
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setSint64Value(value).build();
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setSint64Value(sint64Value).build();
     }
 
     /**
      * Creates a new double cell.
      *
-     * @param value The double to store.
+     * @param doubleValue The double to store.
      */
-    public Cell(double value)
+    public Cell(double doubleValue)
     {
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setDoubleValue(value).build();
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setDoubleValue(doubleValue).build();
     }
 
     /**
      * Creates a new "Boolean" Cell from the provided boolean.
      *
-     * @param value The boolean to store.
+     * @param booleanValue The boolean to store.
      */
-    public Cell(boolean value)
+    public Cell(boolean booleanValue)
     {
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setBooleanValue(value).build();
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setBooleanValue(booleanValue).build();
     }
 
     /**
      * Creates a new "Timestamp" Cell from the provided Calendar, by fetching the current time in milliseconds.
      *
-     * @param value The Calendar to fetch the timestamp from.
+     * @param timestampValue The Calendar to fetch the timestamp from.
      */
-    public Cell(Calendar value)
+    public Cell(Calendar timestampValue)
     {
-        if (value == null)
+        if (timestampValue == null)
         {
             throw new IllegalArgumentException("Calendar object for timestamp value cannot be NULL.");
         }
 
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(value.getTimeInMillis()).build();
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(timestampValue.getTimeInMillis()).build();
     }
 
     /**
      * Creates a new "Timestamp" Cell from the provided Date, by fetching the current time in milliseconds.
      *
-     * @param value The Date to fetch the timestamp from.
+     * @param timestampValue The Date to fetch the timestamp from.
      */
-    public Cell(Date value)
+    public Cell(Date timestampValue)
     {
-        if (value == null)
+        if (timestampValue == null)
         {
             throw new IllegalArgumentException("Date object for timestamp value cannot be NULL.");
         }
 
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(value.getTime()).build();
+        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(timestampValue.getTime()).build();
     }
 
     Cell(RiakTsPB.TsCell pbCell)
@@ -129,12 +130,12 @@ public class Cell
     /**
      * Creates a new "Timestamp" cell from the provided raw value.
      *
-     * @param value The epoch timestamp, including milliseconds.
+     * @param rawTimestampValue The epoch timestamp, including milliseconds.
      * @return The new timestamp Cell.
      */
-    public static Cell newTimestamp(long value)
+    public static Cell newTimestamp(long rawTimestampValue)
     {
-        final RiakTsPB.TsCell tsCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(value).build();
+        final RiakTsPB.TsCell tsCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(rawTimestampValue).build();
         return new Cell(tsCell);
     }
 
@@ -171,11 +172,6 @@ public class Cell
     public BinaryValue getVarcharValue()
     {
         return BinaryValue.unsafeCreate(pbCell.getVarcharValue().toByteArray());
-    }
-
-    public byte[] getVarcharUnsafe()
-    {
-        return pbCell.getVarcharValue().toByteArray();
     }
 
     public long getLong()

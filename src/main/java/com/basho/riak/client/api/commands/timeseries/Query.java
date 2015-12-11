@@ -42,6 +42,9 @@ public class Query extends RiakCommand<QueryResult, String>
                                            .build();
     }
 
+    /**
+     * Used to construct a Time Series Query command.
+     */
     public static class Builder
     {
         private static final Logger logger = LoggerFactory.getLogger(Query.Builder.class);
@@ -51,6 +54,10 @@ public class Query extends RiakCommand<QueryResult, String>
         private final Map<String, BinaryValue> interpolations = new HashMap<String, BinaryValue>();
         private final Set<String> knownParams;
 
+        /**
+         * Construct a Builder for a Time Series Query command.
+         * @param queryText Required. The query to run.
+         */
         public Builder(String queryText)
         {
             if (queryText == null || queryText.isEmpty())
@@ -94,6 +101,10 @@ public class Query extends RiakCommand<QueryResult, String>
             }
         }
 
+        /**
+         * Construct a Time Series Query object.
+         * @return a new Time Series Query instance.
+         */
         public Query build()
         {
             return new Query(this);
