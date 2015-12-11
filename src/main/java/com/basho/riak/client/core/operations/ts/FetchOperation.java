@@ -6,7 +6,6 @@ import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -71,20 +70,20 @@ public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGe
     public static class Builder
     {
         private final String tableName;
-        private final Collection<Cell> keyValues;
+        private final Iterable<Cell> keyValues;
 
         private final RiakTsPB.TsGetReq.Builder reqBuilder = RiakTsPB.TsGetReq.newBuilder();
 
-        public Builder(String tableName, Collection<Cell> keyValues)
+        public Builder(String tableName, Iterable<Cell> keyValues)
         {
             if (tableName == null || tableName.length() == 0)
             {
                 throw new IllegalArgumentException("Table Name cannot be null or an empty string.");
             }
 
-            if (keyValues == null || keyValues.size() == 0)
+            if (keyValues == null || !keyValues.iterator().hasNext())
             {
-                throw new IllegalArgumentException("Key Values cannot be null or an empty list.");
+                throw new IllegalArgumentException("Key Values cannot be null or an empty.");
             }
 
             this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));

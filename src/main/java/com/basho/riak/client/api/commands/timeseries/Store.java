@@ -56,6 +56,7 @@ public class Store extends RiakCommand<Void,String>
     public static class Builder
     {
         private final String tableName;
+        // TODO: Think about introducing kinda flatteringItarable
         private final List<Row> rows = new LinkedList<Row>();
 
         /**
@@ -83,9 +84,17 @@ public class Store extends RiakCommand<Void,String>
          * @param rows Required. The rows to add.
          * @return a reference to this object.
          */
-        public Builder withRows(Collection<Row> rows)
+        public Builder withRows(Iterable<Row> rows)
         {
-            this.rows.addAll(rows);
+            if (rows instanceof Collection)
+            {
+                this.rows.addAll((Collection<Row>) rows);
+            } else {
+                // A bit weird but have no other ideas
+                for (Row r : rows) {
+                    this.rows.add(r);
+                }
+            }
             return this;
         }
 

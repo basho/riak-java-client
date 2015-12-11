@@ -8,8 +8,6 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
  * Time Series Delete Command
  * Allows you to delete a single time series row by its key values.
@@ -56,7 +54,7 @@ public class Delete extends RiakCommand<Void, String>
     public static class Builder
     {
         private final String tableName;
-        private final List<Cell> keyValues;
+        private final Iterable<Cell> keyValues;
         private int timeout;
 
         /**
@@ -65,16 +63,16 @@ public class Delete extends RiakCommand<Void, String>
          * @param keyValues Required. The cells that make up the key that identifies which row to delete.
          *                  Must be in the same order as the table definition.
          */
-        public Builder(String tableName, List<Cell> keyValues)
+        public Builder(String tableName, Iterable<Cell> keyValues)
         {
             if (tableName == null || tableName.length() == 0)
             {
                 throw new IllegalArgumentException("Table Name cannot be null or an empty string.");
             }
 
-            if (keyValues == null || keyValues.size() == 0)
+            if (keyValues == null || !keyValues.iterator().hasNext())
             {
-                throw new IllegalArgumentException("Key Values cannot be null or an empty list.");
+                throw new IllegalArgumentException("Key Values cannot be null or an empty.");
             }
 
             this.tableName = tableName;
