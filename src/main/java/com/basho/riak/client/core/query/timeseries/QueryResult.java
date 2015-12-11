@@ -14,7 +14,7 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class QueryResult
+public class QueryResult implements Iterable<Row>
 {
     public static final QueryResult EMPTY = new QueryResult();
     private final Iterable<RiakTsPB.TsRow> pbRows;
