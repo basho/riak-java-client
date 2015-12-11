@@ -224,7 +224,7 @@
                                 </relocation>
                                 <relocation>
                                     <pattern>com.basho.riak.protobuf</pattern>
-                                    <shadedPattern>shaded.com.bash.riak.protobuf</shadedPattern>
+                                    <shadedPattern>shaded.com.basho.riak.protobuf</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

@@ -24,6 +24,8 @@ import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.IndexConve
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +110,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
-        private Charset charset = Charset.defaultCharset();
+        private Charset charset = DefaultCharset.get();
 
         public Init(Namespace namespace, String indexName, S start, S end)
         {

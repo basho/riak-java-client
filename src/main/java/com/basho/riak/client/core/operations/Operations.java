@@ -21,17 +21,29 @@ import com.basho.riak.client.core.RiakMessage;
 public class Operations
 {
 
-	public static void checkMessageType(RiakMessage msg, byte expected)
-	{
-		byte pbMessageCode = msg.getCode();
-		if (pbMessageCode != expected)
-		{
-			throw new IllegalStateException("Wrong response; expected "
-				+ expected
-				+ " received " + pbMessageCode);
-		}
+    public static void checkMessageType(RiakMessage msg, byte expected)
+    {
+        byte pbMessageCode = msg.getCode();
+        if (pbMessageCode != expected)
+        {
+            final short unsignedBytePbMessageCode = getUnsignedByteValue(pbMessageCode);
+            throw new IllegalStateException("Wrong response; expected "
+                + expected
+                + " received " + unsignedBytePbMessageCode);
+        }
 
-	}
+    }
+
+    /**
+     * Convert a Java signed byte to unsigned.
+     * Returns the unsigned value as a (signed) short.
+     * @param b a java signed byte
+     * @return a short containing the converted value.
+     */
+    public static short getUnsignedByteValue(byte b)
+    {
+        return (short)(b & 0xFF);
+    }
 
     /**
      * Convert a Java signed int to unsigned.

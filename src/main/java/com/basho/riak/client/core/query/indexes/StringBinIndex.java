@@ -17,6 +17,8 @@ package com.basho.riak.client.core.query.indexes;
 
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
 import java.nio.charset.Charset;
 
 /**
@@ -66,7 +68,7 @@ public class StringBinIndex extends RiakIndex<String>
     
     public static Name named(String name)
     {
-        return named(name, Charset.defaultCharset());
+        return named(name, DefaultCharset.get());
     }
     
     public static Name named(String name, Charset charset)
@@ -88,7 +90,7 @@ public class StringBinIndex extends RiakIndex<String>
          */
         Name(String name)
         {
-            this(name, Charset.defaultCharset());
+            this(name, DefaultCharset.get());
         }
         /**
          * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
