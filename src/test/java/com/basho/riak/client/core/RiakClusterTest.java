@@ -18,7 +18,6 @@ package com.basho.riak.client.core;
 import com.google.protobuf.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.verification.VerificationMode;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -26,13 +25,10 @@ import org.powermock.reflect.Whitebox;
 
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 
@@ -162,6 +158,7 @@ public class RiakClusterTest
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void nodeOperationQueue() throws Exception
     {
         final int OPERATION_QUEUE_MAX_SIZE = 2;

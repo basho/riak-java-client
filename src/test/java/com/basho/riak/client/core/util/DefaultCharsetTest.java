@@ -101,11 +101,12 @@ public class DefaultCharsetTest
 
     private Method getInitializeDefaultCharsetSingletonMethod() throws NoSuchMethodException
     {
-        Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton", null);
+        Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton", (Class<?>)null);
         staticInitializer.setAccessible(true);
         return staticInitializer;
     }
 
+    @SuppressWarnings("unchecked")
     private AtomicReference<Charset> getCurrentCharsetFromDefaultCharsetInstance(DefaultCharset
                                                                                          initializedDefaultCharset)
             throws NoSuchFieldException, IllegalAccessException
