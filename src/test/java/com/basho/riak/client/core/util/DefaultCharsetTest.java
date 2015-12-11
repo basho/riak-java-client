@@ -101,7 +101,7 @@ public class DefaultCharsetTest
 
     private Method getInitializeDefaultCharsetSingletonMethod() throws NoSuchMethodException
     {
-        Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton", (Class<?>)null);
+        Method staticInitializer = DefaultCharset.class.getDeclaredMethod("initializeDefaultCharsetSingleton");
         staticInitializer.setAccessible(true);
         return staticInitializer;
     }
