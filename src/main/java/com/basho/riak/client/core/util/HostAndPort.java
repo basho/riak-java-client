@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * An immutable representation of a host and port.
  *
- * Note: Has been introduced introduced to reduce the amount of 3rd party dependencies such as guava
+ * Note: Introduced  to reduce the amount of 3rd party dependencies such as guava
  *       (http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/net/HostAndPort.html).
  *
  * @author Sergey Galkin <srggal at gmail dot com>

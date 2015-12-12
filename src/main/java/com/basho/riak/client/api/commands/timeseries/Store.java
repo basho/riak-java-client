@@ -5,8 +5,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Row;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -25,8 +23,6 @@ import java.util.List;
  */
 public class Store extends RiakCommand<Void,String>
 {
-    private static final Logger logger = LoggerFactory.getLogger(Store.class);
-
     private final Builder builder;
 
     private Store (Builder builder)

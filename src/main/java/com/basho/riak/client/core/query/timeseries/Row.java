@@ -19,7 +19,7 @@ public class Row implements Iterable<Cell>
      * Create a new row.
      * @param cells the collection of cells that make up the row.
      */
-    public Row(Collection<Cell> cells)
+    public Row(Iterable<Cell> cells)
     {
         final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
 

@@ -5,8 +5,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Time Series Delete Command
@@ -18,7 +16,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Delete extends RiakCommand<Void, String>
 {
-    private static final Logger logger = LoggerFactory.getLogger(Delete.class);
     private final Builder builder;
 
     private Delete(Builder builder)
