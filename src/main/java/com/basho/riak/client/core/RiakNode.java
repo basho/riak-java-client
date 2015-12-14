@@ -1310,13 +1310,6 @@ public class RiakNode implements RiakResponseListener
          * Set the minimum number of active connections to maintain.
          * These connections are exempt from the idle timeout.
          *
-         * <p>
-         * It is recommended that the number of minimum connections is >= 3.
-         * This is to allow free connections for the Retry Queue Worker,
-         * the Operation Queue Drain Worker, and asynchronous update commands
-         * as needed without blocking when the node is in a low number of connections state.
-         * </p>
-         *
          * @param minConnections - number of connections to maintain.
          * @return this
          * @see #DEFAULT_MIN_CONNECTIONS
