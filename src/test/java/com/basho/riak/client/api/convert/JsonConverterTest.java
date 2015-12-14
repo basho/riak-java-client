@@ -32,8 +32,10 @@ import com.basho.riak.client.api.cap.BasicVClock;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.convert.Converter.OrmExtracted;
 import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.links.RiakLink;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -93,14 +95,14 @@ public class JsonConverterTest
         RiakObject o = jc.fromDomain(pojo, null, null).getRiakObject();
         
         String json = o.getValue().toString();
-        assertTrue(fieldExistsInJson(json,"key"));
-        assertTrue(fieldExistsInJson(json,"bucketName"));
-        assertTrue(fieldExistsInJson(json,"bucketType"));
-        assertTrue(fieldExistsInJson(json,"metadata"));
-        assertTrue(fieldExistsInJson(json,"index"));
-        assertTrue(fieldExistsInJson(json,"links"));
-        assertTrue(fieldExistsInJson(json,"vclock"));
-        assertTrue(fieldExistsInJson(json,"tombstone"));
+        assertTrue(fieldExistsInJson(json, "key"));
+        assertTrue(fieldExistsInJson(json, "bucketName"));
+        assertTrue(fieldExistsInJson(json, "bucketType"));
+        assertTrue(fieldExistsInJson(json, "metadata"));
+        assertTrue(fieldExistsInJson(json, "index"));
+        assertTrue(fieldExistsInJson(json, "links"));
+        assertTrue(fieldExistsInJson(json, "vclock"));
+        assertTrue(fieldExistsInJson(json, "tombstone"));
 
         assertTrue(fieldExistsInJson(json, "value"));
 
@@ -117,14 +119,14 @@ public class JsonConverterTest
         RiakObject o = jc.fromDomain(pojo, null, null).getRiakObject();
         
         String json = o.getValue().toString();
-        assertFalse(fieldExistsInJson(json,"key"));
-        assertFalse(fieldExistsInJson(json,"bucketName"));
-        assertFalse(fieldExistsInJson(json,"bucketType"));
-        assertFalse(fieldExistsInJson(json,"usermeta"));
-        assertFalse(fieldExistsInJson(json,"index"));
-        assertFalse(fieldExistsInJson(json,"links"));
-        assertFalse(fieldExistsInJson(json,"vclock"));
-        assertFalse(fieldExistsInJson(json,"tombstone"));
+        assertFalse(fieldExistsInJson(json, "key"));
+        assertFalse(fieldExistsInJson(json, "bucketName"));
+        assertFalse(fieldExistsInJson(json, "bucketType"));
+        assertFalse(fieldExistsInJson(json, "usermeta"));
+        assertFalse(fieldExistsInJson(json, "index"));
+        assertFalse(fieldExistsInJson(json, "links"));
+        assertFalse(fieldExistsInJson(json, "vclock"));
+        assertFalse(fieldExistsInJson(json, "tombstone"));
 
         assertTrue(fieldExistsInJson(json, "value"));
 
@@ -140,14 +142,14 @@ public class JsonConverterTest
         RiakObject o = jc.fromDomain(pojo, null, null).getRiakObject();
         
         String json = o.getValue().toString();
-        assertTrue(fieldExistsInJson(json,"key"));
-        assertTrue(fieldExistsInJson(json,"bucketName"));
-        assertTrue(fieldExistsInJson(json,"bucketType"));
-        assertTrue(fieldExistsInJson(json,"usermeta"));
-        assertTrue(fieldExistsInJson(json,"index"));
-        assertTrue(fieldExistsInJson(json,"links"));
-        assertTrue(fieldExistsInJson(json,"vclock"));
-        assertTrue(fieldExistsInJson(json,"tombstone"));
+        assertTrue(fieldExistsInJson(json, "key"));
+        assertTrue(fieldExistsInJson(json, "bucketName"));
+        assertTrue(fieldExistsInJson(json, "bucketType"));
+        assertTrue(fieldExistsInJson(json, "usermeta"));
+        assertTrue(fieldExistsInJson(json, "index"));
+        assertTrue(fieldExistsInJson(json, "links"));
+        assertTrue(fieldExistsInJson(json, "vclock"));
+        assertTrue(fieldExistsInJson(json, "tombstone"));
         
         assertTrue(fieldExistsInJson(json, "value"));
 
@@ -198,6 +200,18 @@ public class JsonConverterTest
         assertEquals(123, convertedPojo.lastModified.longValue());
         assertEquals("vtag", convertedPojo.vtag);
         
+    }
+
+    @Test
+    public void convertSimpleTypes()
+    {
+        JSONConverter<String> jcs = new JSONConverter<String>(new TypeReference<String>() {});
+        OrmExtracted tested = jcs.fromDomain("Foobar", new Namespace("asdf"), BinaryValue.create("asdf"));
+        assertEquals("\"Foobar\"", tested.getRiakObject().getValue().toStringUtf8());
+
+        JSONConverter<Integer> jci = new JSONConverter<Integer>(new TypeReference<Integer>() {});
+        tested = jci.fromDomain(42, new Namespace("asdf"), BinaryValue.create("asdf"));
+        assertEquals("42", tested.getRiakObject().getValue().toStringUtf8());
     }
     
     

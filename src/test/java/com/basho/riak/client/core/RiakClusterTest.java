@@ -18,7 +18,6 @@ package com.basho.riak.client.core;
 import com.google.protobuf.Message;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.verification.VerificationMode;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -26,12 +25,10 @@ import org.powermock.reflect.Whitebox;
 
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 
@@ -39,6 +36,7 @@ import static org.mockito.Mockito.*;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(FutureOperation.class)
@@ -50,6 +48,44 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = new RiakNode.Builder();
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
         assertTrue(!cluster.getNodes().isEmpty());
+    }
+
+    @Test
+    public void buildClusterFromString() throws UnknownHostException
+    {
+        final int minConnections = 111;
+        final int maxConnections = 222;
+        final int defaultPort = 9999;
+        final int nonDefaultPort = 8888;
+
+        final RiakNode.Builder nodeBuilder = new RiakNode.Builder()
+                .withRemotePort(defaultPort)
+                .withMinConnections(minConnections)
+                .withMaxConnections(maxConnections);
+
+
+        final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, "localhost:"+ nonDefaultPort +", 10.0.0.1").build();
+
+        final List<RiakNode> nodes = cluster.getNodes();
+        assertEquals(2, nodes.size());
+
+        for (RiakNode n: nodes)
+        {
+            assertEquals(minConnections, n.getMinConnections());
+            assertEquals(maxConnections, n.getMaxConnections());
+
+            if ("localhost".equals(n.getRemoteAddress())){
+                assertEquals(nonDefaultPort, n.getPort());
+            }
+            else if ("10.0.0.1".equals(n.getRemoteAddress()))
+            {
+                assertEquals(defaultPort, n.getPort());
+            }
+            else
+            {
+                fail("unexpected remoteAddress '" + n.getRemoteAddress() + "'");
+            }
+        }
     }
     
     @Test
@@ -122,6 +158,7 @@ public class RiakClusterTest
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void nodeOperationQueue() throws Exception
     {
         final int OPERATION_QUEUE_MAX_SIZE = 2;
@@ -197,7 +234,7 @@ public class RiakClusterTest
         assertTrue(queueEnabled);
         assertEquals((long)expectedQueueSize, operationQueue.size());
         assertEquals(expectedClusterState, state);
-        if(expectedQueueHead != null)
+        if (expectedQueueHead != null)
         {
             assertEquals(expectedQueueHead, operationQueue.peek());
         }
