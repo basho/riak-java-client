@@ -41,6 +41,8 @@ This client is published to Maven Central and can be included in your project by
 </dependencies>
 ```
 
+All-in-one jar builds are available [here](http://riak-java-client.s3.amazonaws.com/index.html) for those that don't want to set up a maven project.
+
 ## Documentation
 
 * Develop: [![Build Status](https://travis-ci.org/basho/riak-java-client.svg?branch=develop)](https://travis-ci.org/basho/riak-java-client)
