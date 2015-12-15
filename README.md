@@ -14,7 +14,7 @@ latency. Both Riak and this code is maintained by [Basho](http://www.basho.com/)
     * [Getting started with the 2.0 client](#getting-started-with-the-2.0-client)
     * [Getting Data In](#getting-data-in)
     * [Getting Data Out](#getting-data-out)
-    * [Using 2.0 Data Types)](#using-2.0-data-types)
+    * [Using 2.0 Data Types](#using-2.0-data-types)
     * [RiakCommand Subclasses](#riakcommand-subclasses)
 
 ## Installation
@@ -188,7 +188,7 @@ UpdateMap update = new UpdateMap.Builder(location, mu).build();
 client.execute(update);
 ```
 
- ### RiakCommand Subclasses
+### RiakCommand Subclasses
 
  <h4>Fetching, storing and deleting objects</h4>
  <ul>
