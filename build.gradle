@@ -213,7 +213,11 @@ artifactory {
         }
     }
     resolve {
-        repoKey = 'jcenter'
+        repository {
+            repoKey = 'libs-snapshot-local'
+            username = "$artifactoryUser"
+            password = "$artifactoryPass"
+        }
     }
     if (buildName) {
         clientConfig.info.buildName = buildName
