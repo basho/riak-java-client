@@ -214,7 +214,7 @@ artifactory {
     }
     resolve {
         repository {
-            repoKey = 'libs-snapshot-local'
+            repoKey = 'libs-snapshot'
             username = "$artifactoryUser"
             password = "$artifactoryPass"
         }
