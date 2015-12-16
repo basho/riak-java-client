@@ -1,7 +1,8 @@
 Release Notes
 =============
 
-* 2.0.3 - Following issues / PRs addressed:
+### 2.0.3
+Following issues / PRs addressed:
  * [Time Series support](https://github.com/basho/riak-java-client/pull/543)
  * [Upgrade Netty to 4.0.33](https://github.com/basho/riak-java-client/pull/581)
  * [Add HostAndPort class - Simplify Cluster Creation](https://github.com/basho/riak-java-client/pull/577)
@@ -11,7 +12,8 @@ Release Notes
  * [Typo in shaded package name](https://github.com/basho/riak-java-client/pull/555)
  * Deprecated Java 6 Support
 
-* 2.0.2 - Following issues / PRs addressed:
+### 2.0.2
+Following issues / PRs addressed:
  * [Option to temporarily queue commands when maxConnections is reached](https://github.com/basho/riak-java-client/issues/510)
  * [Made mocking easier with K/V commands](https://github.com/basho/riak-java-client/pull/528)
  * [Improved JavaDocs for Search and MapReduce](https://github.com/basho/riak-java-client/pull/524)
