@@ -1,4 +1,23 @@
-## Riak Java client v2.0
+Riak Java Client
+==================
+
+**Riak Java Client** is a client which makes it easy to communicate with [Riak](http://basho.com/riak/), an open source, distributed database that focuses on high availability, horizontal scalability, and *predictable*
+latency. Both Riak and this code is maintained by [Basho](http://www.basho.com/).
+
+1. [Installation](#installation)
+2. [Documentation](#documentation)
+3. [Contributing](#contributing)
+	* [An honest disclaimer](#an-honest-disclaimer)
+4. [Roadmap](#roadmap)
+5. [License and Authors](#license-and-authors)
+6. [2.0 Overview](#20-overview)
+    * [Getting started with the 2.0 client](#getting-started-with-the-20-client)
+    * [Getting Data In](#getting-data-in)
+    * [Getting Data Out](#getting-data-out)
+    * [Using 2.0 Data Types](#using-20-data-types)
+    * [RiakCommand Subclasses](#riakcommand-subclasses)
+
+## Installation
 
 This branch of the Riak Java Client is for the new v2.0 client, to be used with 
  Riak 2.0.
@@ -16,23 +35,80 @@ This client is published to Maven Central and can be included in your project by
   <dependency>
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.3</version>
   </dependency>
   ...
 </dependencies>
 ```
 
-## Overview
+All-in-one jar builds are available [here](http://riak-java-client.s3.amazonaws.com/index.html) for those that don't want to set up a maven project.
+
+## Documentation
+
+* Develop: [![Build Status](https://travis-ci.org/basho/riak-java-client.svg?branch=develop)](https://travis-ci.org/basho/riak-java-client)
+
+Most documentation is living in the [wiki](https://github.com/basho/riak-java-client/wiki). For specifics on our progress here, see the [release notes](https://github.com/basho/riak-java-client/blob/master/RELNOTES.md). 
+
+Also see [the Javadoc site](http://basho.github.io/riak-java-client/) for more in-depth API docs.
+
+
+## Contributing
+
+To build the Riak Java Client, you must have the correct version of the riak_pb dependency installed to your local Maven repository.  
+
+```
+git clone https://github.com/basho/riak_pb
+git checkout java-2.1.1.0
+mvn clean install
+```
+
+This repository's maintainers are engineers at Basho and we welcome your contribution to the project! Review the details in [CONTRIBUTING.md](CONTRIBUTING.md) in order to give back to this project.
+
+### An honest disclaimer
+
+Due to our obsession with stability and our rich ecosystem of users, community updates on this repo may take a little longer to review. 
+
+The most helpful way to contribute is by reporting your experience through issues. Issues may not be updated while we review internally, but they're still incredibly appreciated.
+
+Thank you for being part of the community! We love you for it. 
+
+
+## Roadmap
+
+TODO
+
+## License and Authors
+**The Riak Java** Client is Open Source software released under the Apache 2.0 License. Please see the [LICENSE](LICENSE) file for full license details.
+
+* Author: [Alex Moore](https://github.com/alexmoore)
+* Author: [Brian Roach](https://github.com/broach)
+* Author: [Chris Mancini](https://github.com/christophermancini)
+* Author: [David Rusek](https://github.com/mgodave)
+* Author: [Sergey Galkin](https://github.com/srgg)
+
+
+## Contributors
+
+Thank you to all of our contributors! If your name is missing please let us know.
+
+* [Cesar Alvernaz](https://github.com/calvernaz)
+* [Cosmin Marginean](https://github.com/cosmink)
+* [Justin Plock](https://github.com/jplock)
+* [Vitaly](https://github.com/empovit)
+* [Zack Manning](https://github.com/zero1zero)
+
+
+## 2.0 Overview
 
 Version 2.0 of the Riak Java client is a completely new codebase. It relies on 
 Netty4 in the core for handling network operations and all operations can
 be executed synchronously or asynchronously. 
 
-## Getting started with the 2.0 client.
+### Getting started with the 2.0 client
 
 The new client is designed to model a Riak cluster:
 
-![RJC model](http://brianroach.info/blog/wp-content/uploads/2013/10/RJC2.png)
+![RJC model](http://basho.github.io/riak-java-client/2.0.3/com/basho/riak/client/api/doc-files/client-image.png)
 
 The easiest way to get started with the client is using one of the static 
 methods provided to instantiate and start the client:
@@ -69,7 +145,7 @@ packages are built then executed by the client.
 Some basic examples of building and executing these commands is shown
 below.
 
-## Getting Data In
+### Getting Data In
 
 ```java
 Namespace ns = new Namespace("default", "my_bucket");
@@ -82,7 +158,7 @@ StoreValue store = new StoreValue.Builder(riakObject)
 client.execute(store);
 ```
 
-## Getting Data Out
+### Getting Data Out
 
 ```java
 Namespace ns = new Namespace("default","my_bucket");
@@ -92,7 +168,7 @@ FetchValue.Response response = client.execute(fv);
 RiakObject obj = response.getValue(RiakObject.class);
 ```
 
-## Using 2.0 Data Types (Maps & Registers)
+### Using 2.0 Data Types
 
 A [bucket type](http://docs.basho.com/riak/latest/dev/advanced/bucket-types) must be created (in all local and remote clusters) before 2.0
 data types can be used.  In the example below, it is assumed that the type
@@ -114,7 +190,8 @@ UpdateMap update = new UpdateMap.Builder(location, mu).build();
 client.execute(update);
 ```
 
- <h1>RiakCommand subclasses</h1>
+### RiakCommand Subclasses
+
  <h4>Fetching, storing and deleting objects</h4>
  <ul>
  <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/kv/FetchValue.html" title="class in com.basho.riak.client.api.commands.kv"><code>FetchValue</code></a></li>
