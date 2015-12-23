@@ -68,8 +68,7 @@ Due to our obsession with stability and our rich ecosystem of users, community u
 
 The most helpful way to contribute is by reporting your experience through issues. Issues may not be updated while we review internally, but they're still incredibly appreciated.
 
-Thank you for being part of the community! We love you for it. 
-
+Thank you for being part of the community!
 
 ## Roadmap
 
@@ -83,7 +82,6 @@ TODO
 * Author: [Chris Mancini](https://github.com/christophermancini)
 * Author: [David Rusek](https://github.com/mgodave)
 * Author: [Sergey Galkin](https://github.com/srgg)
-
 
 ## Contributors
 
