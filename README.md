@@ -1,8 +1,8 @@
 Riak Java Client
 ==================
 
-**Riak Java Client** is a client which makes it easy to communicate with [Riak](http://basho.com/riak/), an open source, distributed database that focuses on high availability, horizontal scalability, and *predictable*
-latency. Both Riak and this code is maintained by [Basho](http://www.basho.com/).
+The **Riak Java Client** enables communication with [Riak](http://basho.com/riak/), an open source, distributed database that focuses on high availability, horizontal scalability, and *predictable*
+latency. Both Riak and this code are maintained by [Basho](http://www.basho.com/).
 
 1. [Installation](#installation)
 2. [Documentation](#documentation)
@@ -19,8 +19,7 @@ latency. Both Riak and this code is maintained by [Basho](http://www.basho.com/)
 
 ## Installation
 
-This branch of the Riak Java Client is for the new v2.0 client, to be used with 
- Riak 2.0.
+This branch of the Riak Java Client is for the new v2.0 client, to be used with Riak 2.0.
 
 Previous versions:
 
@@ -50,7 +49,6 @@ All-in-one jar builds are available [here](http://riak-java-client.s3.amazonaws.
 Most documentation is living in the [wiki](https://github.com/basho/riak-java-client/wiki). For specifics on our progress here, see the [release notes](https://github.com/basho/riak-java-client/blob/master/RELNOTES.md). 
 
 Also see [the Javadoc site](http://basho.github.io/riak-java-client/) for more in-depth API docs.
-
 
 ## Contributing
 
@@ -96,7 +94,6 @@ Thank you to all of our contributors! If your name is missing please let us know
 * [Justin Plock](https://github.com/jplock)
 * [Vitaly](https://github.com/empovit)
 * [Zack Manning](https://github.com/zero1zero)
-
 
 ## 2.0 Overview
 
@@ -240,4 +237,3 @@ client.execute(update);
  <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/mapreduce/IndexMapReduce.html" title="class in com.basho.riak.client.api.commands.mapreduce"><code>IndexMapReduce</code></a></li>
  <li><a href="http://basho.github.io/riak-java-client/2.0.0/com/basho/riak/client/api/commands/mapreduce/SearchMapReduce.html" title="class in com.basho.riak.client.api.commands.mapreduce"><code>SearchMapReduce</code></a></li>
  </ul>
-
