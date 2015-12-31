@@ -19,6 +19,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
@@ -322,17 +323,17 @@ public abstract class ITestBase
     {
         if(resultFuture.cause() == null)
         {
-            assertTrue(resultFuture.isSuccess());
+            assertEquals(true, resultFuture.isSuccess());
         }
         else
         {
-            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
+            assertEquals(resultFuture.cause().getMessage(), true, resultFuture.isSuccess());
         }
     }
 
-    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture, Class<?> expectedExceptionClass)
+    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture)
     {
         assertEquals(false, resultFuture.isSuccess());
-        assertEquals(resultFuture.cause().getClass(), expectedExceptionClass);
+        assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
     }
 }

@@ -85,6 +85,8 @@ public abstract class ITestTsBase extends ITestBase
         final RiakClient client = new RiakClient(cluster);
         final RiakFuture<QueryResult, String> future = client.executeAsync(builder.build());
 
+        future.await();
+
         assertFutureSuccess(future);
         return future.get();
     }

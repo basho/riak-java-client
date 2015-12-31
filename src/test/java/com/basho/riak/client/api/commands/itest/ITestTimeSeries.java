@@ -46,22 +46,23 @@ public class ITestTimeSeries extends ITestTsBase
 {
     private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
 
+    private final static String CreateTableTemplate =
+        "CREATE TABLE %s ( " +
+        "geohash varchar not null, " +
+        "user varchar not null, " +
+        "time timestamp not null, " +
+        "weather varchar not null, " +
+        "temperature double, " +
+        "uv_index sint64, " +
+        "observed boolean not null, " +
+        "PRIMARY KEY((geohash, user, quantum(time, 15, 'm')), geohash, user, time))";
+
     @Test
-    public void TestCreateTableAndChangeNVal() throws Exception
+    public void TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
     {
         RiakClient client = new RiakClient(cluster);
 
-        String createTableCommandString =
-            "CREATE TABLE " + this.tableName +
-            " ( " +
-            "   geohash varchar not null, " +
-            "   user varchar not null, " +
-            "   time timestamp not null, " +
-            "   weather varchar not null, " +
-            "   temperature double, " +
-            "   uv_index sint64, " +
-            "   observed boolean not null, " +
-            "   PRIMARY KEY((geohash, user, quantum(time, 15, 'm')), geohash, user, time))";
+        String createTableCommandString = String.format(CreateTableTemplate, this.tableName);
 
         Query create = new Query.Builder(createTableCommandString).build();
         final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
@@ -83,6 +84,20 @@ public class ITestTimeSeries extends ITestTsBase
         getBucketPropsFuture.await();
         assertFutureSuccess(getBucketPropsFuture);
         assertTrue(1 == getBucketPropsFuture.get().getBucketProperties().getNVal());
+    }
+
+    @Test
+    public void TestCreateBadTable() throws InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        String badCreateTable = String.format(CreateTableTemplate, this.tableName) + ")";
+        Query create = new Query.Builder(badCreateTable).build();
+        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
+
+        resultFuture.await();
+        assertFutureFailure(resultFuture);
+        System.out.println(((RiakResponseException)resultFuture.cause()).getCode());
     }
 
     @Test
@@ -220,7 +235,7 @@ public class ITestTimeSeries extends ITestTsBase
         RiakFuture<QueryResult, String> future = client.executeAsync(query);
 
         future.await();
-        assertFutureFailure(future, RiakResponseException.class);
+        assertFutureFailure(future);
     }
 
     @Test
@@ -234,7 +249,7 @@ public class ITestTimeSeries extends ITestTsBase
         RiakFuture<Void, String> future = client.executeAsync(store);
 
         future.await();
-        assertFutureFailure(future, RiakResponseException.class);
+        assertFutureFailure(future);
     }
 
     @Test
