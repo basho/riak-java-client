@@ -47,6 +47,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -312,5 +316,23 @@ public abstract class ITestBase
 
     public static Namespace defaultNamespace() {
         return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+    }
+
+    protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
+    {
+        if(resultFuture.cause() == null)
+        {
+            assertTrue(resultFuture.isSuccess());
+        }
+        else
+        {
+            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
+        }
+    }
+
+    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture, Class<?> expectedExceptionClass)
+    {
+        assertEquals(false, resultFuture.isSuccess());
+        assertEquals(resultFuture.cause().getClass(), expectedExceptionClass);
     }
 }

@@ -75,16 +75,17 @@ public abstract class ITestTsBase extends ITestBase
     protected static QueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException
     {
         final RiakFuture<QueryResult, String> future = cluster.execute(builder.build());
-        final QueryResult queryResult = future.get();
 
-        assertTrue(future.isSuccess());
-
-        return queryResult;
+        assertFutureSuccess(future);
+        return future.get();
     }
 
     protected static QueryResult executeQuery(Query.Builder builder) throws ExecutionException, InterruptedException
     {
         final RiakClient client = new RiakClient(cluster);
-        return client.execute(builder.build());
+        final RiakFuture<QueryResult, String> future = client.executeAsync(builder.build());
+
+        assertFutureSuccess(future);
+        return future.get();
     }
 }

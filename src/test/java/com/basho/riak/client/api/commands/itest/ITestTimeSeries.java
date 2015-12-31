@@ -67,27 +67,21 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
 
         resultFuture.await();
-        if(resultFuture.cause() != null)
-        {
-            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
-        }
-
+        assertFutureSuccess(resultFuture);
 
         final Namespace namespace = new Namespace(tableName, tableName);
         StoreBucketProperties storeBucketPropsCmd = new StoreBucketProperties.Builder(namespace).withNVal(1).build();
         final RiakFuture<Void, Namespace> storeBucketPropsFuture = client.executeAsync(storeBucketPropsCmd);
 
         storeBucketPropsFuture.await();
-        assertTrue(storeBucketPropsFuture.isSuccess());
-        assertNull(resultFuture.cause());
+        assertFutureSuccess(storeBucketPropsFuture);
 
         FetchBucketProperties fetchBucketPropsCmd = new FetchBucketProperties.Builder(namespace).build();
         final RiakFuture<FetchBucketPropsOperation.Response, Namespace> getBucketPropsFuture =
                 client.executeAsync(fetchBucketPropsCmd);
 
         getBucketPropsFuture.await();
-        assertTrue(getBucketPropsFuture.isSuccess());
-        assertNull(getBucketPropsFuture.cause());
+        assertFutureSuccess(getBucketPropsFuture);
         assertTrue(1 == getBucketPropsFuture.get().getBucketProperties().getNVal());
     }
 
@@ -101,9 +95,7 @@ public class ITestTimeSeries extends ITestTsBase
         RiakFuture<Void, String> execFuture = client.executeAsync(store);
 
         execFuture.await();
-        String errorMessage = execFuture.cause() != null? execFuture.cause().getMessage() : "";
-        assertNull(errorMessage, execFuture.cause());
-        assertEquals(true, execFuture.isSuccess());
+        assertFutureSuccess(execFuture);
     }
 
     @Test
@@ -116,8 +108,7 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<QueryResult, String> listKeysFuture = client.executeAsync(listKeys);
 
         listKeysFuture.await();
-        assertTrue(listKeysFuture.isSuccess());
-        assertNull(listKeysFuture.cause());
+        assertFutureSuccess(listKeysFuture);
 
         final QueryResult queryResult = listKeysFuture.get();
         assertTrue(queryResult.getRowsCount() > 0);
@@ -227,9 +218,9 @@ public class ITestTimeSeries extends ITestTsBase
 
         Query query = new Query.Builder(queryText).build();
         RiakFuture<QueryResult, String> future = client.executeAsync(query);
+
         future.await();
-        assertFalse(future.isSuccess());
-        assertEquals(future.cause().getClass(), RiakResponseException.class);
+        assertFutureFailure(future, RiakResponseException.class);
     }
 
     @Test
@@ -241,9 +232,9 @@ public class ITestTimeSeries extends ITestTsBase
         Store store = new Store.Builder("GeoChicken").withRow(row).build();
 
         RiakFuture<Void, String> future = client.executeAsync(store);
+
         future.await();
-        assertFalse(future.isSuccess());
-        assertEquals(future.cause().getClass(), RiakResponseException.class);
+        assertFutureFailure(future, RiakResponseException.class);
     }
 
     @Test
@@ -257,6 +248,7 @@ public class ITestTimeSeries extends ITestTsBase
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
+
         assertEquals(1, queryResult.getRowsCount());
         Row row = queryResult.getRowsCopy().get(0);
         assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
@@ -295,8 +287,7 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
-        assertTrue(deleteFuture.isSuccess());
-        assertNull(deleteFuture.cause());
+        assertFutureSuccess(deleteFuture);
 
         // Assert that the row is no longer with us
         Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
@@ -316,8 +307,7 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
-        assertTrue(deleteFuture.isSuccess());
-        assertNull(deleteFuture.cause());
+        assertFutureSuccess(deleteFuture);
     }
 
     @Test
@@ -330,8 +320,7 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(query);
 
         resultFuture.await();
-        assertTrue(resultFuture.isSuccess());
-        assertNull(resultFuture.cause());
+        assertFutureSuccess(resultFuture);
 
         final QueryResult tableDescription = resultFuture.get();
         assertEquals(7, tableDescription.getRowsCount());
