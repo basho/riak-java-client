@@ -10,7 +10,10 @@ import com.google.protobuf.ByteString;
 import java.util.List;
 
 /**
- * Created by alex on 1/5/16.
+ * An operation to query a table definition from Riak Time Series.
+ *
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.4
  */
 public class DescribeTableOperation extends PBFutureOperation<TableDefinition, RiakTsPB.TsQueryResp, String>
 {

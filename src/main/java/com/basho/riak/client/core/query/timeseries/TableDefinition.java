@@ -13,17 +13,40 @@ public class TableDefinition
     private final String tableName;
     private final List<FullColumnDescription> fullColumnDescriptions;
 
+    /**
+     * Create a new Table Definition
+     * @param tableName a Table Name, required.
+     * @param fullColumnDescriptions a list of FullColumnDescription that represents the columns in the table.
+     */
     public TableDefinition(String tableName, List<FullColumnDescription> fullColumnDescriptions)
     {
+        if(tableName == null || tableName.isEmpty())
+        {
+            throw new IllegalArgumentException("Table Name must not be null or empty.");
+        }
+
+        if(fullColumnDescriptions == null || fullColumnDescriptions.isEmpty())
+        {
+            throw new IllegalArgumentException("Full Column Descriptions List must not be null or empty.");
+        }
+
         this.tableName = tableName;
         this.fullColumnDescriptions = fullColumnDescriptions;
     }
 
+    /**
+     * Get the table name for this definition.
+     * @return a String table name.
+     */
     public String getTableName()
     {
         return tableName;
     }
 
+    /**
+     * Get the ordered list of full column descriptions for this definition.
+     * @return a List of the FullColumnDescription in this definition.
+     */
     public List<FullColumnDescription> getFullColumnDescriptions()
     {
         return fullColumnDescriptions;

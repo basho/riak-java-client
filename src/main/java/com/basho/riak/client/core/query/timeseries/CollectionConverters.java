@@ -84,9 +84,9 @@ public final class CollectionConverters
         final String name = cells.get(0).getVarcharAsUTF8String();
         final String typeString = cells.get(1).getVarcharAsUTF8String();
         final boolean isNullable = cells.get(2).getBoolean();
-        final boolean isPrimaryKeyMember = cells.get(3) != null;
+        final boolean isPartitionKeyMember = cells.get(3) != null;
         final boolean isLocalKeyMember = cells.get(4) != null;
-        final Integer primaryKeyOrdinal = isPrimaryKeyMember ? new Long(cells.get(3).getLong()).intValue() : null;
+        final Integer partitionKeyOrdinal = isPartitionKeyMember ? new Long(cells.get(3).getLong()).intValue() : null;
         final Integer localKeyOrdinal = isLocalKeyMember ? new Long(cells.get(4).getLong()).intValue() : null;
 
         final ColumnDescription.ColumnType type =
@@ -95,7 +95,7 @@ public final class CollectionConverters
         return new FullColumnDescription(name,
                                          type,
                                          isNullable,
-                                         primaryKeyOrdinal,
+                                         partitionKeyOrdinal,
                                          localKeyOrdinal);
     }
 }

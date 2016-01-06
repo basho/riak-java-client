@@ -13,6 +13,12 @@ public class ColumnDescription
     private final String name;
     private final ColumnType type;
 
+    /**
+     * Create a new ColumnDescription.
+     * @param name The name of the column. Required - must not be null or an empty string.
+     * @param type The type of the column. Required - must not be null.
+     * @throws IllegalArgumentException if Column Name or Column Type are null or empty.
+     */
     public ColumnDescription(String name, ColumnType type)
     {
         if(name == null || name.isEmpty())
@@ -29,11 +35,19 @@ public class ColumnDescription
         this.type = type;
     }
 
+    /**
+     * Get the Column Name.
+     * @return the column name String.
+     */
     public String getName()
     {
         return name;
     }
 
+    /**
+     * Get the Column Type.
+     * @return the ColumnType value.
+     */
     public ColumnType getType()
     {
         return type;
