@@ -19,6 +19,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
@@ -46,6 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -312,5 +317,23 @@ public abstract class ITestBase
 
     public static Namespace defaultNamespace() {
         return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+    }
+
+    protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
+    {
+        if(resultFuture.cause() == null)
+        {
+            assertEquals(true, resultFuture.isSuccess());
+        }
+        else
+        {
+            assertEquals(resultFuture.cause().getMessage(), true, resultFuture.isSuccess());
+        }
+    }
+
+    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture)
+    {
+        assertEquals(false, resultFuture.isSuccess());
+        assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
     }
 }

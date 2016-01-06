@@ -1,13 +1,18 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
+import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.timeseries.*;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.netty.RiakResponseException;
+import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
+import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
 import org.junit.Test;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -39,6 +44,62 @@ import static org.junit.Assert.*;
  */
 public class ITestTimeSeries extends ITestTsBase
 {
+    private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
+
+    private final static String CreateTableTemplate =
+        "CREATE TABLE %s ( " +
+        "geohash varchar not null, " +
+        "user varchar not null, " +
+        "time timestamp not null, " +
+        "weather varchar not null, " +
+        "temperature double, " +
+        "uv_index sint64, " +
+        "observed boolean not null, " +
+        "PRIMARY KEY((geohash, user, quantum(time, 15, 'm')), geohash, user, time))";
+
+    @Test
+    public void TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        String createTableCommandString = String.format(CreateTableTemplate, this.tableName);
+
+        Query create = new Query.Builder(createTableCommandString).build();
+        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
+
+        resultFuture.await();
+        assertFutureSuccess(resultFuture);
+
+        final Namespace namespace = new Namespace(tableName, tableName);
+        StoreBucketProperties storeBucketPropsCmd = new StoreBucketProperties.Builder(namespace).withNVal(1).build();
+        final RiakFuture<Void, Namespace> storeBucketPropsFuture = client.executeAsync(storeBucketPropsCmd);
+
+        storeBucketPropsFuture.await();
+        assertFutureSuccess(storeBucketPropsFuture);
+
+        FetchBucketProperties fetchBucketPropsCmd = new FetchBucketProperties.Builder(namespace).build();
+        final RiakFuture<FetchBucketPropsOperation.Response, Namespace> getBucketPropsFuture =
+                client.executeAsync(fetchBucketPropsCmd);
+
+        getBucketPropsFuture.await();
+        assertFutureSuccess(getBucketPropsFuture);
+        assertTrue(1 == getBucketPropsFuture.get().getBucketProperties().getNVal());
+    }
+
+    @Test
+    public void TestCreateBadTable() throws InterruptedException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        String badCreateTable = String.format(CreateTableTemplate, this.tableName) + ")";
+        Query create = new Query.Builder(badCreateTable).build();
+        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
+
+        resultFuture.await();
+        assertFutureFailure(resultFuture);
+        System.out.println(((RiakResponseException)resultFuture.cause()).getCode());
+    }
+
     @Test
     public void StoringData() throws ExecutionException, InterruptedException
     {
@@ -49,9 +110,7 @@ public class ITestTimeSeries extends ITestTsBase
         RiakFuture<Void, String> execFuture = client.executeAsync(store);
 
         execFuture.await();
-        String errorMessage = execFuture.cause() != null? execFuture.cause().getMessage() : "";
-        assertNull(errorMessage, execFuture.cause());
-        assertEquals(true, execFuture.isSuccess());
+        assertFutureSuccess(execFuture);
     }
 
     @Test
@@ -64,8 +123,7 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<QueryResult, String> listKeysFuture = client.executeAsync(listKeys);
 
         listKeysFuture.await();
-        assertTrue(listKeysFuture.isSuccess());
-        assertNull(listKeysFuture.cause());
+        assertFutureSuccess(listKeysFuture);
 
         final QueryResult queryResult = listKeysFuture.get();
         assertTrue(queryResult.getRowsCount() > 0);
@@ -74,7 +132,7 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void QueryingDataNoMatches() throws ExecutionException, InterruptedException
     {
-        final String queryText = "select * from GeoCheckin Where time > 1 and time < 10 and user='user1' and geohash='hash1'";
+        final String queryText = "select * from " + tableName + " Where time > 1 and time < 10 and user='user1' and geohash='hash1'";
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
         assertNotNull(queryResult);
@@ -89,7 +147,7 @@ public class ITestTimeSeries extends ITestTsBase
         // Should only return the 2nd row (one from "5 mins ago")
         // If we added 1 to the "now" time, we would get the third row back too.
 
-        final String queryText = "select * from GeoCheckin " +
+        final String queryText = "select * from " + tableName + " " +
                 "where user = 'user1' and " +
                 "geohash = 'hash1' and " +
                 "(time > " + tenMinsAgo +" and " +
@@ -110,7 +168,7 @@ public class ITestTimeSeries extends ITestTsBase
         // Should only return the 2nd row (one from "5 mins ago")
         // If we added 1 to the "now" time, we would get the third row back too.
 
-        final String queryText = "select * from GeoCheckin " +
+        final String queryText = "select * from " + tableName + " " +
                 "where user = 'user1' and " +
                 "geohash = 'hash1' and " +
                 "(time > " + tenMinsAgo +" and " +
@@ -130,7 +188,7 @@ public class ITestTimeSeries extends ITestTsBase
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
         // Should return the 2nd & 3rd rows. Query should cover 2 quantums at least.
 
-        final String queryText = "select * from GeoCheckin " +
+        final String queryText = "select * from " + tableName + " " +
                 "where user = 'user1' and " +
                 "geohash = 'hash1' and " +
                 "time > " + tenMinsAgo +" and " +
@@ -149,7 +207,7 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void TestThatNullsAreSavedAndFetchedCorrectly() throws ExecutionException, InterruptedException
     {
-        final String queryText = "select temperature from GeoCheckin " +
+        final String queryText = "select temperature from " + tableName + " " +
                 "where user = 'user2' and " +
                 "geohash = 'hash1' and " +
                 "(time > " + (fifteenMinsAgo - 1) +" and " +
@@ -175,9 +233,9 @@ public class ITestTimeSeries extends ITestTsBase
 
         Query query = new Query.Builder(queryText).build();
         RiakFuture<QueryResult, String> future = client.executeAsync(query);
+
         future.await();
-        assertFalse(future.isSuccess());
-        assertEquals(future.cause().getClass(), RiakResponseException.class);
+        assertFutureFailure(future);
     }
 
     @Test
@@ -189,9 +247,9 @@ public class ITestTimeSeries extends ITestTsBase
         Store store = new Store.Builder("GeoChicken").withRow(row).build();
 
         RiakFuture<Void, String> future = client.executeAsync(store);
+
         future.await();
-        assertFalse(future.isSuccess());
-        assertEquals(future.cause().getClass(), RiakResponseException.class);
+        assertFutureFailure(future);
     }
 
     @Test
@@ -205,6 +263,7 @@ public class ITestTimeSeries extends ITestTsBase
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
+
         assertEquals(1, queryResult.getRowsCount());
         Row row = queryResult.getRowsCopy().get(0);
         assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
@@ -243,8 +302,7 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
-        assertTrue(deleteFuture.isSuccess());
-        assertNull(deleteFuture.cause());
+        assertFutureSuccess(deleteFuture);
 
         // Assert that the row is no longer with us
         Fetch fetch2 = new Fetch.Builder(tableName, keyCells).build();
@@ -264,8 +322,24 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
-        assertTrue(deleteFuture.isSuccess());
-        assertNull(deleteFuture.cause());
+        assertFutureSuccess(deleteFuture);
+    }
+
+    @Test
+    public void TestDescribeTable() throws InterruptedException, ExecutionException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        Query query = new Query.Builder("DESCRIBE " + tableName).build();
+
+        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(query);
+
+        resultFuture.await();
+        assertFutureSuccess(resultFuture);
+
+        final QueryResult tableDescription = resultFuture.get();
+        assertEquals(7, tableDescription.getRowsCount());
+        assertEquals(5, tableDescription.getColumnDescriptionsCopy().size());
     }
 
     private static <T> List<T> toList(Iterator<T> itor)
