@@ -1,7 +1,7 @@
 package com.basho.riak.client.core.query.timeseries;
 
 /**
- * A Metadata description of a column in Riak Time Series.
+ * A minimal metadata description of a column in Riak Time Series.
  * Contains a column name and column type.
  *
  * @author Alex Moore <amoore at basho dot com>

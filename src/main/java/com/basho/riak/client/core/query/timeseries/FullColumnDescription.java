@@ -75,4 +75,45 @@ public class FullColumnDescription
         return localKeyOrdinal;
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        FullColumnDescription that = (FullColumnDescription) o;
+
+        if (isNullable != that.isNullable)
+        {
+            return false;
+        }
+        if (!baseColumnDescription.equals(that.baseColumnDescription))
+        {
+            return false;
+        }
+        if (primaryKeyOrdinal != null ?
+                !primaryKeyOrdinal.equals(that.primaryKeyOrdinal) :
+                that.primaryKeyOrdinal != null)
+        {
+            return false;
+        }
+        return localKeyOrdinal != null ? localKeyOrdinal.equals(that.localKeyOrdinal) : that.localKeyOrdinal == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = baseColumnDescription.hashCode();
+        result = 31 * result + (isNullable ? 1 : 0);
+        result = 31 * result + (primaryKeyOrdinal != null ? primaryKeyOrdinal.hashCode() : 0);
+        result = 31 * result + (localKeyOrdinal != null ? localKeyOrdinal.hashCode() : 0);
+        return result;
+    }
 }
