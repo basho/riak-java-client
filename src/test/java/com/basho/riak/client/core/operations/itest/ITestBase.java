@@ -323,17 +323,17 @@ public abstract class ITestBase
     {
         if(resultFuture.cause() == null)
         {
-            assertEquals(true, resultFuture.isSuccess());
+            assertTrue(resultFuture.isSuccess());
         }
         else
         {
-            assertEquals(resultFuture.cause().getMessage(), true, resultFuture.isSuccess());
+            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
         }
     }
 
     protected static void assertFutureFailure(RiakFuture<?,?> resultFuture)
     {
-        assertEquals(false, resultFuture.isSuccess());
+        assertFalse(resultFuture.isSuccess());
         assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
     }
 }

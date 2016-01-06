@@ -64,4 +64,38 @@ public final class CollectionConverters
 
         return new ColumnDescription(name, type);
     }
+
+    public static List<FullColumnDescription> convertDescribeQueryResultToColumnDescriptions(QueryResult queryResult)
+    {
+        final List<FullColumnDescription> fullColumnDescriptions = new ArrayList<>(queryResult.getRowsCount());
+
+        for (Row row : queryResult)
+        {
+            fullColumnDescriptions.add(convertDescribeResultRowToFullColumnDescription(row));
+        }
+
+        return fullColumnDescriptions;
+    }
+
+    private static FullColumnDescription convertDescribeResultRowToFullColumnDescription(Row row)
+    {
+        final List<Cell> cells = row.getCellsCopy();
+
+        final String name = cells.get(0).getVarcharAsUTF8String();
+        final String typeString = cells.get(1).getVarcharAsUTF8String();
+        final boolean isNullable = cells.get(2).getBoolean();
+        final boolean isPrimaryKeyMember = cells.get(3) != null;
+        final boolean isLocalKeyMember = cells.get(4) != null;
+        final Integer primaryKeyOrdinal = isPrimaryKeyMember ? new Long(cells.get(3).getLong()).intValue() : null;
+        final Integer localKeyOrdinal = isLocalKeyMember ? new Long(cells.get(4).getLong()).intValue() : null;
+
+        final ColumnDescription.ColumnType type =
+                ColumnDescription.ColumnType.valueOf(typeString.toUpperCase(Locale.ENGLISH));
+
+        return new FullColumnDescription(name,
+                                         type,
+                                         isNullable,
+                                         primaryKeyOrdinal,
+                                         localKeyOrdinal);
+    }
 }
