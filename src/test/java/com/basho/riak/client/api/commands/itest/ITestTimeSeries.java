@@ -356,10 +356,10 @@ public class ITestTimeSeries extends ITestTsBase
         assertFutureSuccess(describeFuture);
 
         final TableDefinition tableDefinition = describeFuture.get();
-        final List<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
+        final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
         assertEquals(7, fullColumnDescriptions.size());
 
-        assertEquals(GetCreatedTableFullDescriptions(), fullColumnDescriptions);
+        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(), new ArrayList(fullColumnDescriptions));
     }
 
     @Test
@@ -376,7 +376,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final String message = describeFuture.cause().getMessage();
         assertTrue(message.toLowerCase().contains(BAD_TABLE_NAME.toLowerCase()));
-        assertTrue(message.toLowerCase().contains("does not exist"));
+        assertTrue(message.toLowerCase().contains("does not exist."));
     }
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
@@ -436,7 +436,5 @@ public class ITestTimeSeries extends ITestTsBase
         }
 
         assertEquals(expectedCells.get(6).getBoolean(),  actualCells.get(6).getBoolean());
-
     }
-
 }
