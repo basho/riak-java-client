@@ -76,6 +76,8 @@ public abstract class ITestTsBase extends ITestBase
     {
         final RiakFuture<QueryResult, String> future = cluster.execute(builder.build());
 
+        future.await();
+
         assertFutureSuccess(future);
         return future.get();
     }
