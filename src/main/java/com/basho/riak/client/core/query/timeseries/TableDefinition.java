@@ -41,8 +41,8 @@ public class TableDefinition
             }
         }
 
-        this.localKeys.sort(LocalKeyComparator.INSTANCE);
-        this.partitionKeys.sort(PartitionKeyComparator.INSTANCE);
+        Collections.sort(this.localKeys, LocalKeyComparator.INSTANCE);
+        Collections.sort(this.partitionKeys, PartitionKeyComparator.INSTANCE);
     }
 
     /**

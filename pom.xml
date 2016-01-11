@@ -270,8 +270,8 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- ensure that only methods available in java 1.6 can
-                be used even when compiling with java 1.7+ -->
+                <!-- ensure that only methods available in java 1.7 can
+                be used even when compiling with java 1.8+ -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
                 <version>1.14</version>
