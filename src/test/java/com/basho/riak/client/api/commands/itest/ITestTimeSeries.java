@@ -98,7 +98,6 @@ public class ITestTimeSeries extends ITestTsBase
 
         resultFuture.await();
         assertFutureFailure(resultFuture);
-        System.out.println(((RiakResponseException)resultFuture.cause()).getCode());
     }
 
     @Test

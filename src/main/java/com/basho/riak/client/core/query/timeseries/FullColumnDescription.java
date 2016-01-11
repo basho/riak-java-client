@@ -7,9 +7,8 @@ package com.basho.riak.client.core.query.timeseries;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.4
  */
-public class FullColumnDescription
+public class FullColumnDescription extends ColumnDescription
 {
-    private final ColumnDescription baseColumnDescription;
     private final boolean isNullable;
     private final Integer partitionKeyOrdinal;
     private final Integer localKeyOrdinal;
@@ -65,28 +64,10 @@ public class FullColumnDescription
                                  Integer partitionKeyOrdinal,
                                  Integer localKeyOrdinal)
     {
-        this.baseColumnDescription = new ColumnDescription(name, type);
+        super(name, type);
         this.isNullable = isNullable;
         this.partitionKeyOrdinal = partitionKeyOrdinal;
         this.localKeyOrdinal = localKeyOrdinal;
-    }
-
-    /**
-     * Get the Column Name.
-     * @return the column name String.
-     */
-    public String getName()
-    {
-        return this.baseColumnDescription.getName();
-    }
-
-    /**
-     * Get the Column Type.
-     * @return the ColumnType value.
-     */
-    public ColumnDescription.ColumnType getType()
-    {
-        return this.baseColumnDescription.getType();
     }
 
     /**
