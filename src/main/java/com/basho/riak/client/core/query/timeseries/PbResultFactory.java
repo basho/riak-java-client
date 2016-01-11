@@ -2,7 +2,6 @@ package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.protobuf.RiakTsPB;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,14 +16,22 @@ public final class PbResultFactory
 
     public static QueryResult convertPbQueryResp(RiakTsPB.TsQueryResp response)
     {
-        return response == null ? QueryResult.EMPTY : new QueryResult(response.getColumnsList(),
-                                                                      response.getRowsList());
+        if(response == null)
+        {
+            return QueryResult.EMPTY;
+        }
+
+        return new QueryResult(response.getColumnsList(), response.getRowsList());
     }
 
     public static QueryResult convertPbGetResp(RiakTsPB.TsGetResp response)
     {
-        return response == null ? QueryResult.EMPTY : new QueryResult(response.getColumnsList(),
-                                                                      response.getRowsList());
+        if (response == null)
+        {
+            return QueryResult.EMPTY;
+        }
+
+        return new QueryResult(response.getColumnsList(), response.getRowsList());
     }
 
     public static QueryResult convertPbListKeysResp(List<RiakTsPB.TsListKeysResp> responseChunks)
@@ -55,4 +62,18 @@ public final class PbResultFactory
         return new QueryResult(flatIterable, totalKeyCount);
     }
 
+    public static TableDefinition convertDescribeResp(String tableName, RiakTsPB.TsQueryResp response)
+    {
+        if (response == null || response.getRowsCount() == 0)
+        {
+            return null;
+        }
+
+        final QueryResult intermediaryQueryResult = new QueryResult(response.getColumnsList(), response.getRowsList());
+
+        return new TableDefinition(
+                tableName,
+                CollectionConverters.convertDescribeQueryResultToColumnDescriptions(intermediaryQueryResult));
+
+    }
 }

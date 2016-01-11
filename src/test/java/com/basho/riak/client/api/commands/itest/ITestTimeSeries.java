@@ -12,7 +12,6 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
 import org.junit.Test;
 
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -57,6 +56,8 @@ public class ITestTimeSeries extends ITestTsBase
         "observed boolean not null, " +
         "PRIMARY KEY((geohash, user, quantum(time, 15, 'm')), geohash, user, time))";
 
+    private static final String BAD_TABLE_NAME = "GeoChicken";
+
     @Test
     public void TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
     {
@@ -97,7 +98,6 @@ public class ITestTimeSeries extends ITestTsBase
 
         resultFuture.await();
         assertFutureFailure(resultFuture);
-        System.out.println(((RiakResponseException)resultFuture.cause()).getCode());
     }
 
     @Test
@@ -244,7 +244,7 @@ public class ITestTimeSeries extends ITestTsBase
         RiakClient client = new RiakClient(cluster);
 
         Row row = new Row(com.basho.riak.client.core.query.timeseries.Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
-        Store store = new Store.Builder("GeoChicken").withRow(row).build();
+        Store store = new Store.Builder(BAD_TABLE_NAME).withRow(row).build();
 
         RiakFuture<Void, String> future = client.executeAsync(store);
 
@@ -342,6 +342,53 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(5, tableDescription.getColumnDescriptionsCopy().size());
     }
 
+    @Test
+    public void TestDescribeTableCommand() throws InterruptedException, ExecutionException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        DescribeTable describe = new DescribeTable(tableName);
+
+        final RiakFuture<TableDefinition, String> describeFuture = client.executeAsync(describe);
+
+        describeFuture.await();
+        assertFutureSuccess(describeFuture);
+
+        final TableDefinition tableDefinition = describeFuture.get();
+        final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
+        assertEquals(7, fullColumnDescriptions.size());
+
+        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(), new ArrayList(fullColumnDescriptions));
+    }
+
+    @Test
+    public void TestDescribeTableCommandForNonExistingTable() throws InterruptedException, ExecutionException
+    {
+        RiakClient client = new RiakClient(cluster);
+
+        DescribeTable describe = new DescribeTable(BAD_TABLE_NAME);
+
+        final RiakFuture<TableDefinition, String> describeFuture = client.executeAsync(describe);
+
+        describeFuture.await();
+        assertFutureFailure(describeFuture);
+
+        final String message = describeFuture.cause().getMessage();
+        assertTrue(message.toLowerCase().contains(BAD_TABLE_NAME.toLowerCase()));
+        assertTrue(message.toLowerCase().contains("does not exist."));
+    }
+
+    private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
+    {
+        return Arrays.asList(new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR, false, 1),
+                             new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR, false, 2),
+                             new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP, false, 3),
+                             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR, false),
+                             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
+                             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64, true),
+                             new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN, false));
+    }
+
     private static <T> List<T> toList(Iterator<T> itor)
     {
         final List<T> r = new LinkedList<T>();
@@ -388,7 +435,5 @@ public class ITestTimeSeries extends ITestTsBase
         }
 
         assertEquals(expectedCells.get(6).getBoolean(),  actualCells.get(6).getBoolean());
-
     }
-
 }
