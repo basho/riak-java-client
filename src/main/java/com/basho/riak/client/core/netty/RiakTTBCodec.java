@@ -8,17 +8,21 @@ import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Sergey Galkin <srggal at gmail dot com>
  */
 public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
+    private RiakMessageCodec pbCodec = new RiakMessageCodec();
+
     private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
     private static final OtpErlangAtom tscell = new OtpErlangAtom("tscell");
     private static final OtpErlangAtom tsrow = new OtpErlangAtom("tsrow");
@@ -32,22 +36,46 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     private static final OtpErlangTuple EMPTY_ERLANG_TSCELL = new OtpErlangTuple(new OtpErlangObject[]{
             tscell, undefined, undefined, undefined, undefined, undefined});
 
+    // TODO: REFACTOR BEFORE MERGE
+    private static ConcurrentHashMap<String, Boolean>  ttbPerNode = new ConcurrentHashMap<String, Boolean>();
+
+    private boolean isTTBMessage(byte code) {
+        switch (code) {
+            case RiakMessageCodes.MSG_TsPutReq:
+            case RiakMessageCodes.MSG_TsGetReq:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isTTBOnForChanel(Channel channel) {
+        return Boolean.TRUE.equals(ttbPerNode.get(channel.remoteAddress().toString()));
+    }
+
     @Override
     protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception {
         final OtpErlangTuple t;
 
-        switch (msg.getCode()) {
-            case RiakMessageCodes.MSG_TsPutReq:
-                t = encodeTsPut(msg);
-                break;
-            case RiakMessageCodes.MSG_TsGetReq:
-                t = encodeTsGet(msg);
-                break;
+        final boolean isTtbOn = isTTBOnForChanel(ctx.channel());
+
+        if (isTtbOn && isTTBMessage(msg.getCode())) {
+            switch (msg.getCode()) {
+                case RiakMessageCodes.MSG_TsPutReq:
+                    t = encodeTsPut(msg);
+                    break;
+                case RiakMessageCodes.MSG_TsGetReq:
+                    t = encodeTsGet(msg);
+                    break;
 //            case RiakMessageCodes.MSG_TsQueryReq:
 //                t = encodeTsQuery(msg);
 //                break;
-            default:
-                throw new IllegalStateException("Can't encode TTB request, unsupported message with code " + msg.getCode());
+                default:
+                    throw new IllegalStateException("Can't encode TTB request, unsupported message with code " + msg.getCode());
+            }
+        } else {
+            pbCodec.encode(ctx, msg, out);
+            return;
         }
 
         final OtpOutputStream os = new OtpOutputStream(t);
@@ -238,6 +266,9 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+
+        final boolean isTTBOn = isTTBOnForChanel(ctx.channel());
+
         // Make sure we have 4 bytes
         if (in.readableBytes() >= 4) {
             in.markReaderIndex();
@@ -250,6 +281,23 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 return;
             }
 
+            if (!isTTBOn) {
+                // Decode as PB
+
+                in.resetReaderIndex();
+                pbCodec.decode(null, in, out);
+
+                if (out.size() == 1) {
+                    RiakMessage m = (RiakMessage) out.get(0);
+                    switch ( m.getCode()) {
+                        case RiakMessageCodes.MSG_ToggleEncodingResp:
+                            final RiakPB.RpbToggleEncodingResp r = RiakPB.RpbToggleEncodingResp.PARSER.parseFrom(m.getData());
+                            ttbPerNode.put(ctx.channel().remoteAddress().toString(), r.getUseNative());
+                            break;
+                    }
+                }
+                return;
+            }
 
             final byte[] array = new byte[length];
             in.readBytes(array);
@@ -260,6 +308,24 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 o = is.read_any();
             }catch (Exception ex){
                 in.resetReaderIndex();
+                in.markReaderIndex();
+
+                // skip length header
+                in.readInt();
+
+                // read msg code
+                byte code = in.readByte();
+
+                if (isTTBMessage(code)) {
+                    throw  ex;
+                }
+
+                in.resetReaderIndex();
+
+                /**
+                 * As we failed with TTB encoding, it worth to try with PB
+                 */
+                pbCodec.decode(null, in, out);
                 return;
             }
 
