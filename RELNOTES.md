@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+### 2.0.4
+Following issues / PRs addressed:
+ * [Time Series - Create Tables Support & Tests](https://github.com/basho/riak-java-client/pull/588)
+ * [Time Series - Describe Table Support & Tests](https://github.com/basho/riak-java-client/pull/589)
+ * [General - Add Release Notes, better README, and Top Level License](https://github.com/basho/riak-java-client/pull/583)
+
 ### 2.0.3
 Following issues / PRs addressed:
  * [Time Series support](https://github.com/basho/riak-java-client/pull/543)
