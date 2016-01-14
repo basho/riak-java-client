@@ -1,9 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.basho.riak</groupId>
     <artifactId>dataplatform-riak-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.1.0</version>
+    <version>1.2.0-beta1</version>
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
@@ -72,19 +73,6 @@
         <slf4j.version>1.7.21</slf4j.version>
         <jackson.version>2.8.0</jackson.version>
     </properties>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-    </distributionManagement>
 
     <profiles>
         <profile>
@@ -163,34 +151,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>release</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- NOTE: source and javadoc jars automatically generated on release (http://maven.apache.org/pom.html#The_Super_POM) -->
                 </plugins>
             </build>
         </profile>
@@ -362,7 +322,8 @@
                     <systemPropertyVariables>
                         <org.slf4j.simpleLogger.defaultLogLevel>debug</org.slf4j.simpleLogger.defaultLogLevel>
                         <org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
-                        <org.slf4j.simpleLogger.dateTimeFormat>yyyy-MM-dd HH:mm:ss</org.slf4j.simpleLogger.dateTimeFormat>
+                        <org.slf4j.simpleLogger.dateTimeFormat>yyyy-MM-dd HH:mm:ss
+                        </org.slf4j.simpleLogger.dateTimeFormat>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -374,6 +335,36 @@
                     <excludePackageNames>com.basho.riak.protobuf.util</excludePackageNames>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jfrog.buildinfo</groupId>
+                <artifactId>artifactory-maven-plugin</artifactId>
+                <version>2.4.0</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-info</id>
+                        <goals>
+                            <goal>publish</goal>
+                        </goals>
+                        <configuration>
+                            <publisher>
+                                <contextUrl>https://basholabs.artifactoryonline.com/basholabs</contextUrl>
+                                <username>{{ARTIFACTORY_USER}}</username>
+                                <password>{{ARTIFACTORY_PASS}}</password>
+                                <repoKey>libs-release-local</repoKey>
+                                <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
+                            </publisher>
+                            <buildInfo>
+                                <buildName>{{TRAVIS_REPO_SLUG}}</buildName>
+                                <buildNumber>{{TRAVIS_BUILD_NUMBER}}</buildNumber>
+                                <buildUrl>https://travis-ci.com/{{TRAVIS_REPO_SLUG}}/builds/{{TRAVIS_BUILD_ID}}
+                                </buildUrl>
+                            </buildInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
     <dependencies>
@@ -439,4 +430,17 @@
             <version>1.6.1</version>
         </dependency>
     </dependencies>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jfrog-artifactory-bintray</id>
+            <url>https://dl.bintray.com/jfrog/jfrog-jars</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
 </project>
