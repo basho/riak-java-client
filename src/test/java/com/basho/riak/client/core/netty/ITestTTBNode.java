@@ -81,13 +81,13 @@ public class ITestTTBNode {
         storeDataInternal(tableName, rows);
 
         for (Row r: rows){
-            final FetchOperation fetch = new FetchOperation.Builder(BinaryValue.create(tableName),
-                    r.getCells().subList(0,3) // use the only PK values
+            final FetchOperation fetch = new FetchOperation.Builder(tableName,
+                    r.getCellsCopy().subList(0,3) // use the only PK values
                 ).build();
 
             QueryResult queryResult = execute(fetch);
 
-            assertEquals(1, queryResult.getRows().size());
+            assertEquals(1, queryResult.getRowsCount());
             //assertArrayEquals(r.getCells().toArray(), queryResult.getRows().get(0).getCells().toArray());
         }
     }
@@ -103,11 +103,11 @@ public class ITestTTBNode {
                 "(time = " + tenMinsAgo +" and " +
                 "(time < "+ now + ")) ";
 
-        final QueryOperation query = new QueryOperation.Builder(BinaryValue.create(queryText)).build();
+        final QueryOperation query = new QueryOperation.Builder(queryText).build();
         final QueryResult queryResult = execute(query);
 
-        assertEquals(7, queryResult.getColumnDescriptions().size());
-        assertEquals(1, queryResult.getRows().size());
+        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(1, queryResult.getRowsCount());
     }
 
     @Test
@@ -116,8 +116,8 @@ public class ITestTTBNode {
             storeDataInternal(UUID.randomUUID().toString(), rows);
         } catch (ExecutionException e) {
             if (e.getCause() instanceof RiakResponseException
-                    && e.getCause().getMessage().startsWith("Bucket type")
-                    && e.getCause().getMessage().endsWith("is missing.")) {
+                    && e.getCause().getMessage().startsWith("Time Series table")
+                    && e.getCause().getMessage().endsWith("does not exist.")) {
                 // It's OK
                 return;
             }
@@ -131,7 +131,7 @@ public class ITestTTBNode {
     }
 
     private void storeDataInternal(String table, List<Row> rows) throws ExecutionException, InterruptedException {
-        final StoreOperation store = new StoreOperation.Builder(BinaryValue.create(table)).withRows(rows).build();
+        final StoreOperation store = new StoreOperation.Builder(table).withRows(rows).build();
 
         execute(store);
     }
