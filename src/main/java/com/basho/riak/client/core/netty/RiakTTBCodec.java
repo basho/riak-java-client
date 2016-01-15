@@ -81,8 +81,11 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         final OtpOutputStream os = new OtpOutputStream(t);
         byte data[] = os.toByteArray();
 
-        int length = data.length+1;
+        int length = data.length+2;
         out.writeInt(length);
+
+
+        out.writeByte(msg.getCode());
 
         /**
          * DO A TOP SECRET HACK
@@ -299,8 +302,16 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 return;
             }
 
-            final byte[] array = new byte[length];
+            final byte[] array = new byte[length-1];
+            final int msgCode = in.readByte();
             in.readBytes(array);
+
+            switch (msgCode) {
+                case RiakMessageCodes.MSG_TsPutResp:
+                    final RiakTsPB.TsPutResp r = RiakTsPB.TsPutResp.newBuilder().build();
+                    out.add(new RiakMessage(RiakMessageCodes.MSG_TsPutResp, r.toByteArray()));
+                    return;
+            }
 
             final OtpErlangObject o;
             try {
@@ -335,15 +346,20 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 final OtpErlangAtom resp = (OtpErlangAtom)t.elementAt(0);
                 final String v = resp.atomValue();
 
-                if ("tsputresp".equals(v)) {
-                    final RiakTsPB.TsPutResp r = RiakTsPB.TsPutResp.newBuilder().build();
-                    out.add(new RiakMessage(RiakMessageCodes.MSG_TsPutResp, r.toByteArray()));
-                } else if ("rpberrorresp".equals(v)) {
-                    final OtpErlangString errMsg = (OtpErlangString) t.elementAt(1);
+                if ("rpberrorresp".equals(v)) {
+                    final String errMsg;
+                    if (t.elementAt(1) instanceof OtpErlangString) {
+                        errMsg = ((OtpErlangString) t.elementAt(1)).stringValue();
+                    } else if (t.elementAt(1) instanceof OtpErlangBinary) {
+                        errMsg = new String(((OtpErlangBinary) t.elementAt(1)).binaryValue());
+                    } else {
+                        throw new IllegalStateException();
+                    }
+
                     final OtpErlangLong errCode = (OtpErlangLong) t.elementAt(2);
                     final RiakPB.RpbErrorResp r = RiakPB.RpbErrorResp.newBuilder()
                             .setErrcode(errCode.intValue())
-                            .setErrmsg(ByteString.copyFromUtf8(errMsg.stringValue()))
+                            .setErrmsg(ByteString.copyFromUtf8(errMsg))
                             .build();
                     out.add(new RiakMessage(RiakMessageCodes.MSG_ErrorResp, r.toByteArray()));
                 } else if ("tsgetresp".equals(v)) {

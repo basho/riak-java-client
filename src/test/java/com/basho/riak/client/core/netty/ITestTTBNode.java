@@ -2,6 +2,7 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.operations.ToggleTTBEncodingOperation;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
@@ -22,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Sergey Galkin <srggal at gmail dot com>
@@ -54,13 +56,17 @@ public class ITestTTBNode {
 
 
     @Before
-    public void setup() throws UnknownHostException {
+    public void setup() throws UnknownHostException, ExecutionException, InterruptedException {
         riakNode = new RiakNode.Builder()
                 .useTTB()
                 .withRemotePort(10017)
                 .build();
 
         riakNode.start();
+        final ToggleTTBEncodingOperation op = new ToggleTTBEncodingOperation(true);
+        riakNode.execute(op);
+
+        assertTrue(op.get().isUseNativeEncoding());
     }
 
 
