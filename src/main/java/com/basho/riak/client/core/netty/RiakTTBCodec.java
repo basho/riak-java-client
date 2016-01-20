@@ -6,6 +6,7 @@ import com.basho.riak.protobuf.RiakPB;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -74,6 +75,10 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                     throw new IllegalStateException("Can't encode TTB request, unsupported message with code " + msg.getCode());
             }
         } else {
+            if (!msg.isEncoded()) {
+                final GeneratedMessage.Builder<?> reqBuilder = msg.getDataObject();
+                msg.setData(reqBuilder.build().toByteArray());
+            }
             pbCodec.encode(ctx, msg, out);
             return;
         }
@@ -160,9 +165,12 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     }
 
     private static OtpErlangTuple encodeTsPut(RiakMessage msg) throws InvalidProtocolBufferException, UnsupportedEncodingException {
-        final RiakTsPB.TsPutReq req = RiakTsPB.TsPutReq.parseFrom(msg.getData());
-        assert req != null;
-
+        final RiakTsPB.TsPutReqOrBuilder req;
+        if (msg.isEncoded()) {
+            req = RiakTsPB.TsPutReq.parseFrom(msg.getData());
+        }else {
+            req = msg.getDataObject();
+        }
 
         final OtpErlangObject rows[] = new OtpErlangObject[req.getRowsCount()];
         for (int i = 0; i < rows.length; ++i) {
@@ -188,7 +196,13 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     }
 
     private static OtpErlangTuple encodeTsGet(RiakMessage msg) throws InvalidProtocolBufferException {
-        final RiakTsPB.TsGetReq req = RiakTsPB.TsGetReq.parseFrom(msg.getData());
+        final RiakTsPB.TsGetReqOrBuilder req;
+        if (msg.isEncoded()) {
+            req = RiakTsPB.TsGetReq.parseFrom(msg.getData());
+
+        } else {
+            req = msg.getDataObject();
+        }
 
         final OtpErlangObject[] elems = new OtpErlangObject[]
                 {tsgetreq, pbStrToTtb(req.getTable()),

@@ -19,7 +19,7 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, String>
+public class StoreOperation extends DeferredEncodingOperation<Void, RiakTsPB.TsPutResp, String>
 {
     private final String tableName;
     private final int rowCount;

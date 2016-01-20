@@ -15,7 +15,7 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class FetchOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsGetResp, String>
+public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakTsPB.TsGetResp, String>
 {
     private final Builder builder;
     private String queryInfoMessage;

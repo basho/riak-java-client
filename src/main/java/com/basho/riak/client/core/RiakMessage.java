@@ -18,19 +18,35 @@ package com.basho.riak.client.core;
 /**
  * Encapsulates the raw bytes sent to or received from Riak.
  * @author Brian Roach <roach at basho dot com>
+ * @author Sergey Galkin <sgalkin at basho dot com>
  * @since 2.0
  */
 public final class RiakMessage
 {
     private final byte code;
-    private final byte[] data;
+    private byte[] data;
+    private final Object dataObject;
     
     public RiakMessage(byte code, byte[] data)
     {
         this.code = code;
         this.data = data;
+        this.dataObject = null;
     }
-    
+
+    /**
+     * Creates message for deferred encoding.
+     *
+     * @author Sergey Galkin <sgalkin at basho dot com>
+     * @since 2.4
+     */
+    public RiakMessage(byte code, Object dataObj)
+    {
+        this.code = code;
+        this.data = null;
+        this.dataObject = dataObj;
+    }
+
     public byte getCode()
     {
         return code;
@@ -39,5 +55,32 @@ public final class RiakMessage
     public byte[] getData()
     {
         return data;
+    }
+
+    /**
+     * @author Sergey Galkin <sgalkin at basho dot com>
+     * @since 2.4
+     */
+    public boolean isEncoded()
+    {
+        return data != null;
+    }
+
+    /**
+     * @author Sergey Galkin <sgalkin at basho dot com>
+     * @since 2.4
+     */
+    public void setData(byte[] data)
+    {
+        this.data = data;
+    }
+
+    /**
+     * @author Sergey Galkin <sgalkin at basho dot com>
+     * @since 2.4
+     */
+    public <T> T getDataObject()
+    {
+        return (T) dataObject;
     }
 }

@@ -23,7 +23,7 @@ import java.util.List;
 public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S> {
     protected final Builder<?> reqBuilder;
     private final com.google.protobuf.Parser<U> respParser;
-    private final byte reqMessageCode;
+    protected final byte reqMessageCode;
     private final byte respMessageCode;
 
 
