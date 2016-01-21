@@ -57,9 +57,17 @@ public class ITestTTBNode {
 
     @Before
     public void setup() throws UnknownHostException, ExecutionException, InterruptedException {
+        /**
+         * Riak PBC port
+         *
+         * In case you want/need to use a custom PBC port you may pass it by using the following system property
+         */
+        final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+
+
         riakNode = new RiakNode.Builder()
                 .useTTB()
-                .withRemotePort(10017)
+                .withRemotePort(testRiakPort)
                 .build();
 
         riakNode.start();
