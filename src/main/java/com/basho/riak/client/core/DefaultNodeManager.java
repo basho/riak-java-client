@@ -109,21 +109,6 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                 try
                 {
                     lock.writeLock().lock();
-                    // TODO: REFACTOR BEFORE MERGE THIS TO DEVELOP
-                        final ToggleTTBEncodingOperation op = new ToggleTTBEncodingOperation(true);
-                        try {
-                            boolean switchedToTTB = node.execute(op);
-                            if (!switchedToTTB) {
-                                throw new Exception("RiakNode '" + node.getRemoteAddress() + "' failed to switch to use Native(TTB) encoding");
-                            }
-
-                            logger.warn("RiakNode was switched to use Native encoding: {}:{}",
-                                    node.getRemoteAddress(), node.getPort());
-
-                        } catch ( Exception e) {
-                            throw new RuntimeException("Can't switch RiakNode to use Native (TTB) encoding");
-                        }
-
                     if (unhealthy.remove(node))
                     {
                         healthy.add(node);

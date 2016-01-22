@@ -16,8 +16,10 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.*;
+import com.basho.riak.client.core.operations.ToggleTTBEncodingOperation;
 import com.basho.riak.client.core.util.Constants;
 import com.basho.riak.client.core.util.HostAndPort;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -776,6 +778,23 @@ public class RiakNode implements RiakResponseListener
 
         }
 
+        // TODO: REFACTOR BEFORE MERGE THIS TO DEVELOP (make it to be configurable)
+        // Toggling the Native/TTB encoding
+        final ToggleTTBEncodingOperation operation = new ToggleTTBEncodingOperation(true);
+        try {
+            inProgressMap.put(c, operation);
+            c.writeAndFlush(operation);
+
+            ToggleTTBEncodingOperation.Response r = operation.get();
+            boolean switchedToTTB = r.isUseNativeEncoding();
+            if (!switchedToTTB) {
+                throw new RuntimeException("RiakNode '" + remoteAddress + ":" + port + "' failed to switch to use Native(TTB) encoding");
+            }
+
+            logger.warn("Channel '{}' was switched to use Native encoding: {}", c.hashCode(), c);
+        } catch ( Exception e) {
+            throw new RuntimeException("Can't switch channel to use Native (TTB) encoding");
+        }
         return c;
 
     }
@@ -849,7 +868,12 @@ public class RiakNode implements RiakResponseListener
             if (inProgress.isDone())
             {
                 inProgressMap.remove(channel);
-                returnConnection(channel); // return permit
+
+                // TODO: REALLY DIRTY HACK to prevent channel from being returned back to the pool
+                // as a result of successful response on preventive toggling TTB usage
+                if (response.getCode() != RiakMessageCodes.MSG_ToggleEncodingResp) {
+                    returnConnection(channel); // return permit
+                }
             }
         }
     }

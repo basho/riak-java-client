@@ -12,16 +12,19 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
+import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Sergey Galkin <srggal at gmail dot com>
  */
 public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
+    private final static Logger logger = LoggerFactory.getLogger(RiakTTBCodec.class);
     private RiakMessageCodec pbCodec = new RiakMessageCodec();
 
     private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
@@ -37,9 +40,6 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     private static final OtpErlangTuple EMPTY_ERLANG_TSCELL = new OtpErlangTuple(new OtpErlangObject[]{
             tscell, undefined, undefined, undefined, undefined, undefined});
 
-    // TODO: REFACTOR BEFORE MERGE
-    private static ConcurrentHashMap<String, Boolean>  ttbPerNode = new ConcurrentHashMap<String, Boolean>();
-
     private boolean isTTBMessage(byte code) {
         switch (code) {
             case RiakMessageCodes.MSG_TsPutReq:
@@ -50,17 +50,14 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         }
     }
 
-    private static boolean isTTBOnForChanel(Channel channel) {
-        return Boolean.TRUE.equals(ttbPerNode.get(channel.remoteAddress().toString()));
-    }
-
     @Override
     protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception {
         final OtpErlangTuple t;
-
         final boolean isTtbOn = isTTBOnForChanel(ctx.channel());
 
         if (isTtbOn && isTTBMessage(msg.getCode())) {
+            logger.trace("Encoding message {}, encoding '{}', is deferred: {}, channel '{}' {}",
+                    msg.getCode(), "TTB", !msg.isEncoded(), ctx.channel().hashCode(), ctx.channel());
             switch (msg.getCode()) {
                 case RiakMessageCodes.MSG_TsPutReq:
                     t = encodeTsPut(msg);
@@ -75,6 +72,9 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                     throw new IllegalStateException("Can't encode TTB request, unsupported message with code " + msg.getCode());
             }
         } else {
+            logger.trace("Encoding message {}, encoding '{}', is deferred: {}, channel '{}' {}",
+                    msg.getCode(), "PB", !msg.isEncoded(), ctx.channel().hashCode(), ctx.channel());
+
             if (!msg.isEncoded()) {
                 final GeneratedMessage.Builder<?> reqBuilder = msg.getDataObject();
                 msg.setData(reqBuilder.build().toByteArray());
@@ -309,7 +309,8 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                     switch ( m.getCode()) {
                         case RiakMessageCodes.MSG_ToggleEncodingResp:
                             final RiakPB.RpbToggleEncodingResp r = RiakPB.RpbToggleEncodingResp.PARSER.parseFrom(m.getData());
-                            ttbPerNode.put(ctx.channel().remoteAddress().toString(), r.getUseNative());
+                            updateTTBUsageForChannel(ctx.channel(), r.getUseNative());
+                            logger.debug("Native/TTB encoding for channel '{}' is set to {}: {}", ctx.channel().hashCode(), r.getUseNative(), ctx.channel());
                             break;
                     }
                 }
@@ -394,5 +395,17 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 throw new IllegalStateException("Can't decode TTB response");
             }
         }
+    }
+
+    private static final AttributeKey<Boolean> USE_TTB = AttributeKey.valueOf("useTTB");
+
+    private static boolean isTTBOnForChanel(Channel channel) {
+        final Boolean b = channel.attr(USE_TTB).get();
+        return Boolean.TRUE.equals(b);
+    }
+
+    private static boolean updateTTBUsageForChannel(Channel channel, boolean useTTB) {
+        channel.attr(USE_TTB).getAndSet(Boolean.valueOf(useTTB));
+        return useTTB;
     }
 }

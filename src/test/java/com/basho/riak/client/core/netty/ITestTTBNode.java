@@ -2,14 +2,12 @@ package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakNode;
-import com.basho.riak.client.core.operations.ToggleTTBEncodingOperation;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -21,9 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Sergey Galkin <srggal at gmail dot com>
@@ -68,13 +64,18 @@ public class ITestTTBNode {
         riakNode = new RiakNode.Builder()
                 .useTTB()
                 .withRemotePort(testRiakPort)
+//                .withMaxConnections(1)
+//                .withMinConnections(1)
                 .build();
 
         riakNode.start();
-        final ToggleTTBEncodingOperation op = new ToggleTTBEncodingOperation(true);
-        riakNode.execute(op);
 
-        assertTrue(op.get().isUseNativeEncoding());
+        /*
+            Since TTB is toggled in preventive manner for each conection there is no needs to toggle it manually
+          */
+        //final ToggleTTBEncodingOperation op = new ToggleTTBEncodingOperation(true);
+        //riakNode.execute(op);
+        //assertTrue(op.get().isUseNativeEncoding());
     }
 
 
