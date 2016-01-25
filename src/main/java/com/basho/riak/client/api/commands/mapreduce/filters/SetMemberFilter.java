@@ -32,17 +32,6 @@ public class SetMemberFilter<T> extends KeyFilter
     private final Set<T> set = new HashSet<T>();
 
     /**
-     * Creates a set from a String var arg
-     *
-     * @param set
-     */
-    public SetMemberFilter(T... set)
-    {
-        super(NAME);
-        Collections.addAll(this.set, set);
-    }
-
-    /**
      * Creates a set by copying a known set.
      * @param set
      */

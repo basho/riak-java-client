@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -109,7 +111,7 @@ public class KeyFilterTest
 	public void testSetMemberInt() throws Exception
 	{
 		SetMemberFilter<Integer> filter =
-			new SetMemberFilter<Integer>(1, 2, 3);
+			new SetMemberFilter<Integer>(new HashSet<Integer>(Arrays.asList(1, 2, 3)));
 
 		writer.writeValue(serialized, filter);
 		assertEquals("[\"set_member\",1,2,3]", serialized.toString());
