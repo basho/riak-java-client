@@ -1,10 +1,9 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.operations.PBFutureOperation;
+import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.query.timeseries.*;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
-import com.google.protobuf.ByteString;
 
 import java.util.List;
 
@@ -24,10 +23,16 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
     {
         super(RiakMessageCodes.MSG_TsGetReq,
               RiakMessageCodes.MSG_TsGetResp,
-              builder.reqBuilder,
+//              builder.reqBuilder,
+              null,
               RiakTsPB.TsGetResp.PARSER);
 
-        this.builder = builder;
+            this.builder = builder;
+    }
+
+    @Override
+    protected RiakMessage createChannelMessage() {
+        return new RiakMessage(RiakMessageCodes.MSG_TsGetReq, builder);
     }
 
     @Override
@@ -72,7 +77,7 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
         private final String tableName;
         private final Iterable<Cell> keyValues;
 
-        private final RiakTsPB.TsGetReq.Builder reqBuilder = RiakTsPB.TsGetReq.newBuilder();
+        //private final RiakTsPB.TsGetReq.Builder reqBuilder = RiakTsPB.TsGetReq.newBuilder();
 
         public Builder(String tableName, Iterable<Cell> keyValues)
         {
@@ -86,8 +91,8 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
                 throw new IllegalArgumentException("Key Values cannot be null or an empty.");
             }
 
-            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
-            this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
+//            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
+//            this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
 
             this.tableName = tableName;
             this.keyValues = keyValues;
@@ -95,13 +100,21 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
 
         public Builder withTimeout(int timeout)
         {
-            this.reqBuilder.setTimeout(timeout);
+//            this.reqBuilder.setTimeout(timeout);
             return this;
         }
 
         public FetchOperation build()
         {
             return new FetchOperation(this);
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        public Iterable<Cell> getKeyValues() {
+            return keyValues;
         }
     }
 }

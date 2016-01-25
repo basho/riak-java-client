@@ -194,7 +194,7 @@ public class Cell
         return pbCell.getBooleanValue();
     }
 
-    RiakTsPB.TsCell getPbCell()
+    public RiakTsPB.TsCell getPbCell()
     {
         return pbCell;
     }

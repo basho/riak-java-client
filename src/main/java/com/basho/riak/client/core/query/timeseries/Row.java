@@ -70,7 +70,7 @@ public class Row implements Iterable<Cell>
         return cells;
     }
 
-    RiakTsPB.TsRow getPbRow()
+    public RiakTsPB.TsRow getPbRow()
     {
         return pbRow;
     }
