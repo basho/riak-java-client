@@ -36,6 +36,11 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
     private final Location location;
     private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
+    public Location getLocation()
+    {
+       return location;
+    }
+
     @SuppressWarnings("unchecked")
     protected FetchDatatype(Builder builder)
     {
