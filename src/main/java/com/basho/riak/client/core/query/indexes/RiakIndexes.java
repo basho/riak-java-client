@@ -128,7 +128,7 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      * @param name the {@link RiakIndex.Name} representing the index to check for
      * @return {@code true} if the index is present, {@code false} otherwise
      */
-    public <T extends RiakIndex> boolean hasIndex(RiakIndex.Name<T> name)
+    public <T extends RiakIndex<?>> boolean hasIndex(RiakIndex.Name<T> name)
     {
         return indexes.containsKey(name.getFullname());
     }
@@ -142,7 +142,7 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      * @param name The {@link RiakIndex.Name} of the index to retrieve
      * @return The requested index typed accordingly.
      */
-    public  <V extends RiakIndex, T extends RiakIndex.Name<V>> V getIndex(T name)
+    public <V extends RiakIndex<?>, T extends RiakIndex.Name<V>> V getIndex(T name)
     {
         RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)
