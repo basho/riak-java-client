@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * mutable index; changes are made directly to it.
  * </p>
  * <blockquote><pre>
- * LongIntIndex myIndex = riakIndexes.getIndex(new LongIntIndex.Name("number_on_hand"));
+ * LongIntIndex myIndex = riakIndexes.getIndex(LongIntIndex.named("number_on_hand"));
  * myIndex.removeAll();
  * myIndex.add(6L);
  * </pre></blockquote>
@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * an index.
  * </p>
  * <blockquote><pre>
- * riakIndexes.getIndex(new StringBinIndex.Name("colors")).remove("blue").add("red");
+ * riakIndexes.getIndex(StringBinIndex.named("colors")).remove("blue").add("red");
  * </pre></blockquote>
  * <h6>Special note when using RawIndex</h6>
  * A {@code RiakIndex} is uniquely identified by its textual name and {@code IndexType} 
@@ -68,12 +68,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * public void wrapping()
  * {
  *     // creates or fetches the BIN (_bin) index named "foo", adds a value to it  
- *     RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
+ *     RawIndex index = indexes.getIndex(RawIndex.named("foo", IndexType.BIN));
  *     BinaryValue baw = BinaryValue.unsafeCreate("value".getBytes());
  *     index.add(baw);
  *       
  *     // fetches the previously created index as a StringBinIndex
- *     StringBinIndex wrapper = indexes.getIndex(new StringBinIndex.Name("foo"));
+ *     StringBinIndex wrapper = indexes.getIndex(StringBinIndex.named("foo"));
  *
  *     // The references are to different objects
  *     assertNotSame(index, wrapper);
