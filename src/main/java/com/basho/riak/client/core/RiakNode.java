@@ -793,7 +793,7 @@ public class RiakNode implements RiakResponseListener
 
             logger.warn("Channel '{}' was switched to use Native encoding: {}", c.hashCode(), c);
         } catch ( Exception e) {
-            throw new RuntimeException("Can't switch channel to use Native (TTB) encoding");
+            throw new RuntimeException("Can't switch channel to use Native (TTB) encoding", e);
         }
         return c;
 
