@@ -32,7 +32,7 @@ public class StringBinIndexTest
     @Test
     public void storeAndRetrieveString()
     {
-        StringBinIndex index = new StringBinIndex.Name("index_name").createIndex();
+        StringBinIndex index = StringBinIndex.named("index_name").createIndex();
         Set<String> stringSet = new HashSet<String>(Arrays.asList("value1", "value2"));
         
         index.add(stringSet);

@@ -33,7 +33,7 @@ public class LongIntIndexTest
     @Test
     public void storeAndRetrieveLong()
     {
-        LongIntIndex index = new LongIntIndex.Name("index_name").createIndex();
+        LongIntIndex index = LongIntIndex.named("index_name").createIndex();
         Set<Long> longSet = new HashSet<Long>(Arrays.asList(Long.MAX_VALUE, Long.MIN_VALUE));
         
         index.add(longSet);
