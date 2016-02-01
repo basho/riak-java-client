@@ -139,7 +139,14 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      * If the named index does not exist it is created and added to the container
      * before being returned. 
      * </p>
-     * @param name The {@link RiakIndex.Name} of the index to retrieve
+     * <p>Scala Users: to chain RiakIndex method calls off of this method
+     * please include explicit type parameters for the getIndex() call.
+     * e.g.
+     * </p>
+     * <blockquote><pre>
+     * riakIndexes.getIndex[StringBinIndex,StringBinIndex.Name](StringBinIndex.named("myindex")).add("myvalue")
+     * </pre></blockquote>
+     * @param name The {@link RiakIndex.Name} of the index to retrieve.
      * @return The requested index typed accordingly.
      */
     public <V extends RiakIndex<?>, T extends RiakIndex.Name<V>> V getIndex(T name)
