@@ -41,6 +41,18 @@ public class SetMemberFilter<T> extends KeyFilter
         this.set.addAll(set);
     }
 
+    /**
+      * Creates a set from a String var arg
+      *
+      * @param set
+      */
+    @SafeVarargs // Collections.addAll's contract satisfies this.
+    public SetMemberFilter(T... set)
+    {
+        super(NAME);
+        Collections.addAll(this.set, set);
+    }
+
     public Set<T> getSet()
     {
         return set;
