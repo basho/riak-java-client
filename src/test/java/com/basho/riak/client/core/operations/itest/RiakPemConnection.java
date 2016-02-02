@@ -1,5 +1,8 @@
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
@@ -112,13 +115,8 @@ public class RiakPemConnection {
      * @return Riak Cluster object based on builder properties
      */
     private static RiakCluster initializeRiakCluster(RiakNode.Builder builder){
-        RiakCluster cluster = null;
-        try {
-            cluster = new RiakCluster.Builder(builder.build()).build();
-            cluster.start();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
+        cluster.start();
         return cluster;
     }
 

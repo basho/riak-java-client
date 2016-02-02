@@ -32,7 +32,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -77,7 +75,7 @@ public abstract class ITestBase
     protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
 
     @BeforeClass
-    public static void setUp() throws UnknownHostException, FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    public static void setUp() throws FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
         
