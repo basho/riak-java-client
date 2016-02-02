@@ -84,6 +84,8 @@ public class FetchDatatypeTest
             .withOption(Option.INCLUDE_CONTEXT, true)
 	        .build();
 
+        assertEquals(key, fetchValue.getLocation());
+
         client.execute(fetchValue);
 
         ArgumentCaptor<DtFetchOperation> captor =
