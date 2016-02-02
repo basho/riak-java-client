@@ -172,7 +172,7 @@ public class RiakNode implements RiakResponseListener
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
-    private RiakNode(Builder builder) throws UnknownHostException
+    private RiakNode(Builder builder)
     {
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
@@ -1496,9 +1496,8 @@ public class RiakNode implements RiakResponseListener
          * will be created.
          *
          * @return a new Riaknode
-         * @throws UnknownHostException if the DNS lookup fails for the supplied hostname
          */
-        public RiakNode build() throws UnknownHostException
+        public RiakNode build()
         {
             return new RiakNode(this);
         }
@@ -1513,10 +1512,8 @@ public class RiakNode implements RiakResponseListener
          *                        Since 2.0.3 each of list item is treated as a comma separated list
          *                        of FQDN or IP addresses with the optional remote port delimited by ':'.
          * @return a list of constructed RiakNodes
-         * @throws UnknownHostException if a supplied FQDN can not be resolved.
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
-            throws UnknownHostException
         {
             final Set<HostAndPort> hps = new HashSet<HostAndPort>();
             for (String remoteAddress: remoteAddresses)

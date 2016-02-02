@@ -28,7 +28,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
-
 import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.List;
@@ -36,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Awaitility.fieldIn;
 import static org.hamcrest.Matchers.equalTo;
@@ -53,7 +51,7 @@ import static org.mockito.Mockito.*;
 public class RiakNodeTest
 {
     @Test
-    public void builderProducesDefaultNode() throws UnknownHostException
+    public void builderProducesDefaultNode()
     {
         RiakNode node = new RiakNode.Builder().build();
 
@@ -68,7 +66,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void builderProducesCorrectNode() throws UnknownHostException
+    public void builderProducesCorrectNode()
     {
         final int IDLE_TIMEOUT = 2000;
         final int CONNECTION_TIMEOUT = 2001;
@@ -106,7 +104,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void nodeRegistersListeners() throws UnknownHostException
+    public void nodeRegistersListeners()
     {
         RiakNode node = new RiakNode.Builder().build();
         NodeStateListener listener = mock(NodeStateListener.class);
