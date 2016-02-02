@@ -14,8 +14,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
-
-import sun.misc.BASE64Decoder;
+import javax.xml.bind.DatatypeConverter;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakCluster;
@@ -83,8 +82,7 @@ public class RiakPemConnection {
             String key = new String(privKeyBytes);
             key = key.replace("-----BEGIN PRIVATE KEY-----\n", "").replace("-----END PRIVATE KEY-----\n", "");
 
-            BASE64Decoder base64Decoder = new BASE64Decoder();
-            privKeyBytes = base64Decoder.decodeBuffer(key);
+            privKeyBytes = DatatypeConverter.parseBase64Binary(key);
 
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             KeySpec ks = new PKCS8EncodedKeySpec(privKeyBytes);

@@ -358,7 +358,7 @@ public class ITestTimeSeries extends ITestTsBase
         final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
         assertEquals(7, fullColumnDescriptions.size());
 
-        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(), new ArrayList(fullColumnDescriptions));
+        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(), new ArrayList<FullColumnDescription>(fullColumnDescriptions));
     }
 
     @Test
