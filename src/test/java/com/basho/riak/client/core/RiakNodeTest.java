@@ -15,21 +15,19 @@
  */
 package com.basho.riak.client.core;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.fieldIn;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import com.basho.riak.client.core.RiakNode.State;
+import com.google.protobuf.Message;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 
 import java.net.UnknownHostException;
 import java.util.Deque;
@@ -39,15 +37,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
-
-import com.basho.riak.client.core.RiakNode.State;
-import com.google.protobuf.Message;
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.fieldIn;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -81,7 +75,6 @@ public class RiakNodeTest
         final int MIN_CONNECTIONS = 2002;
         final int MAX_CONNECTIONS = 2003;
         final int PORT = 2004;
-        final int READ_TIMEOUT = 2005;
         final String REMOTE_ADDRESS = "localhost";
         final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
         final Bootstrap BOOTSTRAP = PowerMockito.spy(new Bootstrap());
@@ -124,12 +117,12 @@ public class RiakNodeTest
 
 
     @Test
-    public void nodeNotifiesListeners() throws UnknownHostException, Exception
+    public void nodeNotifiesListeners() throws Exception
     {
         RiakNode node = new RiakNode.Builder().build();
         NodeStateListener listener = mock(NodeStateListener.class);
         node.addStateListener(listener);
-        Whitebox.invokeMethod(node, "notifyStateListeners", new Object[0]);
+        Whitebox.invokeMethod(node, "notifyStateListeners");
         verify(listener).nodeStateChanged(node, RiakNode.State.CREATED);
     }
 
@@ -161,7 +154,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void NodeRespectsMax() throws InterruptedException, UnknownHostException, Exception
+    public void NodeRespectsMax() throws Exception
     {
         final int MAX_CONNECTIONS = 2;
 
@@ -185,19 +178,28 @@ public class RiakNodeTest
 
         for (int i = 0; i < MAX_CONNECTIONS; i++)
         {
-            assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+            assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
         }
 
-        assertNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNull(Whitebox.invokeMethod(node, "getConnection"));
         assertEquals(0, node.availablePermits());
 
         node.setMaxConnections(MAX_CONNECTIONS + 1);
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
         assertEquals(0, node.availablePermits());
     }
 
     @Test
-    public void channelsReturnedCorrectly() throws InterruptedException, UnknownHostException, Exception
+    public void NodeMaxCanBeExplicitlySetToUnlimited() throws Exception
+    {
+        final int UNLIMITED = 0;
+        new RiakNode.Builder()
+            .withMaxConnections(UNLIMITED)
+            .build();
+    }
+
+    @Test
+    public void channelsReturnedCorrectly() throws Exception
     {
         final int MAX_CONNECTIONS = 1;
 
@@ -219,17 +221,17 @@ public class RiakNodeTest
             .build();
         node.start();
 
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
-        assertNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
+        assertNull(Whitebox.invokeMethod(node, "getConnection"));
         Whitebox.invokeMethod(node, "returnConnection", c);
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(1, available.size());
-        assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
     }
 
     @Test
     public void healthCheckChangesState()
-        throws InterruptedException, UnknownHostException, Exception
+        throws Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
@@ -257,12 +259,12 @@ public class RiakNodeTest
         NodeStateListener listener = mock(NodeStateListener.class);
         node.addStateListener(listener);
         Whitebox.setInternalState(node, "state", State.RUNNING);
-        Whitebox.invokeMethod(node, "checkHealth", new Object[0]);
+        Whitebox.invokeMethod(node, "checkHealth");
         verify(listener).nodeStateChanged(node, State.HEALTH_CHECKING);
     }
 
     @Test
-    public void idleReaperTest() throws InterruptedException, UnknownHostException, Exception
+    public void idleReaperTest() throws Exception
     {
 
         ChannelFuture future = mock(ChannelFuture.class);
@@ -300,7 +302,7 @@ public class RiakNodeTest
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(6, available.size());
         Thread.sleep(10);
-        Whitebox.invokeMethod(node, "reapIdleConnections", new Object[0]);
+        Whitebox.invokeMethod(node, "reapIdleConnections");
         assertEquals(1, available.size());
     }
 

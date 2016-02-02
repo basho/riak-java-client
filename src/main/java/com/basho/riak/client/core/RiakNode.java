@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Brian Roach <roach at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class RiakNode implements RiakResponseListener
@@ -1336,7 +1337,7 @@ public class RiakNode implements RiakResponseListener
          */
         public Builder withMaxConnections(int maxConnections)
         {
-            if (maxConnections >= minConnections)
+            if (maxConnections == DEFAULT_MAX_CONNECTIONS ||  maxConnections >= minConnections)
             {
                 this.maxConnections = maxConnections;
             }
