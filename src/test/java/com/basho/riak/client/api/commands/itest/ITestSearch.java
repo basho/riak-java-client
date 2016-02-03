@@ -9,9 +9,13 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * Created by alex on 2/3/16.
@@ -21,6 +25,8 @@ public class ITestSearch extends ISearchTestBase
     private final RiakClient client = new RiakClient(cluster);
     private static final String bucketName = "SearchTest";
     private static final String indexName = "search_index";
+    private final String query = "NOT leader_b:true";
+
 
     @BeforeClass
     public static void Setup() throws ExecutionException, InterruptedException
@@ -39,7 +45,7 @@ public class ITestSearch extends ISearchTestBase
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
 
-        Search searchCmd = new Search.Builder(indexName, "NOT leader_b:true").build();
+        Search searchCmd = new Search.Builder(indexName, query).build();
 
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
@@ -51,10 +57,30 @@ public class ITestSearch extends ISearchTestBase
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
 
-        Search searchCmd = new Search.Builder(indexName, "NOT leader_b:true").withRows(0).build();
+        Search searchCmd = new Search.Builder(indexName, query).withRows(0).build();
 
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
         assertEquals(0, response.getAllResults().size());
+    }
+
+    @Test
+    public void testSortField() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testYokozuna);
+        Assume.assumeTrue(testBucketType);
+
+        Search searchCmd = new Search.Builder(indexName, query).sort("age_i asc").build();
+
+        final SearchOperation.Response response = client.execute(searchCmd);
+        assertEquals(3, response.numResults());
+
+        ArrayList<String> ages = new ArrayList<String>();
+        for (Map<String, List<String>> stringListMap : response.getAllResults())
+        {
+            ages.add(stringListMap.get("age_i").get(0));
+        }
+
+        assertArrayEquals(new String[]{"28", "36", "43"}, ages.toArray());
     }
 }

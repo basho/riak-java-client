@@ -17,19 +17,18 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.core.operations.itest.ISearchTestBase;
 import com.basho.riak.client.api.commands.mapreduce.MapReduce;
 import com.basho.riak.client.api.commands.mapreduce.SearchMapReduce;
+import com.basho.riak.client.core.operations.itest.ISearchTestBase;
 import com.basho.riak.client.core.query.functions.Function;
-
-import java.util.concurrent.ExecutionException;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  *

@@ -15,25 +15,20 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.core.operations.SearchOperation;
-import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
-import com.basho.riak.client.core.operations.YzPutIndexOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
-import static com.basho.riak.client.core.operations.itest.ITestBase.cluster;
-import static com.basho.riak.client.core.operations.itest.ITestBase.testYokozuna;
+import com.basho.riak.client.core.operations.*;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Assume;
+import org.junit.Test;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import static org.junit.Assert.*;
-import org.junit.Assume;
-import org.junit.Test;
 
 /**
  *
@@ -101,12 +96,10 @@ public class ITestSearchOperation extends ITestBase
         {
             assertTrue(propsOp.cause().toString(), propsOp.isSuccess());
         }
-        
-        Thread.sleep(5000);
-        
+
         prepSearch(yokozunaBucketType, searchBucket);
-        
-        Thread.sleep(5000); 
+
+        Thread.sleep(3000);
         
         SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create("test_index"), "multi_ss:t*").build();
         
@@ -130,12 +123,11 @@ public class ITestSearchOperation extends ITestBase
         assertTrue(delOp.isSuccess());
         
     }
-    
+
     private void prepSearch(BinaryValue searchBucketType, BinaryValue searchBucket) throws InterruptedException, ExecutionException
     {
-
         RiakObject obj = new RiakObject().setContentType("application/json");
-                            
+
         obj.setValue(BinaryValue.create("{ \"content_s\":\"Alice was beginning to get very tired of sitting by her sister on the " +
                     "bank, and of having nothing to do: once or twice she had peeped into the " +
                     "book her sister was reading, but it had no pictures or conversations in " +
@@ -144,41 +136,41 @@ public class ITestSearchOperation extends ITestBase
 
         Namespace namespace = new Namespace(searchBucketType, searchBucket);
         Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
-        StoreOperation storeOp = 
+        StoreOperation storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-        
+
         obj.setValue(BinaryValue.create("{ \"content_s\":\"So she was considering in her own mind (as well as she could, for the " +
                     "hot day made her feel very sleepy and stupid), whether the pleasure " +
                     "of making a daisy-chain would be worth the trouble of getting up and " +
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
                     "close by her.\", \"multi_ss\":[\"this\",\"that\"]}"));
-        
-        
+
+
         location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
-        storeOp = 
+        storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-        
+
         obj.setValue(BinaryValue.create("{ \"content_s\":\"The rabbit-hole went straight on like a tunnel for some way, and then " +
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
                     "well.\"}"));
-        
+
         location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
-        storeOp = 
+        storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
     }
