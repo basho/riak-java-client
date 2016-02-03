@@ -44,4 +44,17 @@ public class ITestSearch extends ISearchTestBase
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
     }
+
+    @Test
+    public void testZeroSizedPages() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testYokozuna);
+        Assume.assumeTrue(testBucketType);
+
+        Search searchCmd = new Search.Builder(indexName, "NOT leader_b:true").withRows(0).build();
+
+        final SearchOperation.Response response = client.execute(searchCmd);
+        assertEquals(3, response.numResults());
+        assertEquals(0, response.getAllResults().size());
+    }
 }

@@ -153,7 +153,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
             builder.withStart(start);
         }
 
-        if (rows > 0)
+        if (rows >= 0)
         {
             builder.withNumRows(rows);
         }
