@@ -16,23 +16,23 @@
 
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.annotations.RiakVClock;
 import com.basho.riak.client.api.cap.ConflictResolver;
 import com.basho.riak.client.api.cap.ConflictResolverFactory;
 import com.basho.riak.client.api.cap.UnresolvedConflictException;
+import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.api.commands.kv.FetchValue;
+import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.api.commands.kv.StoreValue.Option;
+import com.basho.riak.client.api.commands.kv.UpdateValue;
+import com.basho.riak.client.api.commands.kv.UpdateValue.Update;
 import com.basho.riak.client.api.convert.ConversionException;
 import com.basho.riak.client.api.convert.Converter;
 import com.basho.riak.client.api.convert.ConverterFactory;
-import com.basho.riak.client.core.operations.itest.ITestBase;
-import com.basho.riak.client.api.commands.kv.FetchValue;
-import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.annotations.RiakVClock;
-import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.convert.RiakJacksonModule;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.api.commands.kv.StoreValue.Option;
-import com.basho.riak.client.api.commands.kv.StoreValue;
-import com.basho.riak.client.api.commands.kv.UpdateValue;
-import com.basho.riak.client.api.commands.kv.UpdateValue.Update;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -40,13 +40,15 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -59,12 +61,16 @@ public class ITestORM extends ITestBase
     {
         TypeReference<GenericPojo<Integer>> tr = 
             new TypeReference<GenericPojo<Integer>>(){};
+
         ConverterFactory.getInstance().unregisterConverterForClass(tr);
         ConflictResolverFactory.getInstance().unregisterConflictResolver(tr);
+
+        ConverterFactory.getInstance().unregisterConverterForClass(Foo.class);
+        ConflictResolverFactory.getInstance().unregisterConflictResolver(Foo.class);
     }
     
     @Test
-    public void storeParamterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
+    public void storeParameterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
