@@ -67,7 +67,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
      * Enum that encapsulates the possible settings for a search command's presort setting.
      * Presort results by the key, or search score.
      */
-    public static enum Presort
+    public enum Presort
     {
         KEY("key"), SCORE("score");
 

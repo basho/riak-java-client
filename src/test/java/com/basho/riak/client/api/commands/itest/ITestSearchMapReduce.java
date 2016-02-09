@@ -38,7 +38,7 @@ public class ITestSearchMapReduce extends ISearchTestBase
 {
     private final RiakClient client = new RiakClient(cluster);
     private static final String mrBucketName = bucketName.toString() + "_search_mr";
-    private static final String indexName = "test_mr_index";
+    private static final String indexName = "test_index_ITestSearchMapReduce";
 
     @BeforeClass
     public static void Setup() throws ExecutionException, InterruptedException
@@ -59,7 +59,7 @@ public class ITestSearchMapReduce extends ISearchTestBase
 
         SearchMapReduce smr = new SearchMapReduce.Builder()
                 .withIndex(indexName)
-                .withQuery("NOT leader_b:true")
+                .withQuery("doc_type_i:1 AND NOT leader_b:true")
                 .withMapPhase(Function.newAnonymousJsFunction("function(v) { return [1]; }"), false)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceSum"), true)
                 .build();

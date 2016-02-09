@@ -48,7 +48,7 @@ import org.junit.Before;
 public class ITestBucketKeyMapReduce extends ITestBase
 {
 
-	RiakClient client = new RiakClient(cluster);
+    RiakClient client = new RiakClient(cluster);
     static final String mrBucket = "mr_bucket";
     
     @Before
@@ -78,35 +78,35 @@ public class ITestBucketKeyMapReduce extends ITestBase
     {
         RiakObject obj = new RiakObject();
 
-		obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
-				"bank, and of having nothing to do: once or twice she had peeped into the " +
-				"book her sister was reading, but it had no pictures or conversations in " +
-				"it, 'and what is the use of a book,' thought Alice 'without pictures or " +
-				"conversation?'"));
+        obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
+                "bank, and of having nothing to do: once or twice she had peeped into the " +
+                "book her sister was reading, but it had no pictures or conversations in " +
+                "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
+                "conversation?'"));
         Namespace ns = new Namespace(bucketType, mrBucket);
-		Location location = new Location(ns, "p1");
-		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
+        Location location = new Location(ns, "p1");
+        client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
-		obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
-				"hot day made her feel very sleepy and stupid), whether the pleasure " +
-				"of making a daisy-chain would be worth the trouble of getting up and " +
-				"picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
-				"close by her."));
+        obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
+                "hot day made her feel very sleepy and stupid), whether the pleasure " +
+                "of making a daisy-chain would be worth the trouble of getting up and " +
+                "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
+                "close by her."));
 
-		location = new Location(ns, "p2");
-		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
+        location = new Location(ns, "p2");
+        client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
 
-		obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
-				"dipped suddenly down, so suddenly that Alice had not a moment to think " +
-				"about stopping herself before she found herself falling down a very deep " +
-				"well."));
-		location = new Location(ns, "p3");
-		client.execute(new StoreValue.Builder(obj).withLocation(location).build());
+        obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
+                "dipped suddenly down, so suddenly that Alice had not a moment to think " +
+                "about stopping herself before she found herself falling down a very deep " +
+                "well."));
+        location = new Location(ns, "p3");
+        client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
     }
     
-	@Test
+    @Test
     public void JsBucketKeyMRDefaultType() throws InterruptedException, ExecutionException, IOException
     {
         JsBucketKeyMR(Namespace.DEFAULT_BUCKET_TYPE);
@@ -119,62 +119,62 @@ public class ITestBucketKeyMapReduce extends ITestBase
         JsBucketKeyMR(bucketType.toString());
     }
     
-	private void JsBucketKeyMR(String bucketType) throws InterruptedException, ExecutionException, IOException
-	{
-		initValues(bucketType);
+    private void JsBucketKeyMR(String bucketType) throws InterruptedException, ExecutionException, IOException
+    {
+        initValues(bucketType);
         
         Namespace ns = new Namespace(bucketType, mrBucket);
-		MapReduce mr = new BucketKeyMapReduce.Builder()
-				.withLocation(new Location(ns, "p1"))
-				.withLocation(new Location(ns, "p2"))
-				.withLocation(new Location(ns, "p3"))
-				.withMapPhase(Function.newAnonymousJsFunction(
-						"function(v, key_data) {" +
-								"  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
-								"  var r = [];" +
-								"  for(var i in m) {" +
-								"    if(m[i] != '') {" +
-								"      var o = {};" +
-								"      o[m[i]] = 1;" +
-								"      r.push(o);" +
-								"     }" +
-								"  }" +
-								"  return r;" +
-								"}"
-				))
-				.withReducePhase(Function.newAnonymousJsFunction(
-						"function(v, key_data) {" +
-								"  var r = {};" +
-								"  for(var i in v) {" +
-								"    for(var w in v[i]) {" +
-								"      if(w in r)" +
-								"        r[w] += v[i][w];" +
-								"      else" +
-								"        r[w] = v[i][w];" +
-								"     }" +
-								"  }" +
-								"  return [r];" +
-								"}"
-				), true)
-				.build();
+        MapReduce mr = new BucketKeyMapReduce.Builder()
+                .withLocation(new Location(ns, "p1"))
+                .withLocation(new Location(ns, "p2"))
+                .withLocation(new Location(ns, "p3"))
+                .withMapPhase(Function.newAnonymousJsFunction(
+                        "function(v, key_data) {" +
+                                "  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
+                                "  var r = [];" +
+                                "  for(var i in m) {" +
+                                "    if(m[i] != '') {" +
+                                "      var o = {};" +
+                                "      o[m[i]] = 1;" +
+                                "      r.push(o);" +
+                                "     }" +
+                                "  }" +
+                                "  return r;" +
+                                "}"
+                ))
+                .withReducePhase(Function.newAnonymousJsFunction(
+                        "function(v, key_data) {" +
+                                "  var r = {};" +
+                                "  for(var i in v) {" +
+                                "    for(var w in v[i]) {" +
+                                "      if(w in r)" +
+                                "        r[w] += v[i][w];" +
+                                "      else" +
+                                "        r[w] = v[i][w];" +
+                                "     }" +
+                                "  }" +
+                                "  return [r];" +
+                                "}"
+                ), true)
+                .build();
 
-		MapReduce.Response response = client.execute(mr);
-		
+        MapReduce.Response response = client.execute(mr);
+
         // The query should return one phase result which is a JSON array containing a
-		// single JSON object that is a set of word counts.        
+        // single JSON object that is a set of word counts.
         ArrayNode resultList = response.getResultForPhase(1);
 
-		assertEquals(1, response.getResultsFromAllPhases().size());
+        assertEquals(1, response.getResultsFromAllPhases().size());
         
-		String json = resultList.get(0).toString();
-		ObjectMapper oMapper = new ObjectMapper();
+        String json = resultList.get(0).toString();
+        ObjectMapper oMapper = new ObjectMapper();
         
         TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
         Map<String, Integer> resultMap = oMapper.readValue(json, type);
 
-		assertNotNull(resultMap.containsKey("the"));
-		assertEquals(Integer.valueOf(8), resultMap.get("the"));
-	}
+        assertNotNull(resultMap.containsKey("the"));
+        assertEquals(Integer.valueOf(8), resultMap.get("the"));
+    }
     
     @Test
     public void erlangBucketKeyMRDefaultType() throws ExecutionException, InterruptedException
@@ -197,9 +197,9 @@ public class ITestBucketKeyMapReduce extends ITestBase
         Namespace ns = new Namespace(bucketType, mrBucket);
         
         MapReduce mr = new BucketKeyMapReduce.Builder()
-				.withLocation(new Location(ns, "p1"))
-				.withLocation(new Location(ns, "p2"))
-				.withLocation(new Location(ns, "p3"))
+                .withLocation(new Location(ns, "p1"))
+                .withLocation(new Location(ns, "p2"))
+                .withLocation(new Location(ns, "p3"))
                 .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false) 
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce","reduce_sort"), true)
                 .build();

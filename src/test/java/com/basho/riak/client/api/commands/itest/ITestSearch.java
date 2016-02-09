@@ -23,9 +23,9 @@ import static org.junit.Assert.assertArrayEquals;
 public class ITestSearch extends ISearchTestBase
 {
     private final RiakClient client = new RiakClient(cluster);
-    private static final String bucketName = "SearchTest";
-    private static final String indexName = "search_index";
-    private final String query = "NOT leader_b:true";
+    private static final String bucketName = "SearchTestCommand";
+    private static final String indexName = "search_index_ITestSearch";
+    private final String thundercatsQuery = "doc_type_i:1 AND NOT leader_b:true";
 
 
     @BeforeClass
@@ -41,11 +41,12 @@ public class ITestSearch extends ISearchTestBase
     }
 
     @Test
-    public void basicSearch() throws InterruptedException, ExecutionException {
+    public void basicSearch() throws InterruptedException, ExecutionException
+    {
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
 
-        Search searchCmd = new Search.Builder(indexName, query).build();
+        Search searchCmd = new Search.Builder(indexName, thundercatsQuery).build();
 
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
@@ -57,7 +58,7 @@ public class ITestSearch extends ISearchTestBase
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
 
-        Search searchCmd = new Search.Builder(indexName, query).withRows(0).build();
+        Search searchCmd = new Search.Builder(indexName, thundercatsQuery).withRows(0).build();
 
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
@@ -70,7 +71,7 @@ public class ITestSearch extends ISearchTestBase
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
 
-        Search searchCmd = new Search.Builder(indexName, query).sort("age_i asc").build();
+        Search searchCmd = new Search.Builder(indexName, thundercatsQuery).sort("age_i asc").build();
 
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
