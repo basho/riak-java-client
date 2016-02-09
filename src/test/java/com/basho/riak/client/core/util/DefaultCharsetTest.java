@@ -2,7 +2,9 @@ package com.basho.riak.client.core.util;
 
 import org.junit.After;
 import org.junit.Assume;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,6 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DefaultCharsetTest
 {
     private static final Charset SystemDefaultCharset = Charset.defaultCharset();
@@ -31,7 +34,7 @@ public class DefaultCharsetTest
     }
 
     @Test
-    public void testSystemDefaultCharsetIsReturnedIfNoPropertyIsDefined()
+    public void a_testSystemDefaultCharsetIsReturnedIfNoPropertyIsDefined()
     {
         Charset clientDefault = DefaultCharset.get();
 
@@ -42,7 +45,7 @@ public class DefaultCharsetTest
     }
 
     @Test
-    public void testDefinedCharsetIsReturnedIfPropertyIsDefined()
+    public void b_testDefinedCharsetIsReturnedIfPropertyIsDefined()
     {
         Charset clientDefault = DefaultCharset.get();
 
@@ -55,7 +58,7 @@ public class DefaultCharsetTest
     }
 
     @Test
-    public void testIntializerProvidesTheRequestedCharsetIfItIsValid()
+    public void c_testIntializerProvidesTheRequestedCharsetIfItIsValid()
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException
     {
         String goodCharsetName = "UTF-16";
@@ -78,7 +81,7 @@ public class DefaultCharsetTest
     }
 
     @Test
-    public void testIntializerProvidesTheDefaultSytemCharsetIfInvalidOneWasRequested()
+    public void d_testIntializerProvidesTheDefaultSytemCharsetIfInvalidOneWasRequested()
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException
     {
         String badCharsetName = "Foobar-16NE";
@@ -118,7 +121,7 @@ public class DefaultCharsetTest
 
 
     @Test
-    public void testRuntimeSetCharset()
+    public void e_testRuntimeSetCharset()
     {
         Charset ascii = Charset.forName("US-ASCII");
         Charset utf8 = Charset.forName("UTF-8");
