@@ -107,7 +107,7 @@ public class ITestYzAdminOperations extends ITestBase
     public void testStoreAndFetchIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testYokozuna);
-        YokozunaIndex index = new YokozunaIndex(indexName);
+        YokozunaIndex index = new YokozunaIndex(indexName).withNVal(2);
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
@@ -132,12 +132,12 @@ public class ITestYzAdminOperations extends ITestBase
         assertFalse(indexList.isEmpty());
         index = indexList.get(0);
         assertEquals(index.getSchema(), "_yz_default");
+        assertEquals((Integer)2, index.getNVal());
         
         YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder(indexName).build();
         cluster.execute(delOp);
         delOp.await();
         assertTrue(delOp.isSuccess());
-        
     }
     
     @Test
