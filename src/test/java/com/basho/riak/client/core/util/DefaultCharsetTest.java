@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class DefaultCharsetTest
 {

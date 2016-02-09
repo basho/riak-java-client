@@ -23,7 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 /**
  * Time Series Cell Unit Tests
@@ -75,7 +75,7 @@ public class CellTest
         double d = 42.0123456789123456789d;
         Cell c = new Cell(d);
         assertTrue(c.hasDouble());
-        assertEquals(c.getDouble(), d);
+        assertEquals(c.getDouble(), d, Double.MIN_VALUE);
     }
     @Test
     public void TestBooleans()

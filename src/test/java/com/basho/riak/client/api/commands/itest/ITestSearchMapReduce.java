@@ -31,8 +31,8 @@ import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Test;
 

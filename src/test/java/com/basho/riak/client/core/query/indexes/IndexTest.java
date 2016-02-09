@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.core.query.indexes;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class IndexTest

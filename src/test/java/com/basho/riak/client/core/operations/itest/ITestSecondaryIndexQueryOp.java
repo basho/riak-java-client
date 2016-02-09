@@ -26,7 +26,7 @@ import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.concurrent.ExecutionException;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Assume;
 import static org.junit.Assert.*;
 import org.junit.Test;
