@@ -21,11 +21,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -227,6 +223,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     }
 
     public <V,S> RiakFuture<V,S> execute(FutureOperation<V, ?, S> operation)
+    {
+        return executeFutureOperation(operation);
+    }
+
+    public <V,S> StreamingRiakFuture<V,S> execute(StreamingFutureOperation<V, ?, S> operation)
+    {
+        executeFutureOperation(operation);
+        return operation;
+    }
+
+    private <V, S> RiakFuture<V, S> executeFutureOperation(FutureOperation<V, ?, S> operation)
     {
         stateCheck(State.RUNNING, State.QUEUING);
         operation.setRetrier(this, executionAttempts);

@@ -17,13 +17,18 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
+
+import com.basho.riak.client.core.operations.StreamingListKeysOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -115,6 +120,13 @@ public class ITestListKeysOperation extends ITestBase
         assumeTrue(testBucketType);
         testLargeKeyList(bucketType.toString());
     }
+
+    @Test
+    public void testLargeKeyListTestTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testLargeKeyListStreaming(bucketType.toString());
+    }
     
     private void testLargeKeyList(String bucketType) throws InterruptedException, ExecutionException
     {
@@ -149,15 +161,11 @@ public class ITestListKeysOperation extends ITestBase
                         latch.countDown();
                     }
                 }
-                catch (InterruptedException ex)
+                catch (InterruptedException | ExecutionException ex)
                 {
                     throw new RuntimeException(ex);
                 }
-                catch (ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
-                
+
             }
         };
         
@@ -179,5 +187,68 @@ public class ITestListKeysOperation extends ITestBase
         latch.await(2, TimeUnit.MINUTES);
         ITestBase.resetAndEmptyBucket(ns);
         
+    }
+
+
+    private void testLargeKeyListStreaming(String bucketType) throws InterruptedException, ExecutionException
+    {
+        final String baseKey = "my_key";
+        final String value = "{\"value\":\"value\"}";
+        final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_4");
+        final Semaphore semaphore = new Semaphore(10);
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        RiakFutureListener<StoreOperation.Response, Location> listener =
+                new RiakFutureListener<StoreOperation.Response, Location>() {
+
+                    private final int expected = 1000;
+                    private final AtomicInteger received = new AtomicInteger();
+
+                    @Override
+                    public void handle(RiakFuture<StoreOperation.Response, Location> f)
+                    {
+                        try
+                        {
+                            f.get();
+                            semaphore.release();
+                            received.incrementAndGet();
+
+                            if (expected == received.intValue())
+                            {
+                                latch.countDown();
+                            }
+                        }
+                        catch (InterruptedException | ExecutionException ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                };
+
+        for (int i = 0; i < 1000; i++)
+        {
+            semaphore.acquire();
+            BinaryValue key = BinaryValue.unsafeCreate((baseKey + i).getBytes());
+            RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
+            Location location = new Location(ns, key);
+            StoreOperation storeOp =
+                    new StoreOperation.Builder(location)
+                            .withContent(rObj)
+                            .build();
+
+            storeOp.addListener(listener);
+            cluster.execute(storeOp);
+        }
+
+        latch.await(2, TimeUnit.MINUTES);
+
+        StreamingListKeysOperation slko = new StreamingListKeysOperation.Builder(ns).build();
+        final StreamingRiakFuture<BinaryValue, Namespace> execute = cluster.execute(slko);
+
+        final Iterator<BinaryValue> streamingResultsIterator = execute.getStreamingResultsIterator();
+
+
+        ITestBase.resetAndEmptyBucket(ns);
+
     }
 }

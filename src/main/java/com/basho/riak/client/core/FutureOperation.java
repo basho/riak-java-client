@@ -39,19 +39,19 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 {
 
-    private enum State
+    protected enum State
     {
         CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED
     }
 
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private volatile OperationRetrier retrier;
-    private volatile int remainingTries = 1;
-    private volatile List<U> rawResponse = new LinkedList<U>();
-    private volatile Throwable exception;
+    protected final CountDownLatch latch = new CountDownLatch(1);
+    protected volatile OperationRetrier retrier;
+    protected volatile int remainingTries = 1;
+    protected volatile LinkedList<U> rawResponses = new LinkedList<U>();
+    protected volatile Throwable exception;
     private volatile T converted;
-    private volatile State state = State.CREATED;
+    protected volatile State state = State.CREATED;
     private volatile RiakNode lastNode;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
@@ -106,7 +106,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         }
     }
 
-    private void fireListeners()
+    protected void fireListeners()
     {
 
         boolean fireNow = false;
@@ -152,11 +152,11 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
 
     // Exposed for testing.
-    public synchronized final void setResponse(RiakMessage rawResponse)
+    public synchronized void setResponse(RiakMessage rawResponse)
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         U decodedMessage = decode(rawResponse);
-        this.rawResponse.add(decodedMessage);
+        this.rawResponses.add(decodedMessage);
         exception = null;
         if (done(decodedMessage))
         {
@@ -261,7 +261,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         }
         else if (null == converted)
         {
-            converted = convert(rawResponse);
+            converted = convert(rawResponses);
             
         }
 
@@ -283,7 +283,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         }
         else if (null == converted)
         {
-            converted = convert(rawResponse);
+            converted = convert(rawResponses);
         }
         
         return converted;
@@ -296,7 +296,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             if (null == converted)
             {
-                converted = convert(rawResponse);
+                converted = convert(rawResponses);
             }
             
             return converted;
@@ -320,7 +320,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
     
     
-    private void stateCheck(State... allowedStates)
+    protected void stateCheck(State... allowedStates)
     {
         if (Arrays.binarySearch(allowedStates, state) < 0)
         {
