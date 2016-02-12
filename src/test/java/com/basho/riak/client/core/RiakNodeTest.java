@@ -24,10 +24,13 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.List;
@@ -230,7 +233,6 @@ public class RiakNodeTest
 
     @Test
     public void healthCheckChangesState() throws Exception
-        throws InterruptedException, UnknownHostException, Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
