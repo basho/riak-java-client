@@ -49,7 +49,7 @@ public class RiakNodeFixtureTest extends FixtureTest
 {
     
     @Test
-    public void closedConnectionsTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
+    public void closedConnectionsTriggerHealthCheck() throws InterruptedException, Exception
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.ACCEPT_THEN_CLOSE)
@@ -65,7 +65,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
     
     @Test
-    public void failedConnectionsTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
+    public void failedConnectionsTriggerHealthCheck() throws InterruptedException, Exception
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.NO_LISTENER)
@@ -81,7 +81,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
         
     @Test
-    public void operationFailuresTriggerHealthCheck() throws UnknownHostException, InterruptedException, Exception
+    public void operationFailuresTriggerHealthCheck() throws InterruptedException, Exception
     {
         RiakNode node = 
             new RiakNode.Builder()
@@ -113,7 +113,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
     
     @Test
-    public void idleConnectionsAreRemoved() throws UnknownHostException, InterruptedException, Exception
+    public void idleConnectionsAreRemoved() throws InterruptedException, Exception
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
@@ -150,7 +150,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
     
     @Test
-    public void nodeGoingDown() throws UnknownHostException, IOException, InterruptedException, ExecutionException
+    public void nodeGoingDown() throws IOException, InterruptedException, ExecutionException
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
@@ -178,7 +178,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
     
     @Test
-    public void nodeRecovery() throws UnknownHostException, IOException, InterruptedException, ExecutionException
+    public void nodeRecovery() throws IOException, InterruptedException, ExecutionException
     {
         RiakNode node = new RiakNode.Builder()
                                .withRemotePort(startingPort + NetworkTestFixture.PB_FULL_WRITE_STAY_OPEN)
@@ -262,7 +262,7 @@ public class RiakNodeFixtureTest extends FixtureTest
     }
 
     @Test
-    public void nodeChangesStateOnPoolState() throws UnknownHostException, IOException, InterruptedException, ExecutionException
+    public void nodeChangesStateOnPoolState() throws IOException, InterruptedException, ExecutionException
     {
         RiakNode node = 
             new RiakNode.Builder()

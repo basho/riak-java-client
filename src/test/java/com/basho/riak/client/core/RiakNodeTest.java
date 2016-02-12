@@ -15,19 +15,19 @@
  */
 package com.basho.riak.client.core;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.fieldIn;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
+import com.basho.riak.client.core.RiakNode.State;
+import com.google.protobuf.Message;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
-
-import java.net.InetSocketAddress;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.List;
@@ -35,17 +35,11 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
-
-import com.basho.riak.client.core.RiakNode.State;
-import com.google.protobuf.Message;
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.fieldIn;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -58,7 +52,7 @@ import com.google.protobuf.Message;
 public class RiakNodeTest
 {
     @Test
-    public void builderProducesDefaultNode() throws UnknownHostException
+    public void builderProducesDefaultNode()
     {
         RiakNode node = new RiakNode.Builder().build();
 
@@ -73,7 +67,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void builderProducesCorrectNode() throws UnknownHostException
+    public void builderProducesCorrectNode()
     {
         final int IDLE_TIMEOUT = 2000;
         final int CONNECTION_TIMEOUT = 2001;
@@ -111,7 +105,7 @@ public class RiakNodeTest
     }
 
     @Test
-    public void nodeRegistersListeners() throws UnknownHostException
+    public void nodeRegistersListeners()
     {
         RiakNode node = new RiakNode.Builder().build();
         NodeStateListener listener = mock(NodeStateListener.class);
@@ -195,6 +189,15 @@ public class RiakNodeTest
     }
 
     @Test
+    public void NodeMaxCanBeExplicitlySetToUnlimited() throws Exception
+    {
+        final int UNLIMITED = 0;
+        new RiakNode.Builder()
+            .withMaxConnections(UNLIMITED)
+            .build();
+    }
+
+    @Test
     public void channelsReturnedCorrectly() throws Exception
     {
         final int MAX_CONNECTIONS = 1;
@@ -227,6 +230,7 @@ public class RiakNodeTest
 
     @Test
     public void healthCheckChangesState() throws Exception
+        throws InterruptedException, UnknownHostException, Exception
     {
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);

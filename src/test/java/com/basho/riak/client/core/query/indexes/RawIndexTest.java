@@ -39,13 +39,13 @@ public class RawIndexTest
     @Test
     public void builderCreatesIndex()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.INT);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.INT);
         RawIndex index = builder.createIndex();
         assertEquals(index.getName(), "index_name");
         assertEquals(index.getType(), IndexType.INT);
         assertEquals(index.getFullname(), "index_name" + IndexType.INT.suffix());
         
-        builder = new RawIndex.Name("index_name", IndexType.BIN);
+        builder = RawIndex.named("index_name", IndexType.BIN);
         index = builder.createIndex();
         assertEquals(index.getName(), "index_name");
         assertEquals(index.getType(), IndexType.BIN);
@@ -56,7 +56,7 @@ public class RawIndexTest
     @Test
     public void stripSuffix()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name_int", IndexType.INT);
+        RawIndex.Name builder = RawIndex.named("index_name_int", IndexType.INT);
         RawIndex index = builder.createIndex();
         assertEquals(index.getName(), "index_name");
     }
@@ -64,7 +64,7 @@ public class RawIndexTest
     @Test
     public void addValue()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         byte[] array = "value".getBytes();
         BinaryValue baw = BinaryValue.unsafeCreate(array);
@@ -78,7 +78,7 @@ public class RawIndexTest
     @Test
     public void addValues()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         List<BinaryValue> values = new LinkedList<BinaryValue>();
@@ -100,7 +100,7 @@ public class RawIndexTest
     @Test
     public void removeValue()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         BinaryValue baw = null;
         for (int i = 0; i < 3; i++)
@@ -119,7 +119,7 @@ public class RawIndexTest
     @Test
     public void removeValues()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         List<BinaryValue> values = new LinkedList<BinaryValue>();
@@ -144,7 +144,7 @@ public class RawIndexTest
     @Test
     public void noDuplicates()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         for (int i = 0; i < 5; i++)
@@ -159,7 +159,7 @@ public class RawIndexTest
     @Test
     public void wrap()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         List<BinaryValue> values = new LinkedList<BinaryValue>();
@@ -170,7 +170,7 @@ public class RawIndexTest
         
         index.add(values);
         
-        builder = new RawIndex.Name("index_name", IndexType.BIN);
+        builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index2 = builder.wrap(index).createIndex();
         
         assertEquals(index, index2);
@@ -184,7 +184,7 @@ public class RawIndexTest
     @Test
     public void copy()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         List<BinaryValue> values = new LinkedList<BinaryValue>();
@@ -195,7 +195,7 @@ public class RawIndexTest
         
         index.add(values);
         
-        builder = new RawIndex.Name("index_name", IndexType.BIN);
+        builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index2 = builder.copyFrom(index).createIndex();
         
         assertEquals(index, index2);
@@ -208,7 +208,7 @@ public class RawIndexTest
     @Test
     public void iterator()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         List<BinaryValue> values = new LinkedList<BinaryValue>();
@@ -237,7 +237,7 @@ public class RawIndexTest
     @Test
     public void values()
     {
-        RawIndex.Name builder = new RawIndex.Name("index_name", IndexType.BIN);
+        RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
         
         List<BinaryValue> values = new LinkedList<BinaryValue>();

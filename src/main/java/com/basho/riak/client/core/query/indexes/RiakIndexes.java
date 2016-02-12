@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * mutable index; changes are made directly to it.
  * </p>
  * <blockquote><pre>
- * LongIntIndex myIndex = riakIndexes.getIndex(new LongIntIndex.Name("number_on_hand"));
+ * LongIntIndex myIndex = riakIndexes.getIndex(LongIntIndex.named("number_on_hand"));
  * myIndex.removeAll();
  * myIndex.add(6L);
  * </pre></blockquote>
@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * an index.
  * </p>
  * <blockquote><pre>
- * riakIndexes.getIndex(new StringBinIndex.Name("colors")).remove("blue").add("red");
+ * riakIndexes.getIndex(StringBinIndex.named("colors")).remove("blue").add("red");
  * </pre></blockquote>
  * <h6>Special note when using RawIndex</h6>
  * A {@code RiakIndex} is uniquely identified by its textual name and {@code IndexType} 
@@ -68,12 +68,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * public void wrapping()
  * {
  *     // creates or fetches the BIN (_bin) index named "foo", adds a value to it  
- *     RawIndex index = indexes.getIndex(new RawIndex.Name("foo", IndexType.BIN));
+ *     RawIndex index = indexes.getIndex(RawIndex.named("foo", IndexType.BIN));
  *     BinaryValue baw = BinaryValue.unsafeCreate("value".getBytes());
  *     index.add(baw);
  *       
  *     // fetches the previously created index as a StringBinIndex
- *     StringBinIndex wrapper = indexes.getIndex(new StringBinIndex.Name("foo"));
+ *     StringBinIndex wrapper = indexes.getIndex(StringBinIndex.named("foo"));
  *
  *     // The references are to different objects
  *     assertNotSame(index, wrapper);
@@ -128,7 +128,7 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      * @param name the {@link RiakIndex.Name} representing the index to check for
      * @return {@code true} if the index is present, {@code false} otherwise
      */
-    public <T extends RiakIndex> boolean hasIndex(RiakIndex.Name<T> name)
+    public <T extends RiakIndex<?>> boolean hasIndex(RiakIndex.Name<T> name)
     {
         return indexes.containsKey(name.getFullname());
     }
@@ -139,10 +139,17 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      * If the named index does not exist it is created and added to the container
      * before being returned. 
      * </p>
-     * @param name The {@link RiakIndex.Name} of the index to retrieve
+     * <p>Scala Users: to chain RiakIndex method calls off of this method
+     * please include explicit type parameters for the getIndex() call.
+     * e.g.
+     * </p>
+     * <blockquote><pre>
+     * riakIndexes.getIndex[StringBinIndex,StringBinIndex.Name](StringBinIndex.named("myindex")).add("myvalue")
+     * </pre></blockquote>
+     * @param name The {@link RiakIndex.Name} of the index to retrieve.
      * @return The requested index typed accordingly.
      */
-    public  <V extends RiakIndex, T extends RiakIndex.Name<V>> V getIndex(T name)
+    public <V extends RiakIndex<?>, T extends RiakIndex.Name<V>> V getIndex(T name)
     {
         RiakIndex<?> existing = indexes.get(name.getFullname());
         if (existing != null)

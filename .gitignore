@@ -12,3 +12,6 @@ target
 .DS_Store
 nb-configuration.xml
 dependency-reduced-pom.xml
+tags
+.java-version
+

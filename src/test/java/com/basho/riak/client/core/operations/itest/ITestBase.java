@@ -19,6 +19,7 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
@@ -31,7 +32,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -42,10 +42,13 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -59,6 +62,7 @@ public abstract class ITestBase
     protected static boolean test2i;
     protected static boolean testBucketType;
     protected static boolean testCrdt;
+    protected static boolean testTimeSeries;
     protected static boolean legacyRiakSearch;
     protected static boolean security;
     protected static BinaryValue bucketName;
@@ -71,7 +75,7 @@ public abstract class ITestBase
     protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
 
     @BeforeClass
-    public static void setUp() throws UnknownHostException, FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    public static void setUp() throws FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
         
@@ -171,6 +175,7 @@ public abstract class ITestBase
         setBucketType = BinaryValue.create("jvtest_sets");
         mapBucketType = BinaryValue.create("jvtest_maps");
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
+        testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries"));
 
         /**
          * Riak PBC port
@@ -310,5 +315,23 @@ public abstract class ITestBase
 
     public static Namespace defaultNamespace() {
         return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+    }
+
+    protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
+    {
+        if(resultFuture.cause() == null)
+        {
+            assertTrue(resultFuture.isSuccess());
+        }
+        else
+        {
+            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
+        }
+    }
+
+    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture)
+    {
+        assertFalse(resultFuture.isSuccess());
+        assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
     }
 }

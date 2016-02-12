@@ -259,7 +259,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             throw new ExecutionException(exception);
         }
-        else if(null == converted)
+        else if (null == converted)
         {
             converted = convert(rawResponse);
             

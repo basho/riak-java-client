@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.operations.itest;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -46,13 +45,8 @@ public class RiakJKSConnection {
      * @return Riak Cluster object based on builder properties
      */
     private static RiakCluster initializeRiakCluster(RiakNode.Builder builder){
-        RiakCluster cluster = null;
-        try {
-            cluster = new RiakCluster.Builder(builder.build()).build();
-            cluster.start();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
+        cluster.start();
         return cluster;
     }
 
@@ -76,7 +70,7 @@ public class RiakJKSConnection {
     public static RiakClient getRiakConnection(){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -107,7 +101,7 @@ public class RiakJKSConnection {
     public static RiakClient getRiakConnection(String username, String password){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -145,7 +139,7 @@ public class RiakJKSConnection {
     public static RiakClient getRiakConnection(String username, String password, String storePath, String storePasswd, String keyPasswd){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password,storePath,storePasswd,keyPasswd);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;

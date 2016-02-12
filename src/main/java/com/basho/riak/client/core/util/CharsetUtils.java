@@ -164,11 +164,11 @@ public class CharsetUtils
      * @return a String
      */
     public static String asString(byte[] bytes, Charset charset) {
-        if(bytes == null) {
+        if (bytes == null) {
             return null;
         }
 
-        if(charset == null) {
+        if (charset == null) {
             throw new IllegalArgumentException("Cannot get bytes without a Charset");
         }
 
@@ -202,11 +202,11 @@ public class CharsetUtils
      * @return a byte[] array
      */
     public static byte[] asBytes(String string, Charset charset) {
-        if(string == null) {
+        if (string == null) {
             return null;
         }
 
-        if(charset == null) {
+        if (charset == null) {
             throw new IllegalArgumentException("Cannot get bytes without a Charset");
         }
 
@@ -237,7 +237,7 @@ public class CharsetUtils
      * @return true if {@code ctype} has a charset, false otherwise
      */
     public static boolean hasCharset(String ctype) {
-        if(ctype == null) {
+        if (ctype == null) {
             return false;
         }
         Matcher matcher = CHARSET_PATT.matcher(ctype);

@@ -1,5 +1,8 @@
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
@@ -14,8 +17,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
-
-import sun.misc.BASE64Decoder;
+import javax.xml.bind.DatatypeConverter;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakCluster;
@@ -83,8 +85,7 @@ public class RiakPemConnection {
             String key = new String(privKeyBytes);
             key = key.replace("-----BEGIN PRIVATE KEY-----\n", "").replace("-----END PRIVATE KEY-----\n", "");
 
-            BASE64Decoder base64Decoder = new BASE64Decoder();
-            privKeyBytes = base64Decoder.decodeBuffer(key);
+            privKeyBytes = DatatypeConverter.parseBase64Binary(key);
 
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             KeySpec ks = new PKCS8EncodedKeySpec(privKeyBytes);
@@ -114,13 +115,8 @@ public class RiakPemConnection {
      * @return Riak Cluster object based on builder properties
      */
     private static RiakCluster initializeRiakCluster(RiakNode.Builder builder){
-        RiakCluster cluster = null;
-        try {
-            cluster = new RiakCluster.Builder(builder.build()).build();
-            cluster.start();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
+        cluster.start();
         return cluster;
     }
 
@@ -144,7 +140,7 @@ public class RiakPemConnection {
     public static RiakClient getRiakConnection(){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -175,7 +171,7 @@ public class RiakPemConnection {
     public static RiakClient getRiakConnection(String username, String password){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
@@ -211,7 +207,7 @@ public class RiakPemConnection {
     public static RiakClient getRiakConnection(String username, String password, String privateKeyPemPath, String publicCertPemPath){
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password,privateKeyPemPath,publicCertPemPath);
-        if(cluster!=null){
+        if (cluster!=null){
             client= new RiakClient(cluster);
         }
         return client;
