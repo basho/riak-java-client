@@ -904,19 +904,15 @@ public class RiakNode implements RiakResponseListener
     private void checkNetworkAddressCacheSettings()
     {
         final String property = Security.getProperty("networkaddress.cache.ttl");
-        if (property == null)
-        {
-            return;
-        }
 
-        int cacheTTL = Integer.parseInt(property);
+        int cacheTTL = property == null ? -1 : Integer.parseInt(property);
 
         if (cacheTTL == -1)
         {
             logger.warn(
                     "networkaddress.cache.ttl is currently set to cache DNS lookups forever. If you use domain names " +
-                            "for the Riak server connection, and an IP address changes (riak host or a load balancer)" +
-                            ", this will block the client from creating connections with the new IP addresses.");
+                    "for the Riak server connection, and an IP address changes (riak host or a load balancer), " +
+                    "this will block the client from creating connections with the new IP addresses.");
         }
     }
 
