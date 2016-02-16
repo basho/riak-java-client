@@ -905,14 +905,27 @@ public class RiakNode implements RiakResponseListener
     {
         final String property = Security.getProperty("networkaddress.cache.ttl");
 
-        int cacheTTL = property == null ? -1 : Integer.parseInt(property);
+        final boolean usingSecurityMgr = System.getSecurityManager() != null;
+        final boolean propertyUndefined = property == null;
+        boolean logWarning = false;
 
-        if (cacheTTL == -1)
+        if(propertyUndefined && usingSecurityMgr)
+        {
+            logWarning = true;
+        }
+        else if(!propertyUndefined)
+        {
+            final int cacheTTL = Integer.parseInt(property);
+            logWarning = (cacheTTL == -1);
+        }
+
+        if (logWarning)
         {
             logger.warn(
-                    "networkaddress.cache.ttl is currently set to cache DNS lookups forever. If you use domain names " +
-                    "for the Riak server connection, and an IP address changes (riak host or a load balancer), " +
-                    "this will block the client from creating connections with the new IP addresses.");
+                    "The Java Security \"networkaddress.cache.ttl\" property may be set to cache DNS lookups forever. " +
+                    "Using domain names for Riak nodes or an intermediate load balancer could result in stale IP " +
+                    "addresses being used for new connections, causing connection errors. " +
+                    "If you use domain names for Riak nodes, please set this property to a value greater than zero.");
         }
     }
 
