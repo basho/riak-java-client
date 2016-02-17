@@ -23,6 +23,7 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -55,6 +56,17 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 ce.description = e.getKeyspaceDesc().toStringUtf8();
                 ce.host = e.getIp().toStringUtf8();
                 ce.port = e.getPort();
+
+                if ("0.0.0.0".equals(ce.getHost()))
+                {
+                    LoggerFactory.getLogger(CoveragePlanOperation.class).error(
+                            "CoveragePlanOperation returns at least one coverage entry: '{}' -- with IP address '0.0.0.0'.\n" +
+                                "Execution will be failed due to the imposibility of using IP '0.0.0.0' " +
+                                "for querying data from the remote Riak.",
+                            ce.description);
+
+                    throw new RuntimeException("CoveragePlanOperation returns at least one coverage entry with ip '0.0.0.0'.");
+                }
 
                 r.addEntry(ce);
             }
