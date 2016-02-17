@@ -42,9 +42,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+
+import org.junit.*;
+import org.junit.rules.TestName;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -73,12 +73,13 @@ public abstract class ITestBase
     protected static BinaryValue yokozunaBucketType;
     protected static String overrideCert;
     protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
+    @Rule
+    public TestName testName = new TestName();
 
     @BeforeClass
     public static void setUp() throws FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
-        
         /**
          * Riak security.
          *
@@ -219,9 +220,9 @@ public abstract class ITestBase
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
     }
-    
-    @Before
-    public void beforeTest() throws InterruptedException, ExecutionException
+
+    @After
+    public void afterTest() throws ExecutionException, InterruptedException
     {
         resetAndEmptyBucket(bucketName);
         if (testBucketType)
@@ -233,7 +234,6 @@ public abstract class ITestBase
     @AfterClass
     public static void tearDown() throws InterruptedException, ExecutionException
     {
-        resetAndEmptyBucket(bucketName);
         cluster.shutdown().get();
     }
     
@@ -334,4 +334,6 @@ public abstract class ITestBase
         assertFalse(resultFuture.isSuccess());
         assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
     }
+
+    protected void setBucketNameToTestName() {bucketName = BinaryValue.create(testName.getMethodName());}
 }
