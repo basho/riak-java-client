@@ -40,7 +40,6 @@ import org.junit.Test;
  */
 public class ITestListKeysOperation extends ITestBase
 {
-    
     @Test
     public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException
     {
@@ -123,11 +122,11 @@ public class ITestListKeysOperation extends ITestBase
         final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_3");
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
+        final int expected = 100;
         
         RiakFutureListener<StoreOperation.Response, Location> listener =
             new RiakFutureListener<StoreOperation.Response, Location>() {
-            
-            private final int expected = 1000;
+
             private final AtomicInteger received = new AtomicInteger();
             
             @Override
@@ -145,23 +144,19 @@ public class ITestListKeysOperation extends ITestBase
                         cluster.execute(klistOp);
                         List<BinaryValue> kList;
                         kList = klistOp.get().getKeys();
-                        assertEquals(kList.size(), 1000);
+                        assertEquals(expected, kList.size());
                         latch.countDown();
                     }
                 }
-                catch (InterruptedException ex)
+                catch (InterruptedException | ExecutionException ex)
                 {
                     throw new RuntimeException(ex);
                 }
-                catch (ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
-                
+
             }
         };
         
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < expected; i++)
         {
             semaphore.acquire();
             BinaryValue key = BinaryValue.unsafeCreate((baseKey + i).getBytes());

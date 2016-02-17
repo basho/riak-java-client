@@ -65,7 +65,7 @@ public class RiakClusterFixtureTest
         }
     }
     
-    @Test
+    @Test(timeout = 10000)
     public void operationSuccess() throws UnknownHostException, InterruptedException, ExecutionException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -104,7 +104,7 @@ public class RiakClusterFixtureTest
         
     }
     
-    @Test
+    @Test(timeout = 10000)
     public void operationFail() throws UnknownHostException, ExecutionException, InterruptedException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -142,7 +142,7 @@ public class RiakClusterFixtureTest
         }
     }
     
-    @Test
+    @Test(timeout = 10000)
     public void testStateListener() throws UnknownHostException, InterruptedException, ExecutionException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -177,7 +177,7 @@ public class RiakClusterFixtureTest
     }
 
 
-    @Test
+    @Test(timeout = 10000)
     public void testOperationQueue() throws Exception {
         List<RiakNode> list = new LinkedList<RiakNode>();
 
