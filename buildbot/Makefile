@@ -1,28 +1,18 @@
-RIAK_CONF = ${RIAK_DIR}/etc/riak.conf
-ADVANCED_CONF = ${RIAK_DIR}/etc/advanced.config
-# RIAK = ${RIAK_DIR}/bin/riak
-RIAK_ADMIN = ${RIAK_DIR}/bin/riak-admin
-CERTS_DIR = $(shell pwd)/../src/test/resources
+
+PROJDIR = $(realpath $(CURDIR)/..)
+
+TOOLS_DIR = $(PROJDIR)/tools/devrel
+RIAK_CONF = $(RIAK_DIR)/etc/riak.conf
+ADV_CONF = $(RIAK_DIR)/etc/advanced.config
+RIAK_ADMIN = $(RIAK_DIR)/bin/riak-admin
 
 preconfigure:
-	echo "storage_backend = leveldb" >> ${RIAK_CONF}
-	echo "search = on" >> ${RIAK_CONF}
-	echo "listener.protobuf.internal = 127.0.0.1:8087" >> ${RIAK_CONF}
-	echo "ssl.keyfile = ${CERTS_DIR}/key.pem" >> ${RIAK_CONF}
-	echo "ssl.certfile = ${CERTS_DIR}/cert.pem" >> ${RIAK_CONF}
-	echo "ssl.cacertfile = ${CERTS_DIR}/cacert.pem" >> ${RIAK_CONF}
+	$(TOOLS_DIR)/gen-riak-conf $(RIAK_CONF) 8098 8087
+	$(TOOLS_DIR)/strong-consistency-conf $(RIAK_CONF)
+	$(TOOLS_DIR)/gen-adv-conf $(ADV_CONF)
 
 configure:
-	${RIAK_ADMIN} bucket-type create jvtest_yz_search '{"props":{}}'
-	${RIAK_ADMIN} bucket-type create jvtest_test_type '{"props":{}}'
-	${RIAK_ADMIN} bucket-type create jvtest_counters '{"props":{"datatype":"counter"}}'
-	${RIAK_ADMIN} bucket-type create jvtest_sets '{"props":{"datatype":"set"}}'
-	${RIAK_ADMIN} bucket-type create jvtest_maps '{"props":{"datatype":"map"}}'
-	${RIAK_ADMIN} bucket-type activate jvtest_yz_search
-	${RIAK_ADMIN} bucket-type activate jvtest_test_type
-	${RIAK_ADMIN} bucket-type activate jvtest_counters
-	${RIAK_ADMIN} bucket-type activate jvtest_sets
-	${RIAK_ADMIN} bucket-type activate jvtest_maps
+	$(TOOLS_DIR)/riak-cluster-config $(RIAK_ADMIN) 8098 true false
 
 compile:
 	@cd ..; mvn clean compile
