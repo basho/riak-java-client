@@ -1,5 +1,5 @@
 
-PROJDIR = $(realpath $(CURDIR)/../..)
+PROJDIR = $(realpath $(CURDIR)/..)
 RESOURCES_DIR = $(PROJDIR)/src/test/resources/
 TOOLS_DIR = $(PROJDIR)/tools/devrel
 CERTS_DIR = $(PROJDIR)/tools/test-ca/certs
