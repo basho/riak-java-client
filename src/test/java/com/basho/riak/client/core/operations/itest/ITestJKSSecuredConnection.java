@@ -22,37 +22,41 @@ public class ITestJKSSecuredConnection {
          * Riak security.
          *
          * If you want to test SSL/AUTH, you need to:
-         *  1) configure riak with the certs included in test/resources
-         *      ssl.certfile = $(platform_etc_dir)/cert.pem
-         *      ssl.keyfile = $(platform_etc_dir)/key.pem
-         *      ssl.cacertfile = $(platform_etc_dir)/cacert.pem
+         *  1) Setup the certs by running the buildbot makefile's "configure-security-certs" target
+         *      cd buildbot;
+         *      make configure-security-certs;
+         *      cd ../;
          *
-         *  2) create a user "riak_cert_user" with the password "riak_cert_user" and configure it with certificate as a source
-         *      riak-admin security add-user riak_cert_user password=riak_cert_user
-         *      riak-admin security add-source riak_cert_user 0.0.0.0/0 certificate
+         *  2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them
+         *      resources_dir=./src/test/resources
+         *      riak_etc_dir=/fill/in/this/path/
          *
-         *  3) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
+         *      # Shell
+         *      cp $resources_dir/cacert.pem $riak_etc_dir
+         *      cp $resources_dir/riak-test-cert.pem $riak_etc_dir
+         *      cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
+         *
+         *      # riak.conf file additions
+         *      ssl.certfile = (riak_etc_dir)/cert.pem
+         *      ssl.keyfile = (riak_etc_dir)/key.pem
+         *      ssl.cacertfile = (riak_etc_dir)/cacert.pem
+         *
+         *  3) Enable Riak Security
+         *      riak-admin security enable
+         *
+         *  4) create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
+         *      riak-admin security add-user riakuser
+         *      riak-admin security add-source riakuser 0.0.0.0/0 certificate
+         *
+         *  5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
          *      riak-admin security add-user riak_trust_user password=riak_trust_user
          *      riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
          *
-         *  4) create a user "riak_passwd_user" with the password "riak_passwd_user" and configure it with password as a source
-         *      riak-admin security add-user riak_passwd_user password=riak_passwd_user
-         *      riak-admin security add-source riak_passwd_user 0.0.0.0/0 password
+         *  6) create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source
+         *      riak-admin security add-user riakpass password=Test1234
+         *      riak-admin security add-source riakpass 0.0.0.0/0 password
          *
-         *  5) Import cacert.pem and cert.pem as a Trusted Certs in truststore.jks
-         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore truststore.jks -file cacert.pem -alias cacert -storepass riak123
-         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore truststore.jks -file cert.pem -alias servercert -storepass riak123
-         *
-         *  6) For Certificate Based Authentication, create user certificate and sign it using cacert.pem
-         *      $JAVA_HOME/bin/keytool -genkey -dname "CN=riak_cert_user, OU=rjc test, O=The Sample Company, L=Metropolis, S=New York, C=US" -keyalg RSA -alias riak_cert_user -keystore riak_cert_user.jks -storepass riak123 -keypass riak_cert_user -validity 3650 -keysize 2048
-         *      $JAVA_HOME/bin/keytool -keystore riak_cert_user.jks -certreq -alias riak_cert_user -keyalg RSA -storepass riak123 -keypass riak_cert_user -file riak_cert_user.csr
-         *
-         *      openssl x509 -req -days 3650 -in riak_cert_user.csr -CA cacert.pem -CAkey cacert.key -CAcreateserial -out riak_cert_user.pem
-         *
-         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore riak_cert_user.jks -file cacert.pem -alias cacert -storepass riak123
-         *      $JAVA_HOME/bin/keytool -import -keystore riak_cert_user.jks -file riak_cert_user.pem -alias riak_cert_user -storepass riak123 -keypass riak_cert_user
-         *
-         *  7) Run the Test suit
+         *  7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to true
          */
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
@@ -60,9 +64,9 @@ public class ITestJKSSecuredConnection {
     }
 
     @Test
-    public void testCetificateBasedAuthentication() throws Exception {
+    public void testCetificateBasedAuthentication() throws Exception
+    {
         Assume.assumeTrue(securityClientCert);
-        //RiakCluster cluster = RiakJKSConnection.getRiakCluster("riak_cert_user","riak_cert_user","riak_cert_user.jks","riak123","riak_cert_user");
         RiakCluster cluster = RiakJKSConnection.getRiakCluster("riakuser","riakuser","riak_cert_user.jks","riak123","");
 
 

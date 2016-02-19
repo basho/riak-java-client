@@ -16,50 +16,51 @@ public class ITestPemSecuredConnection {
     private static boolean securityClientCert;
 
     @BeforeClass
-    public static void setUp() {
-
+    public static void setUp()
+    {
         /**
          * Riak security.
          *
          * If you want to test SSL/AUTH, you need to:
-         *  1) configure riak with the certs included in test/resources
-         *      ssl.certfile = $(platform_etc_dir)/cert.pem
-         *      ssl.keyfile = $(platform_etc_dir)/key.pem
-         *      ssl.cacertfile = $(platform_etc_dir)/cacert.pem
+         *  1) Setup the certs by running the buildbot makefile's "configure-security-certs" target
+         *      cd buildbot;
+         *      make configure-security-certs;
+         *      cd ../;
          *
-         *  2) create a user "riak_cert_user" with the password "riak_cert_user" and configure it with certificate as a source
-         *      riak-admin security add-user riak_cert_user password=riak_cert_user
-         *      riak-admin security add-source riak_cert_user 0.0.0.0/0 certificate
+         *  2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them
+         *      resources_dir=./src/test/resources
+         *      riak_etc_dir=/fill/in/this/path/
          *
-         *  3) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
+         *      # Shell
+         *      cp $resources_dir/cacert.pem $riak_etc_dir
+         *      cp $resources_dir/riak-test-cert.pem $riak_etc_dir
+         *      cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
+         *
+         *      # riak.conf file additions
+         *      ssl.certfile = (riak_etc_dir)/cert.pem
+         *      ssl.keyfile = (riak_etc_dir)/key.pem
+         *      ssl.cacertfile = (riak_etc_dir)/cacert.pem
+         *
+         *  3) Enable Riak Security
+         *      riak-admin security enable
+         *
+         *  4) create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
+         *      riak-admin security add-user riakuser
+         *      riak-admin security add-source riakuser 0.0.0.0/0 certificate
+         *
+         *  5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
          *      riak-admin security add-user riak_trust_user password=riak_trust_user
          *      riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
          *
-         *  4) create a user "riak_passwd_user" with the password "riak_passwd_user" and configure it with password as a source
-         *      riak-admin security add-user riak_passwd_user password=riak_passwd_user
-         *      riak-admin security add-source riak_passwd_user 0.0.0.0/0 password
+         *  6) create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source
+         *      riak-admin security add-user riakpass password=Test1234
+         *      riak-admin security add-source riakpass 0.0.0.0/0 password
          *
-         *  5) For Certificate Based Authentication, create user certificate and sign it using cacert.pem
-         *      openssl genrsa -out riak_cert_user_key.pem 2048
-         *      openssl req -new -key riak_cert_user_key.pem -out riak_cert_user.csr -subj "/C=US/ST=New York/L=Metropolis/O=The Sample Company/OU=rjc test/CN=riak_cert_user/emailAddress=riak_cert_user@basho.com"
-         *
-         *      #Sign the cert with CA.
-         *      openssl x509 -req -days 3650 -in riak_cert_user.csr -CA cacert.pem -CAkey cacert.key -CAcreateserial -out riak_cert_user_cert.pem
-         *
-         *      openssl pkcs8 -topk8 -inform PEM -outform PEM -in riak_cert_user_key.pem -out riak_cert_user_key_pkcs8.pem -nocrypt
-         *
-         *  6) Run the Test suit
+         *  7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to true
          */
+
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
-
-        /**
-         * Riak PBC port
-         *
-         * In case you want/need to use a custom PBC port you may pass it by using the following system property
-         */
-        final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
-
     }
 
     @Test
