@@ -18,6 +18,7 @@ configure:
 	${RIAK_ADMIN} security disable
 
 configure-security-certs:
+	mkdir -p $(RESOURCES_DIR)
 	# Copy certs
 	cp $(CERTS_DIR)/cacert.pem $(RESOURCES_DIR)
 	cp $(CERTS_DIR)/riak-test-cert.pem $(RESOURCES_DIR)
