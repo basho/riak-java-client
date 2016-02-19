@@ -1,5 +1,5 @@
 
-PROJDIR = $(realpath $(CURDIR)/../../)
+PROJDIR = $(realpath $(CURDIR)/..)
 RESOURCES_DIR = $(PROJDIR)/src/test/resources/
 TOOLS_DIR = $(PROJDIR)/tools/devrel
 CERTS_DIR = $(PROJDIR)/tools/test-ca/certs
@@ -17,11 +17,16 @@ configure:
 	$(TOOLS_DIR)/riak-cluster-config $(RIAK_ADMIN) 8098 true true
 	${RIAK_ADMIN} security disable
 
+<<<<<<< HEAD
 configure-tools-submodule:
 	git submodule init
 	git submodule update
 
 configure-security-certs: configure-tools-submodule
+=======
+configure-security-certs:
+	mkdir -p $(RESOURCES_DIR)
+>>>>>>> parent of 7e5e08c... Fix path for project dir in buildbot makefile
 	# Copy certs
 	cp $(CERTS_DIR)/cacert.pem $(RESOURCES_DIR)
 	cp $(CERTS_DIR)/riak-test-cert.pem $(RESOURCES_DIR)
