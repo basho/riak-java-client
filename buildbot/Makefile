@@ -1,5 +1,5 @@
 
-PROJDIR = $(realpath $(CURDIR)/..)
+PROJDIR = $(realpath $(CURDIR)/../../)
 RESOURCES_DIR = $(PROJDIR)/src/test/resources/
 TOOLS_DIR = $(PROJDIR)/tools/devrel
 CERTS_DIR = $(PROJDIR)/tools/test-ca/certs
@@ -18,7 +18,6 @@ configure:
 	${RIAK_ADMIN} security disable
 
 configure-security-certs:
-	mkdir -p $(RESOURCES_DIR)
 	# Copy certs
 	cp $(CERTS_DIR)/cacert.pem $(RESOURCES_DIR)
 	cp $(CERTS_DIR)/riak-test-cert.pem $(RESOURCES_DIR)
