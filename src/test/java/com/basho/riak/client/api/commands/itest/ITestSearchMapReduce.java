@@ -50,6 +50,9 @@ public class ITestSearchMapReduce extends ITestBase
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
 
+        // Search inputs to MR aren't allowed when security is enabled
+        Assume.assumeFalse(security);
+
         // First we have to create an index and attach it to a bucket
         // and the 'default' bucket type can't be used for search
 

@@ -210,9 +210,9 @@ public abstract class ITestBase
 
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(null, "basho".toCharArray());
-            ks.setCertificateEntry("mycert", caCert);
+            ks.setCertificateEntry("cacert", caCert);
             
-            builder.withAuth("tester", "tester", ks);
+            builder.withAuth("riakpass", "Test1234", ks);
         }
         
         
