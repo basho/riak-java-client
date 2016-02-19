@@ -14,7 +14,7 @@ public class ITestPemSecuredConnection {
 
     private static boolean security;
     private static boolean securityClientCert;
-    
+
     @BeforeClass
     public static void setUp() {
 
@@ -53,12 +53,19 @@ public class ITestPemSecuredConnection {
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
 
+        /**
+         * Riak PBC port
+         *
+         * In case you want/need to use a custom PBC port you may pass it by using the following system property
+         */
+        final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+
     }
 
     @Test
     public void testCetificateBasedAuthentication() throws Exception {
         Assume.assumeTrue(securityClientCert);
-        RiakCluster cluster = RiakPemConnection.getRiakCluster("riak_cert_user","riak_cert_user","riak_cert_user_key_pkcs8.pem", "riak_cert_user_cert.pem");
+        RiakCluster cluster = RiakPemConnection.getRiakCluster("riakuser","riakuser","riakuser-client-cert-key_pkcs8.pem", "riakuser-client-cert.pem");
 
         for (RiakNode node : cluster.getNodes()){
             assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
@@ -82,7 +89,7 @@ public class ITestPemSecuredConnection {
     @Test
     public void testPasswordBasedAuthentication() throws Exception {
         Assume.assumeTrue(security);
-        RiakCluster cluster = RiakPemConnection.getRiakCluster("riak_passwd_user","riak_passwd_user");
+        RiakCluster cluster = RiakPemConnection.getRiakCluster("riakpass","Test1234");
 
         for (RiakNode node : cluster.getNodes()){
             assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));

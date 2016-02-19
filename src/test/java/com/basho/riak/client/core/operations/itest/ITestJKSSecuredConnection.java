@@ -62,7 +62,9 @@ public class ITestJKSSecuredConnection {
     @Test
     public void testCetificateBasedAuthentication() throws Exception {
         Assume.assumeTrue(securityClientCert);
-        RiakCluster cluster = RiakJKSConnection.getRiakCluster("riak_cert_user","riak_cert_user","riak_cert_user.jks","riak123","riak_cert_user");
+        //RiakCluster cluster = RiakJKSConnection.getRiakCluster("riak_cert_user","riak_cert_user","riak_cert_user.jks","riak123","riak_cert_user");
+        RiakCluster cluster = RiakJKSConnection.getRiakCluster("riakuser","riakuser","riak_cert_user.jks","riak123","");
+
 
         for (RiakNode node : cluster.getNodes()){
             assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
@@ -86,7 +88,7 @@ public class ITestJKSSecuredConnection {
     @Test
     public void testPasswordBasedAuthentication() throws Exception {
         Assume.assumeTrue(security);
-        RiakCluster cluster = RiakJKSConnection.getRiakCluster("riak_passwd_user","riak_passwd_user");
+        RiakCluster cluster = RiakJKSConnection.getRiakCluster("riakpass","Test1234");
 
         for (RiakNode node : cluster.getNodes()){
             assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));

@@ -209,7 +209,7 @@ public abstract class ITestBase
             in.close();
 
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(null, "password".toCharArray());
+            ks.load(null, "basho".toCharArray());
             ks.setCertificateEntry("mycert", caCert);
             
             builder.withAuth("tester", "tester", ks);
