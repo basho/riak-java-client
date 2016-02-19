@@ -95,13 +95,14 @@ public class RiakClusterFixtureTest
             assertEquals(response.getObjectList().get(0).getValue().toString(), "This is a value!");
             assertTrue(!response.isNotFound());
         }
-        catch(InterruptedException e)
+        catch(InterruptedException ignored)
         {
             
         }
-        
-        cluster.shutdown().get();
-        
+        finally
+        {
+            cluster.shutdown();
+        }
     }
     
     @Test(timeout = 10000)
@@ -138,7 +139,7 @@ public class RiakClusterFixtureTest
         }
         finally
         {
-            cluster.shutdown().get();
+            cluster.shutdown();
         }
     }
     
@@ -207,8 +208,9 @@ public class RiakClusterFixtureTest
 
         try
         {
+            Thread.sleep(1000);
             assertFalse(operation3.isSuccess());
-            assertNotNull(operation3.cause());
+            assertNotNull(operation3.cause().getMessage(), operation3.cause());
 
             // Add a node to process the queue backlog
             cluster.addNode(goodNode);
@@ -227,14 +229,12 @@ public class RiakClusterFixtureTest
         }
         finally
         {
-            cluster.shutdown().get();
+            cluster.shutdown();
         }
-
     }
 
     public static class StateListener implements NodeStateListener
     {
-
         public int stateCreated;
         public int stateRunning;
         public int stateShuttingDown;
@@ -261,8 +261,5 @@ public class RiakClusterFixtureTest
                     break;
             }
         }
-        
     }
-    
-    
 }
