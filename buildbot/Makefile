@@ -17,14 +17,7 @@ configure:
 	$(TOOLS_DIR)/riak-cluster-config $(RIAK_ADMIN) 8098 true true
 	${RIAK_ADMIN} security disable
 
-configure-tools-submodule:
-	cd $(PROJDIR)
-	git submodule init
-	git submodule update
-	cd -
-
-configure-security-certs: configure-tools-submodule
-
+configure-security-certs:
 	# Copy certs
 	cp $(CERTS_DIR)/cacert.pem $(RESOURCES_DIR)
 	cp $(CERTS_DIR)/riak-test-cert.pem $(RESOURCES_DIR)
