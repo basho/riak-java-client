@@ -15,6 +15,7 @@ public class ITestPemSecuredConnection
 
     private static boolean security;
     private static boolean securityClientCert;
+    private RiakCluster cluster;
 
     @BeforeClass
     public static void setUp()
@@ -66,12 +67,10 @@ public class ITestPemSecuredConnection
         securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
     }
 
-    private RiakCluster cluster;
-
     @After
     public void teardown()
     {
-        if(cluster != null)
+        if (cluster != null)
         {
             cluster.shutdown();
         }

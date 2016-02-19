@@ -20,7 +20,6 @@ public class ITestJKSSecuredConnection
     @BeforeClass
     public static void setUp()
     {
-
         /**
          * Riak security.
          *
