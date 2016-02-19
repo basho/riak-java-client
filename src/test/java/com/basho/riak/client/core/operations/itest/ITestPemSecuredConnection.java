@@ -1,16 +1,17 @@
 package com.basho.riak.client.core.operations.itest;
 
-import static org.junit.Assert.assertNotNull;
-
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakNode;
+import org.junit.After;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakNode;
-import org.junit.Assume;
+import static org.junit.Assert.assertNotNull;
 
-public class ITestPemSecuredConnection {
+public class ITestPemSecuredConnection
+{
 
     private static boolean security;
     private static boolean securityClientCert;
@@ -48,7 +49,8 @@ public class ITestPemSecuredConnection {
          *      riak-admin security add-user riakuser
          *      riak-admin security add-source riakuser 0.0.0.0/0 certificate
          *
-         *  5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
+         *  5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a
+         *  source
          *      riak-admin security add-user riak_trust_user password=riak_trust_user
          *      riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
          *
@@ -56,46 +58,60 @@ public class ITestPemSecuredConnection {
          *      riak-admin security add-user riakpass password=Test1234
          *      riak-admin security add-source riakpass 0.0.0.0/0 password
          *
-         *  7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to true
+         *  7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to
+         *  true
          */
 
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
     }
 
+    private RiakCluster cluster;
+
+    @After
+    public void teardown()
+    {
+        if(cluster != null)
+        {
+            cluster.shutdown();
+        }
+    }
+
     @Test
-    public void testCetificateBasedAuthentication() throws Exception {
+    public void testCetificateBasedAuthentication() throws Exception
+    {
         Assume.assumeTrue(securityClientCert);
-        RiakCluster cluster = RiakPemConnection.getRiakCluster("riakuser","riakuser","riakuser-client-cert-key_pkcs8.pem", "riakuser-client-cert.pem");
+        cluster = RiakPemConnection.getRiakCluster("riakuser",
+                                                   "riakuser",
+                                                   "riakuser-client-cert-key_pkcs8.pem",
+                                                   "riakuser-client-cert.pem");
 
-        for (RiakNode node : cluster.getNodes()){
-            assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
-        }
-
-        cluster.shutdown();
+        assertCanGetConnection();
     }
 
     @Test
-    public void testTrustBasedAuthentication() throws Exception {
+    public void testTrustBasedAuthentication() throws Exception
+    {
         Assume.assumeTrue(security);
-        RiakCluster cluster = RiakPemConnection.getRiakCluster("riak_trust_user","riak_trust_user");
+        cluster = RiakPemConnection.getRiakCluster("riak_trust_user", "riak_trust_user");
 
-        for (RiakNode node : cluster.getNodes()){
-            assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
-        }
-
-        cluster.shutdown();
+        assertCanGetConnection();
     }
 
     @Test
-    public void testPasswordBasedAuthentication() throws Exception {
+    public void testPasswordBasedAuthentication() throws Exception
+    {
         Assume.assumeTrue(security);
-        RiakCluster cluster = RiakPemConnection.getRiakCluster("riakpass","Test1234");
+        cluster = RiakPemConnection.getRiakCluster("riakpass", "Test1234");
 
-        for (RiakNode node : cluster.getNodes()){
-            assertNotNull(Whitebox.invokeMethod(node, "getConnection", new Object[0]));
+        assertCanGetConnection();
+    }
+
+    private void assertCanGetConnection() throws Exception
+    {
+        for (RiakNode node : cluster.getNodes())
+        {
+            assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
         }
-
-        cluster.shutdown();
     }
 }

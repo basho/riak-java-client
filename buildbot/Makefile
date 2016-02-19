@@ -49,7 +49,7 @@ lint:
 test: test-normal test-security
 
 test-normal:
-	@cd ..; mvn -Pitest,default -DargLine="-Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true" verify
+	@cd ..; mvn -Pitest,default -Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true verify
 
 test-security: enable-riak-security
 	@cd ..; mvn -Pitest -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true verify
