@@ -39,12 +39,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 import org.junit.*;
 import org.junit.rules.TestName;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -72,6 +72,8 @@ public abstract class ITestBase
     protected static BinaryValue bucketType;
     protected static BinaryValue yokozunaBucketType;
     protected static String overrideCert;
+    protected static String hostname;
+    protected static int pbcPort;
     protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
     @Rule
     public TestName testName = new TestName();
@@ -80,50 +82,14 @@ public abstract class ITestBase
     public static void setUp() throws FileNotFoundException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
+
         /**
          * Riak security.
          *
-         * If you want to test SSL/AUTH, you need to:
-         *  1) configure riak with the certs included in test/resources
-         *      ssl.certfile = $(platform_etc_dir)/cert.pem
-         *      ssl.keyfile = $(platform_etc_dir)/key.pem
-         *      ssl.cacertfile = $(platform_etc_dir)/cacert.pem
-         *
-         *  2) create a user "riak_cert_user" with the password "riak_cert_user" and configure it with certificate as a source
-         *      riak-admin security add-user riak_cert_user password=riak_cert_user
-         *      riak-admin security add-source riak_cert_user 0.0.0.0/0 certificate
-         *
-         *  3) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source
-         *      riak-admin security add-user riak_trust_user password=riak_trust_user
-         *      riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
-         *
-         *  4) create a user "riak_passwd_user" with the password "riak_passwd_user" and configure it with password as a source
-         *      riak-admin security add-user riak_passwd_user password=riak_passwd_user
-         *      riak-admin security add-source riak_passwd_user 0.0.0.0/0 password
-         * 
-         *      grant all permissions to tester on any:
-         *      riak-admin security grant riak_kv.get,riak_kv.put,riak_kv.delete,riak_kv.index,riak_kv.list_keys,riak_kv.list_buckets,riak_core.get_bucket,riak_core.set_bucket,riak_core.get_bucket_type,riak_core.set_bucket_type,riak_kv.mapreduce on any to riak_passwd_user
-         * 
-         *  5) Import cacert.pem and cert.pem as a Trusted Certs in truststore.jks
-         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore truststore.jks -file cacert.pem -alias cacert -storepass riak123
-         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore truststore.jks -file cert.pem -alias servercert -storepass riak123
-         * 
-         *  6) For Certificate Based Authentication, create user certificate and sign it using cacert.pem
-         *      openssl genrsa -out riak_cert_user_key.pem 2048
-         *      openssl req -new -key riak_cert_user_key.pem -out riak_cert_user.csr -subj "/C=US/ST=New York/L=Metropolis/O=The Sample Company/OU=rjc test/CN=riak_cert_user/emailAddress=riak_cert_user@basho.com"
-         *
-         *      #Sign the cert with CA.
-         *      openssl x509 -req -days 3650 -in riak_cert_user.csr -CA cacert.pem -CAkey cacert.key -CAcreateserial -out riak_cert_user_cert.pem
-         *
-         *      openssl pkcs8 -topk8 -inform PEM -outform PEM -in riak_cert_user_key.pem -out riak_cert_user_key_pkcs8.pem -nocrypt
-         *      
-         *      $JAVA_HOME/bin/keytool -import -trustcacerts -keystore riak_cert_user.jks -file cacert.pem -alias cacert -storepass riak123
-         *      $JAVA_HOME/bin/keytool -import -keystore riak_cert_user.jks -file riak_cert_user.pem -alias riak_cert_user -storepass riak123 -keypass riak_cert_user
-         *
-         *  7) Run the Test suit
+         * If you want to test SSL/AUTH, you need to set up your system as described
+         * in the README.md's "Security Tests" section.
          */
-        
-        
+
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         overrideCert = System.getProperty("com.basho.riak.security.cacert");
         
@@ -178,47 +144,54 @@ public abstract class ITestBase
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
         testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries"));
 
+        hostname = System.getProperty("com.basho.riak.host", RiakNode.Builder.DEFAULT_REMOTE_ADDRESS);
+
         /**
          * Riak PBC port
          *
          * In case you want/need to use a custom PBC port you may pass it by using the following system property
          */
-        final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+        pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+
 
         RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withRemotePort(testRiakPort)
+                                        .withRemoteAddress(hostname)
+                                        .withRemotePort(pbcPort)
                                         .withMinConnections(NUMBER_OF_PARALLEL_REQUESTS);
 
         if (security)
         {
-            InputStream in;
-            if (overrideCert != null)
-            {
-                File f = new File(overrideCert);
-                in = new FileInputStream(f);
-            }
-            else
-            {
-                in = 
-                    Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("cacert.pem");
-            }
-            
-            CertificateFactory cFactory = CertificateFactory.getInstance("X.509");
-            X509Certificate caCert = (X509Certificate) cFactory.generateCertificate(in);
-            in.close();
-
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(null, "basho".toCharArray());
-            ks.setCertificateEntry("cacert", caCert);
-            
-            builder.withAuth("riakpass", "Test1234", ks);
+            setupUsernamePasswordSecurity(builder);
         }
-        
-        
-        
+
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
+    }
+
+    private static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    {
+        InputStream in;
+        if (overrideCert != null)
+        {
+            File f = new File(overrideCert);
+            in = new FileInputStream(f);
+        }
+        else
+        {
+            in =
+                Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream("cacert.pem");
+        }
+
+        CertificateFactory cFactory = CertificateFactory.getInstance("X.509");
+        X509Certificate caCert = (X509Certificate) cFactory.generateCertificate(in);
+        in.close();
+
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(null, "basho".toCharArray());
+        ks.setCertificateEntry("cacert", caCert);
+
+        builder.withAuth("riakpass", "Test1234", ks);
     }
 
     @After
@@ -232,15 +205,14 @@ public abstract class ITestBase
     }
     
     @AfterClass
-    public static void tearDown() throws InterruptedException, ExecutionException
+    public static void tearDown() throws InterruptedException, ExecutionException, TimeoutException
     {
-        cluster.shutdown().get();
+        cluster.shutdown().get(2, TimeUnit.SECONDS);
     }
     
     public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
     {
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, name.toString()));
-
     }
 
     protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException

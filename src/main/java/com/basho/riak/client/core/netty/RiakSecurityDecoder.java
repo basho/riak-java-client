@@ -30,12 +30,13 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import javax.net.ssl.SSLEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -65,6 +66,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     @Override
     protected void decode(ChannelHandlerContext chc, ByteBuf in, List<Object> out) throws Exception
     {
+        logger.debug("RiakSecurityDecoder decode");
         // Make sure we have 4 bytes
         if (in.readableBytes() >= 4)
         {
@@ -161,7 +163,8 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception
     {
-        logger.debug("MyStartTlsDecoder Handler Added");
+        
+        logger.debug("Handler Added");
         if (ctx.channel().isActive())
         {
             init(ctx);
@@ -170,13 +173,15 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        logger.debug("MyStartTlsDecoder Channel Active");
+        logger.debug("Channel Active");
         init(ctx);
     }
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
+        logger.debug("Channel Inactive");
+
         promise.tryFailure(new IOException("Channel closed during auth"));
         ctx.fireChannelInactive();
        
@@ -186,6 +191,8 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception 
     {
+        logger.debug("Exception Caught: {}", cause);
+
         if (cause.getCause() instanceof javax.net.ssl.SSLHandshakeException)
         {
             // consume
@@ -208,6 +215,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         {
             if (future.isSuccess())
             {
+                logger.debug("SSL Handshake success!");
                 Channel c = future.getNow();
                 state = State.AUTH_WAIT;
                 RiakPB.RpbAuthReq authReq = 
@@ -221,6 +229,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
             else
             {
+                logger.error("SSL Handshake failed: ", future.cause());
                 promise.tryFailure(future.cause());
             }
         }

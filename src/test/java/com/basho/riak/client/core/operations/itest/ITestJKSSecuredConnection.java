@@ -8,6 +8,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import static org.junit.Assert.assertNotNull;
 
 public class ITestJKSSecuredConnection
@@ -23,55 +27,20 @@ public class ITestJKSSecuredConnection
         /**
          * Riak security.
          *
-         * If you want to test SSL/AUTH, you need to:
-         *  1) Setup the certs by running the buildbot makefile's "configure-security-certs" target
-         *      cd buildbot;
-         *      make configure-security-certs;
-         *      cd ../;
-         *
-         *  2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them
-         *      resources_dir=./src/test/resources
-         *      riak_etc_dir=/fill/in/this/path/
-         *
-         *      # Shell
-         *      cp $resources_dir/cacert.pem $riak_etc_dir
-         *      cp $resources_dir/riak-test-cert.pem $riak_etc_dir
-         *      cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
-         *
-         *      # riak.conf file additions
-         *      ssl.certfile = (riak_etc_dir)/cert.pem
-         *      ssl.keyfile = (riak_etc_dir)/key.pem
-         *      ssl.cacertfile = (riak_etc_dir)/cacert.pem
-         *
-         *  3) Enable Riak Security
-         *      riak-admin security enable
-         *
-         *  4) create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
-         *      riak-admin security add-user riakuser
-         *      riak-admin security add-source riakuser 0.0.0.0/0 certificate
-         *
-         *  5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a
-         *  source
-         *      riak-admin security add-user riak_trust_user password=riak_trust_user
-         *      riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
-         *
-         *  6) create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source
-         *      riak-admin security add-user riakpass password=Test1234
-         *      riak-admin security add-source riakpass 0.0.0.0/0 password
-         *
-         *  7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to
-         *  true
+         * If you want to test SSL/AUTH, you need to set up your system as described
+         * in the README.md's "Security Tests" section.
          */
+
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
     }
 
     @After
-    public void teardown()
+    public void teardown() throws InterruptedException, ExecutionException, TimeoutException
     {
         if (cluster != null)
         {
-            cluster.shutdown();
+            cluster.shutdown().get(1, TimeUnit.SECONDS);
         }
     }
 

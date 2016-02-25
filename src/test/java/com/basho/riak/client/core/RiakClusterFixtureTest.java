@@ -210,7 +210,13 @@ public class RiakClusterFixtureTest
         {
             Thread.sleep(1000);
             assertFalse(operation3.isSuccess());
-            assertNotNull(operation3.cause().getMessage(), operation3.cause());
+            String errorMsg = "No Error message set!";
+
+            if(operation3.cause() != null && operation3.cause().getMessage() != null)
+            {
+                errorMsg = operation3.cause().getMessage();
+            }
+            assertNotNull(errorMsg, operation3.cause());
 
             // Add a node to process the queue backlog
             cluster.addNode(goodNode);
