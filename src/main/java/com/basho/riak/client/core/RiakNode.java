@@ -742,6 +742,7 @@ public class RiakNode implements RiakResponseListener
             try
             {
                 DefaultPromise<Void> promise = decoder.getPromise();
+                logger.debug("Waiting on SSL Promise");
                 promise.await();
 
                 if (promise.isSuccess())

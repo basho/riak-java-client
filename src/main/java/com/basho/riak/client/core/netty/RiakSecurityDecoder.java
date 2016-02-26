@@ -157,7 +157,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         promiseLatch.countDown();
         ctx.channel().writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_StartTls, 
                                     new byte[0]));
-        
     }
     
     @Override
@@ -174,7 +173,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
         logger.debug("Channel Active");
-        init(ctx);
     }
     
     @Override
