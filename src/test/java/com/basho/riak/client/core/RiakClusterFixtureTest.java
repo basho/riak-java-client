@@ -208,30 +208,37 @@ public class RiakClusterFixtureTest
 
         try
         {
-            Thread.sleep(1000);
+            // Verify that the third operation was rejected
+            operation3.await();
+
             assertFalse(operation3.isSuccess());
-            String errorMsg = "No Error message set!";
 
-            if(operation3.cause() != null && operation3.cause().getMessage() != null)
-            {
-                errorMsg = operation3.cause().getMessage();
-            }
-            assertNotNull(errorMsg, operation3.cause());
+            Throwable cause = operation3.cause();
+            assertNotNull(cause != null && cause.getMessage() != null ? cause.getMessage() : "No message set?", cause);
 
-            // Add a node to process the queue backlog
+            // Add a node to start processing the queue backlog
             cluster.addNode(goodNode);
+
+            future1.await();
 
             // Process the first queue item
             assertEquals(future1.get().getObjectList().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!future1.get().isNotFound());
+            assertFalse(future1.get().isNotFound());
 
             // Add another to fill it back up
             RiakFuture<FetchOperation.Response, Location> future4 = cluster.execute(operation4);
-            
+
+            // Get next item in Queue
+            future2.await();
+
             assertEquals(future2.get().getObjectList().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!future2.get().isNotFound());
+            assertFalse(future2.get().isNotFound());
+
+            // Get last item in Queue
+            future4.await();
+
             assertEquals(future4.get().getObjectList().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!future4.get().isNotFound());
+            assertFalse(future4.get().isNotFound());
         }
         finally
         {
