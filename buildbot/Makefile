@@ -2,20 +2,19 @@
 PROJDIR = $(realpath $(CURDIR)/..)
 RESOURCES_DIR = $(PROJDIR)/src/test/resources/
 TOOLS_DIR = $(PROJDIR)/tools/devrel
-CERTS_DIR = $(PROJDIR)/tools/test-ca/certs
-PRIVATE_DIR = $(PROJDIR)/tools/test-ca/private
+CA_DIR = $(PROJDIR)/tools/test-ca
+CERTS_DIR = $(CA_DIR)/certs
+PRIVATE_DIR = $(CA_DIR)/private
 RIAK_CONF = $(RIAK_DIR)/etc/riak.conf
 ADV_CONF = $(RIAK_DIR)/etc/advanced.config
 RIAK_ADMIN = $(RIAK_DIR)/bin/riak-admin
 
 preconfigure: configure-security-certs
-	$(TOOLS_DIR)/gen-riak-conf $(RIAK_CONF) 8098 8087
-	$(TOOLS_DIR)/strong-consistency-conf $(RIAK_CONF)
+	$(TOOLS_DIR)/gen-riak-conf $(RIAK_CONF) 8098 8087 18098 $(CERTS_DIR)/cacert.pem $(CERTS_DIR)/riak-test-cert.pem $(PRIVATE_DIR)/riak-test-key.pem
 	$(TOOLS_DIR)/gen-adv-conf $(ADV_CONF)
 
 configure:
 	$(TOOLS_DIR)/riak-cluster-config $(RIAK_ADMIN) 8098 true true
-	${RIAK_ADMIN} security disable
 
 configure-security-certs:
 	mkdir -p $(RESOURCES_DIR)
@@ -38,11 +37,9 @@ configure-security-certs:
 	mv truststore.jks $(RESOURCES_DIR)
 	mv riak_cert_user.jks $(RESOURCES_DIR)
 
-enable-riak-security:
-	${RIAK_ADMIN} security enable
-
 compile:
-	@cd ..; mvn clean compile
+	cd ..;
+	mvn clean compile
 
 lint:
 	@echo "No lint task"
@@ -50,7 +47,11 @@ lint:
 test: test-normal test-security
 
 test-normal:
-	@cd ..; mvn -Pitest,default -Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true -Dcom.basho.riak.pbcport=10017 verify
+	$(RIAK_ADMIN) security disable
+	cd ..;
+	mvn -Pitest,default -Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true verify
 
-test-security: enable-riak-security
-	@cd ..; mvn -Pitest,test-debug-logging  -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true test-compile failsafe:integration-test
+test-security:
+	$(RIAK_ADMIN) security enable
+	cd ..;
+	mvn -Pitest,test-debug-logging  -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true test-compile failsafe:integration-test
