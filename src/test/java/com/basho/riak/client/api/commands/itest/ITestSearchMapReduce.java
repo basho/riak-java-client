@@ -28,7 +28,8 @@ import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+
 
 /**
  *
