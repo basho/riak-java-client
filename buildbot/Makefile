@@ -51,4 +51,4 @@ test-normal:
 
 test-security:
 	$(RIAK_ADMIN) security enable
-	@cd ..; mvn -Pitest,test-debug-logging  -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true test-compile failsafe:integration-test
+	@cd ..; mvn -Pitest,default -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true test-compile failsafe:integration-test
