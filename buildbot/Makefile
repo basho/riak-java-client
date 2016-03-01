@@ -38,8 +38,7 @@ configure-security-certs:
 	mv riak_cert_user.jks $(RESOURCES_DIR)
 
 compile:
-	cd ..;
-	mvn clean compile
+	cd ..; mvn clean compile
 
 lint:
 	@echo "No lint task"
