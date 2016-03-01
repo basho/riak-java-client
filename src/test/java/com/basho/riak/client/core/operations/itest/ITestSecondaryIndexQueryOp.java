@@ -16,7 +16,6 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation.Response.Entry;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -24,12 +23,13 @@ import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
-import junit.framework.Assert;
-import org.junit.Assume;
+
 import static org.junit.Assert.*;
-import org.junit.Test;
 
 /**
  *
@@ -55,7 +55,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testSingleQuerySingleResponse(String bucketType) throws InterruptedException, ExecutionException
     {
-        
+        setBucketNameToTestName();
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
@@ -114,7 +114,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testSingleQueryMultipleResponse(String bucketType) throws InterruptedException, ExecutionException
     {
-        
+        setBucketNameToTestName();
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
@@ -192,7 +192,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testRangeQuery(String bucketType) throws InterruptedException, ExecutionException
     {
-        
+        setBucketNameToTestName();
         String indexName = "test_index";
         String keyBase = "my_key";
         String value = "value";
@@ -256,7 +256,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testNoSortWithNoPaging(String bucketType) throws InterruptedException, ExecutionException
     {
-
+        setBucketNameToTestName();
         String indexName = "test_index_pagination";
         String value = "value";
         Namespace ns = new Namespace(bucketType, bucketName.toString());
@@ -297,7 +297,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testSortWithNoPaging(String bucketType) throws InterruptedException, ExecutionException
     {
-
+        setBucketNameToTestName();
         String indexName = "test_index_pagination";
         String value = "value";
         Namespace ns = new Namespace(bucketType, bucketName.toString());
@@ -341,7 +341,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testNoSortWithPaging(String bucketType) throws InterruptedException, ExecutionException
     {
-
+        setBucketNameToTestName();
         String indexName = "test_index_pagination";
         String value = "value";
         Namespace ns = new Namespace(bucketType, bucketName.toString());
@@ -386,6 +386,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testSortWithPaging(String bucketType) throws InterruptedException, ExecutionException
     {
+        setBucketNameToTestName();
         String indexName = "test_index_pagination";
         String value = "value";
         Namespace ns = new Namespace(bucketType, bucketName.toString());
@@ -429,6 +430,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testRegexTermFilter(String bucketType) throws InterruptedException, ExecutionException
     {
+        setBucketNameToTestName();
         String indexName = "test_index_regex";
         String value = "value";
         Namespace ns = new Namespace(bucketType, bucketName.toString());
@@ -491,7 +493,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     
     private void testExceptionThrownWhenUsingRegexFilterOnIntIndexes(String bucketType)
     {
-        
+        setBucketNameToTestName();
         try {
             Namespace ns = new Namespace(bucketType, bucketName.toString());
             
@@ -516,6 +518,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     public void testBucketIndexHack() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        setBucketNameToTestName();
         String indexName = "test_index_bucket";
         String keyBase = "my_key";
         String value = "value";
@@ -538,14 +541,13 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SecondaryIndexQueryOperation.Response response = queryOp.get();
         
         Assert.assertTrue(response.getEntryList().size() == 100);
-        
-        
     }
     
     @Test
     public void testKeyIndexHack() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+        setBucketNameToTestName();
         String indexName = "test_index_bucket";
         String keyBase = "my_key";
         String value = "value";
@@ -569,8 +571,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         SecondaryIndexQueryOperation.Response response = queryOp.get();
         
         Assert.assertTrue(response.getEntryList().size() == 10);
-        
-        
     }
     
     private void setupIndexTestData(Namespace ns, String indexName, String keyBase, String value)

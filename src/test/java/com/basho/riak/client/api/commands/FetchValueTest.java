@@ -39,7 +39,7 @@ import org.mockito.internal.util.reflection.Whitebox;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import org.junit.Ignore;
 import static org.mockito.Mockito.*;
 

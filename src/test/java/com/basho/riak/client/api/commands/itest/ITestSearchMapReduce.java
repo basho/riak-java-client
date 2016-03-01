@@ -31,8 +31,8 @@ import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -49,6 +49,9 @@ public class ITestSearchMapReduce extends ITestBase
     public void searchMR() throws InterruptedException, ExecutionException {
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
+
+        // Search inputs to MR aren't allowed when security is enabled
+        Assume.assumeFalse(security);
 
         // First we have to create an index and attach it to a bucket
         // and the 'default' bucket type can't be used for search
