@@ -10,7 +10,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class KeyFilterTest
 {

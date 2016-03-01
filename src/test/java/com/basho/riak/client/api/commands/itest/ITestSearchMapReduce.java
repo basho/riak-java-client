@@ -56,6 +56,7 @@ public class ITestSearchMapReduce extends ISearchTestBase
     public void searchMR() throws InterruptedException, ExecutionException {
         Assume.assumeTrue(testYokozuna);
         Assume.assumeTrue(testBucketType);
+        Assume.assumeFalse(security);
 
         SearchMapReduce smr = new SearchMapReduce.Builder()
                 .withIndex(indexName)
