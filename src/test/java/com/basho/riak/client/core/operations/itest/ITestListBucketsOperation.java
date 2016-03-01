@@ -19,20 +19,22 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
-import org.junit.Test;
 
 /**
  *
@@ -107,7 +109,9 @@ public class ITestListBucketsOperation extends ITestBase
         final String value = "{\"value\":\"value\"}";
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
-        
+        final int bucketCount = 10;
+        final List<BinaryValue> bucketNames = new ArrayList<>();
+
         RiakFutureListener<StoreOperation.Response, Location> listener =
             new RiakFutureListener<StoreOperation.Response, Location>() {
                 
@@ -120,27 +124,26 @@ public class ITestListBucketsOperation extends ITestBase
                     {
                         f.get();
                     }
-                    catch (InterruptedException ex)
+                    catch (InterruptedException | ExecutionException ex)
                     {
                         throw new RuntimeException(ex);
                     }
-                    catch (ExecutionException ex)
-                    {
-                        throw new RuntimeException(ex);
-                    }
-                    
+
                     semaphore.release();
                     received.incrementAndGet();
-                    if (received.intValue() == 1000)
+                    if (received.intValue() == bucketCount)
                     {
                         latch.countDown();
                     }
                 }
             };
         
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < bucketCount; i++)
         {
-            Namespace ns = new Namespace(bucketType, bucketName.toString() + i);
+            String testBucketName = bucketName.toString() + i;
+            bucketNames.add(BinaryValue.create(testBucketName));
+
+            Namespace ns = new Namespace(bucketType, testBucketName);
             RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
             Location location = new Location(ns, key);
             StoreOperation storeOp = 
@@ -159,11 +162,15 @@ public class ITestListBucketsOperation extends ITestBase
                                         .build();
         cluster.execute(listOp);
         List<BinaryValue> bucketList = listOp.get().getBuckets();
-        assertTrue(bucketList.size() >= 1000);
-        
-        for (int i = 0; i < 1000; i++)
+
+        for (BinaryValue name : bucketNames)
         {
-            Namespace ns = new Namespace(bucketType, bucketName.toString() + i);
+            assertTrue(bucketList.contains(name));
+        }
+
+        for (BinaryValue name : bucketNames)
+        {
+            Namespace ns = new Namespace(bucketType, name.toString());
             resetAndEmptyBucket(ns);
         }
         
