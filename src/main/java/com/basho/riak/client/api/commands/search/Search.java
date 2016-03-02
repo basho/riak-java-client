@@ -67,7 +67,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
      * Enum that encapsulates the possible settings for a search command's presort setting.
      * Presort results by the key, or search score.
      */
-    public static enum Presort
+    public enum Presort
     {
         KEY("key"), SCORE("score");
 
@@ -88,7 +88,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
     private final String sortField;
     private final List<String> returnFields;
     private final Map<Option<?>, Object> options =
-	    new HashMap<Option<?>, Object>();
+        new HashMap<Option<?>, Object>();
 
     public Search(Builder builder)
     {
@@ -97,10 +97,10 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
         this.start = builder.start;
         this.rows = builder.rows;
         this.presort = builder.presort;
-	    this.filterQuery = builder.filterQuery;
-	    this.sortField = builder.sortField;
-	    this.returnFields = builder.returnFields;
-	    this.options.putAll(builder.options);
+        this.filterQuery = builder.filterQuery;
+        this.sortField = builder.sortField;
+        this.returnFields = builder.returnFields;
+        this.options.putAll(builder.options);
     }
 
 
@@ -153,7 +153,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
             builder.withStart(start);
         }
 
-        if (rows > 0)
+        if (rows >= 0)
         {
             builder.withNumRows(rows);
         }
@@ -221,39 +221,39 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
    /**
     * Builder for a Search command.
     */
-	public static class Builder
-	{
-		private final String index;
-		private final String query;
-		private int start;
-		private int rows;
-		private Presort presort;
-		private String filterQuery;
-		private String sortField;
-		private List<String> returnFields;
-		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+    public static class Builder
+    {
+        private final String index;
+        private final String query;
+        private int start = -1;
+        private int rows = -1;
+        private Presort presort;
+        private String filterQuery;
+        private String sortField;
+        private List<String> returnFields;
+        private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
 
         /**
          * Construct a Builder for a Search command.
          * @param index The index to search.
          * @param query The query to execute against the index.
          */
-		public Builder(String index, String query)
-		{
-			this.index = index;
-			this.query = query;
-		}
+        public Builder(String index, String query)
+        {
+            this.index = index;
+            this.query = query;
+        }
 
         /**
          * Set the presort option, you may presort the results by Key or Score.
          * @param presort the {@link com.basho.riak.client.api.commands.search.Search.Presort} option to set.
          * @return a reference to this object.
          */
-		public Builder withPresort(Presort presort)
-		{
-			this.presort = presort;
-			return this;
-		}
+        public Builder withPresort(Presort presort)
+        {
+            this.presort = presort;
+            return this;
+        }
 
         /**
          * Set the starting row to return.
@@ -261,11 +261,11 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
          *              Use in conjunction with {@link #withRows(int)} to paginate the results.
          * @return a reference to this object.
          */
-		public Builder withStart(int start)
-		{
-			this.start = start;
-			return this;
-		}
+        public Builder withStart(int start)
+        {
+            this.start = start;
+            return this;
+        }
 
         /**
          * Set the maximum number of rows to return.
@@ -273,11 +273,11 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
          *             Use in conjunction with {@link #withStart(int)} to paginate the results.
          * @return a reference to this object.
          */
-		public Builder withRows(int rows)
-		{
-			this.rows = rows;
-			return this;
-		}
+        public Builder withRows(int rows)
+        {
+            this.rows = rows;
+            return this;
+        }
 
         /**
          * Add an optional setting for this command.
@@ -288,69 +288,69 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
          * @param value the value for the option.
          * @return a reference to this object.
          */
-		public <T> Builder withOption(Option<T> option, T value)
-		{
-			options.put(option, value);
-			return this;
-		}
+        public <T> Builder withOption(Option<T> option, T value)
+        {
+            options.put(option, value);
+            return this;
+        }
 
         /**
          * Set a filter to use for this search.
          * @param query the query string to filter the search with.
          * @return a reference to this object.
          */
-		public Builder filter(String query)
-		{
-			this.filterQuery = query;
-			return this;
-		}
+        public Builder filter(String query)
+        {
+            this.filterQuery = query;
+            return this;
+        }
 
         /**
          * Set a field to sort the results on.
          * @param field the field to sort the results with.
          * @return a reference to this object.
          */
-		public Builder sort(String field)
-		{
-			this.sortField = field;
-			return this;
-		}
+        public Builder sort(String field)
+        {
+            this.sortField = field;
+            return this;
+        }
 
         /**
          * Set the list of fields that should be returned for each record in the result set.
          * @param fields the collection of fields to return with each result.
          * @return a reference to this object.
          */
-		public Builder returnFields(Iterable<String> fields)
-		{
-			this.returnFields = new ArrayList<String>();
-			for (String field : fields)
-			{
-				returnFields.add(field);
-			}
-			return this;
-		}
+        public Builder returnFields(Iterable<String> fields)
+        {
+            this.returnFields = new ArrayList<String>();
+            for (String field : fields)
+            {
+                returnFields.add(field);
+            }
+            return this;
+        }
 
         /**
          * Set the list of fields that should be returned for each record in the result set.
          * @param fields the varargs list of fields to return with each result.
          * @return a reference to this object.
          */
-		public Builder returnFields(String... fields)
-		{
-			this.returnFields(Arrays.asList(fields));
-			return this;
-		}
+        public Builder returnFields(String... fields)
+        {
+            this.returnFields(Arrays.asList(fields));
+            return this;
+        }
 
         /**
          * Construct the Search command.
          * @return the new Search command.
          */
-		public Search build()
-		{
-			return new Search(this);
-		}
+        public Search build()
+        {
+            return new Search(this);
+        }
 
-	}
+    }
 
 }

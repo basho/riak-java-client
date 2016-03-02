@@ -24,7 +24,8 @@ public class YokozunaIndex
 {
     private final String name;
     private final String schema;
-    
+    private volatile Integer nVal;
+
     /**
      * Constructs a Yokozuna index without naming the schema.
      * 
@@ -54,10 +55,28 @@ public class YokozunaIndex
         {
             throw new IllegalArgumentException("Index name can not be null or zero length");
         }
+
         this.name = name;
         this.schema = schema;
     }
-    
+
+    /**
+     * Set the nVal.
+     *
+     * @param nVal the number of replicas.
+     * @return a reference to this object.
+     */
+    public YokozunaIndex withNVal(int nVal)
+    {
+        if (nVal < 1)
+        {
+            throw new IllegalArgumentException("nVal must be >= 1");
+        }
+
+        this.nVal = nVal;
+        return this;
+    }
+
     /**
      * Returns the name of this index as a UTF-8. 
      * 
@@ -69,11 +88,32 @@ public class YokozunaIndex
     }
     
     /**
-     * Returns the schema name for this index
-     * @return The schema name
+     * Returns the schema name for this index.
+     * @return The schema name.
      */
     public String getSchema()
     {
         return schema;
+    }
+
+
+    /**
+     * Determine if an nVal value has been set.
+     *
+     * @return true if set, false otherwise.
+     */
+    public boolean hasNVal()
+    {
+        return nVal != null;
+    }
+
+    /**
+     * Get the nVal.
+     *
+     * @return the nVal value or null if not set.
+     */
+    public Integer getNVal()
+    {
+        return nVal;
     }
 }
