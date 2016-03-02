@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
 
-public class ITestCrdtApi extends ITestBase
+public class ITestCrdtApi extends ITestAutoCleanupBase
 {
 
     @Test

@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @author Brian Roach <roach at basho dot com>
  * @author Alex Moore  <amoore at basho dot com>
  */
-public class ITestSecondaryIndexQueryOp extends ITestBase
+public class ITestSecondaryIndexQueryOp extends ITestAutoCleanupBase
 {
     @Test
     public void testSingleQuerySingleResponseDefaultType() throws InterruptedException, ExecutionException

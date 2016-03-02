@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -38,7 +37,7 @@ import static org.junit.Assume.assumeTrue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ITestMapReduceOperation extends ITestBase
+public class ITestMapReduceOperation extends ITestAutoCleanupBase
 {
     @Test
     public void testBasicMRDefaultType() throws InterruptedException, ExecutionException, IOException

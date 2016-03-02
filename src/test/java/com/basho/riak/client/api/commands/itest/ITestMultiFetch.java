@@ -18,7 +18,7 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.MultiFetch;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -37,7 +37,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestMultiFetch extends ITestBase
+public class ITestMultiFetch extends ITestAutoCleanupBase
 {
     
     @Test

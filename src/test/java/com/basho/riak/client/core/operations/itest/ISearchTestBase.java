@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  * @author Alex Moore  <amoore at basho dot com>
  * @since 2.0.5
  */
-public class ISearchTestBase extends ITestBase
+public class ISearchTestBase extends ITestAutoCleanupBase
 {
     public static void setupSearchEnvironment(String bucketName, String indexName) throws ExecutionException, InterruptedException
     {

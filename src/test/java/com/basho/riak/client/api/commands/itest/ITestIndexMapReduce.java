@@ -18,7 +18,7 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.mapreduce.IndexMapReduce;
@@ -40,7 +40,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestIndexMapReduce extends ITestBase
+public class ITestIndexMapReduce extends ITestAutoCleanupBase
 {
     private final RiakClient client = new RiakClient(cluster);
     private final  String mrBucketName = bucketName.toString() + "_mr";

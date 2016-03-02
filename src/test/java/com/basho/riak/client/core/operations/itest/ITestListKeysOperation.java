@@ -19,7 +19,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -38,7 +37,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestListKeysOperation extends ITestBase
+public class ITestListKeysOperation extends ITestAutoCleanupBase
 {
     @Test
     public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException
@@ -172,7 +171,7 @@ public class ITestListKeysOperation extends ITestBase
         }
         
         latch.await(2, TimeUnit.MINUTES);
-        ITestBase.resetAndEmptyBucket(ns);
+        ITestAutoCleanupBase.resetAndEmptyBucket(ns);
         
     }
 }

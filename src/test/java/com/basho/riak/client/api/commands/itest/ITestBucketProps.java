@@ -20,10 +20,10 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.api.commands.buckets.ResetBucketProperties;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
-import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Namespace;
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  *
  * @author Chris Mancini <cmancini at basho dot com>
  */
-public class ITestBucketProps extends ITestBase
+public class ITestBucketProps extends ITestAutoCleanupBase
 {
     private final String propsBucketName = bucketName.toString() + "_props";
 
