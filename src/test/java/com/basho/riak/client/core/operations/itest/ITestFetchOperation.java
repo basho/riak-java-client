@@ -155,21 +155,21 @@ public class ITestFetchOperation extends ITestBase
 
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         Location location = new Location(namespace, key);
-        final StoreOperation storeOp = new StoreOperation.Builder(location).withContent(rObj).withDw(3).withW(3).withReturnBody(true).build();
+        final StoreOperation storeOp = new StoreOperation.Builder(location).withContent(rObj).build();
 
         cluster.execute(storeOp);
         storeOp.get();
         assertTrue(storeOp.isSuccess());
 
 
-        final StoreOperation storeOp2 = new StoreOperation.Builder(location).withContent(rObj).withDw(3).withW(3).withReturnBody(true).build();
+        final StoreOperation storeOp2 = new StoreOperation.Builder(location).withContent(rObj).build();
 
         cluster.execute(storeOp2);
         storeOp2.get();
         assertTrue(storeOp2.isSuccess());
 
         FetchOperation fetchOp =
-                new FetchOperation.Builder(location).withR(3).build();
+                new FetchOperation.Builder(location).build();
         System.out.println(key.toStringUtf8());
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();
