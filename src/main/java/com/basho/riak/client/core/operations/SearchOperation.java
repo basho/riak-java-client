@@ -143,9 +143,9 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
          */
         public Builder withNumRows(int rows)
         {
-            if (rows <= 0)
+            if (rows < 0)
             {
-                throw new IllegalArgumentException("Rows must be >= 1");
+                throw new IllegalArgumentException("Rows must be >= 0");
             }
             reqBuilder.setRows(rows);
             return this;

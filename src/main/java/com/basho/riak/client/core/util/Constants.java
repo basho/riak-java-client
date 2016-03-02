@@ -15,8 +15,6 @@
  */
 package com.basho.riak.client.core.util;
 
-import com.basho.riak.client.core.netty.RiakResponseHandler;
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>

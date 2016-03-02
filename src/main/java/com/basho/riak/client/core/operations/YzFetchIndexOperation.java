@@ -49,7 +49,8 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
         for (RiakYokozunaPB.RpbYokozunaIndex pbIndex : response.getIndexList())
         {
             indexList.add(new YokozunaIndex(pbIndex.getName().toStringUtf8(),
-                                            pbIndex.getSchema().toStringUtf8()));
+                                            pbIndex.getSchema().toStringUtf8())
+                                            .withNVal(pbIndex.getNVal()));
         }
         
         return new Response(indexList);
