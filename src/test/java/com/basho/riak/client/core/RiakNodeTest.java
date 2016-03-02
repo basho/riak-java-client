@@ -415,6 +415,8 @@ public class RiakNodeTest
     @Test
     public void nodeRefreshesInetSocketAddressWhenConnectionsDie() throws Exception
     {
+        // Setup mock bootstrap / ChannelFuture / Channel
+        // Should behave like good channel.
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
         Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
@@ -428,6 +430,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
+        // Capture arguments passed to InetSocketAddress ctors.
         ArgumentCaptor<InetSocketAddress> addressCaptor = ArgumentCaptor.forClass(InetSocketAddress.class);
 
         RiakNode node = new RiakNode.Builder()
@@ -438,17 +441,28 @@ public class RiakNodeTest
 
         node.start();
 
+        // Get a connection, return it like all is good.
         Channel fetchedChannel = Whitebox.invokeMethod(node, "getConnection");
         Whitebox.invokeMethod(node, "returnConnection", fetchedChannel);
 
+        // Set the mock channel to return false on calling channel.isOpen, to force a lookup.
         doReturn(false).when(c).isOpen();
 
+        // Get another connection, should fail + do 2nd lookup.
         Whitebox.invokeMethod(node, "getConnection");
 
+        // Verify that the lookup occurred twice. Once on startup, once after the failed 2nd getConnection.
         verify(bootstrap, times(2)).remoteAddress(addressCaptor.capture());
 
+        // Verify that we have two different objects with same info, thus verifying that we had two lookups.
         final List<InetSocketAddress> addressesUsed = addressCaptor.getAllValues();
-        assertNotSame(addressesUsed.get(0), addressesUsed.get(1));
+        assertEquals(2, addressesUsed.size());
+
+        // Make sure we aren't referring to same object instance, but that they are equal.
+        final InetSocketAddress firstAddress = addressesUsed.get(0);
+        final InetSocketAddress secondAddress = addressesUsed.get(1);
+        assertNotSame(firstAddress, secondAddress);
+        assertEquals(firstAddress, secondAddress);
     }
 
     @Test
