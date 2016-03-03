@@ -15,21 +15,11 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.RiakFutureListener;
-import com.basho.riak.client.core.operations.DeleteOperation;
-import com.basho.riak.client.core.operations.ListKeysOperation;
-import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
-import com.basho.riak.client.core.operations.YzFetchIndexOperation;
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.After;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
 
 /**
  *
