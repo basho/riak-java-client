@@ -34,7 +34,7 @@ import org.junit.Test;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ITestYzAdminOperations extends ITestAutoCleanupBase
+public class ITestYzAdminOperations extends ITestBase
 {
 
     public static final String indexName = "test_index_ITestYzAdminOperations";

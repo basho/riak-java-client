@@ -54,10 +54,10 @@ public class ITestFetchOperation extends ITestBase
     @AfterClass
     public static void cleanupBuckets() throws ExecutionException, InterruptedException
     {
-        ITestAutoCleanupBase.resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
-        ITestAutoCleanupBase.resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, siblingsBucket));
-        ITestAutoCleanupBase.resetAndEmptyBucket(new Namespace(bucketType.toString(), bucketName.toString()));
-        ITestAutoCleanupBase.resetAndEmptyBucket(new Namespace(bucketType.toString(), siblingsBucket));
+        resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
+        resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, siblingsBucket));
+        resetAndEmptyBucket(new Namespace(bucketType.toString(), bucketName.toString()));
+        resetAndEmptyBucket(new Namespace(bucketType.toString(), siblingsBucket));
     }
 
     @Test
@@ -170,7 +170,6 @@ public class ITestFetchOperation extends ITestBase
 
         FetchOperation fetchOp =
                 new FetchOperation.Builder(location).build();
-        System.out.println(key.toStringUtf8());
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();
 

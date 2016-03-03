@@ -23,6 +23,7 @@ import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.mapreduce.BucketMapReduce;
 import com.basho.riak.client.api.commands.mapreduce.MapReduce;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -35,52 +36,57 @@ import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.concurrent.ExecutionException;
-import org.junit.After;
-import org.junit.Test;
+
+import org.junit.*;
 
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Assume;
-import org.junit.Before;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestBucketMapReduce extends ITestAutoCleanupBase
+public class ITestBucketMapReduce extends ITestBase
 {
     private final static RiakClient client = new RiakClient(cluster);
-    private final static String mrBucketName = bucketName.toString() + "_mr";
-    
-    @Before
-    public void changeBucketProps() throws ExecutionException, InterruptedException
+    private final static String mrBucketName = "ITestBucketMapReduce";
+
+    @BeforeClass
+    public static void setup() throws InterruptedException, ExecutionException
+    {
+        changeBucketProps();
+        initValues(Namespace.DEFAULT_BUCKET_TYPE.toString());
+        if (testBucketType)
+        {
+            initValues(mapReduceBucketType.toString());
+        }
+    }
+
+    @AfterClass
+    public static void tearDown() throws ExecutionException, InterruptedException
+    {
+        Namespace ns = new Namespace(mrBucketName);
+        resetAndEmptyBucket(ns);
+
+        if (testBucketType)
+        {
+            ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
+            resetAndEmptyBucket(ns);
+        }
+    }
+
+    private static void changeBucketProps() throws ExecutionException, InterruptedException
     {
         if (testBucketType)
         {
-            Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
+            Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
             StoreBucketProperties op = new StoreBucketProperties.Builder(ns).withAllowMulti(false).build();
             client.execute(op);
         }
     }
     
-    @After
-    public void cleanUp() throws InterruptedException, ExecutionException
-    {
-        // Because some of these tests blow up due to Riak bugs we need 
-        // to clean up the mess here
-        Namespace ns = new Namespace(mrBucketName);
-        resetAndEmptyBucket(ns);
-        
-        if (testBucketType)
-        {
-            ns = new Namespace(bucketType.toString(), mrBucketName);
-            resetAndEmptyBucket(ns);
-        }
-        
-    }
-    
-    private void initValues(String bucketType) throws InterruptedException
+    private static void initValues(String bucketType) throws InterruptedException
     {
         // insert 200 items into a bucket
        
@@ -109,12 +115,11 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
     public void erlangBucketMRTestType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        erlangBucketMR(bucketType.toString());
+        erlangBucketMR(mapReduceBucketType.toString());
     }
     
     private void erlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
-        initValues(bucketType);
         Namespace ns = new Namespace(bucketType, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
@@ -134,8 +139,6 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
         
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
-        
-        resetAndEmptyBucket(ns);
     }
     
     @Test
@@ -148,13 +151,11 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
     public void JsBucketMRTestType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        JsBucketMR(bucketType.toString());
+        JsBucketMR(mapReduceBucketType.toString());
     }
     
     private void JsBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
-        initValues(bucketType);
-        
         Namespace ns = new Namespace(bucketType, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
@@ -178,15 +179,11 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
         
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
-               
-        resetAndEmptyBucket(ns);
     }
     
     @Test
     public void multiPhaseResult() throws InterruptedException, ExecutionException
     {
-        initValues(Namespace.DEFAULT_BUCKET_TYPE);
-        
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
@@ -211,14 +208,11 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
         
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
-        
-        resetAndEmptyBucket(ns);
     }
     
     @Test
     public void keyFilter() throws InterruptedException, ExecutionException
     {
-        initValues(Namespace.DEFAULT_BUCKET_TYPE);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
@@ -239,8 +233,6 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
         assertEquals(4, response.getResultsFromAllPhases().size());
         assertEquals(46, response.getResultsFromAllPhases().get(0).asInt());
         assertEquals(49, response.getResultsFromAllPhases().get(3).asInt());
-        
-        resetAndEmptyBucket(ns);
     }
     
     @Test
@@ -248,8 +240,7 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(testBucketType);
         
-        initValues(bucketType.toString());
-        Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
+        Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
@@ -266,8 +257,6 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
         MapReduce.Response response = client.execute(bmr);
         
         assertEquals(179, response.getResultsFromAllPhases().size());
-        
-        resetAndEmptyBucket(ns);
     }
     
     @Test
@@ -275,9 +264,7 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(testBucketType);
 
-        initValues(bucketType.toString());
-        
-         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
+        Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
         BucketMapReduce bmr = 
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
@@ -296,8 +283,5 @@ public class ITestBucketMapReduce extends ITestAutoCleanupBase
         future.await();
         assertTrue(future.isSuccess());
         assertEquals(4, future.get().getResultsFromAllPhases().size());
-        resetAndEmptyBucket(ns);
-
     }
-    
 }

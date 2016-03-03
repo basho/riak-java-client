@@ -171,7 +171,7 @@ public class ITestListKeysOperation extends ITestAutoCleanupBase
         }
         
         latch.await(2, TimeUnit.MINUTES);
-        ITestAutoCleanupBase.resetAndEmptyBucket(ns);
+        resetAndEmptyBucket(ns);
         
     }
 }

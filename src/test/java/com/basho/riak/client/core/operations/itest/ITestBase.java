@@ -2,8 +2,15 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.netty.RiakResponseException;
+import com.basho.riak.client.core.operations.DeleteOperation;
+import com.basho.riak.client.core.operations.ListKeysOperation;
+import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
+import com.basho.riak.client.core.operations.YzFetchIndexOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,9 +24,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.List;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,6 +51,7 @@ public class ITestBase
     protected static BinaryValue mapBucketType;
     protected static BinaryValue bucketType;
     protected static BinaryValue yokozunaBucketType;
+    protected static BinaryValue mapReduceBucketType;
     protected static String overrideCert;
     protected static String hostname;
     protected static int pbcPort;
@@ -52,7 +59,7 @@ public class ITestBase
     public TestName testName = new TestName();
 
     @BeforeClass
-    public static void setUp() throws FileNotFoundException, CertificateException, IOException, KeyStoreException,
+    public static void setUp() throws CertificateException, IOException, KeyStoreException,
             NoSuchAlgorithmException
     {
         bucketName = BinaryValue.unsafeCreate("ITestAutoCleanupBase".getBytes());
@@ -115,6 +122,9 @@ public class ITestBase
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
         mapBucketType = BinaryValue.create("maps");
+
+        mapReduceBucketType = BinaryValue.create("mr");
+
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
         testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries"));
 
@@ -151,6 +161,62 @@ public class ITestBase
     public static void tearDown() throws InterruptedException, ExecutionException, TimeoutException
     {
         cluster.shutdown().get(2, TimeUnit.SECONDS);
+    }
+
+    public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
+    {
+        resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, name.toString()));
+    }
+
+    public static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
+    {
+        ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(namespace);
+
+        ListKeysOperation keysOp = keysOpBuilder.build();
+        cluster.execute(keysOp);
+        List<BinaryValue> keyList = keysOp.get().getKeys();
+        final Semaphore semaphore = new Semaphore(NUMBER_OF_PARALLEL_REQUESTS);
+        final CountDownLatch latch = new CountDownLatch(keyList.size());
+
+        RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
+            @Override
+            public void handle(RiakFuture<Void, Location> f)
+            {
+                try
+                {
+                    f.get();
+                }
+                catch (Exception ex)
+                {
+                    if (ex instanceof RuntimeException)
+                    {
+                        throw (RuntimeException)ex;
+                    }
+                    throw new RuntimeException(ex);
+                }
+                semaphore.release();
+                latch.countDown();
+            }
+
+        };
+
+        for (BinaryValue k : keyList)
+        {
+            Location location = new Location(namespace, k);
+            DeleteOperation delOp = new DeleteOperation.Builder(location).withRw(3).build();
+            delOp.addListener(listener);
+            semaphore.acquire();
+            cluster.execute(delOp);
+        }
+
+        latch.await();
+
+        ResetBucketPropsOperation.Builder resetOpBuilder =
+                new ResetBucketPropsOperation.Builder(namespace);
+
+        ResetBucketPropsOperation resetOp = resetOpBuilder.build();
+        cluster.execute(resetOp);
+        resetOp.get();
     }
 
     private static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
@@ -200,5 +266,22 @@ public class ITestBase
     protected void setBucketNameToTestName()
     {
         bucketName = BinaryValue.create(testName.getMethodName());
+    }
+
+    public static boolean assureIndexExists(String indexName) throws InterruptedException
+    {
+        for (int x = 0; x < 5; x++)
+        {
+            Thread.sleep(2000);
+            YzFetchIndexOperation fetch = new YzFetchIndexOperation.Builder().withIndexName(indexName).build();
+            cluster.execute(fetch);
+            fetch.await();
+            if (fetch.isSuccess())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
