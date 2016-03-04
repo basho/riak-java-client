@@ -4,6 +4,9 @@ Riak Java Client
 The **Riak Java Client** enables communication with [Riak](http://basho.com/riak/), an open source, distributed database that focuses on high availability, horizontal scalability, and *predictable*
 latency. Both Riak and this code are maintained by [Basho](http://www.basho.com/).
 
+The latest version of the Java client supports both Riak KV 2.0+, and Riak TS 1.0+.
+Please see the [RELNOTES.md](https://github.com/basho/riak-java-client/blob/develop/README.md) document for more information on specific feature and version support.
+
 1. [Installation](#installation)
 2. [Documentation](#documentation)
 3. [Contributing](#contributing)
@@ -36,7 +39,7 @@ This client is published to Maven Central and can be included in your project by
   <dependency>
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.4</version>
   </dependency>
   ...
 </dependencies>
@@ -48,14 +51,14 @@ All-in-one jar builds are available [here](http://riak-java-client.s3.amazonaws.
 
 * Develop: [![Build Status](https://travis-ci.org/basho/riak-java-client.svg?branch=develop)](https://travis-ci.org/basho/riak-java-client)
 
-Most documentation is living in the [wiki](https://github.com/basho/riak-java-client/wiki). For specifics on our progress here, see the [release notes](https://github.com/basho/riak-java-client/blob/master/RELNOTES.md). 
+Most documentation is living in the [wiki](https://github.com/basho/riak-java-client/wiki). For specifics on our progress here, see the [release notes](https://github.com/basho/riak-java-client/blob/master/RELNOTES.md).
 
 Also see [the Javadoc site](http://basho.github.io/riak-java-client/) for more in-depth API docs.
 
 ## Contributing
 
 #### `riak_pb` dependency
-To build the Riak Java Client, you must have the correct version of the riak_pb dependency installed to your local Maven repository.  
+To build the Riak Java Client, you must have the correct version of the riak_pb dependency installed to your local Maven repository.
 
 ```
 git clone https://github.com/basho/riak_pb
@@ -109,7 +112,7 @@ This repository's maintainers are engineers at Basho and we welcome your contrib
 
 ### An honest disclaimer
 
-Due to our obsession with stability and our rich ecosystem of users, community updates on this repo may take a little longer to review. 
+Due to our obsession with stability and our rich ecosystem of users, community updates on this repo may take a little longer to review.
 
 The most helpful way to contribute is by reporting your experience through issues. Issues may not be updated while we review internally, but they're still incredibly appreciated.
 
@@ -140,9 +143,9 @@ Thank you to all of our contributors! If your name is missing please let us know
 
 ## 2.0 Overview
 
-Version 2.0 of the Riak Java client is a completely new codebase. It relies on 
+Version 2.0 of the Riak Java client is a completely new codebase. It relies on
 Netty4 in the core for handling network operations and all operations can
-be executed synchronously or asynchronously. 
+be executed synchronously or asynchronously.
 
 ### Getting started with the 2.0 client
 
@@ -150,24 +153,24 @@ The new client is designed to model a Riak cluster:
 
 ![RJC model](http://basho.github.io/riak-java-client/2.0.3/com/basho/riak/client/api/doc-files/client-image.png)
 
-The easiest way to get started with the client is using one of the static 
+The easiest way to get started with the client is using one of the static
 methods provided to instantiate and start the client:
 
 ```java
-RiakClient client = 
+RiakClient client =
     RiakClient.newClient("192.168.1.1","192.168.1.2","192.168.1.3");
 ```
 
 The RiakClient object is thread safe and may be shared across multiple threads.
 
-For more complex configurations, you can instantiate a RiakCluster from the 
+For more complex configurations, you can instantiate a RiakCluster from the
 core packages and supply it to the RiakClient constructor.
 
 ```java
 RiakNode.Builder builder = new RiakNode.Builder();
 builder.withMinConnections(10);
 builder.withMaxConnections(50);
- 
+
 List<String> addresses = new LinkedList<String>();
 addresses.add("192.168.1.1");
 addresses.add("192.168.1.2");
@@ -179,7 +182,7 @@ cluster.start();
 RiakClient client = new RiakClient(cluster)
 ```
 
-Once you have a client, commands from the [com.basho.riak.client.api.commands.*](#riakcommand-subclasses) 
+Once you have a client, commands from the [com.basho.riak.client.api.commands.*](#riakcommand-subclasses)
 packages are built then executed by the client.
 
 Some basic examples of building and executing these commands is shown
