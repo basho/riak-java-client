@@ -5,7 +5,7 @@ The **Riak Java Client** enables communication with [Riak](http://basho.com/riak
 latency. Both Riak and this code are maintained by [Basho](http://www.basho.com/).
 
 The latest version of the Java client supports both Riak KV 2.0+, and Riak TS 1.0+.
-Please see the [RELNOTES.md](https://github.com/basho/riak-java-client/blob/develop/README.md) document for more information on specific feature and version support.
+Please see the [RELNOTES.md](https://github.com/basho/riak-java-client/blob/develop/RELNOTES.md) document for more information on specific feature and version support.
 
 1. [Installation](#installation)
 2. [Documentation](#documentation)
