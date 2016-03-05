@@ -41,6 +41,7 @@ import java.security.Security;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -88,6 +89,9 @@ public class RiakNode implements RiakResponseListener
     private volatile long idleTimeoutInNanos;
     private volatile int connectionTimeout;
     private volatile boolean blockOnMaxConnections;
+
+    private final String[] riakSupportedSSLCiphers;
+    private final AtomicReference<String[]> commonSupportedSSLCiphers = new AtomicReference<>();
 
     private HealthCheckFactory healthCheckFactory;
 
@@ -188,6 +192,7 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
+        this.riakSupportedSSLCiphers = Constants.SUPPORTED_RIAK_R16_CIPHERS;
 
         if (builder.bootstrap != null)
         {
@@ -764,6 +769,10 @@ public class RiakNode implements RiakResponseListener
             logger.debug("Using TLSv1.1");
         }
 
+        final String[] commonSupportedCiphers = getCommonSupportedCiphers(engine);
+
+        engine.setEnabledCipherSuites(commonSupportedCiphers);
+
         engine.setUseClientMode(true);
         RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
         c.pipeline().addFirst(decoder);
@@ -784,8 +793,6 @@ public class RiakNode implements RiakResponseListener
                 logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
                 throw new ConnectionFailedException(promise.cause());
             }
-
-
         }
         catch (InterruptedException e)
         {
@@ -795,6 +802,23 @@ public class RiakNode implements RiakResponseListener
             Thread.currentThread().interrupt();
             throw new ConnectionFailedException(e);
         }
+    }
+
+    private synchronized String[] getCommonSupportedCiphers(SSLEngine engine)
+    {
+        if(commonSupportedSSLCiphers.get() == null)
+        {
+            final HashSet<String> riakCiphers = new HashSet<>(Arrays.asList(riakSupportedSSLCiphers));
+            final HashSet<String> javaCiphers = new HashSet<>(Arrays.asList(engine.getEnabledCipherSuites()));
+
+            javaCiphers.retainAll(riakCiphers); // Intersect the two sets
+            String[] commonCiphers = new String[javaCiphers.size()];
+
+            javaCiphers.toArray(commonCiphers);
+            commonSupportedSSLCiphers.set(commonCiphers);
+        }
+
+        return commonSupportedSSLCiphers.get();
     }
 
     /**
@@ -1308,6 +1332,7 @@ public class RiakNode implements RiakResponseListener
         private KeyStore trustStore;
         private KeyStore keyStore;
         private String keyPassword;
+        private String[] SSL_CIPHERS;
 
 
         /**

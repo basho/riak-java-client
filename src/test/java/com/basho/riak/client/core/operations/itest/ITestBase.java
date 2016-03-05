@@ -92,21 +92,21 @@ public abstract class ITestBase
 
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
         overrideCert = System.getProperty("com.basho.riak.security.cacert");
-        
+
         /**
          * Yokozuna.
-         * 
+         *
          * You need to create a bucket type in Riak for YZ:
-         * 
+         *
          * riak-admin bucket-type create jvtest_yz_search '{"props":{}}'
          * riak-admin bucket-type activate jvtest_yz_search
          */
         yokozunaBucketType = BinaryValue.create("jvtest_yz_search");
         testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
-        
+
         /**
          * Bucket type
-         * 
+         *
          * you must create the type 'jvtest_test_type' to use this:
          *
          * riak-admin bucket-type create jvtest_test_type '{"props":{}}'
@@ -114,18 +114,18 @@ public abstract class ITestBase
          */
         testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
         bucketType = BinaryValue.unsafeCreate("jvtest_test_type".getBytes());
-        
+
         /**
          * Secondary indexes
-         * 
+         *
          * The backend must be 'leveldb' in riak config to us this
          */
         test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
-        
-        
+
+
         legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
-        
-        
+
+
         /**
          * In order to run the CRDT itests you must first manually
          * create the following bucket types in your riak instance
@@ -203,13 +203,13 @@ public abstract class ITestBase
             resetAndEmptyBucket(defaultNamespace());
         }
     }
-    
+
     @AfterClass
     public static void tearDown() throws InterruptedException, ExecutionException, TimeoutException
     {
         cluster.shutdown().get(2, TimeUnit.SECONDS);
     }
-    
+
     public static void resetAndEmptyBucket(BinaryValue name) throws InterruptedException, ExecutionException
     {
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, name.toString()));
@@ -218,13 +218,13 @@ public abstract class ITestBase
     protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
     {
         ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(namespace);
-        
+
         ListKeysOperation keysOp = keysOpBuilder.build();
         cluster.execute(keysOp);
         List<BinaryValue> keyList = keysOp.get().getKeys();
         final Semaphore semaphore = new Semaphore(NUMBER_OF_PARALLEL_REQUESTS);
         final CountDownLatch latch = new CountDownLatch(keyList.size());
-        
+
         RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
             @Override
             public void handle(RiakFuture<Void, Location> f)
@@ -244,9 +244,9 @@ public abstract class ITestBase
                 semaphore.release();
                 latch.countDown();
             }
-            
+
         };
-        
+
         for (BinaryValue k : keyList)
         {
             Location location = new Location(namespace, k);
@@ -259,15 +259,15 @@ public abstract class ITestBase
 
         latch.await();
 
-        ResetBucketPropsOperation.Builder resetOpBuilder = 
+        ResetBucketPropsOperation.Builder resetOpBuilder =
             new ResetBucketPropsOperation.Builder(namespace);
-        
+
         ResetBucketPropsOperation resetOp = resetOpBuilder.build();
         cluster.execute(resetOp);
         resetOp.get();
 
     }
-    
+
     public static boolean assureIndexExists(String indexName) throws InterruptedException
     {
         for (int x = 0; x < 5; x++)
@@ -281,7 +281,7 @@ public abstract class ITestBase
                 return true;
             }
         }
-        
+
         return false;
     }
 
