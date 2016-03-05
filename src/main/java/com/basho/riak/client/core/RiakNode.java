@@ -90,7 +90,6 @@ public class RiakNode implements RiakResponseListener
     private volatile int connectionTimeout;
     private volatile boolean blockOnMaxConnections;
 
-    private final String[] riakSupportedSSLCiphers;
     private final AtomicReference<String[]> commonSupportedSSLCiphers = new AtomicReference<>();
 
     private HealthCheckFactory healthCheckFactory;
@@ -192,7 +191,6 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
-        this.riakSupportedSSLCiphers = Constants.SUPPORTED_RIAK_R16_CIPHERS;
 
         if (builder.bootstrap != null)
         {
@@ -808,7 +806,7 @@ public class RiakNode implements RiakResponseListener
     {
         if(commonSupportedSSLCiphers.get() == null)
         {
-            final HashSet<String> riakCiphers = new HashSet<>(Arrays.asList(riakSupportedSSLCiphers));
+            final HashSet<String> riakCiphers = new HashSet<>(Arrays.asList(Constants.SUPPORTED_RIAK_R16_CIPHERS));
             final HashSet<String> javaCiphers = new HashSet<>(Arrays.asList(engine.getEnabledCipherSuites()));
 
             javaCiphers.retainAll(riakCiphers); // Intersect the two sets
@@ -1332,8 +1330,6 @@ public class RiakNode implements RiakResponseListener
         private KeyStore trustStore;
         private KeyStore keyStore;
         private String keyPassword;
-        private String[] SSL_CIPHERS;
-
 
         /**
          * Default constructor. Returns a new builder for a RiakNode with
