@@ -16,7 +16,7 @@
 
 package com.basho.riak.client.api.commands.itest;
 
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.annotations.RiakVClock;
 import com.basho.riak.client.api.cap.VClock;
@@ -34,7 +34,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestUpdateValue extends ITestBase
+public class ITestUpdateValue extends ITestAutoCleanupBase
 {
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException

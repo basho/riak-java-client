@@ -19,7 +19,7 @@ package com.basho.riak.client.api.commands.itest;
 import com.basho.riak.client.api.cap.ConflictResolver;
 import com.basho.riak.client.api.cap.ConflictResolverFactory;
 import com.basho.riak.client.api.cap.UnresolvedConflictException;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.kv.FetchValue.Option;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.RiakClient;
@@ -49,7 +49,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestFetchValue extends ITestBase
+public class ITestFetchValue extends ITestAutoCleanupBase
 {
     @Test
     public void simpleTestDefaultType()

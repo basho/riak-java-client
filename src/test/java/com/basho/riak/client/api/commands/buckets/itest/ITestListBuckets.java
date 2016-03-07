@@ -3,7 +3,7 @@ package com.basho.riak.client.api.commands.buckets.itest;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.api.commands.kv.StoreValue;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -20,7 +20,7 @@ import static org.junit.Assume.assumeTrue;
  * @author empovit
  * @since 2.0.3
  */
-public class ITestListBuckets extends ITestBase
+public class ITestListBuckets extends ITestAutoCleanupBase
 {
 
     private final RiakClient client = new RiakClient(cluster);

@@ -27,7 +27,7 @@ import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestRawIndexQuery extends ITestBase
+public class ITestRawIndexQuery extends ITestAutoCleanupBase
 {
     @Test
     public void simpleTest() throws InterruptedException, ExecutionException

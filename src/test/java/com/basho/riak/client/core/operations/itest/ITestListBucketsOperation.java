@@ -40,7 +40,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestListBucketsOperation extends ITestBase
+public class ITestListBucketsOperation extends ITestAutoCleanupBase
 {
     @Test
     public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
