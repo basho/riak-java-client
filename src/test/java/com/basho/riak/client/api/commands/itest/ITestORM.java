@@ -32,7 +32,7 @@ import com.basho.riak.client.api.convert.Converter;
 import com.basho.riak.client.api.convert.ConverterFactory;
 import com.basho.riak.client.api.convert.RiakJacksonModule;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -54,7 +54,7 @@ import static org.junit.Assert.*;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestORM extends ITestBase
+public class ITestORM extends ITestAutoCleanupBase
 {
     @Before
     public void resetFactory()

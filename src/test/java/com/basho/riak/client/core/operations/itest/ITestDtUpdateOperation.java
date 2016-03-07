@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
-public class ITestDtUpdateOperation extends ITestBase
+public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 {
 
     private RiakCounter fetchCounter(BinaryValue type, BinaryValue bucket, BinaryValue key)

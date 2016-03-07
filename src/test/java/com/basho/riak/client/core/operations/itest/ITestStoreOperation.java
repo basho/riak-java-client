@@ -18,7 +18,6 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -33,7 +32,7 @@ import org.junit.Test;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ITestStoreOperation extends ITestBase
+public class ITestStoreOperation extends ITestAutoCleanupBase
 {
     final private BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
     final private String value = "{\"value\":\"some value\"}";
