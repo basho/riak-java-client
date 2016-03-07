@@ -88,7 +88,7 @@ public interface Constants {
 
     // List bucket operation parameters
     public static String LIST_BUCKETS = "true";
-    
+
     // Netty Channel handler constants
     public static final String MESSAGE_CODEC = "codec";
     public static final String OPERATION_ENCODER = "operationEncoder";
@@ -97,4 +97,28 @@ public interface Constants {
     public static final String HEALTHCHECK_CODEC = "healthCheckCodec";
 
     public static final String CLIENT_OPTION_CHARSET = "com.basho.riak.client.DefaultCharset";
+
+    // SSL Ciphers supported by Erlang R16 + Java 7/8 with and without the JCE
+    // Your system may not support all of these ciphers.
+    public static final String[] SUPPORTED_RIAK_R16_CIPHERS = new String[]{
+        // Supported by both vanilla Java 7 / 8
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+
+        // Supported via Java 7/8 Cryptography Extension Unlimited Strength Jurisdiction Policy
+        "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+        "TLS_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_RSA_WITH_AES_256_CBC_SHA256",
+
+        // RC4 (Java 7)
+        "TLS_ECDHE_RSA_WITH_RC4_128_SHA",
+        "SSL_RSA_WITH_RC4_128_SHA"
+    };
 }
