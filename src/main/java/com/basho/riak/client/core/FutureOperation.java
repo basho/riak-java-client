@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author Brian Roach <roach at basho dot com>
  * @param <T> The type the operation returns
- * @param <U> The protocol type returned 
+ * @param <U> The protocol type returned
  * @param <S> Query info type
  * @since 2.0
  */
@@ -41,7 +41,8 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     private enum State
     {
-        CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED
+        CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED,
+        DONE_NOT_COMPLETE
     }
 
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
@@ -56,7 +57,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     private final ReentrantLock listenersLock = new ReentrantLock();
     private final HashSet<RiakFutureListener<T,S>> listeners =
-        new HashSet<RiakFutureListener<T,S>>();
+            new HashSet<RiakFutureListener<T,S>>();
     private volatile boolean listenersFired = false;
 
     @Override
@@ -160,15 +161,23 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         exception = null;
         if (done(decodedMessage))
         {
+            logger.debug("Setting done but not complete");
             remainingTries--;
             if (retrier != null)
             {
                 retrier.operationComplete(this, remainingTries);
             }
-            state = State.COMPLETE;
-            latch.countDown();
-            fireListeners();
+            state = State.DONE_NOT_COMPLETE;
         }
+    }
+
+    public synchronized final void setComplete()
+    {
+        logger.debug("Setting Complete on future");
+        stateCheck(State.DONE_NOT_COMPLETE);
+        state = State.COMPLETE;
+        latch.countDown();
+        fireListeners();
     }
 
     /**
@@ -228,7 +237,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     @Override
     public final boolean isDone()
     {
-        return state == State.COMPLETE;
+        return state == State.COMPLETE || state == State.DONE_NOT_COMPLETE;
     }
 
     @Override
@@ -236,7 +245,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         return (isDone() && exception == null);
     }
-    
+
     @Override
     public final Throwable cause()
     {
@@ -249,7 +258,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             return exception;
         }
     }
-    
+
     @Override
     public final T get() throws InterruptedException, ExecutionException
     {
@@ -262,7 +271,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         else if (null == converted)
         {
             converted = convert(rawResponse);
-            
+
         }
 
         return converted;
@@ -285,7 +294,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             converted = convert(rawResponse);
         }
-        
+
         return converted;
     }
 
@@ -298,7 +307,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             {
                 converted = convert(rawResponse);
             }
-            
+
             return converted;
         }
         else
@@ -306,7 +315,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             return null;
         }
     }
-    
+
     @Override
     public final void await() throws InterruptedException
     {
@@ -318,17 +327,17 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         latch.await(timeout, unit);
     }
-    
-    
+
+
     private void stateCheck(State... allowedStates)
     {
         if (Arrays.binarySearch(allowedStates, state) < 0)
         {
             logger.debug("IllegalStateException; required: {} current: {} ",
-                Arrays.toString(allowedStates), state);
+                         Arrays.toString(allowedStates), state);
             throw new IllegalStateException("required: "
-                + Arrays.toString(allowedStates)
-                + " current: " + state);
+                                                    + Arrays.toString(allowedStates)
+                                                    + " current: " + state);
         }
     }
 
