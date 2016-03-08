@@ -7,7 +7,7 @@
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
-  
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -43,7 +43,7 @@
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
     </developers>
-    
+
     <scm>
         <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
@@ -56,7 +56,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <powermock.version>1.6.4</powermock.version>
     </properties>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
@@ -69,7 +69,7 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
     </distributionManagement>
-    
+
     <profiles>
         <profile>
             <id>default</id>
@@ -234,9 +234,9 @@
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.2</version>
-                <configuration> 
-                    <mavenExecutorId>forked-path</mavenExecutorId> 
-                </configuration> 
+                <configuration>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

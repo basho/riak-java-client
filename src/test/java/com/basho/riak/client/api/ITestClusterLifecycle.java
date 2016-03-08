@@ -8,6 +8,8 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -15,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 public class ITestClusterLifecycle
 {
@@ -23,6 +26,8 @@ public class ITestClusterLifecycle
     protected static String hostname;
     protected static int pbcPort;
     protected static Random random = new Random();
+    private final Logger logger = LoggerFactory.getLogger(ITestClusterLifecycle.class);
+
 
     public ITestClusterLifecycle()
     {
@@ -33,7 +38,7 @@ public class ITestClusterLifecycle
 
         RiakNode.Builder builder = new RiakNode.Builder()
                                                .withRemoteAddress(hostname)
-                                               .withRemotePort(10017)
+                                               .withRemotePort(pbcPort)
                                                .withMinConnections(1)
                                                .withMaxConnections(1);
 
@@ -43,7 +48,10 @@ public class ITestClusterLifecycle
     @Test
     public void testManyCommandsOneConnection() throws InterruptedException, ExecutionException, TimeoutException
     {
+        assumeTrue(testLifecycle);
+
         RiakClient client = null;
+        int i = 0;
         try
         {
             client = new RiakClient(cluster);
@@ -51,7 +59,7 @@ public class ITestClusterLifecycle
 
             final Namespace namespace = new Namespace("plain", Integer.toString(random.nextInt()));
 
-            for (int i = 0; i < 10000; i++)
+            for (i=0; i < 1000; i++)
             {
                 createAndStoreObject(client, new Location(namespace, Integer.toString(i)));
             }
@@ -59,7 +67,9 @@ public class ITestClusterLifecycle
         }
         catch (Exception ex)
         {
-            assertNull(ex);
+            logger.debug("Exception occurred", ex);
+            logger.debug("Cluster state: {}, iteration: {}", cluster.getNodes().get(0).getNodeState().toString(), i);
+            fail();
         }
         finally
         {
@@ -73,7 +83,7 @@ public class ITestClusterLifecycle
     {
         final StoreValue storeCmd = new StoreValue.Builder("value").withLocation(location).build();
         final RiakFuture<StoreValue.Response, Location> execute = client.executeAsync(storeCmd);
-        final StoreValue.Response response = execute.get(1, TimeUnit.SECONDS);
+        final StoreValue.Response response = execute.get();
 
         assertNotNull(response);
     }
