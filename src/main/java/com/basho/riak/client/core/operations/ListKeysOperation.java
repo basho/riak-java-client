@@ -23,15 +23,18 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
 {
+    private final Logger logger = LoggerFactory.getLogger("ListKeysOperation");
     private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
-    
+
     private ListKeysOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
@@ -39,7 +42,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     }
 
     @Override
-    protected Response convert(List<RiakKvPB.RpbListKeysResp> rawResponse) 
+    protected Response convert(List<RiakKvPB.RpbListKeysResp> rawResponse)
     {
         Response.Builder builder = new Response.Builder();
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
@@ -83,13 +86,13 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     {
         return namespace;
     }
-    
+
     public static class Builder
     {
         private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
         private final Namespace namespace;
-        
+
         /**
          * Construct a builder for a ListKeysOperaiton.
          * @param namespace The namespace in Riak.
@@ -104,7 +107,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
             this.namespace = namespace;
         }
-        
+
         public Builder withTimeout(int timeout)
         {
             if (timeout <= 0)
@@ -114,13 +117,13 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             reqBuilder.setTimeout(timeout);
             return this;
         }
-        
+
         public ListKeysOperation build()
         {
             return new ListKeysOperation(this);
         }
     }
-    
+
     public static class Response
     {
         private final List<BinaryValue> keys;
@@ -128,23 +131,23 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         {
             this.keys = builder.keys;
         }
-        
+
         public List<BinaryValue> getKeys()
         {
             return keys;
         }
-        
+
         static class Builder
         {
             private List<BinaryValue> keys = new ArrayList<BinaryValue>();
-            
+
             Builder addKeys(List<BinaryValue> keys)
             {
                 this.keys.addAll(keys);
                 return this;
             }
-            
-            Builder addKey(BinaryValue key) 
+
+            Builder addKey(BinaryValue key)
             {
                 this.keys.add(key);
                 return this;
@@ -154,7 +157,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             {
                 return new Response(this);
             }
-            
+
         }
 
     }

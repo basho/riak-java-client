@@ -161,7 +161,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         exception = null;
         if (done(decodedMessage))
         {
-            logger.debug("Setting done but not complete");
+            logger.debug("Setting Done but not Complete");
             remainingTries--;
             if (retrier != null)
             {
