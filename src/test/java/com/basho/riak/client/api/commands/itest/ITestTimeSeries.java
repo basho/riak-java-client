@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  *
  * Schema for the Timeseries table we're using:
  *
- *   CREATE TABLE GeoCheckin
+ *   CREATE TABLE GeoCheckin&lt;RandomInteger&gt;
  *   (
  *      geohash     varchar   not null,
  *      user        varchar   not null,

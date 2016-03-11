@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
  *
  * Schema for the Timeseries table we're using:
  *
- *   CREATE TABLE GeoCheckin
+ *   CREATE TABLE GeoCheckin_Wide
  *   (
  *      geohash     varchar   not null,
  *      user        varchar   not null,
