@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class ITestTsBase extends ITestAutoCleanupBase
 {
-    protected final static String tableName = "GeoCheckin";
+    protected final static String tableName = "GeoCheckin_Wide";
 
     protected final static long now = 1443806900000L; // "now"
     protected final static long fiveMinsInMS = 5L * 60L * 1000L;
