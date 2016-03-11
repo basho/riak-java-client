@@ -3,6 +3,9 @@ Release Notes
 
 ### 2.0.5
 Following issues / PRs addressed:
+ * [Fix DNS cache issue when using the client with ELB](https://github.com/basho/riak-java-client/pull/573)
+ * [Remove superfluous declarations of UnknownHostException](https://github.com/basho/riak-java-client/pull/553)
+ * [Allow RiakNode max connections to be set to 0](https://github.com/basho/riak-java-client/pull/582)
  * [Fix buildbot support, speed up some tests](https://github.com/basho/riak-java-client/pull/596)
  * [Update Security Tests to use common client test setup & certs, fix Linux TLS setup race condition](https://github.com/basho/riak-java-client/pull/595)
  * [Improve Search Tests, fix bug that doesn't allow counts via search, add n_val property to Yokozuna Index Creation](https://github.com/basho/riak-java-client/pull/594)
