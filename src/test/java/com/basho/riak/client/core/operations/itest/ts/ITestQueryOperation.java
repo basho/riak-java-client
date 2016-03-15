@@ -33,8 +33,9 @@ public class ITestQueryOperation extends ITestTsBase
     @Test
     public void queryNoMatches() throws ExecutionException, InterruptedException
     {
-        final String queryText = "select * from GeoCheckin " +
-                                 "where time > 0 " +
+        final String queryText = "select * from " +
+                                 tableName +
+                                 " where time > 0 " +
                                  "  and time < 10 " +
                                  "  and user ='user1'" +
                                  "  and geohash ='hash1'";
@@ -51,8 +52,9 @@ public class ITestQueryOperation extends ITestTsBase
     @Test
     public void querySomeMatches() throws ExecutionException, InterruptedException
     {
-        final String queryText = "select * from GeoCheckin " +
-                                 "where time > " + tenMinsAgo +
+        final String queryText = "select * from " +
+                                 tableName +
+                                 " where time > " + tenMinsAgo +
                                  "  and time < "+ now +
                                  "  and user ='user2'" +
                                  "  and geohash ='hash1'";
