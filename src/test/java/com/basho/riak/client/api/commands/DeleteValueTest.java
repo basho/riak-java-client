@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc
+ * Copyright 2013-2016 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,52 +17,23 @@ package com.basho.riak.client.api.commands;
 
 import com.basho.riak.client.api.commands.kv.DeleteValue;
 import com.basho.riak.client.api.commands.kv.DeleteValue.Option;
-import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.BasicVClock;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.protobuf.RiakKvPB;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
-public class DeleteValueTest
+public class DeleteValueTest extends OperationTestBase<DeleteOperation>
 {
-
-    @Mock RiakCluster mockCluster;
-    @Mock RiakFuture mockFuture;
-    VClock vClock = new BasicVClock(new byte[]{'1'});
-    Location key = new Location(new Namespace("type","bucket"), "key");
-    RiakClient client;
-
-    @Before
-    @SuppressWarnings("unchecked")
-    public void init() throws Exception
-    {
-        MockitoAnnotations.initMocks(this);
-        when(mockFuture.get()).thenReturn(null);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(null);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
-        when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.<DeleteOperation, Location>execute(any(FutureOperation.class))).thenReturn(mockFuture);
-        client = new RiakClient(mockCluster);
-    }
+    private VClock vClock = new BasicVClock(new byte[]{'1'});
+    private Location key = new Location(new Namespace("type","bucket"), "key");
 
     @Test
     public void testDelete() throws Exception
@@ -80,15 +51,9 @@ public class DeleteValueTest
             .withOption(Option.TIMEOUT, 100)
             .withOption(Option.W, new Quorum(1));
 
+       final DeleteOperation operation = executeAndVerify(delete.build());
 
-        client.execute(delete.build());
-
-        ArgumentCaptor<DeleteOperation> captor =
-            ArgumentCaptor.forClass(DeleteOperation.class);
-        verify(mockCluster).execute(captor.capture());
-
-        DeleteOperation operation = captor.getValue();
-        RiakKvPB.RpbDelReq.Builder builder =
+        final RiakKvPB.RpbDelReq.Builder builder =
             (RiakKvPB.RpbDelReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
         assertTrue(builder.hasVclock());
@@ -102,6 +67,5 @@ public class DeleteValueTest
         assertEquals(true, builder.getSloppyQuorum());
         assertEquals(100, builder.getTimeout());
         assertEquals(1, builder.getW());
-
     }
 }
