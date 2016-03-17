@@ -36,8 +36,8 @@ import static org.junit.Assert.fail;
 public class CreateTableTest extends OperationTestBase<CreateTableOperation>
 {
     private static final TableDefinition tableDefinition = new TableDefinition("TestTable", Arrays.asList(
-            new FullColumnDescription("field1", ColumnDescription.ColumnType.TIMESTAMP,  false, 1),
-            new FullColumnDescription("field2", ColumnDescription.ColumnType.SINT64, false, null, 1),
+            new FullColumnDescription("field1", ColumnDescription.ColumnType.TIMESTAMP,  false, 1, 1),
+            new FullColumnDescription("field2", ColumnDescription.ColumnType.SINT64, false, null, 2),
             new FullColumnDescription("field3", ColumnDescription.ColumnType.BOOLEAN, true),
             new FullColumnDescription("field4", ColumnDescription.ColumnType.DOUBLE, false),
             new FullColumnDescription("field5", ColumnDescription.ColumnType.VARCHAR, true)
