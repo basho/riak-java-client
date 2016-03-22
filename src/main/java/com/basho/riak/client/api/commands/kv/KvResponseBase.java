@@ -48,6 +48,14 @@ abstract class KvResponseBase
     }
 
     /**
+     * Returns the {@link Location} affected by the operation that resulted in this response.
+     * @return the affected {@link Location}
+     */
+    public Location getLocation() {
+        return location;
+    }
+
+    /**
      * Determine if this response contains any returned values.
      * @return true if values are present, false otherwise.
      */
