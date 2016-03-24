@@ -16,14 +16,51 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.*;
 
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
 public class ITestCoveragePlan extends ITestBase {
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);
+
+    @Test
+    public void obtainAlternativeCoveragePlan() throws ExecutionException, InterruptedException {
+        final int minPartitions = 5;
+        final RiakClient client = new RiakClient(cluster);
+        CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
+                .withMinPartitions(minPartitions)
+                .build();
+
+        CoveragePlan.Response response = client.execute(cmd);
+        final List<CoverageEntry> coverageEntries = new ArrayList<>();
+        for (CoverageEntry ce : response) {
+            coverageEntries.add(ce);
+        }
+        Assert.assertTrue(coverageEntries.size() > minPartitions);
+
+        final CoverageEntry failedEntry = coverageEntries.get(0); // assume this coverage entry failed
+
+        // build request for alternative coverage plan
+        cmd = CoveragePlan.Builder.create(defaultNamespace())
+                .withMinPartitions(minPartitions)
+                .withReplaceCoverageEntry(failedEntry)
+                .withUnavailableCoverageEntries(Collections.singletonList(failedEntry))
+                .build();
+        response = client.execute(cmd);
+        Assert.assertTrue(response.iterator().hasNext());
+
+        final HostAndPort failedHostAndPort = HostAndPort.fromParts(failedEntry.getHost(), failedEntry.getPort());
+        for (CoverageEntry ce : response) {
+            HostAndPort alternativeHostAndPort = HostAndPort.fromParts(ce.getHost(), ce.getPort());
+
+            // received coverage entry must not be on the same host
+            assertThat(alternativeHostAndPort, not(equalTo(failedHostAndPort)));
+            assertThat(ce.getCoverageContext(), not(equalTo(failedEntry.getCoverageContext())));
+        }
+    }
 
     @Test
     public void obtainCoveragePlan() throws ExecutionException, InterruptedException {
