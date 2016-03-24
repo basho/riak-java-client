@@ -117,14 +117,25 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             return this;
         }
 
-        public AbstractBuilder<R> withReplaceCoverageContext(String coverageContext){
-            reqBuilder.setReplaceCover(ByteString.copyFrom(coverageContext.getBytes()));
+        public AbstractBuilder<R> withReplaceCoverageEntry(Response.CoverageEntry coverageEntry){
+            return withReplaceCoverageContext(coverageEntry.getCoverageContext());
+        }
+
+        public AbstractBuilder<R> withReplaceCoverageContext(byte[] coverageContext){
+            reqBuilder.setReplaceCover(ByteString.copyFrom(coverageContext));
             return this;
         }
 
         public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext){
             for(Iterator<byte[]> iterator=coverageContext.iterator(); iterator.hasNext();){
                 withUnavailableCoverageContext(iterator.next());
+            }
+            return this;
+        }
+
+        public AbstractBuilder<R> withUnavailableCoverageEntries(Iterable<Response.CoverageEntry> coverageEntries) {
+            for (Response.CoverageEntry coverageEntry : coverageEntries) {
+                withUnavailableCoverageContext(coverageEntry.getCoverageContext());
             }
             return this;
         }
