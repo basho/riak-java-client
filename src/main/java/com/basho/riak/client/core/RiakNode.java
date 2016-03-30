@@ -1577,6 +1577,32 @@ public class RiakNode implements RiakResponseListener
                 hps.addAll( HostAndPort.hostsFromString(remoteAddress, builder.port) );
             }
 
+            return buildNodes(hps, builder);
+        }
+
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes
+         * using the supplied hosts.
+         *
+         * @param remoteHosts     a list of hosts w/wo ports.
+         * @param builder         a configured builder, used for common properties among the nodes
+         *
+         * @return a list of constructed RiakNodes
+         * @@since 2.0.6
+         */
+        public static List<RiakNode> buildNodes(Collection<HostAndPort> remoteHosts, Builder builder)
+        {
+            final Set<HostAndPort> hps;
+            if (!(remoteHosts instanceof Set))
+            {
+                hps = new HashSet<>(remoteHosts);
+            }
+            else
+            {
+                hps = (Set<HostAndPort>) remoteHosts;
+            }
+
             final List<RiakNode> nodes = new ArrayList<RiakNode>(hps.size());
             for (HostAndPort hp : hps)
             {
