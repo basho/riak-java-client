@@ -907,8 +907,8 @@ public class RiakNode implements RiakResponseListener
         // already been handled.
         if (inProgress != null)
         {
-            inProgress.setException(t);
             returnConnection(channel); // release permit
+            inProgress.setException(t);
         }
     }
 

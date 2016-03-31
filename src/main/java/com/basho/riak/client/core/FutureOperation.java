@@ -35,15 +35,61 @@ import java.util.concurrent.locks.ReentrantLock;
  * @param <U> The protocol type returned
  * @param <S> Query info type
  * @since 2.0
+ *
+ *  State Transition Diagram
+ *
+ *                            New Operation
+ *                                  |
+ *                                  |
+ *                                  |
+ *                                  |
+ *        +-------------------------|---------Cancel-------------+
+ *        |                         |                            |
+ *        |                   +-----v-----+                      |
+ *        |                   |           |                      |
+ *        +------Cancel-------+  CREATED  +----Exception------+  |
+ *        |                   |           |                   |  |
+ *        |                   +-----------+                   |  |
+ *        |                         |                     +---v-----+
+ *        |                         +<---Retries Left-----+         +---+
+ *        |                         |                     |  RETRY  |   |
+ *        |                     Write Data                |         |   |
+ *        |                         |                     +---^-----+   |
+ * +------v--- --+            +-----v-----+                   |         |
+ * |             |            |           +----Exception------+         |
+ * |  CANCELLED  <----Cancel--+  WRITTEN  |                             |
+ * |             |            |           |                             |
+ * +-------------+            +-----------+                             |
+ *                                  |                                   |
+ *                                Read OK                               |
+ *                             Response Done                            |
+ *                                  |                                   |
+ *                          +-------v--------+                          |
+ *                          |                |                          |
+ *                          |  CLEANUP_WAIT  <------No Retries Left-----+
+ *                          |                |
+ *                          +----------------+
+ *                                  |
+ *                     **Caller Returns Connection**
+ *                              setComplete()
+ *                                  |
+ *                            +-----v------+
+ *                            |            |
+ *                            |  COMPLETE  |
+ *                            |            |
+ *                            +------------+
+ *
  */
+
 public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 {
 
     private enum State
     {
         CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED,
-        DONE_NOT_COMPLETE
+        CLEANUP_WAIT
     }
+
 
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
     private final CountDownLatch latch = new CountDownLatch(1);
@@ -56,8 +102,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     private volatile RiakNode lastNode;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
-    private final HashSet<RiakFutureListener<T,S>> listeners =
-            new HashSet<RiakFutureListener<T,S>>();
+    private final HashSet<RiakFutureListener<T,S>> listeners = new HashSet<>();
     private volatile boolean listenersFired = false;
 
     @Override
@@ -161,20 +206,20 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         exception = null;
         if (done(decodedMessage))
         {
-            logger.debug("Setting Done but not Complete");
+            logger.debug("Setting to Cleanup Wait State");
             remainingTries--;
             if (retrier != null)
             {
                 retrier.operationComplete(this, remainingTries);
             }
-            state = State.DONE_NOT_COMPLETE;
+            state = State.CLEANUP_WAIT;
         }
     }
 
     public synchronized final void setComplete()
     {
         logger.debug("Setting Complete on future");
-        stateCheck(State.DONE_NOT_COMPLETE);
+        stateCheck(State.CLEANUP_WAIT);
         state = State.COMPLETE;
         latch.countDown();
         fireListeners();
@@ -199,9 +244,9 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         remainingTries--;
         if (remainingTries == 0)
         {
-            state = State.COMPLETE;
-            latch.countDown();
-            fireListeners();
+            // Connection should be returned before calling
+            state = State.CLEANUP_WAIT;
+            setComplete();
         }
         else
         {
@@ -237,7 +282,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     @Override
     public final boolean isDone()
     {
-        return state == State.COMPLETE || state == State.DONE_NOT_COMPLETE;
+        return state == State.COMPLETE || state == State.CLEANUP_WAIT;
     }
 
     @Override
