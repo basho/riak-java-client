@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc
+ * Copyright 2013-2016 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,19 @@
 package com.basho.riak.client.api.commands;
 
 import com.basho.riak.client.api.commands.kv.FetchValue.Option;
-import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.cap.BasicVClock;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.protobuf.RiakKvPB;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Ignore;
@@ -46,27 +37,22 @@ import static org.mockito.Mockito.*;
 // TODO: Do something with this. You can't mock the responses because the parents aren't public
 
 @Ignore
-public class FetchValueTest
+public class FetchValueTest extends MockedResponseOperationTest<FetchOperation, FetchOperation.Response>
 {
-    @Mock RiakCluster mockCluster;
-    @Mock RiakFuture mockFuture;
-    @Mock FetchOperation.Response mockResponse;
-    VClock vClock = new BasicVClock(new byte[]{'1'});
-	Location key = new Location(new Namespace("type","bucket"), "key");
-    RiakClient client;
-
-    @Before
-    @SuppressWarnings("unchecked")
-    public void init() throws Exception
+    public FetchValueTest()
     {
-        MockitoAnnotations.initMocks(this);
-        when(mockResponse.getObjectList()).thenReturn(new ArrayList<RiakObject>());
-        when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
-        when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
-        client = new RiakClient(mockCluster);
+        super(FetchOperation.Response.class);
+    }
+
+    private final VClock vClock = new BasicVClock(new byte[]{'1'});
+	private final Location key = new Location(new Namespace("type","bucket"), "key");
+
+    @Override
+    protected void setupResponse(FetchOperation.Response mockedResponse)
+    {
+        super.setupResponse(mockedResponse);
+
+        when(mockedResponse.getObjectList()).thenReturn(new ArrayList<RiakObject>());
     }
 
     @Test
@@ -85,13 +71,8 @@ public class FetchValueTest
             .withOption(Option.R, new Quorum(1))
             .withOption(Option.SLOPPY_QUORUM, true);
 
-        client.execute(fetchValue.build());
+        final FetchOperation operation = executeAndVerify(fetchValue.build());
 
-        ArgumentCaptor<FetchOperation> captor =
-            ArgumentCaptor.forClass(FetchOperation.class);
-        verify(mockCluster).execute(captor.capture());
-
-        FetchOperation operation = captor.getValue();
         RiakKvPB.RpbGetReq.Builder builder =
             (RiakKvPB.RpbGetReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 

@@ -5,7 +5,6 @@ import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.timeseries.*;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
@@ -16,6 +15,7 @@ import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -48,31 +48,36 @@ public class ITestTimeSeries extends ITestTsBase
 {
     private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
 
-    private final static String CreateTableTemplate =
-        "CREATE TABLE %s ( " +
-        "geohash varchar not null, " +
-        "user varchar not null, " +
-        "time timestamp not null, " +
-        "weather varchar not null, " +
-        "temperature double, " +
-        "uv_index sint64, " +
-        "observed boolean not null, " +
-        "PRIMARY KEY((geohash, user, quantum(time, 15, 'm')), geohash, user, time))";
+    private static List<FullColumnDescription> tableFields = Arrays.asList(
+            new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
+            new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
+            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3),
+            new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
+            new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
+            new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
+            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false)
+    );
 
     private static final String BAD_TABLE_NAME = "GeoChicken";
+
+    private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException {
+        final TableDefinition tableDef = new TableDefinition(tableName, tableFields);
+
+        final CreateTable cmd = new CreateTable.Builder(tableDef)
+                .withQuantum(15, TimeUnit.MINUTES)
+                .build();
+
+        return client.executeAsync(cmd);
+    }
 
     @Test
     public void test_a_TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
     {
-        RiakClient client = new RiakClient(cluster);
-
-        String createTableCommandString = String.format(CreateTableTemplate, this.tableName);
-
-        Query create = new Query.Builder(createTableCommandString).build();
-        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
-
+        final RiakClient client = new RiakClient(cluster);
+        final RiakFuture<Void, String> resultFuture = createTableAsync(client, tableName);
         resultFuture.await();
         assertFutureSuccess(resultFuture);
+
 
         final Namespace namespace = new Namespace(tableName, tableName);
         StoreBucketProperties storeBucketPropsCmd = new StoreBucketProperties.Builder(namespace).withNVal(1).build();
@@ -93,11 +98,8 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void test_b_TestCreateBadTable() throws InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
-
-        String badCreateTable = String.format(CreateTableTemplate, this.tableName) + ")";
-        Query create = new Query.Builder(badCreateTable).build();
-        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
+        final RiakClient client = new RiakClient(cluster);
+        final RiakFuture<Void, String> resultFuture = createTableAsync(client, tableName);
 
         resultFuture.await();
         assertFutureFailure(resultFuture);
@@ -361,7 +363,8 @@ public class ITestTimeSeries extends ITestTsBase
         final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
         assertEquals(7, fullColumnDescriptions.size());
 
-        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(), new ArrayList<FullColumnDescription>(fullColumnDescriptions));
+        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(),
+                new ArrayList<FullColumnDescription>(fullColumnDescriptions));
     }
 
     @Test
