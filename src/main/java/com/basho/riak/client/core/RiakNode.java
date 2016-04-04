@@ -106,14 +106,8 @@ public class RiakNode implements RiakResponseListener
                     logger.error("Write failed on RiakNode {}:{} id: {}; cause: {}",
                                 remoteAddress, port, future.channel().hashCode(),
                                 future.cause());
-                    FutureOperation inProgress = inProgressMap.remove(future.channel());
-                    if (inProgress != null)
-                    {
-                        future.channel().close();
-                        returnConnection(future.channel()); // to release permit
-                        recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-                        inProgress.setException(future.cause());
-                    }
+
+                    handleExecutionFailure(future.channel(), future.cause(), true);
                 }
                 else
                 {
@@ -147,26 +141,22 @@ public class RiakNode implements RiakResponseListener
             @Override
             public void operationComplete(ChannelFuture future) throws Exception
             {
-                FutureOperation inProgress = inProgressMap.remove(future.channel());
                 logger.error("Channel closed while operation in progress; id:{} {}:{}",
                              future.channel().hashCode(), remoteAddress, port);
-                if (inProgress != null)
-                {
-                    returnConnection(future.channel()); // to release permit
-                    recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
 
-                    // Netty seems to not bother telling you *why* the connection
-                    // was closed.
-                    if (future.cause() != null)
-                    {
-                        inProgress.setException(future.cause());
-                    }
-                    else
-                    {
-                        inProgress.setException(new Exception("Connection closed unexpectedly"));
-                    }
+                // Netty seems to not bother telling you *why* the connection
+                // was closed.
+                final Throwable cause;
+                if (future.cause() != null)
+                {
+                    cause = future.cause();
+                }
+                else
+                {
+                    cause = new Exception("Connection closed unexpectedly");
                 }
 
+                handleExecutionFailure(future.channel(), cause, true);
             }
         };
 
@@ -865,33 +855,64 @@ public class RiakNode implements RiakResponseListener
         if (inProgress != null)
         {
             inProgress.setResponse(response);
+            completeIfDone(channel, inProgress, true);
+        }
+    }
 
-            if (inProgress.isDone())
+    private void completeIfDone(final Channel channel, final FutureOperation fop, boolean adjustInProgressMap)
+    {
+        assert channel != null;
+        assert fop != null;
+
+        if (fop.isDone())
+        {
+            try
             {
-                try
+                if (adjustInProgressMap)
                 {
                     inProgressMap.remove(channel);
-                    returnConnection(channel); // return permit
                 }
-                finally
-                {
-                    inProgress.setComplete();
-                }
+                returnConnection(channel); // return permit
+            }
+            finally
+            {
+                fop.setComplete();
             }
         }
+    }
+
+    private FutureOperation handleExecutionFailure(Channel channel, Throwable t, boolean closeChannel)
+    {
+        final FutureOperation inProgress = inProgressMap.remove(channel);
+
+        // There are fail cases where multiple exceptions are thrown from
+        // the pipeline. In that case we'll get an exception from the
+        // handler but will not have an entry in inProgress because it's
+        // already been handled.
+        if (inProgress != null)
+        {
+            if (closeChannel)
+            {
+                channel.close();
+
+                // since channel was closed (forcible or not) it should be register in the list
+                recentlyClosed.add(new ChannelWithIdleTime(channel));
+            }
+
+            inProgress.setException(t);
+            completeIfDone(channel, inProgress, false);
+            return inProgress;
+        }
+
+        return null;
     }
 
     @Override
     public void onRiakErrorResponse(Channel channel, RiakResponseException ex)
     {
         logger.debug("Riak replied with error; {}:{}", ex.getCode(), ex.getMessage());
-        final FutureOperation inProgress = inProgressMap.remove(channel);
         consecutiveFailedOperations.incrementAndGet();
-        if (inProgress != null)
-        {
-            inProgress.setException(ex);
-            returnConnection(channel); // release permit
-        }
+        handleExecutionFailure(channel, ex, false);
     }
 
     @Override
@@ -900,16 +921,7 @@ public class RiakNode implements RiakResponseListener
         logger.error("Operation onException() channel: id:{} {}:{} {}",
             channel.hashCode(), remoteAddress, port, t);
 
-        final FutureOperation inProgress = inProgressMap.remove(channel);
-        // There are fail cases where multiple exceptions are thrown from
-        // the pipeline. In that case we'll get an exception from the
-        // handler but will not have an entry in inProgress because it's
-        // already been handled.
-        if (inProgress != null)
-        {
-            returnConnection(channel); // release permit
-            inProgress.setException(t);
-        }
+        handleExecutionFailure(channel, t, false);
     }
 
     private void checkNetworkAddressCacheSettings()
