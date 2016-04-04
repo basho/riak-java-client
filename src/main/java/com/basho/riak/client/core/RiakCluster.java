@@ -249,7 +249,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             }
             else // Out of connections, retrier will pick it up later.
             {
-                operation.setException(new NoNodesAvailableException());
+                operation.setFailedDueToLackOfAvailableNodes(null);
             }
         }
 
@@ -266,7 +266,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             logger.warn("No Nodes Available, and Operation Queue at Max Depth");
             operation.setRetrier(this, 1);
-            operation.setException(new NoNodesAvailableException("No Nodes Available, and Operation Queue at Max Depth"));
+            operation.setFailedDueToLackOfAvailableNodes("No Nodes Available, and Operation Queue at Max Depth");
             return;
         }
 
@@ -466,7 +466,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
         if (!gotConnection)
         {
-            operation.setException(new NoNodesAvailableException());
+            operation.setFailedDueToLackOfAvailableNodes(null);
         }
     }
 

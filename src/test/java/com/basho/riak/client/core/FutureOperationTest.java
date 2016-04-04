@@ -212,6 +212,7 @@ public class FutureOperationTest
         });
 
         operation.setException(new Exception());
+        operation.setComplete();
 
         assertTrue(operation.isDone());
         assertTrue(called.get());
@@ -237,6 +238,7 @@ public class FutureOperationTest
 
         operation.setResponse(response);
         operation.setException(new Exception());
+        operation.setComplete();
 
         assertEquals(1, called.get());
         assertTrue(operation.isDone());

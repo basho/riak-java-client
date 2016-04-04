@@ -246,7 +246,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             // Connection should be returned before calling
             state = State.CLEANUP_WAIT;
-            setComplete();
         }
         else
         {
@@ -395,4 +394,12 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     @Override
     abstract public S getQueryInfo();
 
+    void setFailedDueToLackOfAvailableNodes(String message)
+    {
+        setException(new NoNodesAvailableException(message));
+        if (isDone())
+        {
+            setComplete();
+        }
+    }
 }
