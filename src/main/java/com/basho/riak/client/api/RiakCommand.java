@@ -91,11 +91,11 @@ public abstract class RiakCommand<T,S>
         return future.get();
     }
     
-	protected final T execute(RiakCluster cluster, long timeout, TimeUnit unit) throws ExecutionException,
-		InterruptedException, TimeoutException {
-		RiakFuture<T, S> future = executeAsync(cluster);
-		return future.get(timeout, unit);
-	}
+    protected final T execute(RiakCluster cluster, long timeout, TimeUnit unit) throws ExecutionException,
+    InterruptedException, TimeoutException {
+        RiakFuture<T, S> future = executeAsync(cluster);
+        return future.get(timeout, unit);
+    }
     
     protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);    
 } 

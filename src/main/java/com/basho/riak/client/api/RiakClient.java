@@ -330,38 +330,38 @@ public class RiakClient
 		return command.execute(cluster);
 	}
 
-	/**
-	 * Execute a RiakCommand synchronously with a specified client timeout.
-	 * <p>
-	 * Calling this method causes the client to execute the provided RiakCommand synchronously. 
-	 * It will block until the operation completes or up to the given timeout.
-	 * It will either return the response on success or throw an
-	 * exception on failure.
-	 * Note: Using this timeout is different that setting a timeout on the command 
+    /**
+     * Execute a RiakCommand synchronously with a specified client timeout.
+     * <p>
+     * Calling this method causes the client to execute the provided RiakCommand synchronously. 
+     * It will block until the operation completes or up to the given timeout.
+     * It will either return the response on success or throw an
+     * exception on failure.
+     * Note: Using this timeout is different that setting a timeout on the command 
      * itself using the timeout() method of the command's associated builder. 
      * The command timeout is a Riak-side timeout value. This timeout is client-side.
-	 * </p>
-	 *
-	 * @param command
-	 *            The RiakCommand to execute.
+     * </p>
+     *
+     * @param command
+     *            The RiakCommand to execute.
      * @param timeout the amount of time to wait before returning an exception
      * @param unit the unit of time.
-	 * @param <T>
-	 *            The RiakCommand's return type.
-	 * @param <S>
-	 *            The RiakCommand's query info type.
-	 * @return a response from Riak.
-	 * @throws ExecutionException
-	 *             if the command fails for any reason.
-	 * @throws InterruptedException
-	 * @throws TimeoutException
-	 *             if the call to execute the command did not finish within the time limit
-	 */
-	public <T, S> T execute(RiakCommand<T, S> command, long timeout, TimeUnit unit) throws ExecutionException,
-		InterruptedException, TimeoutException {
-		return command.execute(cluster, timeout, unit);
-	}
-	
+     * @param <T>
+     *            The RiakCommand's return type.
+     * @param <S>
+     *            The RiakCommand's query info type.
+     * @return a response from Riak.
+     * @throws ExecutionException
+     *             if the command fails for any reason.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     *             if the call to execute the command did not finish within the time limit
+     */
+    public <T, S> T execute(RiakCommand<T, S> command, long timeout, TimeUnit unit) throws ExecutionException,
+    InterruptedException, TimeoutException {
+        return command.execute(cluster, timeout, unit);
+    }
+    
     /**
      * Execute a RiakCommand asynchronously.
      * <p>
