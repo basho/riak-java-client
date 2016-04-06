@@ -889,8 +889,8 @@ public class RiakNode implements RiakResponseListener
         consecutiveFailedOperations.incrementAndGet();
         if (inProgress != null)
         {
-            inProgress.setException(ex);
             returnConnection(channel); // release permit
+            inProgress.setException(ex);
         }
     }
 

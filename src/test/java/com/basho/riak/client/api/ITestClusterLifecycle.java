@@ -7,7 +7,9 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -28,6 +31,8 @@ public class ITestClusterLifecycle
     protected static Random random = new Random();
     private final Logger logger = LoggerFactory.getLogger(ITestClusterLifecycle.class);
 
+    @Rule
+    public ExpectedException thrown= ExpectedException.none();
 
     public ITestClusterLifecycle()
     {
@@ -69,7 +74,32 @@ public class ITestClusterLifecycle
         {
             logger.debug("Exception occurred", ex);
             logger.debug("Cluster state: {}, iteration: {}", cluster.getNodes().get(0).getNodeState().toString(), i);
-            fail();
+            fail(ex.getMessage());
+        }
+        finally
+        {
+            final Boolean shutdownClean = client.shutdown().get(3, TimeUnit.SECONDS);
+            assertTrue(shutdownClean);
+        }
+    }
+
+    @Test
+    public void testThatConnectionsGetReturnedBeforeErrors() throws InterruptedException, ExecutionException, TimeoutException
+    {
+        assumeTrue(testLifecycle);
+
+        thrown.expect(ExecutionException.class);
+        thrown.expectMessage(containsString("no_type"));
+
+        RiakClient client = null;
+
+        try
+        {
+            client = new RiakClient(cluster);
+            cluster.start();
+
+            final Namespace namespace = new Namespace("doesnotexist", Integer.toString(random.nextInt()));
+            createAndStoreObject(client, new Location(namespace, "no_type"));
         }
         finally
         {
