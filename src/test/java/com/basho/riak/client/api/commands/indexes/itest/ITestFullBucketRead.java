@@ -1,6 +1,7 @@
 package com.basho.riak.client.api.commands.indexes.itest;
 
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.cap.UnresolvedConflictException;
 import com.basho.riak.client.api.commands.kv.FullBucketRead;
 import com.basho.riak.client.api.commands.kv.FullBucketRead.Response.Entry;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
@@ -42,7 +43,7 @@ public class ITestFullBucketRead extends ITestBase {
         setupIndexTestData(defaultNamespace(), indexName, keyBase, value);
 
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
-                .build();
+            .build();
 
         client = new RiakClient(cluster);
 
@@ -52,9 +53,9 @@ public class ITestFullBucketRead extends ITestBase {
             final StringBuilder builder = new StringBuilder("\n\tGot the following list of Coverage Entries:");
             for (CoveragePlanOperation.Response.CoverageEntry ce : coveragePlan) {
                 builder.append(String.format("\n\t%s:%d ('%s')",
-                        ce.getHost(),
-                        ce.getPort(),
-                        ce.getDescription()
+                    ce.getHost(),
+                    ce.getPort(),
+                    ce.getDescription()
                 ));
             }
             logger.info(builder.toString());
@@ -65,8 +66,8 @@ public class ITestFullBucketRead extends ITestBase {
     public void readPlainTextValues() throws ExecutionException, InterruptedException, UnknownHostException {
 
         final FullBucketRead cmd = new FullBucketRead.Builder(defaultNamespace())
-                .withReturnBody(false)
-                .build();
+            .withReturnBody(false)
+            .build();
 
         final FullBucketRead.Response response = client.execute(cmd);
 
@@ -138,7 +139,37 @@ public class ITestFullBucketRead extends ITestBase {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @Test
+    public void queryDataByUsingAnAlternateCoveragePlan() throws ExecutionException, InterruptedException, UnknownHostException {
+        final int minPartitions = 5;
+        final List<CoverageEntry> coverageEntries = new LinkedList<>();
+        for (CoverageEntry ce : coveragePlan) {
+            coverageEntries.add(ce);
+        }
+        assertTrue(coverageEntries.size() > minPartitions);
+
+        final CoverageEntry failedEntry = coverageEntries.get(0); // assume this coverage entry failed
+        final Map<String, RiakObject> riakObjects = readDataForCoverageEntry(failedEntry);
+        assertNotNull(riakObjects);
+
+        // build request for alternative coverage plan
+        final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
+                .withMinPartitions(minPartitions)
+                .withReplaceCoverageEntry(failedEntry)
+                .withUnavailableCoverageEntries(Collections.singletonList(failedEntry))
+                .build();
+        final CoveragePlan.Response response = client.execute(cmd);
+        assertTrue(response.iterator().hasNext());
+
+        final Map<String, RiakObject> riakObjectsAlternative = readDataForCoverageEntry(response.iterator().next());
+        assertNotNull(riakObjects);
+        assertEquals(riakObjects.size(), riakObjectsAlternative.size());
+        for(Map.Entry<String,RiakObject> entry : riakObjects.entrySet()) {
+            assertTrue(riakObjectsAlternative.containsKey(entry.getKey()));
+            assertEquals(entry.getValue().getValue(), riakObjectsAlternative.get(entry.getKey()).getValue());
+        }
+    }
+
     private Map<String, RiakObject> performFBReadWithCoverageContext(boolean withContinuation,
                boolean withReturnBody) throws UnknownHostException, ExecutionException, InterruptedException {
 
@@ -147,55 +178,20 @@ public class ITestFullBucketRead extends ITestBase {
         // -- perform Full Bucket read and gather all results preserving partitioning by CoverageEntry
         for (HostAndPort host : coveragePlan.hosts()) {
             final RiakNode node = new RiakNode.Builder()
-                    .withRemoteHost(host)
-                    .withMinConnections(1)
-                    .build();
+                .withRemoteHost(host)
+                .withMinConnections(1)
+                .build();
 
             final RiakCluster cl = RiakCluster.builder(node)
-                    .build();
+                .build();
 
             cl.start();
 
             final RiakClient rc = new RiakClient(cl);
             try {
                 for (CoverageEntry ce : coveragePlan.hostEntries(host)) {
-
-                    if (!withContinuation) {
-                        final FullBucketRead cmd2 = new FullBucketRead.Builder(defaultNamespace(), ce.getCoverageContext())
-                                .withReturnBody(withReturnBody)
-                                .build();
-
-                        final FullBucketRead.Response readResponse = rc.execute(cmd2);
-                        chunkedKeys.put(ce, readResponse.getEntries());
-                    } else {
-                        BinaryValue continuation = null;
-                        final List<Entry> data = new LinkedList<FullBucketRead.Response.Entry>();
-
-                        do {
-                            final FullBucketRead cmd2 = new FullBucketRead.Builder(defaultNamespace(), ce.getCoverageContext())
-                                    .withReturnBody(withReturnBody)
-                                    .withMaxResults(2)
-                                    .withPaginationSort(true)
-                                    .withContinuation(continuation)
-                                    .build();
-
-                            final FullBucketRead.Response r = rc.execute(cmd2);
-                            final List<Entry> entries;
-
-                            if (r.hasEntries()) {
-                                entries = r.getEntries();
-                                data.addAll(entries);
-                            } else {
-                                entries = Collections.EMPTY_LIST;
-                            }
-
-                            logger.debug("FullBucketRead query(ce={}, token={}) returns:\n  token: {}\n  entries: {}",
-                                    continuation, ce, r.getContinuation(), entries);
-
-                            continuation = r.getContinuation();
-                        } while (continuation != null);
-                        chunkedKeys.put(ce, data);
-                    }
+                    final Map<CoverageEntry, List<Entry>> keys = retrieveChunkedKeysForCoverageEntry(rc, ce, withContinuation, withReturnBody);
+                    chunkedKeys.putAll(keys);
                 }
             } finally {
                 rc.shutdown();
@@ -203,7 +199,77 @@ public class ITestFullBucketRead extends ITestBase {
         }
 
         // -- Transform results
-        final HashMap<String, RiakObject> results = new HashMap<String, RiakObject>(100);
+        return transformChunkedKeysToRiakObjects(chunkedKeys);
+    }
+
+    private Map<String, RiakObject> readDataForCoverageEntry(CoverageEntry ce) throws UnknownHostException, ExecutionException, InterruptedException {
+        final RiakNode node = new RiakNode.Builder()
+            .withRemoteHost(HostAndPort.fromParts(ce.getHost(),ce.getPort()))
+            .withMinConnections(1)
+            .build();
+
+        final RiakCluster cl = RiakCluster.builder(node)
+            .build();
+
+        cl.start();
+
+        final RiakClient rc = new RiakClient(cl);
+
+        Map<CoverageEntry, List<Entry>> keys = Collections.emptyMap();
+        try {
+            keys = retrieveChunkedKeysForCoverageEntry(rc, ce, true, true);
+        } finally {
+            rc.shutdown();
+        }
+
+        return transformChunkedKeysToRiakObjects(keys);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<CoverageEntry, List<Entry>> retrieveChunkedKeysForCoverageEntry(RiakClient rc, CoverageEntry ce, boolean withContinuation, boolean withReturnBody) throws ExecutionException, InterruptedException {
+        final Map<CoverageEntry, List<Entry>> chunkedKeys = new HashMap<>();
+        if (!withContinuation) {
+            final FullBucketRead cmd2 = new FullBucketRead.Builder(defaultNamespace(), ce.getCoverageContext())
+                .withReturnBody(withReturnBody)
+                .build();
+
+            final FullBucketRead.Response readResponse = rc.execute(cmd2);
+            chunkedKeys.put(ce, readResponse.getEntries());
+        } else {
+            BinaryValue continuation = null;
+            final List<Entry> data = new LinkedList<>();
+
+            do {
+                final FullBucketRead cmd2 = new FullBucketRead.Builder(defaultNamespace(), ce.getCoverageContext())
+                    .withReturnBody(withReturnBody)
+                    .withMaxResults(2)
+                    .withPaginationSort(true)
+                    .withContinuation(continuation)
+                    .build();
+
+                final FullBucketRead.Response r = rc.execute(cmd2);
+                final List<Entry> entries;
+
+                if (r.hasEntries()) {
+                    entries = r.getEntries();
+                    data.addAll(entries);
+                } else {
+                    entries = Collections.EMPTY_LIST;
+                }
+
+                logger.debug("FullBucketRead query(ce={}, token={}) returns:\n  token: {}\n  entries: {}",
+                    continuation, ce, r.getContinuation(), entries);
+
+                continuation = r.getContinuation();
+            } while (continuation != null);
+            chunkedKeys.put(ce, data);
+        }
+
+        return chunkedKeys;
+    }
+
+    private Map<String, RiakObject> transformChunkedKeysToRiakObjects(Map<CoverageEntry, List<Entry>> chunkedKeys) throws UnresolvedConflictException {
+        final Map<String, RiakObject> results = new HashMap<>(chunkedKeys.size());
         for (Map.Entry<CoverageEntry, List<Entry>> e : chunkedKeys.entrySet()) {
             final CoverageEntry ce = e.getKey();
             if (e.getValue().isEmpty()) {
@@ -215,7 +281,7 @@ public class ITestFullBucketRead extends ITestBase {
                 }
 
                 logger.debug("{} keys were returned for {}:\n\t{}",
-                        e.getValue().size(), ce, e.getValue()
+                    e.getValue().size(), ce, e.getValue()
                 );
             }
         }
