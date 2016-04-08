@@ -1,14 +1,20 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry;
+import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
+import com.basho.riak.client.core.query.BucketProperties;
+import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.HostAndPort;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +31,10 @@ import static org.junit.Assert.*;
  */
 public class ITestCoveragePlan extends ITestBase {
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
 
     @Test
     public void obtainAlternativeCoveragePlan() throws ExecutionException, InterruptedException {
@@ -160,5 +170,59 @@ public class ITestCoveragePlan extends ITestBase {
         }
 
         assertEquals(NUMBER_OF_TEST_VALUES, keys.size());
+    }
+
+    @Test
+    public void alternativeCoveragePlanShouldFailIfNoPrimaryPartitionAvailable() throws ExecutionException, InterruptedException, UnknownHostException {
+        final RiakClient client = new RiakClient(cluster);
+
+        final Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+        final FetchBucketProperties fetchProps = new FetchBucketProperties.Builder(ns).build();
+        final FetchBucketPropsOperation.Response fetchResponse = client.execute(fetchProps);
+        final BucketProperties bp = fetchResponse.getBucketProperties();
+        final Integer nVal = bp.getNVal();
+
+        final int minPartitions = 5;
+
+        final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
+            .withMinPartitions(minPartitions)
+            .build();
+
+        final CoveragePlan.Response response = client.execute(cmd);
+        final List<CoverageEntry> coverageEntries = new LinkedList<>();
+        for (CoverageEntry ce : response) {
+            coverageEntries.add(ce);
+        }
+
+        CoverageEntry failedEntry = coverageEntries.get(0);
+        List<CoverageEntry> unavailableCoverageEntries = new LinkedList<>();
+
+        for (int i = 0; i < nVal-1; i++) {
+            unavailableCoverageEntries.add(failedEntry);
+
+            final CoveragePlan cmdAlternative = CoveragePlan.Builder.create(defaultNamespace())
+                .withMinPartitions(minPartitions)
+                .withReplaceCoverageEntry(failedEntry)
+                .withUnavailableCoverageEntries(unavailableCoverageEntries)
+                .build();
+            final CoveragePlan.Response responseAlternative = client.execute(cmdAlternative);
+            Assert.assertTrue(responseAlternative.iterator().hasNext());
+            failedEntry = responseAlternative.iterator().next();
+        }
+
+        unavailableCoverageEntries.add(failedEntry);
+
+        //At this moment all virtual nodes for coverage entry are down
+        //request to get alternative coverage entry should fail
+        final CoveragePlan cmdAlternativeFailing = CoveragePlan.Builder.create(defaultNamespace())
+            .withMinPartitions(minPartitions)
+            .withReplaceCoverageEntry(failedEntry)
+            .withUnavailableCoverageEntries(unavailableCoverageEntries)
+            .build();
+
+        exception.expect(ExecutionException.class);
+        exception.expectMessage("com.basho.riak.client.core.netty.RiakResponseException: primary_partition_unavailable");
+
+        client.execute(cmdAlternativeFailing);
     }
 }
