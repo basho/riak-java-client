@@ -627,6 +627,8 @@ public class RiakNode implements RiakResponseListener
         {
             try
             {
+                logger.debug("Attempting to acquire channel permit");
+
                 if (!permits.tryAcquire())
                 {
                     logger.info("All connections in use for {}; had to wait for one.",
@@ -642,6 +644,7 @@ public class RiakNode implements RiakResponseListener
         }
         else
         {
+            logger.debug("Attempting to acquire channel permit");
             acquired = permits.tryAcquire();
         }
 
@@ -865,8 +868,15 @@ public class RiakNode implements RiakResponseListener
 
             if (inProgress.isDone())
             {
-                inProgressMap.remove(channel);
-                returnConnection(channel); // return permit
+                try
+                {
+                    inProgressMap.remove(channel);
+                    returnConnection(channel); // return permit
+                }
+                finally
+                {
+                    inProgress.setComplete();
+                }
             }
         }
     }
@@ -879,8 +889,8 @@ public class RiakNode implements RiakResponseListener
         consecutiveFailedOperations.incrementAndGet();
         if (inProgress != null)
         {
-            inProgress.setException(ex);
             returnConnection(channel); // release permit
+            inProgress.setException(ex);
         }
     }
 
@@ -897,8 +907,8 @@ public class RiakNode implements RiakResponseListener
         // already been handled.
         if (inProgress != null)
         {
-            inProgress.setException(t);
             returnConnection(channel); // release permit
+            inProgress.setException(t);
         }
     }
 
