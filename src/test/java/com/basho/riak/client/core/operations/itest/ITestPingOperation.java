@@ -30,7 +30,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestPingOperation extends ITestBase
+public class ITestPingOperation extends ITestAutoCleanupBase
 {
     @Test
     public void theMachinethatGoesPing() throws InterruptedException, ExecutionException

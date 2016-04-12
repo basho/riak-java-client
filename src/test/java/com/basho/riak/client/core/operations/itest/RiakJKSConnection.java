@@ -1,7 +1,6 @@
 package com.basho.riak.client.core.operations.itest;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +17,13 @@ public class RiakJKSConnection {
     private static final KeyStore trustStore = loadKeystore(trustStrorePath,trustStorePasswd);
 
     /**
+     * Riak PBC port
+     *
+     * In case you want/need to use a custom PBC port you may pass it by using the following system property
+     */
+    private static final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+
+    /**
      * Load Keystore using the storeFilePath and storePassword
      * @param storePath path to the Keystore file
      * @param storePasswd passowrd of Keystore file
@@ -25,16 +31,12 @@ public class RiakJKSConnection {
      */
     private static KeyStore loadKeystore(String storePath, String storePasswd){
         KeyStore store = null;
-        try {
+        try
+        {
             store = KeyStore.getInstance("JKS");
             store.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(storePath), storePasswd.toCharArray());
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | IOException | CertificateException e)
+        {
             e.printStackTrace();
         }
         return store;
@@ -45,14 +47,10 @@ public class RiakJKSConnection {
      * @param builder all builder properties required to make connection to a node.
      * @return Riak Cluster object based on builder properties
      */
-    private static RiakCluster initializeRiakCluster(RiakNode.Builder builder){
-        RiakCluster cluster = null;
-        try {
-            cluster = new RiakCluster.Builder(builder.build()).build();
-            cluster.start();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+    private static RiakCluster initializeRiakCluster(RiakNode.Builder builder)
+    {
+        RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
+        cluster.start();
         return cluster;
     }
 
@@ -60,10 +58,10 @@ public class RiakJKSConnection {
      * Get Riak Cluster Handle. This is for unsecured connection when Riak security is disabled.
      * @return Riak Cluster Object
      */
-    public static RiakCluster getRiakCluster(){
+    public static RiakCluster getRiakCluster()
+    {
 
-        RiakNode.Builder builder = new RiakNode.Builder();
-        builder.withMinConnections(1);
+        RiakNode.Builder builder = createRiakNodeBuilder();
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;
@@ -73,7 +71,8 @@ public class RiakJKSConnection {
      * Get Riak Client Handle. This is for unsecured connection when Riak security is disabled.
      * @return Riak Client Object
      */
-    public static RiakClient getRiakConnection(){
+    public static RiakClient getRiakConnection()
+    {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
         if (cluster!=null){
@@ -88,10 +87,9 @@ public class RiakJKSConnection {
      * @param password password of the username provided
      * @return Riak Cluster Object
      */
-    public static RiakCluster getRiakCluster(String username, String password){
-
-        RiakNode.Builder builder = new RiakNode.Builder();
-        builder.withMinConnections(1);
+    public static RiakCluster getRiakCluster(String username, String password)
+    {
+        RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore);
         RiakCluster cluster = initializeRiakCluster(builder);
 
@@ -104,7 +102,8 @@ public class RiakJKSConnection {
      * @param password password of the username provided
      * @return Riak Client Object
      */
-    public static RiakClient getRiakConnection(String username, String password){
+    public static RiakClient getRiakConnection(String username, String password)
+    {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
         if (cluster!=null){
@@ -122,11 +121,11 @@ public class RiakJKSConnection {
      * @param keyPasswd password of the user's private key/certificate.
      * @return Riak Cluster Object
      */
-    public static RiakCluster getRiakCluster(String username, String password, String storePath, String storePasswd, String keyPasswd){
+    public static RiakCluster getRiakCluster(String username, String password, String storePath, String storePasswd, String keyPasswd)
+    {
         KeyStore keyStore = loadKeystore(storePath,storePasswd);
 
-        RiakNode.Builder builder = new RiakNode.Builder();
-        builder.withMinConnections(1);
+        RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore, keyStore, keyPasswd);
         RiakCluster cluster = initializeRiakCluster(builder);
 
@@ -142,12 +141,22 @@ public class RiakJKSConnection {
      * @param keyPasswd password of the user's private key/certificate.
      * @return Riak Client Object
      */
-    public static RiakClient getRiakConnection(String username, String password, String storePath, String storePasswd, String keyPasswd){
+    public static RiakClient getRiakConnection(String username, String password, String storePath, String storePasswd, String keyPasswd)
+    {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password,storePath,storePasswd,keyPasswd);
-        if (cluster!=null){
+        if (cluster!=null)
+        {
             client= new RiakClient(cluster);
         }
         return client;
+    }
+
+    private static RiakNode.Builder createRiakNodeBuilder()
+    {
+        RiakNode.Builder builder = new RiakNode.Builder();
+        builder.withMinConnections(1);
+        builder.withRemotePort(testRiakPort);
+        return builder;
     }
 }

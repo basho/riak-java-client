@@ -352,7 +352,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
      * @param <T> the RiakIndex this Name encapsulates
      * @see RiakIndexes
      */
-    public static abstract class Name<T extends RiakIndex>
+    public static abstract class Name<T extends RiakIndex<?>>
     {
         protected final String name;
         protected final IndexType type;

@@ -15,21 +15,12 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
-import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
-import com.basho.riak.client.core.query.crdt.types.RiakMap;
-import com.basho.riak.client.core.query.crdt.types.RiakCounter;
-import com.basho.riak.client.core.query.crdt.types.RiakRegister;
-import com.basho.riak.client.core.query.crdt.types.RiakFlag;
-import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
-import com.basho.riak.client.api.commands.datatypes.MapUpdate;
-import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
-import com.basho.riak.client.api.commands.datatypes.FlagUpdate;
-import com.basho.riak.client.api.commands.datatypes.SetUpdate;
+import com.basho.riak.client.api.commands.datatypes.*;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.crdt.types.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
@@ -39,9 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
-public class ITestCrdtApi extends ITestBase
+public class ITestCrdtApi extends ITestAutoCleanupBase
 {
 
     @Test

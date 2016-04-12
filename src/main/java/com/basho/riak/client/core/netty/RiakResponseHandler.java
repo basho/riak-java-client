@@ -34,13 +34,13 @@ public class RiakResponseHandler extends ChannelInboundHandlerAdapter
 
     private RiakResponseListener listener;
     private final Logger logger = LoggerFactory.getLogger(RiakResponseHandler.class);
-    
+
     public RiakResponseHandler(RiakResponseListener listener)
     {
         super();
         this.listener = listener;
     }
-    
+
     @Override
     public void channelRead(ChannelHandlerContext chc, Object message) throws Exception
     {
@@ -48,9 +48,9 @@ public class RiakResponseHandler extends ChannelInboundHandlerAdapter
         if (riakMessage.getCode() == RiakMessageCodes.MSG_ErrorResp)
         {
             RiakPB.RpbErrorResp error = RiakPB.RpbErrorResp.parseFrom(riakMessage.getData());
-                                                
-            listener.onRiakErrorResponse(chc.channel(), 
-                                         new RiakResponseException(error.getErrcode(), 
+
+            listener.onRiakErrorResponse(chc.channel(),
+                                         new RiakResponseException(error.getErrcode(),
                                              error.getErrmsg().toStringUtf8()));
         }
         else
@@ -58,15 +58,15 @@ public class RiakResponseHandler extends ChannelInboundHandlerAdapter
             listener.onSuccess(chc.channel(), riakMessage);
         }
     }
-    
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception 
+            throws Exception
     {
-        // On any exception in the pipeline we explitly close the context here 
-        // so the channel doesn't get reused by the ConnectionPool. 
+        // On any exception in the pipeline we explitly close the context here
+        // so the channel doesn't get reused by the ConnectionPool.
         listener.onException(ctx.channel(), cause);
         ctx.close();
     }
-    
+
 }

@@ -16,10 +16,8 @@
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.*;
-import com.basho.riak.client.core.operations.ToggleTTBEncodingOperation;
 import com.basho.riak.client.core.util.Constants;
 import com.basho.riak.client.core.util.HostAndPort;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -39,6 +37,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
+import java.security.Security;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,6 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Brian Roach <roach at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class RiakNode implements RiakResponseListener
@@ -90,7 +90,6 @@ public class RiakNode implements RiakResponseListener
     private volatile boolean blockOnMaxConnections;
 
     private HealthCheckFactory healthCheckFactory;
-    private boolean useTTB;
 
     private final ChannelFutureListener writeListener =
         new ChannelFutureListener()
@@ -174,7 +173,7 @@ public class RiakNode implements RiakResponseListener
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
-    private RiakNode(Builder builder) throws UnknownHostException
+    private RiakNode(Builder builder)
     {
         this.executor = builder.executor;
         this.connectionTimeout = builder.connectionTimeout;
@@ -189,7 +188,6 @@ public class RiakNode implements RiakResponseListener
         this.keyStore = builder.keyStore;
         this.keyPassword = builder.keyPassword;
         this.healthCheckFactory = builder.healthCheckFactory;
-        this.useTTB = builder.useTTB;
 
         if (builder.bootstrap != null)
         {
@@ -205,6 +203,7 @@ public class RiakNode implements RiakResponseListener
             permits = new Sync(builder.maxConnections);
         }
 
+        checkNetworkAddressCacheSettings();
 
         this.state = State.CREATED;
     }
@@ -249,21 +248,9 @@ public class RiakNode implements RiakResponseListener
             ownsBootstrap = true;
         }
 
-        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
+        bootstrap.handler(new RiakChannelInitializer(this));
 
-        if (socketAddress.isUnresolved())
-        {
-            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
-        }
-
-        final RiakChannelInitializer initialize;
-        if (useTTB) {
-            initialize = new RiakTTBChannelInitializer(this);
-        } else {
-            initialize = new RiakChannelInitializer(this);
-        }
-
-        bootstrap.handler(initialize).remoteAddress(socketAddress);
+        refreshBootstrapRemoteAddress();
 
         if (connectionTimeout > 0)
         {
@@ -278,7 +265,7 @@ public class RiakNode implements RiakResponseListener
                 Channel channel;
                 try
                 {
-                    channel = doGetConnection();
+                    channel = doGetConnection(false);
                     minChannels.add(channel);
                 }
                 catch (ConnectionFailedException ex)
@@ -301,6 +288,19 @@ public class RiakNode implements RiakResponseListener
         logger.info("RiakNode started; {}:{}", remoteAddress, port);
         notifyStateListeners();
         return this;
+    }
+
+    private void refreshBootstrapRemoteAddress() throws UnknownHostException
+    {
+        // Refresh the address, hope their DNS TTL settings allow this.
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, port);
+
+        if (socketAddress.isUnresolved())
+        {
+            throw new UnknownHostException("RiakNode:start - Failed resolving host " + remoteAddress);
+        }
+
+        bootstrap.remoteAddress(socketAddress);
     }
 
     public synchronized Future<Boolean> shutdown()
@@ -627,6 +627,8 @@ public class RiakNode implements RiakResponseListener
         {
             try
             {
+                logger.debug("Attempting to acquire channel permit");
+
                 if (!permits.tryAcquire())
                 {
                     logger.info("All connections in use for {}; had to wait for one.",
@@ -642,6 +644,7 @@ public class RiakNode implements RiakResponseListener
         }
         else
         {
+            logger.debug("Attempting to acquire channel permit");
             acquired = permits.tryAcquire();
         }
 
@@ -650,18 +653,23 @@ public class RiakNode implements RiakResponseListener
         {
             try
             {
-                channel = doGetConnection();
+                channel = doGetConnection(true);
                 channel.closeFuture().removeListener(inAvailableCloseListener);
             }
             catch (ConnectionFailedException ex)
             {
                 permits.release();
             }
+            catch (UnknownHostException ex)
+            {
+                permits.release();
+                logger.error("Unknown host encountered while trying to open connection; {}", ex);
+            }
         }
         return channel;
     }
 
-    private Channel doGetConnection() throws ConnectionFailedException
+    private Channel doGetConnection(boolean forceAddressRefresh) throws ConnectionFailedException, UnknownHostException
     {
         ChannelWithIdleTime cwi;
         while ((cwi = available.poll()) != null)
@@ -675,6 +683,11 @@ public class RiakNode implements RiakResponseListener
             {
                 return channel;
             }
+        }
+
+        if(forceAddressRefresh)
+        {
+            refreshBootstrapRemoteAddress();
         }
 
         ChannelFuture f = bootstrap.connect();
@@ -704,99 +717,87 @@ public class RiakNode implements RiakResponseListener
 
         if (trustStore != null)
         {
-            SSLContext context;
-            try
-            {
-                context = SSLContext.getInstance("TLS");
-                TrustManagerFactory tmf =
-                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmf.init(trustStore);
-                if (keyStore!=null)
-                {
-                    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                    kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
-                    context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-                }
-                else
-                {
-                    context.init(null, tmf.getTrustManagers(), null);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                c.close();
-                logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
-                throw new ConnectionFailedException(ex);
-            }
-
-            SSLEngine engine = context.createSSLEngine();
-
-            Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
-
-            if (protocols.contains("TLSv1.2"))
-            {
-                engine.setEnabledProtocols(new String[] {"TLSv1.2"});
-                logger.debug("Using TLSv1.2");
-            }
-            else if (protocols.contains("TLSv1.1"))
-            {
-                engine.setEnabledProtocols(new String[] {"TLSv1.1"});
-                logger.debug("Using TLSv1.1");
-            }
-
-            engine.setUseClientMode(true);
-            RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
-            c.pipeline().addFirst(decoder);
-
-            try
-            {
-                DefaultPromise<Void> promise = decoder.getPromise();
-                promise.await();
-
-                if (promise.isSuccess())
-                {
-                    logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
-                }
-                else
-                {
-                    c.close();
-                    logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
-                    throw new ConnectionFailedException(promise.cause());
-                }
-
-
-            }
-            catch (InterruptedException e)
-            {
-                c.close();
-                logger.error("Thread interrupted during Auth; {}:{}",
-                    remoteAddress, port);
-                Thread.currentThread().interrupt();
-                throw new ConnectionFailedException(e);
-            }
-
+            setupTLSAndAuthenticate(c);
         }
 
-        // TODO: REFACTOR BEFORE MERGE THIS TO DEVELOP (make it to be configurable)
-        // Toggling the Native/TTB encoding
-        final ToggleTTBEncodingOperation operation = new ToggleTTBEncodingOperation(true);
-        try {
-            inProgressMap.put(c, operation);
-            c.writeAndFlush(operation);
-
-            ToggleTTBEncodingOperation.Response r = operation.get();
-            boolean switchedToTTB = r.isUseNativeEncoding();
-            if (!switchedToTTB) {
-                throw new RuntimeException("RiakNode '" + remoteAddress + ":" + port + "' failed to switch to use Native(TTB) encoding");
-            }
-
-            logger.warn("Channel '{}' was switched to use Native encoding: {}", c.hashCode(), c);
-        } catch ( Exception e) {
-            throw new RuntimeException("Can't switch channel to use Native (TTB) encoding", e);
-        }
         return c;
 
+    }
+
+    private void setupTLSAndAuthenticate(Channel c) throws ConnectionFailedException
+    {
+        SSLContext context;
+        try
+        {
+            context = SSLContext.getInstance("TLS");
+            TrustManagerFactory tmf =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(trustStore);
+                if(keyStore!=null)
+            {
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
+                context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            }
+            else
+            {
+                context.init(null, tmf.getTrustManagers(), null);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            c.close();
+            logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
+            throw new ConnectionFailedException(ex);
+        }
+
+        SSLEngine engine = context.createSSLEngine();
+
+        Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
+
+        if (protocols.contains("TLSv1.2"))
+        {
+            engine.setEnabledProtocols(new String[] {"TLSv1.2"});
+            logger.debug("Using TLSv1.2");
+        }
+        else if (protocols.contains("TLSv1.1"))
+        {
+            engine.setEnabledProtocols(new String[] {"TLSv1.1"});
+            logger.debug("Using TLSv1.1");
+        }
+
+        engine.setUseClientMode(true);
+        RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
+        c.pipeline().addFirst(decoder);
+
+        try
+        {
+            DefaultPromise<Void> promise = decoder.getPromise();
+                logger.debug("Waiting on SSL Promise");
+            promise.await();
+
+            if (promise.isSuccess())
+            {
+                logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
+            }
+            else
+            {
+                c.close();
+                logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
+                throw new ConnectionFailedException(promise.cause());
+            }
+
+
+        }
+        catch (InterruptedException e)
+        {
+            c.close();
+            logger.error("Thread interrupted during Auth; {}:{}",
+                remoteAddress, port);
+            Thread.currentThread().interrupt();
+            throw new ConnectionFailedException(e);
+        }
     }
 
     /**
@@ -867,12 +868,14 @@ public class RiakNode implements RiakResponseListener
 
             if (inProgress.isDone())
             {
-                inProgressMap.remove(channel);
-
-                // TODO: REALLY DIRTY HACK to prevent channel from being returned back to the pool
-                // as a result of successful response on preventive toggling TTB usage
-                if (response.getCode() != RiakMessageCodes.MSG_ToggleEncodingResp) {
+                try
+                {
+                    inProgressMap.remove(channel);
                     returnConnection(channel); // return permit
+                }
+                finally
+                {
+                    inProgress.setComplete();
                 }
             }
         }
@@ -886,8 +889,8 @@ public class RiakNode implements RiakResponseListener
         consecutiveFailedOperations.incrementAndGet();
         if (inProgress != null)
         {
-            inProgress.setException(ex);
             returnConnection(channel); // release permit
+            inProgress.setException(ex);
         }
     }
 
@@ -904,8 +907,36 @@ public class RiakNode implements RiakResponseListener
         // already been handled.
         if (inProgress != null)
         {
-            inProgress.setException(t);
             returnConnection(channel); // release permit
+            inProgress.setException(t);
+        }
+    }
+
+    private void checkNetworkAddressCacheSettings()
+    {
+        final String property = Security.getProperty("networkaddress.cache.ttl");
+
+        final boolean usingSecurityMgr = System.getSecurityManager() != null;
+        final boolean propertyUndefined = property == null;
+        boolean logWarning = false;
+
+        if(propertyUndefined && usingSecurityMgr)
+        {
+            logWarning = true;
+        }
+        else if(!propertyUndefined)
+        {
+            final int cacheTTL = Integer.parseInt(property);
+            logWarning = (cacheTTL == -1);
+        }
+
+        if (logWarning)
+        {
+            logger.warn(
+                    "The Java Security \"networkaddress.cache.ttl\" property may be set to cache DNS lookups forever. " +
+                    "Using domain names for Riak nodes or an intermediate load balancer could result in stale IP " +
+                    "addresses being used for new connections, causing connection errors. " +
+                    "If you use domain names for Riak nodes, please set this property to a value greater than zero.");
         }
     }
 
@@ -1094,7 +1125,7 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-        private void checkHealth()
+    private void checkHealth()
     {
         try
         {
@@ -1104,7 +1135,7 @@ public class RiakNode implements RiakResponseListener
             // connections from the available queue and either
             // return/create a new one (meaning the node is up) or throw
             // an exception if a connection can't be made.
-            Channel c = doGetConnection();
+            Channel c = doGetConnection(true);
             logger.debug("Healthcheck channel: {} isOpen: {} handlers:{}", c.hashCode(), c.isOpen(), c.pipeline().names());
 
 
@@ -1154,18 +1185,21 @@ public class RiakNode implements RiakResponseListener
         {
             healthCheckFailed(ex);
         }
-        catch (IllegalStateException e)
+        catch (UnknownHostException ex)
+        {
+            healthCheckFailed(ex);
+        }
+        catch (IllegalStateException ex)
         {
             // no-op; there's a race condition where the bootstrap is shutting down
             // right when a healthcheck occurs and netty will throw this
             logger.debug("Illegal state exception during healthcheck.");
-            logger.debug("Stack: {}", e);
+            logger.debug("Stack: {}", ex);
         }
-        catch (RuntimeException e)
+        catch (RuntimeException ex)
         {
-            logger.error("Runtime exception during healthcheck: {}",e);
+            logger.error("Runtime exception during healthcheck: {}", ex);
         }
-
     }
 
     private void healthCheckFailed(Throwable cause)
@@ -1276,7 +1310,6 @@ public class RiakNode implements RiakResponseListener
         private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
         private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
         private HealthCheckFactory healthCheckFactory = DEFAULT_HEALTHCHECK_FACTORY;
-        private boolean useTTB = true;
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
         private boolean blockOnMaxConnections;
@@ -1370,7 +1403,7 @@ public class RiakNode implements RiakResponseListener
          */
         public Builder withMaxConnections(int maxConnections)
         {
-            if (maxConnections >= minConnections)
+            if (maxConnections == DEFAULT_MAX_CONNECTIONS ||  maxConnections >= minConnections)
             {
                 this.maxConnections = maxConnections;
             }
@@ -1523,21 +1556,14 @@ public class RiakNode implements RiakResponseListener
             return this;
         }
 
-        public Builder useTTB()
-        {
-            this.useTTB = true;
-            return this;
-        }
-
         /**
          * Builds a RiakNode.
          * If a Netty {@code Bootstrap} and/or a {@code ScheduledExecutorService} has not been provided they
          * will be created.
          *
          * @return a new Riaknode
-         * @throws UnknownHostException if the DNS lookup fails for the supplied hostname
          */
-        public RiakNode build() throws UnknownHostException
+        public RiakNode build()
         {
             return new RiakNode(this);
         }
@@ -1552,10 +1578,8 @@ public class RiakNode implements RiakResponseListener
          *                        Since 2.0.3 each of list item is treated as a comma separated list
          *                        of FQDN or IP addresses with the optional remote port delimited by ':'.
          * @return a list of constructed RiakNodes
-         * @throws UnknownHostException if a supplied FQDN can not be resolved.
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
-            throws UnknownHostException
         {
             final Set<HostAndPort> hps = new HashSet<HostAndPort>();
             for (String remoteAddress: remoteAddresses)

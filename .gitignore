@@ -13,3 +13,5 @@ target
 nb-configuration.xml
 dependency-reduced-pom.xml
 tags
+.java-version
+src/test/resources/*

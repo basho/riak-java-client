@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
 public class RiakClusterTest
 {
     @Test
-    public void builderCreatesCluster() throws UnknownHostException
+    public void builderCreatesCluster()
     {
         RiakNode.Builder nodeBuilder = new RiakNode.Builder();
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
@@ -103,7 +103,7 @@ public class RiakClusterTest
     }
     
     @Test
-    public void removeNodeFromCluster() throws UnknownHostException
+    public void removeNodeFromCluster()
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
@@ -118,7 +118,7 @@ public class RiakClusterTest
     }
     
     @Test
-    public void allNodesShutdownStopsCluster() throws UnknownHostException
+    public void allNodesShutdownStopsCluster()
     {
         NodeManager nodeManager = mock(NodeManager.class);
         RiakNode node = mock(RiakNode.class);
@@ -134,7 +134,7 @@ public class RiakClusterTest
     
     @Test
     @SuppressWarnings("unchecked")
-    public void clusterExecutesOperation() throws UnknownHostException
+    public void clusterExecutesOperation()
     {
         NodeManager nodeManager = mock(NodeManager.class);
         FutureOperation operation = PowerMockito.mock(FutureOperation.class);

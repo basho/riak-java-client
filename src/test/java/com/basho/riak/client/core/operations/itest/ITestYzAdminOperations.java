@@ -36,7 +36,10 @@ import org.junit.Test;
  */
 public class ITestYzAdminOperations extends ITestBase
 {
-    
+
+    public static final String indexName = "test_index_ITestYzAdminOperations";
+    public static final String otherIndexName = "test_index5_ITestYzAdminOperations";
+
     // This is asSet to ignore as I've found a problem with this schema being accepted as
     // valid but then causing problems later if you try to create an index. Need to talk to Z.
     // After that I can expand the unit tests. As is though, they show the networky 
@@ -104,17 +107,17 @@ public class ITestYzAdminOperations extends ITestBase
     public void testStoreAndFetchIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testYokozuna);
-        YokozunaIndex index = new YokozunaIndex("test_index");
+        YokozunaIndex index = new YokozunaIndex(indexName).withNVal(2);
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
         putOp.get();
         
-        assertTrue("Index not created", assureIndexExists("test_index"));
+        assertTrue("Index not created", assureIndexExists(indexName));
         
         
         YzFetchIndexOperation fetchOp = 
-            new YzFetchIndexOperation.Builder().withIndexName("test_index")
+            new YzFetchIndexOperation.Builder().withIndexName(indexName)
                 .build();
         
         cluster.execute(fetchOp);
@@ -129,28 +132,28 @@ public class ITestYzAdminOperations extends ITestBase
         assertFalse(indexList.isEmpty());
         index = indexList.get(0);
         assertEquals(index.getSchema(), "_yz_default");
+        assertEquals((Integer)2, index.getNVal());
         
-        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder("test_index").build();
+        YzDeleteIndexOperation delOp = new YzDeleteIndexOperation.Builder(indexName).build();
         cluster.execute(delOp);
         delOp.await();
         assertTrue(delOp.isSuccess());
-        
     }
     
     @Test
     public void testDeleteIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testYokozuna);
-        YokozunaIndex index = new YokozunaIndex("test_index5");
+        YokozunaIndex index = new YokozunaIndex(otherIndexName);
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
         
         cluster.execute(putOp);
         putOp.get();
         
-        assertTrue("Index not created", assureIndexExists("test_index5"));
+        assertTrue("Index not created", assureIndexExists(otherIndexName));
         
         YzDeleteIndexOperation delOp = 
-            new YzDeleteIndexOperation.Builder("test_index5").build();
+            new YzDeleteIndexOperation.Builder(otherIndexName).build();
         cluster.execute(delOp);
         delOp.get();
         

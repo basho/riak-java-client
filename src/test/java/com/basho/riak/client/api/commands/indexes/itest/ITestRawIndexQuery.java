@@ -22,35 +22,36 @@ import com.basho.riak.client.api.annotations.RiakIndex;
 import com.basho.riak.client.api.annotations.RiakKey;
 import com.basho.riak.client.api.annotations.RiakVClock;
 import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.api.commands.indexes.RawIndexQuery;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
-import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.util.BinaryValue;
-import java.util.concurrent.ExecutionException;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestRawIndexQuery extends ITestBase
+public class ITestRawIndexQuery extends ITestAutoCleanupBase
 {
     @Test
     public void simpleTest() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-        
+
+        setBucketNameToTestName();
+
         RiakClient client = new RiakClient(cluster);
         
         BinaryValue indexKey = BinaryValue.create("index_test_index_key");
@@ -79,11 +80,14 @@ public class ITestRawIndexQuery extends ITestBase
         assertArrayEquals(ip.indexKey, first.getIndexKey().getValue());
         
     }
-    
+
     @Test
     public void testKeyIndexHack() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+
+        setBucketNameToTestName();
+
         RiakClient client = new RiakClient(cluster);
         
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
@@ -116,6 +120,9 @@ public class ITestRawIndexQuery extends ITestBase
     public void testBucketIndexHack() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
+
+        setBucketNameToTestName();
+
         RiakClient client = new RiakClient(cluster);
         
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());

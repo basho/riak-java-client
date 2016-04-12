@@ -1,31 +1,44 @@
-RIAK_CONF = ${RIAK_DIR}/etc/riak.conf
-ADVANCED_CONF = ${RIAK_DIR}/etc/advanced.config
-# RIAK = ${RIAK_DIR}/bin/riak
-RIAK_ADMIN = ${RIAK_DIR}/bin/riak-admin
-CERTS_DIR = $(shell pwd)/../src/test/resources
 
-preconfigure:
-	echo "storage_backend = leveldb" >> ${RIAK_CONF}
-	echo "search = on" >> ${RIAK_CONF}
-	echo "listener.protobuf.internal = 127.0.0.1:8087" >> ${RIAK_CONF}
-	echo "ssl.keyfile = ${CERTS_DIR}/key.pem" >> ${RIAK_CONF}
-	echo "ssl.certfile = ${CERTS_DIR}/cert.pem" >> ${RIAK_CONF}
-	echo "ssl.cacertfile = ${CERTS_DIR}/cacert.pem" >> ${RIAK_CONF}
+PROJDIR = $(realpath $(CURDIR)/..)
+RESOURCES_DIR = $(PROJDIR)/src/test/resources/
+TOOLS_DIR = $(PROJDIR)/tools/devrel
+CA_DIR = $(PROJDIR)/tools/test-ca
+CERTS_DIR = $(CA_DIR)/certs
+PRIVATE_DIR = $(CA_DIR)/private
+RIAK_CONF = $(RIAK_DIR)/etc/riak.conf
+ADV_CONF = $(RIAK_DIR)/etc/advanced.config
+RIAK_ADMIN = $(RIAK_DIR)/bin/riak-admin
+
+preconfigure: configure-security-certs
+	$(TOOLS_DIR)/gen-riak-conf $(RIAK_CONF) 8098 8087 18098 $(CERTS_DIR)/cacert.pem $(CERTS_DIR)/riak-test-cert.pem $(PRIVATE_DIR)/riak-test-key.pem
+	$(TOOLS_DIR)/gen-adv-conf $(ADV_CONF)
 
 configure:
-	${RIAK_ADMIN} bucket-type create jvtest_yz_search '{"props":{}}'
-	${RIAK_ADMIN} bucket-type create jvtest_test_type '{"props":{}}'
-	${RIAK_ADMIN} bucket-type create jvtest_counters '{"props":{"datatype":"counter"}}'
-	${RIAK_ADMIN} bucket-type create jvtest_sets '{"props":{"datatype":"set"}}'
-	${RIAK_ADMIN} bucket-type create jvtest_maps '{"props":{"datatype":"map"}}'
-	${RIAK_ADMIN} bucket-type activate jvtest_yz_search
-	${RIAK_ADMIN} bucket-type activate jvtest_test_type
-	${RIAK_ADMIN} bucket-type activate jvtest_counters
-	${RIAK_ADMIN} bucket-type activate jvtest_sets
-	${RIAK_ADMIN} bucket-type activate jvtest_maps
+	$(TOOLS_DIR)/riak-cluster-config $(RIAK_ADMIN) 8098 true true
+
+configure-security-certs:
+	mkdir -p $(RESOURCES_DIR)
+	# Copy certs
+	cp $(CERTS_DIR)/cacert.pem $(RESOURCES_DIR)
+	cp $(CERTS_DIR)/riak-test-cert.pem $(RESOURCES_DIR)
+	cp $(CERTS_DIR)/riakuser-client-cert.pem $(RESOURCES_DIR)
+
+	# PEM Truststore Setup
+	openssl pkcs8 -topk8 -inform PEM -outform PEM -in $(PRIVATE_DIR)/riakuser-client-cert-key.pem -out riakuser-client-cert-key_pkcs8.pem -nocrypt
+	mv riakuser-client-cert-key_pkcs8.pem $(RESOURCES_DIR)
+
+	# JKS Truststore Setup
+	keytool -noprompt -import -trustcacerts -keystore truststore.jks -file $(CERTS_DIR)/cacert.pem -alias cacert -storepass riak123
+	keytool -noprompt -import -trustcacerts -keystore truststore.jks -file $(CERTS_DIR)/riak-test-cert.pem -alias servercert -storepass riak123
+
+	keytool -importkeystore -srckeystore $(CERTS_DIR)/riakuser-client-cert.pfx -srcstoretype pkcs12 -srcstorepass '' -destkeystore riak_cert_user.jks -deststorepass riak123 -deststoretype JKS
+	keytool -noprompt -import -trustcacerts -keystore riak_cert_user.jks -file $(CERTS_DIR)/cacert.pem -alias cacert -storepass riak123
+
+	mv truststore.jks $(RESOURCES_DIR)
+	mv riak_cert_user.jks $(RESOURCES_DIR)
 
 compile:
-	@cd ..; mvn clean compile
+	cd ..; mvn clean compile
 
 lint:
 	@echo "No lint task"
@@ -33,11 +46,9 @@ lint:
 test: test-normal test-security
 
 test-normal:
-	@cd ..; mvn -Pitest,default -DargLine="-Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true" verify
+	$(RIAK_ADMIN) security disable
+	@cd ..; mvn -Pitest,default -Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true -Dcom.basho.riak.lifecycle=true verify
 
 test-security:
-	${RIAK_ADMIN} security add-user tester password=tester
-	${RIAK_ADMIN} security add-source tester 127.0.0.1/32 password
-	${RIAK_ADMIN} security grant riak_kv.get,riak_kv.put,riak_kv.delete,riak_kv.index,riak_kv.list_keys,riak_kv.list_buckets,riak_core.get_bucket,riak_core.set_bucket,riak_core.get_bucket_type,riak_core.set_bucket_type,search.admin,search.query,riak_kv.mapreduce on any to tester
-	${RIAK_ADMIN} security enable
-	@cd ..; mvn -Pitest -DargLine="-Dcom.basho.riak.security=true" verify
+	$(RIAK_ADMIN) security enable
+	@cd ..; mvn -Pitest,default -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true test-compile failsafe:integration-test

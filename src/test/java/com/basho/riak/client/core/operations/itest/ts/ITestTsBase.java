@@ -3,7 +3,7 @@ package com.basho.riak.client.core.operations.itest.ts;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
  *
  * Schema for the Timeseries table we're using:
  *
- *   CREATE TABLE GeoCheckin
+ *   CREATE TABLE GeoCheckin_Wide
  *   (
  *      geohash     varchar   not null,
  *      user        varchar   not null,
@@ -40,9 +40,9 @@ import static org.junit.Assert.assertTrue;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public abstract class ITestTsBase extends ITestBase
+public abstract class ITestTsBase extends ITestAutoCleanupBase
 {
-    protected final static String tableName = "GeoCheckin";
+    protected final static String tableName = "GeoCheckin_Wide";
 
     protected final static long now = 1443806900000L; // "now"
     protected final static long fiveMinsInMS = 5L * 60L * 1000L;
