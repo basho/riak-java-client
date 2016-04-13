@@ -4,8 +4,11 @@ import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
+import com.basho.riak.client.core.operations.ts.QueryOperation.Builder;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.google.protobuf.ByteString;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +41,7 @@ public class Query extends RiakCommand<QueryResult, String>
     private QueryOperation buildCoreOperation()
     {
         return new QueryOperation.Builder(builder.queryText)
+                                           .withCoverageContext(builder.coverageContext)
                                            //.setInterpolations(builder.interpolations)
                                            .build();
     }
@@ -53,6 +57,7 @@ public class Query extends RiakCommand<QueryResult, String>
         private final String queryText;
         private final Map<String, BinaryValue> interpolations = new HashMap<String, BinaryValue>();
         private final Set<String> knownParams;
+        private byte[] coverageContext = null;
 
         /**
          * Construct a Builder for a Time Series Query command.
@@ -83,11 +88,21 @@ public class Query extends RiakCommand<QueryResult, String>
                 knownParams.add(paramMatcher.group(i));
             }
         }
+        
+        public Builder(String queryText, byte[] coverageContext) {
+            this(queryText);
+            this.coverageContext = coverageContext;
+        }
 
         private Builder addParameter(String keyString, String key, BinaryValue value)
         {
             checkParamValidity(keyString);
             interpolations.put(key, value);
+            return this;
+        }
+        
+        public Builder withCoverageContext(byte[] coverageContext) {
+            this.coverageContext = coverageContext;
             return this;
         }
 

@@ -62,7 +62,7 @@ To build the Riak Java Client, you must have the correct version of the riak_pb 
 
 ```
 git clone https://github.com/basho/riak_pb
-git checkout java-2.1.1.0
+git checkout 2.1.2.0
 mvn clean install
 ```
 
