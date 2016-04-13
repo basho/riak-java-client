@@ -1,11 +1,11 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.TTBFutureOperation;
+import java.util.List;
+
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
-
-import java.util.List;
 
 /**
  * An operation to query data from a Riak Time Series table.
@@ -21,7 +21,6 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
     private QueryOperation(Builder builder)
     {
         super(new TTBConverters.QueryEncoder(builder), new TTBConverters.QueryResultDecoder());
-
         this.queryText = builder.queryText;
     }
 
@@ -42,7 +41,7 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
     public static class Builder
     {
         private final String queryText;
-        private final RiakTsPB.TsInterpolation.Builder interpolationBuilder = RiakTsPB.TsInterpolation.newBuilder();
+        private final RiakTsPB.TsQueryReq.Builder reqBuilder = RiakTsPB.TsQueryReq.newBuilder();
 
         public Builder(String queryText)
         {
@@ -51,7 +50,15 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
                 throw new IllegalArgumentException("QueryText cannot be null or empty");
             }
             this.queryText = queryText;
-            this.interpolationBuilder.setBase(ByteString.copyFromUtf8(queryText));
+            RiakTsPB.TsInterpolation.Builder interpolationBuilder = RiakTsPB.TsInterpolation.newBuilder().setBase(ByteString.copyFromUtf8(queryText));
+            reqBuilder.setQuery(interpolationBuilder);
+        }
+
+        public Builder withCoverageContext(byte[] coverageContext) {
+            if(coverageContext != null) {
+                reqBuilder.setCoverContext(ByteString.copyFrom(coverageContext));
+            }
+            return this;
         }
 
         public String getQueryText()
