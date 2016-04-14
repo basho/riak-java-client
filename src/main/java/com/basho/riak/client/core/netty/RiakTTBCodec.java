@@ -45,8 +45,7 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
 
     private boolean isTTBMessage(byte code) {
         switch (code) {
-            case RiakMessageCodes.MSG_TsPutReq:
-            case RiakMessageCodes.MSG_TsGetReq:
+            case RiakMessageCodes.MSG_TsTtbMsg:
                 return true;
             default:
                 return false;
@@ -56,9 +55,8 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RiakMessage msg, ByteBuf out) throws Exception {
         final OtpErlangTuple t;
-        final boolean isTtbOn = isTTBOnForChanel(ctx.channel());
 
-        if (isTtbOn && isTTBMessage(msg.getCode())) {
+        if (isTTBMessage(msg.getCode())) {
             logger.trace("Encoding message {}, encoding '{}', is deferred: {}, channel '{}' {}",
                     msg.getCode(), "TTB", !msg.isEncoded(), ctx.channel().hashCode(), ctx.channel());
             switch (msg.getCode()) {
@@ -151,7 +149,7 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
         }
 
         int size = 0;
-        for(Object value : values) {
+        for(Object ignored : values) {
             ++size;
         }
         return size;
@@ -334,8 +332,6 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
 
-        final boolean isTTBOn = isTTBOnForChanel(ctx.channel());
-
         // Make sure we have 4 bytes
         if (in.readableBytes() >= 4) {
             in.markReaderIndex();
@@ -345,25 +341,6 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
             if (in.readableBytes() < length) {
                 in.capacity(length);
                 in.resetReaderIndex();
-                return;
-            }
-
-            if (!isTTBOn) {
-                // Decode as PB
-
-                in.resetReaderIndex();
-                pbCodec.decode(null, in, out);
-
-                if (out.size() == 1) {
-                    RiakMessage m = (RiakMessage) out.get(0);
-                    switch ( m.getCode()) {
-                        case RiakMessageCodes.MSG_ToggleEncodingResp:
-                            final RiakPB.RpbToggleEncodingResp r = RiakPB.RpbToggleEncodingResp.PARSER.parseFrom(m.getData());
-                            updateTTBUsageForChannel(ctx.channel(), r.getUseNative());
-                            logger.debug("Native/TTB encoding for channel '{}' is set to {}: {}", ctx.channel().hashCode(), r.getUseNative(), ctx.channel());
-                            break;
-                    }
-                }
                 return;
             }
 
@@ -445,17 +422,5 @@ public class RiakTTBCodec extends ByteToMessageCodec<RiakMessage> {
                 throw new IllegalStateException("Can't decode TTB response");
             }
         }
-    }
-
-    private static final AttributeKey<Boolean> USE_TTB = AttributeKey.valueOf("useTTB");
-
-    private static boolean isTTBOnForChanel(Channel channel) {
-        final Boolean b = channel.attr(USE_TTB).get();
-        return Boolean.TRUE.equals(b);
-    }
-
-    private static boolean updateTTBUsageForChannel(Channel channel, boolean useTTB) {
-        channel.attr(USE_TTB).getAndSet(Boolean.valueOf(useTTB));
-        return useTTB;
     }
 }

@@ -26,7 +26,7 @@ public final class RiakMessage
     private final byte code;
     private byte[] data;
     private final Object dataObject;
-    
+
     public RiakMessage(byte code, byte[] data)
     {
         this.code = code;
@@ -51,7 +51,7 @@ public final class RiakMessage
     {
         return code;
     }
-    
+
     public byte[] getData()
     {
         return data;
@@ -79,6 +79,7 @@ public final class RiakMessage
      * @author Sergey Galkin <sgalkin at basho dot com>
      * @since 2.4
      */
+    @SuppressWarnings("unchecked")
     public <T> T getDataObject()
     {
         return (T) dataObject;

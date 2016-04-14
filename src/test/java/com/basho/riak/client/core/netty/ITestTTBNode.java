@@ -62,7 +62,6 @@ public class ITestTTBNode {
 
 
         riakNode = new RiakNode.Builder()
-                .useTTB()
                 .withRemotePort(testRiakPort)
 //                .withMaxConnections(1)
 //                .withMinConnections(1)
@@ -140,7 +139,8 @@ public class ITestTTBNode {
         }
     }
 
-    private <T, U, S, O extends FutureOperation<T,U,S>> T execute(O operation) throws ExecutionException, InterruptedException {
+    private <T, U, S, O extends FutureOperation<T,U,S>> T execute(O operation) throws ExecutionException, InterruptedException
+    {
         riakNode.execute((FutureOperation) operation);
         return (T)((FutureOperation) operation).get();
     }
