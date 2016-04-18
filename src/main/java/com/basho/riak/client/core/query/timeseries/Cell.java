@@ -2,6 +2,11 @@ package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakTsPB;
+import com.ericsson.otp.erlang.OtpErlangBinary;
+import com.ericsson.otp.erlang.OtpErlangBoolean;
+import com.ericsson.otp.erlang.OtpErlangDouble;
+import com.ericsson.otp.erlang.OtpErlangLong;
+import com.ericsson.otp.erlang.OtpErlangObject;
 import com.google.protobuf.ByteString;
 
 import java.util.Calendar;
@@ -197,6 +202,26 @@ public class Cell
     public RiakTsPB.TsCell getPbCell()
     {
         return pbCell;
+    }
+
+    public OtpErlangObject getErlangObject() {
+        if (pbCell.hasVarcharValue()) {
+            return new OtpErlangBinary(pbCell.getVarcharValue().toByteArray());
+        }
+        if (pbCell.hasSint64Value()) {
+            return new OtpErlangLong(pbCell.getSint64Value());
+        }
+        if (pbCell.hasTimestampValue()) {
+            return new OtpErlangLong(pbCell.getTimestampValue());
+        }
+        if (pbCell.hasBooleanValue()) {
+            return new OtpErlangBoolean(pbCell.getBooleanValue());
+        }
+        if (pbCell.hasDoubleValue()) {
+            return new OtpErlangDouble(pbCell.getDoubleValue());
+        }
+        // TODO GH-611 throw exception?
+        return null;
     }
 
     @Override

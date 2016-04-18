@@ -1,11 +1,13 @@
 package com.basho.riak.client.core.codec;
 
-
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.ericsson.otp.erlang.OtpErlangAtom;
 import com.ericsson.otp.erlang.OtpErlangList;
+import com.ericsson.otp.erlang.OtpExternal;
+import com.ericsson.otp.erlang.OtpOutputStream;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,22 +34,30 @@ public class TermToBinaryCodec
 
         public static final OtpErlangAtom tsDelReq = new OtpErlangAtom("tsdelreq");
         public static final OtpErlangAtom tsDelResp = new OtpErlangAtom("tsdelresp");
+
+        public static final OtpErlangAtom tsUndefined = new OtpErlangAtom("undefined");
     }
 
-    /*
-     Get
-
-         Msg0 = #tsgetreq{table = iolist_to_binary(Table),
-                  key   = Key};
-         Msg1 = Msg0#tsgetreq{timeout = proplists:get_value(timeout, Options)},
-         Msg = {Msg1, {msgopts, Options}},
-
-     */
-
-    public static byte[] encodeTsGetRequest(String tableName, Iterable<Cell> keyValues, Long timeout)
+    public static byte[] encodeTsGetRequest(String tableName, Collection<Cell> keyValues, Long timeout)
     {
-        // fill me in
-        return null;
+        final OtpOutputStream os = new OtpOutputStream();
+        os.write(OtpExternal.versionTag);
+
+        // NB: TsGetReq is a 4-tuple: tsgetreq, tableName, [key values], timeout
+        os.write_tuple_head(4);
+        os.write_any(Messages.tsGetReq);
+        os.write_string(tableName);
+
+        os.write_list_head(keyValues.size());
+        for (Cell k : keyValues) {
+            os.write_any(k.getErlangObject());
+        }
+        os.write_nil(); // NB: finishes the list
+
+        // TODO GH-611 timeout?
+        os.write_any(Messages.tsUndefined);
+
+        return os.toByteArray();
     }
 
     public static QueryResult decodeTsGetResponse(byte[] response)
