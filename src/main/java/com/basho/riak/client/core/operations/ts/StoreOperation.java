@@ -1,10 +1,8 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.protobuf.RiakMessageCodes;
-import com.basho.riak.protobuf.RiakTsPB;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,37 +14,22 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class StoreOperation extends DeferredEncodingOperation<Void, RiakTsPB.TsPutResp, String>
+public class StoreOperation extends TTBFutureOperation<Void, Void, String>
 {
     private final Builder builder;
     private String queryInfoMessage;
 
-
-    private StoreOperation(Builder builder)
+    private StoreOperation(final Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsPutReq,
-              RiakMessageCodes.MSG_TsPutResp,
-//              builder.reqBuilder,
-              null,
-              RiakTsPB.TsPutResp.PARSER);
-
+        super(new TTBConverters.StoreEncoder(builder), new TTBConverters.VoidDecoder());
         this.builder = builder;
-
-//        this.tableName = builder.reqBuilder.getTable().toStringUtf8();
-//        this.rowCount = builder.reqBuilder.getRowsCount();
     }
 
     @Override
-    protected RiakMessage createChannelMessage() {
-        return new RiakMessage(RiakMessageCodes.MSG_TsPutReq, builder);
-    }
-
-    @Override
-    protected Void convert(List<RiakTsPB.TsPutResp> responses)
+    protected Void convert(List<Void> responses)
     {
         // This is not a streaming op, there will only be one response
         checkAndGetSingleResponse(responses);
-
         return null;
     }
 
@@ -71,8 +54,6 @@ public class StoreOperation extends DeferredEncodingOperation<Void, RiakTsPB.TsP
         private final String tableName;
         private Iterable<Row> rows;
 
-//        private final RiakTsPB.TsPutReq.Builder reqBuilder;
-
         public Builder(String tableName)
         {
             if (tableName == null || tableName.length() == 0)
@@ -81,29 +62,26 @@ public class StoreOperation extends DeferredEncodingOperation<Void, RiakTsPB.TsP
             }
 
             this.tableName = tableName;
-//            this.reqBuilder = RiakTsPB.TsPutReq.newBuilder();
-//            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
         }
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-//            this.reqBuilder.addAllColumns(CollectionConverters.convertColumnDescriptionsToPb(columns));
-//            return this;
             throw new UnsupportedOperationException();
         }
 
         public Builder withRows(Iterable<Row> rows)
         {
-//            this.reqBuilder.addAllRows(ConvertibleIterable.asIterablePbRow(rows));
             this.rows = rows;
             return this;
         }
 
-        public String getTableName() {
+        public String getTableName()
+        {
             return tableName;
         }
 
-        public Iterable<Row> getRows() {
+        public Iterable<Row> getRows()
+        {
             return rows;
         }
 

@@ -65,15 +65,4 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
             throw new IllegalArgumentException("Invalid message received", e);
         }
     }
-
-    protected U checkAndGetSingleResponse(List<U> responses)
-    {
-        if (responses.size() > 1)
-        {
-            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
-                                                           responses.size());
-        }
-
-        return responses.get(0);
-    }
 }

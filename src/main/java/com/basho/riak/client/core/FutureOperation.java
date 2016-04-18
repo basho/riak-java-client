@@ -373,6 +373,16 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         latch.await(timeout, unit);
     }
 
+    protected U checkAndGetSingleResponse(List<U> responses)
+    {
+        if (responses.size() > 1)
+        {
+            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
+                                                           responses.size());
+        }
+
+        return responses.get(0);
+    }
 
     private void stateCheck(State... allowedStates)
     {

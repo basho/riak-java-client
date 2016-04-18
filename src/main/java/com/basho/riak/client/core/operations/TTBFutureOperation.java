@@ -2,6 +2,7 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.operations.ts.*;
 import com.basho.riak.protobuf.RiakMessageCodes;
 
 /**
@@ -19,8 +20,8 @@ public abstract class TTBFutureOperation<T, U, S> extends FutureOperation<T, U, 
 {
     protected final byte reqMessageCode = RiakMessageCodes.MSG_TsTtbMsg;
     protected final byte respMessageCode = RiakMessageCodes.MSG_TsTtbMsg;
-    private TTBEncoder requestBuilder;
-    private TTBParser<U> responseParser;
+    protected final TTBEncoder requestBuilder;
+    protected final TTBParser<U> responseParser;
 
     protected TTBFutureOperation(TTBEncoder requestBuilder, TTBParser<U> responseParser)
     {
@@ -49,8 +50,9 @@ public abstract class TTBFutureOperation<T, U, S> extends FutureOperation<T, U, 
         return responseParser.parseFrom(data);
     }
 
-    public interface TTBEncoder
+    public interface TTBEncoder<B>
     {
+
         byte[] build();
     }
 
