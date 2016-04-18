@@ -28,6 +28,7 @@ public class TermToBinaryCodec
 
         public static final OtpErlangAtom tsQueryReq = new OtpErlangAtom("tsqueryreq");
         public static final OtpErlangAtom tsQueryResp = new OtpErlangAtom("tsqueryresp");
+        public static final OtpErlangAtom tsInterpolation = new OtpErlangAtom("tsinterpolation");
 
         public static final OtpErlangAtom tsPutReq = new OtpErlangAtom("tsputreq");
         public static final OtpErlangAtom tsPutResp = new OtpErlangAtom("tsputresp");
@@ -38,10 +39,10 @@ public class TermToBinaryCodec
         public static final OtpErlangAtom tsUndefined = new OtpErlangAtom("undefined");
     }
 
-    public static byte[] encodeTsGetRequest(String tableName, Collection<Cell> keyValues, Long timeout)
+    public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, Long timeout)
     {
         final OtpOutputStream os = new OtpOutputStream();
-        os.write(OtpExternal.versionTag);
+        os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
 
         // NB: TsGetReq is a 4-tuple: tsgetreq, tableName, [key values], timeout
         os.write_tuple_head(4);
@@ -57,7 +58,7 @@ public class TermToBinaryCodec
         // TODO GH-611 timeout?
         os.write_any(Messages.tsUndefined);
 
-        return os.toByteArray();
+        return os;
     }
 
     public static QueryResult decodeTsGetResponse(byte[] response)
@@ -66,21 +67,32 @@ public class TermToBinaryCodec
         return null;
     }
 
-    /*
-     Query
-
-         Content = #tsinterpolation{
-                      base           = iolist_to_binary(QueryText),
-                      interpolations = serialize_interpolations(Interpolations)},
-         Msg0 = #tsqueryreq{query = Content},
-         Msg1 = Msg0#tsqueryreq{cover_context = Cover},
-         Msg = {Msg1, {msgopts, Options}},
-     */
-
-    public static byte[] encodeTsQueryRequest(String queryText)
+    public static OtpOutputStream encodeTsQueryRequest(String queryText)
     {
-        // fill me in
-        return null;
+        final OtpOutputStream os = new OtpOutputStream();
+        os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
+
+        // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInt, boolIsStreaming, bytesCoverContext}
+        os.write_tuple_head(4);
+        os.write_any(Messages.tsQueryReq);
+
+        // TsInterpolation is a 3-tuple
+        // {'tsinterpolation', query, []} empty list is interpolations
+        os.write_tuple_head(3);
+        os.write_any(Messages.tsInterpolation);
+        os.write_string(queryText);
+        // interpolations is an empty list
+        os.write_list_head(0);
+        os.write_nil();
+
+        // streaming is false for now
+        os.write_boolean(false);
+
+        // cover_context is an empty list
+        os.write_list_head(0);
+        os.write_nil();
+
+        return os;
     }
 
     public static QueryResult decodeTsQueryResponse(byte[] response)
@@ -89,19 +101,32 @@ public class TermToBinaryCodec
         return null;
     }
 
-    /*
-     Put
-         Measurements = [{...},{...}].
-         Message = #tsputreq{table   = iolist_to_binary(TableName),
-                             columns = [],
-                             rows    = Measurements};
-         Msg = {Message, {msgopts, Options}},
-     */
-
-    public static byte[] encodeTsPutRequest(String tableName, Iterable<Row> rows)
+    public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<Row> rows)
     {
-        // fill me in
-        return null;
+        final OtpOutputStream os = new OtpOutputStream();
+        os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
+
+        // TsPutReq is a 4-tuple: {'tsputreq', tableName, [], [rows]}
+        // columns is empte
+        os.write_tuple_head(4);
+        os.write_any(Messages.tsPutReq);
+        os.write_string(tableName);
+        // columns is an empty list
+        os.write_list_head(0);
+        os.write_nil();
+
+        // write rows
+        // each row is a tuple of cells
+        os.write_list_head(rows.size());
+        for (Row r : rows) {
+            os.write_tuple_head(r.getCellsCount());
+            for (Cell c : r) {
+                os.write_any(c.getErlangObject());
+            }
+        }
+        os.write_nil();
+
+        return os;
     }
 
     public static Void decodeTsPutResponse(byte[] response)

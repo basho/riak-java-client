@@ -2,6 +2,7 @@ package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.codec.TermToBinaryCodec;
 import com.basho.riak.client.core.operations.TTBFutureOperation;
+import com.ericsson.otp.erlang.OtpOutputStream;
 
 class TTBConverters
 {
@@ -20,7 +21,9 @@ class TTBConverters
         {
             if (message == null)
             {
-                message = TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getRows());
+                OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getRows());
+                // TODO GH-611 should the output stream or base type be returned?
+                message = os.toByteArray();
             }
             return message;
         }

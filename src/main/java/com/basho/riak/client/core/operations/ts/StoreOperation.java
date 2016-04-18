@@ -52,7 +52,7 @@ public class StoreOperation extends TTBFutureOperation<Void, Void, String>
     public static class Builder
     {
         private final String tableName;
-        private Iterable<Row> rows;
+        private Collection<Row> rows;
 
         public Builder(String tableName)
         {
@@ -69,7 +69,7 @@ public class StoreOperation extends TTBFutureOperation<Void, Void, String>
             throw new UnsupportedOperationException();
         }
 
-        public Builder withRows(Iterable<Row> rows)
+        public Builder withRows(Collection<Row> rows)
         {
             this.rows = rows;
             return this;
@@ -80,7 +80,7 @@ public class StoreOperation extends TTBFutureOperation<Void, Void, String>
             return tableName;
         }
 
-        public Iterable<Row> getRows()
+        public Collection<Row> getRows()
         {
             return rows;
         }
@@ -91,5 +91,3 @@ public class StoreOperation extends TTBFutureOperation<Void, Void, String>
         }
     }
 }
-
-
