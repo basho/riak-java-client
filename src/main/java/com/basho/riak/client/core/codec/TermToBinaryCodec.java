@@ -39,7 +39,7 @@ public class TermToBinaryCodec
         public static final OtpErlangAtom tsUndefined = new OtpErlangAtom("undefined");
     }
 
-    public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, Long timeout)
+    public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, int timeout)
     {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
@@ -144,7 +144,7 @@ public class TermToBinaryCodec
                         timeout = proplists:get_value(timeout, Options)},
      */
 
-    public static byte[] encodeTsDeleteRequest(String tableName, Iterable<Cell> keyValues, byte[] vclock, Long timeout)
+    public static OtpOutputStream encodeTsDeleteRequest(String tableName, Iterable<Cell> keyValues, byte[] vclock, int timeout)
     {
         // fill me in
         return null;

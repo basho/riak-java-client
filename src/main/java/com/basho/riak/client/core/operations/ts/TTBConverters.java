@@ -1,31 +1,106 @@
 package com.basho.riak.client.core.operations.ts;
 
+import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.core.codec.TermToBinaryCodec;
 import com.basho.riak.client.core.operations.TTBFutureOperation;
+import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.ericsson.otp.erlang.OtpOutputStream;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 class TTBConverters
 {
-    static class StoreEncoder implements TTBFutureOperation.TTBEncoder<StoreOperation.Builder>
+    private static abstract class MemoizingEncoder<T> implements TTBFutureOperation.TTBEncoder
     {
-        private byte[] message = null;
-        private final StoreOperation.Builder builder;
+        protected byte[] message = null;
+        protected final T builder;
 
-        StoreEncoder(StoreOperation.Builder builder)
+        MemoizingEncoder(T builder)
         {
             this.builder = builder;
         }
+
+        abstract OtpOutputStream buildMessage();
 
         @Override
         public byte[] build()
         {
             if (message == null)
             {
-                OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getRows());
+                OtpOutputStream os = buildMessage();
                 // TODO GH-611 should the output stream or base type be returned?
                 message = os.toByteArray();
             }
             return message;
+        }
+    }
+
+    static class StoreEncoder extends MemoizingEncoder<StoreOperation.Builder>
+    {
+        StoreEncoder(StoreOperation.Builder builder)
+        {
+            super(builder);
+        }
+
+        @Override
+        OtpOutputStream buildMessage()
+        {
+            return TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getRows());
+        }
+    }
+
+    static class DeleteEncoder extends MemoizingEncoder<DeleteOperation.Builder>
+    {
+        DeleteEncoder(DeleteOperation.Builder builder)
+        {
+            super(builder);
+        }
+
+        @Override
+        OtpOutputStream buildMessage()
+        {
+            return TermToBinaryCodec.encodeTsDeleteRequest(builder.getTableName(),
+                                                           builder.getKeyValues(),
+                                                           null,
+                                                           builder.getTimeout());
+        }
+    }
+
+    static class FetchEncoder extends MemoizingEncoder<FetchOperation.Builder>
+    {
+        FetchEncoder(FetchOperation.Builder builder)
+        {
+            super(builder);
+        }
+
+        @Override
+        OtpOutputStream buildMessage()
+        {
+            // TODO: Remove this later
+            LinkedList<Cell> list = new LinkedList<>();
+            for (Cell c : builder.getKeyValues())
+            {
+                list.add(c);
+            }
+            return TermToBinaryCodec.encodeTsGetRequest(builder.getTableName(),
+                                                        list,
+                                                        builder.getTimeout());
+        }
+    }
+
+    static class QueryEncoder extends MemoizingEncoder<QueryOperation.Builder>
+    {
+        QueryEncoder(QueryOperation.Builder builder)
+        {
+            super(builder);
+        }
+
+        @Override
+        OtpOutputStream buildMessage()
+        {
+            return TermToBinaryCodec.encodeTsQueryRequest(builder.getQueryText());
         }
     }
 
@@ -38,4 +113,12 @@ class TTBConverters
         }
     }
 
+    static class QueryResultDecoder implements TTBFutureOperation.TTBParser<QueryResult>
+    {
+        @Override
+        public QueryResult parseFrom(byte[] data)
+        {
+            return TermToBinaryCodec.decodeTsGetResponse(data);
+        }
+    }
 }

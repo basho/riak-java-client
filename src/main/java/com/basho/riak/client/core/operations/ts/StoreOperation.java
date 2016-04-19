@@ -14,7 +14,7 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class StoreOperation extends TTBFutureOperation<Void, Void, String>
+public class StoreOperation extends TTBFutureOperation<Void, String>
 {
     private final Builder builder;
     private String queryInfoMessage;
@@ -26,7 +26,7 @@ public class StoreOperation extends TTBFutureOperation<Void, Void, String>
     }
 
     @Override
-    protected Void convert(List<Void> responses)
+    protected Void convert(List<byte[]> responses)
     {
         // This is not a streaming op, there will only be one response
         checkAndGetSingleResponse(responses);

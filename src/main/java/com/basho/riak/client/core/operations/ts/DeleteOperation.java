@@ -1,6 +1,7 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.PBFutureOperation;
+import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -16,23 +17,20 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp, String>
+public class DeleteOperation extends TTBFutureOperation<Void, String>
 {
     private final Builder builder;
     private String queryInfoMessage;
 
     private DeleteOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsDelReq,
-              RiakMessageCodes.MSG_TsDelResp,
-              builder.reqBuilder,
-              RiakTsPB.TsDelResp.PARSER);
+        super(new TTBConverters.DeleteEncoder(builder), new TTBConverters.VoidDecoder());
 
         this.builder = builder;
     }
 
     @Override
-    protected Void convert(List<RiakTsPB.TsDelResp> responses)
+    protected Void convert(List<byte[]> responses)
     {
         // This is not a streaming op, there will only be one response
         checkAndGetSingleResponse(responses);
@@ -73,8 +71,7 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
     {
         private final String tableName;
         private final Iterable<Cell> keyValues;
-
-        private final RiakTsPB.TsDelReq.Builder reqBuilder = RiakTsPB.TsDelReq.newBuilder();
+        private int timeout = 0;
 
         public Builder(String tableName, Iterable<Cell> keyValues)
         {
@@ -88,9 +85,6 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
                 throw new IllegalArgumentException("Key Values cannot be null or an empty.");
             }
 
-            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
-            this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
-
             this.tableName = tableName;
             this.keyValues = keyValues;
         }
@@ -101,8 +95,23 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
             {
                 throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
             }
-            this.reqBuilder.setTimeout(timeout);
+            this.timeout = timeout;
             return this;
+        }
+
+        public String getTableName()
+        {
+            return tableName;
+        }
+
+        public Iterable<Cell> getKeyValues()
+        {
+            return keyValues;
+        }
+
+        public int getTimeout()
+        {
+            return timeout;
         }
 
         public DeleteOperation build()

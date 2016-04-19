@@ -2,7 +2,6 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.operations.ts.*;
 import com.basho.riak.protobuf.RiakMessageCodes;
 
 /**
@@ -10,20 +9,19 @@ import com.basho.riak.protobuf.RiakMessageCodes;
  *
  * @author Alex Moore <amoore at basho dot com>
  * @param <T> The type the operation returns
- * @param <U> The protocol type returned
  * @param <S> Query info type
 
  * @since 2.0.6
  */
 
-public abstract class TTBFutureOperation<T, U, S> extends FutureOperation<T, U, S>
+public abstract class TTBFutureOperation<T, S> extends FutureOperation<T, byte[], S>
 {
     protected final byte reqMessageCode = RiakMessageCodes.MSG_TsTtbMsg;
     protected final byte respMessageCode = RiakMessageCodes.MSG_TsTtbMsg;
     protected final TTBEncoder requestBuilder;
-    protected final TTBParser<U> responseParser;
+    protected final TTBParser<T> responseParser;
 
-    protected TTBFutureOperation(TTBEncoder requestBuilder, TTBParser<U> responseParser)
+    protected TTBFutureOperation(TTBEncoder requestBuilder, TTBParser<T> responseParser)
     {
         this.requestBuilder = requestBuilder;
         this.responseParser = responseParser;
@@ -36,7 +34,7 @@ public abstract class TTBFutureOperation<T, U, S> extends FutureOperation<T, U, 
     }
 
     @Override
-    protected U decode(RiakMessage rawMessage)
+    protected byte[] decode(RiakMessage rawMessage)
     {
         Operations.checkMessageType(rawMessage, respMessageCode);
 
@@ -47,17 +45,16 @@ public abstract class TTBFutureOperation<T, U, S> extends FutureOperation<T, U, 
             return null;
         }
 
-        return responseParser.parseFrom(data);
+        return data;
     }
 
-    public interface TTBEncoder<B>
+    public interface TTBEncoder
     {
-
         byte[] build();
     }
 
-    public interface TTBParser<U>
+    public interface TTBParser<T>
     {
-        U parseFrom(byte[] data);
+        T parseFrom(byte[] data);
     }
 }

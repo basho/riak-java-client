@@ -1,6 +1,7 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.*;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -14,20 +15,15 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakTsPB.TsGetResp, String>
+public class FetchOperation extends TTBFutureOperation<QueryResult, String>
 {
     private final Builder builder;
     private String queryInfoMessage;
 
     private FetchOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsGetReq,
-              RiakMessageCodes.MSG_TsGetResp,
-//              builder.reqBuilder,
-              null,
-              RiakTsPB.TsGetResp.PARSER);
-
-            this.builder = builder;
+        super(new TTBConverters.FetchEncoder(builder), new TTBConverters.QueryResultDecoder());
+        this.builder = builder;
     }
 
     @Override
@@ -36,12 +32,11 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
     }
 
     @Override
-    protected QueryResult convert(List<RiakTsPB.TsGetResp> responses)
+    protected QueryResult convert(List<byte[]> responses)
     {
         // This is not a streaming op, there will only be one response
-        final RiakTsPB.TsGetResp response = checkAndGetSingleResponse(responses);
-
-        return PbResultFactory.convertPbGetResp(response);
+        final byte[] bytes = checkAndGetSingleResponse(responses);
+        return this.responseParser.parseFrom(bytes);
     }
 
     @Override
@@ -76,8 +71,7 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
     {
         private final String tableName;
         private final Iterable<Cell> keyValues;
-
-        //private final RiakTsPB.TsGetReq.Builder reqBuilder = RiakTsPB.TsGetReq.newBuilder();
+        private int timeout = 0;
 
         public Builder(String tableName, Iterable<Cell> keyValues)
         {
@@ -91,16 +85,13 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
                 throw new IllegalArgumentException("Key Values cannot be null or an empty.");
             }
 
-//            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
-//            this.reqBuilder.addAllKey(ConvertibleIterable.asIterablePbCell(keyValues));
-
             this.tableName = tableName;
             this.keyValues = keyValues;
         }
 
         public Builder withTimeout(int timeout)
         {
-//            this.reqBuilder.setTimeout(timeout);
+            this.timeout = timeout;
             return this;
         }
 
@@ -109,12 +100,19 @@ public class FetchOperation extends DeferredEncodingOperation<QueryResult, RiakT
             return new FetchOperation(this);
         }
 
-        public String getTableName() {
+        public String getTableName()
+        {
             return tableName;
         }
 
-        public Iterable<Cell> getKeyValues() {
+        public Iterable<Cell> getKeyValues()
+        {
             return keyValues;
+        }
+
+        public int getTimeout()
+        {
+            return timeout;
         }
     }
 }
