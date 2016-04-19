@@ -55,8 +55,7 @@ public class TermToBinaryCodec
         }
         os.write_nil(); // NB: finishes the list
 
-        // TODO GH-611 timeout?
-        os.write_any(Messages.tsUndefined);
+        os.write_long(timeout);
 
         return os;
     }
@@ -115,7 +114,7 @@ public class TermToBinaryCodec
         os.write_list_head(0);
         os.write_nil();
 
-        // write rows
+        // write a list of rows
         // each row is a tuple of cells
         os.write_list_head(rows.size());
         for (Row r : rows) {
@@ -130,27 +129,6 @@ public class TermToBinaryCodec
     }
 
     public static Void decodeTsPutResponse(byte[] response)
-    {
-        // Do we return anything in TTB?
-        return null;
-    }
-
-    /*
-     Delete
-
-         Message = #tsdelreq{table   = iolist_to_binary(Table),
-                        key     = riak_pb_ts_codec:encode_cells_non_strict(Key),
-                        vclock  = proplists:get_value(vclock, Options),
-                        timeout = proplists:get_value(timeout, Options)},
-     */
-
-    public static OtpOutputStream encodeTsDeleteRequest(String tableName, Iterable<Cell> keyValues, byte[] vclock, int timeout)
-    {
-        // fill me in
-        return null;
-    }
-
-    public static Void decodeTsDeleteResponse(byte[] response)
     {
         // Do we return anything in TTB?
         return null;
