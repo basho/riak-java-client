@@ -4,9 +4,17 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.ericsson.otp.erlang.OtpErlangAtom;
+import com.ericsson.otp.erlang.OtpErlangBinary;
+import com.ericsson.otp.erlang.OtpErlangBoolean;
+import com.ericsson.otp.erlang.OtpErlangDecodeException;
+import com.ericsson.otp.erlang.OtpErlangDouble;
 import com.ericsson.otp.erlang.OtpErlangList;
+import com.ericsson.otp.erlang.OtpErlangLong;
+import com.ericsson.otp.erlang.OtpErlangObject;
 import com.ericsson.otp.erlang.OtpExternal;
+import com.ericsson.otp.erlang.OtpInputStream;
 import com.ericsson.otp.erlang.OtpOutputStream;
+import java.util.Calendar;
 import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +44,7 @@ public class TermToBinaryCodec
         public static final OtpErlangAtom tsDelReq = new OtpErlangAtom("tsdelreq");
         public static final OtpErlangAtom tsDelResp = new OtpErlangAtom("tsdelresp");
 
-        public static final OtpErlangAtom tsUndefined = new OtpErlangAtom("undefined");
+        public static final OtpErlangAtom rpbErrorResp = new OtpErlangAtom("rpberrorresp");
     }
 
     public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, int timeout)
@@ -60,10 +68,9 @@ public class TermToBinaryCodec
         return os;
     }
 
-    public static QueryResult decodeTsGetResponse(byte[] response)
+    public static QueryResult decodeTsGetResponse(byte[] response) throws OtpErlangDecodeException
     {
-        // fill me in
-        return null;
+        return decodeTsResponse(response);
     }
 
     public static OtpOutputStream encodeTsQueryRequest(String queryText)
@@ -94,10 +101,9 @@ public class TermToBinaryCodec
         return os;
     }
 
-    public static QueryResult decodeTsQueryResponse(byte[] response)
+    public static QueryResult decodeTsQueryResponse(byte[] response) throws OtpErlangDecodeException
     {
-        // fill me in
-        return null;
+        return decodeTsResponse(response);
     }
 
     public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<Row> rows)
@@ -132,5 +138,94 @@ public class TermToBinaryCodec
     {
         // Do we return anything in TTB?
         return null;
+    }
+
+    private static QueryResult decodeTsResponse(byte[] response) throws OtpErlangDecodeException
+    {
+        QueryResult result = null;
+
+        OtpInputStream is = new OtpInputStream(response);
+        final int msgArity = is.read_tuple_head();
+        // Response is:
+        // {'rpberrorresp', ErrMsg, ErrCode}
+        // {'tsgetresp', {ColNames, ColTypes, Rows}}
+        // {'tsqueryresp', {ColNames, ColTypes, Rows}}
+        final String respAtom = is.read_atom();
+        switch (respAtom) {
+            case "rpberrorresp":
+                // TODO process error
+                assert(msgArity == 3);
+                break;
+            case "tsgetresp":
+            case "tsqueryresp":
+                assert(msgArity == 2);
+
+                final int dataArity = is.read_tuple_head();
+                assert(dataArity == 3);
+
+                final int colNameCount = is.read_list_head();
+                String[] columnNames = new String[colNameCount];
+                for (int i = 0; i < colNameCount; i++) {
+                    String colName = is.read_string();
+                    columnNames[i] = colName;
+                }
+
+                final int colTypeCount = is.read_list_head();
+                assert(colNameCount == colTypeCount);
+                String[] columnTypes = new String[colTypeCount];
+                for (int i = 0; i < colTypeCount; i++) {
+                    String colType = is.read_string();
+                    columnTypes[i] = colType;
+                }
+
+                final int rowCount = is.read_list_head();
+                Row[] rows = new Row[rowCount];
+                for (int i = 0; i < rowCount; i++) {
+                    final int rowDataCount = is.read_tuple_head();
+                    assert(colNameCount == rowDataCount);
+
+                    Cell[] cells = new Cell[rowDataCount];
+                    for (int j = 0; i < rowDataCount; j++) {
+                        OtpErlangObject cell = is.read_any();
+                        if (cell instanceof OtpErlangBinary) {
+                            OtpErlangBinary v = (OtpErlangBinary)cell;
+                            // TODO GH-611 this may not be correct encoding
+                            String s = new String(v.binaryValue());
+                            cells[j] = new Cell(s);
+                        }
+                        else if (cell instanceof OtpErlangBoolean) {
+                            OtpErlangBoolean v = (OtpErlangBoolean)cell;
+                            cells[j] = new Cell(v.booleanValue());
+                        }
+                        else if (cell instanceof OtpErlangLong) {
+                            OtpErlangLong v = (OtpErlangLong)cell;
+                            if ("timestamp".equals(columnTypes[j])) {
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTimeInMillis(v.longValue());
+                                cells[j] = new Cell(cal);
+                            } else {
+                                cells[j] = new Cell(v.longValue());
+                            }
+                        }
+                        else if (cell instanceof OtpErlangDouble) {
+                            OtpErlangDouble v = (OtpErlangDouble)cell;
+                            cells[j] = new Cell(v.doubleValue());
+                        }
+                        else {
+                            // TODO GH-611 throw exception?
+                        }
+                    }
+
+                    rows[i] = new Row(cells);
+                }
+
+                result = new QueryResult(rows);
+
+                break;
+            default:
+                // TODO GH-611 throw exception?
+        }
+
+        return result;
     }
 }
