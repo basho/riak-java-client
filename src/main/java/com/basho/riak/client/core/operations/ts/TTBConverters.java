@@ -1,13 +1,11 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.api.commands.timeseries.Query;
 import com.basho.riak.client.core.codec.TermToBinaryCodec;
 import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.ericsson.otp.erlang.OtpOutputStream;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 class TTBConverters
@@ -48,23 +46,6 @@ class TTBConverters
         OtpOutputStream buildMessage()
         {
             return TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getRows());
-        }
-    }
-
-    static class DeleteEncoder extends MemoizingEncoder<DeleteOperation.Builder>
-    {
-        DeleteEncoder(DeleteOperation.Builder builder)
-        {
-            super(builder);
-        }
-
-        @Override
-        OtpOutputStream buildMessage()
-        {
-            return TermToBinaryCodec.encodeTsDeleteRequest(builder.getTableName(),
-                                                           builder.getKeyValues(),
-                                                           null,
-                                                           builder.getTimeout());
         }
     }
 
