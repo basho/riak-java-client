@@ -21,8 +21,6 @@ import org.slf4j.LoggerFactory;
 
 public class TermToBinaryCodec
 {
-    private final static Logger logger = LoggerFactory.getLogger(TermToBinaryCodec.class);
-
     private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
     private static final OtpErlangAtom tsinterpolation = new OtpErlangAtom("tsinterpolation");
 

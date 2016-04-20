@@ -5,11 +5,15 @@ import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.protobuf.RiakMessageCodes;
+import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class TTBConverters
 {
@@ -31,20 +35,29 @@ class TTBConverters
         {
             if (message == null)
             {
-                OtpOutputStream os = buildMessage();
-                os.flush();
-                // TODO GH-611 should the output stream or base type be returned?
-                // TODO GH-611 we still need to add msgCode 141 and message length
-                final int msgLen = os.length() + 5; // Add 4-byte msg length and 1-byte msgCode
-                ByteArrayOutputStream bs = new ByteArrayOutputStream(msgLen);
-                DataOutputStream ds = new DataOutputStream(bs);
-                ds.writeInt(msgLen);
-                ds.writeByte(RiakMessageCodes.MSG_TsTtbMsg);
-                ds.flush();
-                os.writeTo(bs);
-                bs.flush();
-                message = bs.toByteArray();
+                try {
+                    OtpOutputStream os = buildMessage();
+                    os.flush();
+                    
+                    // TODO GH-611 should the output stream or base type be returned?
+                    // TODO GH-611 we still need to add msgCode 141 and message length
+                    final int msgLen = os.length() + 5; // Add 4-byte msg length and 1-byte msgCode
+                    ByteArrayOutputStream bs = new ByteArrayOutputStream(msgLen);
+                    
+                    DataOutputStream ds = new DataOutputStream(bs);
+                    ds.writeInt(msgLen);
+                    ds.writeByte(RiakMessageCodes.MSG_TsTtbMsg);
+                    ds.flush();
+                    
+                    os.writeTo(bs);
+                    bs.flush();
+                    message = bs.toByteArray();
+                } catch (IOException ex) {
+                    // TODO GH-611
+                    Logger.getLogger(TTBConverters.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
+
             return message;
         }
     }
@@ -113,7 +126,16 @@ class TTBConverters
         @Override
         public QueryResult parseFrom(byte[] data)
         {
-            return TermToBinaryCodec.decodeTsGetResponse(data);
+            QueryResult rv = null;
+
+            try {
+                rv = TermToBinaryCodec.decodeTsGetResponse(data);
+            } catch (OtpErlangDecodeException ex) {
+                // TODO GH-611
+                Logger.getLogger(TTBConverters.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            return rv;
         }
     }
 }

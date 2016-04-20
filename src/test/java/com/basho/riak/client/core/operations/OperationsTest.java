@@ -19,7 +19,14 @@ public class OperationsTest
     public void testThatMessageCodesAreWrittenCorrectlyInErrorMessages()
     {
         // MSG_StartTls = 255
-        RiakMessage msg = new RiakMessage(RiakMessageCodes.MSG_StartTls, new byte[0]);
+        RiakMessage msg = null;
+
+        try {
+            msg = new RiakMessage(RiakMessageCodes.MSG_StartTls, new byte[0]);
+        } catch (Exception ex) {
+            // TODO GH-611
+            assertTrue("unexpected exception", false);
+        }
 
         try
         {
