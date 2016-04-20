@@ -14,6 +14,7 @@ import com.ericsson.otp.erlang.OtpErlangObject;
 import com.ericsson.otp.erlang.OtpExternal;
 import com.ericsson.otp.erlang.OtpInputStream;
 import com.ericsson.otp.erlang.OtpOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -188,7 +189,7 @@ public class TermToBinaryCodec
                         if (cell instanceof OtpErlangBinary) {
                             OtpErlangBinary v = (OtpErlangBinary)cell;
                             // TODO GH-611 this may not be correct encoding
-                            String s = new String(v.binaryValue());
+                            String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
                             cells[j] = new Cell(s);
                         }
                         else if (cell instanceof OtpErlangBoolean) {

@@ -5,7 +5,9 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpInputStream;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +105,7 @@ public final class RiakMessage
 
             if ("rpberrorresp".equals(atom)) {
                 try {
-                    String errMsg = ttbInputStream.read_string(); // TODO GH-611 encoding?
+                    String errMsg = new String(ttbInputStream.read_binary(), StandardCharsets.UTF_8);
                     int errCode = ttbInputStream.read_int(); // TODO GH-611 is errcode an int?
                     return new RiakResponseException(errCode, errMsg);
                 } catch (OtpErlangDecodeException ex) {
