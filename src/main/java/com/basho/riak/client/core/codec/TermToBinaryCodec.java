@@ -17,8 +17,6 @@ import com.ericsson.otp.erlang.OtpOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TermToBinaryCodec
 {
@@ -54,7 +52,7 @@ public class TermToBinaryCodec
         // NB: TsGetReq is a 4-tuple: tsgetreq, tableName, [key values], timeout
         os.write_tuple_head(4);
         os.write_any(Messages.tsGetReq);
-        os.write_string(tableName);
+        os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         os.write_list_head(keyValues.size());
         for (Cell k : keyValues) {
@@ -85,7 +83,7 @@ public class TermToBinaryCodec
         // {'tsinterpolation', query, []} empty list is interpolations
         os.write_tuple_head(3);
         os.write_any(Messages.tsInterpolation);
-        os.write_string(queryText);
+        os.write_binary(queryText.getBytes(StandardCharsets.UTF_8));
         // interpolations is an empty list
         os.write_list_head(0);
         os.write_nil();
@@ -114,7 +112,7 @@ public class TermToBinaryCodec
         // columns is empte
         os.write_tuple_head(4);
         os.write_any(Messages.tsPutReq);
-        os.write_string(tableName);
+        os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
         // columns is an empty list
         os.write_list_head(0);
         os.write_nil();
