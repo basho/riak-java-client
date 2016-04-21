@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.basho.riak</groupId>
-    <artifactId>dataplatform-riak-client</artifactId>
+    <artifactId>riak-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>2.0.6-SNAPSHOT</version>
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
@@ -43,19 +42,14 @@
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
-        <developer>
-            <name>Sergey Galkin</name>
-            <email>sgalkin@basho.com</email>
-            <organization>Basho Technologies, Inc</organization>
-            <organizationUrl>http://www.basho.com</organizationUrl>
-        </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:ssh://github.com/basho/data_platform_riak_java_client.git</connection>
-        <developerConnection>scm:git:ssh://github.com/basho/data_platform_riak_java_client.git</developerConnection>
-        <url>https://github.com/basho/data_platform_riak_java_client</url>
-    </scm>
+        <connection>scm:git:ssh://git@github.com/basho/riak-java-client.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/basho/riak-java-client.git</developerConnection>
+        <url>http://github.com/basho/riak-java-client</url>
+      <tag>HEAD</tag>
+  </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -63,34 +57,20 @@
         <powermock.version>1.6.4</powermock.version>
     </properties>
 
-    <repositories>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
-            <id>artifactory</id>
-            <url>https://basholabs.artifactoryonline.com/basholabs/libs-snapshot</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jfrog-artifactory-bintray</id>
-            <url>https://dl.bintray.com/jfrog/jfrog-jars</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+    </distributionManagement>
 
     <profiles>
-
         <profile>
             <id>default</id>
             <activation>
@@ -105,7 +85,6 @@
                 </dependency>
             </dependencies>
         </profile>
-
         <profile>
             <id>test-debug-logging</id>
             <dependencies>
@@ -117,7 +96,6 @@
                 </dependency>
             </dependencies>
         </profile>
-
         <profile>
             <id>itest</id>
             <build>
@@ -138,7 +116,6 @@
                 </plugins>
             </build>
         </profile>
-
         <profile>
             <id>jar-with-dependencies</id>
             <activation>
@@ -175,6 +152,34 @@
         </profile>
 
         <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- NOTE: source and javadoc jars automatically generated on release (http://maven.apache.org/pom.html#The_Super_POM) -->
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>doclint-java8-disable</id>
             <activation>
                 <jdk>[1.8,)</jdk>
@@ -191,12 +196,9 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
-
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -230,7 +232,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.2</version>
@@ -238,7 +239,6 @@
                     <mavenExecutorId>forked-path</mavenExecutorId>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -258,8 +258,8 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
 
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -273,10 +273,9 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
-
             <plugin>
-                <!-- ensure that only methods available in java 1.6 can
-                be used even when compiling with java 1.7+ -->
+                <!-- ensure that only methods available in java 1.7 can
+                be used even when compiling with java 1.8+ -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
                 <version>1.14</version>
@@ -296,7 +295,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -305,51 +303,17 @@
                     <systemPropertyVariables>
                         <org.slf4j.simpleLogger.defaultLogLevel>debug</org.slf4j.simpleLogger.defaultLogLevel>
                         <org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
-                        <org.slf4j.simpleLogger.dateTimeFormat>yyyy-MM-dd HH:mm:ss
-                        </org.slf4j.simpleLogger.dateTimeFormat>
+                        <org.slf4j.simpleLogger.dateTimeFormat>yyyy-MM-dd HH:mm:ss</org.slf4j.simpleLogger.dateTimeFormat>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
             </plugin>
-
-            <plugin>
-                <groupId>org.jfrog.buildinfo</groupId>
-                <artifactId>artifactory-maven-plugin</artifactId>
-                <version>2.4.0</version>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>build-info</id>
-                        <goals>
-                            <goal>publish</goal>
-                        </goals>
-                        <configuration>
-                            <publisher>
-                                <contextUrl>https://basholabs.artifactoryonline.com/basholabs</contextUrl>
-                                <username>{{ARTIFACTORY_USER}}</username>
-                                <password>{{ARTIFACTORY_PASS}}</password>
-                                <repoKey>libs-release-local</repoKey>
-                                <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
-                            </publisher>
-                            <buildInfo>
-                                <buildName>{{TRAVIS_REPO_SLUG}}</buildName>
-                                <buildNumber>{{TRAVIS_BUILD_NUMBER}}</buildNumber>
-                                <buildUrl>https://travis-ci.com/{{TRAVIS_REPO_SLUG}}/builds/{{TRAVIS_BUILD_ID}}
-                                </buildUrl>
-                            </buildInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
-
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -408,5 +372,4 @@
             <version>2.1.1.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
 </project>
