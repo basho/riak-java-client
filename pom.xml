@@ -7,6 +7,9 @@
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
 
     <licenses>
         <license>
@@ -39,6 +42,12 @@
         <developer>
             <name>Chris Mancini</name>
             <email>cmancini@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Luke Bakken</name>
+            <email>lbakken@basho.com</email>
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
@@ -190,6 +199,7 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
+                            <excludePackageNames>com.basho.riak.protobuf.util</excludePackageNames>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -199,35 +209,57 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.1</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+            <plugin>
+                <groupId>com.webguys</groupId>
+                <artifactId>string-template-maven-plugin</artifactId>
+                <version>1.1</version>
+                <configuration>
+                    <templates>
+                        <template>
+                            <directory>${basedir}/src/main/resources</directory>
+                            <name>RiakMessageCodes</name>
+                            <target>${basedir}/src/main/java/com/basho/riak/protobuf/RiakMessageCodes.java</target>
+                            <controller>
+                                <className>com.basho.riak.protobuf.util.TemplateController</className>
+                                <method>getProperties</method>
+                            </controller>
+                        </template>
+                    </templates>
+                </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>render</goal>
                         </goals>
-                        <configuration>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.google.protobuf:protobuf-java</include>
-                                    <include>com.basho.riak.protobuf:riak-pb</include>
-                                </includes>
-                            </artifactSet>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.google.protobuf</pattern>
-                                    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.basho.riak.protobuf</pattern>
-                                    <shadedPattern>shaded.com.basho.riak.protobuf</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.twdata.maven</groupId>
+                        <artifactId>mojo-executor</artifactId>
+                        <version>2.2.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>com.github.igor-petruk.protobuf</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.5</version>
+                <configuration>
+                    <inputDirectories>
+                        <directory>${project.basedir}/riak_pb/src</directory>
+                    </inputDirectories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -257,7 +289,6 @@
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -310,6 +341,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
+                <configuration>
+                    <excludePackageNames>com.basho.riak.protobuf.util</excludePackageNames>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -366,9 +400,14 @@
             <version>4.0.33.Final</version>
         </dependency>
         <dependency>
-            <groupId>com.basho.riak.protobuf</groupId>
-            <artifactId>riak-pb</artifactId>
-            <version>2.1.1.0</version>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr-complete</artifactId>
+            <version>3.5.1</version>
         </dependency>
     </dependencies>
 </project>
