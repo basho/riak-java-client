@@ -1,9 +1,13 @@
 package com.basho.riak.client.core.codec;
 
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.Row;
 import com.ericsson.otp.erlang.OtpOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,6 +54,40 @@ public class TermToBinaryCodecTest
 
         try {
             OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY);
+            os.flush();
+            byte[] msg = os.toByteArray();
+            Assert.assertArrayEquals(exp, msg);
+        } catch (IOException ex) {
+            Assert.fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void encodesPutRequestCorrectly() {
+        // What erlang generates
+        // A = riakc_ts_put_operator:serialize(<<"test_table">>,[[<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []]], true).
+        // A = {tsputreq,<<"test_table">>,[],[[<<"series">>,<<"family">>,12345678,1,true,34.3,[]]]}
+        // rp(term_to_binary(A)). => exp array below
+
+        // # What we generate
+        // B = <<-125, 104, 4, 100, 0, 8, 116, 115, 112, 117, 116, 114, 101, 113, 109, 0, 0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 106, 108, 0, 0, 0, 1, 108, 0, 0, 0, 7, 109, 0, 0, 0, 6, 115, 101, 114, 105, 101, 115, 109, 0, 0, 0, 6, 102, 97, 109, 105, 108, 121, 98, 0, -68, 97, 78, 97, 1, 100, 0, 4, 116, 114, 117, 101, 70, 64, 65, 38, 102, 102, 102, 102, 102, 106, 106, 106, 106>>.
+        // B2 = binary_to_term(B).
+        // B2 = {tsputreq,<<"test_table">>,[],[[<<"series">>,<<"family">>,12345678,1,true,34.3,[]]]}
+        // A = B2. #true (wtf) (magic)
+
+        final byte[] exp = {(byte)131,104,4,100,0,8,116,115,112,117,116,114,101,113,109,0,
+                            0,0,7,70,82,65,90,90,76,69,106,108,0,0,0,1,108,0,0,0,7,
+                            109,0,0,0,6,115,101,114,105,101,115,109,0,0,0,6,102,97,
+                            109,105,108,121,98,0,(byte)188,97,78,97,1,100,0,4,116,114,117,
+                            101,99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,
+                            57,55,49,53,55,56,101,43,48,49,0,0,0,0,0,106,106,106};
+
+        final ArrayList<Row> rows = new ArrayList<>(1);
+        rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
+                         new Cell(1l), new Cell(true), new Cell(34.3), null));
+
+        try {
+            OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, rows);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
