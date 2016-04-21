@@ -85,14 +85,12 @@ public class TermToBinaryCodec
         os.write_any(Messages.tsInterpolation);
         os.write_binary(queryText.getBytes(StandardCharsets.UTF_8));
         // interpolations is an empty list
-        os.write_list_head(0);
         os.write_nil();
 
         // streaming is false for now
         os.write_boolean(false);
 
         // cover_context is an empty list
-        os.write_list_head(0);
         os.write_nil();
 
         return os;
@@ -114,7 +112,6 @@ public class TermToBinaryCodec
         os.write_any(Messages.tsPutReq);
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
         // columns is an empty list
-        os.write_list_head(0);
         os.write_nil();
 
         // write a list of rows
