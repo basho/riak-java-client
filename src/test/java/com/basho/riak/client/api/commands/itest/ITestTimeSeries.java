@@ -20,7 +20,6 @@ import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -53,27 +52,12 @@ import static org.junit.Assume.assumeTrue;
 public class ITestTimeSeries extends ITestTsBase
 {
     private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
-
-    private static List<FullColumnDescription> tableFields = Arrays.asList(
-            new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
-            new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
-            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3),
-            new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
-            new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
-            new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
-            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false)
-    );
-
     private static final String BAD_TABLE_NAME = "GeoChicken";
 
     private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException {
-        final TableDefinition tableDef = new TableDefinition(tableName, tableFields);
+        final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckinWideTableDefinition.getFullColumnDescriptions());
 
-        final CreateTable cmd = new CreateTable.Builder(tableDef)
-                .withQuantum(15, TimeUnit.MINUTES)
-                .build();
-
-        return client.executeAsync(cmd);
+        return createTableAsync(client, tableDef);
     }
 
     @Rule
