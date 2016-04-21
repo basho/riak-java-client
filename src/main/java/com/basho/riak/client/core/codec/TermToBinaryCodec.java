@@ -120,14 +120,10 @@ public class TermToBinaryCodec
         for (Row r : rows) {
             os.write_tuple_head(r.getCellsCount());
             for (Cell c : r) {
-                if (c == null)
-                {
+                if (c == null) {
                     // NB: Null cells are represented as empty lists
-                    os.write_list_head(0);
-                    os.write_nil(); // NB: Finishes List
-                }
-                else
-                {
+                    os.write_nil();
+                } else {
                     os.write_any(c.getErlangObject());
                 }
             }

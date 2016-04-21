@@ -25,16 +25,17 @@ public class TermToBinaryCodecTest
         final byte[] exp = {(byte)131, 104, 4, 100, 0, 8, 116, 115, 112, 117, 116, 114, 101, 113, 109, 0,
             0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 106, 108, 0, 0,
             0, 2, 104, 5, 109, 0, 0, 0, 7, 118, 97, 114, 99, 104, 97, 114, 98, 0, (byte)188,
-            97, 78, 99, 49, 46, 50, 51, 51, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57,
-            57, 57, 57, 56, 53, 55, 57, 101, 43, 48, 49, 0, 0, 0, 0, 0, 100, 0, 4, 116,
+            97, 78,
+            70, 64, 65, 38, 102, 102, 102, 102, 102,
+            100, 0, 4, 116,
             114, 117, 101, 98, 0, 0, 48, 57, 104, 5, 109, 0, 0, 0, 6, 115, 116, 114,
-            105, 110, 103, 98, 0, (byte)133, (byte)191, (byte)248, 99, 52, 46, 51, 50, 49, 48, 48, 48,
-            48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 56, 53, 50, 55, 101, 43, 48, 49,
-            0, 0, 0, 0, 0, 100, 0, 5, 102, 97, 108, 115, 101, 98, 0, 8, 74, 89, 106};
+            105, 110, 103, 98, 0, (byte)133, (byte)191, (byte)248,
+            70, 64, 65, 38, 102, 102, 102, 102, 102,
+            100, 0, 5, 102, 97, 108, 115, 101, 98, 0, 8, 74, 89, 106};
 
         Cell c1 = new Cell("varchar");
         Cell c2 = new Cell(12345678L);
-        Cell c3 = new Cell(12.34);
+        Cell c3 = new Cell(34.3);
         Cell c4 = new Cell(true);
         Calendar cal1 = Calendar.getInstance();
         cal1.setTimeInMillis(12345);
@@ -43,7 +44,7 @@ public class TermToBinaryCodecTest
 
         Cell c6 = new Cell("string");
         Cell c7 = new Cell(8765432L);
-        Cell c8 = new Cell(43.21);
+        Cell c8 = new Cell(34.3);
         Cell c9 = new Cell(false);
         Calendar cal2 = Calendar.getInstance();
         cal2.setTimeInMillis(543321);
@@ -63,24 +64,25 @@ public class TermToBinaryCodecTest
 
     @Test
     public void encodesPutRequestCorrectly_2() {
-        // What erlang generates
         // A = riakc_ts_put_operator:serialize(<<"test_table">>,[{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}], true).
         // A = {tsputreq,<<"test_table">>,[],[{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
-        // rp(term_to_binary(A)). => exp array below
-
-        // # What we generate
-        // B = <<-125, 104, 4, 100, 0, 8, 116, 115, 112, 117, 116, 114, 101, 113, 109, 0, 0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 106, 108, 0, 0, 0, 1, 104, 7, 109, 0, 0, 0, 6, 115, 101, 114, 105, 101, 115, 109, 0, 0, 0, 6, 102, 97, 109, 105, 108, 121, 98, 0, -68, 97, 78, 97, 1, 100, 0, 4, 116, 114, 117, 101, 70, 64, 65, 38, 102, 102, 102, 102, 102, 106, 106, 106>>.
-        // C = binary_to_term(B).
-        // C = {tsputreq,<<"test_table">>,[],[{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
-        // A = C. #true (wtf) (magic)
-
-        final byte[] exp = {(byte)131,104,4,100,0,8,116,115,112,117,116,114,101,113,109,0,
-                            0,0,10,116,101,115,116,95,116,97,98,108,101,106,108,0,0,
-                            0,1,104,7,109,0,0,0,6,115,101,114,105,101,115,109,0,0,0,
-                            6,102,97,109,105,108,121,98,0,(byte)188,97,78,97,1,100,0,4,
-                            116,114,117,101,99,51,46,52,50,57,57,57,57,57,57,57,57,
-                            57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0,
-                            106,106};
+        final byte[] exp = {(byte)131,104,4, // outer tuple arity 4
+                            100,0,8,116,115,112,117,116,114,101,113, // tsputreq atom
+                            109,0,0,0,10,116,101,115,116,95,116,97,98,108,101, // table name binary
+                            106, // empty list
+                            108,0,0,0,1, // list start arity 1
+                                104,7, // row tuple arity 7
+                                    109,0,0,0,6,115,101,114,105,101,115, // series binary
+                                    109,0,0,0,6,102,97,109,105,108,121, // family binary
+                                    98,0,(byte)188,97,78, // integer
+                                    97,1, // small integer
+                                    100,0,4,116,114,117,101, // true atom
+                                    // NB: this is what Erlang generates, an old-style float
+                                    // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
+                                    // NB: this is what JInterface generates, a new-style float
+                                    70, 64, 65, 38, 102, 102, 102, 102, 102,
+                                    106, // null cell empty list
+                            106}; // list arity 1 end
 
         final ArrayList<Row> rows = new ArrayList<>(1);
         rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
