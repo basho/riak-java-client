@@ -1,14 +1,22 @@
 package com.basho.riak.client.core.codec;
 
+import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.ColumnDescription;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.protobuf.RiakTsPB;
+import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpOutputStream;
+import com.google.protobuf.ByteString;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.List;
 
 /**
  *
@@ -139,5 +147,71 @@ public class TermToBinaryCodecTest
         } catch (IOException ex) {
             Assert.fail(ex.getMessage());
         }
+    }
+
+    @Test
+    public void decodesQueryResultCorrectly() throws OtpErlangDecodeException
+    {
+
+        /* MSG = {tsqueryresp, DATA}
+           DATA = {COLUMN_NAMES, COLUMN_TYPES, ROWS}
+           COLUMN_NAMES = [binary, ...]
+           COLUMN_TYPES = [atom, ...]
+           ROWS = [ ROW, ...]
+           ROW = { binary :: numeric :: atom :: [], ... }
+
+           { tsqueryresp,
+             { [<<"geohash">>,<<"user">>,<<"time">>,<<"weather">>,<<"temperature">>,<<"uv_index">>,<<"observed">>],
+               [varchar,varchar,timestamp,varchar,double,sint64,boolean],
+               [
+                 {<<"hash1">>,<<"user2">>,1443806600000,<<"cloudy">>,[],[],true}
+               ]
+             }
+           }
+         */
+
+        final byte[] input =
+                {-125, 104, 2, 100, 0, 11, 116, 115, 113, 117, 101, 114, 121, 114, 101, 115, 112, 104, 3, 108, 0, 0,
+                 0, 7, 109, 0, 0, 0, 7, 103, 101, 111, 104, 97, 115, 104, 109, 0, 0, 0, 4, 117, 115, 101, 114, 109,
+                 0, 0, 0, 4, 116, 105, 109, 101, 109, 0, 0, 0, 7, 119, 101, 97, 116, 104, 101, 114, 109, 0, 0, 0, 11,
+                 116, 101, 109, 112, 101, 114, 97, 116, 117, 114, 101, 109, 0, 0, 0, 8, 117, 118, 95, 105, 110, 100,
+                 101, 120, 109, 0, 0, 0, 8, 111, 98, 115, 101, 114, 118, 101, 100, 106, 108, 0, 0, 0, 7, 100, 0, 7,
+                 118, 97, 114, 99, 104, 97, 114, 100, 0, 7, 118, 97, 114, 99, 104, 97, 114, 100, 0, 9, 116, 105, 109,
+                 101, 115, 116, 97, 109, 112, 100, 0, 7, 118, 97, 114, 99, 104, 97, 114, 100, 0, 6, 100, 111, 117,
+                 98, 108, 101, 100, 0, 6, 115, 105, 110, 116, 54, 52, 100, 0, 7, 98, 111, 111, 108, 101, 97, 110,
+                 106, 108, 0, 0, 0, 1, 104, 7, 109, 0, 0, 0, 5, 104, 97, 115, 104, 49, 109, 0, 0, 0, 5, 117, 115,
+                 101, 114, 50, 110, 6, 0, 64, 91, -108, 41, 80, 1, 109, 0, 0, 0, 6, 99, 108, 111, 117, 100, 121, 106,
+                 106, 100, 0, 4, 116, 114, 117, 101, 106};
+
+        final ColumnDescription[] expectedColumnDescriptions = new ColumnDescription[7];
+        expectedColumnDescriptions[0] = new ColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR);
+        expectedColumnDescriptions[1] = new ColumnDescription("user", ColumnDescription.ColumnType.VARCHAR);
+        expectedColumnDescriptions[2] = new ColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP);
+        expectedColumnDescriptions[3] = new ColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR);
+        expectedColumnDescriptions[4] = new ColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE);
+        expectedColumnDescriptions[5] = new ColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64);
+        expectedColumnDescriptions[6] = new ColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN);
+
+        final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L), new Cell("cloudy"), null, null, new Cell(true));
+        final Row[] expectedRows = new Row[1];
+        expectedRows[0] = (row);
+
+        try
+        {
+            final QueryResult actual = TermToBinaryCodec.decodeTsQueryResponse(input);
+
+            final List<ColumnDescription> actualColumnDescriptions = actual.getColumnDescriptionsCopy();
+            final List<Row> actualRows = actual.getRowsCopy();
+
+            Assert.assertArrayEquals(expectedColumnDescriptions,
+                                     actualColumnDescriptions.toArray(new ColumnDescription[actualColumnDescriptions.size()]));
+
+            Assert.assertArrayEquals(expectedRows, actualRows.toArray(new Row[actualRows.size()]));
+        }
+        catch (InvalidTermToBinaryException ex)
+        {
+            Assert.fail(ex.getMessage());
+        }
+
     }
 }

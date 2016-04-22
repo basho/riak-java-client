@@ -16,6 +16,8 @@
 package com.basho.riak.client.core;
 
 
+import com.basho.riak.client.api.RiakException;
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -309,17 +311,35 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         latch.await();
 
+        throwExceptionIfSet();
+
+        if (null == converted)
+        {
+            tryConvertResponse();
+        }
+
+        return converted;
+    }
+
+    private void throwExceptionIfSet() throws ExecutionException
+    {
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        else if (null == converted)
+    }
+
+    private void tryConvertResponse() throws ExecutionException
+    {
+        try
         {
             converted = convert(rawResponse);
-
         }
-
-        return converted;
+        catch(IllegalArgumentException ex)
+        {
+            exception = ex;
+            throwExceptionIfSet();
+        }
     }
 
     @Override
@@ -331,13 +351,12 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             throw new TimeoutException();
         }
-        else if (exception != null)
+
+        throwExceptionIfSet();
+
+        if (null == converted)
         {
-            throw new ExecutionException(exception);
-        }
-        else if (null == converted)
-        {
-            converted = convert(rawResponse);
+            tryConvertResponse();
         }
 
         return converted;

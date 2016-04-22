@@ -1,5 +1,7 @@
 package com.basho.riak.client.core.operations.ts;
 
+import com.basho.riak.client.api.RiakException;
+import com.basho.riak.client.core.codec.InvalidTermToBinaryException;
 import com.basho.riak.client.core.codec.TermToBinaryCodec;
 import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
@@ -108,13 +110,14 @@ class TTBConverters
         @Override
         public QueryResult parseFrom(byte[] data)
         {
-            QueryResult rv = null;
+            QueryResult rv;
 
             try {
                 rv = TermToBinaryCodec.decodeTsGetResponse(data);
-            } catch (OtpErlangDecodeException ex) {
-                // TODO GH-611
+            } catch (OtpErlangDecodeException | InvalidTermToBinaryException ex)
+            {
                 Logger.getLogger(TTBConverters.class.getName()).log(Level.SEVERE, null, ex);
+                throw new IllegalArgumentException("Error decoding Riak TTB Response", ex);
             }
 
             return rv;

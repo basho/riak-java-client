@@ -1,32 +1,22 @@
 package com.basho.riak.client.core.codec;
 
+import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.ericsson.otp.erlang.OtpErlangAtom;
-import com.ericsson.otp.erlang.OtpErlangBinary;
-import com.ericsson.otp.erlang.OtpErlangBoolean;
-import com.ericsson.otp.erlang.OtpErlangDecodeException;
-import com.ericsson.otp.erlang.OtpErlangDouble;
-import com.ericsson.otp.erlang.OtpErlangList;
-import com.ericsson.otp.erlang.OtpErlangLong;
-import com.ericsson.otp.erlang.OtpErlangObject;
-import com.ericsson.otp.erlang.OtpExternal;
-import com.ericsson.otp.erlang.OtpInputStream;
-import com.ericsson.otp.erlang.OtpOutputStream;
+import com.basho.riak.protobuf.RiakTsPB;
+import com.ericsson.otp.erlang.*;
+import com.google.protobuf.ByteString;
+
 import java.nio.charset.StandardCharsets;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 public class TermToBinaryCodec
 {
-    private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
-    private static final OtpErlangAtom tsinterpolation = new OtpErlangAtom("tsinterpolation");
-
-    private static final OtpErlangAtom _false = new OtpErlangAtom("false");
-    private static final OtpErlangList EMPTY_ERLANG_LIST = new OtpErlangList();
-
-    private static class Messages
+    private static final class Messages
     {
         public static final OtpErlangAtom tsGetReq = new OtpErlangAtom("tsgetreq");
         public static final OtpErlangAtom tsGetResp = new OtpErlangAtom("tsgetresp");
@@ -44,6 +34,8 @@ public class TermToBinaryCodec
         public static final OtpErlangAtom rpbErrorResp = new OtpErlangAtom("rpberrorresp");
     }
 
+    private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
+
     public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, int timeout)
     {
         final OtpOutputStream os = new OtpOutputStream();
@@ -55,7 +47,8 @@ public class TermToBinaryCodec
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         os.write_list_head(keyValues.size());
-        for (Cell k : keyValues) {
+        for (Cell k : keyValues)
+        {
             os.write_any(k.getErlangObject());
         }
         os.write_nil(); // NB: finishes the list
@@ -65,7 +58,7 @@ public class TermToBinaryCodec
         return os;
     }
 
-    public static QueryResult decodeTsGetResponse(byte[] response) throws OtpErlangDecodeException
+    public static QueryResult decodeTsGetResponse(byte[] response) throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         return decodeTsResponse(response);
     }
@@ -96,7 +89,7 @@ public class TermToBinaryCodec
         return os;
     }
 
-    public static QueryResult decodeTsQueryResponse(byte[] response) throws OtpErlangDecodeException
+    public static QueryResult decodeTsQueryResponse(byte[] response) throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         return decodeTsResponse(response);
     }
@@ -117,13 +110,18 @@ public class TermToBinaryCodec
         // write a list of rows
         // each row is a tuple of cells
         os.write_list_head(rows.size());
-        for (Row r : rows) {
+        for (Row r : rows)
+        {
             os.write_tuple_head(r.getCellsCount());
-            for (Cell c : r) {
-                if (c == null) {
+            for (Cell c : r)
+            {
+                if (c == null)
+                {
                     // NB: Null cells are represented as empty lists
                     os.write_nil();
-                } else {
+                }
+                else
+                {
                     os.write_any(c.getErlangObject());
                 }
             }
@@ -133,13 +131,7 @@ public class TermToBinaryCodec
         return os;
     }
 
-    public static Void decodeTsPutResponse(byte[] response)
-    {
-        // Do we return anything in TTB?
-        return null;
-    }
-
-    private static QueryResult decodeTsResponse(byte[] response) throws OtpErlangDecodeException
+    private static QueryResult decodeTsResponse(byte[] response) throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         QueryResult result = null;
 
@@ -150,81 +142,24 @@ public class TermToBinaryCodec
         // {'tsgetresp', {ColNames, ColTypes, Rows}}
         // {'tsqueryresp', {ColNames, ColTypes, Rows}}
         final String respAtom = is.read_atom();
-        switch (respAtom) {
+        switch (respAtom)
+        {
             case "rpberrorresp":
                 // TODO process error
-                assert(msgArity == 3);
+                assert (msgArity == 3);
                 break;
             case "tsgetresp":
             case "tsqueryresp":
-                assert(msgArity == 2);
+                assert (msgArity == 2);
 
                 final int dataArity = is.read_tuple_head();
-                assert(dataArity == 3);
+                assert (dataArity == 3);
 
-                final int colNameCount = is.read_list_head();
-                final String[] columnNames = new String[colNameCount];
-                for (int i = 0; i < colNameCount; i++) {
-                    final String colName = new String(is.read_binary(), StandardCharsets.UTF_8);
-                    columnNames[i] = colName;
-                }
+                final ArrayList<RiakTsPB.TsColumnDescription> columnDescriptions = parseColumnDescriptions(is);
 
-                final int colTypeCount = is.read_list_head();
-                assert(colNameCount == colTypeCount);
-                final String[] columnTypes = new String[colTypeCount];
-                for (int i = 0; i < colTypeCount; i++) {
-                    final String colType = new String(is.read_binary(), StandardCharsets.UTF_8);
-                    columnTypes[i] = colType;
-                }
+                final ArrayList<RiakTsPB.TsRow> rows = parseRows(is, columnDescriptions);
 
-                final int rowCount = is.read_list_head();
-                final Row[] rows = new Row[rowCount];
-                for (int i = 0; i < rowCount; i++) {
-                    final int rowDataCount = is.read_tuple_head();
-                    assert(colNameCount == rowDataCount);
-
-                    final Cell[] cells = new Cell[rowDataCount];
-                    for (int j = 0; i < rowDataCount; j++) {
-                        final OtpErlangObject cell = is.read_any();
-                        if (cell instanceof OtpErlangBinary) {
-                            OtpErlangBinary v = (OtpErlangBinary)cell;
-                            // TODO GH-611 this may not be correct encoding
-                            String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
-                            cells[j] = new Cell(s);
-                        }
-                        else if (cell instanceof OtpErlangBoolean) {
-                            OtpErlangBoolean v = (OtpErlangBoolean)cell;
-                            cells[j] = new Cell(v.booleanValue());
-                        }
-                        else if (cell instanceof OtpErlangLong) {
-                            OtpErlangLong v = (OtpErlangLong)cell;
-                            if ("timestamp".equals(columnTypes[j])) {
-                                Calendar cal = Calendar.getInstance();
-                                cal.setTimeInMillis(v.longValue());
-                                cells[j] = new Cell(cal);
-                            } else {
-                                cells[j] = new Cell(v.longValue());
-                            }
-                        }
-                        else if (cell instanceof OtpErlangDouble) {
-                            OtpErlangDouble v = (OtpErlangDouble)cell;
-                            cells[j] = new Cell(v.doubleValue());
-                        }
-                        else if (cell instanceof OtpErlangList)
-                        {
-                            final OtpErlangList l = (OtpErlangList)cell;
-                            assert(l.arity() == 0);
-                            cells[j] = null;
-                        }
-                        else {
-                            // TODO GH-611 throw exception?
-                        }
-                    }
-
-                    rows[i] = new Row(cells);
-                }
-
-                result = new QueryResult(rows);
+                result = new QueryResult(columnDescriptions, rows);
 
                 break;
             default:
@@ -232,5 +167,128 @@ public class TermToBinaryCodec
         }
 
         return result;
+    }
+
+    private static ArrayList<RiakTsPB.TsColumnDescription> parseColumnDescriptions(OtpInputStream is)
+            throws OtpErlangDecodeException
+    {
+        final int colNameCount = is.read_list_head();
+        final String[] columnNames = new String[colNameCount];
+        for (int colNameIdx = 0; colNameIdx < colNameCount; colNameIdx++)
+        {
+            final String colName = new String(is.read_binary(), StandardCharsets.UTF_8);
+            columnNames[colNameIdx] = colName;
+
+            final boolean isLastRow = colNameIdx + 1 == colNameCount;
+            if (isLastRow)
+            {
+                is.read_nil();
+            }
+        }
+
+
+        final int colTypeCount = is.read_list_head();
+        assert (colNameCount == colTypeCount);
+        final String[] columnTypes = new String[colTypeCount];
+
+        for (int colTypeIdx = 0; colTypeIdx < colTypeCount; colTypeIdx++)
+        {
+            final String colType = is.read_atom();
+            columnTypes[colTypeIdx] = colType;
+
+            final boolean isLastRow = colTypeIdx + 1 == colNameCount;
+            if (isLastRow)
+            {
+                is.read_nil();
+            }
+        }
+
+        final ArrayList<RiakTsPB.TsColumnDescription> columnDescriptions = new ArrayList<>(colNameCount);
+        for (int colDescIdx = 0; colDescIdx < colNameCount; colDescIdx++)
+        {
+
+            final RiakTsPB.TsColumnDescription desc = RiakTsPB.TsColumnDescription.newBuilder().setName(
+                    ByteString.copyFromUtf8(columnNames[colDescIdx])).setType(RiakTsPB.TsColumnType.valueOf(
+                    columnTypes[colDescIdx].toUpperCase(Locale.US))).build();
+            columnDescriptions.add(desc);
+        }
+        return columnDescriptions;
+    }
+
+    private static ArrayList<RiakTsPB.TsRow> parseRows(OtpInputStream is, List<RiakTsPB.TsColumnDescription> columnDescriptions)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+        final int rowCount = is.read_list_head();
+        final ArrayList<RiakTsPB.TsRow> rows = new ArrayList<>(rowCount);
+
+        for (int rowIdx = 0; rowIdx < rowCount; rowIdx++)
+        {
+            final boolean isLastRow = rowIdx + 1 == columnDescriptions.size();
+            rows.add(parseRow(is, columnDescriptions, isLastRow));
+        }
+        return rows;
+    }
+
+    private static RiakTsPB.TsRow parseRow(OtpInputStream is, List<RiakTsPB.TsColumnDescription> columnDescriptions, Boolean isLastRow)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+        final int rowDataCount = is.read_tuple_head();
+        assert (columnDescriptions.size() == rowDataCount);
+
+        final Cell[] cells = new Cell[rowDataCount];
+        for (int j = 0; j < rowDataCount; j++)
+        {
+            final OtpErlangObject cell = is.read_any();
+            cells[j] = parseCell(columnDescriptions, j, cell);
+        }
+
+        if (isLastRow)
+        {
+            is.read_nil();
+        }
+
+        return new Row(cells).getPbRow();
+    }
+
+    private static Cell parseCell(List<RiakTsPB.TsColumnDescription> columnDescriptions, int j, OtpErlangObject cell) throws InvalidTermToBinaryException
+    {
+        if (cell instanceof OtpErlangBinary)
+        {
+            OtpErlangBinary v = (OtpErlangBinary) cell;
+            String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
+            return new Cell(s);
+        }
+        else if (cell instanceof OtpErlangLong)
+        {
+            OtpErlangLong v = (OtpErlangLong) cell;
+            if (columnDescriptions.get(j).getType() == RiakTsPB.TsColumnType.TIMESTAMP)
+            {
+                return Cell.newTimestamp(v.longValue());
+            }
+            else
+            {
+                return new Cell(v.longValue());
+            }
+        }
+        else if (cell instanceof OtpErlangDouble)
+        {
+            OtpErlangDouble v = (OtpErlangDouble) cell;
+            return new Cell(v.doubleValue());
+        }
+        else if (cell instanceof OtpErlangAtom)
+        {
+            OtpErlangAtom v = (OtpErlangAtom) cell;
+            return new Cell(v.booleanValue());
+        }
+        else if (cell instanceof OtpErlangList)
+        {
+            final OtpErlangList l = (OtpErlangList) cell;
+            assert (l.arity() == 0);
+            return null;
+        }
+        else
+        {
+            throw new InvalidTermToBinaryException("Unknown cell type encountered: " + cell.toString() + ", unable to continue parsing.");
+        }
     }
 }
