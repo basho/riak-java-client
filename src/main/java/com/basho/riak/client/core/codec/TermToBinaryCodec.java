@@ -90,8 +90,8 @@ public class TermToBinaryCodec
         // streaming is false for now
         os.write_boolean(false);
 
-        // cover_context is an empty list
-        os.write_nil();
+        // cover_context is an undefined atom
+        os.write_any(undefined);
 
         return os;
     }
@@ -163,29 +163,29 @@ public class TermToBinaryCodec
                 assert(dataArity == 3);
 
                 final int colNameCount = is.read_list_head();
-                String[] columnNames = new String[colNameCount];
+                final String[] columnNames = new String[colNameCount];
                 for (int i = 0; i < colNameCount; i++) {
-                    String colName = is.read_string();
+                    final String colName = new String(is.read_binary(), StandardCharsets.UTF_8);
                     columnNames[i] = colName;
                 }
 
                 final int colTypeCount = is.read_list_head();
                 assert(colNameCount == colTypeCount);
-                String[] columnTypes = new String[colTypeCount];
+                final String[] columnTypes = new String[colTypeCount];
                 for (int i = 0; i < colTypeCount; i++) {
-                    String colType = is.read_string();
+                    final String colType = new String(is.read_binary(), StandardCharsets.UTF_8);
                     columnTypes[i] = colType;
                 }
 
                 final int rowCount = is.read_list_head();
-                Row[] rows = new Row[rowCount];
+                final Row[] rows = new Row[rowCount];
                 for (int i = 0; i < rowCount; i++) {
                     final int rowDataCount = is.read_tuple_head();
                     assert(colNameCount == rowDataCount);
 
-                    Cell[] cells = new Cell[rowDataCount];
+                    final Cell[] cells = new Cell[rowDataCount];
                     for (int j = 0; i < rowDataCount; j++) {
-                        OtpErlangObject cell = is.read_any();
+                        final OtpErlangObject cell = is.read_any();
                         if (cell instanceof OtpErlangBinary) {
                             OtpErlangBinary v = (OtpErlangBinary)cell;
                             // TODO GH-611 this may not be correct encoding
@@ -209,6 +209,12 @@ public class TermToBinaryCodec
                         else if (cell instanceof OtpErlangDouble) {
                             OtpErlangDouble v = (OtpErlangDouble)cell;
                             cells[j] = new Cell(v.doubleValue());
+                        }
+                        else if (cell instanceof OtpErlangList)
+                        {
+                            final OtpErlangList l = (OtpErlangList)cell;
+                            assert(l.arity() == 0);
+                            cells[j] = null;
                         }
                         else {
                             // TODO GH-611 throw exception?

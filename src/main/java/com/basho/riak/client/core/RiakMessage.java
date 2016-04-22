@@ -23,6 +23,7 @@ public final class RiakMessage
     private final byte code;
     private final byte[] data;
     private final OtpInputStream ttbInputStream;
+    // TODO offer output stream?
     private final RiakResponseException riakError;
 
     public RiakMessage(byte code, byte[] data)
@@ -113,7 +114,7 @@ public final class RiakMessage
                     logger.error("exception", ex);
                 }
             }
-        } 
+        }
 
         return null;
     }
