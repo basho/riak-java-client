@@ -1,6 +1,5 @@
 package com.basho.riak.client.core.codec;
 
-import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
@@ -223,13 +222,12 @@ public class TermToBinaryCodec
 
         for (int rowIdx = 0; rowIdx < rowCount; rowIdx++)
         {
-            final boolean isLastRow = rowIdx + 1 == columnDescriptions.size();
-            rows.add(parseRow(is, columnDescriptions, isLastRow));
+            rows.add(parseRow(is, columnDescriptions));
         }
         return rows;
     }
 
-    private static RiakTsPB.TsRow parseRow(OtpInputStream is, List<RiakTsPB.TsColumnDescription> columnDescriptions, Boolean isLastRow)
+    private static RiakTsPB.TsRow parseRow(OtpInputStream is, List<RiakTsPB.TsColumnDescription> columnDescriptions)
             throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         final int rowDataCount = is.read_tuple_head();
@@ -240,11 +238,6 @@ public class TermToBinaryCodec
         {
             final OtpErlangObject cell = is.read_any();
             cells[j] = parseCell(columnDescriptions, j, cell);
-        }
-
-        if (isLastRow)
-        {
-            is.read_nil();
         }
 
         return new Row(cells).getPbRow();
