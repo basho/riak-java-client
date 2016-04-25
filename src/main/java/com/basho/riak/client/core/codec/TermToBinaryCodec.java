@@ -6,7 +6,6 @@ import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -177,29 +176,26 @@ public class TermToBinaryCodec
         {
             final String colName = new String(is.read_binary(), StandardCharsets.UTF_8);
             columnNames[colNameIdx] = colName;
+        }
 
-            final boolean isLastRow = colNameIdx + 1 == colNameCount;
-            if (isLastRow)
-            {
-                is.read_nil();
-            }
+        if (colNameCount > 0)
+        {
+            is.read_nil();
         }
 
 
         final int colTypeCount = is.read_list_head();
         assert (colNameCount == colTypeCount);
         final String[] columnTypes = new String[colTypeCount];
-
         for (int colTypeIdx = 0; colTypeIdx < colTypeCount; colTypeIdx++)
         {
             final String colType = is.read_atom();
             columnTypes[colTypeIdx] = colType;
+        }
 
-            final boolean isLastRow = colTypeIdx + 1 == colNameCount;
-            if (isLastRow)
-            {
-                is.read_nil();
-            }
+        if (colTypeCount > 0)
+        {
+            is.read_nil();
         }
 
         final ArrayList<RiakTsPB.TsColumnDescription> columnDescriptions = new ArrayList<>(colNameCount);
