@@ -198,7 +198,7 @@ public class TermToBinaryCodecTest
 
         try
         {
-            final QueryResult actual = TermToBinaryCodec.decodeTsQueryResponse(input);
+            final QueryResult actual = TermToBinaryCodec.decodeTsResultResponse(input);
 
             final List<ColumnDescription> actualColumnDescriptions = actual.getColumnDescriptionsCopy();
             final List<Row> actualRows = actual.getRowsCopy();

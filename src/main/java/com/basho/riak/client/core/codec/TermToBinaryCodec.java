@@ -17,26 +17,20 @@ import java.util.Locale;
 
 public class TermToBinaryCodec
 {
+    private static final String TS_GET_REQ = "tsgetreq";
+    private static final String TS_GET_RESP = "tsgetresp";
+    private static final String TS_QUERY_REQ = "tsqueryreq";
+    private static final String TS_QUERY_RESP = "tsqueryresp";
+    private static final String TS_INTERPOLATION = "tsinterpolation";
+    private static final String TS_PUT_REQ = "tsputreq";
+    private static final String ERROR_RESP = "rpberrorresp";
+    private static final String UNDEFINED = "undefined";
+    private static final OtpErlangAtom TS_GET_REQ_ATOM = new OtpErlangAtom(TS_GET_REQ);
+    private static final OtpErlangAtom TS_QUERY_REQ_ATOM = new OtpErlangAtom(TS_QUERY_REQ);
+    private static final OtpErlangAtom TS_INTERPOLATION_ATOM = new OtpErlangAtom(TS_INTERPOLATION);
+    private static final OtpErlangAtom TS_PUT_REQ_ATOM = new OtpErlangAtom(TS_PUT_REQ);
+    private static final OtpErlangAtom UNDEFINED_ATOM = new OtpErlangAtom(UNDEFINED);
     private static Logger logger = LoggerFactory.getLogger(TermToBinaryCodec.class);
-    private static final class Messages
-    {
-        public static final OtpErlangAtom tsGetReq = new OtpErlangAtom("tsgetreq");
-        public static final OtpErlangAtom tsGetResp = new OtpErlangAtom("tsgetresp");
-
-        public static final OtpErlangAtom tsQueryReq = new OtpErlangAtom("tsqueryreq");
-        public static final OtpErlangAtom tsQueryResp = new OtpErlangAtom("tsqueryresp");
-        public static final OtpErlangAtom tsInterpolation = new OtpErlangAtom("tsinterpolation");
-
-        public static final OtpErlangAtom tsPutReq = new OtpErlangAtom("tsputreq");
-        public static final OtpErlangAtom tsPutResp = new OtpErlangAtom("tsputresp");
-
-        public static final OtpErlangAtom tsDelReq = new OtpErlangAtom("tsdelreq");
-        public static final OtpErlangAtom tsDelResp = new OtpErlangAtom("tsdelresp");
-
-        public static final OtpErlangAtom rpbErrorResp = new OtpErlangAtom("rpberrorresp");
-    }
-
-    private static final OtpErlangAtom undefined = new OtpErlangAtom("undefined");
 
     public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, int timeout)
     {
@@ -45,7 +39,7 @@ public class TermToBinaryCodec
 
         // NB: TsGetReq is a 4-tuple: tsgetreq, tableName, [key values], timeout
         os.write_tuple_head(4);
-        os.write_any(Messages.tsGetReq);
+        os.write_any(TS_GET_REQ_ATOM);
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         os.write_list_head(keyValues.size());
@@ -60,7 +54,8 @@ public class TermToBinaryCodec
         return os;
     }
 
-    public static QueryResult decodeTsGetResponse(byte[] response) throws OtpErlangDecodeException, InvalidTermToBinaryException
+    public static QueryResult decodeTsResultResponse(byte[] response)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         return decodeTsResponse(response);
     }
@@ -72,12 +67,12 @@ public class TermToBinaryCodec
 
         // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInt, boolIsStreaming, bytesCoverContext}
         os.write_tuple_head(4);
-        os.write_any(Messages.tsQueryReq);
+        os.write_any(TS_QUERY_REQ_ATOM);
 
         // TsInterpolation is a 3-tuple
         // {'tsinterpolation', query, []} empty list is interpolations
         os.write_tuple_head(3);
-        os.write_any(Messages.tsInterpolation);
+        os.write_any(TS_INTERPOLATION_ATOM);
         os.write_binary(queryText.getBytes(StandardCharsets.UTF_8));
         // interpolations is an empty list
         os.write_nil();
@@ -86,14 +81,9 @@ public class TermToBinaryCodec
         os.write_boolean(false);
 
         // cover_context is an undefined atom
-        os.write_any(undefined);
+        os.write_any(UNDEFINED_ATOM);
 
         return os;
-    }
-
-    public static QueryResult decodeTsQueryResponse(byte[] response) throws OtpErlangDecodeException, InvalidTermToBinaryException
-    {
-        return decodeTsResponse(response);
     }
 
     public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<Row> rows)
@@ -104,7 +94,7 @@ public class TermToBinaryCodec
         // TsPutReq is a 4-tuple: {'tsputreq', tableName, [], [rows]}
         // columns is empte
         os.write_tuple_head(4);
-        os.write_any(Messages.tsPutReq);
+        os.write_any(TS_PUT_REQ_ATOM);
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
         // columns is an empty list
         os.write_nil();
@@ -133,7 +123,8 @@ public class TermToBinaryCodec
         return os;
     }
 
-    private static QueryResult decodeTsResponse(byte[] response) throws OtpErlangDecodeException, InvalidTermToBinaryException
+    private static QueryResult decodeTsResponse(byte[] response)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         QueryResult result = null;
 
@@ -146,12 +137,12 @@ public class TermToBinaryCodec
         final String respAtom = is.read_atom();
         switch (respAtom)
         {
-            case "rpberrorresp":
+            case ERROR_RESP:
                 // TODO process error
                 assert (msgArity == 3);
                 break;
-            case "tsgetresp":
-            case "tsqueryresp":
+            case TS_GET_RESP:
+            case TS_QUERY_RESP:
                 assert (msgArity == 2);
 
                 final int dataArity = is.read_tuple_head();
@@ -207,16 +198,18 @@ public class TermToBinaryCodec
         final ArrayList<RiakTsPB.TsColumnDescription> columnDescriptions = new ArrayList<>(colNameCount);
         for (int colDescIdx = 0; colDescIdx < colNameCount; colDescIdx++)
         {
+            final RiakTsPB.TsColumnDescription.Builder descBuilder = RiakTsPB.TsColumnDescription.newBuilder();
 
-            final RiakTsPB.TsColumnDescription desc = RiakTsPB.TsColumnDescription.newBuilder().setName(
-                    ByteString.copyFromUtf8(columnNames[colDescIdx])).setType(RiakTsPB.TsColumnType.valueOf(
-                    columnTypes[colDescIdx].toUpperCase(Locale.US))).build();
-            columnDescriptions.add(desc);
+            descBuilder.setName(ByteString.copyFromUtf8(columnNames[colDescIdx]));
+            descBuilder.setType(RiakTsPB.TsColumnType.valueOf(columnTypes[colDescIdx].toUpperCase(Locale.US)));
+
+            columnDescriptions.add(descBuilder.build());
         }
         return columnDescriptions;
     }
 
-    private static ArrayList<RiakTsPB.TsRow> parseRows(OtpInputStream is, List<RiakTsPB.TsColumnDescription> columnDescriptions)
+    private static ArrayList<RiakTsPB.TsRow> parseRows(OtpInputStream is,
+                                                       List<RiakTsPB.TsColumnDescription> columnDescriptions)
             throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
         final int rowCount = is.read_list_head();
@@ -245,7 +238,8 @@ public class TermToBinaryCodec
         return new Row(cells).getPbRow();
     }
 
-    private static Cell parseCell(List<RiakTsPB.TsColumnDescription> columnDescriptions, int j, OtpErlangObject cell) throws InvalidTermToBinaryException
+    private static Cell parseCell(List<RiakTsPB.TsColumnDescription> columnDescriptions, int j, OtpErlangObject cell)
+            throws InvalidTermToBinaryException
     {
         if (cell instanceof OtpErlangBinary)
         {
@@ -283,7 +277,8 @@ public class TermToBinaryCodec
         }
         else
         {
-            throw new InvalidTermToBinaryException("Unknown cell type encountered: " + cell.toString() + ", unable to continue parsing.");
+            throw new InvalidTermToBinaryException("Unknown cell type encountered: " + cell.toString() + ", unable to" +
+                                                           " continue parsing.");
         }
     }
 }

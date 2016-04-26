@@ -116,7 +116,7 @@ class TTBConverters
 
             try
             {
-                rv = TermToBinaryCodec.decodeTsGetResponse(data);
+                rv = TermToBinaryCodec.decodeTsResultResponse(data);
             }
             catch (OtpErlangDecodeException | InvalidTermToBinaryException ex)
             {
