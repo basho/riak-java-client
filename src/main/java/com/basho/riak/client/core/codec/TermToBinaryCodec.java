@@ -137,10 +137,6 @@ public class TermToBinaryCodec
         final String respAtom = is.read_atom();
         switch (respAtom)
         {
-            case ERROR_RESP:
-                // TODO process error
-                assert (msgArity == 3);
-                break;
             case TS_GET_RESP:
             case TS_QUERY_RESP:
                 assert (msgArity == 2);
