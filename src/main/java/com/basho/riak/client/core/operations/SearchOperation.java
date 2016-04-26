@@ -57,7 +57,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     }
 
     @Override
-    protected SearchOperation.Response convert(List<RiakSearchPB.RpbSearchQueryResp> rawResponse) 
+    protected SearchOperation.Response convert(List<RiakSearchPB.RpbSearchQueryResp> rawResponse)
     {
         // This isn't a streaming op, there will only be one protobuf
         RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);
@@ -92,7 +92,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     @Override
     protected RiakSearchPB.RpbSearchQueryResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_SearchQueryResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_SearchQueryResp);
         try
         {
             return RiakSearchPB.RpbSearchQueryResp.parseFrom(rawMessage.getData());
@@ -274,7 +274,7 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         private final List<Map<String, List<String>>> results;
         private final float maxScore;
         private final int numResults;
-        
+
         Response(List<Map<String,List<String>>> results, float maxScore, int numResults)
         {
             this.results = results;
@@ -308,13 +308,13 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
 
         /**
          * Returns the entire list of results from the search query.
-         * @return a list containing all the result sets. 
+         * @return a list containing all the result sets.
          */
         public List<Map<String, List<String>>> getAllResults()
         {
             return results;
         }
-        
+
     }
-    
+
 }

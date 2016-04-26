@@ -5,14 +5,16 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpInputStream;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+
 /**
  * Encapsulates the raw bytes sent to or received from Riak.
+ *
  * @author Brian Roach <roach at basho dot com>
  * @author Sergey Galkin <sgalkin at basho dot com>
  * @since 2.0
@@ -31,7 +33,8 @@ public final class RiakMessage
         this.code = code;
         this.data = data;
 
-        switch(this.code) {
+        switch (this.code)
+        {
             case RiakMessageCodes.MSG_ErrorResp:
                 this.ttbInputStream = null;
                 this.riakError = getRiakErrorFromPbuf(this.data);
@@ -48,70 +51,91 @@ public final class RiakMessage
         }
     }
 
-    public byte getCode() {
+    private static RiakResponseException getRiakErrorFromPbuf(byte[] data)
+    {
+        try
+        {
+            RiakPB.RpbErrorResp err = RiakPB.RpbErrorResp.parseFrom(data);
+            return new RiakResponseException(err.getErrcode(), err.getErrmsg().toStringUtf8());
+        }
+        catch (InvalidProtocolBufferException ex)
+        {
+            logger.error("exception", ex);
+            return new RiakResponseException(0, "Could not parse protocol buffers error");
+        }
+    }
+
+    public byte getCode()
+    {
         return code;
     }
 
-    public byte[] getData() {
+    public byte[] getData()
+    {
         return data;
     }
 
-    public boolean isTtbMessage() {
+    public boolean isTtbMessage()
+    {
         return this.ttbInputStream != null;
     }
 
-    public boolean isRiakError() {
+    public boolean isRiakError()
+    {
         return this.riakError != null;
     }
 
-    public OtpInputStream getTtbStream() {
+    public OtpInputStream getTtbStream()
+    {
         return this.ttbInputStream;
     }
 
-    public RiakResponseException getRiakError() {
+    public RiakResponseException getRiakError()
+    {
         return this.riakError;
     }
 
-    private static RiakResponseException getRiakErrorFromPbuf(byte[] data) {
-        try {
-            RiakPB.RpbErrorResp err = RiakPB.RpbErrorResp.parseFrom(data);
-            return new RiakResponseException(err.getErrcode(), err.getErrmsg().toStringUtf8());
-        } catch (InvalidProtocolBufferException ex) {
-            // TODO GH-611
-            logger.error("exception", ex);
-            return new RiakResponseException(0, "could not parse protocol buffers error");
-        }
-    }
+    private RiakResponseException getRiakErrorFromTtb(OtpInputStream ttbInputStream)
+    {
+        final String decodeErrorMsg = "Error decoding Riak TTB Response, unexpected format.";
+        int ttbMsgArity;
 
-    private RiakResponseException getRiakErrorFromTtb(OtpInputStream ttbInputStream) {
-        int ttbMsgArity = 0;
-
-        try {
+        try
+        {
             ttbMsgArity = ttbInputStream.read_tuple_head();
-        } catch (OtpErlangDecodeException ex) {
-            // TODO GH-611
-            logger.error("exception", ex);
+        }
+        catch (OtpErlangDecodeException ex)
+        {
+            logger.error(decodeErrorMsg + " Was expecting a tuple head.", ex);
+            throw new IllegalArgumentException(decodeErrorMsg, ex);
         }
 
-        if (ttbMsgArity == 3) {
+        if (ttbMsgArity == 3)
+        {
             // NB: may be an error response
-            // TODO GH-611 message atom constants?
-            String atom = "unknown";
-            try {
+            String atom;
+            try
+            {
                 atom = ttbInputStream.read_atom();
-            } catch (OtpErlangDecodeException ex) {
-                // TODO GH-611
-                logger.error("exception", ex);
+            }
+            catch (OtpErlangDecodeException ex)
+            {
+                logger.error(decodeErrorMsg + " Was expecting an atom.", ex);
+                throw new IllegalArgumentException(decodeErrorMsg, ex);
             }
 
-            if ("rpberrorresp".equals(atom)) {
-                try {
+            if ("rpberrorresp".equals(atom))
+            {
+                try
+                {
                     String errMsg = new String(ttbInputStream.read_binary(), StandardCharsets.UTF_8);
-                    int errCode = ttbInputStream.read_int(); // TODO GH-611 is errcode an int?
+                    int errCode = ttbInputStream.read_int();
                     return new RiakResponseException(errCode, errMsg);
-                } catch (OtpErlangDecodeException ex) {
-                    // TODO GH-611
-                    logger.error("exception", ex);
+                }
+                catch (OtpErlangDecodeException ex)
+                {
+                    logger.error(decodeErrorMsg, ex);
+                    throw new IllegalArgumentException(decodeErrorMsg, ex);
                 }
             }
         }

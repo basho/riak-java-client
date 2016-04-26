@@ -8,6 +8,8 @@ import com.ericsson.otp.erlang.OtpErlangDouble;
 import com.ericsson.otp.erlang.OtpErlangLong;
 import com.ericsson.otp.erlang.OtpErlangObject;
 import com.google.protobuf.ByteString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -31,6 +33,7 @@ import java.util.Date;
 
 public class Cell
 {
+    private static Logger logger = LoggerFactory.getLogger(Cell.class);
     static final Cell NullCell = new Cell(RiakTsPB.TsCell.newBuilder().build());
 
     private final RiakTsPB.TsCell pbCell;
@@ -220,8 +223,9 @@ public class Cell
         if (pbCell.hasDoubleValue()) {
             return new OtpErlangDouble(pbCell.getDoubleValue());
         }
-        // TODO GH-611 throw exception?
-        return null;
+
+        logger.error("Unknown TS cell type encountered.");
+        throw new IllegalArgumentException("Unknown TS cell type encountered.");
     }
 
     @Override

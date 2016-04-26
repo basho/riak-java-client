@@ -1,6 +1,5 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.core.codec.InvalidTermToBinaryException;
 import com.basho.riak.client.core.codec.TermToBinaryCodec;
 import com.basho.riak.client.core.operations.TTBFutureOperation;
@@ -8,17 +7,20 @@ import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class TTBConverters
 {
+    private static Logger logger = LoggerFactory.getLogger(TTBConverters.class);
+
     private static abstract class MemoizingEncoder<T> implements TTBFutureOperation.TTBEncoder
     {
-        protected byte[] message = null;
         protected final T builder;
+        protected byte[] message = null;
 
         MemoizingEncoder(T builder)
         {
@@ -32,13 +34,15 @@ class TTBConverters
         {
             if (message == null)
             {
-                try {
+                try
+                {
                     OtpOutputStream os = buildMessage();
                     os.flush();
                     message = os.toByteArray();
-                } catch (IOException ex) {
-                    // TODO GH-611
-                    Logger.getLogger(TTBConverters.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                catch (IOException ex)
+                {
+                    logger.error("Error creating term to binary message.", ex);
                 }
             }
 
@@ -76,9 +80,7 @@ class TTBConverters
             {
                 list.add(c);
             }
-            return TermToBinaryCodec.encodeTsGetRequest(builder.getTableName(),
-                                                        list,
-                                                        builder.getTimeout());
+            return TermToBinaryCodec.encodeTsGetRequest(builder.getTableName(), list, builder.getTimeout());
         }
     }
 
@@ -112,12 +114,15 @@ class TTBConverters
         {
             QueryResult rv;
 
-            try {
-                rv = TermToBinaryCodec.decodeTsGetResponse(data);
-            } catch (OtpErlangDecodeException | InvalidTermToBinaryException ex)
+            try
             {
-                Logger.getLogger(TTBConverters.class.getName()).log(Level.SEVERE, null, ex);
-                throw new IllegalArgumentException("Error decoding Riak TTB Response", ex);
+                rv = TermToBinaryCodec.decodeTsGetResponse(data);
+            }
+            catch (OtpErlangDecodeException | InvalidTermToBinaryException ex)
+            {
+                final String errorMsg = "Error decoding Riak TTB response";
+                logger.error(errorMsg, ex);
+                throw new IllegalArgumentException(errorMsg, ex);
             }
 
             return rv;

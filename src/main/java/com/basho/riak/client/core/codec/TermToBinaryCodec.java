@@ -6,6 +6,9 @@ import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +17,7 @@ import java.util.Locale;
 
 public class TermToBinaryCodec
 {
+    private static Logger logger = LoggerFactory.getLogger(TermToBinaryCodec.class);
     private static final class Messages
     {
         public static final OtpErlangAtom tsGetReq = new OtpErlangAtom("tsgetreq");
@@ -161,7 +165,9 @@ public class TermToBinaryCodec
 
                 break;
             default:
-                // TODO GH-611 throw exception?
+                final String errorMsg = "Unsupported response message received: " + respAtom;
+                logger.error(errorMsg);
+                throw new IllegalArgumentException(errorMsg);
         }
 
         return result;

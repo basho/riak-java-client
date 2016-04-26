@@ -21,7 +21,7 @@ import com.basho.riak.client.core.RiakMessage;
 public class Operations
 {
 
-    public static void checkMessageType(RiakMessage msg, byte expected)
+    public static void checkPBMessageType(RiakMessage msg, byte expected)
     {
         byte pbMessageCode = msg.getCode();
         if (pbMessageCode != expected)
@@ -47,7 +47,7 @@ public class Operations
 
     /**
      * Convert a Java signed int to unsigned.
-     * Returns the unsigned value as a (signed) long. 
+     * Returns the unsigned value as a (signed) long.
      * @param i a java signed int
      * @return a long containing the converted value.
      */

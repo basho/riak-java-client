@@ -47,7 +47,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     }
 
     @Override
-    protected Response convert(List<RiakDtPB.DtUpdateResp> rawResponse) 
+    protected Response convert(List<RiakDtPB.DtUpdateResp> rawResponse)
     {
         if (rawResponse.size() != 1)
         {
@@ -57,8 +57,8 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         RiakDtPB.DtUpdateResp response = rawResponse.iterator().next();
         CrdtResponseConverter converter = new CrdtResponseConverter();
         RiakDatatype element = converter.convert(response);
-        
-        Response.Builder responseBuilder = 
+
+        Response.Builder responseBuilder =
             new Response.Builder().withCrdtElement(element);
 
         if (response.hasKey())
@@ -66,7 +66,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             BinaryValue key = BinaryValue.unsafeCreate(response.getKey().toByteArray());
 	        responseBuilder.withGeneratedKey(key);
         }
-        
+
         if (response.hasContext())
         {
             BinaryValue context = BinaryValue.unsafeCreate(response.getContext().toByteArray());
@@ -86,7 +86,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
     @Override
     protected RiakDtPB.DtUpdateResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DtUpdateResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_DtUpdateResp);
         try
         {
             RiakDtPB.DtUpdateResp resp = RiakDtPB.DtUpdateResp.parseFrom(rawMessage.getData());
@@ -109,7 +109,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         private final RiakDtPB.DtUpdateReq.Builder reqBuilder = RiakDtPB.DtUpdateReq.newBuilder();
         private final Location location;
         private boolean removeOpPresent = false;
-        
+
         /**
          * Construct a builder for a DtUpdateOperation.
          * @param location The location of the object in Riak.
@@ -124,11 +124,11 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 throw new IllegalArgumentException("Default bucket type does not accept CRDTs");
             }
-            
+
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
-            
+
             this.location = location;
         }
 
@@ -142,17 +142,17 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 throw new IllegalArgumentException("Default bucket type does not accept CRDTs");
             }
-            
+
             // This is simply for the returned query info
             Location loc = new Location(namespace, "RIAK_GENERATED");
-            
+
             reqBuilder.setBucket(ByteString.copyFrom(loc.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(loc.getNamespace().getBucketType().unsafeGetValue()));
-            
+
             this.location = loc;
-            
+
         }
-        
+
         /**
          * Set the context for this operation.
          *
@@ -269,7 +269,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 throw new IllegalStateException("Remove operations cannot be performed without a context.");
             }
-            
+
             return new DtUpdateOperation(this);
         }
 
@@ -293,7 +293,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 setOpBuilder.addRemoves(ByteString.copyFrom(element.unsafeGetValue()));
             }
-            
+
             if (setOpBuilder.getRemovesCount() > 0)
             {
                 removeOpPresent = true;
@@ -348,7 +348,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 mapOpBuilder.addRemoves(getMapField(field));
             }
-            
+
             if (mapOpBuilder.getRemovesCount() > 0)
             {
                 removeOpPresent = true;
@@ -437,38 +437,38 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         }
 
     }
-    
+
     public static class Response extends DtFetchOperation.Response
     {
         private final BinaryValue generatedKey;
-        
+
         private Response(Init<?> builder)
         {
             super(builder);
             this.generatedKey = builder.generatedKey;
         }
-        
+
         public boolean hasGeneratedKey()
         {
             return generatedKey != null;
         }
-        
+
         public BinaryValue getGeneratedKey()
         {
             return generatedKey;
         }
-        
+
         protected static abstract class Init<T extends Init<T>> extends DtFetchOperation.Response.Init<T>
         {
             private BinaryValue generatedKey;
-            
+
             T withGeneratedKey(BinaryValue generatedKey)
             {
                 this.generatedKey = generatedKey;
                 return self();
             }
         }
-        
+
         static class Builder extends Init<Builder>
         {
             @Override
@@ -476,14 +476,14 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 return this;
             }
-            
+
             @Override
             protected Response build()
             {
                 return new Response(this);
             }
-            
+
         }
     }
-    
+
 }

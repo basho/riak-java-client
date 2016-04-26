@@ -74,7 +74,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     @Override
     protected RiakDtPB.DtFetchResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DtFetchResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_DtFetchResp);
         try
         {
             return RiakDtPB.DtFetchResp.parseFrom(rawMessage.getData());
@@ -106,7 +106,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             {
                 throw new IllegalArgumentException("Location can not be null");
             }
-            
+
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
@@ -238,7 +238,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
     }
 
-    public static class Response 
+    public static class Response
     {
         private final BinaryValue context;
         private final RiakDatatype crdtElement;
@@ -276,7 +276,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
 
             protected abstract T self();
             protected abstract Response build();
-            
+
             T withContext(BinaryValue context)
             {
                 if (context != null)

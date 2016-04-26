@@ -43,7 +43,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     private final BinaryValue mapReduce;
     private final Logger logger = LoggerFactory.getLogger(MapReduceOperation.class);
-    
+
     private MapReduceOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
@@ -53,16 +53,16 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     @Override
     protected Response convert(List<RiakKvPB.RpbMapRedResp> rawResponse)
     {
-        // Riak streams the result back. Each message from Riak contains a int 
+        // Riak streams the result back. Each message from Riak contains a int
         // that tells you what phase the result is from. The result from a phase
         // can span multiple messages. Each result chunk is a JSON array.
-        
+
         final JsonNodeFactory factory = JsonNodeFactory.instance;
         final ObjectMapper mapper = new ObjectMapper();
         final Map<Integer, ArrayNode> resultMap = new LinkedHashMap<Integer, ArrayNode>();
-        
+
         int phase = 0;
-        
+
         for (RiakKvPB.RpbMapRedResp response : rawResponse)
         {
             if (response.hasPhase())
@@ -76,12 +76,12 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
                 {
                     jsonArray = resultMap.get(phase);
                 }
-                else 
+                else
                 {
                     jsonArray = factory.arrayNode();
                     resultMap.put(phase, jsonArray);
                 }
-                
+
                 JsonNode responseJson;
                 try
                 {
@@ -92,7 +92,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
                     logger.error("Mapreduce job returned non-JSON; {}",response.getResponse().toStringUtf8());
                     throw new RuntimeException("Non-JSON response from MR job", ex);
                 }
-                
+
                 if (responseJson.isArray())
                 {
                     jsonArray.addAll((ArrayNode)responseJson);
@@ -116,7 +116,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     @Override
     protected RiakKvPB.RpbMapRedResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_MapRedResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_MapRedResp);
         try
         {
             return RiakKvPB.RpbMapRedResp.parseFrom(rawMessage.getData());
@@ -138,13 +138,13 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
     {
         return mapReduce;
     }
-    
+
     public static class Builder
     {
         private final RiakKvPB.RpbMapRedReq.Builder reqBuilder =
             RiakKvPB.RpbMapRedReq.newBuilder();
         private final BinaryValue mapReduce;
-        
+
         /**
          * Create a MapReduce operation builder with the given function.
          *
@@ -156,33 +156,33 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
             {
                 throw new IllegalArgumentException("MapReduce can not be null or empty.");
             }
-            
-            
+
+
             reqBuilder.setRequest(ByteString.copyFrom(mapReduce.unsafeGetValue()))
                         .setContentType(ByteString.copyFromUtf8("application/json"));
             this.mapReduce = mapReduce;
-        
+
         }
-        
+
         public MapReduceOperation build()
         {
             return new MapReduceOperation(this);
         }
     }
-    
+
     public static class Response
     {
         private final Map<Integer, ArrayNode> resultMap;
-        
+
         Response(Map<Integer, ArrayNode> results)
         {
             this.resultMap = results;
         }
-        
+
         public Map<Integer, ArrayNode> getResults()
         {
             return resultMap;
         }
-        
+
     }
 }

@@ -15,7 +15,6 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-// TODO GH-611 We have the ability to send TsGetReq / Resp TTB messages
 public class FetchOperation extends TTBFutureOperation<QueryResult, String>
 {
     private final Builder builder;

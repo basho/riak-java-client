@@ -7,8 +7,6 @@ import com.google.protobuf.GeneratedMessage.Builder;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
  * An abstract PB operation that introduces generic encoding/decoding
  *
@@ -45,7 +43,7 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
 
     @Override
     protected U decode(RiakMessage rawMessage) {
-        Operations.checkMessageType(rawMessage, respMessageCode);
+        Operations.checkPBMessageType(rawMessage, respMessageCode);
         try
         {
             byte[] data = rawMessage.getData();

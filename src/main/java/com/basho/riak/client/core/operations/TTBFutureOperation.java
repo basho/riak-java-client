@@ -36,7 +36,7 @@ public abstract class TTBFutureOperation<T, S> extends FutureOperation<T, byte[]
     @Override
     protected byte[] decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, respMessageCode);
+        Operations.checkPBMessageType(rawMessage, respMessageCode);
 
         byte[] data = rawMessage.getData();
 

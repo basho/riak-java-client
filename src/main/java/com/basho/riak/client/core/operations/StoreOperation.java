@@ -27,7 +27,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.List;
 
-import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import static com.basho.riak.client.core.operations.Operations.checkPBMessageType;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -42,7 +42,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     private final Logger logger = LoggerFactory.getLogger(StoreOperation.class);
     private final RiakKvPB.RpbPutReq.Builder reqBuilder;
     private final Location location;
-    
+
     private StoreOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
@@ -50,7 +50,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     }
 
     @Override
-    protected Response convert(List<RiakKvPB.RpbPutResp> responses) 
+    protected Response convert(List<RiakKvPB.RpbPutResp> responses)
     {
         // There should only be one response message from Riak.
         if (responses.size() != 1)
@@ -59,29 +59,29 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         }
 
         RiakKvPB.RpbPutResp response = responses.get(0);
-        
-        StoreOperation.Response.Builder responseBuilder = 
+
+        StoreOperation.Response.Builder responseBuilder =
             new StoreOperation.Response.Builder();
-        
+
         // This only exists if no key was specified in the put request
         if (response.hasKey())
         {
             responseBuilder.withGeneratedKey(BinaryValue.unsafeCreate(response.getKey().toByteArray()));
         }
-        
+
         // Is there a case where this isn't true? Can a delete interleve?
         if (response.getContentCount() > 0)
         {
             responseBuilder.addObjects(RiakObjectConverter.convert(response.getContentList(), response.getVclock()));
         }
-        
+
         return responseBuilder.build();
     }
 
     @Override
     protected RiakKvPB.RpbPutResp decode(RiakMessage rawMessage)
     {
-        checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
+        checkPBMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         try
         {
             return RiakKvPB.RpbPutResp.parseFrom(rawMessage.getData());
@@ -110,7 +110,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
     {
         private final RiakKvPB.RpbPutReq.Builder reqBuilder = RiakKvPB.RpbPutReq.newBuilder();
         private final Location location;
-        
+
         /**
          * Constructs a builder for a StoreOperation
          * @param location The location in Riak at which to store.
@@ -121,15 +121,15 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             {
                 throw new IllegalArgumentException("Location cannot be null");
             }
-            
+
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
-            
+
             this.location = location;
-            
+
         }
-        
+
         /**
          * Constructs a builder for a StoreOperation.
          * <p>
@@ -145,28 +145,28 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             }
             reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
             reqBuilder.setBucket(ByteString.copyFrom(namespace.getBucketName().unsafeGetValue()));
-            
+
             this.location = new Location(namespace, "RIAK_GENERATED");
-            
+
         }
-        
-        
+
+
         public Builder withContent(RiakObject content)
         {
             if (null == content)
             {
                 throw new IllegalArgumentException("Object cannot be null.");
             }
-            
+
             reqBuilder.setContent(RiakObjectConverter.convert(content));
-            
+
             if (content.getVClock() != null)
             {
                 reqBuilder.setVclock(ByteString.copyFrom(content.getVClock().getBytes()));
             }
             return this;
         }
-        
+
         /**
          * Set the W value for this StoreOperation.
          * If not asSet the bucket default is used.
@@ -205,7 +205,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
 
         /**
          * Return the object after storing (including any siblings).
-         * @param returnBody true to return the object. 
+         * @param returnBody true to return the object.
          * @return a reference to this object.
          */
 		public Builder withReturnBody(boolean returnBody)
@@ -219,7 +219,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * <p>
          * Causes Riak to only return the metadata for the object. The value
          * will be asSet to null.
-         * @param returnHead true to return only metadata. 
+         * @param returnHead true to return only metadata.
          * @return a reference to this object.
          */
 		public Builder withReturnHead(boolean returnHead)
@@ -231,7 +231,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         /**
          * Set the if_not_modified flag for this StoreOperation.
          * <p>
-         * Setting this to true means to update the value only if the 
+         * Setting this to true means to update the value only if the
          * vclock in the supplied object matches the one in the database.
          * </p>
          * <p>
@@ -250,13 +250,13 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         /**
          * Set the if_none_match flag value for this StoreOperation.
          * <p>
-         * Setting this to true means store the value only if this 
-         * bucket/key combination are not already defined. 
+         * Setting this to true means store the value only if this
+         * bucket/key combination are not already defined.
          * </p>
-         * Be aware that there are several cases where 
+         * Be aware that there are several cases where
          * this may not actually happen. Use of this option is discouraged.
          * </p>
-         * 
+         *
          * @param ifNoneMatch the if_non-match value.
          * @return a reference to this object.
          */
@@ -318,49 +318,49 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
 			reqBuilder.setSloppyQuorum(sloppyQuorum);
 			return this;
 		}
-        
+
         public StoreOperation build()
         {
             return new StoreOperation(this);
         }
-        
+
     }
-    
+
     /**
      * Response returned from a StoreOperation
      */
     public static class Response extends FetchOperation.KvResponseBase
     {
         private final BinaryValue generatedKey;
-        
+
         private Response(Init<?> builder)
         {
             super(builder);
             this.generatedKey = builder.generatedKey;
         }
-        
+
         public boolean hasGeneratedKey()
         {
             return generatedKey != null;
         }
-        
+
         public BinaryValue getGeneratedKey()
         {
             return generatedKey;
         }
-        
+
         protected static abstract class Init<T extends Init<T>> extends FetchOperation.KvResponseBase.Init<T>
         {
             private BinaryValue generatedKey;
-            
+
             T withGeneratedKey(BinaryValue key)
             {
                 this.generatedKey = key;
                 return self();
             }
-            
+
         }
-        
+
         static class Builder extends Init<Builder>
         {
             @Override
@@ -368,7 +368,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             {
                 return this;
             }
-            
+
             @Override
             protected Response build()
             {

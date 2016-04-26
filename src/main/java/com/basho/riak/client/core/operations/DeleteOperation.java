@@ -24,7 +24,7 @@ import com.google.protobuf.ByteString;
 
 import java.util.List;
 
-import static com.basho.riak.client.core.operations.Operations.checkMessageType;
+import static com.basho.riak.client.core.operations.Operations.checkPBMessageType;
 import com.basho.riak.client.core.query.Location;
 
 /**
@@ -46,7 +46,7 @@ public class DeleteOperation extends FutureOperation<Void, Void, Location>
     }
 
     @Override
-    protected Void convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse)
     {
         return null;
     }
@@ -54,7 +54,7 @@ public class DeleteOperation extends FutureOperation<Void, Void, Location>
     @Override
     protected Void decode(RiakMessage rawResponse)
     {
-        checkMessageType(rawResponse, RiakMessageCodes.MSG_DelResp);
+        checkPBMessageType(rawResponse, RiakMessageCodes.MSG_DelResp);
         return null;
     }
 
@@ -85,7 +85,7 @@ public class DeleteOperation extends FutureOperation<Void, Void, Location>
             {
                 throw new IllegalArgumentException("Location can not be null");
             }
-            
+
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));

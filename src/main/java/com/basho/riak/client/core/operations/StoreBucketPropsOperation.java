@@ -42,7 +42,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
     }
 
     @Override
-    protected Void convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse)
     {
         return null;
     }
@@ -57,7 +57,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_SetBucketResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_SetBucketResp);
         return null;
     }
 
@@ -437,7 +437,7 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
         private final RiakPB.RpbSetBucketReq.Builder reqBuilder
             = RiakPB.RpbSetBucketReq.newBuilder();
         private final Namespace namespace;
-        
+
         /**
          * Constructs a builder for a StoreBucketPropsOperation.
          * @param namespace The namespace in Riak.
@@ -452,13 +452,13 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
             reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
             this.namespace = namespace;
         }
-        
+
         @Override
         protected Builder self()
         {
             return this;
         }
-        
+
         public StoreBucketPropsOperation build()
         {
             reqBuilder.setProps(propsBuilder);
