@@ -6,14 +6,13 @@ import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TermToBinaryCodec
 {
@@ -23,14 +22,8 @@ public class TermToBinaryCodec
     private static final String TS_QUERY_RESP = "tsqueryresp";
     private static final String TS_INTERPOLATION = "tsinterpolation";
     private static final String TS_PUT_REQ = "tsputreq";
-    private static final String ERROR_RESP = "rpberrorresp";
     private static final String UNDEFINED = "undefined";
-    private static final OtpErlangAtom TS_GET_REQ_ATOM = new OtpErlangAtom(TS_GET_REQ);
-    private static final OtpErlangAtom TS_QUERY_REQ_ATOM = new OtpErlangAtom(TS_QUERY_REQ);
-    private static final OtpErlangAtom TS_INTERPOLATION_ATOM = new OtpErlangAtom(TS_INTERPOLATION);
-    private static final OtpErlangAtom TS_PUT_REQ_ATOM = new OtpErlangAtom(TS_PUT_REQ);
-    private static final OtpErlangAtom UNDEFINED_ATOM = new OtpErlangAtom(UNDEFINED);
-    private static Logger logger = LoggerFactory.getLogger(TermToBinaryCodec.class);
+    private static final Logger logger = LoggerFactory.getLogger(TermToBinaryCodec.class);
 
     public static OtpOutputStream encodeTsGetRequest(String tableName, Collection<Cell> keyValues, int timeout)
     {
@@ -39,7 +32,7 @@ public class TermToBinaryCodec
 
         // NB: TsGetReq is a 4-tuple: tsgetreq, tableName, [key values], timeout
         os.write_tuple_head(4);
-        os.write_any(TS_GET_REQ_ATOM);
+        os.write_atom(TS_GET_REQ);
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         os.write_list_head(keyValues.size());
@@ -67,12 +60,12 @@ public class TermToBinaryCodec
 
         // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInt, boolIsStreaming, bytesCoverContext}
         os.write_tuple_head(4);
-        os.write_any(TS_QUERY_REQ_ATOM);
+        os.write_atom(TS_QUERY_REQ);
 
         // TsInterpolation is a 3-tuple
         // {'tsinterpolation', query, []} empty list is interpolations
         os.write_tuple_head(3);
-        os.write_any(TS_INTERPOLATION_ATOM);
+        os.write_atom(TS_INTERPOLATION);
         os.write_binary(queryText.getBytes(StandardCharsets.UTF_8));
         // interpolations is an empty list
         os.write_nil();
@@ -81,7 +74,7 @@ public class TermToBinaryCodec
         os.write_boolean(false);
 
         // cover_context is an undefined atom
-        os.write_any(UNDEFINED_ATOM);
+        os.write_atom(UNDEFINED);
 
         return os;
     }
@@ -94,7 +87,7 @@ public class TermToBinaryCodec
         // TsPutReq is a 4-tuple: {'tsputreq', tableName, [], [rows]}
         // columns is empte
         os.write_tuple_head(4);
-        os.write_any(TS_PUT_REQ_ATOM);
+        os.write_atom(TS_PUT_REQ);
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
         // columns is an empty list
         os.write_nil();

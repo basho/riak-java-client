@@ -6,11 +6,9 @@ import com.basho.riak.protobuf.RiakPB;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 /**
  * Encapsulates the raw bytes sent to or received from Riak.
@@ -25,8 +23,8 @@ public final class RiakMessage
     private final byte code;
     private final byte[] data;
     private final OtpInputStream ttbInputStream;
-    // TODO offer output stream?
     private final RiakResponseException riakError;
+    private static final String ERROR_RESP = "rpberrorresp";
 
     public RiakMessage(byte code, byte[] data)
     {
@@ -124,7 +122,7 @@ public final class RiakMessage
                 throw new IllegalArgumentException(decodeErrorMsg, ex);
             }
 
-            if ("rpberrorresp".equals(atom))
+            if (ERROR_RESP.equals(atom))
             {
                 try
                 {
