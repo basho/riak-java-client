@@ -3,7 +3,6 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
-import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +29,12 @@ import java.util.Date;
 
 public class Cell
 {
-    private static Logger logger = LoggerFactory.getLogger(Cell.class);
-    private final String varcharValue;
-    private final Long sint64Value;
-    private final Double doubleValue;
-    private final Long timestampValue;
-    private final Boolean booleanValue;
+    private String varcharValue = "";
+    private long sint64Value = 0L;
+    private double doubleValue = 0.0;
+    private long timestampValue = 0L;
+    private boolean booleanValue = false;
+    private int typeBitfield = 0;
 
     /**
      * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
@@ -49,11 +48,7 @@ public class Cell
             throw new IllegalArgumentException("String value cannot be NULL.");
         }
 
-        this.varcharValue = varcharValue;
-        this.sint64Value = null;
-        this.doubleValue = null;
-        this.timestampValue = null;
-        this.booleanValue = null;
+        initVarchar(varcharValue);
     }
 
     /**
@@ -68,11 +63,8 @@ public class Cell
             throw new IllegalArgumentException("BinaryValue value cannot be NULL.");
         }
 
-        this.varcharValue = varcharValue.toStringUtf8();
-        this.sint64Value = null;
-        this.doubleValue = null;
-        this.timestampValue = null;
-        this.booleanValue = null;
+        initVarchar(varcharValue.toStringUtf8());
+
     }
 
     /**
@@ -82,11 +74,7 @@ public class Cell
      */
     public Cell(long sint64Value)
     {
-        this.varcharValue = null;
-        this.sint64Value = sint64Value;
-        this.doubleValue = null;
-        this.timestampValue = null;
-        this.booleanValue = null;
+        initSInt64(sint64Value);
     }
 
     /**
@@ -96,11 +84,7 @@ public class Cell
      */
     public Cell(double doubleValue)
     {
-        this.varcharValue = null;
-        this.sint64Value = null;
-        this.doubleValue = doubleValue;
-        this.timestampValue = null;
-        this.booleanValue = null;
+        initDouble(doubleValue);
     }
 
     /**
@@ -110,11 +94,7 @@ public class Cell
      */
     public Cell(boolean booleanValue)
     {
-        this.varcharValue = null;
-        this.sint64Value = null;
-        this.doubleValue = null;
-        this.timestampValue = null;
-        this.booleanValue = booleanValue;
+        initBoolean(booleanValue);
     }
 
     /**
@@ -129,11 +109,7 @@ public class Cell
             throw new IllegalArgumentException("Calendar object for timestamp value cannot be NULL.");
         }
 
-        this.varcharValue = null;
-        this.sint64Value = null;
-        this.doubleValue = null;
-        this.timestampValue = timestampValue.getTimeInMillis();
-        this.booleanValue = null;
+        initTimestamp(timestampValue.getTimeInMillis());
     }
 
     /**
@@ -148,54 +124,30 @@ public class Cell
             throw new IllegalArgumentException("Date object for timestamp value cannot be NULL.");
         }
 
-        this.varcharValue = null;
-        this.sint64Value = null;
-        this.doubleValue = null;
-        this.timestampValue = timestampValue.getTime();
-        this.booleanValue = null;
+        initTimestamp(timestampValue.getTime());
     }
 
     Cell(RiakTsPB.TsCell pbCell)
     {
         if (pbCell.hasBooleanValue())
         {
-            this.varcharValue = null;
-            this.sint64Value = null;
-            this.doubleValue = null;
-            this.timestampValue = null;
-            this.booleanValue = pbCell.getBooleanValue();
+            initBoolean(pbCell.getBooleanValue());
         }
         else if (pbCell.hasDoubleValue())
         {
-            this.varcharValue = null;
-            this.sint64Value = null;
-            this.doubleValue = pbCell.getDoubleValue();
-            this.timestampValue = null;
-            this.booleanValue = null;
+            initDouble(pbCell.getDoubleValue());
         }
         else if (pbCell.hasSint64Value())
         {
-            this.varcharValue = null;
-            this.sint64Value = pbCell.getSint64Value();
-            this.doubleValue = null;
-            this.timestampValue = null;
-            this.booleanValue = null;
+            initSInt64(pbCell.getSint64Value());
         }
         else if (pbCell.hasTimestampValue())
         {
-            this.varcharValue = null;
-            this.sint64Value = null;
-            this.doubleValue = null;
-            this.timestampValue = pbCell.getTimestampValue();
-            this.booleanValue = null;
+            initTimestamp(pbCell.getTimestampValue());
         }
         else if(pbCell.hasVarcharValue())
         {
-            this.varcharValue = pbCell.getVarcharValue().toStringUtf8();
-            this.sint64Value = null;
-            this.doubleValue = null;
-            this.timestampValue = null;
-            this.booleanValue = null;
+            initVarchar(pbCell.getVarcharValue().toStringUtf8());
         }
         else
         {
@@ -203,13 +155,38 @@ public class Cell
         }
     }
 
-    private Cell(long rawTimestampValue, boolean isTimestamp)
+    private Cell()
     {
-        this.varcharValue = null;
-        this.sint64Value = null;
-        this.doubleValue = null;
-        this.timestampValue = rawTimestampValue;
-        this.booleanValue = null;
+    }
+
+    private void initBoolean(boolean booleanValue)
+    {
+        typeBitfield |= 0x00000010;
+        this.booleanValue = booleanValue;
+    }
+
+    private void initTimestamp(long timestampValue)
+    {
+        typeBitfield |= 0x00000008;
+        this.timestampValue = timestampValue;
+    }
+
+    private void initDouble(double doubleValue)
+    {
+        typeBitfield |= 0x00000004;
+        this.doubleValue = doubleValue;
+    }
+
+    private void initSInt64(long longValue)
+    {
+        typeBitfield |= 0x00000002;
+        this.sint64Value = longValue;
+    }
+
+    private void initVarchar(String stringValue)
+    {
+        typeBitfield |= 0x00000001;
+        this.varcharValue = stringValue;
     }
 
     /**
@@ -220,32 +197,34 @@ public class Cell
      */
     public static Cell newTimestamp(long rawTimestampValue)
     {
-        return new Cell(rawTimestampValue, true);
+        final Cell cell = new Cell();
+        cell.initTimestamp(rawTimestampValue);
+        return cell;
     }
 
     public boolean hasVarcharValue()
     {
-        return varcharValue != null;
+        return ((typeBitfield & 0x00000001) == 0x00000001);
     }
 
     public boolean hasLong()
     {
-        return sint64Value != null;
-    }
-
-    public boolean hasTimestamp()
-    {
-        return timestampValue != null;
-    }
-
-    public boolean hasBoolean()
-    {
-        return booleanValue != null;
+        return ((typeBitfield & 0x00000002) == 0x00000002);
     }
 
     public boolean hasDouble()
     {
-        return doubleValue != null;
+        return ((typeBitfield & 0x00000004) == 0x00000004);
+    }
+
+    public boolean hasTimestamp()
+    {
+        return ((typeBitfield & 0x00000008) == 0x00000008);
+    }
+
+    public boolean hasBoolean()
+    {
+        return ((typeBitfield & 0x00000010) == 0x00000010);
     }
 
     public String getVarcharAsUTF8String()
@@ -359,34 +338,42 @@ public class Cell
 
         Cell cell = (Cell) o;
 
-        if (varcharValue != null ? !varcharValue.equals(cell.varcharValue) : cell.varcharValue != null)
+        if (sint64Value != cell.sint64Value)
         {
             return false;
         }
-        if (sint64Value != null ? !sint64Value.equals(cell.sint64Value) : cell.sint64Value != null)
+        if (Double.compare(cell.doubleValue, doubleValue) != 0)
         {
             return false;
         }
-        if (doubleValue != null ? !doubleValue.equals(cell.doubleValue) : cell.doubleValue != null)
+        if (timestampValue != cell.timestampValue)
         {
             return false;
         }
-        if (timestampValue != null ? !timestampValue.equals(cell.timestampValue) : cell.timestampValue != null)
+        if (booleanValue != cell.booleanValue)
         {
             return false;
         }
-        return booleanValue != null ? booleanValue.equals(cell.booleanValue) : cell.booleanValue == null;
+        if (typeBitfield != cell.typeBitfield)
+        {
+            return false;
+        }
+        return varcharValue.equals(cell.varcharValue);
 
     }
 
     @Override
     public int hashCode()
     {
-        int result = varcharValue != null ? varcharValue.hashCode() : 0;
-        result = 31 * result + (sint64Value != null ? sint64Value.hashCode() : 0);
-        result = 31 * result + (doubleValue != null ? doubleValue.hashCode() : 0);
-        result = 31 * result + (timestampValue != null ? timestampValue.hashCode() : 0);
-        result = 31 * result + (booleanValue != null ? booleanValue.hashCode() : 0);
+        int result;
+        long temp;
+        result = varcharValue.hashCode();
+        result = 31 * result + (int) (sint64Value ^ (sint64Value >>> 32));
+        temp = Double.doubleToLongBits(doubleValue);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (int) (timestampValue ^ (timestampValue >>> 32));
+        result = 31 * result + (booleanValue ? 1 : 0);
+        result = 31 * result + typeBitfield;
         return result;
     }
 }

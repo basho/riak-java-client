@@ -20,7 +20,6 @@ class TTBConverters
     private static abstract class MemoizingEncoder<T> implements TTBFutureOperation.TTBEncoder
     {
         protected final T builder;
-        protected byte[] message = null;
 
         MemoizingEncoder(T builder)
         {
@@ -32,21 +31,7 @@ class TTBConverters
         @Override
         public byte[] build()
         {
-            if (message == null)
-            {
-                try
-                {
-                    OtpOutputStream os = buildMessage();
-                    os.flush();
-                    message = os.toByteArray();
-                }
-                catch (IOException ex)
-                {
-                    logger.error("Error creating term to binary message.", ex);
-                }
-            }
-
-            return message;
+            return buildMessage().toByteArray();
         }
     }
 
