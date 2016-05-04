@@ -11,7 +11,7 @@ import java.util.Iterator;
  */
 public abstract class ConvertibleIterator<S,D> implements Iterator<D>
 {
-    private static RiakTsPB.TsCell NullTSCell = RiakTsPB.TsCell.newBuilder().build();
+    private static final RiakTsPB.TsCell NullTSCell = RiakTsPB.TsCell.newBuilder().build();
     private final Iterator<S> iterator;
 
     public ConvertibleIterator(Iterator<S> iterator)
