@@ -1,15 +1,9 @@
 package com.basho.riak.client.core.query.timeseries;
 
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
-import com.ericsson.otp.erlang.OtpErlangBinary;
-import com.ericsson.otp.erlang.OtpErlangBoolean;
-import com.ericsson.otp.erlang.OtpErlangDouble;
-import com.ericsson.otp.erlang.OtpErlangLong;
-import com.ericsson.otp.erlang.OtpErlangObject;
 import com.google.protobuf.ByteString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -33,10 +27,18 @@ import java.util.Date;
 
 public class Cell
 {
-    private static Logger logger = LoggerFactory.getLogger(Cell.class);
-    static final Cell NullCell = new Cell(RiakTsPB.TsCell.newBuilder().build());
+    private static final int VARCHAR_MASK = 0x00000001;
+    private static final int SINT64_MASK = 0x00000002;
+    private static final int DOUBLE_MASK = 0x00000004;
+    private static final int TIMESTAMP_MASK = 0x00000008;
+    private static final int BOOLEAN_MASK = 0x00000010;
+    private int typeBitfield = 0x0;
 
-    private final RiakTsPB.TsCell pbCell;
+    private String varcharValue = "";
+    private long sint64Value = 0L;
+    private double doubleValue = 0.0;
+    private long timestampValue = 0L;
+    private boolean booleanValue = false;
 
     /**
      * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
@@ -50,8 +52,7 @@ public class Cell
             throw new IllegalArgumentException("String value cannot be NULL.");
         }
 
-        final ByteString varcharByteString = ByteString.copyFromUtf8(varcharValue);
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
+        initVarchar(varcharValue);
     }
 
     /**
@@ -66,8 +67,8 @@ public class Cell
             throw new IllegalArgumentException("BinaryValue value cannot be NULL.");
         }
 
-        final ByteString varcharByteString = ByteString.copyFrom(varcharValue.getValue());
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setVarcharValue(varcharByteString).build();
+        initVarchar(varcharValue.toStringUtf8());
+
     }
 
     /**
@@ -77,7 +78,7 @@ public class Cell
      */
     public Cell(long sint64Value)
     {
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setSint64Value(sint64Value).build();
+        initSInt64(sint64Value);
     }
 
     /**
@@ -87,7 +88,7 @@ public class Cell
      */
     public Cell(double doubleValue)
     {
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setDoubleValue(doubleValue).build();
+        initDouble(doubleValue);
     }
 
     /**
@@ -97,7 +98,7 @@ public class Cell
      */
     public Cell(boolean booleanValue)
     {
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setBooleanValue(booleanValue).build();
+        initBoolean(booleanValue);
     }
 
     /**
@@ -112,7 +113,7 @@ public class Cell
             throw new IllegalArgumentException("Calendar object for timestamp value cannot be NULL.");
         }
 
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(timestampValue.getTimeInMillis()).build();
+        initTimestamp(timestampValue.getTimeInMillis());
     }
 
     /**
@@ -127,12 +128,39 @@ public class Cell
             throw new IllegalArgumentException("Date object for timestamp value cannot be NULL.");
         }
 
-        this.pbCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(timestampValue.getTime()).build();
+        initTimestamp(timestampValue.getTime());
     }
 
     Cell(RiakTsPB.TsCell pbCell)
     {
-        this.pbCell = pbCell;
+        if (pbCell.hasBooleanValue())
+        {
+            initBoolean(pbCell.getBooleanValue());
+        }
+        else if (pbCell.hasDoubleValue())
+        {
+            initDouble(pbCell.getDoubleValue());
+        }
+        else if (pbCell.hasSint64Value())
+        {
+            initSInt64(pbCell.getSint64Value());
+        }
+        else if (pbCell.hasTimestampValue())
+        {
+            initTimestamp(pbCell.getTimestampValue());
+        }
+        else if (pbCell.hasVarcharValue())
+        {
+            initVarchar(pbCell.getVarcharValue().toStringUtf8());
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unknown PB Cell encountered.");
+        }
+    }
+
+    private Cell()
+    {
     }
 
     /**
@@ -143,89 +171,132 @@ public class Cell
      */
     public static Cell newTimestamp(long rawTimestampValue)
     {
-        final RiakTsPB.TsCell tsCell = RiakTsPB.TsCell.newBuilder().setTimestampValue(rawTimestampValue).build();
-        return new Cell(tsCell);
+        final Cell cell = new Cell();
+        cell.initTimestamp(rawTimestampValue);
+        return cell;
+    }
+
+    private void initBoolean(boolean booleanValue)
+    {
+        setBitfieldType(BOOLEAN_MASK);
+        this.booleanValue = booleanValue;
+    }
+
+    private void initTimestamp(long timestampValue)
+    {
+        setBitfieldType(TIMESTAMP_MASK);
+        this.timestampValue = timestampValue;
+    }
+
+    private void initDouble(double doubleValue)
+    {
+        setBitfieldType(DOUBLE_MASK);
+        this.doubleValue = doubleValue;
+    }
+
+    private void initSInt64(long longValue)
+    {
+        setBitfieldType(SINT64_MASK);
+        this.sint64Value = longValue;
+    }
+
+    private void initVarchar(String stringValue)
+    {
+        setBitfieldType(VARCHAR_MASK);
+        this.varcharValue = stringValue;
+    }
+
+    private void setBitfieldType(int mask)
+    {
+        typeBitfield |= mask;
+    }
+
+    private boolean bitfieldHasType(int mask)
+    {
+        return (typeBitfield & mask) == mask;
     }
 
     public boolean hasVarcharValue()
     {
-        return pbCell.hasVarcharValue();
+        return bitfieldHasType(VARCHAR_MASK);
     }
 
     public boolean hasLong()
     {
-        return pbCell.hasSint64Value();
-    }
-
-    public boolean hasTimestamp()
-    {
-        return pbCell.hasTimestampValue();
-    }
-
-    public boolean hasBoolean()
-    {
-        return pbCell.hasBooleanValue();
+        return bitfieldHasType(SINT64_MASK);
     }
 
     public boolean hasDouble()
     {
-        return pbCell.hasDoubleValue();
+        return bitfieldHasType(DOUBLE_MASK);
+    }
+
+    public boolean hasTimestamp()
+    {
+        return bitfieldHasType(TIMESTAMP_MASK);
+    }
+
+    public boolean hasBoolean()
+    {
+        return bitfieldHasType(BOOLEAN_MASK);
     }
 
     public String getVarcharAsUTF8String()
     {
-        return pbCell.getVarcharValue().toStringUtf8();
+        return varcharValue;
     }
 
     public BinaryValue getVarcharValue()
     {
-        return BinaryValue.unsafeCreate(pbCell.getVarcharValue().toByteArray());
+        return BinaryValue.unsafeCreate(varcharValue.getBytes(CharsetUtils.UTF_8));
     }
 
     public long getLong()
     {
-        return pbCell.getSint64Value();
+        return sint64Value;
     }
 
     public double getDouble()
     {
-        return pbCell.getDoubleValue();
+        return doubleValue;
     }
 
     public long getTimestamp()
     {
-        return pbCell.getTimestampValue();
+        return timestampValue;
     }
 
     public boolean getBoolean()
     {
-        return pbCell.getBooleanValue();
+        return booleanValue;
     }
 
-    public RiakTsPB.TsCell getPbCell()
+    RiakTsPB.TsCell getPbCell()
     {
-        return pbCell;
-    }
+        final RiakTsPB.TsCell.Builder builder = RiakTsPB.TsCell.newBuilder();
 
-    public OtpErlangObject getErlangObject() {
-        if (pbCell.hasVarcharValue()) {
-            return new OtpErlangBinary(pbCell.getVarcharValue().toByteArray());
+        if (hasVarcharValue())
+        {
+            builder.setVarcharValue(ByteString.copyFromUtf8(varcharValue));
         }
-        if (pbCell.hasSint64Value()) {
-            return new OtpErlangLong(pbCell.getSint64Value());
+        else if (hasLong())
+        {
+            builder.setSint64Value(sint64Value);
         }
-        if (pbCell.hasTimestampValue()) {
-            return new OtpErlangLong(pbCell.getTimestampValue());
+        else if (hasTimestamp())
+        {
+            builder.setTimestampValue(timestampValue);
         }
-        if (pbCell.hasBooleanValue()) {
-            return new OtpErlangBoolean(pbCell.getBooleanValue());
+        else if (hasBoolean())
+        {
+            builder.setBooleanValue(booleanValue);
         }
-        if (pbCell.hasDoubleValue()) {
-            return new OtpErlangDouble(pbCell.getDoubleValue());
+        else if (hasDouble())
+        {
+            builder.setDoubleValue(doubleValue);
         }
 
-        logger.error("Unknown TS cell type encountered.");
-        throw new IllegalArgumentException("Unknown TS cell type encountered.");
+        return builder.build();
     }
 
     @Override
@@ -281,13 +352,42 @@ public class Cell
 
         Cell cell = (Cell) o;
 
-        return !(pbCell != null ? !pbCell.equals(cell.pbCell) : cell.pbCell != null);
+        if (sint64Value != cell.sint64Value)
+        {
+            return false;
+        }
+        if (Double.compare(cell.doubleValue, doubleValue) != 0)
+        {
+            return false;
+        }
+        if (timestampValue != cell.timestampValue)
+        {
+            return false;
+        }
+        if (booleanValue != cell.booleanValue)
+        {
+            return false;
+        }
+        if (typeBitfield != cell.typeBitfield)
+        {
+            return false;
+        }
+        return varcharValue.equals(cell.varcharValue);
 
     }
 
     @Override
     public int hashCode()
     {
-        return pbCell != null ? pbCell.hashCode() : 0;
+        int result;
+        long temp;
+        result = varcharValue.hashCode();
+        result = 31 * result + (int) (sint64Value ^ (sint64Value >>> 32));
+        temp = Double.doubleToLongBits(doubleValue);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (int) (timestampValue ^ (timestampValue >>> 32));
+        result = 31 * result + (booleanValue ? 1 : 0);
+        result = 31 * result + typeBitfield;
+        return result;
     }
 }

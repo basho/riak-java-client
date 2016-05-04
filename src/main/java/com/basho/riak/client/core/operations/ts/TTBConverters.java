@@ -10,19 +10,17 @@ import com.ericsson.otp.erlang.OtpOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.LinkedList;
 
 class TTBConverters
 {
     private static Logger logger = LoggerFactory.getLogger(TTBConverters.class);
 
-    private static abstract class MemoizingEncoder<T> implements TTBFutureOperation.TTBEncoder
+    private static abstract class BuilderTTBEncoder<T> implements TTBFutureOperation.TTBEncoder
     {
         protected final T builder;
-        protected byte[] message = null;
 
-        MemoizingEncoder(T builder)
+        BuilderTTBEncoder(T builder)
         {
             this.builder = builder;
         }
@@ -32,25 +30,11 @@ class TTBConverters
         @Override
         public byte[] build()
         {
-            if (message == null)
-            {
-                try
-                {
-                    OtpOutputStream os = buildMessage();
-                    os.flush();
-                    message = os.toByteArray();
-                }
-                catch (IOException ex)
-                {
-                    logger.error("Error creating term to binary message.", ex);
-                }
-            }
-
-            return message;
+            return buildMessage().toByteArray();
         }
     }
 
-    static class StoreEncoder extends MemoizingEncoder<StoreOperation.Builder>
+    static class StoreEncoder extends BuilderTTBEncoder<StoreOperation.Builder>
     {
         StoreEncoder(StoreOperation.Builder builder)
         {
@@ -64,7 +48,7 @@ class TTBConverters
         }
     }
 
-    static class FetchEncoder extends MemoizingEncoder<FetchOperation.Builder>
+    static class FetchEncoder extends BuilderTTBEncoder<FetchOperation.Builder>
     {
         FetchEncoder(FetchOperation.Builder builder)
         {
@@ -84,7 +68,7 @@ class TTBConverters
         }
     }
 
-    static class QueryEncoder extends MemoizingEncoder<QueryOperation.Builder>
+    static class QueryEncoder extends BuilderTTBEncoder<QueryOperation.Builder>
     {
         QueryEncoder(QueryOperation.Builder builder)
         {

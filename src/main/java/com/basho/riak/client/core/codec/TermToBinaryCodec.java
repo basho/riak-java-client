@@ -3,6 +3,7 @@ package com.basho.riak.client.core.codec;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
@@ -36,9 +37,9 @@ public class TermToBinaryCodec
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         os.write_list_head(keyValues.size());
-        for (Cell k : keyValues)
+        for (Cell cell : keyValues)
         {
-            os.write_any(k.getErlangObject());
+            writeTsCellToStream(os, cell);
         }
         os.write_nil(); // NB: finishes the list
 
@@ -95,25 +96,54 @@ public class TermToBinaryCodec
         // write a list of rows
         // each row is a tuple of cells
         os.write_list_head(rows.size());
-        for (Row r : rows)
+        for (Row row : rows)
         {
-            os.write_tuple_head(r.getCellsCount());
-            for (Cell c : r)
+            os.write_tuple_head(row.getCellsCount());
+            for (Cell cell : row)
             {
-                if (c == null)
+                if (cell == null)
                 {
                     // NB: Null cells are represented as empty lists
                     os.write_nil();
                 }
                 else
                 {
-                    os.write_any(c.getErlangObject());
+                    writeTsCellToStream(os, cell);
                 }
             }
         }
         os.write_nil();
 
         return os;
+    }
+
+    private static void writeTsCellToStream(OtpOutputStream stream, Cell cell)
+    {
+        if (cell.hasVarcharValue())
+        {
+            stream.write_binary(cell.getVarcharAsUTF8String().getBytes(CharsetUtils.UTF_8));
+        }
+        else if (cell.hasLong())
+        {
+            stream.write_long(cell.getLong());
+        }
+        else if (cell.hasTimestamp())
+        {
+            stream.write_long(cell.getTimestamp());
+        }
+        else if (cell.hasBoolean())
+        {
+            stream.write_boolean(cell.getBoolean());
+        }
+        else if (cell.hasDouble())
+        {
+            stream.write_double(cell.getDouble());
+        }
+        else
+        {
+            logger.error("Unknown TS cell type encountered.");
+            throw new IllegalArgumentException("Unknown TS cell type encountered.");
+        }
     }
 
     private static QueryResult decodeTsResponse(byte[] response)
