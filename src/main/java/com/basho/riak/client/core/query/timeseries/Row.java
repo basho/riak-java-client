@@ -14,6 +14,8 @@ import java.util.*;
 public class Row implements Iterable<Cell>
 {
     private final RiakTsPB.TsRow pbRow;
+    private final Iterable<Cell> cells;
+    private final int cellCount;
 
     /**
      * Create a new row.
@@ -21,11 +23,16 @@ public class Row implements Iterable<Cell>
      */
     public Row(Iterable<Cell> cells)
     {
-        final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
+        pbRow = null;
+        this.cells = cells;
+        int cellCount = 0;
 
-        builder.addAllCells(ConvertibleIterable.asIterablePbCell(cells));
+        for (Cell ignored : this.cells)
+        {
+            cellCount++;
+        }
 
-        this.pbRow = builder.build();
+        this.cellCount = cellCount;
     }
 
     /**
@@ -34,16 +41,16 @@ public class Row implements Iterable<Cell>
      */
     public Row(Cell... cells)
     {
-        final RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
-        // TODO: consider avoiding ArrayList creation under the hood of Arrays.asList
-        builder.addAllCells(ConvertibleIterable.asIterablePbCell(Arrays.asList(cells)));
-
-        this.pbRow = builder.build();
+        pbRow = null;
+        this.cells = Arrays.asList(cells);
+        cellCount = cells.length;
     }
 
     Row(RiakTsPB.TsRow pbRow)
     {
         this.pbRow = pbRow;
+        cells = null;
+        cellCount = pbRow.getCellsCount();
     }
 
     /**
@@ -52,7 +59,7 @@ public class Row implements Iterable<Cell>
      */
     public int getCellsCount()
     {
-        return pbRow.getCellsCount();
+        return cellCount;
     }
 
     /**
@@ -72,7 +79,14 @@ public class Row implements Iterable<Cell>
 
     public RiakTsPB.TsRow getPbRow()
     {
-        return pbRow;
+        if(pbRow != null)
+        {
+            return pbRow;
+        }
+
+        RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();
+        builder.addAllCells(ConvertibleIterable.asIterablePbCell(cells));
+        return builder.build();
     }
 
     /**
@@ -82,7 +96,14 @@ public class Row implements Iterable<Cell>
     @Override
     public Iterator<Cell> iterator()
     {
-        return ConvertibleIterator.iterateAsCell(pbRow.getCellsList().iterator());
+        if(cells != null)
+        {
+            return cells.iterator();
+        }
+        else // if (pbRow != null)
+        {
+            return ConvertibleIterator.iterateAsCell(pbRow.getCellsList().iterator());
+        }
     }
 
     @Override
@@ -97,15 +118,22 @@ public class Row implements Iterable<Cell>
             return false;
         }
 
-        Row cells = (Row) o;
+        Row cells1 = (Row) o;
 
-        return !(pbRow != null ? !pbRow.equals(cells.pbRow) : cells.pbRow != null);
+        if (cellCount != cells1.cellCount)
+        {
+            return false;
+        }
+        return getCellsCopy().equals(cells1.getCellsCopy());
 
     }
 
     @Override
     public int hashCode()
     {
-        return pbRow != null ? pbRow.hashCode() : 0;
+        int result = pbRow != null ? pbRow.hashCode() : 0;
+        result = 31 * result + (cells != null ? cells.hashCode() : 0);
+        result = 31 * result + cellCount;
+        return result;
     }
 }

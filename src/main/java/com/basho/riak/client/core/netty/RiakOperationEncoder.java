@@ -33,5 +33,5 @@ public class RiakOperationEncoder extends MessageToMessageEncoder<FutureOperatio
     {
         out.add(operation.channelMessage());
     }
-    
+
 }
