@@ -22,30 +22,37 @@ public final class RiakMessage
     private static final Logger logger = LoggerFactory.getLogger(RiakMessage.class);
     private final byte code;
     private final byte[] data;
-    private final OtpInputStream ttbInputStream;
     private final RiakResponseException riakError;
     private static final String ERROR_RESP = "rpberrorresp";
 
     public RiakMessage(byte code, byte[] data)
     {
+        this(code, data, true);
+    }
+
+    public RiakMessage(byte code, byte[] data, boolean doErrorCheck)
+    {
         this.code = code;
         this.data = data;
 
-        switch (this.code)
+        if(doErrorCheck)
         {
-            case RiakMessageCodes.MSG_ErrorResp:
-                this.ttbInputStream = null;
-                this.riakError = getRiakErrorFromPbuf(this.data);
-                break;
-            case RiakMessageCodes.MSG_TsTtbMsg:
-                this.ttbInputStream = new OtpInputStream(data);
-                this.riakError = getRiakErrorFromTtb(this.ttbInputStream);
-                // Set stream back to the beginning for codec's use
-                this.ttbInputStream.setPos(0);
-                break;
-            default:
-                this.riakError = null;
-                this.ttbInputStream = null;
+            switch (this.code)
+            {
+                case RiakMessageCodes.MSG_ErrorResp:
+                    this.riakError = getRiakErrorFromPbuf(this.data);
+                    break;
+                case RiakMessageCodes.MSG_TsTtbMsg:
+                    OtpInputStream ttbInputStream = new OtpInputStream(data);
+                    this.riakError = getRiakErrorFromTtb(ttbInputStream);
+                    break;
+                default:
+                    this.riakError = null;
+            }
+        }
+        else
+        {
+            this.riakError = null;
         }
     }
 
@@ -73,19 +80,9 @@ public final class RiakMessage
         return data;
     }
 
-    public boolean isTtbMessage()
-    {
-        return this.ttbInputStream != null;
-    }
-
     public boolean isRiakError()
     {
         return this.riakError != null;
-    }
-
-    public OtpInputStream getTtbStream()
-    {
-        return this.ttbInputStream;
     }
 
     public RiakResponseException getRiakError()

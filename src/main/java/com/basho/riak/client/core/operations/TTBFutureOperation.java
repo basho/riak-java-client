@@ -30,7 +30,7 @@ public abstract class TTBFutureOperation<T, S> extends FutureOperation<T, byte[]
     @Override
     protected RiakMessage createChannelMessage()
     {
-        return new RiakMessage(reqMessageCode, requestBuilder.build());
+        return new RiakMessage(reqMessageCode, requestBuilder.build(), false);
     }
 
     @Override
