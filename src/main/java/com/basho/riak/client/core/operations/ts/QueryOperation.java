@@ -1,9 +1,7 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.PbResultFactory;
+import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
@@ -16,26 +14,23 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQueryResp, String>
+public class QueryOperation extends TTBFutureOperation<QueryResult, String>
 {
     private final String queryText;
 
     private QueryOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsQueryReq,
-              RiakMessageCodes.MSG_TsQueryResp,
-              RiakTsPB.TsQueryReq.newBuilder().setQuery(builder.interpolationBuilder),
-              RiakTsPB.TsQueryResp.PARSER);
+        super(new TTBConverters.QueryEncoder(builder), new TTBConverters.QueryResultDecoder());
 
         this.queryText = builder.queryText;
     }
 
     @Override
-    protected QueryResult convert(List<RiakTsPB.TsQueryResp> responses)
+    protected QueryResult convert(List<byte[]> responses)
     {
         // This is not a streaming op, there will only be one response
-        final RiakTsPB.TsQueryResp response = checkAndGetSingleResponse(responses);
-        return PbResultFactory.convertPbQueryResp(response);
+        final byte[] response = checkAndGetSingleResponse(responses);
+        return this.responseParser.parseFrom(response);
     }
 
     @Override
@@ -57,6 +52,11 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
             }
             this.queryText = queryText;
             this.interpolationBuilder.setBase(ByteString.copyFromUtf8(queryText));
+        }
+
+        public String getQueryText()
+        {
+            return queryText;
         }
 
         public QueryOperation build()

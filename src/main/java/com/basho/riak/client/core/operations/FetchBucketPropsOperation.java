@@ -35,17 +35,17 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
 {
     private final RiakPB.RpbGetBucketReq.Builder reqBuilder;
     private final Namespace namespace;
-    
+
     public FetchBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
     }
-    
+
     @Override
-    protected Response convert(List<RiakPB.RpbGetBucketResp> rawResponse) 
+    protected Response convert(List<RiakPB.RpbGetBucketResp> rawResponse)
     {
-        // This isn't streaming, there will only be one response. 
+        // This isn't streaming, there will only be one response.
         RiakPB.RpbBucketProps pbProps = rawResponse.get(0).getProps();
         return new Response(BucketPropertiesConverter.convert(pbProps));
     }
@@ -60,7 +60,7 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
     @Override
     protected RiakPB.RpbGetBucketResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_GetBucketResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_GetBucketResp);
         try
         {
             return RiakPB.RpbGetBucketResp.parseFrom(rawMessage.getData());
@@ -76,13 +76,13 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
     {
         return namespace;
     }
-    
+
     public static class Builder
     {
-        private final RiakPB.RpbGetBucketReq.Builder reqBuilder = 
+        private final RiakPB.RpbGetBucketReq.Builder reqBuilder =
             RiakPB.RpbGetBucketReq.newBuilder();
         private final Namespace namespace;
-        
+
         /**
          * Construct a builder for a FetchBucketPropsOperation.
          * @param namespace The namespace for the bucket.
@@ -97,13 +97,13 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
             reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
             this.namespace = namespace;
         }
-        
+
         public FetchBucketPropsOperation build()
         {
             return new FetchBucketPropsOperation(this);
         }
     }
-    
+
     /**
      * Response from Fetching a bucket's properties.
      */
@@ -114,7 +114,7 @@ public class FetchBucketPropsOperation extends FutureOperation<FetchBucketPropsO
         {
             this.props = props;
         }
-        
+
         /**
          * Returns the fetched BucketProperties.
          * @return the BucketProperties.

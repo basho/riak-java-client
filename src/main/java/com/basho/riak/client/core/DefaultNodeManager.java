@@ -20,23 +20,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- * The default {@link NodeManager} used by {@link RiakCluster} if none is 
+ * The default {@link NodeManager} used by {@link RiakCluster} if none is
  * specified.
- * 
- * This NodeManager round-robins through a list of {@link RiakNode}s and attempts 
- * to execute the operation passed to it. If a node reports that it is 
- * health checking it is removed from the list until it sends an update that it 
- * is again running. If the selected node cannot accept the operation because all 
- * connections are in use or it unable to make a new connection, the next node in 
- * the list is tried until either the operation is accepted or all nodes have 
- * been tried. If no nodes are able to accept the operation its setException() 
+ *
+ * This NodeManager round-robins through a list of {@link RiakNode}s and attempts
+ * to execute the operation passed to it. If a node reports that it is
+ * health checking it is removed from the list until it sends an update that it
+ * is again running. If the selected node cannot accept the operation because all
+ * connections are in use or it unable to make a new connection, the next node in
+ * the list is tried until either the operation is accepted or all nodes have
+ * been tried. If no nodes are able to accept the operation its setException()
  * method is called with a {@link NoNodesAvailableException}.
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -47,7 +48,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
     private final AtomicInteger index = new AtomicInteger();
     private final Logger logger = LoggerFactory.getLogger(DefaultNodeManager.class);
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
-    
+
     @Override
     public void init(List<RiakNode> nodes)
     {
@@ -73,7 +74,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
             {
                 int startIndex = index.getAndIncrement();
                 int currentIndex = startIndex;
-                
+
                 do
                 {
                     if (healthy.get(Math.abs(currentIndex % healthy.size())).execute(operation))
@@ -89,7 +90,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
             {
                 executed = healthy.get(0).execute(operation);
             }
-            
+
             return executed;
         }
         finally
@@ -97,7 +98,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
             lock.readLock().unlock();
         }
     }
-    
+
     @Override
     public void nodeStateChanged(RiakNode node, State state)
     {
@@ -110,7 +111,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                     if (unhealthy.remove(node))
                     {
                         healthy.add(node);
-                        logger.info("NodeManager moved node to healthy list; {}:{}", 
+                        logger.info("NodeManager moved node to healthy list; {}:{}",
                                     node.getRemoteAddress(), node.getPort());
                     }
                 }
@@ -126,7 +127,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
                     if (healthy.remove(node))
                     {
                         unhealthy.add(node);
-                        logger.info("NodeManager moved node to unhealthy list; {}:{}", 
+                        logger.info("NodeManager moved node to unhealthy list; {}:{}",
                                     node.getRemoteAddress(), node.getPort());
                     }
                 }
@@ -174,7 +175,7 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
         {
             lock.writeLock().unlock();
         }
-        
+
     }
 
     @Override
@@ -194,12 +195,12 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
         {
             lock.writeLock().unlock();
         }
-        
+
         if (removed)
         {
             node.removeStateListener(this);
             node.shutdown();
-            logger.info("NodeManager removed and shutdown node; {}:{}", 
+            logger.info("NodeManager removed and shutdown node; {}:{}",
                         node.getRemoteAddress(), node.getPort());
         }
         return removed;

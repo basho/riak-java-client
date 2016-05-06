@@ -431,5 +431,10 @@
             <artifactId>antlr-complete</artifactId>
             <version>3.5.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.erlang.otp</groupId>
+            <artifactId>jinterface</artifactId>
+            <version>1.5.6</version>
+        </dependency>
     </dependencies>
 </project>

@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -38,7 +37,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
-    
+
     private SecondaryIndexQueryOperation(Builder builder)
     {
         // Yo dawg, we don't ever not want to use streaming.
@@ -50,28 +49,28 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     @Override
     protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse)
     {
-        SecondaryIndexQueryOperation.Response.Builder responseBuilder = 
+        SecondaryIndexQueryOperation.Response.Builder responseBuilder =
             new SecondaryIndexQueryOperation.Response.Builder();
-        
+
         for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
         {
             /**
-             * The 2i API is inconsistent on the Riak side. If it's not 
-             * a range query, return_terms is ignored it only returns the 
+             * The 2i API is inconsistent on the Riak side. If it's not
+             * a range query, return_terms is ignored it only returns the
              * list of object keys and you have to have
              * preserved the index key if you want to return it to the user
-             * with the results. 
-             * 
+             * with the results.
+             *
              * Also, the $key index queries just ignore return_terms altogether.
              */
-            
+
             if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase("$key"))
             {
                 if (pbReq.hasRangeMin())
                 {
                     for (RpbPair pair : pbEntry.getResultsList())
                     {
-                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()), 
+                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),
                                                              BinaryValue.unsafeCreate(pair.getValue().toByteArray())));
                     }
                 }
@@ -94,7 +93,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                     responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(objKey.toByteArray())));
                 }
             }
-            
+
             if (pbEntry.hasContinuation())
             {
                 responseBuilder.withContinuation(BinaryValue.unsafeCreate(pbEntry.getContinuation().toByteArray()));
@@ -114,7 +113,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     {
         try
         {
-            Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_IndexResp);
+            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_IndexResp);
             return RiakKvPB.RpbIndexResp.parseFrom(rawMessage.getData());
         }
         catch (InvalidProtocolBufferException e)
@@ -122,7 +121,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             throw new IllegalArgumentException("Invalid message received", e);
         }
     }
-    
+
     @Override
     protected boolean done(RiakKvPB.RpbIndexResp msg)
     {
@@ -134,8 +133,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     {
         return query;
     }
-    
-    
+
+
     /**
      * Builder that constructs a QueryOperation.
      */
@@ -143,9 +142,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     {
         private final RiakKvPB.RpbIndexReq.Builder pbReqBuilder = RiakKvPB.RpbIndexReq.newBuilder();
         private final Query query;
-        
+
         /**
-         * Constructs a builder for a QueryOperation. 
+         * Constructs a builder for a QueryOperation.
          * The index name must be the complete name with the _int or _bin suffix.
          * @param query A 2i query.
          */
@@ -157,12 +156,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             }
 
             this.query = query;
-            
+
             pbReqBuilder.setBucket(ByteString.copyFrom(query.namespace.getBucketName().unsafeGetValue()))
                         .setType(ByteString.copyFrom(query.namespace.getBucketType().unsafeGetValue()))
                         .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
                         .setReturnTerms(query.returnKeyAndIndex);
-            
+
             if (query.indexKey != null)
             {
                 pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
@@ -194,13 +193,13 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 pbReqBuilder.setTermRegex(ByteString.copyFrom(query.termFilter.unsafeGetValue()));
             }
-            
+
             if (query.timeout != null)
             {
                 pbReqBuilder.setTimeout(query.timeout);
             }
         }
-        
+
         /**
          * Construct a new QueryOperation.
          * @return a QueryOperation
@@ -210,7 +209,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return new SecondaryIndexQueryOperation(this);
         }
     }
-    
+
     public static class Query
     {
         private final Namespace namespace;
@@ -224,7 +223,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final Boolean paginationSort;
         private final BinaryValue termFilter;
         private final Integer timeout;
-        
+
         private Query(Builder builder)
         {
             this.indexName = builder.indexName;
@@ -248,7 +247,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             return namespace;
         }
-        
+
         /**
          * @return the indexName
          */
@@ -320,7 +319,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             return termFilter;
         }
-        
+
         /**
          * @return the timeout value, or null if not set.
          */
@@ -328,8 +327,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             return timeout;
         }
-        
-        
+
+
         public static class Builder
         {
             private final Namespace namespace;
@@ -343,9 +342,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private Boolean paginationSort;
             private BinaryValue termFilter;
             private Integer timeout;
-            
+
             /**
-            * Constructs a builder for a (2i) Query. 
+            * Constructs a builder for a (2i) Query.
             * The index name must be the complete name with the _int or _bin suffix.
             * @param namespace the namespace for this Query
             * @param indexName the name of the index (including suffix).
@@ -363,11 +362,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 this.indexName = indexName;
                 this.namespace = namespace;
             }
-            
+
             /**
             * Set a single secondary index key to use for query.
             * If querying a _int index the bytes must be the UTF-8 text
-            * representation of an integer (Yes, really). 
+            * representation of an integer (Yes, really).
             * @param key the secondary index key.
             * @return a reference to this object.
             */
@@ -376,11 +375,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                this.indexKey = key;
                return this;
            }
-           
+
            /**
             * Set the start value for a range query.
             * If querying a _int index the bytes must be the UTF-8 text
-            * representation of an integer (Yes, really). 
+            * representation of an integer (Yes, really).
             * @param startingIndex the starting index for a range query.
             * @return a reference to this object.
             */
@@ -389,20 +388,20 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                this.rangeStart = startingIndex;
                return this;
            }
-            
+
            /**
             * Set the ending value for a range query.
             * If querying a _int index the bytes must be the UTF-8 text
-            * representation of an integer (Yes, really). 
+            * representation of an integer (Yes, really).
             * @param endIndex the ending index for a range query.
             * @return a reference to this object.
             */
-           public Builder withRangeEnd(BinaryValue endIndex) 
+           public Builder withRangeEnd(BinaryValue endIndex)
            {
                this.rangeEnd = endIndex;
                return this;
            }
-            
+
            /**
             * Set whether to return the index keys with the Riak object keys.
             * Setting this to true will return both the index key and the Riak
@@ -415,7 +414,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                this.returnKeyAndIndex = returnBoth;
                return this;
            }
-           
+
            /**
             * Set the maximum number of results returned by the query.
             * @param maxResults the number of results.
@@ -437,7 +436,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                this.continuation = continuation;
                return this;
            }
-           
+
            /**
             * Set whether to sort the results of a non-paginated 2i query.
             * <p>
@@ -445,9 +444,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             * </p>
             * <p>
             * Note that this is not recommended for queries that could return a large
-            * result set; the overhead in Riak is substantial. 
+            * result set; the overhead in Riak is substantial.
             * </p>
-            * 
+            *
             * @param orderByKey true to sort the results, false to return as-is.
             * @return a reference to this object.
             */
@@ -467,7 +466,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                this.termFilter = filter;
                return this;
            }
-           
+
            /**
             * Set the timeout for the query.
             * <p>
@@ -481,7 +480,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                this.timeout = timeout;
                return this;
            }
-           
+
            public Query build()
             {
                 // sanity checks
@@ -511,7 +510,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             }
         }
     }
-    
+
     public static class Response
     {
         private final BinaryValue continuation;
@@ -522,7 +521,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.continuation = builder.continuation;
             this.entryList = builder.entryList;
         }
-        
+
         public boolean hasContinuation()
         {
             return continuation != null;
@@ -532,12 +531,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             return continuation;
         }
-        
+
         public List<Response.Entry> getEntryList()
         {
             return entryList;
         }
-        
+
         public static class Entry
         {
             private final BinaryValue indexKey;
@@ -569,31 +568,31 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 return objectKey;
             }
         }
-        
+
         static class Builder
         {
             private BinaryValue continuation;
-            private List<Response.Entry> entryList = 
+            private List<Response.Entry> entryList =
                 new ArrayList<Response.Entry>();
-            
+
             Builder withContinuation(BinaryValue continuation)
             {
                 this.continuation = continuation;
                 return this;
             }
-            
+
             Builder addEntry(Response.Entry entry)
             {
                 entryList.add(entry);
                 return this;
             }
-            
+
             Response build()
             {
                 return new Response(this);
             }
         }
-        
+
     }
-    
+
 }

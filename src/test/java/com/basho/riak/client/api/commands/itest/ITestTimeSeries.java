@@ -4,13 +4,18 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.timeseries.*;
+import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import java.util.*;
@@ -18,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Time Series Commands Integration Tests
@@ -69,6 +75,9 @@ public class ITestTimeSeries extends ITestTsBase
 
         return client.executeAsync(cmd);
     }
+
+    @Rule
+    public ExpectedException thrown= ExpectedException.none();
 
     @Test
     public void test_a_TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
@@ -381,7 +390,26 @@ public class ITestTimeSeries extends ITestTsBase
 
         final String message = describeFuture.cause().getMessage();
         assertTrue(message.toLowerCase().contains(BAD_TABLE_NAME.toLowerCase()));
-        assertTrue(message.toLowerCase().contains("not an active table."));
+        assertTrue(message.toLowerCase().contains("not an active table"));
+    }
+
+    @Test
+    public void test_z_TestPBCErrorsReturnWhenSecurityIsOn() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(security);
+
+        thrown.expect(ExecutionException.class);
+        thrown.expectMessage("Security is enabled, please STARTTLS first");
+
+        // Build connection WITHOUT security
+        final RiakNode node = new RiakNode.Builder().withRemoteAddress(hostname).withRemotePort(pbcPort).build();
+        final RiakCluster cluster = new RiakCluster.Builder(node).build();
+        cluster.start();
+        final RiakClient client = new RiakClient(cluster);
+
+        Query query = new Query.Builder("DESCRIBE " + tableName).build();
+
+        final QueryResult result = client.execute(query);
     }
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
