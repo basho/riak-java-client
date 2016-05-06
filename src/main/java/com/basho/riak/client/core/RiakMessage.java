@@ -4,6 +4,7 @@ import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
+import com.ericsson.otp.erlang.OtpExternal;
 import com.ericsson.otp.erlang.OtpInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.nio.charset.StandardCharsets;
@@ -97,6 +98,15 @@ public final class RiakMessage
 
         try
         {
+            int firstByte = ttbInputStream.read1skip_version();
+
+            if(firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
+            {
+                return null;
+            }
+
+            ttbInputStream.reset();
+
             ttbMsgArity = ttbInputStream.read_tuple_head();
         }
         catch (OtpErlangDecodeException ex)

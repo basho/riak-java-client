@@ -8,10 +8,8 @@ import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +150,37 @@ public class TermToBinaryCodec
         QueryResult result = null;
 
         OtpInputStream is = new OtpInputStream(response);
+
+        int firstByte = is.read1skip_version();
+        is.reset();
+
+        if(firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
+        {
+            return parseAtomResult(is);
+        }
+
+        return parseTupleResult(is);
+    }
+
+    private static QueryResult parseAtomResult(OtpInputStream is)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+        final String responseAtom = is.read_atom();
+
+        if(Objects.equals(responseAtom, TS_QUERY_RESP))
+        {
+            return QueryResult.EMPTY;
+        }
+
+        throw new InvalidTermToBinaryException("Invalid Response atom encountered: " +
+                                                    responseAtom + ". Was expecting tsqueryresp");
+
+    }
+
+    private static QueryResult parseTupleResult(OtpInputStream is)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+        QueryResult result;
         final int msgArity = is.read_tuple_head();
         // Response is:
         // {'rpberrorresp', ErrMsg, ErrCode}
@@ -179,7 +208,6 @@ public class TermToBinaryCodec
                 logger.error(errorMsg);
                 throw new IllegalArgumentException(errorMsg);
         }
-
         return result;
     }
 
