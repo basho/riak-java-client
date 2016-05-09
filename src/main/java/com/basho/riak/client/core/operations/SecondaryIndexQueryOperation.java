@@ -411,9 +411,9 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return timeout;
         }
 
-        
+        /**
          * @return the cover context value, or null if not set.
-        
+         */
         public byte[] getCoverageContext() {
             return coverageContext;
         }
@@ -579,7 +579,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                return this;
            }
 
-           
+           /*
             * Set the coverage context for the query
             * @param coverageContext
             * @return a reference to this object.

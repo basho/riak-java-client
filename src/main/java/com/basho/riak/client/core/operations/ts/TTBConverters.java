@@ -78,7 +78,7 @@ class TTBConverters
         @Override
         OtpOutputStream buildMessage()
         {
-            return TermToBinaryCodec.encodeTsQueryRequest(builder.getQueryText());
+            return TermToBinaryCodec.encodeTsQueryRequest(builder.getQueryText(), builder.getCoverageContext());
         }
     }
 

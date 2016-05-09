@@ -83,7 +83,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
     protected RiakKvPB.RpbCoverageResp decode(RiakMessage rawMessage) {
         try
         {
-            Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_CoverageResp);
+            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_CoverageResp);
             return RiakKvPB.RpbCoverageResp.parseFrom(rawMessage.getData());
         }
         catch (InvalidProtocolBufferException e)

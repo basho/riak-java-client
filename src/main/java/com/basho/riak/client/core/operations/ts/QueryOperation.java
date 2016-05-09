@@ -42,7 +42,7 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
     public static class Builder
     {
         private final String queryText;
-        private final RiakTsPB.TsInterpolation.Builder interpolationBuilder = RiakTsPB.TsInterpolation.newBuilder();
+        private byte[] coverageContext;
 
         public Builder(String queryText)
         {
@@ -51,12 +51,13 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
                 throw new IllegalArgumentException("QueryText cannot be null or empty");
             }
             this.queryText = queryText;
-            this.interpolationBuilder.setBase(ByteString.copyFromUtf8(queryText));
         }
 
-        public Builder withCoverageContext(byte[] coverageContext) {
-            if(coverageContext != null) {
-                reqBuilder.setCoverContext(ByteString.copyFrom(coverageContext));
+        public Builder withCoverageContext(byte[] coverageContext)
+        {
+            if(coverageContext != null)
+            {
+                this.coverageContext = coverageContext;
             }
             return this;
         }
@@ -64,6 +65,11 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
         public String getQueryText()
         {
             return queryText;
+        }
+
+        public byte[] getCoverageContext()
+        {
+            return coverageContext;
         }
 
         public QueryOperation build()

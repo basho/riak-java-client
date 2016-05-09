@@ -7,11 +7,11 @@ import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class TermToBinaryCodec
 {
@@ -52,7 +52,7 @@ public class TermToBinaryCodec
         return decodeTsResponse(response);
     }
 
-    public static OtpOutputStream encodeTsQueryRequest(String queryText)
+    public static OtpOutputStream encodeTsQueryRequest(String queryText, byte[] coverageContext)
     {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
@@ -72,8 +72,15 @@ public class TermToBinaryCodec
         // streaming is false for now
         os.write_boolean(false);
 
-        // cover_context is an undefined atom
-        os.write_atom(UNDEFINED);
+        if (coverageContext == null)
+        {
+            // cover_context is an undefined atom
+            os.write_atom(UNDEFINED);
+        }
+        else
+        {
+            os.write(coverageContext);
+        }
 
         return os;
     }
@@ -154,7 +161,7 @@ public class TermToBinaryCodec
         int firstByte = is.read1skip_version();
         is.reset();
 
-        if(firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
+        if (firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
         {
             return parseAtomResult(is);
         }
@@ -167,13 +174,13 @@ public class TermToBinaryCodec
     {
         final String responseAtom = is.read_atom();
 
-        if(Objects.equals(responseAtom, TS_QUERY_RESP))
+        if (Objects.equals(responseAtom, TS_QUERY_RESP))
         {
             return QueryResult.EMPTY;
         }
 
         throw new InvalidTermToBinaryException("Invalid Response atom encountered: " +
-                                                    responseAtom + ". Was expecting tsqueryresp");
+                                                       responseAtom + ". Was expecting tsqueryresp");
 
     }
 
