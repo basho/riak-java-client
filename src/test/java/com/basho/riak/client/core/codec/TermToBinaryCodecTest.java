@@ -130,7 +130,8 @@ public class TermToBinaryCodecTest
     }
 
     @Test
-    public void encodesQueryRequestCorrectly() {
+    public void encodesQueryRequestCorrectly()
+    {
         // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []}, false, []}
         final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
@@ -140,7 +141,7 @@ public class TermToBinaryCodecTest
                             110,101,100};
 
         try {
-            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY);
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, null);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);

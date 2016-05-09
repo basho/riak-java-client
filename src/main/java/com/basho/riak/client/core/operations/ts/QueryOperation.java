@@ -42,6 +42,7 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
     {
         private final String queryText;
         private final RiakTsPB.TsQueryReq.Builder reqBuilder = RiakTsPB.TsQueryReq.newBuilder();
+        private byte[] coverageContext;
 
         public Builder(String queryText)
         {
@@ -54,9 +55,11 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
             reqBuilder.setQuery(interpolationBuilder);
         }
 
-        public Builder withCoverageContext(byte[] coverageContext) {
-            if(coverageContext != null) {
-                reqBuilder.setCoverContext(ByteString.copyFrom(coverageContext));
+        public Builder withCoverageContext(byte[] coverageContext)
+        {
+            if(coverageContext != null)
+            {
+                this.coverageContext = coverageContext;
             }
             return this;
         }
@@ -64,6 +67,11 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
         public String getQueryText()
         {
             return queryText;
+        }
+
+        public byte[] getCoverageContext()
+        {
+            return coverageContext;
         }
 
         public QueryOperation build()
