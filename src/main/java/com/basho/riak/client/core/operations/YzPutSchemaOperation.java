@@ -31,13 +31,13 @@ public class YzPutSchemaOperation extends FutureOperation<Void, Void, YokozunaSc
 {
     private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder;
     private final YokozunaSchema schema;
-    
+
     private YzPutSchemaOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.schema = builder.schema;
     }
-    
+
     @Override
     protected Void convert(List<Void> rawResponse)
     {
@@ -54,7 +54,7 @@ public class YzPutSchemaOperation extends FutureOperation<Void, Void, YokozunaSc
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
     }
 
@@ -63,24 +63,24 @@ public class YzPutSchemaOperation extends FutureOperation<Void, Void, YokozunaSc
     {
         return schema;
     }
-    
+
     public static class Builder
     {
         private final RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaSchemaPutReq.newBuilder();
         private final YokozunaSchema schema;
-        
+
         public Builder(YokozunaSchema schema)
         {
-            RiakYokozunaPB.RpbYokozunaSchema.Builder schemaBuilder = 
+            RiakYokozunaPB.RpbYokozunaSchema.Builder schemaBuilder =
             RiakYokozunaPB.RpbYokozunaSchema.newBuilder();
-        
+
             schemaBuilder.setName(ByteString.copyFromUtf8(schema.getName()));
             schemaBuilder.setContent(ByteString.copyFromUtf8(schema.getContent()));
             reqBuilder.setSchema(schemaBuilder);
             this.schema = schema;
         }
-        
+
         public YzPutSchemaOperation build()
         {
             return new YzPutSchemaOperation(this);

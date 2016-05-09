@@ -7,8 +7,6 @@ import com.google.protobuf.GeneratedMessage.Builder;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
  * An abstract PB operation that introduces generic encoding/decoding
  *
@@ -23,7 +21,7 @@ import java.util.List;
 public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S> {
     protected final Builder<?> reqBuilder;
     private final com.google.protobuf.Parser<U> respParser;
-    private final byte reqMessageCode;
+    protected final byte reqMessageCode;
     private final byte respMessageCode;
 
 
@@ -45,7 +43,7 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
 
     @Override
     protected U decode(RiakMessage rawMessage) {
-        Operations.checkMessageType(rawMessage, respMessageCode);
+        Operations.checkPBMessageType(rawMessage, respMessageCode);
         try
         {
             byte[] data = rawMessage.getData();
@@ -64,16 +62,5 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
 
             throw new IllegalArgumentException("Invalid message received", e);
         }
-    }
-
-    protected U checkAndGetSingleResponse(List<U> responses)
-    {
-        if (responses.size() > 1)
-        {
-            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
-                                                           responses.size());
-        }
-
-        return responses.get(0);
     }
 }

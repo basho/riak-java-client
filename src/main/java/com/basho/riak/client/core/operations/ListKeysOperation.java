@@ -66,7 +66,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
     {
         try
         {
-            Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_ListKeysResp);
+            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_ListKeysResp);
             return RiakKvPB.RpbListKeysResp.parseFrom(rawMessage.getData());
         }
         catch (InvalidProtocolBufferException e)

@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+### 2.0.6
+Following issues / PRs addressed:
+ * [Removed riak_pb external dependency](https://github.com/basho/riak-java-client/pull/615)
+ * [Fixed connection handling deadlock issue](https://github.com/basho/riak-java-client/pull/598)
+ * [Added TimeSeries Create Table command](https://github.com/basho/riak-java-client/pull/602/)
+ * [Added Erlang Term Serialization support for some Time Series operations](https://github.com/basho/riak-java-client/pull/611/)
+
 ### 2.0.5
 Following issues / PRs addressed:
  * [Fix DNS cache issue when using the client with ELB](https://github.com/basho/riak-java-client/pull/573)

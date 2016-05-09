@@ -16,9 +16,6 @@
 package com.basho.riak.client.core;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,6 +25,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
@@ -262,7 +261,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     public synchronized final Object channelMessage()
     {
-        Object message = createChannelMessage();
+        final Object message = createChannelMessage();
         state = State.WRITTEN;
         return message;
     }
@@ -309,17 +308,35 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         latch.await();
 
+        throwExceptionIfSet();
+
+        if (null == converted)
+        {
+            tryConvertResponse();
+        }
+
+        return converted;
+    }
+
+    private void throwExceptionIfSet() throws ExecutionException
+    {
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        else if (null == converted)
+    }
+
+    private void tryConvertResponse() throws ExecutionException
+    {
+        try
         {
             converted = convert(rawResponse);
-
         }
-
-        return converted;
+        catch(IllegalArgumentException ex)
+        {
+            exception = ex;
+            throwExceptionIfSet();
+        }
     }
 
     @Override
@@ -331,13 +348,12 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             throw new TimeoutException();
         }
-        else if (exception != null)
+
+        throwExceptionIfSet();
+
+        if (null == converted)
         {
-            throw new ExecutionException(exception);
-        }
-        else if (null == converted)
-        {
-            converted = convert(rawResponse);
+            tryConvertResponse();
         }
 
         return converted;
@@ -373,6 +389,16 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         latch.await(timeout, unit);
     }
 
+    protected U checkAndGetSingleResponse(List<U> responses)
+    {
+        if (responses.size() > 1)
+        {
+            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
+                                                           responses.size());
+        }
+
+        return responses.get(0);
+    }
 
     private void stateCheck(State... allowedStates)
     {
