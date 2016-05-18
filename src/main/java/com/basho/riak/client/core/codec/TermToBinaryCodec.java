@@ -79,7 +79,7 @@ public class TermToBinaryCodec
         }
         else
         {
-            os.write(coverageContext);
+            os.write_binary(coverageContext);
         }
 
         return os;

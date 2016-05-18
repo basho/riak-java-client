@@ -1,14 +1,11 @@
 package com.basho.riak.client.core.codec;
 
-import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpOutputStream;
-import com.google.protobuf.ByteString;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,6 +23,7 @@ public class TermToBinaryCodecTest
 {
     private static final String TABLE_NAME = "test_table";
     private static final String QUERY = "SELECT * FROM FRAZZLE";
+    private static final byte[] CONTEXT = new byte[]{(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
     @Test
     public void encodesPutRequestCorrectly_1() {
@@ -132,7 +130,7 @@ public class TermToBinaryCodecTest
     @Test
     public void encodesQueryRequestCorrectly()
     {
-        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []}, false, []}
+        // {tsqueryreq,{tsinterpolation,<<"SELECT * FROM FRAZZLE">>,[]},false,undefined}
         final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
@@ -142,6 +140,27 @@ public class TermToBinaryCodecTest
 
         try {
             OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, null);
+            os.flush();
+            byte[] msg = os.toByteArray();
+            Assert.assertArrayEquals(exp, msg);
+        } catch (IOException ex) {
+            Assert.fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void encodesQueryRequestWithCoverageContextCorrectly()
+    {
+        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []}, false, <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>}
+        final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
+                            113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
+                            108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
+                            32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
+                            5,102,97,108,115,101,109,0,0,0,25,(byte)131,104,2,98,40,26,4,
+                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
+
+        try {
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
