@@ -7,6 +7,7 @@ import com.basho.riak.client.core.query.timeseries.QueryResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
@@ -33,8 +34,9 @@ public class ITestQueryOperation extends ITestTsBase
     @Test
     public void queryNoMatches() throws ExecutionException, InterruptedException
     {
-        final String queryText = "select * from GeoCheckin " +
-                                 "where time > 0 " +
+        final String queryText = "select * from " +
+                                 tableName +
+                                 " where time > 0 " +
                                  "  and time < 10 " +
                                  "  and user ='user1'" +
                                  "  and geohash ='hash1'";
@@ -51,8 +53,9 @@ public class ITestQueryOperation extends ITestTsBase
     @Test
     public void querySomeMatches() throws ExecutionException, InterruptedException
     {
-        final String queryText = "select * from GeoCheckin " +
-                                 "where time > " + tenMinsAgo +
+        final String queryText = "select * from " +
+                                 tableName +
+                                 " where time > " + tenMinsAgo +
                                  "  and time < "+ now +
                                  "  and user ='user2'" +
                                  "  and geohash ='hash1'";
@@ -64,5 +67,23 @@ public class ITestQueryOperation extends ITestTsBase
         assertNotNull(queryResult);
         assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
+    }
+
+    @Test
+    public void queryCreateTable() throws ExecutionException, InterruptedException
+    {
+        final String queryText = "CREATE TABLE BobbyTables" + Integer.toString(new Random().nextInt()) +
+        " (" +
+        "    k1 varchar not null," +
+        "    k2 varchar   not null," +
+        "    k3 timestamp not null, " +
+        "    PRIMARY KEY((k1, k2, quantum(k3, 15, 'm')),k1, k2, k3)" +
+        " )";
+
+        final QueryResult queryResult = executeQuery(new QueryOperation.Builder(queryText));
+
+        assertNotNull(queryResult);
+        assertEquals(0, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(0, queryResult.getRowsCount());
     }
 }

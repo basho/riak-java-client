@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Operations Class Unit Tests
-
+ *
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
@@ -19,11 +19,20 @@ public class OperationsTest
     public void testThatMessageCodesAreWrittenCorrectlyInErrorMessages()
     {
         // MSG_StartTls = 255
-        RiakMessage msg = new RiakMessage(RiakMessageCodes.MSG_StartTls, new byte[0]);
+        RiakMessage msg = null;
 
         try
         {
-            Operations.checkMessageType(msg, RiakMessageCodes.MSG_GetReq);
+            msg = new RiakMessage(RiakMessageCodes.MSG_StartTls, new byte[0]);
+        }
+        catch (Exception ex)
+        {
+            assertTrue("unexpected exception", false);
+        }
+
+        try
+        {
+            Operations.checkPBMessageType(msg, RiakMessageCodes.MSG_GetReq);
         }
         catch (IllegalStateException ex)
         {
@@ -34,8 +43,8 @@ public class OperationsTest
     @Test
     public void testThatSingedToUnsignedConversionIsCorrect()
     {
-        assertEquals(Operations.getUnsignedByteValue((byte)0x00), 0);
-        assertEquals(Operations.getUnsignedByteValue((byte)0xFF), 255);
+        assertEquals(Operations.getUnsignedByteValue((byte) 0x00), 0);
+        assertEquals(Operations.getUnsignedByteValue((byte) 0xFF), 255);
         assertEquals(Operations.getUnsignedIntValue(0x00000000), 0l);
         assertEquals(Operations.getUnsignedIntValue(0xffffffff), 4294967295l);
     }

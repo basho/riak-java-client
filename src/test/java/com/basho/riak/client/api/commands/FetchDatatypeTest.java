@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc
+ * Copyright 2013-2016 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
 package com.basho.riak.client.api.commands;
 
 import com.basho.riak.client.api.commands.datatypes.FetchMap;
-import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.api.commands.datatypes.FetchDatatype.Option;
 import com.basho.riak.client.core.query.Location;
@@ -28,51 +24,34 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.crdt.types.RiakMap;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class FetchDatatypeTest
+public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperation, DtFetchOperation.Response>
 {
+	private Location key = new Location(new Namespace("type", "bucket"), "key");
 
-    @Mock RiakCluster mockCluster;
-    @Mock RiakFuture mockFuture;
-    @Mock DtFetchOperation.Response mockResponse;
-	Location key = new Location(new Namespace("type", "bucket"), "key");
-    RiakClient client;
+    public FetchDatatypeTest() {
+        super(DtFetchOperation.Response.class);
+    }
 
-    @Before
-    @SuppressWarnings("unchecked")
-    public void init() throws Exception
+    @Override
+    protected void setupResponse(DtFetchOperation.Response mockedResponse)
     {
-        MockitoAnnotations.initMocks(this);
-        when(mockResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
-        when(mockResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
-        when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
-        when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
-        client = new RiakClient(mockCluster);
+        super.setupResponse(mockedResponse);
+
+        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
+        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
     }
 
     @Test
     public void testFetch() throws Exception
     {
-
         FetchMap fetchValue = new FetchMap.Builder(key)
             .withOption(Option.TIMEOUT, 100)
             .withOption(Option.BASIC_QUORUM, true)
@@ -86,14 +65,8 @@ public class FetchDatatypeTest
 
         assertEquals(key, fetchValue.getLocation());
 
-        client.execute(fetchValue);
-
-        ArgumentCaptor<DtFetchOperation> captor =
-            ArgumentCaptor.forClass(DtFetchOperation.class);
-        verify(mockCluster).execute(captor.capture());
-
-        DtFetchOperation operation = captor.getValue();
-        RiakDtPB.DtFetchReq.Builder builder =
+        final DtFetchOperation operation = executeAndVerify(fetchValue);
+        final RiakDtPB.DtFetchReq.Builder builder =
             (RiakDtPB.DtFetchReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
         assertEquals("type", builder.getType().toStringUtf8());
@@ -107,6 +80,4 @@ public class FetchDatatypeTest
         assertEquals(1, builder.getR());
         assertEquals(true, builder.getSloppyQuorum());
     }
-
-
 }

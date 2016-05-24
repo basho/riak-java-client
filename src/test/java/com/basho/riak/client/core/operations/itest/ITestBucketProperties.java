@@ -18,8 +18,6 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
-import static com.basho.riak.client.core.operations.itest.ITestBase.testBucketType;
 import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.core.query.Namespace;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +29,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestBucketProperties extends ITestBase
+public class ITestBucketProperties extends ITestAutoCleanupBase
 {
     
     @Test

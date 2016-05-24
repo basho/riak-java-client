@@ -3,6 +3,8 @@ package com.basho.riak.client.core.query.timeseries;
 import com.basho.riak.protobuf.RiakTsPB;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -18,14 +20,16 @@ public class QueryResult implements Iterable<Row>
 {
     public static final QueryResult EMPTY = new QueryResult();
     private final Iterable<RiakTsPB.TsRow> pbRows;
-    private final int pbRowsCount;
+    private final Row[] rows;
+    private final int rowCount;
     private final List<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
 
     private QueryResult()
     {
         this.pbRows = Collections.emptyList();
-        this.pbRowsCount = 0;
+        this.rowCount = 0;
         this.pbColumnDescriptions = Collections.emptyList();
+        this.rows = null;
     }
 
     public QueryResult(List<RiakTsPB.TsRow> tsRows)
@@ -37,14 +41,23 @@ public class QueryResult implements Iterable<Row>
     {
         this.pbColumnDescriptions = null;
         this.pbRows = tsRowsIterator;
-        this.pbRowsCount = rowCount;
+        this.rowCount = rowCount;
+        this.rows = null;
     }
 
     public QueryResult(List<RiakTsPB.TsColumnDescription> columnsList, List<RiakTsPB.TsRow> rowsList)
     {
         this.pbColumnDescriptions = columnsList;
         this.pbRows = rowsList;
-        this.pbRowsCount = rowsList.size();
+        this.rowCount = rowsList.size();
+        this.rows = null;
+    }
+
+    public QueryResult(Row[] rows) {
+        this.rows = rows;
+        this.rowCount = rows.length;
+        this.pbRows = Collections.emptyList();
+        this.pbColumnDescriptions = Collections.emptyList();
     }
 
     /**
@@ -62,7 +75,11 @@ public class QueryResult implements Iterable<Row>
      */
     public Iterator<Row> iterator()
     {
-        return ConvertibleIterator.iterateAsRow(this.pbRows.iterator());
+        if (this.rows != null) {
+            return Arrays.asList(this.rows).iterator();
+        } else {
+            return ConvertibleIterator.iterateAsRow(this.pbRows.iterator());
+        }
     }
 
     /**
@@ -71,7 +88,7 @@ public class QueryResult implements Iterable<Row>
      */
     public int getRowsCount()
     {
-        return this.pbRowsCount;
+        return this.rowCount;
     }
 
     /**

@@ -32,15 +32,15 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Names
 {
     private final RiakPB.RpbResetBucketReq.Builder reqBuilder;
     private final Namespace namespace;
-    
+
     private ResetBucketPropsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
     }
-    
+
     @Override
-    protected Void convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse)
     {
         return null;
     }
@@ -48,16 +48,16 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Names
     @Override
     protected RiakMessage createChannelMessage()
     {
-        RiakPB.RpbResetBucketReq req = 
+        RiakPB.RpbResetBucketReq req =
             reqBuilder.build();
-        
+
         return new RiakMessage(RiakMessageCodes.MSG_ResetBucketReq, req.toByteArray());
     }
 
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_ResetBucketResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_ResetBucketResp);
         return null;
     }
 
@@ -66,15 +66,15 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Names
     {
         return namespace;
     }
-    
+
     public static class Builder
     {
-        private final RiakPB.RpbResetBucketReq.Builder reqBuilder = 
+        private final RiakPB.RpbResetBucketReq.Builder reqBuilder =
             RiakPB.RpbResetBucketReq.newBuilder();
         private final Namespace namespace;
-        
+
         /**
-         * Construct a builder for a ResetBucketPropsOperation. 
+         * Construct a builder for a ResetBucketPropsOperation.
          * @param namespace The namespace in Riak.
          */
         public Builder(Namespace namespace)
@@ -87,7 +87,7 @@ public class ResetBucketPropsOperation extends FutureOperation<Void, Void, Names
             reqBuilder.setType(ByteString.copyFrom(namespace.getBucketType().unsafeGetValue()));
             this.namespace = namespace;
         }
-        
+
         public ResetBucketPropsOperation build()
         {
             return new ResetBucketPropsOperation(this);

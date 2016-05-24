@@ -23,9 +23,17 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 
-public class RiakPemConnection {
+public class RiakPemConnection
+{
 
     private static final KeyStore trustStore = loadTruststore();
+
+    /**
+     * Riak PBC port
+     *
+     * In case you want/need to use a custom PBC port you may pass it by using the following system property
+     */
+    private static final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
 
     /**
      * Load Truststore using Trusted Certificates.
@@ -34,29 +42,25 @@ public class RiakPemConnection {
     private static KeyStore loadTruststore(){
 
         KeyStore truststore = null;
-        try {
+        try
+        {
             CertificateFactory cFactory = CertificateFactory.getInstance("X.509");
 
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("cacert.pem");
             X509Certificate caCert = (X509Certificate) cFactory.generateCertificate(in);
             in.close();
 
-            in = Thread.currentThread().getContextClassLoader().getResourceAsStream("cert.pem");
+            in = Thread.currentThread().getContextClassLoader().getResourceAsStream("riak-test-cert.pem");
             X509Certificate serverCert = (X509Certificate) cFactory.generateCertificate(in);
             in.close();
 
             truststore = KeyStore.getInstance(KeyStore.getDefaultType());
-            truststore.load(null, "password".toCharArray());
+            truststore.load(null, "basho".toCharArray());
             truststore.setCertificateEntry("cacert", caCert);
             truststore.setCertificateEntry("server", serverCert);
 
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e)
+        {
             e.printStackTrace();
         }
         return truststore;
@@ -92,18 +96,10 @@ public class RiakPemConnection {
             PrivateKey privKey = (PrivateKey) keyFactory.generatePrivate(ks);
 
             keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keystore.load(null, "password".toCharArray());
+            keystore.load(null, "basho".toCharArray());
             keystore.setKeyEntry("private-key", privKey,"".toCharArray(),new java.security.cert.Certificate[] { public_cert });
 
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | InvalidKeySpecException e) {
             e.printStackTrace();
         }
         return keystore;
@@ -126,11 +122,18 @@ public class RiakPemConnection {
      */
     public static RiakCluster getRiakCluster(){
 
-        RiakNode.Builder builder = new RiakNode.Builder();
-        builder.withMinConnections(1);
+        RiakNode.Builder builder = createRiakNodeBuilder();
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;
+    }
+
+    private static RiakNode.Builder createRiakNodeBuilder()
+    {
+        RiakNode.Builder builder = new RiakNode.Builder();
+        builder.withMinConnections(1);
+        builder.withRemotePort(testRiakPort);
+        return builder;
     }
 
     /**
@@ -154,8 +157,7 @@ public class RiakPemConnection {
      */
     public static RiakCluster getRiakCluster(String username, String password){
 
-        RiakNode.Builder builder = new RiakNode.Builder();
-        builder.withMinConnections(1);
+        RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore);
         RiakCluster cluster = initializeRiakCluster(builder);
 
@@ -188,8 +190,7 @@ public class RiakPemConnection {
     public static RiakCluster getRiakCluster(String username, String password, String privateKeyPemPath, String publicCertPemPath){
         KeyStore keyStore = loadKeystore(privateKeyPemPath,publicCertPemPath);
 
-        RiakNode.Builder builder = new RiakNode.Builder();
-        builder.withMinConnections(1);
+        RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore, keyStore, "");
         RiakCluster cluster = initializeRiakCluster(builder);
 

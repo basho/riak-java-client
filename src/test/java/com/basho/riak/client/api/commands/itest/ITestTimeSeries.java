@@ -4,18 +4,26 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.timeseries.*;
+import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.netty.RiakResponseException;
+import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
+import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Time Series Commands Integration Tests
@@ -26,7 +34,7 @@ import static org.junit.Assert.*;
  *
  * Schema for the Timeseries table we're using:
  *
- *   CREATE TABLE GeoCheckin
+ *   CREATE TABLE GeoCheckin&lt;RandomInteger&gt;
  *   (
  *      geohash     varchar   not null,
  *      user        varchar   not null,
@@ -41,35 +49,44 @@ import static org.junit.Assert.*;
  *      )
  *   )
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ITestTimeSeries extends ITestTsBase
 {
     private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
 
-    private final static String CreateTableTemplate =
-        "CREATE TABLE %s ( " +
-        "geohash varchar not null, " +
-        "user varchar not null, " +
-        "time timestamp not null, " +
-        "weather varchar not null, " +
-        "temperature double, " +
-        "uv_index sint64, " +
-        "observed boolean not null, " +
-        "PRIMARY KEY((geohash, user, quantum(time, 15, 'm')), geohash, user, time))";
+    private static List<FullColumnDescription> tableFields = Arrays.asList(
+            new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
+            new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
+            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3),
+            new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
+            new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
+            new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
+            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false)
+    );
 
     private static final String BAD_TABLE_NAME = "GeoChicken";
 
+    private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException {
+        final TableDefinition tableDef = new TableDefinition(tableName, tableFields);
+
+        final CreateTable cmd = new CreateTable.Builder(tableDef)
+                .withQuantum(15, TimeUnit.MINUTES)
+                .build();
+
+        return client.executeAsync(cmd);
+    }
+
+    @Rule
+    public ExpectedException thrown= ExpectedException.none();
+
     @Test
-    public void TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
+    public void test_a_TestCreateTableAndChangeNVal() throws InterruptedException, ExecutionException
     {
-        RiakClient client = new RiakClient(cluster);
-
-        String createTableCommandString = String.format(CreateTableTemplate, this.tableName);
-
-        Query create = new Query.Builder(createTableCommandString).build();
-        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
-
+        final RiakClient client = new RiakClient(cluster);
+        final RiakFuture<Void, String> resultFuture = createTableAsync(client, tableName);
         resultFuture.await();
         assertFutureSuccess(resultFuture);
+
 
         final Namespace namespace = new Namespace(tableName, tableName);
         StoreBucketProperties storeBucketPropsCmd = new StoreBucketProperties.Builder(namespace).withNVal(1).build();
@@ -88,20 +105,17 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestCreateBadTable() throws InterruptedException
+    public void test_b_TestCreateBadTable() throws InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
-
-        String badCreateTable = String.format(CreateTableTemplate, this.tableName) + ")";
-        Query create = new Query.Builder(badCreateTable).build();
-        final RiakFuture<QueryResult, String> resultFuture = client.executeAsync(create);
+        final RiakClient client = new RiakClient(cluster);
+        final RiakFuture<Void, String> resultFuture = createTableAsync(client, tableName);
 
         resultFuture.await();
         assertFutureFailure(resultFuture);
     }
 
     @Test
-    public void StoringData() throws ExecutionException, InterruptedException
+    public void test_c_StoringData() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -114,7 +128,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestListingKeysReturnsThem() throws ExecutionException, InterruptedException
+    public void test_d_TestListingKeysReturnsThem() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -130,7 +144,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void QueryingDataNoMatches() throws ExecutionException, InterruptedException
+    public void test_e_QueryingDataNoMatches() throws ExecutionException, InterruptedException
     {
         final String queryText = "select * from " + tableName + " Where time > 1 and time < 10 and user='user1' and geohash='hash1'";
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
@@ -141,7 +155,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void QueryingDataWithMinimumPredicate() throws ExecutionException, InterruptedException
+    public void test_f_QueryingDataWithMinimumPredicate() throws ExecutionException, InterruptedException
     {
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
         // Should only return the 2nd row (one from "5 mins ago")
@@ -162,7 +176,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void QueryingDataWithExtraPredicate() throws ExecutionException, InterruptedException
+    public void test_g_QueryingDataWithExtraPredicate() throws ExecutionException, InterruptedException
     {
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
         // Should only return the 2nd row (one from "5 mins ago")
@@ -183,7 +197,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void QueryingDataAcrossManyQuantum() throws ExecutionException, InterruptedException
+    public void test_h_QueryingDataAcrossManyQuantum() throws ExecutionException, InterruptedException
     {
         // Timestamp fields lower bounds are inclusive, upper bounds are exclusive
         // Should return the 2nd & 3rd rows. Query should cover 2 quantums at least.
@@ -205,7 +219,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestThatNullsAreSavedAndFetchedCorrectly() throws ExecutionException, InterruptedException
+    public void test_i_TestThatNullsAreSavedAndFetchedCorrectly() throws ExecutionException, InterruptedException
     {
         final String queryText = "select temperature from " + tableName + " " +
                 "where user = 'user2' and " +
@@ -225,7 +239,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestQueryingInvalidTableNameResultsInError() throws ExecutionException, InterruptedException
+    public void test_j_TestQueryingInvalidTableNameResultsInError() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -239,7 +253,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestStoringDataOutOfOrderResultsInError() throws ExecutionException, InterruptedException
+    public void test_k_TestStoringDataOutOfOrderResultsInError() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -253,7 +267,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
+    public void test_l_TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -271,7 +285,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestFetchingWithNotFoundKeyReturnsNoRows() throws ExecutionException, InterruptedException
+    public void test_m_TestFetchingWithNotFoundKeyReturnsNoRows() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -284,7 +298,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
+    public void test_n_TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
     {
         final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core.query.timeseries.Cell
                 .newTimestamp(fiveMinsAgo));
@@ -311,7 +325,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestDeletingWithNotFoundKeyDoesNotReturnError() throws ExecutionException, InterruptedException
+    public void test_o_TestDeletingWithNotFoundKeyDoesNotReturnError() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -322,11 +336,11 @@ public class ITestTimeSeries extends ITestTsBase
         final RiakFuture<Void, String> deleteFuture = client.executeAsync(delete);
 
         deleteFuture.await();
-        assertFutureSuccess(deleteFuture);
+        assertFutureFailure(deleteFuture);
     }
 
     @Test
-    public void TestDescribeTable() throws InterruptedException, ExecutionException
+    public void test_p_TestDescribeTable() throws InterruptedException, ExecutionException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -343,7 +357,7 @@ public class ITestTimeSeries extends ITestTsBase
     }
 
     @Test
-    public void TestDescribeTableCommand() throws InterruptedException, ExecutionException
+    public void test_q_TestDescribeTableCommand() throws InterruptedException, ExecutionException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -358,11 +372,12 @@ public class ITestTimeSeries extends ITestTsBase
         final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
         assertEquals(7, fullColumnDescriptions.size());
 
-        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(), new ArrayList<FullColumnDescription>(fullColumnDescriptions));
+        TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(),
+                new ArrayList<FullColumnDescription>(fullColumnDescriptions));
     }
 
     @Test
-    public void TestDescribeTableCommandForNonExistingTable() throws InterruptedException, ExecutionException
+    public void test_r_TestDescribeTableCommandForNonExistingTable() throws InterruptedException, ExecutionException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -375,7 +390,26 @@ public class ITestTimeSeries extends ITestTsBase
 
         final String message = describeFuture.cause().getMessage();
         assertTrue(message.toLowerCase().contains(BAD_TABLE_NAME.toLowerCase()));
-        assertTrue(message.toLowerCase().contains("does not exist."));
+        assertTrue(message.toLowerCase().contains("not an active table"));
+    }
+
+    @Test
+    public void test_z_TestPBCErrorsReturnWhenSecurityIsOn() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(security);
+
+        thrown.expect(ExecutionException.class);
+        thrown.expectMessage("Security is enabled, please STARTTLS first");
+
+        // Build connection WITHOUT security
+        final RiakNode node = new RiakNode.Builder().withRemoteAddress(hostname).withRemotePort(pbcPort).build();
+        final RiakCluster cluster = new RiakCluster.Builder(node).build();
+        cluster.start();
+        final RiakClient client = new RiakClient(cluster);
+
+        Query query = new Query.Builder("DESCRIBE " + tableName).build();
+
+        final QueryResult result = client.execute(query);
     }
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()

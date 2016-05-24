@@ -23,7 +23,7 @@ import com.basho.riak.client.api.annotations.RiakKey;
 import com.basho.riak.client.api.annotations.RiakVClock;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.query.Location;
@@ -39,7 +39,7 @@ import org.junit.Test;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ITestBinIndexQuery extends ITestBase
+public class ITestBinIndexQuery extends ITestAutoCleanupBase
 {
     @Test
     public void testMatchQuery() throws ExecutionException, InterruptedException

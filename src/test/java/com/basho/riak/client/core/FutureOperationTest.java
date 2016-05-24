@@ -125,6 +125,7 @@ public class FutureOperationTest
         operation.setResponse(response);
         verify(retrier).operationComplete(operation, NUM_TRIES - 1);
         assertTrue(operation.isDone());
+        operation.setComplete();
         assertNotNull(operation.get());
     }
 
@@ -161,6 +162,7 @@ public class FutureOperationTest
         });
 
         operation.setResponse(response);
+        operation.setComplete();
 
         assertTrue(operation.isDone());
         assertTrue(called.get());
@@ -186,6 +188,7 @@ public class FutureOperationTest
 
         operation.setResponse(response);
         operation.setResponse(response);
+        operation.setComplete();
 
         assertTrue(operation.isDone());
         assertEquals(1, called.get());
@@ -248,6 +251,7 @@ public class FutureOperationTest
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
         operation.setResponse(response);
+        operation.setComplete();
 
         final AtomicBoolean called = new AtomicBoolean(false);
         operation.addListener(new RiakFutureListener<String, Void>()
@@ -344,7 +348,7 @@ public class FutureOperationTest
         }
 
         @Override
-        protected String convert(List<Message> rawResponse) 
+        protected String convert(List<Message> rawResponse)
         {
             return "Fake!";
         }

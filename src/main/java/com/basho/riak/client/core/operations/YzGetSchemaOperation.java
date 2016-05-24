@@ -38,16 +38,16 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
         this.reqBuilder = builder.reqBuilder;
         this.schemaName = builder.schemaName;
     }
-    
+
     @Override
     protected YzGetSchemaOperation.Response convert(List<RiakYokozunaPB.RpbYokozunaSchemaGetResp> rawResponse)
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaSchemaGetResp response = rawResponse.get(0);
-        
+
         return new Response(new YokozunaSchema(response.getSchema().getName().toStringUtf8(),
                                     response.getSchema().getContent().toStringUtf8()));
-        
+
     }
 
     @Override
@@ -55,13 +55,13 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     {
         RiakYokozunaPB.RpbYokozunaSchemaGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaSchemaGetReq, req.toByteArray());
-        
+
     }
 
     @Override
     protected RiakYokozunaPB.RpbYokozunaSchemaGetResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaSchemaGetResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaSchemaGetResp);
         try
         {
             return RiakYokozunaPB.RpbYokozunaSchemaGetResp.parseFrom(rawMessage.getData());
@@ -70,7 +70,7 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
-        
+
     }
 
     @Override
@@ -78,13 +78,13 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     {
         return schemaName;
     }
-    
+
     public static class Builder
     {
-        private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder = 
+        private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaSchemaGetReq.newBuilder();
         private final String schemaName;
-        
+
         public Builder(String schemaName)
         {
             if (null == schemaName || schemaName.length() == 0)
@@ -94,22 +94,22 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
             reqBuilder.setName(ByteString.copyFromUtf8(schemaName));
             this.schemaName = schemaName;
         }
-        
+
         public YzGetSchemaOperation build()
         {
             return new YzGetSchemaOperation(this);
         }
     }
-    
+
     public static class Response
     {
         private final YokozunaSchema schema;
-        
+
         Response(YokozunaSchema schema)
         {
             this.schema = schema;
         }
-        
+
         public YokozunaSchema getSchema()
         {
             return schema;

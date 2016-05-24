@@ -13,7 +13,7 @@ import com.basho.riak.client.api.commands.datatypes.SetUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchMap;
 import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.core.operations.itest.ITestBase;
+import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.datatypes.UpdateMap;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -28,11 +28,11 @@ import java.util.Set;
 
 import java.util.concurrent.ExecutionException;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class ITestDatatype extends ITestBase
+public class ITestDatatype extends ITestAutoCleanupBase
 {
 
 	private final String numLogins = "logins";

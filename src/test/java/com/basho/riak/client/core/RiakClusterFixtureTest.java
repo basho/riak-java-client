@@ -19,21 +19,17 @@ import com.basho.riak.client.core.fixture.NetworkTestFixture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingDeque;
 
-import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
+import static org.junit.Assert.*;
 
 
 /**
@@ -65,7 +61,7 @@ public class RiakClusterFixtureTest
         }
     }
     
-    @Test
+    @Test(timeout = 10000)
     public void operationSuccess() throws UnknownHostException, InterruptedException, ExecutionException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -95,16 +91,17 @@ public class RiakClusterFixtureTest
             assertEquals(response.getObjectList().get(0).getValue().toString(), "This is a value!");
             assertTrue(!response.isNotFound());
         }
-        catch(InterruptedException e)
+        catch(InterruptedException ignored)
         {
             
         }
-        
-        cluster.shutdown().get();
-        
+        finally
+        {
+            cluster.shutdown();
+        }
     }
     
-    @Test
+    @Test(timeout = 10000)
     public void operationFail() throws UnknownHostException, ExecutionException, InterruptedException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -138,11 +135,11 @@ public class RiakClusterFixtureTest
         }
         finally
         {
-            cluster.shutdown().get();
+            cluster.shutdown();
         }
     }
     
-    @Test
+    @Test(timeout = 10000)
     public void testStateListener() throws UnknownHostException, InterruptedException, ExecutionException
     {
         List<RiakNode> list = new LinkedList<RiakNode>();
@@ -177,7 +174,7 @@ public class RiakClusterFixtureTest
     }
 
 
-    @Test
+    @Test(timeout = 10000)
     public void testOperationQueue() throws Exception {
         List<RiakNode> list = new LinkedList<RiakNode>();
 
@@ -207,34 +204,46 @@ public class RiakClusterFixtureTest
 
         try
         {
-            assertFalse(operation3.isSuccess());
-            assertNotNull(operation3.cause());
+            // Verify that the third operation was rejected
+            operation3.await();
 
-            // Add a node to process the queue backlog
+            assertFalse(operation3.isSuccess());
+
+            Throwable cause = operation3.cause();
+            assertNotNull(cause != null && cause.getMessage() != null ? cause.getMessage() : "No message set?", cause);
+
+            // Add a node to start processing the queue backlog
             cluster.addNode(goodNode);
+
+            future1.await();
 
             // Process the first queue item
             assertEquals(future1.get().getObjectList().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!future1.get().isNotFound());
+            assertFalse(future1.get().isNotFound());
 
             // Add another to fill it back up
             RiakFuture<FetchOperation.Response, Location> future4 = cluster.execute(operation4);
-            
+
+            // Get next item in Queue
+            future2.await();
+
             assertEquals(future2.get().getObjectList().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!future2.get().isNotFound());
+            assertFalse(future2.get().isNotFound());
+
+            // Get last item in Queue
+            future4.await();
+
             assertEquals(future4.get().getObjectList().get(0).getValue().toString(), "This is a value!");
-            assertTrue(!future4.get().isNotFound());
+            assertFalse(future4.get().isNotFound());
         }
         finally
         {
-            cluster.shutdown().get();
+            cluster.shutdown();
         }
-
     }
 
     public static class StateListener implements NodeStateListener
     {
-
         public int stateCreated;
         public int stateRunning;
         public int stateShuttingDown;
@@ -261,8 +270,5 @@ public class RiakClusterFixtureTest
                     break;
             }
         }
-        
     }
-    
-    
 }

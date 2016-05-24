@@ -17,7 +17,6 @@ package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -38,8 +37,8 @@ import static org.junit.Assume.assumeTrue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class ITestMapReduceOperation extends ITestBase
-{    
+public class ITestMapReduceOperation extends ITestAutoCleanupBase
+{
     @Test
     public void testBasicMRDefaultType() throws InterruptedException, ExecutionException, IOException
     {
@@ -62,49 +61,49 @@ public class ITestMapReduceOperation extends ITestBase
     private Map<String, Integer> testBasicMR(Namespace namespace) throws InterruptedException, ExecutionException, IOException
     {
         RiakObject obj = new RiakObject();
-                            
+
         obj.setValue(BinaryValue.create("Alice was beginning to get very tired of sitting by her sister on the " +
                     "bank, and of having nothing to do: once or twice she had peeped into the " +
                     "book her sister was reading, but it had no pictures or conversations in " +
                     "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
                     "conversation?'"));
         Location location = new Location(namespace, BinaryValue.unsafeCreate("p1".getBytes()));
-        StoreOperation storeOp = 
+        StoreOperation storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-        
+
         obj.setValue(BinaryValue.create("So she was considering in her own mind (as well as she could, for the " +
                     "hot day made her feel very sleepy and stupid), whether the pleasure " +
                     "of making a daisy-chain would be worth the trouble of getting up and " +
                     "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
                     "close by her."));
-        
+
         location = new Location(namespace, BinaryValue.unsafeCreate("p2".getBytes()));
-        storeOp = 
+        storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-        
+
         obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
                     "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                     "about stopping herself before she found herself falling down a very deep " +
                     "well."));
         location = new Location(namespace, BinaryValue.unsafeCreate("p3".getBytes()));
-        storeOp = 
+        storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-            
+
         String bName = namespace.getBucketNameAsString();
         String bType = namespace.getBucketTypeAsString();
         

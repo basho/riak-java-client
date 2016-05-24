@@ -31,7 +31,7 @@ import org.junit.Test;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class ITestDeleteOperation extends ITestBase
+public class ITestDeleteOperation extends ITestAutoCleanupBase
 {
     @Test
     public void testDeleteObjectDefaultType() throws InterruptedException, ExecutionException

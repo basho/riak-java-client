@@ -31,13 +31,13 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void, YokozunaInd
 {
     private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder;
     private final YokozunaIndex index;
-    
+
     private YzPutIndexOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.index = builder.index;
     }
-    
+
     @Override
     protected Void convert(List<Void> rawResponse)
     {
@@ -49,13 +49,13 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void, YokozunaInd
     {
         RiakYokozunaPB.RpbYokozunaIndexPutReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexPutReq, req.toByteArray());
-        
+
     }
 
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_PutResp);
         return null;
     }
 
@@ -64,34 +64,38 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void, YokozunaInd
     {
         return index;
     }
-    
+
     public static class Builder
     {
         private final RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaIndexPutReq.newBuilder();
         private final YokozunaIndex index;
-        
+
         public Builder(YokozunaIndex index)
         {
             if (null == index)
             {
                 throw new IllegalArgumentException("Index can not be null");
             }
-            
-            RiakYokozunaPB.RpbYokozunaIndex.Builder indexBuilder =
-                RiakYokozunaPB.RpbYokozunaIndex.newBuilder();
-        
+
+            this.index = index;
+            final RiakYokozunaPB.RpbYokozunaIndex.Builder indexBuilder = RiakYokozunaPB.RpbYokozunaIndex.newBuilder();
+
             indexBuilder.setName(ByteString.copyFromUtf8(index.getName()));
-            // A null schema is valid; the default will be used 
+            // A null schema is valid; the default will be used
             if (index.getSchema() != null)
             {
                 indexBuilder.setSchema(ByteString.copyFromUtf8(index.getSchema()));
             }
-            
-            reqBuilder.setIndex(indexBuilder);
-            this.index = index;
+
+            if (index.hasNVal())
+            {
+                indexBuilder.setNVal(index.getNVal());
+            }
+
+            this.reqBuilder.setIndex(indexBuilder);
         }
-        
+
         public YzPutIndexOperation build()
         {
             return new YzPutIndexOperation(this);

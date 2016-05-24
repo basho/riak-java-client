@@ -16,9 +16,6 @@
 package com.basho.riak.client.core;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,21 +25,70 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Brian Roach <roach at basho dot com>
  * @param <T> The type the operation returns
- * @param <U> The protocol type returned 
+ * @param <U> The protocol type returned
  * @param <S> Query info type
  * @since 2.0
+ *
+ *  State Transition Diagram
+ *
+ *                            New Operation
+ *                                  |
+ *                                  |
+ *                                  |
+ *                                  |
+ *        +-------------------------|---------Cancel-------------+
+ *        |                         |                            |
+ *        |                   +-----v-----+                      |
+ *        |                   |           |                      |
+ *        +------Cancel-------+  CREATED  +----Exception------+  |
+ *        |                   |           |                   |  |
+ *        |                   +-----------+                   |  |
+ *        |                         |                     +---v-----+
+ *        |                         +<---Retries Left-----+         +---+
+ *        |                         |                     |  RETRY  |   |
+ *        |                     Write Data                |         |   |
+ *        |                         |                     +---^-----+   |
+ * +------v--- --+            +-----v-----+                   |         |
+ * |             |            |           +----Exception------+         |
+ * |  CANCELLED  <----Cancel--+  WRITTEN  |                             |
+ * |             |            |           |                             |
+ * +-------------+            +-----------+                             |
+ *                                  |                                   |
+ *                                Read OK                               |
+ *                             Response Done                            |
+ *                                  |                                   |
+ *                          +-------v--------+                          |
+ *                          |                |                          |
+ *                          |  CLEANUP_WAIT  <------No Retries Left-----+
+ *                          |                |
+ *                          +----------------+
+ *                                  |
+ *                     **Caller Returns Connection**
+ *                              setComplete()
+ *                                  |
+ *                            +-----v------+
+ *                            |            |
+ *                            |  COMPLETE  |
+ *                            |            |
+ *                            +------------+
+ *
  */
+
 public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 {
 
     protected enum State
     {
-        CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED
+        CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED,
+        CLEANUP_WAIT
     }
+
 
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
     protected final CountDownLatch latch = new CountDownLatch(1);
@@ -55,8 +101,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     private volatile RiakNode lastNode;
 
     private final ReentrantLock listenersLock = new ReentrantLock();
-    private final HashSet<RiakFutureListener<T,S>> listeners =
-        new HashSet<RiakFutureListener<T,S>>();
+    private final HashSet<RiakFutureListener<T,S>> listeners = new HashSet<>();
     private volatile boolean listenersFired = false;
 
     @Override
@@ -160,15 +205,23 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         exception = null;
         if (done(decodedMessage))
         {
+            logger.debug("Setting to Cleanup Wait State");
             remainingTries--;
             if (retrier != null)
             {
                 retrier.operationComplete(this, remainingTries);
             }
-            state = State.COMPLETE;
-            latch.countDown();
-            fireListeners();
+            state = State.CLEANUP_WAIT;
         }
+    }
+
+    public synchronized final void setComplete()
+    {
+        logger.debug("Setting Complete on future");
+        stateCheck(State.CLEANUP_WAIT);
+        state = State.COMPLETE;
+        latch.countDown();
+        fireListeners();
     }
 
     /**
@@ -190,9 +243,9 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         remainingTries--;
         if (remainingTries == 0)
         {
-            state = State.COMPLETE;
-            latch.countDown();
-            fireListeners();
+            // Connection should be returned before calling
+            state = State.CLEANUP_WAIT;
+            setComplete();
         }
         else
         {
@@ -208,7 +261,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     public synchronized final Object channelMessage()
     {
-        Object message = createChannelMessage();
+        final Object message = createChannelMessage();
         state = State.WRITTEN;
         return message;
     }
@@ -228,7 +281,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     @Override
     public final boolean isDone()
     {
-        return state == State.COMPLETE;
+        return state == State.COMPLETE || state == State.CLEANUP_WAIT;
     }
 
     @Override
@@ -236,7 +289,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         return (isDone() && exception == null);
     }
-    
+
     @Override
     public final Throwable cause()
     {
@@ -249,23 +302,41 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             return exception;
         }
     }
-    
+
     @Override
     public final T get() throws InterruptedException, ExecutionException
     {
         latch.await();
 
+        throwExceptionIfSet();
+
+        if (null == converted)
+        {
+            tryConvertResponse();
+        }
+
+        return converted;
+    }
+
+    private void throwExceptionIfSet() throws ExecutionException
+    {
         if (exception != null)
         {
             throw new ExecutionException(exception);
         }
-        else if (null == converted)
+    }
+
+    private void tryConvertResponse() throws ExecutionException
+    {
+        try
         {
             converted = convert(rawResponses);
-            
         }
-
-        return converted;
+        catch(IllegalArgumentException ex)
+        {
+            exception = ex;
+            throwExceptionIfSet();
+        }
     }
 
     @Override
@@ -277,15 +348,14 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             throw new TimeoutException();
         }
-        else if (exception != null)
+
+        throwExceptionIfSet();
+
+        if (null == converted)
         {
-            throw new ExecutionException(exception);
+            tryConvertResponse();
         }
-        else if (null == converted)
-        {
-            converted = convert(rawResponses);
-        }
-        
+
         return converted;
     }
 
@@ -298,7 +368,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             {
                 converted = convert(rawResponses);
             }
-            
+
             return converted;
         }
         else
@@ -306,7 +376,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             return null;
         }
     }
-    
+
     @Override
     public final void await() throws InterruptedException
     {
@@ -318,17 +388,27 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         latch.await(timeout, unit);
     }
-    
-    
+
+    protected U checkAndGetSingleResponse(List<U> responses)
+    {
+        if (responses.size() > 1)
+        {
+            LoggerFactory.getLogger(this.getClass()).error("Received {} responses when only one was expected.",
+                                                           responses.size());
+        }
+
+        return responses.get(0);
+    }
+
     protected void stateCheck(State... allowedStates)
     {
         if (Arrays.binarySearch(allowedStates, state) < 0)
         {
             logger.debug("IllegalStateException; required: {} current: {} ",
-                Arrays.toString(allowedStates), state);
+                         Arrays.toString(allowedStates), state);
             throw new IllegalStateException("required: "
-                + Arrays.toString(allowedStates)
-                + " current: " + state);
+                                                    + Arrays.toString(allowedStates)
+                                                    + " current: " + state);
         }
     }
 

@@ -29,29 +29,30 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  */
 public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation.Response, RiakYokozunaPB.RpbYokozunaIndexGetResp, String>
-{    
+{
     private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder;
     private final String indexName;
-    
+
     private YzFetchIndexOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.indexName = builder.indexName;
     }
-    
+
     @Override
     protected Response convert(List<RiakYokozunaPB.RpbYokozunaIndexGetResp> rawResponse)
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaIndexGetResp response = rawResponse.get(0);
         List<YokozunaIndex> indexList = new ArrayList<YokozunaIndex>(response.getIndexCount());
-        
+
         for (RiakYokozunaPB.RpbYokozunaIndex pbIndex : response.getIndexList())
         {
             indexList.add(new YokozunaIndex(pbIndex.getName().toStringUtf8(),
-                                            pbIndex.getSchema().toStringUtf8()));
+                                            pbIndex.getSchema().toStringUtf8())
+                                            .withNVal(pbIndex.getNVal()));
         }
-        
+
         return new Response(indexList);
     }
 
@@ -60,13 +61,13 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     {
         RiakYokozunaPB.RpbYokozunaIndexGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexGetReq, req.toByteArray());
-        
+
     }
 
     @Override
     protected RiakYokozunaPB.RpbYokozunaIndexGetResp decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaIndexGetResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaIndexGetResp);
         try
         {
             return RiakYokozunaPB.RpbYokozunaIndexGetResp.parseFrom(rawMessage.getData());
@@ -75,7 +76,7 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
-        
+
     }
 
     @Override
@@ -83,17 +84,17 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     {
         return indexName;
     }
-    
+
     public static class Builder
     {
-        private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder =  
+        private final RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaIndexGetReq.newBuilder();
         private String indexName = "All Indexes";
-        
+
         public Builder()
         {}
-        
-        public Builder withIndexName(String indexName) 
+
+        public Builder withIndexName(String indexName)
         {
             if (null == indexName || indexName.length() == 0)
             {
@@ -103,22 +104,22 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
             this.indexName = indexName;
             return this;
         }
-        
+
         public YzFetchIndexOperation build()
         {
             return new YzFetchIndexOperation(this);
         }
     }
-    
+
     public static class Response
     {
         private final List<YokozunaIndex> indexList;
-        
+
         Response(List<YokozunaIndex> indexList)
         {
             this.indexList = indexList;
         }
-        
+
         public List<YokozunaIndex> getIndexes()
         {
             return this.indexList;

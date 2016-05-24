@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc
+ * Copyright 2013-2016 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
 package com.basho.riak.client.api.commands;
 
 import com.basho.riak.client.api.commands.datatypes.UpdateMap;
-import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.api.commands.datatypes.Context;
@@ -30,47 +26,36 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.crdt.types.RiakMap;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class UpdateDatatypeTest
+public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOperation, DtUpdateOperation.Response>
 {
-    @Mock RiakCluster mockCluster;
-    @Mock RiakFuture mockFuture;
-    @Mock DtUpdateOperation.Response mockResponse;
-    @Mock Context context;
-    RiakClient client;
-	Location key = new Location(new Namespace("type","bucket"), "key");
+    @Mock
+    private Context context;
+    private final Location key = new Location(new Namespace("type","bucket"), "key");
 
-    @Before
-    @SuppressWarnings("unchecked")
-    public void init() throws Exception
+    public UpdateDatatypeTest()
     {
-        MockitoAnnotations.initMocks(this);
-        when(mockResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
-        when(mockResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
-        when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
-        when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
+        super(DtUpdateOperation.Response.class);
+    }
+
+    @Override
+    protected void setupResponse(DtUpdateOperation.Response mockedResponse)
+    {
+        super.setupResponse(mockedResponse);
+
+        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
+        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
+
         when(context.getValue()).thenReturn(BinaryValue.unsafeCreate(new byte[] {'1'}));
-        client = new RiakClient(mockCluster);
     }
 
     @Test
@@ -90,14 +75,9 @@ public class UpdateDatatypeTest
             .withOption(Option.W, new Quorum(1))
 	        .build();
 
-        client.execute(store);
+        final DtUpdateOperation operation = executeAndVerify(store);
 
-        ArgumentCaptor<DtUpdateOperation> captor =
-            ArgumentCaptor.forClass(DtUpdateOperation.class);
-        verify(mockCluster).execute(captor.capture());
-
-        DtUpdateOperation operation = captor.getValue();
-        RiakDtPB.DtUpdateReq.Builder builder =
+        final RiakDtPB.DtUpdateReq.Builder builder =
             (RiakDtPB.DtUpdateReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
         assertEquals(1, builder.getDw());
@@ -107,6 +87,5 @@ public class UpdateDatatypeTest
         assertEquals(true, builder.getSloppyQuorum());
         assertEquals(1000, builder.getTimeout());
         assertEquals(1, builder.getW());
-
     }
 }
