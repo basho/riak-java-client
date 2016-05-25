@@ -9,8 +9,8 @@ import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class StreamingListKeysOperation
@@ -18,13 +18,13 @@ public class StreamingListKeysOperation
 {
     private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
-    private final Response response;
+    private final BlockingQueue<BinaryValue> responseQueue;
 
     private StreamingListKeysOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
-        this.response = new Response();
+        this.responseQueue = new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -33,9 +33,15 @@ public class StreamingListKeysOperation
         for (ByteString key : rawResponseChunk.getKeysList())
         {
             final BinaryValue value = BinaryValue.unsafeCreate(key.toByteArray());
-            this.response.addValue(value);
+            this.responseQueue.add(value);
         }
         return null;
+    }
+
+    @Override
+    protected boolean done(RiakKvPB.RpbListKeysResp message)
+    {
+        return message.getDone();
     }
 
     @Override
@@ -65,9 +71,9 @@ public class StreamingListKeysOperation
     }
 
     @Override
-    public Iterator<BinaryValue> getStreamingResultsIterator()
+    public BlockingQueue<BinaryValue> getResultsQueue()
     {
-        return this.response;
+        return this.responseQueue;
     }
 
     public static class Builder
@@ -105,34 +111,6 @@ public class StreamingListKeysOperation
         public StreamingListKeysOperation build()
         {
             return new StreamingListKeysOperation(this);
-        }
-    }
-
-    public class Response implements Iterator<BinaryValue>
-    {
-        private volatile ConcurrentLinkedQueue<BinaryValue> queue = new ConcurrentLinkedQueue<>();
-
-        @Override
-        public boolean hasNext()
-        {
-            return !isDone();
-        }
-
-        @Override
-        public BinaryValue next()
-        {
-            return queue.poll();
-        }
-
-        @Override
-        public void remove()
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        private void addValue(BinaryValue value)
-        {
-            queue.add(value);
         }
     }
 }

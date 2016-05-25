@@ -20,28 +20,23 @@ import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import static com.basho.riak.client.core.operations.itest.ITestBase.bucketName;
-
 import com.basho.riak.client.core.operations.StreamingListKeysOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
-
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
@@ -110,7 +105,6 @@ public class ITestListKeysOperation extends ITestBase
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), key);
         resetAndEmptyBucket(ns);
-
     }
 
     @Test
@@ -207,11 +201,11 @@ public class ITestListKeysOperation extends ITestBase
         final Namespace ns = new Namespace(bucketType, bucketName.toString() + "_4");
         final Semaphore semaphore = new Semaphore(10);
         final CountDownLatch latch = new CountDownLatch(1);
+        final int expected = 1000;
 
         RiakFutureListener<StoreOperation.Response, Location> listener =
                 new RiakFutureListener<StoreOperation.Response, Location>() {
 
-                    private final int expected = 1000;
                     private final AtomicInteger received = new AtomicInteger();
 
                     @Override
@@ -235,7 +229,7 @@ public class ITestListKeysOperation extends ITestBase
                     }
                 };
 
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < expected; i++)
         {
             semaphore.acquire();
             BinaryValue key = BinaryValue.unsafeCreate((baseKey + i).getBytes());
@@ -255,8 +249,28 @@ public class ITestListKeysOperation extends ITestBase
         StreamingListKeysOperation slko = new StreamingListKeysOperation.Builder(ns).build();
         final StreamingRiakFuture<BinaryValue, Namespace> execute = cluster.execute(slko);
 
-        final Iterator<BinaryValue> streamingResultsIterator = execute.getStreamingResultsIterator();
+        final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
+        List<BinaryValue> kList = new LinkedList<>();
+        int timeouts = 0;
 
+        for (int i = 0; i < expected; i++)
+        {
+            final BinaryValue key = resultsQueue.poll(1, TimeUnit.SECONDS);
+
+            if(key != null)
+            {
+                kList.add(key);
+                continue;
+            }
+
+            timeouts++;
+            if(timeouts == 10)
+            {
+                break;
+            }
+        }
+
+        assertEquals(expected, kList.size());
 
         ITestBase.resetAndEmptyBucket(ns);
 

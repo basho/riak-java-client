@@ -15,25 +15,21 @@
  */
 package com.basho.riak.client.core;
 
-import java.util.Iterator;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * The result of an asynchronous streaming Riak operation.
  *
  * @author Alex Moore <amoore at basho dot com>
  * @param <V> the (response) return type
- * @param <T> The query info type 
- * @since 2.0.5
+ * @param <T> The query info type
+ * @since 2.0.7
  */
 public interface StreamingRiakFuture<V, T> extends RiakFuture<Void, T>
 {
     /**
-     * An iterator that provides the stream of results as they return from Riak.
-     * @return An iterator.
+     * An Queue that provides the stream of results as they return from Riak.
+     * @return An Queue.
      */
-    Iterator<V> getStreamingResultsIterator();
+    BlockingQueue<V> getResultsQueue();
 }
