@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
 public class ITestFullBucketRead extends ITestBase {
+    final static int minPartitions = 5;
     final static int NUMBER_OF_TEST_VALUES = 100;
     private final static Logger logger = LoggerFactory.getLogger(ITestFullBucketRead.class);
 
@@ -43,6 +44,7 @@ public class ITestFullBucketRead extends ITestBase {
         setupIndexTestData(defaultNamespace(), indexName, keyBase, value);
 
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
+            .withMinPartitions(minPartitions)
             .build();
 
         client = new RiakClient(cluster);
@@ -141,7 +143,6 @@ public class ITestFullBucketRead extends ITestBase {
 
     @Test
     public void queryDataByUsingAnAlternateCoveragePlan() throws ExecutionException, InterruptedException, UnknownHostException {
-        final int minPartitions = 5;
         final List<CoverageEntry> coverageEntries = new LinkedList<>();
         for (CoverageEntry ce : coveragePlan) {
             coverageEntries.add(ce);

@@ -15,6 +15,10 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.cap.Quorum;
+import com.basho.riak.client.api.commands.indexes.IntIndexQuery;
+import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
@@ -331,14 +335,53 @@ public abstract class ITestBase
 
             obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(i);
 
-            Location location = new Location(ns, keyBase + i);
-            StoreOperation storeOp =
+            final Location location = new Location(ns, keyBase + i);
+            final StoreOperation storeOp =
                     new StoreOperation.Builder(location)
                             .withContent(obj)
+                            .withPw(Quorum.allQuorum().getIntValue())
                             .build();
 
             cluster.execute(storeOp);
             storeOp.get();
+        }
+
+        // -- waiting/checking while data will be available
+        for (long i = 0; i < NUMBER_OF_TEST_VALUES; ++i)
+        {
+            final Location location = new Location(ns, keyBase + i);
+            boolean found = false;
+
+            for (int j=0; j<6; ++j)
+            {
+                final FetchOperation fop = new FetchOperation.Builder(location)
+                        .withR(1)
+                        .build();
+
+                cluster.execute(fop);
+
+                final FetchOperation.Response r = fop.get();
+
+                found = !r.isNotFound();
+                if (!found)
+                {
+                    Thread.sleep(200);
+                }
+            }
+
+            if (!found)
+            {
+                throw new RuntimeException("Test data can't be fetched back after creation, retries exceeded.");
+            }
+
+            final IntIndexQuery qop = new IntIndexQuery.Builder(location.getNamespace(), indexName, i)
+                    .build();
+
+            final RiakClient client = new RiakClient(cluster);
+            final List<IntIndexQuery.Response.Entry> entries = client.execute(qop).getEntries();
+
+            assertEquals(1, entries.size());
+            assertEquals( location, entries.get(0).getRiakObjectLocation());
         }
     }
 }
