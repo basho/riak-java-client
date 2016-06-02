@@ -28,7 +28,8 @@ import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
 import com.basho.riak.client.core.util.HostAndPort;
 
-public class ITestCoveragePlan extends ITestTsBase {
+public class ITestCoveragePlan extends ITestTsBase
+{
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);
     private static long quantum = 900000L; // 15 minutes
     private static long period = 10 * quantum;
@@ -37,9 +38,11 @@ public class ITestCoveragePlan extends ITestTsBase {
     private static long to = from + period;
 
     @BeforeClass
-    public static void createData() throws ExecutionException, InterruptedException {
+    public static void createData() throws ExecutionException, InterruptedException
+    {
         List<Row> rows1 = new ArrayList<Row>();
-        for (long time = from; time <= to; time += quantum) {
+        for (long time = from; time <= to; time += quantum)
+        {
             rows1.add(new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(time), new Cell("cloudy"), new Cell(
                     79.0), new Cell(1), new Cell(true)));
         }
@@ -50,8 +53,8 @@ public class ITestCoveragePlan extends ITestTsBase {
     }
 
     @Test
-    public void obtainCoveragePlan() throws ExecutionException, InterruptedException {
-
+    public void obtainCoveragePlan() throws ExecutionException, InterruptedException
+    {
         final RiakClient client = new RiakClient(cluster);
         String query = "select * from " + tableName + " where time >= " + from + " and time <= " + to
                 + "  and user = 'user1' and geohash = 'hash1'";
@@ -60,7 +63,8 @@ public class ITestCoveragePlan extends ITestTsBase {
         final RiakFuture<CoveragePlanResult, String> response = client.executeAsync(cmd);
         response.await();
         final List<CoverageEntry> coverageEntries = new LinkedList<CoverageEntry>();
-        for (CoverageEntry ce : response.get()) {
+        for (CoverageEntry ce : response.get())
+        {
             coverageEntries.add(ce);
         }
         logger.info("Got {} Coverage Entries", coverageEntries.size());
@@ -68,7 +72,8 @@ public class ITestCoveragePlan extends ITestTsBase {
     }
 
     @Test
-    public void queryWithCoveragePlan() throws ExecutionException, InterruptedException, UnknownHostException {
+    public void queryWithCoveragePlan() throws ExecutionException, InterruptedException, UnknownHostException
+    {
 
         final RiakClient client = new RiakClient(cluster);
         String queryOneRowOnly = "select * from " + tableName + " where time >= " + (from - 100) + " and time < " + (from + 100)
@@ -79,7 +84,8 @@ public class ITestCoveragePlan extends ITestTsBase {
         final RiakFuture<CoveragePlanResult, String> response = client.executeAsync(cmd);
         response.await();
         final List<CoverageEntry> coverageEntries = new LinkedList<CoverageEntry>();
-        for (CoverageEntry ce : response.get()) {
+        for (CoverageEntry ce : response.get())
+        {
             coverageEntries.add(ce);
         }
         logger.info("Got {} Coverage Entries", coverageEntries.size());
@@ -92,21 +98,24 @@ public class ITestCoveragePlan extends ITestTsBase {
         cl.start();
         final RiakClient rc = new RiakClient(cl);
 
-        try {
+        try
+        {
             final Query queryOperation = new Query.Builder(queryOneRowOnly, coverageEntry.getCoverageContext()).build();
             final RiakFuture<QueryResult, String> readResponse = rc.executeAsync(queryOperation);
             response.await();
             assertNotNull(readResponse);
             assertEquals(1, readResponse.get().getRowsCount());
-        } finally {
+        }
+        finally
+        {
             rc.shutdown();
         }
 
     }
 
     @Test
-    public void obtainCoveragePlanForNonExistingData() throws ExecutionException, InterruptedException {
-
+    public void obtainCoveragePlanForNonExistingData() throws ExecutionException, InterruptedException
+    {
         final RiakClient client = new RiakClient(cluster);
         String query = "select * from " + tableName + " where time > " + (from - 10 * quantum) + " and time < "
                 + (from - 5 * quantum) + "  and user = 'user1' and geohash = 'hash1'";
@@ -115,7 +124,8 @@ public class ITestCoveragePlan extends ITestTsBase {
         final RiakFuture<CoveragePlanResult, String> response = client.executeAsync(cmd);
         response.await();
         final List<CoverageEntry> lst = new LinkedList<CoverageEntry>();
-        for (CoverageEntry ce : response.get()) {
+        for (CoverageEntry ce : response.get())
+        {
             lst.add(ce);
         }
         logger.info("Got {} Coverage Entries", lst.size());

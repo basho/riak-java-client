@@ -294,32 +294,40 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof DeleteValue)) {
+        if (!(obj instanceof DeleteValue))
+        {
             return false;
         }
 
         final DeleteValue other = (DeleteValue) obj;
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
-        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock))) {
+        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{location: %s, options: %s, vClock: %s}",
                 location, options, vClock);
     }

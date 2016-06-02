@@ -100,7 +100,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         return responseBuilder.build();
     }
 
-    private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry){
+    private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry)
+    {
         /**
          * If return_terms wasn't specified only the object keys are returned
          */
@@ -119,7 +120,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         }
     }
 
-    private void convertTerms(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry){
+    private void convertTerms(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry)
+    {
         if (pbReq.hasRangeMin())
         {
             for (RpbPair pair : pbEntry.getResultsList())
@@ -213,7 +215,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
              * Options 'returnBody' and 'returnKeyAndIndex' are contradictory because them both use the same field
              * to store the results
              */
-            if (query.returnBody && query.returnKeyAndIndex) {
+            if (query.returnBody && query.returnKeyAndIndex)
+            {
                 throw new IllegalArgumentException("Contradictory query options: returnBody and returnKeyAndIndex");
             }
 
@@ -414,14 +417,16 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         /**
          * @return the cover context value, or null if not set.
          */
-        public byte[] getCoverageContext() {
+        public byte[] getCoverageContext()
+        {
             return coverageContext;
         }
 
         /**
          * @return the returnBody
          */
-        public boolean isReturnBody() {
+        public boolean isReturnBody()
+        {
             return returnBody;
         }
 
@@ -584,12 +589,22 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             * @param coverageContext
             * @return a reference to this object.
             */
-           public Builder withCoverageContext(byte[] coverageContext) {
+           public Builder withCoverageContext(byte[] coverageContext)
+           {
                this.coverageContext = coverageContext;
                return this;
            }
 
-            public Builder withReturnBody(boolean returnBody) {
+            /**
+             * Set whether to return list of RiakObjects inside the response.
+             * This option could be used only if target Riak instance supports parallel extract
+             * feature (such as RiakTS).
+             *
+             * @param returnBody true to return data inside response
+             * @return a reference to this object.
+             */
+            public Builder withReturnBody(boolean returnBody)
+            {
                 this.returnBody = returnBody;
                 return this;
             }
@@ -671,7 +686,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 this(indexKey, objectKey, null);
             }
 
-            Entry(BinaryValue indexKey, BinaryValue objectKey, FetchOperation.Response fr){
+            Entry(BinaryValue indexKey, BinaryValue objectKey, FetchOperation.Response fr)
+            {
                 this.indexKey = indexKey;
                 this.objectKey = objectKey;
                 this.fetchResponse = fr;

@@ -531,7 +531,8 @@ public class RiakNodeTest
     }
 
     @Test(expected = UnknownHostException.class )
-    public void failsResolvingHostname() throws UnknownHostException {
+    public void failsResolvingHostname() throws UnknownHostException
+    {
         RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name.com").build();
         node.start();
     }

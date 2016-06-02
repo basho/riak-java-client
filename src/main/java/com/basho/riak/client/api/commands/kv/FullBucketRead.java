@@ -46,8 +46,8 @@ import java.util.List;
  * @author Sergey Galkin <sgalkin at basho dot com>
  * @see CoveragePlan
  */
-public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketRead.Response, FullBucketRead> {
-
+public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketRead.Response, FullBucketRead>
+{
     private final IndexConverter<BinaryValue> converter;
 
     protected FullBucketRead(Builder builder)
@@ -105,8 +105,8 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
      */
     public static class Builder
     {
-        private static class BuilderFullBucketRead2i extends  SecondaryIndexQuery.Init<BinaryValue, BuilderFullBucketRead2i> {
-
+        private static class BuilderFullBucketRead2i extends  SecondaryIndexQuery.Init<BinaryValue, BuilderFullBucketRead2i>
+        {
             public BuilderFullBucketRead2i(Namespace namespace)
             {
                 super(namespace, "$bucket", BinaryValue.create(ByteString.EMPTY.toByteArray()));
@@ -118,12 +118,14 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
             }
 
             @Override
-            protected BuilderFullBucketRead2i self() {
+            protected BuilderFullBucketRead2i self()
+            {
                 return this;
             }
 
             @Override
-            public BuilderFullBucketRead2i withReturnBody(boolean returnBody) {
+            public BuilderFullBucketRead2i withReturnBody(boolean returnBody)
+            {
                 return super.withReturnBody(returnBody);
             }
         }
@@ -167,7 +169,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         public Builder withReturnBody(boolean returnBody)
         {
             builder2i.withReturnBody(returnBody);
-            return self();
+            return this;
         }
 
         /**
@@ -181,7 +183,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         public Builder withContinuation(BinaryValue continuation)
         {
             builder2i.withContinuation(continuation);
-            return self();
+            return this;
         }
 
         /**
@@ -192,7 +194,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         public Builder withMaxResults(Integer maxResults)
         {
             builder2i.withMaxResults(maxResults);
-            return self();
+            return this;
         }
 
         /**
@@ -211,11 +213,6 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         public Builder withPaginationSort(boolean orderByKey)
         {
             builder2i.withPaginationSort(orderByKey);
-            return self();
-        }
-
-        protected Builder self()
-        {
             return this;
         }
 

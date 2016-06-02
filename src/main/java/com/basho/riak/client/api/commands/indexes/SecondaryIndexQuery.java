@@ -300,7 +300,6 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             this.match = match;
         }
 
-        // TODO: Documentation should provide more details about coverageContext
         /**
          * Build a cover query.
          * <p>
@@ -308,7 +307,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
          * </p>
          * @param namespace the namespace for this query
          * @param indexName the index name
-         * @param coverageContext the cover context.
+         * @param coverageContext the cover context. An opaque binary received from coverage context entry
+         *                        to be sent back to Riak for receiving appropriate data.
          */
         public Init(Namespace namespace, String indexName, byte[] coverageContext)
         {
@@ -403,10 +403,12 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
 
         /**
          * Set the cover context for the local read
-         * @param coverageContext
-         * @return
+         * @param coverageContext the cover context. An opaque binary received from coverage context entry
+         *                        to be sent back to Riak for receiving appropriate data.
+         * @return a reference to this object.
          */
-        public T withCoverageContext(byte[] coverageContext){
+        public T withCoverageContext(byte[] coverageContext)
+        {
             this.coverageContext = coverageContext;
             return self();
         }
@@ -418,7 +420,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
          * @param returnBody
          * @return
          */
-        protected T withReturnBody(boolean returnBody){
+        protected T withReturnBody(boolean returnBody)
+        {
             this.returnBody = returnBody;
             return self();
         }

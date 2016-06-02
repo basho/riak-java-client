@@ -176,21 +176,10 @@ public abstract class ITestBase
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
     }
-    
-    @Before
-    public void beforeTest() throws InterruptedException, ExecutionException
-    {
-        resetAndEmptyBucket(bucketName);
-        if (testBucketType)
-        {
-            resetAndEmptyBucket(defaultNamespace());
-        }
-    }
-    
+
     @AfterClass
     public static void tearDown() throws InterruptedException, ExecutionException, TimeoutException
     {
-        resetAndEmptyBucket(bucketName);
         cluster.shutdown().get(2, TimeUnit.SECONDS);
     }
 
@@ -298,7 +287,8 @@ public abstract class ITestBase
         return false;
     }
 
-    public static Namespace defaultNamespace() {
+    public static Namespace defaultNamespace()
+    {
         return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
     }
 

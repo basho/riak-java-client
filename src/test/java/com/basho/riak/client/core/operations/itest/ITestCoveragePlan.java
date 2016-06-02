@@ -29,7 +29,8 @@ import static org.junit.Assert.*;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class ITestCoveragePlan extends ITestBase {
+public class ITestCoveragePlan extends ITestAutoCleanupBase
+{
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);
 
     @Rule
@@ -37,7 +38,8 @@ public class ITestCoveragePlan extends ITestBase {
 
 
     @Test
-    public void obtainAlternativeCoveragePlan() throws ExecutionException, InterruptedException {
+    public void obtainAlternativeCoveragePlan() throws ExecutionException, InterruptedException
+    {
         final int minPartitions = 5;
         final RiakClient client = new RiakClient(cluster);
         CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
@@ -46,7 +48,8 @@ public class ITestCoveragePlan extends ITestBase {
 
         CoveragePlan.Response response = client.execute(cmd);
         final List<CoverageEntry> coverageEntries = new ArrayList<>();
-        for (CoverageEntry ce : response) {
+        for (CoverageEntry ce : response)
+        {
             coverageEntries.add(ce);
         }
         Assert.assertTrue(coverageEntries.size() > minPartitions);
@@ -63,7 +66,8 @@ public class ITestCoveragePlan extends ITestBase {
         Assert.assertTrue(response.iterator().hasNext());
 
         final HostAndPort failedHostAndPort = HostAndPort.fromParts(failedEntry.getHost(), failedEntry.getPort());
-        for (CoverageEntry ce : response) {
+        for (CoverageEntry ce : response)
+        {
             HostAndPort alternativeHostAndPort = HostAndPort.fromParts(ce.getHost(), ce.getPort());
 
             // received coverage entry must not be on the same host
@@ -73,7 +77,8 @@ public class ITestCoveragePlan extends ITestBase {
     }
 
     @Test
-    public void obtainCoveragePlan() throws ExecutionException, InterruptedException {
+    public void obtainCoveragePlan() throws ExecutionException, InterruptedException
+    {
         final int minPartitions = 5;
         final RiakClient client = new RiakClient(cluster);
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
@@ -82,7 +87,8 @@ public class ITestCoveragePlan extends ITestBase {
 
         final CoveragePlan.Response response = client.execute(cmd);
         final List<CoverageEntry> lst = new LinkedList<CoverageEntry>();
-        for(CoverageEntry ce: response){
+        for(CoverageEntry ce: response)
+        {
             lst.add(ce);
         }
         logger.info("Got the following list of Coverage Entries: {}", lst);
@@ -91,7 +97,8 @@ public class ITestCoveragePlan extends ITestBase {
     }
 
     @Test
-    public void fetchAllDataByUsingCoverageContext() throws ExecutionException, InterruptedException, UnknownHostException {
+    public void fetchAllDataByUsingCoverageContext() throws ExecutionException, InterruptedException, UnknownHostException
+    {
         String indexName = "test_coverctx_index";
         String keyBase = "k";
         String value = "v";
@@ -104,9 +111,11 @@ public class ITestCoveragePlan extends ITestBase {
 
         final CoveragePlan.Response response = client.execute(cmd);
 
-        if(logger.isInfoEnabled()) {
+        if(logger.isInfoEnabled())
+        {
             StringBuilder sbld = new StringBuilder("Got the following list of Coverage Entries:");
-            for (CoverageEntry ce: response) {
+            for (CoverageEntry ce: response)
+            {
                 sbld.append(String.format("\n\t%s:%d ('%s')",
                         ce.getHost(),
                         ce.getPort(),
@@ -119,7 +128,8 @@ public class ITestCoveragePlan extends ITestBase {
         final Map<CoverageEntry, List<BinIndexQuery.Response.Entry>> chunkedKeys
                 = new HashMap<CoverageEntry, List<BinIndexQuery.Response.Entry>>();
 
-        for(HostAndPort host: response.hosts()) {
+        for(HostAndPort host: response.hosts())
+        {
             final RiakNode node= new RiakNode.Builder()
                     .withRemoteHost(host)
                     .withMinConnections(1)
@@ -131,8 +141,10 @@ public class ITestCoveragePlan extends ITestBase {
             cl.start();
 
             final RiakClient rc = new RiakClient(cl);
-            try {
-                for(CoverageEntry ce: response.hostEntries(host)) {
+            try
+            {
+                for(CoverageEntry ce: response.hostEntries(host))
+                {
                     // The only "$bucket" Binary Index may be used for Full Bucket Reads
                     final BinIndexQuery query = new BinIndexQuery.Builder(defaultNamespace(), "$bucket", ce.getCoverageContext())
                             .withCoverageContext(ce.getCoverageContext())
@@ -144,20 +156,27 @@ public class ITestCoveragePlan extends ITestBase {
                     chunkedKeys.put(ce, readResponse.getEntries());
                     assertNotNull(readResponse);
                 }
-            } finally {
+            }
+            finally
+            {
                 rc.shutdown();
             }
         }
 
         final Set<String> keys = new HashSet<String>(NUMBER_OF_TEST_VALUES);
-        for(Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet()){
+        for(Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet())
+        {
             final CoverageEntry ce = e.getKey();
-            if(e.getValue().isEmpty()){
+            if(e.getValue().isEmpty())
+            {
                 logger.debug("Nothing was returned for CE {}", ce);
-            } else {
+            }
+            else
+            {
                 final List<String> lst = new ArrayList<String>(e.getValue().size());
 
-                for(BinIndexQuery.Response.Entry re: e.getValue()){
+                for(BinIndexQuery.Response.Entry re: e.getValue())
+                {
                     lst.add(re.getRiakObjectLocation().getKeyAsString());
                 }
 
@@ -173,7 +192,9 @@ public class ITestCoveragePlan extends ITestBase {
     }
 
     @Test
-    public void alternativeCoveragePlanShouldFailIfNoPrimaryPartitionAvailable() throws ExecutionException, InterruptedException, UnknownHostException {
+    public void alternativeCoveragePlanShouldFailIfNoPrimaryPartitionAvailable()
+            throws ExecutionException, InterruptedException, UnknownHostException
+    {
         final RiakClient client = new RiakClient(cluster);
 
         final Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
@@ -190,14 +211,16 @@ public class ITestCoveragePlan extends ITestBase {
 
         final CoveragePlan.Response response = client.execute(cmd);
         final List<CoverageEntry> coverageEntries = new LinkedList<>();
-        for (CoverageEntry ce : response) {
+        for (CoverageEntry ce : response)
+        {
             coverageEntries.add(ce);
         }
 
         CoverageEntry failedEntry = coverageEntries.get(0);
         List<CoverageEntry> unavailableCoverageEntries = new LinkedList<>();
 
-        for (int i = 0; i < nVal-1; i++) {
+        for (int i = 0; i < nVal-1; i++)
+        {
             unavailableCoverageEntries.add(failedEntry);
 
             final CoveragePlan cmdAlternative = CoveragePlan.Builder.create(defaultNamespace())

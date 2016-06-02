@@ -171,7 +171,8 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     }
     
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(final ChannelHandlerContext ctx) throws Exception
+    {
         logger.debug("Channel Active");
     }
     
@@ -201,7 +202,8 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         }
     }
     
-    public DefaultPromise<Void> getPromise() throws InterruptedException {
+    public DefaultPromise<Void> getPromise() throws InterruptedException
+    {
         promiseLatch.await();
         return promise;
     }

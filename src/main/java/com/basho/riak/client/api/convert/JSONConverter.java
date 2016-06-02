@@ -38,12 +38,13 @@ import java.lang.reflect.Type;
  * @param <T> type to convert to/from
  * 
  */
-public class JSONConverter<T> extends Converter<T> {
-
+public class JSONConverter<T> extends Converter<T>
+{
     // Object mapper per domain class is expensive, a singleton (and ThreadSafe) will do.
     private static final ObjectMapper OBJECT_MAPPER= new ObjectMapper();
     private final TypeReference<T> typeReference;
-    static {
+    static
+    {
         OBJECT_MAPPER.registerModule(new RiakJacksonModule());
         OBJECT_MAPPER.registerModule(new JodaModule());
     }
@@ -55,7 +56,8 @@ public class JSONConverter<T> extends Converter<T> {
      * 
      * @param type
      */
-    public JSONConverter(Type type) {
+    public JSONConverter(Type type)
+    {
         super(type);
         typeReference = null;
     }
@@ -71,7 +73,8 @@ public class JSONConverter<T> extends Converter<T> {
      * This is a convenience method to allow changing its behavior.
      * @return The Jackson ObjectMapper
      */
-    public static ObjectMapper getObjectMapper() {
+    public static ObjectMapper getObjectMapper()
+    {
         return OBJECT_MAPPER;
     }
 
@@ -79,7 +82,8 @@ public class JSONConverter<T> extends Converter<T> {
      * Convenient method to register a Jackson module into the singleton Object mapper used by domain objects.
      * @param jacksonModule Module to register.
      */
-    public static void registerJacksonModule(final Module jacksonModule) {
+    public static void registerJacksonModule(final Module jacksonModule)
+    {
         OBJECT_MAPPER.registerModule(jacksonModule);
     }
 

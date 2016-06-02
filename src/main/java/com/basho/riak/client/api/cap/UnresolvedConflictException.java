@@ -25,7 +25,8 @@ import java.util.concurrent.ExecutionException;
  * @author Russell Brown <russelldb at basho dot com>
  * @since 1.0
  */
-public class UnresolvedConflictException extends ExecutionException {
+public class UnresolvedConflictException extends ExecutionException
+{
 
     /**
      * eclipse generated id
@@ -44,7 +45,8 @@ public class UnresolvedConflictException extends ExecutionException {
      * @param siblings
      *            the list of siblings
      */
-    public UnresolvedConflictException(Throwable cause, String message, List<? extends Object> siblings) {
+    public UnresolvedConflictException(Throwable cause, String message, List<? extends Object> siblings)
+    {
         super(message, cause);
         this.siblings = siblings;
     }
@@ -57,7 +59,8 @@ public class UnresolvedConflictException extends ExecutionException {
      * @param siblings
      *            the list of siblings
      */
-    public UnresolvedConflictException(String message, List<? extends Object> siblings) {
+    public UnresolvedConflictException(String message, List<? extends Object> siblings)
+    {
         super(message);
         this.siblings = siblings;
     }
@@ -66,7 +69,8 @@ public class UnresolvedConflictException extends ExecutionException {
      * Get the siblings that could not be resolved.
      * @return the siblings
      */
-    public List<? extends Object> getSiblings() {
+    public List<? extends Object> getSiblings()
+    {
         return siblings;
     }
 }
