@@ -42,7 +42,6 @@ public class Query extends RiakCommand<QueryResult, String>
     {
         return new QueryOperation.Builder(builder.queryText)
                                            .withCoverageContext(builder.coverageContext)
-                                           //.setInterpolations(builder.interpolations)
                                            .build();
     }
 
