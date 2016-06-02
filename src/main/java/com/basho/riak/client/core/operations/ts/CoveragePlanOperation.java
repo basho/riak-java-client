@@ -32,11 +32,13 @@ import com.google.protobuf.ByteString;
  *
  */
 
-public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult, RiakTsPB.TsCoverageResp, String> {
+public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult, RiakTsPB.TsCoverageResp, String>
+{
     private final String tableName;
     private final String queryText;
 
-    private CoveragePlanOperation(AbstractBuilder builder) {
+    private CoveragePlanOperation(AbstractBuilder builder)
+    {
         super(RiakMessageCodes.MSG_TsCoverageReq, 
                 RiakMessageCodes.MSG_TsCoverageResp, 
                 builder.reqBuilder,
@@ -47,28 +49,34 @@ public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult,
     }
 
     @Override
-    protected CoveragePlanResult convert(List<RiakTsPB.TsCoverageResp> responses) {
+    protected CoveragePlanResult convert(List<RiakTsPB.TsCoverageResp> responses)
+    {
         // This is not a streaming op, there will only be one response
         final RiakTsPB.TsCoverageResp response = checkAndGetSingleResponse(responses);
         return PbResultFactory.convertCoverageResp(this.tableName, response);
     }
 
     @Override
-    public String getQueryInfo() {
+    public String getQueryInfo()
+    {
         return this.queryText;
     }
 
-    public static abstract class AbstractBuilder<R> {
+    public static abstract class AbstractBuilder<R>
+    {
         private final String tableName;
         private final String queryText;
         private final RiakTsPB.TsCoverageReq.Builder reqBuilder = RiakTsPB.TsCoverageReq.newBuilder();
 
-        public AbstractBuilder(String tableName, String queryText) {
-            if (tableName == null || tableName.length() == 0) {
+        public AbstractBuilder(String tableName, String queryText)
+        {
+            if (tableName == null || tableName.length() == 0)
+            {
                 throw new IllegalArgumentException("Table Name cannot be null or empty");
             }
 
-            if (queryText == null || queryText.length() == 0) {
+            if (queryText == null || queryText.length() == 0)
+            {
                 throw new IllegalArgumentException("Query cannot be null or empty");
             }
 
@@ -78,37 +86,46 @@ public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult,
             this.queryText = queryText;
         }
 
-        public AbstractBuilder<R> withReplaceCoverageEntry(Response.CoverageEntry coverageEntry) {
+        public AbstractBuilder<R> withReplaceCoverageEntry(Response.CoverageEntry coverageEntry)
+        {
             return withReplaceCoverageContext(coverageEntry.getCoverageContext());
         }
 
-        public AbstractBuilder<R> withReplaceCoverageContext(byte[] coverageContext) {
+        public AbstractBuilder<R> withReplaceCoverageContext(byte[] coverageContext)
+        {
             reqBuilder.setReplaceCover(ByteString.copyFrom(coverageContext));
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext) {
-            for (Iterator<byte[]> iterator = coverageContext.iterator(); iterator.hasNext();) {
+        public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext)
+        {
+            for (Iterator<byte[]> iterator = coverageContext.iterator(); iterator.hasNext();)
+            {
                 withUnavailableCoverageContext(iterator.next());
             }
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableCoverageEntries(Iterable<Response.CoverageEntry> coverageEntries) {
-            for (Response.CoverageEntry coverageEntry : coverageEntries) {
+        public AbstractBuilder<R> withUnavailableCoverageEntries(Iterable<Response.CoverageEntry> coverageEntries)
+        {
+            for (Response.CoverageEntry coverageEntry : coverageEntries)
+            {
                 withUnavailableCoverageContext(coverageEntry.getCoverageContext());
             }
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableCoverageContext(byte[]... coverageContext) {
-            for (byte[] cc : coverageContext) {
+        public AbstractBuilder<R> withUnavailableCoverageContext(byte[]... coverageContext)
+        {
+            for (byte[] cc : coverageContext)
+            {
                 reqBuilder.addUnavailableCover(ByteString.copyFrom(cc));
             }
             return this;
         }
 
-        public CoveragePlanOperation buildOperation(){
+        public CoveragePlanOperation buildOperation()
+        {
             return new CoveragePlanOperation(this);
         }
 

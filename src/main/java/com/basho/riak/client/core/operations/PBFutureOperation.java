@@ -18,7 +18,8 @@ import org.slf4j.LoggerFactory;
 
  * @since 2.0.3
  */
-public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S> {
+public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S>
+{
     protected final Builder<?> reqBuilder;
     private final com.google.protobuf.Parser<U> respParser;
     protected final byte reqMessageCode;
@@ -37,12 +38,14 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
     }
 
     @Override
-    protected RiakMessage createChannelMessage() {
+    protected RiakMessage createChannelMessage()
+    {
         return new RiakMessage(reqMessageCode, reqBuilder.build().toByteArray());
     }
 
     @Override
-    protected U decode(RiakMessage rawMessage) {
+    protected U decode(RiakMessage rawMessage)
+    {
         Operations.checkPBMessageType(rawMessage, respMessageCode);
         try
         {

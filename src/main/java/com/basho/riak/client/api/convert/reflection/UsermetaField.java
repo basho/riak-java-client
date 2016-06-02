@@ -26,9 +26,14 @@ import java.util.Map;
  * @author Russell Brown <russelldb at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  */
-public class UsermetaField {
+public class UsermetaField
+{
     
-    public enum FieldType { STRING, MAP }
+    public enum FieldType
+    {
+        STRING,
+        MAP
+    }
     
     private final Field field;
     private final String usermetaDataKey;
@@ -39,7 +44,8 @@ public class UsermetaField {
      * 
      * @param field
      */
-    public UsermetaField(final Field field) {
+    public UsermetaField(final Field field)
+    {
         this.fieldType = validateAndGetType(field);
         this.field = field;
         this.usermetaDataKey = field.getAnnotation(RiakUsermeta.class).key();
@@ -54,7 +60,8 @@ public class UsermetaField {
     /**
      * @return the field
      */
-    public Field getField() {
+    public Field getField()
+    {
         return field;
     }
 
@@ -62,14 +69,16 @@ public class UsermetaField {
      *
      * @return the field type
      */
-    public FieldType getFieldType() {
+    public FieldType getFieldType()
+    {
         return fieldType;
     }
         
     /**
      * @return the usermetaDataKey
      */
-    public String getUsermetaDataKey() {
+    public String getUsermetaDataKey()
+    {
         return usermetaDataKey;
     }
     

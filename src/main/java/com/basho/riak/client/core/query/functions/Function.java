@@ -241,7 +241,8 @@ public class Function
      */
     public static class Builder
     {
-        private enum Type {
+        private enum Type
+        {
             UNKNOWN,
             NAMED_JS,
             STORED_JS,

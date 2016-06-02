@@ -34,7 +34,8 @@ import java.util.*;
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation.Response, RiakKvPB.RpbCoverageResp, Namespace> {
+public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation.Response, RiakKvPB.RpbCoverageResp, Namespace>
+{
     private final RiakKvPB.RpbCoverageReq.Builder reqBuilder;
     private final Namespace namespace;
 
@@ -45,7 +46,8 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
     }
 
     @Override
-    protected Response convert(List<RiakKvPB.RpbCoverageResp> rawResponse) {
+    protected Response convert(List<RiakKvPB.RpbCoverageResp> rawResponse)
+    {
         Response r = new Response();
         for (RiakKvPB.RpbCoverageResp resp : rawResponse)
         {
@@ -75,12 +77,14 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
     }
 
     @Override
-    protected RiakMessage createChannelMessage() {
+    protected RiakMessage createChannelMessage()
+    {
         return new RiakMessage(RiakMessageCodes.MSG_CoverageReq, reqBuilder.build().toByteArray());
     }
 
     @Override
-    protected RiakKvPB.RpbCoverageResp decode(RiakMessage rawMessage) {
+    protected RiakKvPB.RpbCoverageResp decode(RiakMessage rawMessage)
+    {
         try
         {
             Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_CoverageResp);
@@ -93,16 +97,20 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
     }
 
     @Override
-    public Namespace getQueryInfo() {
+    public Namespace getQueryInfo()
+    {
         return namespace;
     }
 
-    public static abstract class AbstractBuilder<R> {
+    public static abstract class AbstractBuilder<R>
+    {
         private final RiakKvPB.RpbCoverageReq.Builder reqBuilder = RiakKvPB.RpbCoverageReq.newBuilder();
         private Namespace namespace;
 
-        public AbstractBuilder(Namespace ns) {
-            if (ns == null) {
+        public AbstractBuilder(Namespace ns)
+        {
+            if (ns == null)
+            {
                 throw new IllegalArgumentException("Namespace can not be null");
             }
 
@@ -112,55 +120,68 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             namespace = ns;
         }
 
-        public AbstractBuilder<R> withMinPartitions(int minPartitions) {
+        public AbstractBuilder<R> withMinPartitions(int minPartitions)
+        {
             reqBuilder.setMinPartitions(minPartitions);
             return this;
         }
 
-        public AbstractBuilder<R> withReplaceCoverageEntry(Response.CoverageEntry coverageEntry){
+        public AbstractBuilder<R> withReplaceCoverageEntry(Response.CoverageEntry coverageEntry)
+        {
             return withReplaceCoverageContext(coverageEntry.getCoverageContext());
         }
 
-        public AbstractBuilder<R> withReplaceCoverageContext(byte[] coverageContext){
+        public AbstractBuilder<R> withReplaceCoverageContext(byte[] coverageContext)
+        {
             reqBuilder.setReplaceCover(ByteString.copyFrom(coverageContext));
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext){
-            for(Iterator<byte[]> iterator=coverageContext.iterator(); iterator.hasNext();){
+        public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext)
+        {
+            for(Iterator<byte[]> iterator=coverageContext.iterator(); iterator.hasNext();)
+            {
                 withUnavailableCoverageContext(iterator.next());
             }
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableCoverageEntries(Iterable<Response.CoverageEntry> coverageEntries) {
-            for (Response.CoverageEntry coverageEntry : coverageEntries) {
+        public AbstractBuilder<R> withUnavailableCoverageEntries(Iterable<Response.CoverageEntry> coverageEntries)
+        {
+            for (Response.CoverageEntry coverageEntry : coverageEntries)
+            {
                 withUnavailableCoverageContext(coverageEntry.getCoverageContext());
             }
             return this;
         }
 
-        public AbstractBuilder<R> withUnavailableCoverageContext(byte[]...coverageContext){
-            for(byte[] cc: coverageContext){
+        public AbstractBuilder<R> withUnavailableCoverageContext(byte[]...coverageContext)
+        {
+            for(byte[] cc: coverageContext)
+            {
                 reqBuilder.addUnavailableCover(ByteString.copyFrom(cc));
             }
             return this;
         }
 
-        public CoveragePlanOperation buildOperation(){
+        public CoveragePlanOperation buildOperation()
+        {
             return new CoveragePlanOperation(this);
         }
 
         public abstract R build();
 
-        public Namespace getNamespace() {
+        public Namespace getNamespace()
+        {
             return namespace;
         }
     }
 
-    public static class Response implements Iterable<Response.CoverageEntry>{
+    public static class Response implements Iterable<Response.CoverageEntry>
+    {
 
-        public static class CoverageEntry implements Serializable{
+        public static class CoverageEntry implements Serializable
+        {
             private static final long serialVersionUID = 0;
             private String host;
             private int port;
@@ -175,24 +196,29 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
              */
             private byte[] coverageContext;
 
-            public String getHost() {
+            public String getHost()
+            {
                 return host;
             }
 
-            public int getPort() {
+            public int getPort()
+            {
                 return port;
             }
 
-            public String getDescription() {
+            public String getDescription()
+            {
                 return description;
             }
 
-            public byte[] getCoverageContext() {
+            public byte[] getCoverageContext()
+            {
                 return coverageContext;
             }
 
             @Override
-            public boolean equals(Object o) {
+            public boolean equals(Object o)
+            {
                 if (this == o) return true;
                 if (!(o instanceof CoverageEntry)) return false;
 
@@ -205,7 +231,8 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             }
 
             @Override
-            public int hashCode() {
+            public int hashCode()
+            {
                 int result = getHost().hashCode();
                 result = 31 * result + getPort();
                 result = 31 * result + Arrays.hashCode(getCoverageContext());
@@ -213,7 +240,8 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             }
 
             @Override
-            public String toString() {
+            public String toString()
+            {
                 return "CoverageEntry{" +
                         "description='" + description + '\'' +
                         '}';
@@ -222,48 +250,62 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
         private HashMap<HostAndPort, List<CoverageEntry>> perHostCoverage = new HashMap<HostAndPort, List<CoverageEntry>>();
 
-        protected Response(){
+        protected Response()
+        {
         }
 
-        protected Response(Response rhs){
+        protected Response(Response rhs)
+        {
             this.perHostCoverage.putAll(rhs.perHostCoverage);
         }
 
-        public Set<HostAndPort> hosts(){
+        public Set<HostAndPort> hosts()
+        {
             return perHostCoverage.keySet();
         }
 
-        public List<CoverageEntry> hostEntries(HostAndPort host){
+        public List<CoverageEntry> hostEntries(HostAndPort host)
+        {
             final List<CoverageEntry> lst = perHostCoverage.get(host);
 
-            if(lst == null){
+            if(lst == null)
+            {
                 return Collections.emptyList();
             }
 
             return lst;
         }
 
-        public List<CoverageEntry> hostEntries(String host, int port){
+        public List<CoverageEntry> hostEntries(String host, int port)
+        {
             return hostEntries(HostAndPort.fromParts(host, port));
         }
 
-        private static <T>  Iterator<T> emptyIterator(){
+        private static <T>  Iterator<T> emptyIterator()
+        {
             return Collections.<T>emptyList().iterator();
         }
 
         @Override
-        public Iterator<CoverageEntry> iterator() {
+        public Iterator<CoverageEntry> iterator()
+        {
             final Iterator<List<CoverageEntry>> itor = perHostCoverage.values().iterator();
 
-            return new Iterator<CoverageEntry>() {
+            return new Iterator<CoverageEntry>()
+            {
                 Iterator<CoverageEntry> subIterator = null;
 
                 @Override
-                public boolean hasNext() {
-                    if(subIterator == null || !subIterator.hasNext()){
-                        if(itor.hasNext()){
+                public boolean hasNext()
+                {
+                    if(subIterator == null || !subIterator.hasNext())
+                    {
+                        if(itor.hasNext())
+                        {
                             subIterator = itor.next().iterator();
-                        } else {
+                        }
+                        else
+                        {
                             subIterator = emptyIterator();
                             return false;
                         }
@@ -273,8 +315,10 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 }
 
                 @Override
-                public CoverageEntry next() {
-                    if(!hasNext()){
+                public CoverageEntry next()
+                {
+                    if(!hasNext())
+                    {
                         throw new NoSuchElementException();
                     }
 
@@ -283,16 +327,19 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 }
 
                 @Override
-                public void remove() {
+                public void remove()
+                {
                     throw new UnsupportedOperationException();
                 }
             };
         }
 
-        private void addEntry(CoverageEntry coverageEntry) {
+        private void addEntry(CoverageEntry coverageEntry)
+        {
             final HostAndPort key = HostAndPort.fromParts(coverageEntry.getHost(), coverageEntry.getPort());
             List<CoverageEntry> lst =  perHostCoverage.get(key);
-            if(lst == null){
+            if(lst == null)
+            {
                 lst = new LinkedList<CoverageEntry>();
                 perHostCoverage.put(key, lst);
             }

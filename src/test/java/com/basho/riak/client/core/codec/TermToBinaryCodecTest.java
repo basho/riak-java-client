@@ -26,7 +26,8 @@ public class TermToBinaryCodecTest
     private static final byte[] CONTEXT = new byte[]{(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
     @Test
-    public void encodesPutRequestCorrectly_1() {
+    public void encodesPutRequestCorrectly_1()
+    {
         // {tsputreq, <<"test_table">>, [], [{<<"varchar">>, 12345678, 12.34, true, 12345}, {<<"string">>, 8765432, 43.21, false, 543321}]}
         final byte[] exp = {(byte)131, 104, 4, 100, 0, 8, 116, 115, 112, 117, 116, 114, 101, 113, 109, 0,
             0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 106, 108, 0, 0,
@@ -58,18 +59,22 @@ public class TermToBinaryCodecTest
         Row r2 = new Row(c6, c7, c8, c9, c10);
         Row[] rows = { r1, r2 };
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, Arrays.asList(rows));
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
 
     @Test
-    public void encodesPutRequestCorrectly_2() {
+    public void encodesPutRequestCorrectly_2()
+    {
         // A = riakc_ts_put_operator:serialize(<<"test_table">>,[{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}], true).
         // A = {tsputreq,<<"test_table">>,[],[{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
         final byte[] exp = {(byte)131,104,4, // outer tuple arity 4
@@ -94,18 +99,22 @@ public class TermToBinaryCodecTest
         rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
                          new Cell(1L), new Cell(true), new Cell(34.3), null));
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, rows);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
 
     @Test
-    public void encodesGetRequestCorrectly() {
+    public void encodesGetRequestCorrectly()
+    {
         // {tsgetreq, <<"test_table">>, [<<"series">>, <<"family">>, 12345678], 5000}
         final byte[] exp = {(byte)131, 104, 4, 100, 0, 8, 116, 115, 103, 101, 116, 114, 101, 113, 109, 0,
             0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 108, 0, 0, 0, 3,
@@ -117,12 +126,15 @@ public class TermToBinaryCodecTest
         Cell k3 = new Cell(12345678);
         Cell[] key = {k1, k2, k3};
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsGetRequest(TABLE_NAME, Arrays.asList(key), 5000);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
@@ -138,12 +150,15 @@ public class TermToBinaryCodecTest
                             5,102,97,108,115,101,100,0,9,117,110,100,101,102,105,
                             110,101,100};
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, null);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
@@ -159,12 +174,15 @@ public class TermToBinaryCodecTest
                             5,102,97,108,115,101,109,0,0,0,25,(byte)131,104,2,98,40,26,4,
                             (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }

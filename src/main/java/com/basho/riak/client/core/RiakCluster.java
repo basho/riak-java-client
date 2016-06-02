@@ -125,7 +125,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             this.operationQueueMaxDepth = builder.operationQueueMaxDepth;
             this.operationQueue = new LinkedBlockingDeque<FutureOperation>();
 
-            for (RiakNode node : nodeList) {
+            for (RiakNode node : nodeList)
+            {
                 node.setBlockOnMaxConnections(false);
             }
         }
@@ -194,7 +195,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                                                          500, 500,
                                                          TimeUnit.MILLISECONDS);
 
-        return new Future<Boolean>() {
+        return new Future<Boolean>()
+        {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
             {
@@ -256,7 +258,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         return operation;
     }
 
-    private boolean notQueuingOrQueueIsEmpty() {
+    private boolean notQueuingOrQueueIsEmpty()
+    {
         return !this.queueOperations || this.operationQueue.size() == 0;
     }
 
@@ -289,7 +292,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         boolean gotConnection = this.execute(operation, null);
 
         // If we can't get a connection, put it back at the beginning of the queue
-        if (!gotConnection) {
+        if (!gotConnection)
+        {
             operationQueue.offerFirst(operation);
         }
 

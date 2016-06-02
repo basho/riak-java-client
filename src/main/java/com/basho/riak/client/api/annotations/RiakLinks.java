@@ -55,5 +55,6 @@ import java.lang.annotation.Target;
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
 */
-@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakLinks {
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakLinks
+{
 }

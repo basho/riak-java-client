@@ -3,7 +3,8 @@ package com.basho.riak.client.core.query.timeseries;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class CoverageEntry implements Serializable {
+public class CoverageEntry implements Serializable
+{
     private static final long serialVersionUID = 0;
     private String host;
     private int port;
@@ -15,80 +16,99 @@ public class CoverageEntry implements Serializable {
     private String description;
     private byte[] coverageContext;
 
-    public String getHost() {
+    public String getHost()
+    {
         return host;
     }
 
-    public void setHost(String host) {
+    public void setHost(String host)
+    {
         this.host = host;
     }
 
-    public int getPort() {
+    public int getPort()
+    {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(int port)
+    {
         this.port = port;
     }
 
-    public String getFieldName() {
+    public String getFieldName()
+    {
         return fieldName;
     }
 
-    public void setFieldName(String fieldName) {
+    public void setFieldName(String fieldName)
+    {
         this.fieldName = fieldName;
     }
 
-    public long getLowerBound() {
+    public long getLowerBound()
+    {
         return lowerBound;
     }
 
-    public void setLowerBound(long lowerBound) {
+    public void setLowerBound(long lowerBound)
+    {
         this.lowerBound = lowerBound;
     }
 
-    public boolean isLowerBoundInclusive() {
+    public boolean isLowerBoundInclusive()
+    {
         return lowerBoundInclusive;
     }
 
-    public void setLowerBoundInclusive(boolean lowerBoundInclusive) {
+    public void setLowerBoundInclusive(boolean lowerBoundInclusive)
+    {
         this.lowerBoundInclusive = lowerBoundInclusive;
     }
 
-    public long getUpperBound() {
+    public long getUpperBound()
+    {
         return upperBound;
     }
 
-    public void setUpperBound(long upperBound) {
+    public void setUpperBound(long upperBound)
+    {
         this.upperBound = upperBound;
     }
 
-    public boolean isUpperBoundInclusive() {
+    public boolean isUpperBoundInclusive()
+    {
         return upperBoundInclusive;
     }
 
-    public void setUpperBoundInclusive(boolean upperBoundInclusive) {
+    public void setUpperBoundInclusive(boolean upperBoundInclusive)
+    {
         this.upperBoundInclusive = upperBoundInclusive;
     }
 
-    public String getDescription() {
+    public String getDescription()
+    {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(String description)
+    {
         this.description = description;
     }
 
-    public byte[] getCoverageContext() {
+    public byte[] getCoverageContext()
+    {
         return coverageContext;
     }
 
-    public void setCoverageContext(byte[] coverageContext) {
+    public void setCoverageContext(byte[] coverageContext)
+    {
         this.coverageContext = coverageContext;
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(coverageContext);
@@ -104,7 +124,8 @@ public class CoverageEntry implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (this == obj)
             return true;
         if (obj == null)
@@ -114,20 +135,26 @@ public class CoverageEntry implements Serializable {
         CoverageEntry other = (CoverageEntry) obj;
         if (!Arrays.equals(coverageContext, other.coverageContext))
             return false;
-        if (description == null) {
+        if (description == null)
+        {
             if (other.description != null)
                 return false;
-        } else if (!description.equals(other.description))
+        }
+        else if (!description.equals(other.description))
             return false;
-        if (fieldName == null) {
+        if (fieldName == null)
+        {
             if (other.fieldName != null)
                 return false;
-        } else if (!fieldName.equals(other.fieldName))
+        }
+        else if (!fieldName.equals(other.fieldName))
             return false;
-        if (host == null) {
+        if (host == null)
+        {
             if (other.host != null)
                 return false;
-        } else if (!host.equals(other.host))
+        }
+        else if (!host.equals(other.host))
             return false;
         if (lowerBound != other.lowerBound)
             return false;
@@ -143,7 +170,8 @@ public class CoverageEntry implements Serializable {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "CoverageEntry [host=" + host + ", port=" + port + ", fieldName=" + fieldName + ", lowerBound=" + lowerBound
                 + ", lowerBoundInclusive=" + lowerBoundInclusive + ", upperBound=" + upperBound + ", upperBoundInclusive="
                 + upperBoundInclusive + ", description=" + description + "]";

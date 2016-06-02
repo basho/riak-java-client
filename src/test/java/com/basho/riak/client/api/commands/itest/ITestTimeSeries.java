@@ -54,7 +54,8 @@ public class ITestTimeSeries extends ITestTsBase
     private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
     private static final String BAD_TABLE_NAME = "GeoChicken";
 
-    private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException {
+    private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException
+    {
         final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckinWideTableDefinition.getFullColumnDescriptions());
 
         return createTableAsync(client, tableDef);

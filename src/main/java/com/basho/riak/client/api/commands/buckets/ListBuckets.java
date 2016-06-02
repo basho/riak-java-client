@@ -108,7 +108,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
      * </pre>
      * </p>
      */
-    public static class Response implements Iterable<Namespace> {
+    public static class Response implements Iterable<Namespace>
+    {
 
         private final BinaryValue type;
         private final List<BinaryValue> buckets;

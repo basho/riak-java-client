@@ -40,13 +40,16 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
     }
 
 
-    private static class ImmutablePBCellIterator extends ConvertibleIterator<Cell, RiakTsPB.TsCell> {
-        public ImmutablePBCellIterator(Iterator<Cell> iterator) {
+    private static class ImmutablePBCellIterator extends ConvertibleIterator<Cell, RiakTsPB.TsCell>
+    {
+        public ImmutablePBCellIterator(Iterator<Cell> iterator)
+        {
             super(iterator);
         }
 
         @Override
-        protected RiakTsPB.TsCell convert(Cell cell) {
+        protected RiakTsPB.TsCell convert(Cell cell)
+        {
             if (cell == null)
             {
                 return NullTSCell;
@@ -56,25 +59,30 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
         }
     }
 
-    private static class ImmutablePBRowIterator extends ConvertibleIterator<Row, RiakTsPB.TsRow> {
-        public ImmutablePBRowIterator(Iterator<Row> iterator) {
+    private static class ImmutablePBRowIterator extends ConvertibleIterator<Row, RiakTsPB.TsRow>
+    {
+        public ImmutablePBRowIterator(Iterator<Row> iterator)
+        {
             super(iterator);
         }
 
         @Override
-        protected RiakTsPB.TsRow convert(Row row) {
+        protected RiakTsPB.TsRow convert(Row row)
+        {
             return row.getPbRow();
         }
     }
 
     private static class ImmutableCellIterator extends ConvertibleIterator<RiakTsPB.TsCell, Cell>
     {
-        public ImmutableCellIterator(Iterator<RiakTsPB.TsCell> iterator) {
+        public ImmutableCellIterator(Iterator<RiakTsPB.TsCell> iterator)
+        {
             super(iterator);
         }
 
         @Override
-        protected Cell convert(RiakTsPB.TsCell pbCell) {
+        protected Cell convert(RiakTsPB.TsCell pbCell)
+        {
             if (pbCell.equals(NullTSCell))
             {
                 return null;
@@ -86,12 +94,14 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
 
     private static class ImmutableRowIterator extends ConvertibleIterator<RiakTsPB.TsRow,Row>
     {
-        public ImmutableRowIterator(Iterator<RiakTsPB.TsRow> iterator) {
+        public ImmutableRowIterator(Iterator<RiakTsPB.TsRow> iterator)
+        {
             super(iterator);
         }
 
         @Override
-        protected Row convert(RiakTsPB.TsRow source) {
+        protected Row convert(RiakTsPB.TsRow source)
+        {
             return new Row(source);
         }
     }
