@@ -34,7 +34,8 @@ public class Query extends RiakCommand<QueryResult, String>
     }
 
     @Override
-    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster) {
+    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
+    {
         return cluster.execute(buildCoreOperation());
     }
 
@@ -42,7 +43,6 @@ public class Query extends RiakCommand<QueryResult, String>
     {
         return new QueryOperation.Builder(builder.queryText)
                                            .withCoverageContext(builder.coverageContext)
-                                           //.setInterpolations(builder.interpolations)
                                            .build();
     }
 
@@ -84,12 +84,14 @@ public class Query extends RiakCommand<QueryResult, String>
 
             knownParams = new HashSet<String>(paramMatcher.groupCount());
 
-            for (int i = 0; i < paramMatcher.groupCount(); i++) {
+            for (int i = 0; i < paramMatcher.groupCount(); i++)
+            {
                 knownParams.add(paramMatcher.group(i));
             }
         }
         
-        public Builder(String queryText, byte[] coverageContext) {
+        public Builder(String queryText, byte[] coverageContext)
+        {
             this(queryText);
             this.coverageContext = coverageContext;
         }
@@ -101,7 +103,8 @@ public class Query extends RiakCommand<QueryResult, String>
             return this;
         }
         
-        public Builder withCoverageContext(byte[] coverageContext) {
+        public Builder withCoverageContext(byte[] coverageContext)
+        {
             this.coverageContext = coverageContext;
             return this;
         }

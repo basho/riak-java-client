@@ -321,7 +321,8 @@ public class RiakNode implements RiakResponseListener
 
         executor.schedule(new ShutdownTask(), 0, TimeUnit.SECONDS);
 
-        return new Future<Boolean>() {
+        return new Future<Boolean>()
+        {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
             {
@@ -564,7 +565,8 @@ public class RiakNode implements RiakResponseListener
     {
         synchronized (stateListeners)
         {
-            for (NodeStateListener listener : stateListeners) {
+            for (NodeStateListener listener : stateListeners)
+            {
                 listener.nodeStateChanged(this, state);
             }
         }
@@ -1335,7 +1337,8 @@ public class RiakNode implements RiakResponseListener
          * @param hostAndPOrt
          * @return this
          */
-        public Builder withRemoteHost(HostAndPort hostAndPOrt){
+        public Builder withRemoteHost(HostAndPort hostAndPOrt)
+        {
             this.withRemoteAddress(hostAndPOrt.getHost());
             this.withRemotePort(hostAndPOrt.getPort());
             return this;

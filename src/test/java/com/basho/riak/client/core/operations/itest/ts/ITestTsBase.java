@@ -82,13 +82,15 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
 
     @BeforeClass
-    public static void BeforeClass() throws ExecutionException, InterruptedException {
+    public static void BeforeClass() throws ExecutionException, InterruptedException
+    {
         Assume.assumeTrue(testTimeSeries);
         final RiakClient client = new RiakClient(cluster);
         createTableIfNotExists(client, GeoCheckinWideTableDefinition);
     }
 
-    protected static boolean isTableExistence(RiakClient client, String tableName) throws InterruptedException, ExecutionException {
+    protected static boolean isTableExistence(RiakClient client, String tableName) throws InterruptedException, ExecutionException
+    {
         final Namespace ns = new Namespace(tableName, tableName);
 
         final FetchBucketPropsOperation fetchProps = new FetchBucketPropsOperation.Builder(ns).build();
@@ -112,7 +114,8 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         }
     }
 
-    protected static RiakFuture<Void, String> createTableAsync(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException {
+    protected static RiakFuture<Void, String> createTableAsync(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException
+    {
         final CreateTable cmd = new CreateTable.Builder(tableDefinition)
                 // TODO: avoid usage of hardcoded quanta
                 .withQuantum(15, TimeUnit.MINUTES)
@@ -121,11 +124,13 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         return client.executeAsync(cmd);
     }
 
-    protected static void createTable(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException, ExecutionException {
+    protected static void createTable(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException, ExecutionException
+    {
         createTableAsync(client, tableDefinition).get();
     }
 
-    protected static void createTableIfNotExists(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException, ExecutionException {
+    protected static void createTableIfNotExists(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException, ExecutionException
+    {
         if (!isTableExistence(client, tableDefinition.getTableName()))
         {
             createTableAsync(client, tableDefinition).get();

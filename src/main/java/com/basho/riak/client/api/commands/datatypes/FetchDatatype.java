@@ -105,7 +105,8 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
      * @author Dave Rusek <drusek at basho dot com>
      * @since 2.0
      */
-    public static final class Option<T> extends RiakOption<T> {
+    public static final class Option<T> extends RiakOption<T>
+    {
 
         /**
          * Read Quorum.
@@ -146,7 +147,8 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
          */
         public static final Option<Boolean> INCLUDE_CONTEXT = new Option<Boolean>("INCLUDE_CONTEXT");
 
-        public Option(String name) {
+        public Option(String name)
+        {
             super(name);
         }
     }

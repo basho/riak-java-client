@@ -311,7 +311,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getIllegalBucketNameField()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakBucketName
             Date bucketName;
         };
@@ -322,12 +323,18 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void illegalBucketNameGetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakBucketName 
-            Date getKey() { return null; }
+            Date getKey()
+            {
+                return null;
+            }
             
             @RiakBucketName
-            void setKey(String key) {}
+            void setKey(String key)
+            {
+            }
             
         };
         
@@ -339,11 +346,15 @@ public class AnnotationUtilTest
     {
         final Object o = new Object() {
             @RiakBucketName 
-            String getBucketName() { return null; }
+            String getBucketName()
+            {
+                return null;
+            }
             
             @RiakBucketName
-            void setBucketName(Date key) {}
-            
+            void setBucketName(Date key)
+            {
+            }
         };
         
         AnnotationUtil.setBucketName(o, BinaryValue.create("Some Date"));
@@ -783,7 +794,8 @@ public class AnnotationUtilTest
             
             @RiakVClock
             public void setTombstone(Boolean v)
-            {}
+            {
+            }
 
         };
         
@@ -2434,52 +2446,62 @@ public class AnnotationUtilTest
         }
         
         @RiakIndex(name = "longs")
-        public Set<Long> getLongs() {
+        public Set<Long> getLongs()
+        {
           return longs;
         }
         
         @RiakIndex(name = "longs")
-        public void setLongs(Set<Long> longs) {
+        public void setLongs(Set<Long> longs)
+        {
             this.longs = longs;
         }
  
         @RiakIndex(name = "strings") 
-        public Set<String> getStrings() {
+        public Set<String> getStrings()
+        {
             return strings;
         }
         
         @RiakIndex(name = "strings") 
-        public void setStrings(Set<String> strings) {
+        public void setStrings(Set<String> strings)
+        {
             this.strings = strings;
         }
         
         @RiakIndex(name = "long")
-        public long getLong() {
+        public long getLong()
+        {
           return myLong;
         }
         
         @RiakIndex(name = "long")
-        public void setLong(long l) {
+        public void setLong(long l)
+        {
             this.myLong = l;
         }
         
         @RiakIndex(name = "longlong")
-        public Long getLongLong() {
+        public Long getLongLong()
+        {
           return myLongLong;
         }
         
         @RiakIndex(name = "longlong")
-        public void setLongLong(Long l) {
+        public void setLongLong(Long l)
+        {
             this.myLongLong = l;
         }
 
         @RiakIndex(name = "string") 
-        public String getString() {
+        public String getString()
+        {
             return myString;
         }
         
         @RiakIndex(name = "string") 
-        public void setString(String s) {
+        public void setString(String s)
+        {
             this.myString = s;
         }
         
@@ -2533,12 +2555,14 @@ public class AnnotationUtilTest
         
         
         @RiakTombstone
-        public Boolean getTombstone() {
+        public Boolean getTombstone()
+        {
             return this.tombstone;
         }
         
         @RiakTombstone
-        public void setTombstone(Boolean tombstone) {
+        public void setTombstone(Boolean tombstone)
+        {
             this.tombstone = tombstone;
         }
         
@@ -2636,12 +2660,14 @@ public class AnnotationUtilTest
         }
         
         @RiakTombstone
-        public boolean getTombstone() {
+        public boolean getTombstone()
+        {
             return this.tombstone;
         }
         
         @RiakTombstone
-        public void setTombstone(boolean tombstone) {
+        public void setTombstone(boolean tombstone)
+        {
             this.tombstone = tombstone;
         }
         

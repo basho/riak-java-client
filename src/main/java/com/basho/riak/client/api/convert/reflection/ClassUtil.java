@@ -24,7 +24,8 @@ import java.lang.reflect.Method;
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
-public final class ClassUtil {
+public final class ClassUtil
+{
 
     private ClassUtil() {}
 
@@ -36,53 +37,78 @@ public final class ClassUtil {
      * @return the member
      * @throws IllegalArgumentException if cannot set accessibility
      */
-    public static <T extends Member> T checkAndFixAccess(T member) {
+    public static <T extends Member> T checkAndFixAccess(T member)
+    {
          com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member, false);
         return member;
     }
 
-    public static void setFieldValue(Field field, Object obj, Object value) {
-        try {
+    public static void setFieldValue(Field field, Object obj, Object value)
+    {
+        try
+        {
             field.set(obj, value);
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e)
+        {
             throw new IllegalStateException("Unable to set Riak annotated field value", e);
         }
     }
 
-    public static <T> Object getFieldValue(Field f, T obj) {
+    public static <T> Object getFieldValue(Field f, T obj)
+    {
         Object value = null;
-        try {
+        try
+        {
             value = f.get(obj);
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e)
+        {
             throw new IllegalStateException("Unable to get Riak annotated field value", e);
         }
 
         return value;
     }
 
-    public static <T> Object getMethodValue(Method m, T obj) {
+    public static <T> Object getMethodValue(Method m, T obj)
+    {
         Object value = null;
-        try {
+        try
+        {
             value = m.invoke(obj);
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e)
+        {
             throw new IllegalStateException("Unable to get Riak annotated method value", e);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e)
+        {
             throw new IllegalStateException("Unable to get Riak annotated method value", e);
-        } catch (InvocationTargetException e) {
+        }
+        catch (InvocationTargetException e)
+        {
             throw new IllegalStateException("Unable to get Riak annotated method value", e);
         }
 
         return value;
     }
     
-    public static <T> void setMethodValue(Method m, T obj, Object value) {
-        try {
+    public static <T> void setMethodValue(Method m, T obj, Object value)
+    {
+        try
+        {
             m.invoke(obj, value);
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e)
+        {
             throw new IllegalStateException("Unable to set Riak annotated method value", e);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e)
+        {
             throw new IllegalStateException("Unable to set Riak annotated method value", e);
-        } catch (InvocationTargetException e) {
+        }
+        catch (InvocationTargetException e)
+        {
             throw new IllegalStateException("Unable to set Riak annotated method value", e);
         }
     }
