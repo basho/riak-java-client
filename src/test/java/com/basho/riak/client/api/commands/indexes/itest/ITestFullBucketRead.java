@@ -150,10 +150,12 @@ public class ITestFullBucketRead extends ITestBase {
         assertTrue(coverageEntries.size() > minPartitions);
 
         final CoverageEntry failedEntry = coverageEntries.get(0); // assume this coverage entry failed
+        logger.debug("Reading original data by coverage entry: {}", failedEntry);
         final Map<String, RiakObject> riakObjects = readDataForCoverageEntry(failedEntry);
         assertNotNull(riakObjects);
 
         // build request for alternative coverage plan
+        logger.debug("Querying alternative coverage plan for coverage entry: {}", failedEntry);
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
                 .withMinPartitions(minPartitions)
                 .withReplaceCoverageEntry(failedEntry)
@@ -162,11 +164,12 @@ public class ITestFullBucketRead extends ITestBase {
         final CoveragePlan.Response response = client.execute(cmd);
         assertTrue(response.iterator().hasNext());
 
-        final Map<String, RiakObject> riakObjectsAlternative = readDataForCoverageEntry(response.iterator().next());
-        assertNotNull(riakObjects);
-        assertEquals(riakObjects.size(), riakObjectsAlternative.size());
+        final CoverageEntry alternativeEntry = response.iterator().next();
+        logger.debug("Reading original data by alternative coverage entry: {}", alternativeEntry);
+        final Map<String, RiakObject> riakObjectsAlternative = readDataForCoverageEntry(alternativeEntry);
+        assertEquals("Key set queried by alternative coverage entry does not match original keys",
+                riakObjects.keySet(), riakObjectsAlternative.keySet());
         for(Map.Entry<String,RiakObject> entry : riakObjects.entrySet()) {
-            assertTrue(riakObjectsAlternative.containsKey(entry.getKey()));
             assertEquals(entry.getValue().getValue(), riakObjectsAlternative.get(entry.getKey()).getValue());
         }
     }
