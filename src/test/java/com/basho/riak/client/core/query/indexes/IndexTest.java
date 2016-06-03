@@ -47,8 +47,8 @@ public class IndexTest
     }
     
     @Test
-    public void testValidIndexTypeExtensions() {
-
+    public void testValidIndexTypeExtensions()
+    {
         IndexType indexType = IndexType.typeFromFullname("indexname_int");
         Assert.assertTrue(indexType.equals(IndexType.INT));
 

@@ -28,7 +28,8 @@ import com.basho.riak.client.core.query.Namespace;
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace> {
+public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
+{
     private final CoveragePlanOperation operation;
 
     private CoveragePlan(Builder builder)
@@ -37,7 +38,8 @@ public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
     }
 
     @Override
-    protected RiakFuture<Response, Namespace> executeAsync(RiakCluster cluster) {
+    protected RiakFuture<Response, Namespace> executeAsync(RiakCluster cluster)
+    {
         final RiakFuture<CoveragePlanOperation.Response, Namespace> coreFuture = cluster.execute(operation);
 
         CoreFutureAdapter<CoveragePlan.Response, Namespace, CoveragePlanOperation.Response, Namespace> future =
@@ -62,8 +64,10 @@ public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
     /**
      * Used to construct a CoveragePlan command.
      */
-    public static class Builder extends CoveragePlanOperation.AbstractBuilder<CoveragePlan> {
-        public Builder(Namespace ns) {
+    public static class Builder extends CoveragePlanOperation.AbstractBuilder<CoveragePlan>
+    {
+        public Builder(Namespace ns)
+        {
             super(ns);
         }
 
@@ -73,14 +77,16 @@ public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
             return new CoveragePlan(this);
         }
 
-        public static Builder create(Namespace ns){
+        public static Builder create(Namespace ns)
+        {
             return new Builder(ns);
         }
     }
 
     public static class Response extends CoveragePlanOperation.Response
     {
-        private Response(CoveragePlanOperation.Response coreResponse) {
+        private Response(CoveragePlanOperation.Response coreResponse)
+        {
             super(coreResponse);
         }
     }

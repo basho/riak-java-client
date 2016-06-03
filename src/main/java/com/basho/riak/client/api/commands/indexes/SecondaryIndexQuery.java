@@ -406,7 +406,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
          * @param coverageContext
          * @return
          */
-        public T withCoverageContext(byte[] coverageContext){
+        public T withCoverageContext(byte[] coverageContext)
+        {
             this.coverageContext = coverageContext;
             return self();
         }
@@ -418,7 +419,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
          * @param returnBody
          * @return
          */
-        protected T withReturnBody(boolean returnBody){
+        protected T withReturnBody(boolean returnBody)
+        {
             this.returnBody = returnBody;
             return self();
         }

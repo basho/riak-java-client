@@ -476,7 +476,8 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + (namespace != null ? namespace.hashCode() : 0);
@@ -489,41 +490,52 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof StoreValue)) {
+        if (!(obj instanceof StoreValue))
+        {
             return false;
         }
 
         final StoreValue other = (StoreValue) obj;
-        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace))) {
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace)))
+        {
             return false;
         }
-        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
-        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+        if (this.value != other.value && (this.value == null || !this.value.equals(other.value)))
+        {
             return false;
         }
-        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference))) {
+        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference)))
+        {
             return false;
         }
-        if (this.vclock != other.vclock && (this.vclock == null || !this.vclock.equals(other.vclock))) {
+        if (this.vclock != other.vclock && (this.vclock == null || !this.vclock.equals(other.vclock)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{namespace: %s, key: %s, options: %s, value: %s,"
                 + " typeReference: %s, vclock: %s}", namespace, key, options,
                 value, typeReference, vclock);

@@ -13,7 +13,8 @@ import java.util.Collections;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class CoveragePlanOperationTest {
+public class CoveragePlanOperationTest
+{
     @Rule
     public ExpectedException exception = ExpectedException.none();
 

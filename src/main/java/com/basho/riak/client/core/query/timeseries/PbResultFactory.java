@@ -80,15 +80,19 @@ public final class PbResultFactory
 
     }
 
-    public static CoveragePlanResult convertCoverageResp(String tableName, RiakTsPB.TsCoverageResp response) {
-        if (response == null || response.getEntriesCount() == 0) {
+    public static CoveragePlanResult convertCoverageResp(String tableName, RiakTsPB.TsCoverageResp response)
+    {
+        if (response == null || response.getEntriesCount() == 0)
+        {
             return null;
         }
         CoveragePlanResult r = new CoveragePlanResult();
-        for (RiakTsPB.TsCoverageEntry e : response.getEntriesList()) {
+        for (RiakTsPB.TsCoverageEntry e : response.getEntriesList())
+        {
             final CoverageEntry ce = new CoverageEntry();
             ce.setCoverageContext(e.getCoverContext().toByteArray());
-            if (e.hasRange()) {
+            if (e.hasRange())
+            {
                 TsRange range = e.getRange();
                 ce.setFieldName(range.getFieldName().toStringUtf8());
                 ce.setLowerBound(range.getLowerBound());
@@ -100,7 +104,8 @@ public final class PbResultFactory
             ce.setHost(e.getIp().toStringUtf8());
             ce.setPort(e.getPort());
 
-            if ("0.0.0.0".equals(ce.getHost())) {
+            if ("0.0.0.0".equals(ce.getHost()))
+            {
                 LoggerFactory.getLogger(CoveragePlanResult.class).error(
                         "CoveragePlanOperation returns at least one coverage entry: '{}' -- with IP address '0.0.0.0'.\n"
                                 + "Execution will be failed due to the imposibility of using IP '0.0.0.0' "

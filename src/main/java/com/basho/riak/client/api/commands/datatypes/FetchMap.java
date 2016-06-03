@@ -62,30 +62,30 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
             cluster.execute(buildCoreOperation());
         
         CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location>(coreFuture) {
-
-            @Override
-            protected FetchMap.Response convertResponse(DtFetchOperation.Response coreResponse)
+            new CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
-                RiakDatatype element = coreResponse.getCrdtElement();
-                
-                Context context = null;
-                if (coreResponse.hasContext())
+                @Override
+                protected FetchMap.Response convertResponse(DtFetchOperation.Response coreResponse)
                 {
-                    context = new Context(coreResponse.getContext());
+                    RiakDatatype element = coreResponse.getCrdtElement();
+
+                    Context context = null;
+                    if (coreResponse.hasContext())
+                    {
+                        context = new Context(coreResponse.getContext());
+                    }
+
+                    RiakMap datatype = extractDatatype(element);
+
+                    return new Response(datatype, context);
                 }
 
-                RiakMap datatype = extractDatatype(element);
-
-                return new Response(datatype, context);
-            }
-
-            @Override
-            protected Location convertQueryInfo(Location coreQueryInfo)
-            {
-                return coreQueryInfo;
-            }
-        };
+                @Override
+                protected Location convertQueryInfo(Location coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
         coreFuture.addListener(future);
         return future;
     }
