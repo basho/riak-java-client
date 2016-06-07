@@ -595,6 +595,14 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                return this;
            }
 
+            /**
+             * Set whether to return list of RiakObjects inside the response.
+             * This option could be used only if target Riak instance supports parallel extract
+             * feature (such as RiakTS).
+             *
+             * @param returnBody true to return data inside response
+             * @return a reference to this object.
+             */
             public Builder withReturnBody(boolean returnBody)
             {
                 this.returnBody = returnBody;
