@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class ITestCoveragePlan extends ITestBase
+public class ITestCoveragePlan extends ITestAutoCleanupBase
 {
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);
 
