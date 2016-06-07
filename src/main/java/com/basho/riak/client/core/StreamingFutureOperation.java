@@ -1,14 +1,18 @@
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.util.BinaryValue;
+
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
  * @param <T> The type the operation returns
  * @param <U> The protocol type returned
  * @param <S> Query info type
- * @since 2.0.5
+ * @since 2.0.7
  */
 public abstract class StreamingFutureOperation<T, U, S>
         extends FutureOperation<Void,U,S>
