@@ -25,12 +25,12 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -43,117 +43,113 @@ import static org.junit.Assume.assumeTrue;
  */
 public class ITestListKeysOperation extends ITestBase
 {
-    private Logger logger = LoggerFactory.getLogger("ITestListKeysOperation");
-
-    private final String keyBase = "my_key";
-    private final String value = "{\"value\":\"value\"}";
-    private final String bucketType = super.bucketType.toStringUtf8();
+    private final String bucketType = ITestBase.bucketType.toStringUtf8();
 
     @Test
     public void testListNoKeysDefaultType() throws InterruptedException, ExecutionException
     {
-        testListNoKeys(Namespace.DEFAULT_BUCKET_TYPE, "_0");
+        testListNoKeys(Namespace.DEFAULT_BUCKET_TYPE);
     }
 
     @Test
     public void testListNoKeysTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testListNoKeys(bucketType, "_1");
+        testListNoKeys(bucketType);
     }
 
     @Test
     public void testListNoKeysDefaultTypeStreaming() throws InterruptedException, ExecutionException
     {
-        testListKeysStreaming(Namespace.DEFAULT_BUCKET_TYPE, "_2", 0);
+        testListKeysStreaming(Namespace.DEFAULT_BUCKET_TYPE, 0);
     }
 
 
     @Test
     public void testListKeyDefaultType() throws InterruptedException, ExecutionException
     {
-        testListSingleKey(Namespace.DEFAULT_BUCKET_TYPE, "_3");
+        testListSingleKey(Namespace.DEFAULT_BUCKET_TYPE);
     }
 
     @Test
     public void testListKeyTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testListSingleKey(bucketType, "_4");
+        testListSingleKey(bucketType);
     }
 
     @Test
     public void testListKeyDefaultTypeStreaming() throws InterruptedException, ExecutionException
     {
-        testListKeysStreaming(Namespace.DEFAULT_BUCKET_TYPE, "_5", 1);
+        testListKeysStreaming(Namespace.DEFAULT_BUCKET_TYPE, 1);
     }
 
 
     @Test
     public void testLargeKeyListDefaultType() throws InterruptedException, ExecutionException
     {
-        testManyKeyList(Namespace.DEFAULT_BUCKET_TYPE, "_6", 1000);
+        testManyKeyList(Namespace.DEFAULT_BUCKET_TYPE, 1000);
     }
 
     @Test
     public void testLargeKeyListDefaultTypeStreaming() throws InterruptedException, ExecutionException
     {
-        testListKeysStreaming(Namespace.DEFAULT_BUCKET_TYPE, "_7", 1000);
+        testListKeysStreaming(Namespace.DEFAULT_BUCKET_TYPE, 1000);
     }
 
     @Test
     public void testLargeKeyListTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testManyKeyList(bucketType, "_8", 1000);
+        testManyKeyList(bucketType, 1000);
     }
 
     @Test
     public void testLargeKeyListTestTypeStreaming() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testListKeysStreaming(bucketType, "_9", 1000);
+        testListKeysStreaming(bucketType, 1000);
     }
 
 
 
-    private void testListNoKeys(String bucketType, String bucketSuffix) throws InterruptedException, ExecutionException
+    private void testListNoKeys(String bucketType) throws InterruptedException, ExecutionException
     {
-        Namespace ns = setupBucket(bucketType, bucketSuffix, 0);
+        final Namespace ns = setupBucket(bucketType, 0);
 
-        List<BinaryValue> kList = getAllKeyListResults(ns);
+        final List<BinaryValue> kList = getAllKeyListResults(ns);
 
         assertTrue(kList.isEmpty());
         resetAndEmptyBucket(ns);
     }
 
-    private void testListSingleKey(String bucketType, String bucketSuffix) throws InterruptedException, ExecutionException
+    private void testListSingleKey(String bucketType) throws InterruptedException, ExecutionException
     {
-        final Namespace ns = setupBucket(bucketType, bucketSuffix, 1);
+        final Namespace ns = setupBucket(bucketType, 1);
 
-        List<BinaryValue> kList = getAllKeyListResults(ns);
+        final List<BinaryValue> kList = getAllKeyListResults(ns);
 
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), createKeyName(0));
         resetAndEmptyBucket(ns);
     }
 
-    private void testManyKeyList(String bucketType, String bucketSuffix, int numExpected) throws InterruptedException, ExecutionException
+    private void testManyKeyList(String bucketType, int numExpected) throws InterruptedException, ExecutionException
     {
-        final Namespace ns = setupBucket(bucketType, bucketSuffix, numExpected);
+        final Namespace ns = setupBucket(bucketType, numExpected);
 
-        List<BinaryValue> kList = getAllKeyListResults(ns);
+        final List<BinaryValue> kList = getAllKeyListResults(ns);
 
         assertEquals(numExpected, kList.size());
 
         resetAndEmptyBucket(ns);
     }
 
-    private void testListKeysStreaming(String bucketType, String bucketSuffix, int numExpected) throws InterruptedException, ExecutionException
+    private void testListKeysStreaming(String bucketType, int numExpected) throws InterruptedException, ExecutionException
     {
-        final Namespace ns = setupBucket(bucketType, bucketSuffix, numExpected);
+        final Namespace ns = setupBucket(bucketType, numExpected);
 
-        StreamingListKeysOperation slko = new StreamingListKeysOperation.Builder(ns).build();
+        final StreamingListKeysOperation slko = new StreamingListKeysOperation.Builder(ns).build();
         final StreamingRiakFuture<BinaryValue, Namespace> execute = cluster.execute(slko);
 
         final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
@@ -184,26 +180,29 @@ public class ITestListKeysOperation extends ITestBase
 
     private List<BinaryValue> getAllKeyListResults(Namespace ns) throws InterruptedException, ExecutionException
     {
-        ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
+        final ListKeysOperation klistOp = new ListKeysOperation.Builder(ns).build();
         cluster.execute(klistOp);
         return klistOp.get().getKeys();
     }
 
-    private Namespace setupBucket(String bucketType, String bucketSuffix, int numExpected) throws InterruptedException
+    private Namespace setupBucket(String bucketType, int numExpected) throws InterruptedException
     {
-        final Namespace ns = new Namespace(bucketType, bucketName + bucketSuffix);
+        final Namespace ns = new Namespace(bucketType, bucketName + "_" + testName.getMethodName());
         storeObjects(ns, numExpected);
         return ns;
     }
 
     private void storeObjects(Namespace ns, int expected) throws InterruptedException
     {
+        final String value = "{\"value\":\"value\"}";
+        final RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
+
         for (int i = 0; i < expected; i++)
         {
-            BinaryValue key = createKeyName(i);
-            RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-            Location location = new Location(ns, key);
-            StoreOperation storeOp =
+            final BinaryValue key = createKeyName(i);
+
+            final Location location = new Location(ns, key);
+            final StoreOperation storeOp =
                     new StoreOperation.Builder(location)
                             .withContent(rObj)
                             .build();
@@ -214,5 +213,9 @@ public class ITestListKeysOperation extends ITestBase
         }
     }
 
-    private BinaryValue createKeyName(int i) {return BinaryValue.unsafeCreate((keyBase + i).getBytes());}
+    private BinaryValue createKeyName(int i)
+    {
+        final String keyBase = "my_key";
+        return BinaryValue.unsafeCreate((keyBase + i).getBytes());
+    }
 }
