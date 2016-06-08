@@ -15,8 +15,8 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.StreamingFutureOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
@@ -28,17 +28,24 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
+public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperation.Response, BinaryValue, RiakKvPB.RpbListKeysResp, Namespace>
 {
     private final Logger logger = LoggerFactory.getLogger("ListKeysOperation");
     private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
+    private final BlockingQueue<BinaryValue> responseQueue;
+
 
     private ListKeysOperation(Builder builder)
     {
+        super(builder.streamResults);
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
+        this.responseQueue = new LinkedBlockingQueue<>();
+
     }
 
     @Override
@@ -87,11 +94,28 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         return namespace;
     }
 
+    @Override
+    protected void processStreamingChunk(RiakKvPB.RpbListKeysResp rawResponseChunk)
+    {
+        for (ByteString key : rawResponseChunk.getKeysList())
+        {
+            final BinaryValue value = BinaryValue.unsafeCreate(key.toByteArray());
+            this.responseQueue.add(value);
+        }
+    }
+
+    @Override
+    public BlockingQueue<BinaryValue> getResultsQueue()
+    {
+        return this.responseQueue;
+    }
+
     public static class Builder
     {
         private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
         private final Namespace namespace;
+        private boolean streamResults;
 
         /**
          * Construct a builder for a ListKeysOperaiton.
@@ -115,6 +139,24 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
                 throw new IllegalArgumentException("Timeout can not be zero or less");
             }
             reqBuilder.setTimeout(timeout);
+            return this;
+        }
+
+        /**
+         * Set the streamResults flag.
+         *
+         * If unset or false, the entire result set will be available through the {@link ListKeysOperation#get()}
+         * method once the operation is complete.
+         *
+         * If set to true, results will be pushed to the queue available through the {@link ListKeysOperation#getResultsQueue()}
+         * method as soon as they are available.
+         *
+         * @param streamResults whether to stream results to {@link ListKeysOperation#get()}(false), or {@link ListKeysOperation#getResultsQueue()}(true)
+         * @return A reference to this object.
+         */
+        public Builder streamResults(boolean streamResults)
+        {
+            this.streamResults = streamResults;
             return this;
         }
 

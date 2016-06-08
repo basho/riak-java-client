@@ -19,7 +19,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.operations.StreamingListKeysOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -149,8 +148,8 @@ public class ITestListKeysOperation extends ITestBase
     {
         final Namespace ns = setupBucket(bucketType, numExpected);
 
-        final StreamingListKeysOperation slko = new StreamingListKeysOperation.Builder(ns).build();
-        final StreamingRiakFuture<BinaryValue, Namespace> execute = cluster.execute(slko);
+        final ListKeysOperation slko = new ListKeysOperation.Builder(ns).streamResults(true).build();
+        final StreamingRiakFuture<?, BinaryValue, Namespace> execute = cluster.execute(slko);
 
         final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
         List<BinaryValue> kList = new LinkedList<>();

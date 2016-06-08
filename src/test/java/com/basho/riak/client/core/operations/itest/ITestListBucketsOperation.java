@@ -19,7 +19,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.operations.StreamingListBucketsOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -29,9 +28,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -104,11 +104,12 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
     private void testBucketListStreaming(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
     {
         final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
-        final StreamingListBucketsOperation listOp = new StreamingListBucketsOperation.Builder()
+        final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                 .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                .streamResults(true)
                 .build();
 
-        final StreamingRiakFuture<BinaryValue, BinaryValue> execute = cluster.execute(listOp);
+        final StreamingRiakFuture<?, BinaryValue, BinaryValue> execute = cluster.execute(listOp);
         final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
 
         List<BinaryValue> actualBuckets = new LinkedList<>();

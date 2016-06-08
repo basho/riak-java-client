@@ -1,27 +1,34 @@
 package com.basho.riak.client.core;
 
-import com.basho.riak.client.core.util.BinaryValue;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 /**
  * @author Alex Moore <amoore at basho dot com>
- * @param <T> The type the operation returns
- * @param <U> The protocol type returned
- * @param <S> Query info type
+ * @param <SyncReturnType> The type the non-streaming operation returns
+ * @param <ResponseType> The protocol type returned
+ * @param <QueryInfoType> Query info type
+ * @param <StreamingReturnType> The type the streaming operation queue returns
  * @since 2.0.7
  */
-public abstract class StreamingFutureOperation<T, U, S>
-        extends FutureOperation<Void,U,S>
-        implements StreamingRiakFuture<T,S>
+public abstract class StreamingFutureOperation<SyncReturnType, StreamingReturnType, ResponseType, QueryInfoType>
+        extends FutureOperation<SyncReturnType, ResponseType, QueryInfoType>
+        implements StreamingRiakFuture<SyncReturnType, StreamingReturnType, QueryInfoType>
 {
+    private boolean streamResults;
+
+    protected StreamingFutureOperation(boolean streamResults)
+    {
+        this.streamResults = streamResults;
+    }
+
     public synchronized void setResponse(RiakMessage rawResponse)
     {
+        if(!streamResults)
+        {
+            super.setResponse(rawResponse);
+            return;
+        }
+
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
-        U decodedMessage = decode(rawResponse);
+        ResponseType decodedMessage = decode(rawResponse);
 
         processStreamingChunk(decodedMessage);
 
@@ -40,11 +47,5 @@ public abstract class StreamingFutureOperation<T, U, S>
         }
     }
 
-    protected Void convert(List<U> rawResponse)
-    {
-        // Nothing added to the rawResponse list, nothing to convert;
-        return null;
-    }
-
-    abstract protected Void processStreamingChunk(U rawResponseChunk);
+    abstract protected void processStreamingChunk(ResponseType rawResponseChunk);
 }
