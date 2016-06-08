@@ -41,119 +41,86 @@ import static org.junit.Assume.assumeTrue;
  */
 public class ITestListBucketsOperation extends ITestAutoCleanupBase
 {
+    private String defaultBucketType = Namespace.DEFAULT_BUCKET_TYPE;
+    private String namedBucketType = ITestBase.bucketType.toStringUtf8();
+
     @Test
     public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
     {
-        testListBuckets(Namespace.DEFAULT_BUCKET_TYPE);
+        testBucketList(defaultBucketType, 1);
     }
 
     @Test
     public void testListBucketsTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testListBuckets(bucketType.toString());
+        testBucketList(namedBucketType, 1);
     }
 
-    private void testListBuckets(String bucketType) throws InterruptedException, ExecutionException
+    @Test
+    public void testListBucketsDefaultTypeStreaming() throws ExecutionException, InterruptedException
     {
-        // Empty buckets do not show up
-        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
-        final String value = "{\"value\":\"value\"}";
-
-        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
-        StoreOperation storeOp =
-            new StoreOperation.Builder(location)
-                .withContent(rObj)
-                .build();
-
-        cluster.execute(storeOp);
-        storeOp.get();
-
-        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
-                                        .withBucketType(BinaryValue.createFromUtf8(bucketType))
-                                        .build();
-        cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get().getBuckets();
-        assertTrue(bucketList.size() > 0);
-
-        boolean found = false;
-        for (BinaryValue baw : bucketList)
-        {
-            if (baw.toString().equals(bucketName.toString()))
-            {
-                found = true;
-            }
-        }
-
-        assertTrue(found);
+        testBucketListStreaming(namedBucketType, 1);
     }
 
     @Test
     public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException
     {
-        testLargeBucketList(Namespace.DEFAULT_BUCKET_TYPE);
+        testBucketList(defaultBucketType, 10);
     }
 
     @Test
     public void testLargeBucketListTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testLargeBucketList(bucketType.toString());
+        testBucketList(namedBucketType, 10);
+    }
+
+    @Test
+    public void testLargeBucketListDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testBucketListStreaming(defaultBucketType, 10);
     }
 
     @Test
     public void testLargeBucketListTestTypeStreaming() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testLargeBucketListStreaming(bucketType.toString());
+        testBucketListStreaming(namedBucketType, 10);
     }
 
-    private void testLargeBucketList(String bucketType) throws InterruptedException, ExecutionException
+    private void testBucketList(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
     {
-        final int bucketCount = 10;
-        final List<BinaryValue> bucketNames = storeObjects(bucketType, bucketCount);
+        final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
 
-        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
-                                        .withBucketType(BinaryValue.createFromUtf8(bucketType))
-                                        .build();
-        cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get().getBuckets();
+        List<BinaryValue> actualBucketNames = getAllBucketListResults(bucketType);
 
-        for (BinaryValue name : bucketNames)
-        {
-            assertTrue(bucketList.contains(name));
-        }
+        assertContainsAll(expectedBuckets, actualBucketNames);
 
-        for (BinaryValue name : bucketNames)
-        {
-            Namespace ns = new Namespace(bucketType, name.toString());
-            resetAndEmptyBucket(ns);
-        }
+        resetAndEmptyBuckets(bucketType, expectedBuckets);
     }
 
-    private void testLargeBucketListStreaming(String bucketType) throws InterruptedException, ExecutionException
+    private void testBucketListStreaming(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
     {
-        final int bucketCount = 10;
-        final List<BinaryValue> expectedBucketNames = storeObjects(bucketType, bucketCount);
-
-        StreamingListBucketsOperation listOp = new StreamingListBucketsOperation.Builder()
+        final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
+        final StreamingListBucketsOperation listOp = new StreamingListBucketsOperation.Builder()
                 .withBucketType(BinaryValue.createFromUtf8(bucketType))
                 .build();
 
         final StreamingRiakFuture<BinaryValue, BinaryValue> execute = cluster.execute(listOp);
         final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
 
-        List<BinaryValue> actualBucketNames = new LinkedList<>();
+        List<BinaryValue> actualBuckets = new LinkedList<>();
         int timeouts = 0;
 
-        for (int i = 0; i < bucketCount; i++)
+        while(!execute.isDone())
         {
-            final BinaryValue bucket = resultsQueue.poll(1, TimeUnit.SECONDS);
+            final BinaryValue bucket = resultsQueue.poll(50, TimeUnit.MILLISECONDS);
 
             if(bucket != null)
             {
-                actualBucketNames.add(bucket);
+                actualBuckets.add(bucket);
                 continue;
             }
 
@@ -164,13 +131,25 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
             }
         }
 
-        assertEquals(bucketCount, actualBucketNames.size());
+        // Grab any last buckets that came in on the last message
+        resultsQueue.drainTo(actualBuckets);
 
-        for (BinaryValue name : expectedBucketNames)
+        assertContainsAll(expectedBuckets, actualBuckets);
+
+        resetAndEmptyBuckets(bucketType, expectedBuckets);
+    }
+
+    private void assertContainsAll(List<BinaryValue> expectedSet, List<BinaryValue> actualSet)
+    {
+        for (BinaryValue name : expectedSet)
         {
-            assertTrue(actualBucketNames.contains(name));
+            assertTrue(actualSet.contains(name));
         }
+    }
 
+    private void resetAndEmptyBuckets(String bucketType, List<BinaryValue> expectedBucketNames)
+            throws InterruptedException, ExecutionException
+    {
         for (BinaryValue name : expectedBucketNames)
         {
             Namespace ns = new Namespace(bucketType, name.toString());
@@ -178,21 +157,29 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         }
     }
 
+    private List<BinaryValue> getAllBucketListResults(String bucketType) throws InterruptedException, ExecutionException
+    {
+        final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
+                .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                .build();
+        cluster.execute(listOp);
+        return listOp.get().getBuckets();
+    }
+
     private List<BinaryValue> storeObjects(String bucketType, int bucketCount) throws InterruptedException
     {
         final List<BinaryValue> bucketNames = new ArrayList<>();
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
+        final RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
 
         for (int i = 0; i < bucketCount; i++)
         {
-            String testBucketName = bucketName.toString() + i;
+            final String testBucketName = testName.getMethodName() + "_" + i;
             bucketNames.add(BinaryValue.create(testBucketName));
 
-            Namespace ns = new Namespace(bucketType, testBucketName);
-            RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-            Location location = new Location(ns, key);
-            StoreOperation storeOp = new StoreOperation.Builder(location)
+            final Location location = new Location(new Namespace(bucketType, testBucketName), key);
+            final StoreOperation storeOp = new StoreOperation.Builder(location)
                                                        .withContent(rObj)
                                                        .build();
 
