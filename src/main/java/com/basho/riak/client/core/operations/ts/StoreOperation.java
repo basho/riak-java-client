@@ -1,13 +1,8 @@
 package com.basho.riak.client.core.operations.ts;
 
-import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.CollectionConverters;
+import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
-import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.protobuf.RiakMessageCodes;
-import com.basho.riak.protobuf.RiakTsPB;
-import com.google.protobuf.ByteString;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,30 +14,22 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, String>
+public class StoreOperation extends TTBFutureOperation<Void, String>
 {
-    private final String tableName;
-    private final int rowCount;
+    private final Builder builder;
     private String queryInfoMessage;
 
-
-    private StoreOperation(Builder builder)
+    private StoreOperation(final Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsPutReq,
-              RiakMessageCodes.MSG_TsPutResp,
-              builder.reqBuilder,
-              RiakTsPB.TsPutResp.PARSER);
-
-        this.tableName = builder.reqBuilder.getTable().toStringUtf8();
-        this.rowCount = builder.reqBuilder.getRowsCount();
+        super(new TTBConverters.StoreEncoder(builder), new TTBConverters.VoidDecoder());
+        this.builder = builder;
     }
 
     @Override
-    protected Void convert(List<RiakTsPB.TsPutResp> responses)
+    protected Void convert(List<byte[]> responses)
     {
         // This is not a streaming op, there will only be one response
         checkAndGetSingleResponse(responses);
-
         return null;
     }
 
@@ -59,12 +46,13 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
 
     private String createQueryInfoMessage()
     {
-        return "INSERT <" + this.rowCount + " rows> into " + this.tableName;
+        return "INSERT into " + builder.tableName;
     }
 
     public static class Builder
     {
-        private final RiakTsPB.TsPutReq.Builder reqBuilder;
+        private final String tableName;
+        private Collection<Row> rows;
 
         public Builder(String tableName)
         {
@@ -73,20 +61,28 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
                 throw new IllegalArgumentException("TableName can not be null or empty");
             }
 
-            this.reqBuilder = RiakTsPB.TsPutReq.newBuilder();
-            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
+            this.tableName = tableName;
         }
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            this.reqBuilder.addAllColumns(CollectionConverters.convertColumnDescriptionsToPb(columns));
+            throw new UnsupportedOperationException();
+        }
+
+        public Builder withRows(Collection<Row> rows)
+        {
+            this.rows = rows;
             return this;
         }
 
-        public Builder withRows(Iterable<Row> rows)
+        public String getTableName()
         {
-            this.reqBuilder.addAllRows(ConvertibleIterable.asIterablePbRow(rows));
-            return this;
+            return tableName;
+        }
+
+        public Collection<Row> getRows()
+        {
+            return rows;
         }
 
         public StoreOperation build()
@@ -95,5 +91,3 @@ public class StoreOperation extends PBFutureOperation<Void, RiakTsPB.TsPutResp, 
         }
     }
 }
-
-

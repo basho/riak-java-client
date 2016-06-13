@@ -30,15 +30,15 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void, String>
 {
     private final RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder;
     private final String indexName;
-    
+
     private YzDeleteIndexOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
         this.indexName = builder.indexName;
     }
-    
+
     @Override
-    protected Void convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse)
     {
         return null;
     }
@@ -48,13 +48,13 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void, String>
     {
         RiakYokozunaPB.RpbYokozunaIndexDeleteReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexDeleteReq, req.toByteArray());
-        
+
     }
 
     @Override
     protected Void decode(RiakMessage rawMessage)
     {
-        Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_DelResp);
+        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_DelResp);
         return null;
     }
 
@@ -63,13 +63,13 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void, String>
     {
         return indexName;
     }
-    
+
     public static class Builder
     {
         private RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder reqBuilder =
             RiakYokozunaPB.RpbYokozunaIndexDeleteReq.newBuilder();
         private final String indexName;
-        
+
         public Builder(String indexName)
         {
             if (null == indexName || indexName.length() == 0)
@@ -79,7 +79,7 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void, String>
             reqBuilder.setName(ByteString.copyFromUtf8(indexName));
             this.indexName = indexName;
         }
-        
+
         public YzDeleteIndexOperation build()
         {
             return new YzDeleteIndexOperation(this);

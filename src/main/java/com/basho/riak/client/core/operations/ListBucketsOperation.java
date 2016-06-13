@@ -31,7 +31,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
-    
+
     private ListBucketsOperation(Builder builder)
     {
         this.reqBuilder = builder.reqBuilder;
@@ -45,7 +45,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     }
 
     @Override
-    protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse) 
+    protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse)
     {
         List<BinaryValue> buckets = new ArrayList<BinaryValue>(rawResponse.size());
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
@@ -69,7 +69,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     {
         try
         {
-            Operations.checkMessageType(rawMessage, RiakMessageCodes.MSG_ListBucketsResp);
+            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_ListBucketsResp);
             return RiakKvPB.RpbListBucketsResp.parseFrom(rawMessage.getData());
         }
         catch (InvalidProtocolBufferException e)
@@ -84,19 +84,19 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     {
         return bucketType;
     }
-    
+
     public static class Builder
     {
-        private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder = 
+        private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder =
             RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
         private BinaryValue bucketType = BinaryValue.create(Namespace.DEFAULT_BUCKET_TYPE);
-        
+
         /**
          * Create a Builder for a ListBucketsOperation.
          */
         public Builder()
         {}
-        
+
         /**
          * Provide a timeout for this operation.
          * @param timeout value in milliseconds
@@ -111,10 +111,10 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             reqBuilder.setTimeout(timeout);
             return this;
         }
-        
+
         /**
         * Set the bucket type.
-        * If unset {@link Namespace#DEFAULT_BUCKET_TYPE} is used. 
+        * If unset {@link Namespace#DEFAULT_BUCKET_TYPE} is used.
         * @param bucketType the bucket type to use
         * @return A reference to this object.
         */
@@ -128,34 +128,34 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             this.bucketType = bucketType;
             return this;
         }
-        
+
         public ListBucketsOperation build()
         {
             return new ListBucketsOperation(this);
         }
-        
+
     }
-    
+
     public static class Response
     {
         private final BinaryValue bucketType;
         private final List<BinaryValue> buckets;
-        
+
         Response(BinaryValue bucketType, List<BinaryValue> buckets)
         {
             this.bucketType = bucketType;
             this.buckets = buckets;
         }
-        
+
         public BinaryValue getBucketType()
         {
             return bucketType;
         }
-        
+
         public List<BinaryValue> getBuckets()
         {
             return buckets;
         }
     }
-    
+
 }

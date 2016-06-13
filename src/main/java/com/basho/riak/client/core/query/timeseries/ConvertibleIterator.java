@@ -11,6 +11,7 @@ import java.util.Iterator;
  */
 public abstract class ConvertibleIterator<S,D> implements Iterator<D>
 {
+    private static final RiakTsPB.TsCell NullTSCell = RiakTsPB.TsCell.newBuilder().build();
     private final Iterator<S> iterator;
 
     public ConvertibleIterator(Iterator<S> iterator)
@@ -48,7 +49,7 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
         protected RiakTsPB.TsCell convert(Cell cell) {
             if (cell == null)
             {
-                return Cell.NullCell.getPbCell();
+                return NullTSCell;
             }
 
             return cell.getPbCell();
@@ -74,7 +75,7 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
 
         @Override
         protected Cell convert(RiakTsPB.TsCell pbCell) {
-            if (pbCell.equals(Cell.NullCell.getPbCell()))
+            if (pbCell.equals(NullTSCell))
             {
                 return null;
             }

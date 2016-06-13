@@ -33,7 +33,7 @@ public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
         int length = msg.getData().length + 1;
         out.writeInt(length);
         out.writeByte(msg.getCode());
-        out.writeBytes(msg.getData());        
+        out.writeBytes(msg.getData());
     }
 
     @Override
@@ -44,7 +44,7 @@ public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
         {
             in.markReaderIndex();
             int length = in.readInt();
-            
+
             // See if we have the full frame.
             if (in.readableBytes() < length)
             {
@@ -58,8 +58,8 @@ public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
                 in.readBytes(array);
                 out.add(new RiakMessage(code,array));
             }
-            
+
         }
     }
-    
+
 }

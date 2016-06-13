@@ -1,13 +1,11 @@
 package com.basho.riak.client.core.operations.ts;
 
-import java.util.List;
-
-import com.basho.riak.client.core.operations.PBFutureOperation;
-import com.basho.riak.client.core.query.timeseries.PbResultFactory;
+import com.basho.riak.client.core.operations.TTBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
+
+import java.util.List;
 
 /**
  * An operation to query data from a Riak Time Series table.
@@ -16,26 +14,23 @@ import com.google.protobuf.ByteString;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQueryResp, String>
+public class QueryOperation extends TTBFutureOperation<QueryResult, String>
 {
     private final String queryText;
 
     private QueryOperation(Builder builder)
     {
-        super(RiakMessageCodes.MSG_TsQueryReq,
-              RiakMessageCodes.MSG_TsQueryResp,
-              builder.reqBuilder,
-              RiakTsPB.TsQueryResp.PARSER);
+        super(new TTBConverters.QueryEncoder(builder), new TTBConverters.QueryResultDecoder());
 
         this.queryText = builder.queryText;
     }
 
     @Override
-    protected QueryResult convert(List<RiakTsPB.TsQueryResp> responses)
+    protected QueryResult convert(List<byte[]> responses)
     {
         // This is not a streaming op, there will only be one response
-        final RiakTsPB.TsQueryResp response = checkAndGetSingleResponse(responses);
-        return PbResultFactory.convertPbQueryResp(response);
+        final byte[] response = checkAndGetSingleResponse(responses);
+        return this.responseParser.parseFrom(response);
     }
 
     @Override
@@ -47,7 +42,7 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
     public static class Builder
     {
         private final String queryText;
-        private final RiakTsPB.TsQueryReq.Builder reqBuilder = RiakTsPB.TsQueryReq.newBuilder();
+        private byte[] coverageContext;
 
         public Builder(String queryText)
         {
@@ -56,15 +51,25 @@ public class QueryOperation extends PBFutureOperation<QueryResult, RiakTsPB.TsQu
                 throw new IllegalArgumentException("QueryText cannot be null or empty");
             }
             this.queryText = queryText;
-            RiakTsPB.TsInterpolation.Builder interpolationBuilder = RiakTsPB.TsInterpolation.newBuilder().setBase(ByteString.copyFromUtf8(queryText));
-            reqBuilder.setQuery(interpolationBuilder);
         }
 
-        public Builder withCoverageContext(byte[] coverageContext) {
-            if(coverageContext != null) {
-                reqBuilder.setCoverContext(ByteString.copyFrom(coverageContext));
+        public Builder withCoverageContext(byte[] coverageContext)
+        {
+            if(coverageContext != null)
+            {
+                this.coverageContext = coverageContext;
             }
             return this;
+        }
+
+        public String getQueryText()
+        {
+            return queryText;
+        }
+
+        public byte[] getCoverageContext()
+        {
+            return coverageContext;
         }
 
         public QueryOperation build()

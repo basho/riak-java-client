@@ -40,7 +40,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 {
     private final RiakKvPB.RpbGetReq.Builder reqBuilder;
     Location location;
-    
+
     private final Logger logger = LoggerFactory.getLogger(FetchOperation.class);
 
     private FetchOperation(Builder builder)
@@ -52,8 +52,8 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     @Override
     protected RiakKvPB.RpbGetResp decode(RiakMessage message)
     {
-        Operations.checkMessageType(message, RiakMessageCodes.MSG_GetResp);
-        
+        Operations.checkPBMessageType(message, RiakMessageCodes.MSG_GetResp);
+
         try
         {
             byte[] data = message.getData();
@@ -73,7 +73,8 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     }
 
     @Override
-    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) {
+    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses)
+    {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
         {
@@ -86,17 +87,17 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 
     static FetchOperation.Response convert(RiakKvPB.RpbGetResp response)
     {
-        FetchOperation.Response.Builder responseBuilder = 
+        FetchOperation.Response.Builder responseBuilder =
                 new FetchOperation.Response.Builder();
-        
-        // If the response is null ... it means not found. Riak only sends 
+
+        // If the response is null ... it means not found. Riak only sends
         // a message code and zero bytes when that's the case. (See: decode() )
         // Because that makes sense!
         if (null == response)
         {
             responseBuilder.withNotFound(true);
         }
-        else 
+        else
         {
             // To unify the behavior of having just a tombstone vs. siblings
             // that include a tombstone, we create an empty object and mark
@@ -106,7 +107,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
                 RiakObject ro = new RiakObject()
                                     .setDeleted(true)
                                     .setVClock(new BasicVClock(response.getVclock().toByteArray()));
-                
+
                 responseBuilder.addObject(ro);
             }
             else
@@ -117,7 +118,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             responseBuilder.withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
 
         }
-        
+
         return responseBuilder.build();
     }
 
@@ -133,13 +134,13 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     {
         return location;
     }
-    
+
     public static class Builder
     {
-        private final RiakKvPB.RpbGetReq.Builder reqBuilder = 
+        private final RiakKvPB.RpbGetReq.Builder reqBuilder =
             RiakKvPB.RpbGetReq.newBuilder();
         private final Location location;
-        
+
         /**
          * Construct a FetchOperation that will retrieve an object from Riak stored
          * at the provided Location.
@@ -151,14 +152,14 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             {
                 throw new IllegalArgumentException("Location can not be null.");
             }
-            
+
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
             this.location = location;
-            
+
         }
-        
+
         /**
          * Set the R value for this FetchOperation.
          * If not asSet the bucket default is used.
@@ -205,7 +206,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         * Set the basic_quorum value.
         * <p>
         * The parameter controls whether a read request should return early in
-        * some fail cases. 
+        * some fail cases.
         * E.g. If a quorum of nodes has already
         * returned notfound/error, don't wait around for the rest.
         * </p>
@@ -234,7 +235,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * <p>
          * Causes Riak to only return the metadata for the object. The value
          * will be asSet to null.
-         * @param headOnly true to return only metadata. 
+         * @param headOnly true to return only metadata.
          * @return a reference to this object.
          */
 		public Builder withHeadOnly(boolean headOnly)
@@ -244,9 +245,9 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 		}
 
         /**
-         * Do not return the object if the supplied vclock matches. 
+         * Do not return the object if the supplied vclock matches.
          * @param vclock the vclock to match on
-         * @return a refrence to this object. 
+         * @return a refrence to this object.
          */
 		public Builder withIfNotModified(byte[] vclock)
 		{
@@ -292,42 +293,42 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 			reqBuilder.setSloppyQuorum(sloppyQuorum);
 			return this;
 		}
-        
+
         public FetchOperation build()
         {
             return new FetchOperation(this);
         }
-        
-        
+
+
     }
-    
+
     protected static abstract class KvResponseBase
     {
         private final List<RiakObject> objectList;
-        
+
         protected KvResponseBase(Init<?> builder)
         {
             this.objectList = builder.objectList;
         }
-        
+
         public List<RiakObject> getObjectList()
         {
             return objectList;
         }
-        
-        protected static abstract class Init<T extends Init<T>> 
+
+        protected static abstract class Init<T extends Init<T>>
         {
             private final List<RiakObject> objectList =
                 new LinkedList<RiakObject>();
             protected abstract T self();
             protected abstract KvResponseBase build();
-            
+
             T addObject(RiakObject object)
             {
                 objectList.add(object);
                 return self();
             }
-            
+
             T addObjects(List<RiakObject> objects)
             {
                 objectList.addAll(objects);
@@ -335,48 +336,48 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             }
         }
     }
-    
-    
+
+
     public static class Response extends KvResponseBase
     {
         private final boolean notFound;
         private final boolean unchanged;
-        
+
         private Response(Init<?> builder)
         {
             super(builder);
             this.notFound = builder.notFound;
             this.unchanged = builder.unchanged;
         }
-        
+
         public boolean isNotFound()
         {
             return notFound;
         }
-        
+
         public boolean isUnchanged()
         {
             return unchanged;
         }
-        
+
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private boolean notFound;
             private boolean unchanged;
-            
+
             T withNotFound(boolean notFound)
             {
                 this.notFound = notFound;
                 return self();
             }
-            
+
             T withUnchanged(boolean unchanged)
             {
                 this.unchanged = unchanged;
                 return self();
             }
         }
-        
+
         static class Builder extends Init<Builder>
         {
             @Override
