@@ -175,7 +175,8 @@ public class RiakClusterFixtureTest
 
 
     @Test(timeout = 10000)
-    public void testOperationQueue() throws Exception {
+    public void testOperationQueue() throws Exception
+    {
         List<RiakNode> list = new LinkedList<RiakNode>();
 
         RiakNode.Builder goodNodeBuilder = new RiakNode.Builder()

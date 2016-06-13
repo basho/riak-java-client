@@ -20,26 +20,30 @@ import com.basho.riak.client.core.query.RiakObject;
  * @author russell
  *
  */
-public class ConversionException extends RuntimeException {
-
+public class ConversionException extends RuntimeException
+{
   /**
    * eclipse generated id
    */
   private static final long serialVersionUID = 2116948528090219193L;
 
-  public ConversionException() {
+  public ConversionException()
+  {
     super();
   }
 
-  public ConversionException(String message) {
+  public ConversionException(String message)
+  {
     super(message);
   }
 
-  public ConversionException(Throwable cause) {
+  public ConversionException(Throwable cause)
+  {
     super(cause);
   }
 
-  public ConversionException(String message, Throwable cause) {
+  public ConversionException(String message, Throwable cause)
+  {
     super(message, cause);
   }
 }

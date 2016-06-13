@@ -89,7 +89,8 @@ public class Store extends RiakCommand<Void,String>
             else
             {
                 // A bit weird but have no other ideas
-                for (Row r : rows) {
+                for (Row r : rows)
+                {
                     this.rows.add(r);
                 }
             }

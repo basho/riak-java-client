@@ -10,52 +10,66 @@ import java.util.Set;
 
 import com.basho.riak.client.core.util.HostAndPort;
 
-public class CoveragePlanResult implements Iterable<CoverageEntry> {
-
+public class CoveragePlanResult implements Iterable<CoverageEntry>
+{
     private HashMap<HostAndPort, List<CoverageEntry>> perHostCoverage = new HashMap<HostAndPort, List<CoverageEntry>>();
 
-    protected CoveragePlanResult() {
+    protected CoveragePlanResult()
+    {
     }
 
-    protected CoveragePlanResult(CoveragePlanResult rhs) {
+    protected CoveragePlanResult(CoveragePlanResult rhs)
+    {
         this.perHostCoverage.putAll(rhs.perHostCoverage);
     }
 
-    public Set<HostAndPort> hosts() {
+    public Set<HostAndPort> hosts()
+    {
         return perHostCoverage.keySet();
     }
 
-    public List<CoverageEntry> hostEntries(HostAndPort host) {
+    public List<CoverageEntry> hostEntries(HostAndPort host)
+    {
         final List<CoverageEntry> lst = perHostCoverage.get(host);
 
-        if (lst == null) {
+        if (lst == null)
+        {
             return Collections.emptyList();
         }
 
         return lst;
     }
 
-    public List<CoverageEntry> hostEntries(String host, int port) {
+    public List<CoverageEntry> hostEntries(String host, int port)
+    {
         return hostEntries(HostAndPort.fromParts(host, port));
     }
 
-    private static <T> Iterator<T> emptyIterator() {
+    private static <T> Iterator<T> emptyIterator()
+    {
         return Collections.emptyIterator();
     }
 
     @Override
-    public Iterator<CoverageEntry> iterator() {
+    public Iterator<CoverageEntry> iterator()
+    {
         final Iterator<List<CoverageEntry>> itor = perHostCoverage.values().iterator();
 
-        return new Iterator<CoverageEntry>() {
+        return new Iterator<CoverageEntry>()
+        {
             Iterator<CoverageEntry> subIterator = null;
 
             @Override
-            public boolean hasNext() {
-                if (subIterator == null || !subIterator.hasNext()) {
-                    if (itor.hasNext()) {
+            public boolean hasNext()
+            {
+                if (subIterator == null || !subIterator.hasNext())
+                {
+                    if (itor.hasNext())
+                    {
                         subIterator = itor.next().iterator();
-                    } else {
+                    }
+                    else
+                    {
                         subIterator = emptyIterator();
                         return false;
                     }
@@ -65,8 +79,10 @@ public class CoveragePlanResult implements Iterable<CoverageEntry> {
             }
 
             @Override
-            public CoverageEntry next() {
-                if (!hasNext()) {
+            public CoverageEntry next()
+            {
+                if (!hasNext())
+                {
                     throw new NoSuchElementException();
                 }
 
@@ -75,16 +91,19 @@ public class CoveragePlanResult implements Iterable<CoverageEntry> {
             }
 
             @Override
-            public void remove() {
+            public void remove()
+            {
                 throw new UnsupportedOperationException();
             }
         };
     }
 
-    public void addEntry(CoverageEntry coverageEntry) {
+    public void addEntry(CoverageEntry coverageEntry)
+    {
         final HostAndPort key = HostAndPort.fromParts(coverageEntry.getHost(), coverageEntry.getPort());
         List<CoverageEntry> lst = perHostCoverage.get(key);
-        if (lst == null) {
+        if (lst == null)
+        {
             lst = new LinkedList<CoverageEntry>();
             perHostCoverage.put(key, lst);
         }

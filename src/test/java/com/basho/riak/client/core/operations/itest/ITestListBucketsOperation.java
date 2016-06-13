@@ -113,7 +113,8 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         final List<BinaryValue> bucketNames = new ArrayList<>();
 
         RiakFutureListener<StoreOperation.Response, Location> listener =
-            new RiakFutureListener<StoreOperation.Response, Location>() {
+            new RiakFutureListener<StoreOperation.Response, Location>()
+            {
                 
                 private final AtomicInteger received = new AtomicInteger();
                 

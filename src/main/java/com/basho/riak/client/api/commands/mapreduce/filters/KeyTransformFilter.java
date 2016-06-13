@@ -18,6 +18,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  * @author russell
  *
  */
-public interface KeyTransformFilter {
-
+public interface KeyTransformFilter
+{
 }

@@ -21,31 +21,37 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.CoveragePlanOperation;
 import com.basho.riak.client.core.query.timeseries.CoveragePlanResult;
 
-public class CoveragePlan extends RiakCommand<CoveragePlanResult, String> {
-
+public class CoveragePlan extends RiakCommand<CoveragePlanResult, String>
+{
     private final CoveragePlanOperation operation;
 
-    private CoveragePlan(Builder builder) {
+    private CoveragePlan(Builder builder)
+    {
         this.operation = builder.buildOperation();
     }
 
     @Override
-    protected RiakFuture<CoveragePlanResult, String> executeAsync(RiakCluster cluster) {
+    protected RiakFuture<CoveragePlanResult, String> executeAsync(RiakCluster cluster)
+    {
         RiakFuture<CoveragePlanResult, String> future = cluster.execute(operation);
         return future;
     }
 
-    public static class Builder extends CoveragePlanOperation.AbstractBuilder<CoveragePlan> {
-        public Builder(String tableName, String query) {
+    public static class Builder extends CoveragePlanOperation.AbstractBuilder<CoveragePlan>
+    {
+        public Builder(String tableName, String query)
+        {
             super(tableName, query);
         }
 
         @Override
-        public CoveragePlan build() {
+        public CoveragePlan build()
+        {
             return new CoveragePlan(this);
         }
 
-        public static Builder create(String tableName, String query) {
+        public static Builder create(String tableName, String query)
+        {
             return new Builder(tableName, query);
         }
     }
