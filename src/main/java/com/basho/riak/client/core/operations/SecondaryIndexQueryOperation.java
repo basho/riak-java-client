@@ -54,7 +54,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     protected SecondaryIndexQueryOperation.Response convert(List<Object> rawResponse)
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder =
-            new SecondaryIndexQueryOperation.Response.Builder();
+                new SecondaryIndexQueryOperation.Response.Builder();
 
         for (Object o : rawResponse)
         {
@@ -85,22 +85,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
             if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase("$key"))
             {
-                if (pbReq.hasRangeMin())
-                {
-                    for (RpbPair pair : pbEntry.getResultsList())
-                    {
-                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),
-                                                             BinaryValue.unsafeCreate(pair.getValue().toByteArray())));
-                    }
-                }
-                else
-                {
-                    for (ByteString objKey : pbEntry.getKeysList())
-                    {
-                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pbReq.getKey().toByteArray()),
-                                                             BinaryValue.unsafeCreate(objKey.toByteArray())));
-                    }
-                }
                 convertTerms(responseBuilder, pbEntry);
             }
             else
