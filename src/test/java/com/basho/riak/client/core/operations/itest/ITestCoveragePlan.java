@@ -11,6 +11,7 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.HostAndPort;
+import com.basho.riak.test.rule.annotations.OverrideRiakClusterConfig;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +30,7 @@ import static org.junit.Assert.*;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
+@OverrideRiakClusterConfig(nodes = 3, timeout = 3)
 public class ITestCoveragePlan extends ITestAutoCleanupBase
 {
     private final static Logger logger = LoggerFactory.getLogger(ITestCoveragePlan.class);

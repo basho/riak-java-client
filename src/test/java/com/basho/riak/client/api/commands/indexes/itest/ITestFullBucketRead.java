@@ -13,6 +13,7 @@ import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.HostAndPort;
+import com.basho.riak.test.rule.annotations.OverrideRiakClusterConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import static org.junit.Assert.*;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
+@OverrideRiakClusterConfig(nodes = 3, timeout = 3)
 public class ITestFullBucketRead extends ITestAutoCleanupBase
 {
     final static int minPartitions = 5;
