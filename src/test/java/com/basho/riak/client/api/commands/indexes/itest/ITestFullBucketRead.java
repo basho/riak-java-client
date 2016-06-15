@@ -46,6 +46,7 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
         setupIndexTestData(defaultNamespace(), indexName, keyBase, value);
 
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
+            .withMinPartitions(minPartitions)
             .build();
 
         client = new RiakClient(cluster);
