@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc. 
+ * Copyright 2013 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
@@ -23,10 +24,17 @@ import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -80,6 +88,13 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
+    public void testSingleQuerySingleResponseDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        testSingleQuerySingleResponseStreaming(defaultTypeNamespace);
+    }
+
+    @Test
     public void testSingleQuerySingleResponseTestType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
@@ -130,6 +145,12 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         Assume.assumeTrue(test2i);
         Assume.assumeTrue(testBucketType);
         testNoSortWithNoPaging(typedNamespace);
+    }
+
+    @Test
+    public void testNoSortWithNoPagingTestTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        testNoSortWithNoPagingStreaming(typedNamespace);
     }
 
     @Test
@@ -221,6 +242,14 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     }
 
     @Test
+    public void testSortWithPagingTestTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+        Assume.assumeTrue(testBucketType);
+        testSortWithPagingStreaming(typedNamespace);
+    }
+
+    @Test
     public void testRegexTermFilterDefaultType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
@@ -284,6 +313,71 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertTrue(response.getEntryList().get(0).hasIndexKey());
         assertEquals(BinaryValue.unsafeCreate("5".getBytes()), response.getEntryList().get(0).getIndexKey());
         assertEquals(keyBase + "5", response.getEntryList().get(0).getObjectKey().toString());
+    }
+
+    private void testSingleQuerySingleResponseStreaming(Namespace namespace) throws InterruptedException, ExecutionException
+    {
+        {
+            SecondaryIndexQueryOperation.Query query =
+                    new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                            .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                            .build();
+
+
+            SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(query).streamResults(true)
+                    .build();
+
+            final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response,
+                    SecondaryIndexQueryOperation.Query>
+                    future = cluster.execute(queryOp);
+            SecondaryIndexQueryOperation.Response syncResponse = queryOp.get();
+
+            List<SecondaryIndexQueryOperation.Response.Entry> streamedResponses = new LinkedList<>();
+            for (SecondaryIndexQueryOperation.Response r : future.getResultsQueue())
+            {
+                streamedResponses.addAll(r.getEntryList());
+            }
+
+            assertEquals(0, syncResponse.getEntryList().size());
+            assertFalse(syncResponse.hasContinuation());
+
+            assertEquals(1, streamedResponses.size());
+            final SecondaryIndexQueryOperation.Response.Entry entry = streamedResponses.get(0);
+            assertFalse(entry.hasIndexKey());
+            assertEquals(keyBase + "5", entry.getObjectKey().toString());
+            assertFalse(syncResponse.hasContinuation());
+        }
+
+        {
+            SecondaryIndexQueryOperation.Query query2 = new SecondaryIndexQueryOperation.Query.Builder(namespace,
+                                                                                                       incrementingIndexName)
+                    .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                    .withReturnKeyAndIndex(true)
+                    .build();
+            SecondaryIndexQueryOperation queryOp2 =
+                    new SecondaryIndexQueryOperation.Builder(query2).streamResults(true).build();
+
+            final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+                    future2 = cluster.execute(queryOp2);
+
+            SecondaryIndexQueryOperation.Response syncResponse2 = queryOp2.get();
+
+            LinkedList<SecondaryIndexQueryOperation.Response.Entry> streamedResponses2 = new LinkedList<>();
+            for (SecondaryIndexQueryOperation.Response r : future2.getResultsQueue())
+            {
+                streamedResponses2.addAll(r.getEntryList());
+            }
+
+            assertEquals(0, syncResponse2.getEntryList().size());
+            assertFalse(syncResponse2.hasContinuation());
+
+            assertEquals(1, streamedResponses2.size());
+            final SecondaryIndexQueryOperation.Response.Entry entry2 = streamedResponses2.get(0);
+            assertTrue(entry2.hasIndexKey());
+            assertEquals(BinaryValue.unsafeCreate("5".getBytes()), entry2.getIndexKey());
+            assertEquals(keyBase + "5", entry2.getObjectKey().toString());
+        }
     }
 
     private void testSingleQueryMultipleResponse(Namespace namespace) throws InterruptedException, ExecutionException
@@ -386,6 +480,62 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(100, response.getEntryList().size());
     }
 
+    private void testNoSortWithNoPagingStreaming(Namespace namespace) throws InterruptedException, ExecutionException
+    {
+        SecondaryIndexQueryOperation.Query query =
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(false)
+                        .build();
+
+        SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .streamResults(true)
+                        .build();
+
+        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response,
+                SecondaryIndexQueryOperation.Query>
+                future = cluster.execute(queryOp);
+
+
+        final BlockingQueue<SecondaryIndexQueryOperation.Response> resultsQueue = future.getResultsQueue();
+        final List<SecondaryIndexQueryOperation.Response.Entry> resultsList = new LinkedList<>();
+        int timeouts = 0;
+
+        for (int i = 0; i < 100; i++)
+        {
+            if(future.isDone())
+            {
+                for (SecondaryIndexQueryOperation.Response response : resultsQueue)
+                {
+                    resultsList.addAll(response.getEntryList());
+                }
+                break;
+            }
+
+            final SecondaryIndexQueryOperation.Response chunk = resultsQueue.poll(1, TimeUnit.MILLISECONDS);
+
+            if(chunk != null)
+            {
+                resultsList.addAll(chunk.getEntryList());
+                continue;
+            }
+            else
+            {
+                timeouts++;
+                if (timeouts == 10)
+                {
+                    break;
+                }
+            }
+        }
+
+        assertEquals(100, resultsList.size());
+        assertEquals(0, future.get().getEntryList().size());
+        assertFalse(future.get().hasContinuation());
+    }
+
     private void testSortWithNoPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
@@ -404,7 +554,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         assertEquals(100, response.getEntryList().size());
 
-        AssertLongObjectsInOrder(response);
+        AssertLongObjectsInOrder(response.getEntryList());
     }
 
 
@@ -431,7 +581,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         }
     }
 
-
     private void testSortWithPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
@@ -451,7 +600,77 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         assertEquals(20, response.getEntryList().size());
 
-        AssertLongObjectsInOrder(response);
+        AssertLongObjectsInOrder(response.getEntryList());
+    }
+
+    private void testSortWithPagingStreaming(Namespace namespace) throws InterruptedException, ExecutionException
+    {
+        SecondaryIndexQueryOperation.Query query =
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                    .withPaginationSort(true)
+                    .withMaxResults(20)
+                    .build();
+
+        SecondaryIndexQueryOperation queryOp =
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .streamResults(true)
+                        .build();
+
+        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response,
+                SecondaryIndexQueryOperation.Query>
+                future = cluster.execute(queryOp);
+
+        final BlockingQueue<SecondaryIndexQueryOperation.Response> resultsQueue = future.getResultsQueue();
+        final List<SecondaryIndexQueryOperation.Response.Entry> resultsList = new LinkedList<>();
+        BinaryValue continuation = null;
+        int timeouts = 0;
+
+        for (int i = 0; i < 20; i++)
+        {
+            if(future.isDone())
+            {
+                for (SecondaryIndexQueryOperation.Response response : resultsQueue)
+                {
+                    resultsList.addAll(response.getEntryList());
+                    if(response.hasContinuation())
+                    {
+                        continuation = response.getContinuation();
+                    }
+                }
+                break;
+            }
+
+            final SecondaryIndexQueryOperation.Response chunk = resultsQueue.poll(1, TimeUnit.MILLISECONDS);
+
+            if(chunk == null)
+            {
+                if (++timeouts == 10)
+                {
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            resultsList.addAll(chunk.getEntryList());
+            if(chunk.hasContinuation())
+            {
+                continuation = chunk.getContinuation();
+            }
+
+        }
+
+        assertEquals(20, resultsList.size());
+        assertEquals(0, future.get().getEntryList().size());
+        assertTrue(future.get().hasContinuation());
+        assertNotNull(continuation);
+        assertEquals(continuation, future.get().getContinuation());
+
+        AssertLongObjectsInOrder(resultsList);
     }
 
     private void testRegexTermFilter(Namespace namespace) throws InterruptedException, ExecutionException
@@ -524,14 +743,14 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         }
     }
 
-    private void AssertLongObjectsInOrder(SecondaryIndexQueryOperation.Response response)
+    private void AssertLongObjectsInOrder(List<SecondaryIndexQueryOperation.Response.Entry> entryList)
     {
-        final String firstKey = response.getEntryList().get(0).getObjectKey().toString();
+        final String firstKey = entryList.get(0).getObjectKey().toString();
         Long previousKey = Long.parseLong(firstKey.substring(keyBase.length()));
 
-        for (int j = 1; j < response.getEntryList().size(); j++)
+        for (int j = 1; j < entryList.size(); j++)
         {
-            String fullKey = response.getEntryList().get(j).getObjectKey().toString();
+            String fullKey = entryList.get(j).getObjectKey().toString();
             Long currentKey = Long.parseLong(fullKey.substring(keyBase.length()));
             assertTrue(previousKey <= currentKey);
             previousKey = currentKey;

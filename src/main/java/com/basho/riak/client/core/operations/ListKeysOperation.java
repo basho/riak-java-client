@@ -45,7 +45,6 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
         this.responseQueue = new LinkedBlockingQueue<>();
-
     }
 
     @Override

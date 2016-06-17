@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * The base class for all Riak Commands.
  * <p>
- * All the commands the {@link RiakClient} can execute extend this class. 
+ * All the commands the {@link RiakClient} can execute extend this class.
  * <h2>Client Commands</h2>
  * <h4>Fetching, storing and deleting objects</h4>
  * <ul>
@@ -88,6 +88,7 @@ public abstract class RiakCommand<T,S>
         future.await();
         return future.get();
     }
-    protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);    
-} 
+
+    protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);
+}
 
