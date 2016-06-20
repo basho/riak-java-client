@@ -53,7 +53,7 @@ class ImmediateRiakFuture<V,S> implements RiakFuture<V,S>
     {
         return value;
     }
-    
+
     @Override
     public boolean isCancelled()
     {
@@ -85,7 +85,7 @@ class ImmediateRiakFuture<V,S> implements RiakFuture<V,S>
     }
 
     @Override
-    public void await(long timeout, TimeUnit unit) throws InterruptedException
+    public boolean await(long timeout, TimeUnit unit) throws InterruptedException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

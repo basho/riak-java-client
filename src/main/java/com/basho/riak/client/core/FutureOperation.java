@@ -384,9 +384,9 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     }
 
     @Override
-    public final void await(long timeout, TimeUnit unit) throws InterruptedException
+    public final boolean await(long timeout, TimeUnit unit) throws InterruptedException
     {
-        latch.await(timeout, unit);
+        return latch.await(timeout, unit);
     }
 
     protected U checkAndGetSingleResponse(List<U> responses)
