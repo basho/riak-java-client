@@ -21,18 +21,17 @@ import java.util.concurrent.BlockingQueue;
  * The result of an asynchronous streaming (chunked) Riak operation.
  *
  * @author Alex Moore <amoore at basho dot com>
- * @param <SyncResultType> the non-streaming (response) return type
- * @param <StreamResultType> the streaming (response) return type
+ * @param <ResultType> the streaming and non-streaming (response) return type
  * @param <QueryInfoType> The query info type
  *
  * @since 2.0.7
  */
-public interface StreamingRiakFuture<SyncResultType, StreamResultType, QueryInfoType>
-        extends RiakFuture<SyncResultType, QueryInfoType>
+public interface StreamingRiakFuture<ResultType, QueryInfoType>
+        extends RiakFuture<ResultType, QueryInfoType>
 {
     /**
      * An Queue that provides the stream of results as they return from Riak.
      * @return An Queue.
      */
-    BlockingQueue<StreamResultType> getResultsQueue();
+    BlockingQueue<ResultType> getResultsQueue();
 }

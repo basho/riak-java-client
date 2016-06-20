@@ -37,8 +37,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @since 2.0
  */
 public class SecondaryIndexQueryOperation
-        extends StreamingFutureOperation<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation
-        .Response, RiakKvPB.RpbIndexResp, SecondaryIndexQueryOperation.Query>
+        extends StreamingFutureOperation<SecondaryIndexQueryOperation.Response,
+            RiakKvPB.RpbIndexResp, SecondaryIndexQueryOperation.Query>
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;

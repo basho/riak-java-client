@@ -25,18 +25,18 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOperation.Response,
-                                                                   BinaryValue,
                                                                    RiakKvPB.RpbListBucketsResp,
                                                                    BinaryValue>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
-    private final BlockingQueue<BinaryValue> responseQueue;
+    private final BlockingQueue<Response> responseQueue;
 
     private ListBucketsOperation(Builder builder)
     {
@@ -55,25 +55,32 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
     @Override
     protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse)
     {
-        List<BinaryValue> buckets = new ArrayList<BinaryValue>(rawResponse.size());
+        List<BinaryValue> buckets = new LinkedList<>();
+
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
         {
-            for (ByteString bucket : resp.getBucketsList())
-            {
-                buckets.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
-            }
+            buckets.addAll(convertSingleResponse(resp));
         }
+
         return new Response(bucketType, buckets);
+    }
+
+    private List<BinaryValue> convertSingleResponse(RiakKvPB.RpbListBucketsResp resp)
+    {
+        List<BinaryValue> buckets = new ArrayList<>(resp.getBucketsCount());
+
+        for (ByteString bucket : resp.getBucketsList())
+        {
+            buckets.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
+        }
+        return buckets;
     }
 
     @Override
     protected void processStreamingChunk(RiakKvPB.RpbListBucketsResp rawResponseChunk)
     {
-        for (ByteString bucket : rawResponseChunk.getBucketsList())
-        {
-            final BinaryValue value = BinaryValue.unsafeCreate(bucket.toByteArray());
-            this.responseQueue.add(value);
-        }
+        final List<BinaryValue> buckets = convertSingleResponse(rawResponseChunk);
+        this.responseQueue.add(new Response(bucketType, buckets));
     }
 
     @Override
@@ -104,7 +111,7 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
     }
 
     @Override
-    public BlockingQueue<BinaryValue> getResultsQueue()
+    public BlockingQueue<Response> getResultsQueue()
     {
         return this.responseQueue;
     }

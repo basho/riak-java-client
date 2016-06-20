@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperation.Response, BinaryValue, RiakKvPB.RpbListKeysResp, Namespace>
+public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
 {
     private final Logger logger = LoggerFactory.getLogger("ListKeysOperation");
     private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
-    private final BlockingQueue<BinaryValue> responseQueue;
+    private final BlockingQueue<Response> responseQueue;
 
 
     private ListKeysOperation(Builder builder)
@@ -53,12 +53,21 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
         Response.Builder builder = new Response.Builder();
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
         {
-            for (ByteString bucket : resp.getKeysList())
-            {
-                builder.addKey(BinaryValue.unsafeCreate(bucket.toByteArray()));
-            }
+            builder.addKeys(convertSingleResponse(resp));
         }
         return builder.build();
+    }
+
+    private List<BinaryValue> convertSingleResponse(RiakKvPB.RpbListKeysResp resp)
+    {
+        List<BinaryValue> keys = new ArrayList<>(resp.getKeysCount());
+
+        for (ByteString key : resp.getKeysList())
+        {
+            keys.add(BinaryValue.unsafeCreate(key.toByteArray()));
+        }
+
+        return keys;
     }
 
     @Override
@@ -96,15 +105,11 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
     @Override
     protected void processStreamingChunk(RiakKvPB.RpbListKeysResp rawResponseChunk)
     {
-        for (ByteString key : rawResponseChunk.getKeysList())
-        {
-            final BinaryValue value = BinaryValue.unsafeCreate(key.toByteArray());
-            this.responseQueue.add(value);
-        }
+        this.responseQueue.add(new Response.Builder().addKeys(convertSingleResponse(rawResponseChunk)).build());
     }
 
     @Override
-    public BlockingQueue<BinaryValue> getResultsQueue()
+    public BlockingQueue<Response> getResultsQueue()
     {
         return this.responseQueue;
     }

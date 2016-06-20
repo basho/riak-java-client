@@ -2,15 +2,14 @@ package com.basho.riak.client.core;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
- * @param <SyncReturnType> The type the non-streaming operation returns
+ * @param <ReturnType> The type returned by the streaming and non-streaming operation versions
  * @param <ResponseType> The protocol type returned
  * @param <QueryInfoType> Query info type
- * @param <StreamingReturnType> The type the streaming operation queue returns
  * @since 2.0.7
  */
-public abstract class StreamingFutureOperation<SyncReturnType, StreamingReturnType, ResponseType, QueryInfoType>
-        extends FutureOperation<SyncReturnType, ResponseType, QueryInfoType>
-        implements StreamingRiakFuture<SyncReturnType, StreamingReturnType, QueryInfoType>
+public abstract class StreamingFutureOperation<ReturnType, ResponseType, QueryInfoType>
+        extends FutureOperation<ReturnType, ResponseType, QueryInfoType>
+        implements StreamingRiakFuture<ReturnType, QueryInfoType>
 {
     private boolean streamResults;
 

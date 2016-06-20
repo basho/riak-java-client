@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -109,19 +110,19 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
                 .streamResults(true)
                 .build();
 
-        final StreamingRiakFuture<?, BinaryValue, BinaryValue> execute = cluster.execute(listOp);
-        final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
+        final StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> execute = cluster.execute(listOp);
+        final BlockingQueue<ListBucketsOperation.Response> resultsQueue = execute.getResultsQueue();
 
         List<BinaryValue> actualBuckets = new LinkedList<>();
         int timeouts = 0;
 
         while(!execute.isDone())
         {
-            final BinaryValue bucket = resultsQueue.poll(50, TimeUnit.MILLISECONDS);
+            final ListBucketsOperation.Response response = resultsQueue.poll(50, TimeUnit.MILLISECONDS);
 
-            if(bucket != null)
+            if(response != null)
             {
-                actualBuckets.add(bucket);
+                actualBuckets.addAll(response.getBuckets());
                 continue;
             }
 
@@ -133,7 +134,10 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         }
 
         // Grab any last buckets that came in on the last message
-        resultsQueue.drainTo(actualBuckets);
+        for (ListBucketsOperation.Response response : resultsQueue)
+        {
+            actualBuckets.addAll(response.getBuckets());
+        }
 
         assertContainsAll(expectedBuckets, actualBuckets);
 

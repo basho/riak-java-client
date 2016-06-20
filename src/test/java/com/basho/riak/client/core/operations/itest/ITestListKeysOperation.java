@@ -149,19 +149,19 @@ public class ITestListKeysOperation extends ITestBase
         final Namespace ns = setupBucket(bucketType, numExpected);
 
         final ListKeysOperation slko = new ListKeysOperation.Builder(ns).streamResults(true).build();
-        final StreamingRiakFuture<?, BinaryValue, Namespace> execute = cluster.execute(slko);
+        final StreamingRiakFuture<ListKeysOperation.Response, Namespace> execute = cluster.execute(slko);
 
-        final BlockingQueue<BinaryValue> resultsQueue = execute.getResultsQueue();
-        List<BinaryValue> kList = new LinkedList<>();
+        final BlockingQueue<ListKeysOperation.Response> resultsQueue = execute.getResultsQueue();
+        List<BinaryValue> actualKeys = new LinkedList<>();
         int timeouts = 0;
 
-        for (int i = 0; i < numExpected; i++)
+        while(!execute.isDone())
         {
-            final BinaryValue key = resultsQueue.poll(1, TimeUnit.SECONDS);
+            final ListKeysOperation.Response response = resultsQueue.poll(50, TimeUnit.MILLISECONDS);
 
-            if(key != null)
+            if(response != null)
             {
-                kList.add(key);
+                actualKeys.addAll(response.getKeys());
                 continue;
             }
 
@@ -172,7 +172,13 @@ public class ITestListKeysOperation extends ITestBase
             }
         }
 
-        assertEquals(numExpected, kList.size());
+        // Grab any last buckets that came in on the last message
+        for (ListKeysOperation.Response response : resultsQueue)
+        {
+            actualKeys.addAll(response.getKeys());
+        }
+
+        assertEquals(numExpected, actualKeys.size());
 
         ITestBase.resetAndEmptyBucket(ns);
     }

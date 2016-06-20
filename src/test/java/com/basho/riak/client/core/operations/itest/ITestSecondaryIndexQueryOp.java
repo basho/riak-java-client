@@ -328,7 +328,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                 new SecondaryIndexQueryOperation.Builder(query).streamResults(true)
                     .build();
 
-            final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response,
+            final StreamingRiakFuture<SecondaryIndexQueryOperation.Response,
                     SecondaryIndexQueryOperation.Query>
                     future = cluster.execute(queryOp);
             SecondaryIndexQueryOperation.Response syncResponse = queryOp.get();
@@ -358,7 +358,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             SecondaryIndexQueryOperation queryOp2 =
                     new SecondaryIndexQueryOperation.Builder(query2).streamResults(true).build();
 
-            final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+            final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
                     future2 = cluster.execute(queryOp2);
 
             SecondaryIndexQueryOperation.Response syncResponse2 = queryOp2.get();
@@ -494,8 +494,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                         .streamResults(true)
                         .build();
 
-        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response,
-                SecondaryIndexQueryOperation.Query>
+        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
                 future = cluster.execute(queryOp);
 
 
@@ -618,8 +617,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
                         .streamResults(true)
                         .build();
 
-        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response,
-                SecondaryIndexQueryOperation.Query>
+        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
                 future = cluster.execute(queryOp);
 
         final BlockingQueue<SecondaryIndexQueryOperation.Response> resultsQueue = future.getResultsQueue();
