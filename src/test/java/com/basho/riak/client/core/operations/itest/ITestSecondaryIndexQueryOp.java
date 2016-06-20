@@ -625,14 +625,15 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         BinaryValue continuation = null;
         int timeouts = 0;
 
-        for (int i = 0; i < 20; i++)
+        while(true)
         {
             if(future.isDone())
             {
-                for (SecondaryIndexQueryOperation.Response response : resultsQueue)
+                while(resultsQueue.peek() != null)
                 {
+                    final SecondaryIndexQueryOperation.Response response = resultsQueue.take();
                     resultsList.addAll(response.getEntryList());
-                    if(response.hasContinuation())
+                    if(response.hasContinuation() && continuation == null)
                     {
                         continuation = response.getContinuation();
                     }
@@ -655,11 +656,10 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             }
 
             resultsList.addAll(chunk.getEntryList());
-            if(chunk.hasContinuation())
+            if(chunk.hasContinuation() && continuation == null)
             {
                 continuation = chunk.getContinuation();
             }
-
         }
 
         assertEquals(20, resultsList.size());
