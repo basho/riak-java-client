@@ -371,9 +371,9 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         }
 
         @Override
-        public void await(long timeout, TimeUnit unit) throws InterruptedException
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException
         {
-            latch.await(timeout, unit);
+            return latch.await(timeout, unit);
         }
 
         @Override
