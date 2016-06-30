@@ -74,7 +74,8 @@ import java.lang.annotation.Target;
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
-@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakUsermeta {
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakUsermeta
+{
     /**
      * Use a lower case key. The riak HTTP API *will* lower case key names.
      * @return the key for the user meta item

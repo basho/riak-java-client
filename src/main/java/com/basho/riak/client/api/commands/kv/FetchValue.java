@@ -380,7 +380,8 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + (location != null ? location.hashCode() : 0);;
@@ -389,29 +390,36 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof FetchValue)) {
+        if (!(obj instanceof FetchValue))
+        {
             return false;
         }
 
         final FetchValue other = (FetchValue) obj;
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{location: %s, options: %s}", location, options);
     }
 }

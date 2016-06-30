@@ -81,8 +81,12 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             logger.error("Received {} responses when only one was expected.", responses.size());
         }
 
-        RiakKvPB.RpbGetResp response = responses.get(0);
+        final RiakKvPB.RpbGetResp response = responses.get(0);
+        return convert(response);
+    }
 
+    static FetchOperation.Response convert(RiakKvPB.RpbGetResp response)
+    {
         FetchOperation.Response.Builder responseBuilder =
                 new FetchOperation.Response.Builder();
 

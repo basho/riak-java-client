@@ -67,6 +67,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
     protected final boolean paginationSort;
     protected final String termFilter;
     protected Integer timeout;
+    protected final byte[] coverageContext;
+    protected final boolean returnBody;
 
     protected abstract IndexConverter<T> getConverter();
 
@@ -83,6 +85,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         this.paginationSort = builder.paginationSort;
         this.termFilter = builder.termFilter;
         this.timeout = builder.timeout;
+        this.coverageContext = builder.coverageContext;
+        this.returnBody = builder.returnBody;
     }
 
     /**
@@ -192,7 +196,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             new SecondaryIndexQueryOperation.Query.Builder(namespace, BinaryValue.create(indexName))
                 .withContinuation(continuation)
                 .withReturnKeyAndIndex(returnTerms)
-                .withPaginationSort(paginationSort);
+                .withPaginationSort(paginationSort)
+                .withReturnBody(returnBody);
 
         if (termFilter != null)
         {
@@ -219,6 +224,10 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             coreQueryBuilder.withTimeout(timeout);
         }
 
+        if (coverageContext != null)
+        {
+            coreQueryBuilder.withCoverageContext(coverageContext);
+        }
         return coreQueryBuilder.build();
     }
 
@@ -250,6 +259,8 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
         private volatile boolean paginationSort;
         private volatile String termFilter;
         private volatile Integer timeout;
+        private volatile byte[] coverageContext;
+        private volatile boolean returnBody;
 
         protected abstract T self();
 
@@ -287,6 +298,23 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             this.namespace = namespace;
             this.indexName = indexName;
             this.match = match;
+        }
+
+        /**
+         * Build a cover query.
+         * <p>
+         * Returns all objects in Riak related to the provided coverageContext.
+         * </p>
+         * @param namespace the namespace for this query
+         * @param indexName the index name
+         * @param coverageContext the cover context. An opaque binary received from coverage context entry
+         *                        to be sent back to Riak for receiving appropriate data.
+         */
+        public Init(Namespace namespace, String indexName, byte[] coverageContext)
+        {
+            this.namespace = namespace;
+            this.indexName = indexName;
+            this.coverageContext = coverageContext;
         }
 
         /**
@@ -372,6 +400,31 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             this.timeout = timeout;
             return self();
         }
+
+        /**
+         * Set the cover context for the local read
+         * @param coverageContext the cover context. An opaque binary received from coverage context entry
+         *                        to be sent back to Riak for receiving appropriate data.
+         * @return a reference to this object.
+         */
+        public T withCoverageContext(byte[] coverageContext)
+        {
+            this.coverageContext = coverageContext;
+            return self();
+        }
+
+        /**
+         * Set whether to return the object values with the Riak object keys.
+         *
+         * It has protected access since, due to performance reasons, it might be used only for the Full Bucket Read
+         * @param returnBody
+         * @return
+         */
+        protected T withReturnBody(boolean returnBody)
+        {
+            this.returnBody = returnBody;
+            return self();
+        }
     }
     
     /**
@@ -380,9 +433,9 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
      */
     public abstract static class Response<T> 
     {
-        final IndexConverter<T> converter;
-        final SecondaryIndexQueryOperation.Response coreResponse;
-        final Namespace queryLocation;
+        final protected IndexConverter<T> converter;
+        final protected SecondaryIndexQueryOperation.Response coreResponse;
+        final protected Namespace queryLocation;
         
         protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<T> converter)
         {
@@ -432,6 +485,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             private final Location RiakObjectLocation;
             private final BinaryValue indexKey;
             private final IndexConverter<T> converter;
+            //private final RiakObject riakObject;
             
             protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter<T> converter)
             {
@@ -439,7 +493,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
                 this.indexKey = indexKey;
                 this.converter = converter;
             }
-            
+
             /**
              * Get the location for this entry.
              * @return the location for this object in Riak.
@@ -459,7 +513,7 @@ public abstract class SecondaryIndexQuery<T,S,U> extends RiakCommand<S, U>
             {
                 return converter.convert(indexKey);
             }
-            
+
         }
         
     }

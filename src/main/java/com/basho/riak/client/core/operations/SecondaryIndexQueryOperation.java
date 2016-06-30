@@ -24,6 +24,9 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +36,9 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, RiakKvPB.RpbIndexResp, SecondaryIndexQueryOperation.Query>
+public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, Object, SecondaryIndexQueryOperation.Query>
 {
+    private final static Logger logger = LoggerFactory.getLogger(SecondaryIndexQueryOperation.class);
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
 
@@ -47,13 +51,28 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected SecondaryIndexQueryOperation.Response convert(List<RiakKvPB.RpbIndexResp> rawResponse)
+    protected SecondaryIndexQueryOperation.Response convert(List<Object> rawResponse)
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder =
             new SecondaryIndexQueryOperation.Response.Builder();
 
-        for (RiakKvPB.RpbIndexResp pbEntry : rawResponse)
+        for (Object o : rawResponse)
         {
+            if (o instanceof RiakKvPB.RpbIndexBodyResp)
+            {
+                assert pbReq.getReturnBody();
+                final RiakKvPB.RpbIndexBodyResp bodyResp = (RiakKvPB.RpbIndexBodyResp)o;
+                convertBodies(responseBuilder, bodyResp);
+
+                if (bodyResp.hasContinuation())
+                {
+                    responseBuilder.withContinuation(BinaryValue.unsafeCreate(bodyResp.getContinuation().toByteArray()));
+                }
+                continue;
+            }
+
+            final RiakKvPB.RpbIndexResp pbEntry = (RiakKvPB.RpbIndexResp) o;
+
             /**
              * The 2i API is inconsistent on the Riak side. If it's not
              * a range query, return_terms is ignored it only returns the
@@ -66,32 +85,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
             if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase("$key"))
             {
-                if (pbReq.hasRangeMin())
-                {
-                    for (RpbPair pair : pbEntry.getResultsList())
-                    {
-                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),
-                                                             BinaryValue.unsafeCreate(pair.getValue().toByteArray())));
-                    }
-                }
-                else
-                {
-                    for (ByteString objKey : pbEntry.getKeysList())
-                    {
-                        responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pbReq.getKey().toByteArray()),
-                                                             BinaryValue.unsafeCreate(objKey.toByteArray())));
-                    }
-                }
+                convertTerms(responseBuilder, pbEntry);
             }
             else
             {
-                /**
-                 * If return_terms wasn't specified only the object keys are returned
-                 */
-                for (ByteString objKey : pbEntry.getKeysList())
-                {
-                    responseBuilder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(objKey.toByteArray())));
-                }
+                convertKeys(responseBuilder, pbEntry);
             }
 
             if (pbEntry.hasContinuation())
@@ -102,6 +100,46 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         return responseBuilder.build();
     }
 
+    private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry)
+    {
+        /**
+         * If return_terms wasn't specified only the object keys are returned
+         */
+        for (ByteString objKey : pbEntry.getKeysList())
+        {
+            builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(objKey.toByteArray())));
+        }
+    }
+
+    private static void convertBodies(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexBodyResp resp)
+    {
+        for (RiakKvPB.RpbIndexObject io: resp.getObjectsList())
+        {
+            final FetchOperation.Response fr = FetchOperation.convert(io.getObject());
+            builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(io.getKey().toByteArray()), fr));
+        }
+    }
+
+    private void convertTerms(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry)
+    {
+        if (pbReq.hasRangeMin())
+        {
+            for (RpbPair pair : pbEntry.getResultsList())
+            {
+                builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),
+                        BinaryValue.unsafeCreate(pair.getValue().toByteArray())));
+            }
+        }
+        else
+        {
+            for (ByteString objKey : pbEntry.getKeysList())
+            {
+                builder.addEntry(new Response.Entry(BinaryValue.unsafeCreate(pbReq.getKey().toByteArray()),
+                        BinaryValue.unsafeCreate(objKey.toByteArray())));
+            }
+        }
+    }
+
     @Override
     protected RiakMessage createChannelMessage()
     {
@@ -109,12 +147,21 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected RiakKvPB.RpbIndexResp decode(RiakMessage rawMessage)
+    protected Object decode(RiakMessage rawMessage)
     {
         try
         {
-            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_IndexResp);
-            return RiakKvPB.RpbIndexResp.parseFrom(rawMessage.getData());
+            if (rawMessage.getCode() == RiakMessageCodes.MSG_IndexResp)
+            {
+                return RiakKvPB.RpbIndexResp.parseFrom(rawMessage.getData());
+            }
+            else if (rawMessage.getCode() == RiakMessageCodes.MSG_IndexBodyResp)
+            {
+                return RiakKvPB.RpbIndexBodyResp.parseFrom(rawMessage.getData());
+            }
+            throw new IllegalArgumentException("Invalid message received: Wrong response; expected "
+                    + RiakMessageCodes.MSG_IndexResp + " or " + RiakMessageCodes.MSG_IndexBodyResp
+                    + " received " + rawMessage.getCode());
         }
         catch (InvalidProtocolBufferException e)
         {
@@ -123,9 +170,18 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
     }
 
     @Override
-    protected boolean done(RiakKvPB.RpbIndexResp msg)
+    protected boolean done(Object msg)
     {
-        return msg.getDone();
+        if (msg instanceof RiakKvPB.RpbIndexResp)
+        {
+            return ((RiakKvPB.RpbIndexResp)msg).getDone();
+        }
+        else if (msg instanceof RiakKvPB.RpbIndexBodyResp)
+        {
+            return ((RiakKvPB.RpbIndexBodyResp)msg).getDone();
+        }
+
+        throw new IllegalStateException("Unsupported response message type");
     }
 
     @Override
@@ -155,23 +211,44 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 throw new IllegalArgumentException("Query cannot be null.");
             }
 
+            /**
+             * Options 'returnBody' and 'returnKeyAndIndex' are contradictory because them both use the same field
+             * to store the results
+             */
+            if (query.returnBody && query.returnKeyAndIndex)
+            {
+                throw new IllegalArgumentException("Contradictory query options: returnBody and returnKeyAndIndex");
+            }
+
             this.query = query;
 
             pbReqBuilder.setBucket(ByteString.copyFrom(query.namespace.getBucketName().unsafeGetValue()))
                         .setType(ByteString.copyFrom(query.namespace.getBucketType().unsafeGetValue()))
                         .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
-                        .setReturnTerms(query.returnKeyAndIndex);
+                        .setReturnTerms(query.returnKeyAndIndex)
+                        .setReturnBody(query.returnBody);
 
             if (query.indexKey != null)
             {
                 pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
                             .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
-            else
+            else if(query.getRangeStart() != null)
             {
                 pbReqBuilder.setRangeMin(ByteString.copyFrom(query.rangeStart.unsafeGetValue()))
                             .setRangeMax(ByteString.copyFrom(query.rangeEnd.unsafeGetValue()))
                             .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.range);
+            }
+            else
+            {
+                // Full Bucket Read
+                assert query.coverageContext != null;
+
+                pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverageContext))
+                    .setKey(ByteString.EMPTY)
+                    .setIndex(ByteString.copyFromUtf8("$bucket"))
+                    .clearReturnTerms()
+                    .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
 
             if (query.maxResults != null)
@@ -198,6 +275,11 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             {
                 pbReqBuilder.setTimeout(query.timeout);
             }
+
+            if (query.coverageContext != null)
+            {
+                pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverageContext));
+            }
         }
 
         /**
@@ -223,6 +305,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         private final Boolean paginationSort;
         private final BinaryValue termFilter;
         private final Integer timeout;
+        private final byte[] coverageContext;
+        private final boolean returnBody;
 
         private Query(Builder builder)
         {
@@ -237,6 +321,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             this.termFilter = builder.termFilter;
             this.namespace = builder.namespace;
             this.timeout = builder.timeout;
+            this.coverageContext = builder.coverageContext;
+            this.returnBody = builder.returnBody;
         }
 
         /**
@@ -328,6 +414,21 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             return timeout;
         }
 
+        /**
+         * @return the cover context value, or null if not set.
+         */
+        public byte[] getCoverageContext()
+        {
+            return coverageContext;
+        }
+
+        /**
+         * @return the returnBody
+         */
+        public boolean isReturnBody()
+        {
+            return returnBody;
+        }
 
         public static class Builder
         {
@@ -342,6 +443,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private Boolean paginationSort;
             private BinaryValue termFilter;
             private Integer timeout;
+            private byte[] coverageContext;
+            private boolean returnBody;
 
             /**
             * Constructs a builder for a (2i) Query.
@@ -481,12 +584,37 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                return this;
            }
 
+           /*
+            * Set the coverage context for the query
+            * @param coverageContext
+            * @return a reference to this object.
+            */
+           public Builder withCoverageContext(byte[] coverageContext)
+           {
+               this.coverageContext = coverageContext;
+               return this;
+           }
+
+            /**
+             * Set whether to return list of RiakObjects inside the response.
+             * This option could be used only if target Riak instance supports parallel extract
+             * feature (such as RiakTS).
+             *
+             * @param returnBody true to return data inside response
+             * @return a reference to this object.
+             */
+            public Builder withReturnBody(boolean returnBody)
+            {
+                this.returnBody = returnBody;
+                return this;
+            }
+
            public Query build()
             {
                 // sanity checks
-                if ( rangeStart == null && rangeEnd == null && indexKey == null)
+                if ( rangeStart == null && rangeEnd == null && indexKey == null && coverageContext == null)
                 {
-                    throw new IllegalArgumentException("An index key or range must be supplied");
+                    throw new IllegalArgumentException("An index key or range or coverageContext must be supplied");
                 }
                 else if ( (rangeStart != null && rangeEnd == null) ||
                      (rangeEnd != null && rangeStart == null ) )
@@ -541,6 +669,12 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         {
             private final BinaryValue indexKey;
             private final BinaryValue objectKey;
+            private final FetchOperation.Response fetchResponse;
+
+            Entry(BinaryValue objectKey, FetchOperation.Response fr)
+            {
+                this(null, objectKey, fr);
+            }
 
             Entry(BinaryValue objectKey)
             {
@@ -549,8 +683,14 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
             Entry(BinaryValue indexKey, BinaryValue objectKey)
             {
+                this(indexKey, objectKey, null);
+            }
+
+            Entry(BinaryValue indexKey, BinaryValue objectKey, FetchOperation.Response fr)
+            {
                 this.indexKey = indexKey;
                 this.objectKey = objectKey;
+                this.fetchResponse = fr;
             }
 
             public boolean hasIndexKey()
@@ -566,6 +706,16 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             public BinaryValue getObjectKey()
             {
                 return objectKey;
+            }
+
+            public boolean hasBody()
+            {
+                return fetchResponse != null;
+            }
+
+            public FetchOperation.Response getBody()
+            {
+                return fetchResponse;
             }
         }
 

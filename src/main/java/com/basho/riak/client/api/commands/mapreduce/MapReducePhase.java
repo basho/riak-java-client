@@ -54,7 +54,8 @@ public abstract class MapReducePhase
 	 *
 	 * @return true if the results are returned, false otherwise.
 	 */
-	Boolean isKeep() {
+	Boolean isKeep()
+	{
 		return keep;
 	}
 
