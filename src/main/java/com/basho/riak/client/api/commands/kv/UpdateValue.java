@@ -213,7 +213,7 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                     }
                     else
                     {
-                        updateFuture.setException(f.cause().getCause());
+                        updateFuture.setException(f.cause());
                     }
                 }
             };
