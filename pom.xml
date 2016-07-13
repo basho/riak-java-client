@@ -421,7 +421,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.38.Final</version>
+            <version>4.1.3.Final</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
