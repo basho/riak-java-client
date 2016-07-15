@@ -136,7 +136,7 @@ public class RiakNode implements RiakResponseListener
                 // the next time it's pulled from the pool.
                 // We record the disco for the health check.
                 recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-                logger.error("inAvailable channel closed; id:{} {}:{}",
+                logger.info("Available channel closed; id:{} {}:{}",
                              future.channel().hashCode(), remoteAddress, port);
             }
         };
