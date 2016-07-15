@@ -31,7 +31,6 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -109,7 +108,7 @@ public class UpdateValueTest
     }
 
     @Test
-    public void testHandleStoreFailure() throws UnknownHostException, InterruptedException
+    public void testHandleFetchFailure() throws UnknownHostException, InterruptedException
     {
         UpdateValue update = new UpdateValue.Builder(key).withUpdate(new NoopUpdate()).build();
 
@@ -129,7 +128,7 @@ public class UpdateValueTest
 
         updateFuture.await();
 
-        // Whole operation should fail too
+        // Whole command should fail too
         assertNotNull(updateFuture.cause());
         assertFalse(updateFuture.isSuccess());
     }
