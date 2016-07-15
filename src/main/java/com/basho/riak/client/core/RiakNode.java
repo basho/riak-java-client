@@ -1181,11 +1181,7 @@ public class RiakNode implements RiakResponseListener
                 closeConnection(c);
             }
         }
-        catch (ConnectionFailedException ex)
-        {
-            healthCheckFailed(ex);
-        }
-        catch (UnknownHostException ex)
+        catch (ConnectionFailedException | UnknownHostException ex)
         {
             healthCheckFailed(ex);
         }

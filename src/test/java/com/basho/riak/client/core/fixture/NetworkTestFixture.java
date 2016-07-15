@@ -172,17 +172,13 @@ public class NetworkTestFixture implements Runnable
 
                         }
                     }
-                    catch (IOException ex)
+                    catch (IOException | InterruptedException ex)
                     {
                         ex.printStackTrace();
                     }
                     catch (ClosedSelectorException e)
                     {
                         // no op
-                    }
-                    catch (InterruptedException ex)
-                    {
-                        ex.printStackTrace();
                     }
                 }
                 else
