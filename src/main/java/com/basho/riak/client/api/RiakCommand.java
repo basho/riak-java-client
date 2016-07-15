@@ -19,6 +19,8 @@ package com.basho.riak.client.api;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The base class for all Riak Commands.
@@ -88,6 +90,13 @@ public abstract class RiakCommand<T,S>
         future.await();
         return future.get();
     }
+    
+    protected final T execute(RiakCluster cluster, long timeout, TimeUnit unit) throws ExecutionException,
+    InterruptedException, TimeoutException {
+        RiakFuture<T, S> future = executeAsync(cluster);
+        return future.get(timeout, unit);
+    }
+    
     protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);    
 } 
 
