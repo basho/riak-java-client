@@ -18,7 +18,7 @@ public class TemplateController
 {
     public Map<String, Object> getProperties() throws IOException
     {
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        HashMap<String, Object> result = new HashMap<>();
 
         File f = new File("./riak_pb/src/riak_pb_messages.csv");
         InputStream stream =

@@ -52,13 +52,13 @@ import java.util.Map;
  * ...
  * future.await();
  * if (future.isSuccess())
- * { 
- *     ... 
+ * {
+ *     ...
  * }}</pre>
  * </p>
  * <p>
- * ORM features are also provided when retrieving the results from the response. 
- * By default, JSON serialization / deserializtion is used. For example, if 
+ * ORM features are also provided when retrieving the results from the response.
+ * By default, JSON serialization / deserializtion is used. For example, if
  * the value stored in Riak was JSON and mapped to your class {@code MyPojo}:
  * <pre class="prettyprint">
  * {@code
@@ -66,7 +66,7 @@ import java.util.Map;
  * MyPojo mp = response.getValue(MyPojo.class);
  * ...}</pre>
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  * @see Response
@@ -75,8 +75,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
 
     private final Location location;
-    private final Map<Option<?>, Object> options =
-            new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
 
     FetchValue(Builder builder)
     {
@@ -87,18 +86,18 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     @Override
     protected final RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<FetchOperation.Response, Location> coreFuture = 
+        RiakFuture<FetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
-        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future = 
+
+        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future =
             new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
             {
                 @Override
                 protected Response convertResponse(FetchOperation.Response coreResponse)
                 {
-                    return new Response.Builder().withNotFound(coreResponse.isNotFound()) 
+                    return new Response.Builder().withNotFound(coreResponse.isNotFound())
                                         .withUnchanged(coreResponse.isUnchanged())
-                                        .withValues(coreResponse.getObjectList()) 
+                                        .withValues(coreResponse.getObjectList())
                                         .withLocation(location) // for ORM
                                         .build();
                 }
@@ -111,7 +110,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             };
         coreFuture.addListener(future);
         return future;
-        
+
     }
 
     private FetchOperation buildCoreOperation()
@@ -213,20 +212,20 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
         {
             private boolean notFound;
             private boolean unchanged;
-            
+
             T withUnchanged(boolean unchanged)
             {
                 this.unchanged = unchanged;
                 return self();
             }
-            
+
             T withNotFound(boolean notFound)
             {
                 this.notFound = notFound;
                 return self();
             }
         }
-        
+
         static class Builder extends Init<Builder>
         {
 
@@ -241,7 +240,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             {
                 return new Response(this);
             }
-            
+
         }
 
     }
@@ -265,48 +264,48 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
         * Read Quorum.
         * How many replicas need to agree when fetching the object.
         */
-       public static final Option<Quorum> R = new Option<Quorum>("R");
+       public static final Option<Quorum> R = new Option<>("R");
        /**
         * Primary Read Quorum.
         * How many primary replicas need to be available when retrieving the object.
         */
-       public static final Option<Quorum> PR = new Option<Quorum>("PR");
+       public static final Option<Quorum> PR = new Option<>("PR");
        /**
         * Basic Quorum.
-        * Whether to return early in some failure cases (eg. when r=1 and you get 
+        * Whether to return early in some failure cases (eg. when r=1 and you get
         * 2 errors and a success basic_quorum=true would return an error)
         */
-       public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+       public static final Option<Boolean> BASIC_QUORUM = new Option<>("BASIC_QUORUM");
        /**
         * Not Found OK.
         * Whether to treat notfounds as successful reads for the purposes of R
         */
-       public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+       public static final Option<Boolean> NOTFOUND_OK = new Option<>("NOTFOUND_OK");
        /**
         * If Modified.
-        * When a vector clock is supplied with this option, only return the object 
+        * When a vector clock is supplied with this option, only return the object
         * if the vector clocks don't match.
         */
-       public static final Option<VClock> IF_MODIFIED = new Option<VClock>("IF_MODIFIED");
+       public static final Option<VClock> IF_MODIFIED = new Option<>("IF_MODIFIED");
        /**
         * Head.
-        * return the object with the value(s) set as empty. This allows you to get the 
+        * return the object with the value(s) set as empty. This allows you to get the
         * meta data without a potentially large value. Analogous to an HTTP HEAD request.
         */
-       public static final Option<Boolean> HEAD = new Option<Boolean>("HEAD");
+       public static final Option<Boolean> HEAD = new Option<>("HEAD");
        /**
         * Deleted VClock.
-        * By default single tombstones are not returned by a fetch operations. This 
-        * will return a Tombstone if it is present. 
+        * By default single tombstones are not returned by a fetch operations. This
+        * will return a Tombstone if it is present.
         */
-       public static final Option<Boolean> DELETED_VCLOCK = new Option<Boolean>("DELETED_VCLOCK");
+       public static final Option<Boolean> DELETED_VCLOCK = new Option<>("DELETED_VCLOCK");
        /**
         * Timeout.
         * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
         */
-       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+       public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
+       public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
        private Option(String name)
        {
@@ -314,20 +313,19 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
        }
 
    }
-    
+
     /**
-     * Used to construct a FetchValue command. 
+     * Used to construct a FetchValue command.
      */
     public static class Builder
     {
 
         private final Location location;
-        private final Map<Option<?>, Object> options =
-                new HashMap<Option<?>, Object>();
+        private final Map<Option<?>, Object> options = new HashMap<>();
 
         /**
          * Constructs a builder for a FetchValue operation using the supplied location.
-         * @param location the location of the object you want to fetch from Riak. 
+         * @param location the location of the object you want to fetch from Riak.
          */
         public Builder(Location location)
         {
@@ -367,7 +365,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             withOption(Option.TIMEOUT, timeout);
             return this;
         }
-        
+
         /**
          * Build a {@link FetchValue} object
          *

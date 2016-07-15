@@ -139,7 +139,7 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
 
         static class Builder
         {
-            private List<BinaryValue> keys = new ArrayList<BinaryValue>();
+            private List<BinaryValue> keys = new ArrayList<>();
 
             Builder addKeys(List<BinaryValue> keys)
             {

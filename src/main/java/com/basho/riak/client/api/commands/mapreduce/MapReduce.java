@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -55,7 +55,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	@Override
 	protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
 	{
-		
+
         BinaryValue jobSpec;
 		try
 		{
@@ -144,7 +144,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	protected static abstract class Builder<T extends Builder<T>>
 	{
 
-		protected final List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+		protected final List<MapReducePhase> phases = new LinkedList<>();
 		protected Long timeout;
 
 		/**
@@ -352,17 +352,17 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
         {
             return results.containsKey(i);
         }
-        
+
         public ArrayNode getResultForPhase(int i)
         {
             return results.get(i);
         }
-        
+
         public ArrayNode getResultsFromAllPhases()
         {
             return flattenResults();
         }
-        
+
         public <T> Collection<T> getResultsFromAllPhases(Class<T> resultType)
         {
             ArrayNode flat = flattenResults();
@@ -376,7 +376,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
                 throw new ConversionException("Could not convert Mapreduce response",ex);
             }
         }
-        
+
         private ArrayNode flattenResults()
         {
             final JsonNodeFactory factory = JsonNodeFactory.instance;
@@ -387,6 +387,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
             }
             return flatArray;
         }
-		
+
 	}
 }

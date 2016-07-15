@@ -373,7 +373,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(7, fullColumnDescriptions.size());
 
         TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(),
-                new ArrayList<FullColumnDescription>(fullColumnDescriptions));
+                                                             new ArrayList<>(fullColumnDescriptions));
     }
 
     @Test
@@ -425,7 +425,7 @@ public class ITestTimeSeries extends ITestTsBase
 
     private static <T> List<T> toList(Iterator<T> itor)
     {
-        final List<T> r = new LinkedList<T>();
+        final List<T> r = new LinkedList<>();
 
         while(itor.hasNext())
         {

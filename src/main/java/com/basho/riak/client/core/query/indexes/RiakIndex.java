@@ -33,10 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * what attribute to index on and what its index value should be, via key/value
  * metadata. This is different from Search, which parses the data and builds
  * indexes based on a schema. Riak 2i currently requires the LevelDB or Memory
- * backend. 
- * </p> 
+ * backend.
+ * </p>
  * <p> A {@code RiakIndex} is made up of the index name, a type,
- * then one or more queryable index values. 
+ * then one or more queryable index values.
  * </p>
  * <p>
  * {@code RiakIndex} instances are created and managed via the {@link RiakIndexes}
@@ -64,7 +64,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         this.name = name.name;
         this.type = name.type;
-        
+
         if (name.values != null)
         {
             this.values = name.values;
@@ -118,7 +118,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     /**
      * Remove a value from this index.
      *
-     * @param value the value to remove 
+     * @param value the value to remove
      * @return a reference to this object
      */
     public final RiakIndex<T> remove(T value)
@@ -151,12 +151,12 @@ public abstract class RiakIndex<T> implements Iterable<T>
         values.clear();
         return this;
     }
-    
+
     /**
      * Returns an iterator over the asSet of values in this index.
-     * This iterator is a "weakly consistent" iterator that will never throw 
-     * {@link ConcurrentModificationException}, and guarantees to traverse elements 
-     * as they existed upon construction of the iterator, and may (but is not guaranteed to) 
+     * This iterator is a "weakly consistent" iterator that will never throw
+     * {@link ConcurrentModificationException}, and guarantees to traverse elements
+     * as they existed upon construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.
      * @return an Iterator.
      */
@@ -195,7 +195,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         return values.size();
     }
-    
+
     /**
      * Determine if this index has any values.
      * @return {@code true} if this index has no values, {@code false} otherwise.
@@ -204,10 +204,10 @@ public abstract class RiakIndex<T> implements Iterable<T>
     {
         return values.isEmpty();
     }
-    
+
     /**
      * Return the values in this index as raw bytes.
-     * 
+     *
      * @return an unmodifiable view of the raw values in this index.
      */
     public final Set<BinaryValue> rawValues()
@@ -217,12 +217,12 @@ public abstract class RiakIndex<T> implements Iterable<T>
 
     /**
      * Return the values in this index.
-     * The returned {@code Set} is unmodifiable. 
+     * The returned {@code Set} is unmodifiable.
      * @return an unmodifiable view of the values in this index.
      */
     public final Set<T> values()
     {
-        Set<T> convertedValues = new HashSet<T>();
+        Set<T> convertedValues = new HashSet<>();
         for (BinaryValue baw : values)
         {
             convertedValues.add(convert(baw));
@@ -241,7 +241,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Get the index's name. 
+     * Get the index's name.
      *
      * @return the name of this index without the type suffix
      */
@@ -261,7 +261,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     }
 
     /**
-     * Convert a value to a BinaryValue. 
+     * Convert a value to a BinaryValue.
      * <p> Index values are stored
      * internally as bytes. Concrete classes implement this method to convert
      * values to bytes. </p>
@@ -272,7 +272,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
     protected abstract BinaryValue convert(T value);
 
     /**
-     * Convert bytes to a value type. 
+     * Convert bytes to a value type.
      * <p> Index values are stored internally as
      * bytes. Concrete classes implement this method to convert bytes to values.
      * </p>
@@ -283,10 +283,10 @@ public abstract class RiakIndex<T> implements Iterable<T>
     protected abstract T convert(BinaryValue value);
 
     /**
-     * Returns a hash code value for the object. 
+     * Returns a hash code value for the object.
      * This method is supported for the benefit of hash tables such as those provided by HashMap.
      * @return a hash code value for this object.
-     * @see RiakIndex#equals(java.lang.Object) 
+     * @see RiakIndex#equals(java.lang.Object)
      */
     @Override
     public final int hashCode()
@@ -301,9 +301,9 @@ public abstract class RiakIndex<T> implements Iterable<T>
     /**
      * Indicates whether this RiakIndex is "equal to" another RiakIndex.
      * <p>
-     * Only the name and index type of the RiakIndex are used to determine equality. 
+     * Only the name and index type of the RiakIndex are used to determine equality.
      * <p>
-     * 
+     *
      * @param obj a RiakIndex
      * @return true if this RiakIndex has the same name and type
      */
@@ -345,7 +345,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
 
 	/**
      * Abstract base class used to encapsulate a {@code RiakIndex} name and type.
-     * 
+     *
      * This class serves two purposes; encapsulating the name and type of an
      * index as well as being a builder used with {@link RiakIndexes}.
      *
@@ -357,7 +357,7 @@ public abstract class RiakIndex<T> implements Iterable<T>
         protected final String name;
         protected final IndexType type;
         private volatile Set<BinaryValue> values;
-        
+
         protected Name(String name, IndexType type)
         {
             name = name.toLowerCase();

@@ -68,7 +68,7 @@ public class Row implements Iterable<Cell>
      */
     public List<Cell> getCellsCopy()
     {
-        final ArrayList<Cell> cells = new ArrayList<Cell>(this.getCellsCount());
+        final ArrayList<Cell> cells = new ArrayList<>(this.getCellsCount());
 
         for (Cell c: this)
         {

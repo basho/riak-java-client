@@ -35,7 +35,7 @@ import java.util.List;
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * A RawIndexQuery is used when you are using strings for your 2i keys. The
- * parameters are provided as String objects. 
+ * parameters are provided as String objects.
  * </p>
  * <pre class="prettyprint">
  * {@code
@@ -55,7 +55,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     {
         super(builder);
         this.charset = builder.charset;
-        this.converter = new IndexConverter<String>() 
+        this.converter = new IndexConverter<String>()
         {
             @Override
             public String convert(BinaryValue input)
@@ -71,7 +71,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         };
     }
 
-    @Override 
+    @Override
     protected IndexConverter<String> getConverter()
     {
         return converter;
@@ -82,7 +82,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
-        
+
         BinQueryFuture future = new BinQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
@@ -94,7 +94,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         {
             super(coreFuture);
         }
-        
+
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
@@ -107,7 +107,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             return BinIndexQuery.this;
         }
     }
-    
+
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
         private Charset charset = DefaultCharset.get();
@@ -140,7 +140,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
          * Construct a Builder for a BinIndexQuery with a range.
          * <p>
          * Note that your index name should not include the Riak {@literal _int} or
-         * {@literal _bin} extension. 
+         * {@literal _bin} extension.
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The index name in Riak to query.
@@ -156,7 +156,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
          * Construct a Builder for a BinIndexQuery with a single 2i key.
          * <p>
          * Note that your index name should not include the Riak {@literal _int} or
-         * {@literal _bin} extension. 
+         * {@literal _bin} extension.
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The name of the index in Riak.
@@ -183,18 +183,18 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         }
 
     }
-    
+
     public static class Response extends SecondaryIndexQuery.Response<String>
     {
         protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<String> converter)
         {
             super(queryLocation, coreResponse, converter);
         }
-        
+
         @Override
         public List<Entry> getEntries()
         {
-            List<Entry> convertedList = new ArrayList<Entry>();
+            List<Entry> convertedList = new ArrayList<>();
             for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
             {
                 Location loc = getLocationFromCoreEntry(e);

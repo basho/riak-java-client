@@ -94,7 +94,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int remainingTries = 1;
-    private volatile List<U> rawResponse = new LinkedList<U>();
+    private volatile List<U> rawResponse = new LinkedList<>();
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;

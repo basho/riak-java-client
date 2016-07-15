@@ -17,8 +17,7 @@ public final class CollectionConverters
     public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb
             (Collection<ColumnDescription> columns)
     {
-        final ArrayList<RiakTsPB.TsColumnDescription> pbColumns =
-                new ArrayList<RiakTsPB.TsColumnDescription>(columns.size());
+        final ArrayList<RiakTsPB.TsColumnDescription> pbColumns = new ArrayList<>(columns.size());
 
         for (ColumnDescription column : columns)
         {
@@ -45,7 +44,7 @@ public final class CollectionConverters
             return Collections.emptyList();
         }
 
-        final ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
+        final ArrayList<ColumnDescription> columns = new ArrayList<>(pbColumns.size());
 
         for (RiakTsPB.TsColumnDescription pbColumn : pbColumns)
         {

@@ -62,7 +62,7 @@ public class IndexMapReduce extends MapReduce
          */
         public Builder withRange(final long start, final long end)
         {
-            this.criteria = new IndexInput.RangeCriteria<Long>(start, end);
+            this.criteria = new IndexInput.RangeCriteria<>(start, end);
             return this;
         }
 
@@ -75,7 +75,7 @@ public class IndexMapReduce extends MapReduce
          */
         public Builder withRange(final BinaryValue start, final BinaryValue end)
         {
-            this.criteria = new IndexInput.RangeCriteria<BinaryValue>(start, end);
+            this.criteria = new IndexInput.RangeCriteria<>(start, end);
             return this;
         }
 
@@ -87,7 +87,7 @@ public class IndexMapReduce extends MapReduce
          */
         public Builder withMatchValue(final long value)
         {
-            this.criteria = new IndexInput.MatchCriteria<Long>(value);
+            this.criteria = new IndexInput.MatchCriteria<>(value);
             return this;
         }
 
@@ -99,7 +99,7 @@ public class IndexMapReduce extends MapReduce
          */
         public Builder withMatchValue(final BinaryValue value)
         {
-            this.criteria = new IndexInput.MatchCriteria<BinaryValue>(value);
+            this.criteria = new IndexInput.MatchCriteria<>(value);
             return this;
         }
 

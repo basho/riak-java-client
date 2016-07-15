@@ -29,8 +29,7 @@ import java.util.*;
  */
 public class RiakSet extends RiakDatatype
 {
-    private final Set<BinaryValue> elements =
-        new HashSet<BinaryValue>();
+    private final Set<BinaryValue> elements = new HashSet<>();
 
     public RiakSet(List<BinaryValue> elements)
     {
@@ -40,7 +39,7 @@ public class RiakSet extends RiakDatatype
     /**
      * Check to see if the supplied value exists in this RiakSet.
      * @param element The value to check.
-     * @return true if this RiakSet contains the value, false otherwise. 
+     * @return true if this RiakSet contains the value, false otherwise.
      */
     public boolean contains(BinaryValue element)
     {
@@ -50,15 +49,15 @@ public class RiakSet extends RiakDatatype
     /**
      * Check to see if the supplied value exists in this RiakSet.
      * @param element The value to check.
-     * @return true if this RiakSet contains the value, false otherwise. 
+     * @return true if this RiakSet contains the value, false otherwise.
      */
     public boolean contains(String element)
     {
         return elements.contains(BinaryValue.create(element));
     }
-    
+
     /**
-     * Get this set as a {@link Set}. The returned Set is unmodifiable. 
+     * Get this set as a {@link Set}. The returned Set is unmodifiable.
      * @return a read-only view of this RiakSet.
      */
 	@Override
@@ -66,7 +65,7 @@ public class RiakSet extends RiakDatatype
 	{
 		return Collections.unmodifiableSet(elements);
 	}
-    
+
     @Override
     public String toString()
     {

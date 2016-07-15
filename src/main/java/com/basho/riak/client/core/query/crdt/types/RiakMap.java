@@ -27,18 +27,17 @@ import static java.util.Collections.unmodifiableMap;
 /**
  * Representation of the Riak map datatype.
  * <p>
- * This is an immutable map returned when querying Riak for 
+ * This is an immutable map returned when querying Riak for
  * a map datatype.
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class RiakMap extends RiakDatatype
 {
 
-    private final Map<BinaryValue, List<RiakDatatype>> entries =
-        new HashMap<BinaryValue, List<RiakDatatype>>();
+    private final Map<BinaryValue, List<RiakDatatype>> entries = new HashMap<>();
 
     public RiakMap(List<MapEntry> mapEntries)
     {
@@ -48,7 +47,7 @@ public class RiakMap extends RiakDatatype
 	        List<RiakDatatype> datatypes;
             if ((datatypes = entries.get(entry.field)) == null)
             {
-	            datatypes = new LinkedList<RiakDatatype>();
+	            datatypes = new LinkedList<>();
 	            entries.put(entry.field, datatypes);
             }
 	        datatypes.add(entry.element);
@@ -56,7 +55,7 @@ public class RiakMap extends RiakDatatype
     }
 
     /**
-     * Returns the value(s) to which the specified key is mapped, or {@literal null} 
+     * Returns the value(s) to which the specified key is mapped, or {@literal null}
      * if the map contains no mapping for the key.
      * @param key key whose associated value(s) is to be returned.
      * @return a List containing one or more datatypes, or null if this map contains no mapping for the key.
@@ -67,7 +66,7 @@ public class RiakMap extends RiakDatatype
     }
 
     /**
-     * Returns a RiakMap to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakMap to which the specified key is mapped, or {@literal null}
      * if no RiakMap is present.
      * @param key key whose associated RiakMap is to be returned.
      * @return a RiakMap, or null if one is not present.
@@ -85,7 +84,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakMap to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakMap to which the specified key is mapped, or {@literal null}
      * if no RiakMap is present.
      * @param key key whose associated RiakMap is to be returned.
      * @return a RiakMap, or null if one is not present.
@@ -96,7 +95,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakSet to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakSet to which the specified key is mapped, or {@literal null}
      * if no RiakSet is present.
      * @param key key whose associated RiakSet is to be returned.
      * @return a RiakSet, or null if one is not present.
@@ -114,7 +113,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakSet to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakSet to which the specified key is mapped, or {@literal null}
      * if no RiakSet is present.
      * @param key key whose associated RiakSet is to be returned.
      * @return a RiakSet, or null if one is not present.
@@ -125,7 +124,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakCounter to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakCounter to which the specified key is mapped, or {@literal null}
      * if no RiakCounter is present.
      * @param key key whose associated RiakCounter is to be returned.
      * @return a RiakCounter, or null if one is not present.
@@ -143,7 +142,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakCounter to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakCounter to which the specified key is mapped, or {@literal null}
      * if no RiakCounter is present.
      * @param key key whose associated RiakCounter is to be returned.
      * @return a RiakCounter, or null if one is not present.
@@ -154,7 +153,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakFlag to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakFlag to which the specified key is mapped, or {@literal null}
      * if no RiakFlag is present.
      * @param key key whose associated RiakFlag is to be returned.
      * @return a RiakFlag, or null if one is not present.
@@ -172,7 +171,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakFlag to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakFlag to which the specified key is mapped, or {@literal null}
      * if no RiakFlag is present.
      * @param key key whose associated RiakFlag is to be returned.
      * @return a RiakFlag, or null if one is not present.
@@ -183,7 +182,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakRegister to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakRegister to which the specified key is mapped, or {@literal null}
      * if no RiakRegister is present.
      * @param key key whose associated RiakRegister is to be returned.
      * @return a RiakRegister, or null if one is not present.
@@ -201,7 +200,7 @@ public class RiakMap extends RiakDatatype
 	}
 
     /**
-     * Returns a RiakRegister to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakRegister to which the specified key is mapped, or {@literal null}
      * if no RiakRegister is present.
      * @param key key whose associated RiakRegister is to be returned.
      * @return a RiakRegister, or null if one is not present.

@@ -45,7 +45,7 @@ public class DefaultNodeManagerTest
     @Before
     public void setUp()
     {
-        mockNodes = new LinkedList<RiakNode>();
+        mockNodes = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             RiakNode mock = mock(RiakNode.class);

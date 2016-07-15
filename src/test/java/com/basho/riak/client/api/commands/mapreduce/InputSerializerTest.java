@@ -70,13 +70,13 @@ public class InputSerializerTest
 		jg.writeObject(input);
         assertEquals("\"bucket\"", out.toString());
     }
-    
+
 	@Test
 	public void testBucketInputSerializerWithFilter() throws IOException
 	{
 
 		Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
-		ArrayList<KeyFilter> filters = new ArrayList<KeyFilter>();
+		ArrayList<KeyFilter> filters = new ArrayList<>();
 		filters.add(new EndsWithFilter("dave"));
 		BucketInput input = new BucketInput(ns, filters);
 
@@ -85,7 +85,7 @@ public class InputSerializerTest
 		assertEquals("{\"bucket\":\"bucket\",\"key_filters\":[[\"ends_with\",\"dave\"]]}", out.toString());
 
 	}
-    
+
     @Test public void testBucketInputSerializerWithType() throws IOException
     {
         Namespace ns = new Namespace("type", "bucket");
@@ -93,13 +93,13 @@ public class InputSerializerTest
         jg.writeObject(input);
         assertEquals("[\"type\",\"bucket\"]", out.toString());
     }
-    
+
     @Test
 	public void testBucketInputSerializerWithTypeAndFilter() throws IOException
 	{
 
 		Namespace ns = new Namespace("type", "bucket");
-		ArrayList<KeyFilter> filters = new ArrayList<KeyFilter>();
+		ArrayList<KeyFilter> filters = new ArrayList<>();
 		filters.add(new EndsWithFilter("dave"));
 		BucketInput input = new BucketInput(ns, filters);
 
@@ -109,13 +109,13 @@ public class InputSerializerTest
 
 	}
 
-    
-    
+
+
 	@Test
 	public void testSerializeBucketKeyInput() throws IOException
 	{
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
-		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<BucketKeyInput.IndividualInput>();
+		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<>();
 		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key")));
 		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key"), "data"));
 		BucketKeyInput input = new BucketKeyInput(inputs);
@@ -131,7 +131,7 @@ public class InputSerializerTest
 	public void testSerializeBucketKeyInputWithType() throws IOException
 	{
         Namespace ns = new Namespace("type", "bucket");
-		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<BucketKeyInput.IndividualInput>();
+		ArrayList<BucketKeyInput.IndividualInput> inputs = new ArrayList<>();
 		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key")));
 		inputs.add(new BucketKeyInput.IndividualInput(new Location(ns, "key"), "data"));
 		BucketKeyInput input = new BucketKeyInput(inputs);
@@ -142,23 +142,23 @@ public class InputSerializerTest
 
 
 	}
-    
+
 	@Test
 	public void testSearializeIndexInputMatch() throws Exception
 	{
 		Namespace ns = new Namespace("bucket");
-		IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<String>("dave");
+		IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<>("dave");
 		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
 		assertEquals("{\"bucket\":\"bucket\",\"index\":\"index_int\",\"key\":\"dave\"}", out.toString());
 	}
-    
+
     @Test
 	public void testSearializeIndexInputMatchWithType() throws Exception
 	{
 		Namespace ns = new Namespace("type", "bucket");
-        IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<String>("dave");
+        IndexInput.MatchCriteria<String> criteria = new IndexInput.MatchCriteria<>("dave");
 		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
@@ -170,19 +170,19 @@ public class InputSerializerTest
 	public void testSearializeIndexInputRange() throws Exception
 	{
 		Namespace ns = new Namespace("bucket");
-		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<Integer>(1, 2);
+		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<>(1, 2);
 		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);
 
 		assertEquals("{\"bucket\":\"bucket\",\"index\":\"index_int\",\"start\":1,\"end\":2}", out.toString());
 	}
-    
+
     @Test
 	public void testSearializeIndexInputRangeWithType() throws Exception
 	{
 		Namespace ns = new Namespace("type","bucket");
-		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<Integer>(1, 2);
+		IndexInput.RangeCriteria<Integer> criteria = new IndexInput.RangeCriteria<>(1, 2);
 		IndexInput input = new IndexInput(ns, "index_int", criteria);
 
 		jg.writeObject(input);

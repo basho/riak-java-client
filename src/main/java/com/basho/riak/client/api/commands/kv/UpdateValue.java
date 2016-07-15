@@ -94,8 +94,8 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
     private final Location location;
     private final Update<?> update;
     private final TypeReference<?> typeReference;
-    private final Map<FetchValue.Option<?>, Object> fetchOptions = new HashMap<FetchValue.Option<?>, Object>();
-    private final Map<StoreValue.Option<?>, Object> storeOptions = new HashMap<StoreValue.Option<?>, Object>();
+    private final Map<FetchValue.Option<?>, Object> fetchOptions = new HashMap<>();
+    private final Map<StoreValue.Option<?>, Object> storeOptions = new HashMap<>();
 
     UpdateValue(Builder builder)
     {

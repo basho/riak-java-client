@@ -29,8 +29,7 @@ public class BucketKeyMapReduce extends MapReduce
     public static class Builder extends MapReduce.Builder<Builder>
     {
 
-        private List<BucketKeyInput.IndividualInput> input =
-                new ArrayList<BucketKeyInput.IndividualInput>();
+        private List<BucketKeyInput.IndividualInput> input = new ArrayList<>();
 
         @Override
         protected Builder self()

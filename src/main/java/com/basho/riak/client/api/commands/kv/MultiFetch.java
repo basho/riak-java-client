@@ -85,9 +85,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Location>>
 {
     public static final int DEFAULT_MAX_IN_FLIGHT = 10;
-    
-    private final ArrayList<Location> locations = new ArrayList<Location>();
-    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+
+    private final ArrayList<Location> locations = new ArrayList<>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
     private final int maxInFlight;
 
     private MultiFetch(Builder builder)
@@ -102,10 +102,10 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     {
         List<FetchValue> fetchOperations = buildFetchOperations();
         MultiFetchFuture future = new MultiFetchFuture(locations);
-        
-        Submitter submitter = new Submitter(fetchOperations, maxInFlight, 
+
+        Submitter submitter = new Submitter(fetchOperations, maxInFlight,
                                             cluster, future);
-        
+
         Thread t = new Thread(submitter);
         t.setDaemon(true);
         t.start();
@@ -115,9 +115,8 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     @SuppressWarnings("unchecked")
     private List<FetchValue> buildFetchOperations()
     {
-        List<FetchValue> fetchValueOperations =
-            new LinkedList<FetchValue>();
-        
+        List<FetchValue> fetchValueOperations = new LinkedList<>();
+
         for (Location location : locations)
         {
             FetchValue.Builder builder = new FetchValue.Builder(location);
@@ -129,20 +128,20 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
 
             fetchValueOperations.add(builder.build());
         }
-        
+
         return fetchValueOperations;
-        
+
     }
-    
+
     /**
      * Used to construct a MutiFetch command.
      */
     public static class Builder
     {
-        private ArrayList<Location> keys = new ArrayList<Location>();
-        private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+        private ArrayList<Location> keys = new ArrayList<>();
+        private Map<Option<?>, Object> options = new HashMap<>();
         private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
-        
+
         /**
          * Add a location to the list of locations to retrieve as part of
          * this multifetch operation.
@@ -189,8 +188,8 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
          * Set the maximum number of requests to be in progress simultaneously.
          * <p>
          * As noted, Riak does not actually have "MultiFetch" functionality. This
-         * operation simulates it by sending multiple fetch requests. This 
-         * parameter controls how many outstanding requests are allowed simultaneously. 
+         * operation simulates it by sending multiple fetch requests. This
+         * parameter controls how many outstanding requests are allowed simultaneously.
          * </p>
          * @param maxInFlight the max number of outstanding requests.
          * @return a reference to this object.
@@ -200,7 +199,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
             this.maxInFlight = maxInFlight;
             return this;
         }
-        
+
         /**
          * A {@link Option} to use with each fetch operation.
          *
@@ -229,7 +228,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
             withOption(Option.TIMEOUT, timeout);
             return this;
         }
-        
+
         /**
          * Build a {@link MultiFetch} operation from this builder
          *
@@ -261,12 +260,12 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         {
             return unmodifiableList(responses).iterator();
         }
-        
+
         public List<RiakFuture<FetchValue.Response, Location>> getResponses()
         {
             return responses;
         }
-        
+
     }
 
     private class Submitter implements Runnable, RiakFutureListener<FetchValue.Response, Location>
@@ -276,8 +275,8 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         private final AtomicInteger received = new AtomicInteger();
         private final RiakCluster cluster;
         private final MultiFetchFuture multiFuture;
-        
-        public Submitter(List<FetchValue> operations, int maxInFlight, 
+
+        public Submitter(List<FetchValue> operations, int maxInFlight,
                          RiakCluster cluster, MultiFetchFuture multiFuture)
         {
             this.operations = operations;
@@ -285,7 +284,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
             this.multiFuture = multiFuture;
             inFlight = new Semaphore(maxInFlight);
         }
-        
+
         @Override
         public void run()
         {
@@ -300,7 +299,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
                     multiFuture.setFailed(ex);
                     break;
                 }
-                
+
                 RiakFuture<FetchValue.Response, Location> future =
                     fv.executeAsync(cluster);
                 future.addListener(this);
@@ -318,23 +317,23 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
                 multiFuture.setCompleted();
             }
         }
-        
+
     }
-    
+
     private class MultiFetchFuture extends ListenableFuture<Response, List<Location>>
     {
         private final CountDownLatch latch = new CountDownLatch(1);
         private final List<Location> locations;
         private final List<RiakFuture<FetchValue.Response, Location>> futures;
         private volatile Throwable exception;
-        
+
         private MultiFetchFuture(List<Location> locations)
         {
             this.locations = locations;
-            futures = 
+            futures =
                 Collections.synchronizedList(new LinkedList<RiakFuture<FetchValue.Response, Location>>());
         }
-        
+
         @Override
         public boolean cancel(boolean mayInterruptIfRunning)
         {
@@ -374,7 +373,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
                 return null;
             }
         }
-        
+
         @Override
         public boolean isCancelled()
         {
@@ -410,31 +409,31 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         {
             return locations;
         }
-        
+
         @Override
         public Throwable cause()
         {
             return exception;
         }
-        
+
         private void addFetchFuture(RiakFuture<FetchValue.Response, Location> future)
         {
             futures.add(future);
         }
-        
+
         private void setCompleted()
         {
             latch.countDown();
             notifyListeners();
         }
-        
+
         private void setFailed(Throwable t)
         {
             this.exception = t;
             latch.countDown();
             notifyListeners();
         }
- 
+
     }
 
     @Override
@@ -471,7 +470,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return String.format("{locations: %s, options: %s, maxInFlight: %s}",

@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A thread safe container for {@link RiakLink} objects.
- * 
+ *
  * <br/><b>Thread Safety:</b><br/> This is a thread safe container.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -32,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RiakLinks implements Iterable<RiakLink>
 {
-    private final Set<RiakLink> links = 
+    private final Set<RiakLink> links =
          Collections.newSetFromMap(new ConcurrentHashMap<RiakLink, Boolean>());
-    
+
     /**
      * Reports if there are any {@code RiakLink} objects present
      * @return {@code true} if there are links present, {@code false} otherwise
@@ -43,7 +43,7 @@ public class RiakLinks implements Iterable<RiakLink>
     {
         return links.isEmpty();
     }
-    
+
     /**
      * Returns the number of links present
      * @return the number of links present
@@ -61,10 +61,10 @@ public class RiakLinks implements Iterable<RiakLink>
     {
         return links.contains(link);
     }
-    
+
     /**
-     * Add {@link RiakLink}s 
-     * 
+     * Add {@link RiakLink}s
+     *
      * @param links a Collection of RiakLink objects to add
      * @return a reference to this object
      */
@@ -73,9 +73,9 @@ public class RiakLinks implements Iterable<RiakLink>
         this.links.addAll(links);
         return this;
     }
-        
+
     /**
-     * Adds a {@link RiakLink} 
+     * Adds a {@link RiakLink}
      * @param link a {@code RiakLink} to be added
      * @return a reference to this object
      */
@@ -86,7 +86,7 @@ public class RiakLinks implements Iterable<RiakLink>
     }
 
     /**
-     * Remove a {@code RiakLink} 
+     * Remove a {@code RiakLink}
      * @param link the {@code RiakLink} to remove
      * @return {@code true} if the link was present and was removed, {@code false} otherwise
      */
@@ -94,7 +94,7 @@ public class RiakLinks implements Iterable<RiakLink>
     {
         return links.remove(link);
     }
-    
+
     /**
      * Remove all links
      */
@@ -102,7 +102,7 @@ public class RiakLinks implements Iterable<RiakLink>
     {
         links.clear();
     }
-    
+
     /**
      * Return all the links.
      * <p>
@@ -112,11 +112,11 @@ public class RiakLinks implements Iterable<RiakLink>
      */
     public Set<RiakLink> getLinks()
     {
-        return new HashSet<RiakLink>(links);
+        return new HashSet<>(links);
     }
-    
+
     /**
-     * Return an iterator 
+     * Return an iterator
      * @return an {@code Iterator} that returns the links in this container
      */
     @Override
@@ -125,6 +125,6 @@ public class RiakLinks implements Iterable<RiakLink>
         return links.iterator();
     }
 
-    
-    
+
+
 }

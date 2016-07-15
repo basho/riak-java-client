@@ -81,7 +81,7 @@ public final class HostAndPort implements Serializable
         checkHost(hostPortStr);
         String rawHosts[] = hostPortStr.split(",");
 
-        List<HostAndPort> retVal = new ArrayList<HostAndPort>(rawHosts.length);
+        List<HostAndPort> retVal = new ArrayList<>(rawHosts.length);
 
         for( String s: rawHosts)
         {

@@ -64,7 +64,7 @@ public class RiakClusterFixtureTest
     @Test(timeout = 10000)
     public void operationSuccess() throws UnknownHostException, InterruptedException, ExecutionException
     {
-        List<RiakNode> list = new LinkedList<RiakNode>();
+        List<RiakNode> list = new LinkedList<>();
 
         for (int i = 5000; i < 8000; i += 1000)
         {
@@ -104,7 +104,7 @@ public class RiakClusterFixtureTest
     @Test(timeout = 10000)
     public void operationFail() throws UnknownHostException, ExecutionException, InterruptedException
     {
-        List<RiakNode> list = new LinkedList<RiakNode>();
+        List<RiakNode> list = new LinkedList<>();
 
         for (int i = 5000; i < 8000; i += 1000)
         {
@@ -142,7 +142,7 @@ public class RiakClusterFixtureTest
     @Test(timeout = 10000)
     public void testStateListener() throws UnknownHostException, InterruptedException, ExecutionException
     {
-        List<RiakNode> list = new LinkedList<RiakNode>();
+        List<RiakNode> list = new LinkedList<>();
 
         for (int i = 5000; i < 8000; i += 1000)
         {
@@ -176,7 +176,7 @@ public class RiakClusterFixtureTest
 
     @Test(timeout = 10000)
     public void testOperationQueue() throws Exception {
-        List<RiakNode> list = new LinkedList<RiakNode>();
+        List<RiakNode> list = new LinkedList<>();
 
         RiakNode.Builder goodNodeBuilder = new RiakNode.Builder()
                 .withMinConnections(1)
