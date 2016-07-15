@@ -178,26 +178,22 @@ public class ITestBase
         final Semaphore semaphore = new Semaphore(NUMBER_OF_PARALLEL_REQUESTS);
         final CountDownLatch latch = new CountDownLatch(keyList.size());
 
-        RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
-            @Override
-            public void handle(RiakFuture<Void, Location> f)
+        RiakFutureListener<Void, Location> listener = countdownFuture ->
+        {
+            try
             {
-                try
-                {
-                    f.get();
-                }
-                catch (Exception ex)
-                {
-                    if (ex instanceof RuntimeException)
-                    {
-                        throw (RuntimeException)ex;
-                    }
-                    throw new RuntimeException(ex);
-                }
-                semaphore.release();
-                latch.countDown();
+                countdownFuture.get();
             }
-
+            catch (Exception ex)
+            {
+                if (ex instanceof RuntimeException)
+                {
+                    throw (RuntimeException)ex;
+                }
+                throw new RuntimeException(ex);
+            }
+            semaphore.release();
+            latch.countDown();
         };
 
         for (BinaryValue k : keyList)

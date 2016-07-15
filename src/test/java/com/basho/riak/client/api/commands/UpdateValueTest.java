@@ -115,16 +115,12 @@ public class UpdateValueTest
         // Setup new client with 0 connections.
         RiakClient client = RiakClient.newClient(1, new ArrayList<String>());
         final RiakFuture<UpdateValue.Response, Location> updateFuture = client.executeAsync(update);
-        updateFuture.addListener(new RiakFutureListener<UpdateValue.Response, Location>()
-        {
-            @Override
-            public void handle(RiakFuture<UpdateValue.Response, Location> f)
-            {
-                // Assert that we fail
-                assertNotNull(f.cause());
-                assertFalse(f.isSuccess());
-            }
-        });
+        updateFuture.addListener(listenerFuture ->
+                                 {
+                                     // Assert that we fail
+                                     assertNotNull(listenerFuture.cause());
+                                     assertFalse(listenerFuture.isSuccess());
+                                 });
 
         updateFuture.await();
 
