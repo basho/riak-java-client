@@ -64,6 +64,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <powermock.version>1.6.4</powermock.version>
+        <java.target.version>1.8</java.target.version>
     </properties>
 
     <distributionManagement>
@@ -317,13 +318,37 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.target.version}</source>
+                    <target>${java.target.version}</target>
                     <compilerArgs>
                         <arg>-Werror</arg>
                         <arg>-Xlint:all</arg>
                     </compilerArgs>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-property</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <fail>true</fail>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.0</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${java.target.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
