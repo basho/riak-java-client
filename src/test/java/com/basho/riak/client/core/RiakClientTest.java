@@ -50,6 +50,8 @@ public class RiakClientTest
     public class CommandFake extends RiakCommand<String, String>
     {
         private boolean executeAsyncCalled = false;
+
+        @SuppressWarnings("unchecked")
         private RiakFuture<String, String> mockFuture = (RiakFuture<String, String>) mock(RiakFuture.class);
 
         @Override
