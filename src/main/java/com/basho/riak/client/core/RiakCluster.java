@@ -424,7 +424,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 {
                     this.state = State.SHUTDOWN;
                     executor.shutdown();
-                    bootstrap.group().shutdownGracefully();
+                    bootstrap.config().group().shutdownGracefully();
                     logger.debug("RiakCluster shut down bootstrap");
                     logger.info("RiakCluster has shut down");
                     shutdownLatch.countDown();

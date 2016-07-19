@@ -1243,7 +1243,7 @@ public class RiakNode implements RiakResponseListener
                 }
                 if (ownsBootstrap)
                 {
-                    bootstrap.group().shutdownGracefully();
+                    bootstrap.config().group().shutdownGracefully();
                 }
                 logger.debug("RiakNode shut down {}:{}", remoteAddress, port);
                 shutdownLatch.countDown();
