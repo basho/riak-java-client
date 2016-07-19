@@ -229,6 +229,8 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         assertEquals(pojo.value, fResp.getValues(converter).get(0).value);
         assertEquals(pojo.value, fResp.getValue(converter, resolver).value);
         assertEquals(pojo.value, fResp.getValue(pojoTypeRef).value);
+
+        assertEquals(loc, fResp.getLocation());
     }
 
     private Pojo storeSiblings(Location loc) throws ExecutionException, InterruptedException
