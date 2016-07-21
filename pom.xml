@@ -51,6 +51,12 @@
             <organization>Basho Technologies, Inc</organization>
             <organizationUrl>http://www.basho.com</organizationUrl>
         </developer>
+        <developer>
+            <name>Sergey Galkin</name>
+            <email>sgalkin@basho.com</email>
+            <organization>Basho Technologies, Inc</organization>
+            <organizationUrl>http://www.basho.com</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
@@ -80,6 +86,19 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>artifactory</id>
+            <url>https://basholabs.artifactoryonline.com/basholabs/libs-snapshot</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <profiles>
         <profile>
@@ -288,12 +307,47 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.protobuf:protobuf-java</include>
+                                    <include>com.basho.riak.protobuf:riak-pb</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.basho.riak.protobuf</pattern>
+                                    <shadedPattern>shaded.com.basho.riak.protobuf</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
                 <configuration>
                     <mavenExecutorId>forked-path</mavenExecutorId>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -313,6 +367,7 @@
                         </goals>
                     </execution>
                 </executions>
+
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -432,6 +487,12 @@
             <groupId>org.erlang.otp</groupId>
             <artifactId>jinterface</artifactId>
             <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.basho.riak.test</groupId>
+            <artifactId>riak-test-docker</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

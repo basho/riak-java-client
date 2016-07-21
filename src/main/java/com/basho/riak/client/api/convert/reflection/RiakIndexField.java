@@ -25,7 +25,8 @@ import java.util.Set;
  * @author russell
  * 
  */
-public class RiakIndexField {
+public class RiakIndexField
+{
 
     public enum FieldType { LONG, SET_LONG, STRING, SET_STRING, RAW, SET_RAW, BIG_INT, SET_BIG_INT }
     
@@ -38,7 +39,8 @@ public class RiakIndexField {
      * 
      * @param field
      */
-    public RiakIndexField(final Field field) {
+    public RiakIndexField(final Field field)
+    {
         type = validateAndGetType(field);
         this.field = field;
         this.indexName = field.getAnnotation(RiakIndex.class).name();
@@ -57,22 +59,26 @@ public class RiakIndexField {
     /**
      * @return the field
      */
-    public Field getField() {
+    public Field getField()
+    {
         return field;
     }
 
     /**
      * @return the indexName
      */
-    public String getIndexName() {
+    public String getIndexName()
+    {
         return indexName;
     }
     
-    public FieldType getFieldType() {
+    public FieldType getFieldType()
+    {
         return type;
     }
     
-    private FieldType validateAndGetType(Field f) {
+    private FieldType validateAndGetType(Field f)
+    {
         
         if (f != null)
         {

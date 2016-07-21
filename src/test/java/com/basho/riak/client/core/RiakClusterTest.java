@@ -74,7 +74,8 @@ public class RiakClusterTest
             assertEquals(minConnections, n.getMinConnections());
             assertEquals(maxConnections, n.getMaxConnections());
 
-            if ("localhost".equals(n.getRemoteAddress())){
+            if ("localhost".equals(n.getRemoteAddress()))
+            {
                 assertEquals(nonDefaultPort, n.getPort());
             }
             else if ("10.0.0.1".equals(n.getRemoteAddress()))

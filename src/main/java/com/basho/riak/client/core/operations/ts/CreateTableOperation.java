@@ -151,7 +151,8 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
                         .append(' ')
                         .append(fd.getType().name());
 
-                if (!fd.isNullable()) {
+                if (!fd.isNullable())
+                {
                     sb.append(" not null");
                 }
             }
@@ -175,7 +176,9 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
                 if (sb.length() > 0)
                 {
                     sb.append(", ");
-                } else {
+                }
+                else
+                {
                     sb.append('(');
                 }
 

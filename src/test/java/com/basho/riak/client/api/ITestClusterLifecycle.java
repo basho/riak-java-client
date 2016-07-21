@@ -5,8 +5,11 @@ import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.test.rule.DockerRiakClusterRule;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,10 +37,16 @@ public class ITestClusterLifecycle
     @Rule
     public ExpectedException thrown= ExpectedException.none();
 
+    @ClassRule
+    public static DockerRiakClusterRule dockerCluster = ITestBase.dockerCluster;
+
     public ITestClusterLifecycle()
     {
         testLifecycle = Boolean.getBoolean("com.basho.riak.lifecycle");
-        hostname = System.getProperty("com.basho.riak.host", RiakNode.Builder.DEFAULT_REMOTE_ADDRESS);
+        hostname = System.getProperty("com.basho.riak.host",
+                dockerCluster.getIps().iterator().hasNext() // if cluster was not started default host should be used
+                        ? dockerCluster.getIps().iterator().next()
+                        : RiakNode.Builder.DEFAULT_REMOTE_ADDRESS);
 
         pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
 
