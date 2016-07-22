@@ -15,32 +15,33 @@ import static org.junit.Assert.assertTrue;
 public class RiakObjectConverterTest
 {
 
-    public static final String APPLICATION_JSON = "application/json";
-    public static final String UTF_8 = "UTF-8";
+    public static final String JZON_CONTENT_TYPE = "application/jzon"; // use a non-default content type
+    public static final String UTF_48_CHARSET = "UTF-48"; // use a non-default charset
 
     @Test
     public void contentTypeAndCharsetAreEncodedProperly()
     {
         RiakObject riakObject = new RiakObject();
-        riakObject.setContentType(APPLICATION_JSON);
-        riakObject.setCharset(UTF_8);
+        riakObject.setContentType(JZON_CONTENT_TYPE);
+        riakObject.setCharset(UTF_48_CHARSET);
         riakObject.setValue(BinaryValue.create("foo"));
 
         final RiakKvPB.RpbContent pbObject = RiakObjectConverter.convert(riakObject);
         assertTrue(pbObject.hasCharset());
         assertTrue(pbObject.hasContentType());
 
-        assertEquals(UTF_8, pbObject.getCharset().toStringUtf8());
-        assertEquals(APPLICATION_JSON, pbObject.getContentType().toStringUtf8());
+        assertEquals(UTF_48_CHARSET, pbObject.getCharset().toStringUtf8());
+        assertEquals(JZON_CONTENT_TYPE, pbObject.getContentType().toStringUtf8());
     }
 
     @Test
     public void contentTypeAndCharsetAreDecodedProperly()
     {
         final RiakKvPB.RpbContent pbObject = RiakKvPB.RpbContent.newBuilder()
-                                                            .setValue(ByteString.copyFromUtf8("foo"))
-                                                            .setContentType(ByteString.copyFromUtf8(APPLICATION_JSON))
-                                                            .setCharset(ByteString.copyFromUtf8(UTF_8)).build();
+                                                                .setValue(ByteString.copyFromUtf8("foo"))
+                                                                .setContentType(ByteString.copyFromUtf8(
+                                                                        JZON_CONTENT_TYPE))
+                                                                .setCharset(ByteString.copyFromUtf8(UTF_48_CHARSET)).build();
 
         final List<RiakObject> riakObjects = RiakObjectConverter.convert(
                 new ArrayList<RiakKvPB.RpbContent>() {{ add(pbObject); }}, ByteString.EMPTY);
@@ -53,7 +54,47 @@ public class RiakObjectConverterTest
         assertTrue(riakObject.hasCharset());
         assertTrue(contentType != null && !contentType.isEmpty());
 
-        assertEquals(UTF_8, charset);
-        assertEquals(APPLICATION_JSON, contentType);
+        assertEquals(UTF_48_CHARSET, charset);
+        assertEquals(JZON_CONTENT_TYPE, contentType);
+    }
+
+    @Test
+    public void literalCharsetsArePreferred()
+    {
+        final String longJzonContentType = JZON_CONTENT_TYPE + "; charset=UTF-16";
+
+        RiakObject riakObject = new RiakObject();
+        riakObject.setContentType(JZON_CONTENT_TYPE + "; charset=UTF-16");
+        riakObject.setCharset(UTF_48_CHARSET);
+        riakObject.setValue(BinaryValue.create("foo"));
+
+        assertTrue(riakObject.hasCharset());
+
+        final RiakKvPB.RpbContent pbObject = RiakObjectConverter.convert(riakObject);
+        assertTrue(pbObject.hasCharset());
+        assertTrue(pbObject.hasContentType());
+
+        assertEquals(UTF_48_CHARSET, pbObject.getCharset().toStringUtf8());
+        assertEquals(longJzonContentType, pbObject.getContentType().toStringUtf8());
+    }
+
+    @Test
+    public void charsetsAreBackwardsCompatible()
+    {
+        final String longJzonContentType = JZON_CONTENT_TYPE + "; charset=UTF-16";
+
+        RiakObject riakObject = new RiakObject();
+        riakObject.setContentType(JZON_CONTENT_TYPE + "; charset=UTF-16");
+        riakObject.setValue(BinaryValue.create("foo"));
+
+        assertTrue(riakObject.hasCharset());
+
+        final RiakKvPB.RpbContent pbObject = RiakObjectConverter.convert(riakObject);
+        assertTrue(pbObject.hasCharset());
+        assertTrue(pbObject.hasContentType());
+
+        assertEquals("UTF-16", pbObject.getCharset().toStringUtf8());
+        assertEquals(longJzonContentType, pbObject.getContentType().toStringUtf8());
+        // We won't remove it from the Content-Type if declared there, but it may be duplicated like with the old style.
     }
 }
