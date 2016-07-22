@@ -204,4 +204,29 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
 		{
 				return indexes.values().iterator();
 		}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        RiakIndexes that = (RiakIndexes) o;
+        return indexes.equals(that.indexes);
+    }
+
+    @Override
+    public int hashCode() {
+        return indexes.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "RiakIndexes{" +
+                "indexes: " + indexes +
+                '}';
+    }
 }

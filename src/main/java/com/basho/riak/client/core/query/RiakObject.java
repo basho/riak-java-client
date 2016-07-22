@@ -395,4 +395,76 @@ public final class RiakObject
     {
         return isDeleted;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        RiakObject that = (RiakObject) o;
+
+        if (isDeleted != that.isDeleted) {
+            return false;
+        }
+        if (isModified != that.isModified) {
+            return false;
+        }
+        if (lastModified != that.lastModified) {
+            return false;
+        }
+        if (value != null ? !value.equals(that.value) : that.value != null) {
+            return false;
+        }
+        if (riakIndexes != null ? !riakIndexes.equals(that.riakIndexes) : that.riakIndexes != null) {
+            return false;
+        }
+        if (links != null ? !links.equals(that.links) : that.links != null) {
+            return false;
+        }
+        if (userMeta != null ? !userMeta.equals(that.userMeta) : that.userMeta != null) {
+            return false;
+        }
+        if (contentType != null ? !contentType.equals(that.contentType) : that.contentType != null) {
+            return false;
+        }
+        if (vtag != null ? !vtag.equals(that.vtag) : that.vtag != null) {
+            return false;
+        }
+        return !(vclock != null ? !vclock.equals(that.vclock) : that.vclock != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = value != null ? value.hashCode() : 0;
+        result = 31 * result + (riakIndexes != null ? riakIndexes.hashCode() : 0);
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (userMeta != null ? userMeta.hashCode() : 0);
+        result = 31 * result + (contentType != null ? contentType.hashCode() : 0);
+        result = 31 * result + (vtag != null ? vtag.hashCode() : 0);
+        result = 31 * result + (isDeleted ? 1 : 0);
+        result = 31 * result + (isModified ? 1 : 0);
+        result = 31 * result + (vclock != null ? vclock.hashCode() : 0);
+        result = 31 * result + (int) (lastModified ^ (lastModified >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "RiakObject{" +
+                "contentType: " + contentType +
+                ", value: " + value +
+                ", riakIndexes: " + riakIndexes +
+                ", links: " + links +
+                ", userMeta: " + userMeta +
+                ", vtag: " + vtag +
+                ", isDeleted: " + isDeleted +
+                ", isModified: " + isModified +
+                ", vclock: " + vclock +
+                ", lastModified: " + lastModified +
+                '}';
+    }
 }

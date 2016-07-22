@@ -28,6 +28,8 @@ import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.StringBinIndex;
+import com.basho.riak.client.core.query.links.RiakLink;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import org.junit.Before;
@@ -76,30 +78,15 @@ public class StoreValueTest
 		when(mockFuture.isDone()).thenReturn(true);
 		when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
 		client = new RiakClient(mockCluster);
-		riakObject = new RiakObject();
-        riakObject.setVClock(vClock);
-		riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
+		riakObject = createRiakObject();
 	}
 
 	@Test
 	public void testStore() throws ExecutionException, InterruptedException
 	{
 
-		StoreValue.Builder store =
-			new StoreValue.Builder(riakObject).withLocation(key)
-				.withOption(Option.ASIS, true)
-				.withOption(Option.DW, new Quorum(1))
-				.withOption(Option.IF_NONE_MATCH, true)
-				.withOption(Option.IF_NOT_MODIFIED, true)
-				.withOption(Option.PW, new Quorum(1))
-				.withOption(Option.N_VAL, 1)
-				.withOption(Option.RETURN_BODY, true)
-				.withOption(Option.RETURN_HEAD, true)
-				.withOption(Option.SLOPPY_QUORUM, true)
-				.withOption(Option.TIMEOUT, 1000)
-				.withOption(Option.W, new Quorum(1));
-
-		client.execute(store.build());
+		StoreValue storeValue = filledStoreValue(riakObject);
+		client.execute(storeValue);
 
 		ArgumentCaptor<StoreOperation> captor =
 			ArgumentCaptor.forClass(StoreOperation.class);
@@ -124,5 +111,46 @@ public class StoreValueTest
 
 	}
 
+	@Test
+	public void testEqualsWithRiakObject()
+	{
+		final RiakObject riakObject1 = createRiakObject();
+		final RiakObject riakObject2 = createRiakObject();
 
+
+		final StoreValue value1 = filledStoreValue(riakObject1);
+		final StoreValue value2 = filledStoreValue(riakObject2);
+		
+		assertEquals(value1, value2);
+	}
+
+	private RiakObject createRiakObject()
+    {
+		final RiakObject result = new RiakObject();
+		result.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
+		result.getIndexes().getIndex(StringBinIndex.named("foo")).add("bar");
+		result.getLinks().addLink(new RiakLink("bucket", "linkkey", "linktag"));
+		result.getUserMeta().put("foo", "bar");
+		result.setVTag("vtag");
+		result.setVClock(vClock);
+		return result;
+	}
+
+	private StoreValue filledStoreValue(final RiakObject riakObject)
+	{
+		StoreValue.Builder store =
+			new StoreValue.Builder(riakObject).withLocation(key)
+				.withOption(Option.ASIS, true)
+				.withOption(Option.DW, new Quorum(1))
+				.withOption(Option.IF_NONE_MATCH, true)
+				.withOption(Option.IF_NOT_MODIFIED, true)
+				.withOption(Option.PW, new Quorum(1))
+				.withOption(Option.N_VAL, 1)
+				.withOption(Option.RETURN_BODY, true)
+				.withOption(Option.RETURN_HEAD, true)
+				.withOption(Option.SLOPPY_QUORUM, true)
+				.withOption(Option.TIMEOUT, 1000)
+				.withOption(Option.W, new Quorum(1));
+		return store.build();
+	}
 }

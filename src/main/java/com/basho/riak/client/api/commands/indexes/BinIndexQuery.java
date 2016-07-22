@@ -20,7 +20,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.IndexConverter;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -55,20 +54,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     {
         super(builder);
         this.charset = builder.charset;
-        this.converter = new IndexConverter<String>() 
-        {
-            @Override
-            public String convert(BinaryValue input)
-            {
-                return input.toString(charset);
-            }
-
-            @Override
-            public BinaryValue convert(String input)
-            {
-                return BinaryValue.create(input, charset);
-            }
-        };
+        this.converter = new StringIndexConverter();
     }
 
     @Override 
@@ -86,6 +72,36 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         BinQueryFuture future = new BinQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        BinIndexQuery that = (BinIndexQuery) o;
+        if (!charset.equals(that.charset)) {
+            return false;
+        }
+
+        return converter.equals(that.converter);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = super.hashCode();
+        result = 31 * result + charset.hashCode();
+        result = 31 * result + converter.hashCode();
+        return result;
     }
 
     protected final class BinQueryFuture extends CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
@@ -211,6 +227,39 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
                 super(riakObjectLocation, indexKey, converter);
             }
 
+        }
+    }
+
+    private class StringIndexConverter implements IndexConverter<String>
+    {
+        @Override
+        public String convert(BinaryValue input)
+        {
+            return input.toString(charset);
+        }
+
+        @Override
+        public BinaryValue convert(String input)
+        {
+            return BinaryValue.create(input, charset);
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
         }
     }
 }

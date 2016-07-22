@@ -125,6 +125,28 @@ public class RiakLinks implements Iterable<RiakLink>
         return links.iterator();
     }
 
-    
-    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        RiakLinks riakLinks = (RiakLinks) o;
+        return links.equals(riakLinks.links);
+    }
+
+    @Override
+    public int hashCode() {
+        return links.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "RiakLinks{" +
+                "links: " + links +
+                '}';
+    }
 }
