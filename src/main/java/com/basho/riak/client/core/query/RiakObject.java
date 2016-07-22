@@ -29,13 +29,13 @@ import java.nio.charset.Charset;
  * <p>
  * While the client APIs provide methods to store/retrieve data to/from Riak using your own
  * Beans/POJOs, this class is used as the core data type to and from which those types are
- * converted. 
+ * converted.
  * </p>
  * <p>
  * <h5>Working with Metadata</h5>
  * An object in Riak has a few types of metadata that can be attached; Secondary
  * Indexes, Links, and User Metadata. Each of these has its own container in
- * {@code RiakObject} and methods are provided to access them. 
+ * {@code RiakObject} and methods are provided to access them.
  * </p>
  * <p>
  * <br/><b>Thread Safety:</b><br/>
@@ -52,44 +52,45 @@ public final class RiakObject
     /**
      * The default content type assigned when storing in Riak if one is not
      * provided. {@value #DEFAULT_CONTENT_TYPE}
-     * @see RiakObject#setContentType(java.lang.String) 
+     * @see RiakObject#setContentType(java.lang.String)
      */
     public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
-    
-    // Mutable types. 
-    // Worth noting here is that changes to the contents of this  
-    // are not guaranteed to be seen outside of a single thread. We never 
+
+    // Mutable types.
+    // Worth noting here is that changes to the contents of this
+    // are not guaranteed to be seen outside of a single thread. We never
     // expose it directly outside the RiakObject except via "unsafe" methods
     private volatile BinaryValue value;
-    
-    // Mutable collections 
+
+    // Mutable collections
     private volatile RiakIndexes riakIndexes;
     private volatile RiakLinks links;
     private volatile RiakUserMetadata userMeta;
-    
+
     // All immutable types
     private volatile String contentType = DEFAULT_CONTENT_TYPE;
+    private volatile String charset;
     private volatile String vtag;
     private volatile boolean isDeleted;
     private volatile boolean isModified;
-    
-    // This is annotated to that the UpdateValue command 
-    // can inject a vclock. 
+
+    // This is annotated to that the UpdateValue command
+    // can inject a vclock.
     @RiakVClock
     private volatile VClock vclock;
-    
+
     private volatile long lastModified;
-    
+
     /**
      * Constructs a new, empty RiakObject.
      */
     public RiakObject()
     {
-        
+
     }
-    
+
     // Methods For dealing with Value
-    
+
     /**
      * Returns whether or not this RiakObject has a value
      * @return true if the value has been asSet, false otherwise
@@ -98,21 +99,21 @@ public final class RiakObject
     {
         return value != null;
     }
-    
+
     /**
      * Returns the value of this RiakObject.
-     * 
+     *
      * @return the value of this RiakObject
      */
     public BinaryValue getValue()
     {
         return value;
     }
-    
+
     /**
      * Set the value for this RiakObject
      * <p>
-     * Note that if {@link RiakObject#setContentType(java.lang.String)} is not 
+     * Note that if {@link RiakObject#setContentType(java.lang.String)} is not
      * called a value of {@value #DEFAULT_CONTENT_TYPE} is used.
      * </p>
      * <br/><b>Thread Safety:</b><br/>
@@ -131,7 +132,7 @@ public final class RiakObject
         this.value = value;
         return this;
     }
-    
+
     /**
      * Get the vector clock for this RiakObject.
      * @return The vector clock, or null if not set.
@@ -140,7 +141,7 @@ public final class RiakObject
     {
         return vclock;
     }
-    
+
     /**
      * Set the vector clock for this RiakObject.
      * @param vclock a vector clock.
@@ -151,10 +152,10 @@ public final class RiakObject
         this.vclock = vclock;
         return this;
     }
-    
+
     /**
      * Returns the version tag (if it is one of a asSet of siblings) for this RiakObject
-     * 
+     *
      * @return the vtag if present, otherwise {@code null}
      */
     public String getVTag()
@@ -163,7 +164,7 @@ public final class RiakObject
     }
 
     /**
-     * Set the version tag for this RiakObject 
+     * Set the version tag for this RiakObject
      *
      * @param vtag a {@code String} representing the VTag for this RiakObject
      * @return a reference to this object
@@ -178,20 +179,20 @@ public final class RiakObject
         this.vtag = vtag;
         return this;
     }
-    
+
     /**
      * Returns the last modified time of this RiakObject.
      * <p>
-     * The timestamp is returned as a {@code long} (Unix) epoch time. 
+     * The timestamp is returned as a {@code long} (Unix) epoch time.
      * </p>
      * @return The last modified time or {@code 0} if it has not been asSet.
-     * @see RiakObject#setLastModified(long) 
+     * @see RiakObject#setLastModified(long)
      */
     public long getLastModified()
     {
         return lastModified;
     }
-    
+
     /**
      * A {@code long} timestamp of milliseconds since the epoch to asSet as
      * the last modified date on this RiakObject.
@@ -204,15 +205,15 @@ public final class RiakObject
         this.lastModified = lastModified;
         return this;
     }
-    
+
     /**
      * Returns the content type of the data payload (value) of this RiakObject
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
-     * a HTTP {@code Content-Type} header. 
+     * a HTTP {@code Content-Type} header.
      * </p>
      * @return a {@code String} representing the content type of this object's value
-     * @see RiakObject#setVClock(com.basho.riak.client.api.cap.VClock) 
+     * @see RiakObject#setVClock(com.basho.riak.client.api.cap.VClock)
      */
     public String getContentType()
     {
@@ -220,73 +221,81 @@ public final class RiakObject
     }
 
     /**
-     * Set the content type of the data payload (value) of the this RiakObject
+     * Set the content type of the data payload (value) of the this RiakObject.
+     * Please do not include a charset here, use {@link RiakObject#setCharset(String)} to declare one.
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
-     * a HTTP {@code Content-Type} header. 
+     * a HTTP {@code Content-Type} header.
      * </p>
      * @param contentType a {@code String} representing the content type of this object's value
      * @return a reference to this object
-     * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue) 
+     * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue)
      */
     public RiakObject setContentType(String contentType)
     {
         this.contentType = contentType;
         return this;
     }
-    
+
     /**
-     * Determine if there is a character asSet present in the content-type.
+     * Determine if there is a charset set in either the charset or content-type settings.
      * @return true if a charset is present, false otherwise.
      */
     public boolean hasCharset()
     {
-        return CharsetUtils.hasCharset(contentType);
+        return charset != null || CharsetUtils.hasCharset(this.contentType);
     }
-    
+
     /**
-     * Get the character asSet for this RiakObject's content (value)
+     * Get the charset for this RiakObject's content (value).
+     * Will fetch from the RiakObject's charset setting, and failing that will attempt to get one from the content-type.
+     * Defaults to UTF-8.
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
-     * a HTTP {@code Content-Type} header. 
+     * a HTTP {@code Content-Type} header.
      * </p>
      * @return The character asSet {@code String}
-     * @see RiakObject#setCharset(java.lang.String) 
-     * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue) 
+     * @see RiakObject#setCharset(java.lang.String)
+     * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue)
      */
     public String getCharset()
     {
+        if(charset != null)
+        {
+            return charset;
+        }
+
         return CharsetUtils.getDeclaredCharset(contentType);
     }
-    
+
     /**
-     * Set the character asSet for this object's content (value).
+     * Set the characterSet for this object's content (value).
      * <p>
      * Due to Riak's HTTP API this is represented as a string suitable for
-     * a HTTP {@code Content-Type} header. 
+     * a HTTP {@code Content-Type} header.
      * </p>
      * @param charset the {@link Charset} to be asSet
      * @return a reference to this object
-     * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue) 
+     * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue)
      */
     public RiakObject setCharset(String charset)
     {
-        this.contentType = CharsetUtils.addCharset(charset, contentType);
+        this.charset = charset;
         return this;
     }
-    
+
     // Indexes
-    
+
     /**
      * Returns whether this RiakObject has secondary indexes (2i)
-     * @return {@code true} if indexes are present, {@code false} otherwise 
+     * @return {@code true} if indexes are present, {@code false} otherwise
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
     public boolean hasIndexes()
     {
         return (riakIndexes != null && !riakIndexes.isEmpty());
     }
-    
+
     /**
      * Returns the Secondary Indexes (2i) for this RiakObject
      * <p>
@@ -307,7 +316,7 @@ public final class RiakObject
         }
         return riakIndexes;
     }
-    
+
     // Links
     /**
      * Returns whether this RiakObject containsKeyKey links
@@ -317,7 +326,7 @@ public final class RiakObject
     {
         return (links != null && !links.isEmpty());
     }
-    
+
     /**
      * Returns the RiakLinks for this RiakObject.
      * <br/><b>Thread Safety:</b><br/> The returned <code>RiakLinks</code> object encapsulates any/all
@@ -332,12 +341,12 @@ public final class RiakObject
         {
             links = new RiakLinks();
         }
-        
+
         return links;
     }
-    
+
     // User Meta
-    
+
     /**
      * Returns if there are any User Meta entries for this RiakObject
      * @return {@code true} if user meta entries are present, {@code false} otherwise.
@@ -346,7 +355,7 @@ public final class RiakObject
     {
         return userMeta != null && !userMeta.isEmpty();
     }
-    
+
     /**
      * Returns the User Meta for this RiakObject
      * <br/><b>Thread Safety:</b><br/>
@@ -357,19 +366,19 @@ public final class RiakObject
      */
     public synchronized RiakUserMetadata getUserMeta()
     {
-        // Lazy initialization of container. 
+        // Lazy initialization of container.
         if (null == userMeta)
         {
             userMeta = new RiakUserMetadata();
         }
-        
+
         return userMeta;
     }
-    
+
     /**
      * Marks this RiakObject as being a tombstone in Riak
-     * 
-     * @param isDeleted 
+     *
+     * @param isDeleted
      * @return a reference to this object
      */
     public RiakObject setDeleted(boolean isDeleted)
@@ -377,7 +386,7 @@ public final class RiakObject
         this.isDeleted = isDeleted;
         return this;
     }
-        
+
     /**
      * Returns whether or not this RiakObject is marked as being deleted (a tombstone)
      * @return [{@code true} is this {@code RiakObject} is a tombstone, {@code false} otherwise
