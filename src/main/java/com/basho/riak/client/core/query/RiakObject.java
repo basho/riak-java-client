@@ -22,6 +22,7 @@ import com.basho.riak.client.core.query.indexes.RiakIndexes;
 import com.basho.riak.client.core.query.links.RiakLinks;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.CharsetUtils;
+
 import java.nio.charset.Charset;
 
 /**
@@ -44,6 +45,7 @@ import java.nio.charset.Charset;
  * that if you use any of the methods prefixed with "unsafe" you need to
  * understand the ramifications as noted in their Javadoc.
  * </p>
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -52,6 +54,7 @@ public final class RiakObject
     /**
      * The default content type assigned when storing in Riak if one is not
      * provided. {@value #DEFAULT_CONTENT_TYPE}
+     *
      * @see RiakObject#setContentType(java.lang.String)
      */
     public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
@@ -93,6 +96,7 @@ public final class RiakObject
 
     /**
      * Returns whether or not this RiakObject has a value
+     *
      * @return true if the value has been asSet, false otherwise
      */
     public boolean hasValue()
@@ -119,6 +123,7 @@ public final class RiakObject
      * <br/><b>Thread Safety:</b><br/>
      * Unsafe modifications to the supplied BinaryValue's
      * underlying byte[] would be a bad thing.
+     *
      * @param value the value to be stored in Riak.
      * @return a reference to this object.
      * @throws IllegalArgumentException if {@code value} is zero length.
@@ -135,6 +140,7 @@ public final class RiakObject
 
     /**
      * Get the vector clock for this RiakObject.
+     *
      * @return The vector clock, or null if not set.
      */
     public VClock getVClock()
@@ -144,6 +150,7 @@ public final class RiakObject
 
     /**
      * Set the vector clock for this RiakObject.
+     *
      * @param vclock a vector clock.
      * @return a reference to this object.
      */
@@ -185,6 +192,7 @@ public final class RiakObject
      * <p>
      * The timestamp is returned as a {@code long} (Unix) epoch time.
      * </p>
+     *
      * @return The last modified time or {@code 0} if it has not been asSet.
      * @see RiakObject#setLastModified(long)
      */
@@ -212,6 +220,7 @@ public final class RiakObject
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header.
      * </p>
+     *
      * @return a {@code String} representing the content type of this object's value
      * @see RiakObject#setVClock(com.basho.riak.client.api.cap.VClock)
      */
@@ -227,6 +236,7 @@ public final class RiakObject
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header.
      * </p>
+     *
      * @param contentType a {@code String} representing the content type of this object's value
      * @return a reference to this object
      * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue)
@@ -239,6 +249,7 @@ public final class RiakObject
 
     /**
      * Determine if there is a charset set in either the charset or content-type settings.
+     *
      * @return true if a charset is present, false otherwise.
      */
     public boolean hasCharset()
@@ -254,13 +265,14 @@ public final class RiakObject
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header.
      * </p>
+     *
      * @return The character asSet {@code String}
      * @see RiakObject#setCharset(java.lang.String)
      * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue)
      */
     public String getCharset()
     {
-        if(charset != null)
+        if (charset != null)
         {
             return charset;
         }
@@ -274,6 +286,7 @@ public final class RiakObject
      * Due to Riak's HTTP API this is represented as a string suitable for
      * a HTTP {@code Content-Type} header.
      * </p>
+     *
      * @param charset the {@link Charset} to be asSet
      * @return a reference to this object
      * @see RiakObject#setValue(com.basho.riak.client.core.util.BinaryValue)
@@ -288,6 +301,7 @@ public final class RiakObject
 
     /**
      * Returns whether this RiakObject has secondary indexes (2i)
+     *
      * @return {@code true} if indexes are present, {@code false} otherwise
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
@@ -304,6 +318,7 @@ public final class RiakObject
      * <br/><b>Thread Safety:</b><br/> The returned <code>RiakIndexes</code> object encapsulates any/all
      * indexes for this <code>RiakObject}</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RiakObject</code>.
+     *
      * @return the {@link RiakIndexes} that encapsulates any/all indexes for this RiakObject
      * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/2i/">Riak Secondary Indexes</a>
      */
@@ -318,8 +333,10 @@ public final class RiakObject
     }
 
     // Links
+
     /**
      * Returns whether this RiakObject containsKeyKey links
+     *
      * @return {@code true} if links are present, {@code false} otherwise
      */
     public boolean hasLinks()
@@ -332,6 +349,7 @@ public final class RiakObject
      * <br/><b>Thread Safety:</b><br/> The returned <code>RiakLinks</code> object encapsulates any/all
      * links for this <code>RiakObject</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RiakObject</code>.
+     *
      * @return the {@link RiakIndexes} that encapsulates all/any links for this {@code RiakObject}
      */
     public synchronized RiakLinks getLinks()
@@ -349,6 +367,7 @@ public final class RiakObject
 
     /**
      * Returns if there are any User Meta entries for this RiakObject
+     *
      * @return {@code true} if user meta entries are present, {@code false} otherwise.
      */
     public boolean hasUserMeta()
@@ -362,6 +381,7 @@ public final class RiakObject
      * The returned <code>RiakUserMetadata</code> encapsulates any/all
      * user meta entries for this <code>RiakObject</code>, is mutable, and thread safe. Any changes
      * are directly applied to this <code>RiakObject</code>.
+     *
      * @return the {@code RiakUserMetadata} that containsKeyKey any/all User Meta entries for this {@code RiakObject}
      */
     public synchronized RiakUserMetadata getUserMeta()
@@ -376,6 +396,16 @@ public final class RiakObject
     }
 
     /**
+     * Returns whether or not this RiakObject is marked as being deleted (a tombstone)
+     *
+     * @return [{@code true} is this {@code RiakObject} is a tombstone, {@code false} otherwise
+     */
+    public boolean isDeleted()
+    {
+        return isDeleted;
+    }
+
+    /**
      * Marks this RiakObject as being a tombstone in Riak
      *
      * @param isDeleted
@@ -387,12 +417,99 @@ public final class RiakObject
         return this;
     }
 
-    /**
-     * Returns whether or not this RiakObject is marked as being deleted (a tombstone)
-     * @return [{@code true} is this {@code RiakObject} is a tombstone, {@code false} otherwise
-     */
-    public boolean isDeleted()
+    @Override
+    public boolean equals(Object o)
     {
-        return isDeleted;
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        RiakObject that = (RiakObject) o;
+
+        if (isDeleted != that.isDeleted)
+        {
+            return false;
+        }
+        if (isModified != that.isModified)
+        {
+            return false;
+        }
+        if (lastModified != that.lastModified)
+        {
+            return false;
+        }
+        if (value != null ? !value.equals(that.value) : that.value != null)
+        {
+            return false;
+        }
+        if (riakIndexes != null ? !riakIndexes.equals(that.riakIndexes) : that.riakIndexes != null)
+        {
+            return false;
+        }
+        if (links != null ? !links.equals(that.links) : that.links != null)
+        {
+            return false;
+        }
+        if (userMeta != null ? !userMeta.equals(that.userMeta) : that.userMeta != null)
+        {
+            return false;
+        }
+        if (contentType != null ? !contentType.equals(that.contentType) : that.contentType != null)
+        {
+            return false;
+        }
+        if (charset != null ? !charset.equals(that.charset) : that.charset != null)
+        {
+            return false;
+        }
+        if (vtag != null ? !vtag.equals(that.vtag) : that.vtag != null)
+        {
+            return false;
+        }
+        if (vclock != null ? !vclock.equals(that.vclock) : that.vclock != null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = value != null ? value.hashCode() : 0;
+        result = 31 * result + (riakIndexes != null ? riakIndexes.hashCode() : 0);
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (userMeta != null ? userMeta.hashCode() : 0);
+        result = 31 * result + (contentType != null ? contentType.hashCode() : 0);
+        result = 31 * result + (charset != null ? charset.hashCode() : 0);
+        result = 31 * result + (vtag != null ? vtag.hashCode() : 0);
+        result = 31 * result + (isDeleted ? 1 : 0);
+        result = 31 * result + (isModified ? 1 : 0);
+        result = 31 * result + (vclock != null ? vclock.hashCode() : 0);
+        result = 31 * result + (int) (lastModified ^ (lastModified >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RiakObject{" +
+                "contentType: " + contentType +
+                ", value: " + value +
+                ", riakIndexes: " + riakIndexes +
+                ", links: " + links +
+                ", userMeta: " + userMeta +
+                ", vtag: " + vtag +
+                ", isDeleted: " + isDeleted +
+                ", isModified: " + isModified +
+                ", vclock: " + vclock +
+                ", lastModified: " + lastModified +
+                '}';
     }
 }
