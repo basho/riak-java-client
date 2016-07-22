@@ -16,16 +16,13 @@
 package com.basho.riak.client.core;
 
 
+import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -661,6 +658,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         public Builder(RiakNode.Builder nodeBuilder, List<String> remoteAddresses) throws UnknownHostException
         {
             riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, remoteAddresses );
+        }
+
+        /**
+         * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * The RiakNode.Builder is used for setting common properties among the nodes.
+         * @since 2.0.6
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(Collection, RiakNode.Builder)
+         */
+        public Builder(Collection<HostAndPort> remoteHosts, RiakNode.Builder nodeBuilder) throws UnknownHostException
+        {
+            riakNodes = RiakNode.Builder.buildNodes(remoteHosts, nodeBuilder);
         }
 
         /**

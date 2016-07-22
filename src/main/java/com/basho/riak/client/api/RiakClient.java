@@ -18,10 +18,13 @@ package com.basho.riak.client.api;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.util.HostAndPort;
+
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import java.util.concurrent.ExecutionException;
@@ -296,6 +299,29 @@ public class RiakClient
     public static RiakClient newClient(RiakNode.Builder nodeBuilder, String... addresses) throws UnknownHostException
     {
         return newClient(nodeBuilder, Arrays.asList(addresses));
+    }
+
+    /**
+     * Static factory method to create a new client instance.
+     *
+     * @since 2.0.6
+     */
+    public static RiakClient newClient(Collection<HostAndPort> hosts) throws UnknownHostException
+    {
+        return newClient(hosts, createDefaultNodeBuilder());
+    }
+
+    /**
+     * Static factory method to create a new client instance.
+     *
+     * @since 2.0.6
+     */
+    public static RiakClient newClient(Collection<HostAndPort> hosts, RiakNode.Builder nodeBuilder) throws UnknownHostException
+    {
+        final RiakCluster cluster = new RiakCluster.Builder(hosts, nodeBuilder).build();
+        cluster.start();
+
+        return new RiakClient(cluster);
     }
 
     /**
