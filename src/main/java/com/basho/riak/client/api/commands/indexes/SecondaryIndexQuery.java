@@ -180,11 +180,11 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
     {
         IndexConverter<T> converter = getConverter();
 
-        SecondaryIndexQueryOperation.Query.Builder coreQueryBuilder = new SecondaryIndexQueryOperation.Query.Builder(
-                namespace,
-                BinaryValue.create(indexName)).withContinuation(continuation)
-                                              .withReturnKeyAndIndex(returnTerms)
-                                              .withPaginationSort(paginationSort);
+        SecondaryIndexQueryOperation.Query.Builder coreQueryBuilder =
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, BinaryValue.create(indexName))
+                        .withContinuation(continuation)
+                        .withReturnKeyAndIndex(returnTerms)
+                        .withPaginationSort(paginationSort);
 
         if (termFilter != null)
         {
@@ -197,7 +197,8 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         }
         else
         {
-            coreQueryBuilder.withRangeStart(converter.convert(start)).withRangeEnd(converter.convert(end));
+            coreQueryBuilder.withRangeStart(converter.convert(start))
+                            .withRangeEnd(converter.convert(end));
         }
 
         if (maxResults != null)
@@ -213,10 +214,11 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         return coreQueryBuilder.build();
     }
 
-    protected RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> executeCoreAsync(
-            RiakCluster cluster)
+    protected RiakFuture<SecondaryIndexQueryOperation.Response,
+                         SecondaryIndexQueryOperation.Query> executeCoreAsync(RiakCluster cluster)
     {
-        SecondaryIndexQueryOperation.Builder builder = new SecondaryIndexQueryOperation.Builder(this.createCoreQuery());
+        SecondaryIndexQueryOperation.Builder builder =
+                new SecondaryIndexQueryOperation.Builder(this.createCoreQuery());
 
         return cluster.execute(builder.build());
     }
