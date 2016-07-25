@@ -17,9 +17,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.mockito.Mockito.when;
+
 public class BatchDeleteTest
 {
-
     @Mock
     RiakCluster mockCluster;
     @Mock
@@ -29,16 +30,15 @@ public class BatchDeleteTest
     RiakClient client;
 
     @Before
-    @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(mockFuture.get()).thenReturn(null);
-        Mockito.when(mockFuture.get(Matchers.anyLong(), Matchers.any(TimeUnit.class))).thenReturn(null);
-        Mockito.when(mockFuture.isCancelled()).thenReturn(false);
-        Mockito.when(mockFuture.isDone()).thenReturn(true);
-        Mockito.when(mockFuture.isSuccess()).thenReturn(true);
-        Mockito.when(mockCluster.<DeleteOperation, Location>execute(Matchers.any(FutureOperation.class))).thenReturn(
+        when(mockFuture.get()).thenReturn(null);
+        when(mockFuture.get(Matchers.anyLong(), Matchers.any(TimeUnit.class))).thenReturn(null);
+        when(mockFuture.isCancelled()).thenReturn(false);
+        when(mockFuture.isDone()).thenReturn(true);
+        when(mockFuture.isSuccess()).thenReturn(true);
+        when(mockCluster.<DeleteOperation, Location>execute(Matchers.any(FutureOperation.class))).thenReturn(
                 mockFuture);
         client = new RiakClient(mockCluster);
     }
@@ -50,6 +50,5 @@ public class BatchDeleteTest
         batchDeleteBuilder.withTimeout(3000).addLocations(key1, key2);
         BatchDelete batchDelete = batchDeleteBuilder.build();
         client.executeAsync(batchDelete);
-
     }
 }

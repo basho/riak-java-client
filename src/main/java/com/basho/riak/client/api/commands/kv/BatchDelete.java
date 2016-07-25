@@ -52,8 +52,8 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
 {
     public static final int DEFAULT_MAX_IN_FLIGHT = 10;
 
-    private final ArrayList<Location> locations = new ArrayList<Location>();
-    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+    private final ArrayList<Location> locations = new ArrayList<>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
     private final int maxInFlight;
 
     private BatchDelete(Builder builder)
@@ -77,10 +77,9 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         return future;
     }
 
-    @SuppressWarnings("unchecked")
     private List<DeleteValue> buildDeleteOperations()
     {
-        List<DeleteValue> deleteValueOperations = new LinkedList<DeleteValue>();
+        List<DeleteValue> deleteValueOperations = new LinkedList<>();
 
         for (Location location : locations)
         {
@@ -103,8 +102,8 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
      */
     public static class Builder
     {
-        private ArrayList<Location> keys = new ArrayList<Location>();
-        private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+        private ArrayList<Location> keys = new ArrayList<>();
+        private Map<Option<?>, Object> options = new HashMap<>();
         private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
 
         /**
