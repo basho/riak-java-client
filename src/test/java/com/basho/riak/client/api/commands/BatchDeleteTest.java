@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.concurrent.TimeUnit;
@@ -30,6 +29,7 @@ public class BatchDeleteTest
     RiakClient client;
 
     @Before
+    @SuppressWarnings("unchecked")
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
@@ -38,8 +38,8 @@ public class BatchDeleteTest
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
         when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.<DeleteOperation, Location>execute(Matchers.any(FutureOperation.class))).thenReturn(
-                mockFuture);
+        when(mockCluster.<DeleteOperation, Location>execute(Matchers.any(FutureOperation.class)))
+                .thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
     }
 
