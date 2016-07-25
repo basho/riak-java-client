@@ -5,8 +5,6 @@ import com.basho.riak.client.api.commands.ListenableFuture;
 import com.basho.riak.client.api.commands.kv.DeleteValue.Option;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-
-
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.query.Location;
 
@@ -47,31 +45,31 @@ import static java.util.Collections.unmodifiableList;
  * </p>
  *
  * @author Gerard Stannard
- * gerards at tacklocal dot com
+ *         gerards at tacklocal dot com
  * @since 3.0
  */
-public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Location>> {
+public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Location>>
+{
     public static final int DEFAULT_MAX_IN_FLIGHT = 10;
 
     private final ArrayList<Location> locations = new ArrayList<Location>();
-    private
-    final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
     private final int maxInFlight;
 
-    private BatchDelete(Builder builder) {
+    private BatchDelete(Builder builder)
+    {
         this.locations.addAll(builder.keys);
         this.options.putAll(builder.options);
         this.maxInFlight = builder.maxInFlight;
     }
 
     @Override
-    protected RiakFuture<Response, List<Location>> executeAsync(
-            final RiakCluster cluster) {
+    protected RiakFuture<Response, List<Location>> executeAsync(final RiakCluster cluster)
+    {
         List<DeleteValue> deleteOperations = buildDeleteOperations();
         BatchDeleteFuture future = new BatchDeleteFuture(locations);
 
-        Submitter submitter = new Submitter(deleteOperations, maxInFlight,
-                cluster, future);
+        Submitter submitter = new Submitter(deleteOperations, maxInFlight, cluster, future);
 
         Thread t = new Thread(submitter);
         t.setDaemon(true);
@@ -80,14 +78,16 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
     }
 
     @SuppressWarnings("unchecked")
-    private List<DeleteValue> buildDeleteOperations() {
-        List<DeleteValue> deleteValueOperations =
-                new LinkedList<DeleteValue>();
+    private List<DeleteValue> buildDeleteOperations()
+    {
+        List<DeleteValue> deleteValueOperations = new LinkedList<DeleteValue>();
 
-        for (Location location : locations) {
+        for (Location location : locations)
+        {
             DeleteValue.Builder builder = new DeleteValue.Builder(location);
 
-            for (Option<?> option : options.keySet()) {
+            for (Option<?> option : options.keySet())
+            {
                 builder.withOption((Option<Object>) option, options.get(option));
             }
 
@@ -101,7 +101,8 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
     /**
      * Used to construct a BatchDelete command.
      */
-    public static class Builder {
+    public static class Builder
+    {
         private ArrayList<Location> keys = new ArrayList<Location>();
         private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
         private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
@@ -113,7 +114,8 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          * @param location the location to add.
          * @return this
          */
-        public Builder addLocation(Location location) {
+        public Builder addLocation(Location location)
+        {
             keys.add(location);
             return this;
         }
@@ -125,7 +127,8 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          * @param location a list of Locations
          * @return a reference to this object
          */
-        public Builder addLocations(Location... location) {
+        public Builder addLocations(Location... location)
+        {
             keys.addAll(Arrays.asList(location));
             return this;
         }
@@ -137,8 +140,10 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          * @param location an Iterable set of Locations.
          * @return a reference to this object
          */
-        public Builder addLocations(Iterable<Location> location) {
-            for (Location loc : location) {
+        public Builder addLocations(Iterable<Location> location)
+        {
+            for (Location loc : location)
+            {
                 keys.add(loc);
             }
             return this;
@@ -151,10 +156,12 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          * operation simulates it by sending multiple delete requests. This
          * parameter controls how many outstanding requests are allowed simultaneously.
          * </p>
+         *
          * @param maxInFlight the max number of outstanding requests.
          * @return a reference to this object.
          */
-        public Builder withMaxInFlight(int maxInFlight) {
+        public Builder withMaxInFlight(int maxInFlight)
+        {
             this.maxInFlight = maxInFlight;
             return this;
         }
@@ -163,11 +170,12 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          * A {@link com.basho.riak.client.api.commands.kv.DeleteValue.Option} to use with each delete operation.
          *
          * @param option an option
-         * @param value the option's associated value
-         * @param <U>     the type of the option's value
+         * @param value  the option's associated value
+         * @param <U>    the type of the option's value
          * @return a reference to this object.
          */
-        public <U> Builder withOption(Option<U> option, U value) {
+        public <U> Builder withOption(Option<U> option, U value)
+        {
             this.options.put(option, value);
             return this;
         }
@@ -178,10 +186,12 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          * By default, riak has a 60s timeout for operations. Setting
          * this value will override that default for each delete.
          * </p>
+         *
          * @param timeout the timeout in milliseconds to be sent to riak.
          * @return a reference to this object.
          */
-        public Builder withTimeout(int timeout) {
+        public Builder withTimeout(int timeout)
+        {
             withOption(Option.TIMEOUT, timeout);
             return this;
         }
@@ -191,7 +201,8 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
          *
          * @return an initialized {@link BatchDelete} operation
          */
-        public BatchDelete build() {
+        public BatchDelete build()
+        {
             return new BatchDelete(this);
         }
 
@@ -199,37 +210,43 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
 
     /**
      * The response from Riak for a BatchDelete command.
-     *
      */
-    public static
-    final class Response implements Iterable<RiakFuture<Void, Location>> {
+    public static final class Response implements Iterable<RiakFuture<Void, Location>>
+    {
 
         private final List<RiakFuture<Void, Location>> responses;
 
-        Response(List<RiakFuture<Void, Location>> responses) {
+        Response(List<RiakFuture<Void, Location>> responses)
+        {
             this.responses = responses;
         }
 
         @Override
-        public Iterator<RiakFuture<Void, Location>> iterator() {
+        public Iterator<RiakFuture<Void, Location>> iterator()
+        {
             return unmodifiableList(responses).iterator();
         }
 
-        public List<RiakFuture<Void, Location>> getResponses() {
+        public List<RiakFuture<Void, Location>> getResponses()
+        {
             return responses;
         }
 
     }
 
-    private class Submitter implements Runnable, RiakFutureListener<Void, Location> {
+    private class Submitter implements Runnable, RiakFutureListener<Void, Location>
+    {
         private final List<DeleteValue> operations;
         private final Semaphore inFlight;
         private final AtomicInteger received = new AtomicInteger();
         private final RiakCluster cluster;
         private final BatchDeleteFuture batchDeleteFuture;
 
-        public Submitter(List<DeleteValue> operations, int maxInFlight,
-                         RiakCluster cluster, BatchDeleteFuture batchDeleteFuture) {
+        public Submitter(List<DeleteValue> operations,
+                         int maxInFlight,
+                         RiakCluster cluster,
+                         BatchDeleteFuture batchDeleteFuture)
+        {
             this.operations = operations;
             this.cluster = cluster;
             this.batchDeleteFuture = batchDeleteFuture;
@@ -237,121 +254,147 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         }
 
         @Override
-        public void run() {
-            for (DeleteValue fv : operations) {
-                try {
+        public void run()
+        {
+            for (DeleteValue fv : operations)
+            {
+                try
+                {
                     inFlight.acquire();
                 }
-                catch (InterruptedException ex) {
+                catch (InterruptedException ex)
+                {
                     batchDeleteFuture.setFailed(ex);
                     break;
                 }
 
-                RiakFuture<Void, Location> future =
-                        fv.executeAsync(cluster);
+                RiakFuture<Void, Location> future = fv.executeAsync(cluster);
                 future.addListener(this);
             }
         }
 
         @Override
-        public void handle(RiakFuture<Void, Location> f) {
+        public void handle(RiakFuture<Void, Location> f)
+        {
             batchDeleteFuture.addDeleteFuture(f);
             inFlight.release();
             int completed = received.incrementAndGet();
-            if (completed == operations.size()) {
+            if (completed == operations.size())
+            {
                 batchDeleteFuture.setCompleted();
             }
         }
 
     }
 
-    private class BatchDeleteFuture extends ListenableFuture<Response, List<Location>> {
+    private class BatchDeleteFuture extends ListenableFuture<Response, List<Location>>
+    {
         private final CountDownLatch latch = new CountDownLatch(1);
         private final List<Location> locations;
         private final List<RiakFuture<Void, Location>> futures;
         private volatile Throwable exception;
 
-        private BatchDeleteFuture(List<Location> locations) {
+        private BatchDeleteFuture(List<Location> locations)
+        {
             this.locations = locations;
-            futures =
-                    Collections.synchronizedList(new LinkedList<RiakFuture<Void, Location>>());
+            futures = Collections.synchronizedList(new LinkedList<RiakFuture<Void, Location>>());
         }
 
         @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
+        public boolean cancel(boolean mayInterruptIfRunning)
+        {
             return false;
         }
 
         @Override
-        public Response get() throws InterruptedException {
+        public Response get() throws InterruptedException
+        {
             latch.await();
             return new Response(futures);
         }
 
         @Override
-        public Response get(long timeout, TimeUnit unit) throws InterruptedException {
+        public Response get(long timeout, TimeUnit unit) throws InterruptedException
+        {
             latch.await(timeout, unit);
-            if (isDone()) {
+            if (isDone())
+            {
                 return new Response(futures);
-            } else {
+            }
+            else
+            {
                 return null;
             }
         }
 
         @Override
-        public Response getNow() {
-            if (isDone()) {
+        public Response getNow()
+        {
+            if (isDone())
+            {
                 return new Response(futures);
-            } else {
+            }
+            else
+            {
                 return null;
             }
         }
 
         @Override
-        public boolean isCancelled() {
+        public boolean isCancelled()
+        {
             return false;
         }
 
         @Override
-        public boolean isDone() {
+        public boolean isDone()
+        {
             return latch.getCount() != 1;
         }
 
         @Override
-        public void await() throws InterruptedException {
+        public void await() throws InterruptedException
+        {
             latch.await();
         }
 
         @Override
-        public void await(long timeout, TimeUnit unit) throws InterruptedException {
+        public void await(long timeout, TimeUnit unit) throws InterruptedException
+        {
             latch.await(timeout, unit);
         }
 
         @Override
-        public boolean isSuccess() {
+        public boolean isSuccess()
+        {
             return isDone() && exception == null;
         }
 
         @Override
-        public List<Location> getQueryInfo() {
+        public List<Location> getQueryInfo()
+        {
             return locations;
         }
 
         @Override
-        public Throwable cause() {
+        public Throwable cause()
+        {
             return exception;
         }
 
-        private void addDeleteFuture(RiakFuture<Void, Location> future) {
+        private void addDeleteFuture(RiakFuture<Void, Location> future)
+        {
             futures.add(future);
         }
 
-        private void setCompleted() {
+        private void setCompleted()
+        {
             latch.countDown();
             notifyListeners();
         }
 
-        private void setFailed(Throwable t) {
+        private void setFailed(Throwable t)
+        {
             this.exception = t;
             latch.countDown();
             notifyListeners();

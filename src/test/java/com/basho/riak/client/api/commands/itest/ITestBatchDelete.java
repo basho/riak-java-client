@@ -17,27 +17,19 @@ import org.junit.Test;
 import java.net.UnknownHostException;
 import java.util.List;
 
-public class ITestBatchDelete {
-
-    public static class Book {
-        public String title;
-        public String author;
-        public String body;
-        public String isbn;
-        public Integer copiesOwned;
-    }
+public class ITestBatchDelete
+{
 
     // This will create a client object that we can use to interact with Riak
-    private static RiakCluster setUpCluster() throws UnknownHostException {
+    private static RiakCluster setUpCluster() throws UnknownHostException
+    {
         // This example will use only one node listening on localhost:10017
-        RiakNode node = new RiakNode.Builder()
-                .withRemoteAddress("127.0.0.1")
-//                .withRemotePort(10017)
-                .build();
+        RiakNode node = new RiakNode.Builder().withRemoteAddress("127.0.0.1")
+                                              //                .withRemotePort(10017)
+                                              .build();
 
         // This cluster object takes our one node as an argument
-        RiakCluster cluster = new RiakCluster.Builder(node)
-                .build();
+        RiakCluster cluster = new RiakCluster.Builder(node).build();
 
         // The cluster must be started to work, otherwise you will see errors
         cluster.start();
@@ -45,15 +37,16 @@ public class ITestBatchDelete {
         return cluster;
     }
 
-
     @Test
-    public void testExecuteAsync() throws Exception {
-        try {
+    public void testExecuteAsync() throws Exception
+    {
+        try
+        {
             // First, we'll create a basic object storing a movie quote
             RiakObject quoteObject = new RiakObject()
                     // We tell Riak that we're storing plaintext, not JSON, HTML, etc.
                     .setContentType("text/plain")
-                            // Objects are ultimately stored as binaries
+                    // Objects are ultimately stored as binaries
                     .setValue(BinaryValue.create("You're dangerous, Maverick"));
 
             // In the new Java client, instead of buckets you interact with Namespace
@@ -67,9 +60,7 @@ public class ITestBatchDelete {
             Location quoteObjectLocation = new Location(quotesBucket, "Iceman");
 
             // With our RiakObject in hand, we can create a StoreValue operation
-            StoreValue storeOp = new StoreValue.Builder(quoteObject)
-                    .withLocation(quoteObjectLocation)
-                    .build();
+            StoreValue storeOp = new StoreValue.Builder(quoteObject).withLocation(quoteObjectLocation).build();
 
             // And now we can use our setUpCluster() function to create a cluster
             // object which we can then use to create a client object and then
@@ -81,56 +72,48 @@ public class ITestBatchDelete {
 
             // Now we can verify that the object has been stored properly by
             // creating and executing a FetchValue operation
-            FetchValue fetchOp = new FetchValue.Builder(quoteObjectLocation)
-                    .build();
+            FetchValue fetchOp = new FetchValue.Builder(quoteObjectLocation).build();
             RiakObject fetchedObject = client.execute(fetchOp).getValue(RiakObject.class);
             assert (fetchedObject.getValue().equals(quoteObject.getValue()));
 
             // And we'll delete the object
-            DeleteValue deleteOp = new DeleteValue.Builder(quoteObjectLocation)
-                    .build();
+            DeleteValue deleteOp = new DeleteValue.Builder(quoteObjectLocation).build();
             client.execute(deleteOp);
 
             Book mobyDick = new Book();
-            mobyDick.title="Moby Dick";
-            mobyDick.author="Herman Melville";
-            mobyDick.body="Call me Ishmael. Some years ago...";
-            mobyDick.isbn="1111979723";
-            mobyDick.copiesOwned=3;
+            mobyDick.title = "Moby Dick";
+            mobyDick.author = "Herman Melville";
+            mobyDick.body = "Call me Ishmael. Some years ago...";
+            mobyDick.isbn = "1111979723";
+            mobyDick.copiesOwned = 3;
 
             Book mobyDick2 = new Book();
-            mobyDick2.title="Moby Dick 2";
-            mobyDick2.author="Herman Melville 2";
-            mobyDick2.body="Call me Ishmael. Some years ago... 2";
-            mobyDick2.isbn="1111979723 2";
-            mobyDick2.copiesOwned=2;
+            mobyDick2.title = "Moby Dick 2";
+            mobyDick2.author = "Herman Melville 2";
+            mobyDick2.body = "Call me Ishmael. Some years ago... 2";
+            mobyDick2.isbn = "1111979723 2";
+            mobyDick2.copiesOwned = 2;
 
             // Now we'll assign a Location for the book, create a StoreValue
             // operation, and store the book
             Namespace booksBucket = new Namespace("books");
             Location mobyDickLocation = new Location(booksBucket, "moby_dick");
             Location mobyDickLocation2 = new Location(booksBucket, "moby_dick_2");
-            StoreValue storeBookOp = new StoreValue.Builder(mobyDick)
-                    .withLocation(mobyDickLocation)
-                    .build();
-            StoreValue storeBookOp2 = new StoreValue.Builder(mobyDick2)
-                    .withLocation(mobyDickLocation2)
-                    .build();
+            StoreValue storeBookOp = new StoreValue.Builder(mobyDick).withLocation(mobyDickLocation).build();
+            StoreValue storeBookOp2 = new StoreValue.Builder(mobyDick2).withLocation(mobyDickLocation2).build();
             client.execute(storeBookOp);
             client.execute(storeBookOp2);
 
             // And we'll verify that we can fetch the info about Moby Dick and
             // that that info will match the object we created initially
-            FetchValue fetchMobyDickOp = new FetchValue.Builder(mobyDickLocation)
-                    .build();
+            FetchValue fetchMobyDickOp = new FetchValue.Builder(mobyDickLocation).build();
             Book fetchedBook = client.execute(fetchMobyDickOp).getValue(Book.class);
 
             assert (mobyDick.getClass() == fetchedBook.getClass());
             assert (mobyDick.title.equals(fetchedBook.title));
             assert (mobyDick.author.equals(fetchedBook.author));
             // And so on...
-            FetchValue fetchMobyDickOp2 = new FetchValue.Builder(mobyDickLocation2)
-                    .build();
+            FetchValue fetchMobyDickOp2 = new FetchValue.Builder(mobyDickLocation2).build();
             Book fetchedBook2 = client.execute(fetchMobyDickOp2).getValue(Book.class);
 
             assert (mobyDick2.getClass() == fetchedBook2.getClass());
@@ -138,9 +121,7 @@ public class ITestBatchDelete {
             assert (mobyDick2.author.equals(fetchedBook2.author));
 
             BatchDelete.Builder batchDeleteBuilder = new BatchDelete.Builder();
-            batchDeleteBuilder
-                    .withTimeout(3000)
-                    .addLocations(mobyDickLocation, mobyDickLocation2);
+            batchDeleteBuilder.withTimeout(3000).addLocations(mobyDickLocation, mobyDickLocation2);
             BatchDelete batchDelete = batchDeleteBuilder.build();
             RiakFuture<BatchDelete.Response, List<Location>> future = client.executeAsync(batchDelete);
             future.await();
@@ -156,10 +137,21 @@ public class ITestBatchDelete {
             // Now that we're all finished, we should shut our cluster object down
             cluster.shutdown();
 
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             System.out.println(e.getMessage());
         }
 
+    }
+
+    public static class Book
+    {
+        public String title;
+        public String author;
+        public String body;
+        public String isbn;
+        public Integer copiesOwned;
     }
 
 }
