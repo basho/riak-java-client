@@ -77,6 +77,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         return future;
     }
 
+    @SuppressWarnings("unchecked")
     private List<DeleteValue> buildDeleteOperations()
     {
         List<DeleteValue> deleteValueOperations = new LinkedList<>();

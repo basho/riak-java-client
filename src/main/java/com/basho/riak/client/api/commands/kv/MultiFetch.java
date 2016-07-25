@@ -115,8 +115,7 @@ public final class MultiFetch extends RiakCommand<MultiFetch.Response, List<Loca
     @SuppressWarnings("unchecked")
     private List<FetchValue> buildFetchOperations()
     {
-        List<FetchValue> fetchValueOperations =
-            new LinkedList<FetchValue>();
+        List<FetchValue> fetchValueOperations = new LinkedList<>();
 
         for (Location location : locations)
         {
