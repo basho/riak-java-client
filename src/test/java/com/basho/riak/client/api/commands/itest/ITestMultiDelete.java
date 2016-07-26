@@ -1,7 +1,7 @@
 package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.commands.kv.BatchDelete;
+import com.basho.riak.client.api.commands.kv.MultiDelete;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
@@ -17,10 +17,10 @@ import java.util.concurrent.TimeUnit;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 
-public class ITestBatchDelete extends ITestBase
+public class ITestMultiDelete extends ITestBase
 {
     @Test
-    public void testBatchDelete() throws ExecutionException, InterruptedException
+    public void testMultiDelete() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
 
@@ -31,10 +31,10 @@ public class ITestBatchDelete extends ITestBase
         FetchValue[] fetchCmds = verifyInsert(client, bookLocations);
 
         // Delete Data
-        BatchDelete.Builder batchDeleteBuilder = new BatchDelete.Builder();
-        batchDeleteBuilder.withTimeout(3000).addLocations(bookLocations);
-        BatchDelete batchDelete = batchDeleteBuilder.build();
-        RiakFuture<BatchDelete.Response, List<Location>> future = client.executeAsync(batchDelete);
+        MultiDelete.Builder multiDeleteBuilder = new MultiDelete.Builder();
+        multiDeleteBuilder.withTimeout(3000).addLocations(bookLocations);
+        MultiDelete multiDelete = multiDeleteBuilder.build();
+        RiakFuture<MultiDelete.Response, List<Location>> future = client.executeAsync(multiDelete);
         future.await(10, TimeUnit.SECONDS);
 
         // Verify Deleted Data

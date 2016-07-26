@@ -20,7 +20,7 @@ import static java.util.Collections.unmodifiableList;
  * Command used to delete multiple values from Riak.
  * Shamelessly adapted from {@code MultiFetch}
  * <p>
- * Riak itself does not support pipelining of requests. BatchDelete addresses this issue by using a thread to
+ * Riak itself does not support pipelining of requests. MultiDelete addresses this issue by using a thread to
  * parallelize and manage a set of async delete operations for a given set of keys.
  * </p>
  * <p>
@@ -30,8 +30,8 @@ import static java.util.Collections.unmodifiableList;
  * <p/>
  * <pre class="prettyprint">
  * {@code
- * BatchDelete batchdelete = ...;
- * BatchDelete.Response response = client.execute(batchdelete);
+ * MultiDelete multiDelete = ...;
+ * MultiDelete.Response response = client.execute(multiDelete);
  * </p>
  * <p>
  * The maximum number of concurrent requests defaults to 10. This can be changed
@@ -48,7 +48,7 @@ import static java.util.Collections.unmodifiableList;
  *         gerards at tacklocal dot com
  * @since 3.0
  */
-public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Location>>
+public final class MultiDelete extends RiakCommand<MultiDelete.Response, List<Location>>
 {
     public static final int DEFAULT_MAX_IN_FLIGHT = 10;
 
@@ -56,7 +56,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
     private final Map<Option<?>, Object> options = new HashMap<>();
     private final int maxInFlight;
 
-    private BatchDelete(Builder builder)
+    private MultiDelete(Builder builder)
     {
         this.locations.addAll(builder.keys);
         this.options.putAll(builder.options);
@@ -67,7 +67,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
     protected RiakFuture<Response, List<Location>> executeAsync(final RiakCluster cluster)
     {
         List<DeleteValue> deleteOperations = buildDeleteOperations();
-        BatchDeleteFuture future = new BatchDeleteFuture(locations);
+        MultiDeleteFuture future = new MultiDeleteFuture(locations);
 
         Submitter submitter = new Submitter(deleteOperations, maxInFlight, cluster, future);
 
@@ -110,7 +110,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
             return false;
         }
 
-        BatchDelete that = (BatchDelete) o;
+        MultiDelete that = (MultiDelete) o;
 
         if (maxInFlight != that.maxInFlight)
         {
@@ -140,7 +140,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
     }
 
     /**
-     * Used to construct a BatchDelete command.
+     * Used to construct a MultiDelete command.
      */
     public static class Builder
     {
@@ -150,7 +150,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
 
         /**
          * Add a location to the list of locations to delete as part of
-         * this batchdelete operation.
+         * this multiDelete operation.
          *
          * @param location the location to add.
          * @return this
@@ -163,7 +163,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
 
         /**
          * Add a list of Locations to the list of locations to delete as part of
-         * this batchdelete operation.
+         * this multiDelete operation.
          *
          * @param location a list of Locations
          * @return a reference to this object
@@ -176,7 +176,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
 
         /**
          * Add a set of keys to the list of Locations to delete as part of
-         * this batchdelete operation.
+         * this multiDelete operation.
          *
          * @param location an Iterable set of Locations.
          * @return a reference to this object
@@ -193,7 +193,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         /**
          * Set the maximum number of requests to be in progress simultaneously.
          * <p>
-         * As noted, Riak does not actually have "BatchDelete" functionality. This
+         * As noted, Riak does not actually have "MultiDelete" functionality. This
          * operation simulates it by sending multiple delete requests. This
          * parameter controls how many outstanding requests are allowed simultaneously.
          * </p>
@@ -238,19 +238,19 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         }
 
         /**
-         * Build a {@link BatchDelete} operation from this builder
+         * Build a {@link MultiDelete} operation from this builder
          *
-         * @return an initialized {@link BatchDelete} operation
+         * @return an initialized {@link MultiDelete} operation
          */
-        public BatchDelete build()
+        public MultiDelete build()
         {
-            return new BatchDelete(this);
+            return new MultiDelete(this);
         }
 
     }
 
     /**
-     * The response from Riak for a BatchDelete command.
+     * The response from Riak for a MultiDelete command.
      */
     public static final class Response implements Iterable<RiakFuture<Void, Location>>
     {
@@ -281,16 +281,16 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         private final Semaphore inFlight;
         private final AtomicInteger received = new AtomicInteger();
         private final RiakCluster cluster;
-        private final BatchDeleteFuture batchDeleteFuture;
+        private final MultiDeleteFuture multiDeleteFuture;
 
         public Submitter(List<DeleteValue> operations,
                          int maxInFlight,
                          RiakCluster cluster,
-                         BatchDeleteFuture batchDeleteFuture)
+                         MultiDeleteFuture multiDeleteFuture)
         {
             this.operations = operations;
             this.cluster = cluster;
-            this.batchDeleteFuture = batchDeleteFuture;
+            this.multiDeleteFuture = multiDeleteFuture;
             inFlight = new Semaphore(maxInFlight);
         }
 
@@ -305,7 +305,7 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
                 }
                 catch (InterruptedException ex)
                 {
-                    batchDeleteFuture.setFailed(ex);
+                    multiDeleteFuture.setFailed(ex);
                     break;
                 }
 
@@ -317,25 +317,25 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
         @Override
         public void handle(RiakFuture<Void, Location> f)
         {
-            batchDeleteFuture.addDeleteFuture(f);
+            multiDeleteFuture.addDeleteFuture(f);
             inFlight.release();
             int completed = received.incrementAndGet();
             if (completed == operations.size())
             {
-                batchDeleteFuture.setCompleted();
+                multiDeleteFuture.setCompleted();
             }
         }
 
     }
 
-    private class BatchDeleteFuture extends ListenableFuture<Response, List<Location>>
+    private class MultiDeleteFuture extends ListenableFuture<Response, List<Location>>
     {
         private final CountDownLatch latch = new CountDownLatch(1);
         private final List<Location> locations;
         private final List<RiakFuture<Void, Location>> futures;
         private volatile Throwable exception;
 
-        private BatchDeleteFuture(List<Location> locations)
+        private MultiDeleteFuture(List<Location> locations)
         {
             this.locations = locations;
             futures = Collections.synchronizedList(new LinkedList<RiakFuture<Void, Location>>());

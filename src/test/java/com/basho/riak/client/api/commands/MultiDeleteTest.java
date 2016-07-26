@@ -1,7 +1,7 @@
 package com.basho.riak.client.api.commands;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.api.commands.kv.BatchDelete;
+import com.basho.riak.client.api.commands.kv.MultiDelete;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.when;
 
-public class BatchDeleteTest
+public class MultiDeleteTest
 {
     @Mock
     RiakCluster mockCluster;
@@ -46,9 +46,9 @@ public class BatchDeleteTest
     @Test
     public void testExecuteAsync() throws Exception
     {
-        BatchDelete.Builder batchDeleteBuilder = new BatchDelete.Builder();
-        batchDeleteBuilder.withTimeout(3000).addLocations(key1, key2);
-        BatchDelete batchDelete = batchDeleteBuilder.build();
-        client.executeAsync(batchDelete);
+        MultiDelete.Builder multiDeleteBuilder = new MultiDelete.Builder();
+        multiDeleteBuilder.withTimeout(3000).addLocations(key1, key2);
+        MultiDelete multiDelete = multiDeleteBuilder.build();
+        client.executeAsync(multiDelete);
     }
 }
