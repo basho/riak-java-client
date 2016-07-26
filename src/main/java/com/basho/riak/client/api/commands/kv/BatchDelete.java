@@ -98,6 +98,47 @@ public final class BatchDelete extends RiakCommand<BatchDelete.Response, List<Lo
 
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        BatchDelete that = (BatchDelete) o;
+
+        if (maxInFlight != that.maxInFlight)
+        {
+            return false;
+        }
+        if (!locations.equals(that.locations))
+        {
+            return false;
+        }
+        return options.equals(that.options);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = locations.hashCode();
+        result = 31 * result + options.hashCode();
+        result = 31 * result + maxInFlight;
+        return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("{locations: %s, options: %s, maxInFlight: %s}", locations, options, maxInFlight);
+    }
+
     /**
      * Used to construct a BatchDelete command.
      */
