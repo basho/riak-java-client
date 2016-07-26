@@ -38,7 +38,7 @@ import java.util.Map;
  * <p>
  * Note that this operation returns a {@code Void} type upon success. Any failure
  * will be thrown as an exception when calling {@code DeleteValue} synchronously or
- * when calling the future's get methods. 
+ * when calling the future's get methods.
  * </p>
  * <pre class="prettyprint">
  * {@code
@@ -56,11 +56,11 @@ import java.util.Map;
  * ...
  * future.await();
  * if (future.isSuccess())
- * { 
- *     ... 
+ * {
+ *     ...
  * }}</pre>
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -84,7 +84,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     {
         RiakFuture<Void, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<Void, Location, Void, Location> future =
             new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
             {
@@ -164,7 +164,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
         /**
          * Read Write Quorum.
-         * Quorum for both operations (get and put) involved in deleting an object 
+         * Quorum for both operations (get and put) involved in deleting an object
          */
         public static final Option<Quorum> RW = new Option<Quorum>("RW");
         /**
@@ -183,7 +183,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          */
         public static final Option<Quorum> PR = new Option<Quorum>("PR");
         /**
-         * Primary Write Quorum. 
+         * Primary Write Quorum.
          * How many primary nodes must be up when the write is attempted
          */
         public static final Option<Quorum> PW = new Option<Quorum>("PW");
@@ -209,10 +209,8 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     /**
      * Used to construct a DeleteValue command.
      */
-    public static class Builder
+    public static class Builder extends KvBuilderBase<DeleteValue>
     {
-
-        private final Location location;
         private final Map<Option<?>, Object> options =
             new HashMap<Option<?>, Object>();
         private VClock vClock;
@@ -223,11 +221,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          */
         public Builder(Location location)
         {
-            if (location == null)
-            {
-                throw new IllegalArgumentException("Location cannot be null");
-            }
-            this.location = location;
+            super(location);
         }
 
         /**
@@ -270,11 +264,12 @@ public final class DeleteValue extends RiakCommand<Void, Location>
             withOption(Option.TIMEOUT, timeout);
             return this;
         }
-        
+
         /**
          * Construct a DeleteValue object.
          * @return a new DeleteValue instance.
          */
+        @Override
         public DeleteValue build()
         {
             return new DeleteValue(this);

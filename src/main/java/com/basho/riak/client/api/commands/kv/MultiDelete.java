@@ -1,20 +1,11 @@
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.ListenableFuture;
 import com.basho.riak.client.api.commands.kv.DeleteValue.Option;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.query.Location;
 
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.Collections.unmodifiableList;
+import java.util.List;
 
 /**
  * Command used to delete multiple values from Riak.
@@ -48,179 +39,36 @@ import static java.util.Collections.unmodifiableList;
  *         gerards at tacklocal dot com
  * @since 3.0
  */
-public final class MultiDelete extends RiakCommand<MultiDelete.Response, List<Location>>
+public final class MultiDelete extends MultiCommand<DeleteValue, DeleteValue.Builder, MultiDelete.Response, Void>
 {
-    public static final int DEFAULT_MAX_IN_FLIGHT = 10;
-
-    private final ArrayList<Location> locations = new ArrayList<>();
-    private final Map<Option<?>, Object> options = new HashMap<>();
-    private final int maxInFlight;
-
     private MultiDelete(Builder builder)
     {
-        this.locations.addAll(builder.keys);
-        this.options.putAll(builder.options);
-        this.maxInFlight = builder.maxInFlight;
+        super(builder);
     }
 
     @Override
-    protected RiakFuture<Response, List<Location>> executeAsync(final RiakCluster cluster)
+    protected Response createResponseType(List<RiakFuture<Void, Location>> riakFutures)
     {
-        List<DeleteValue> deleteOperations = buildDeleteOperations();
-        MultiDeleteFuture future = new MultiDeleteFuture(locations);
-
-        Submitter submitter = new Submitter(deleteOperations, maxInFlight, cluster, future);
-
-        Thread t = new Thread(submitter);
-        t.setDaemon(true);
-        t.start();
-        return future;
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<DeleteValue> buildDeleteOperations()
-    {
-        List<DeleteValue> deleteValueOperations = new LinkedList<>();
-
-        for (Location location : locations)
-        {
-            DeleteValue.Builder builder = new DeleteValue.Builder(location);
-
-            for (Option<?> option : options.keySet())
-            {
-                builder.withOption((Option<Object>) option, options.get(option));
-            }
-
-            deleteValueOperations.add(builder.build());
-        }
-
-        return deleteValueOperations;
-
+        return null;
     }
 
     @Override
-    public boolean equals(Object o)
+    protected DeleteValue.Builder createBaseBuilderType(Location location)
     {
-        if (this == o)
-        {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass())
-        {
-            return false;
-        }
-
-        MultiDelete that = (MultiDelete) o;
-
-        if (maxInFlight != that.maxInFlight)
-        {
-            return false;
-        }
-        if (!locations.equals(that.locations))
-        {
-            return false;
-        }
-        return options.equals(that.options);
-
+        return new DeleteValue.Builder(location);
     }
 
     @Override
-    public int hashCode()
+    protected RiakFuture<Void, Location> executeBaseCommandAsync(DeleteValue command, RiakCluster cluster)
     {
-        int result = locations.hashCode();
-        result = 31 * result + options.hashCode();
-        result = 31 * result + maxInFlight;
-        return result;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format("{locations: %s, options: %s, maxInFlight: %s}", locations, options, maxInFlight);
+        return command.executeAsync(cluster);
     }
 
     /**
      * Used to construct a MultiDelete command.
      */
-    public static class Builder
+    public static class Builder extends MultiCommand.Builder<MultiDelete, Builder>
     {
-        private ArrayList<Location> keys = new ArrayList<>();
-        private Map<Option<?>, Object> options = new HashMap<>();
-        private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
-
-        /**
-         * Add a location to the list of locations to delete as part of
-         * this multiDelete operation.
-         *
-         * @param location the location to add.
-         * @return this
-         */
-        public Builder addLocation(Location location)
-        {
-            keys.add(location);
-            return this;
-        }
-
-        /**
-         * Add a list of Locations to the list of locations to delete as part of
-         * this multiDelete operation.
-         *
-         * @param location a list of Locations
-         * @return a reference to this object
-         */
-        public Builder addLocations(Location... location)
-        {
-            keys.addAll(Arrays.asList(location));
-            return this;
-        }
-
-        /**
-         * Add a set of keys to the list of Locations to delete as part of
-         * this multiDelete operation.
-         *
-         * @param location an Iterable set of Locations.
-         * @return a reference to this object
-         */
-        public Builder addLocations(Iterable<Location> location)
-        {
-            for (Location loc : location)
-            {
-                keys.add(loc);
-            }
-            return this;
-        }
-
-        /**
-         * Set the maximum number of requests to be in progress simultaneously.
-         * <p>
-         * As noted, Riak does not actually have "MultiDelete" functionality. This
-         * operation simulates it by sending multiple delete requests. This
-         * parameter controls how many outstanding requests are allowed simultaneously.
-         * </p>
-         *
-         * @param maxInFlight the max number of outstanding requests.
-         * @return a reference to this object.
-         */
-        public Builder withMaxInFlight(int maxInFlight)
-        {
-            this.maxInFlight = maxInFlight;
-            return this;
-        }
-
-        /**
-         * A {@link com.basho.riak.client.api.commands.kv.DeleteValue.Option} to use with each delete operation.
-         *
-         * @param option an option
-         * @param value  the option's associated value
-         * @param <U>    the type of the option's value
-         * @return a reference to this object.
-         */
-        public <U> Builder withOption(Option<U> option, U value)
-        {
-            this.options.put(option, value);
-            return this;
-        }
-
         /**
          * Set the Riak-side timeout value.
          * <p>
@@ -242,204 +90,24 @@ public final class MultiDelete extends RiakCommand<MultiDelete.Response, List<Lo
          *
          * @return an initialized {@link MultiDelete} operation
          */
+        @Override
         public MultiDelete build()
         {
             return new MultiDelete(this);
         }
 
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
     }
 
-    /**
-     * The response from Riak for a MultiDelete command.
-     */
-    public static final class Response implements Iterable<RiakFuture<Void, Location>>
+    public static class Response extends MultiCommand.Response<Void>
     {
-
-        private final List<RiakFuture<Void, Location>> responses;
-
         Response(List<RiakFuture<Void, Location>> responses)
         {
-            this.responses = responses;
+            super(responses);
         }
-
-        @Override
-        public Iterator<RiakFuture<Void, Location>> iterator()
-        {
-            return unmodifiableList(responses).iterator();
-        }
-
-        public List<RiakFuture<Void, Location>> getResponses()
-        {
-            return responses;
-        }
-
-    }
-
-    private class Submitter implements Runnable, RiakFutureListener<Void, Location>
-    {
-        private final List<DeleteValue> operations;
-        private final Semaphore inFlight;
-        private final AtomicInteger received = new AtomicInteger();
-        private final RiakCluster cluster;
-        private final MultiDeleteFuture multiDeleteFuture;
-
-        public Submitter(List<DeleteValue> operations,
-                         int maxInFlight,
-                         RiakCluster cluster,
-                         MultiDeleteFuture multiDeleteFuture)
-        {
-            this.operations = operations;
-            this.cluster = cluster;
-            this.multiDeleteFuture = multiDeleteFuture;
-            inFlight = new Semaphore(maxInFlight);
-        }
-
-        @Override
-        public void run()
-        {
-            for (DeleteValue fv : operations)
-            {
-                try
-                {
-                    inFlight.acquire();
-                }
-                catch (InterruptedException ex)
-                {
-                    multiDeleteFuture.setFailed(ex);
-                    break;
-                }
-
-                RiakFuture<Void, Location> future = fv.executeAsync(cluster);
-                future.addListener(this);
-            }
-        }
-
-        @Override
-        public void handle(RiakFuture<Void, Location> f)
-        {
-            multiDeleteFuture.addDeleteFuture(f);
-            inFlight.release();
-            int completed = received.incrementAndGet();
-            if (completed == operations.size())
-            {
-                multiDeleteFuture.setCompleted();
-            }
-        }
-
-    }
-
-    private class MultiDeleteFuture extends ListenableFuture<Response, List<Location>>
-    {
-        private final CountDownLatch latch = new CountDownLatch(1);
-        private final List<Location> locations;
-        private final List<RiakFuture<Void, Location>> futures;
-        private volatile Throwable exception;
-
-        private MultiDeleteFuture(List<Location> locations)
-        {
-            this.locations = locations;
-            futures = Collections.synchronizedList(new LinkedList<RiakFuture<Void, Location>>());
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning)
-        {
-            return false;
-        }
-
-        @Override
-        public Response get() throws InterruptedException
-        {
-            latch.await();
-            return new Response(futures);
-        }
-
-        @Override
-        public Response get(long timeout, TimeUnit unit) throws InterruptedException
-        {
-            latch.await(timeout, unit);
-            if (isDone())
-            {
-                return new Response(futures);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        @Override
-        public Response getNow()
-        {
-            if (isDone())
-            {
-                return new Response(futures);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        @Override
-        public boolean isCancelled()
-        {
-            return false;
-        }
-
-        @Override
-        public boolean isDone()
-        {
-            return latch.getCount() != 1;
-        }
-
-        @Override
-        public void await() throws InterruptedException
-        {
-            latch.await();
-        }
-
-        @Override
-        public void await(long timeout, TimeUnit unit) throws InterruptedException
-        {
-            latch.await(timeout, unit);
-        }
-
-        @Override
-        public boolean isSuccess()
-        {
-            return isDone() && exception == null;
-        }
-
-        @Override
-        public List<Location> getQueryInfo()
-        {
-            return locations;
-        }
-
-        @Override
-        public Throwable cause()
-        {
-            return exception;
-        }
-
-        private void addDeleteFuture(RiakFuture<Void, Location> future)
-        {
-            futures.add(future);
-        }
-
-        private void setCompleted()
-        {
-            latch.countDown();
-            notifyListeners();
-        }
-
-        private void setFailed(Throwable t)
-        {
-            this.exception = t;
-            latch.countDown();
-            notifyListeners();
-        }
-
     }
 }
