@@ -11,9 +11,7 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.HostAndPort;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +34,11 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
+    @BeforeClass
+    public static void BeforeClass() {
+        Assume.assumeTrue(testTimeSeries);
+    }
 
     @Test
     public void obtainAlternativeCoveragePlan() throws ExecutionException, InterruptedException

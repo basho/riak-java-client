@@ -13,7 +13,9 @@ import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.HostAndPort;
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,12 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
 
     private CoveragePlan.Response coveragePlan;
     private RiakClient client;
+
+    // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
+    @BeforeClass
+    public static void BeforeClass() {
+        Assume.assumeTrue(testTimeSeries);
+    }
 
     @Before
     public void setupData() throws ExecutionException, InterruptedException
@@ -66,6 +74,9 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
             }
             logger.info(builder.toString());
         }
+
+        // To be sure that
+        Thread.sleep(1000);
     }
 
     @Test
