@@ -16,7 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.unmodifiableList;
 
+/**
+ * @param <BaseCommand> The type of the individual command you are trying to repeat
+ * @param <BaseBuilder> The type of the builder for an individual {@link BaseCommand}
+ * @param <ResponseType> The return type of the grouped "multi" command
+ * @param <BaseResponseType> The return type of an individual {@link BaseCommand}
+ */
+/*
 
+ */
 abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Location>,
                                    BaseBuilder extends KvBuilderBase<BaseCommand>,
                                    ResponseType extends Iterable<RiakFuture<BaseResponseType, Location>>,
@@ -32,8 +40,8 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
     @SuppressWarnings("unchecked")
     protected MultiCommand(Builder builder)
     {
-        this.locations = builder.getKeys();
-        this.options.putAll(builder.getOptions());
+        this.locations = builder.locations;
+        this.options.putAll(builder.options);
         this.maxInFlight = builder.maxInFlight;
     }
 
@@ -74,9 +82,44 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
     }
 
     @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        MultiCommand<?, ?, ?, ?> that = (MultiCommand<?, ?, ?, ?>) o;
+
+        if (maxInFlight != that.maxInFlight)
+        {
+            return false;
+        }
+        if (!locations.equals(that.locations))
+        {
+            return false;
+        }
+        return options.equals(that.options);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = locations.hashCode();
+        result = 31 * result + options.hashCode();
+        result = 31 * result + maxInFlight;
+        return result;
+    }
+
+    @Override
     public String toString()
     {
-        return String.format("{locations: %s, options: %s, maxInFlight: %s}", locations, options, maxInFlight);
+        return String.format("%s {locations: %s, options: %s, maxInFlight: %s}", this.getClass().getSimpleName(), locations, options, maxInFlight);
     }
 
     protected abstract ResponseType createResponseType(List<RiakFuture<BaseResponseType, Location>> futures);
@@ -85,24 +128,9 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
 
     protected static abstract class Builder<BuiltType, ConcreteBuilder extends Builder<BuiltType, ConcreteBuilder>>
     {
-        private ArrayList<Location> keys = new ArrayList<Location>();
+        private ArrayList<Location> locations = new ArrayList<>();
         private Map<RiakOption<?>, Object> options = new HashMap<>();
         private int maxInFlight = DEFAULT_MAX_IN_FLIGHT;
-
-        public ArrayList<Location> getKeys()
-        {
-            return keys;
-        }
-
-        public Map<RiakOption<?>, Object> getOptions()
-        {
-            return options;
-        }
-
-        public int getMaxInFlight()
-        {
-            return maxInFlight;
-        }
 
         /**
          * Add a location to the list of locations to interact with as part of
@@ -113,7 +141,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
          */
         public ConcreteBuilder addLocation(Location location)
         {
-            keys.add(location);
+            locations.add(location);
             return self();
         }
 
@@ -126,12 +154,12 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
          */
         public ConcreteBuilder addLocations(Location... location)
         {
-            keys.addAll(Arrays.asList(location));
+            locations.addAll(Arrays.asList(location));
             return self();
         }
 
         /**
-         * Add a set of keys to the list of Locations to interact with as part of
+         * Add a set of locations to the list of Locations to interact with as part of
          * this operation.
          *
          * @param location an Iterable set of Locations.
@@ -141,7 +169,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         {
             for (Location loc : location)
             {
-                keys.add(loc);
+                locations.add(loc);
             }
             return self();
         }
@@ -180,7 +208,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         protected abstract ConcreteBuilder self();
 
         public abstract BuiltType build();
-
     }
 
     public static class Response<BaseResponseType> implements Iterable<RiakFuture<BaseResponseType, Location>>
@@ -269,6 +296,12 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         {
             this.locations = locations;
             futures = Collections.synchronizedList(new LinkedList<RiakFuture<BaseResponseType, Location>>());
+
+            // If we have no locations, then we have no work to do.
+            if(this.locations.isEmpty())
+            {
+                setCompleted();
+            }
         }
 
         @Override

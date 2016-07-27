@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * Command used to delete multiple values from Riak.
- * Shamelessly adapted from {@code MultiFetch}
  * <p>
  * Riak itself does not support pipelining of requests. MultiDelete addresses this issue by using a thread to
  * parallelize and manage a set of async delete operations for a given set of keys.
@@ -35,9 +34,9 @@ import java.util.List;
  * or worse they could time out.
  * </p>
  *
- * @author Gerard Stannard
- *         gerards at tacklocal dot com
- * @since 3.0
+ * @author Gerard Stannard <gerards at tacklocal dot com>
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.0.7
  */
 public final class MultiDelete extends MultiCommand<DeleteValue, DeleteValue.Builder, MultiDelete.Response, Void>
 {
@@ -49,7 +48,7 @@ public final class MultiDelete extends MultiCommand<DeleteValue, DeleteValue.Bui
     @Override
     protected Response createResponseType(List<RiakFuture<Void, Location>> riakFutures)
     {
-        return null;
+        return new Response(riakFutures);
     }
 
     @Override

@@ -13,16 +13,18 @@ import org.junit.Test;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 
 public class ITestMultiDelete extends ITestBase
 {
+    RiakClient client = new RiakClient(cluster);
+
     @Test
     public void testMultiDelete() throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
 
         // Insert Data
         Location[] bookLocations = insertBookData(client);
@@ -39,6 +41,17 @@ public class ITestMultiDelete extends ITestBase
 
         // Verify Deleted Data
         verifyDeletedData(client, fetchCmds);
+    }
+
+    @Test
+    public void testNoDeletes() throws InterruptedException, ExecutionException, TimeoutException
+    {
+        final MultiDelete multiDelete = new MultiDelete.Builder().build();
+        final RiakFuture<MultiDelete.Response, List<Location>> future =
+                client.executeAsync(multiDelete);
+
+        final MultiDelete.Response deleteResponse = future.get(100, TimeUnit.MILLISECONDS);
+        assertNotNull("Fail: Couldn't delete 0 records in 100ms", deleteResponse);
     }
 
     private Location[] insertBookData(RiakClient client)
