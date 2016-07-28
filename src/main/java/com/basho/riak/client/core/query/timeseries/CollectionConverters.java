@@ -4,7 +4,6 @@ import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
@@ -81,18 +80,13 @@ public final class CollectionConverters
     private static FullColumnDescription convertDescribeResultRowToFullColumnDescription(Row row)
     {
         /*
-         * Expected Format for the DESCRIBE function is 5 or 7 columns depending on the version.
+         * Expected Format for the DESCRIBE function is 5 columns:
          *
-         *  V1 includes:
          *   "Column"        (non-null Varchar)
          *   "Type"          (non-null Varchar)
          *   "Is Null"       (non-null Boolean)
          *   "Partition Key" (nullable SInt64)
          *   "Local Key"     (nullable SInt64)
-         *
-         *  V2 also includes:
-         *   "Interval", part of the quantum information (nullable SInt64)
-         *   "Unit", part of the quantum information     (nullable Varchar), either 'd', 'h', 'm', or 's'
          */
 
         final List<Cell> cells = row.getCellsCopy();
@@ -110,62 +104,16 @@ public final class CollectionConverters
         final ColumnDescription.ColumnType type =
                 ColumnDescription.ColumnType.valueOf(typeString.toUpperCase(Locale.ENGLISH));
 
-        final boolean hasQuantum = cells.size() > 5 && cells.get(5) != null && cells.get(6) != null;
-
-        final Long quantumInterval = hasQuantum ? cells.get(5).getLong() : null;
-        final TimeUnit quantumUnit = parseQuantumUnit(hasQuantum, cells.get(6));
-
-        final FullColumnDescription.Quantum quantum =
-                hasQuantum ?
-                    new FullColumnDescription.Quantum(quantumInterval, quantumUnit) :
-                    null;
-
         return new FullColumnDescription(name,
                                          type,
                                          isNullable,
                                          partitionKeyOrdinal,
-                                         localKeyOrdinal,
-                                         quantum);
-    }
-
-    private static TimeUnit parseQuantumUnit(boolean hasQuantum, Cell cell)
-    {
-        if(!hasQuantum)
-        {
-            return null;
-        }
-
-        switch(cell.getVarcharAsUTF8String())
-        {
-            case "d":
-                return TimeUnit.DAYS;
-            case "h":
-                return TimeUnit.HOURS;
-            case "m":
-                return TimeUnit.MINUTES;
-            case "s":
-                return TimeUnit.SECONDS;
-            default:
-                return null;
-        }
+                                         localKeyOrdinal);
     }
 
     private static boolean DescribeFnRowResultIsValid(List<Cell> cells)
     {
-        final boolean isValidV1Description = cells.size() == 5 && describeRowBaseIsValid(cells);
-
-        final boolean isValidV2Description =
-                cells.size() == 7 &&
-                describeRowBaseIsValid(cells) &&
-                cells.get(5) != null ? cells.get(5).hasLong() : true &&
-                cells.get(6) != null ? cells.get(6).hasVarcharValue() : true;
-
-        return isValidV1Description || isValidV2Description;
-    }
-
-    private static boolean describeRowBaseIsValid(List<Cell> cells)
-    {
-        return cells.size() >= 5 &&
+        return cells.size() == 5 &&
                cells.get(0).hasVarcharValue() &&
                cells.get(1).hasVarcharValue() &&
                cells.get(2).hasBoolean() &&
