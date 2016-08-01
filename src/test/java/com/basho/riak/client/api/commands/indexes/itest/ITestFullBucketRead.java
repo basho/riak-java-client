@@ -75,7 +75,7 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
             logger.info(builder.toString());
         }
 
-        // To be sure that
+        // To be sure that settle down across nodes
         Thread.sleep(1000);
     }
 
@@ -340,6 +340,4 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
         }
         return results;
     }
-
-    // TODO: Add test for JSON values
 }

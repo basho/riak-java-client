@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.*;
 
-// TODO: documentation for CoveragePlanOperation needs to be improved
 /**
  * An operation to retrieve a coverage plan from Riak.
  *

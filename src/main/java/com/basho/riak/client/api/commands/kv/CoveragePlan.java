@@ -22,7 +22,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.CoveragePlanOperation;
 import com.basho.riak.client.core.query.Namespace;
 
-// TODO: documentation for CoveragePlan needs to be improved
 /**
  * Command used to retrieve a coverage plan from Riak.
  *
