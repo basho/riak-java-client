@@ -53,6 +53,6 @@ import java.lang.annotation.Target;
  * @since 1.4
  */
 
-@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakVClock {
-
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakVClock
+{
 }
