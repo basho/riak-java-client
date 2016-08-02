@@ -41,15 +41,15 @@ import java.util.List;
  * List<MyPojo> myResults = new ArrayList<MyPojo>();
  * for (RiakFuture<FetchValue.Response, Location> f : response)
  * {
- * try
- * {
- * FetchValue.Response response = f.get();
- * myResults.add(response.getValue(MyPojo.class));
- * }
- * catch (ExecutionException e)
- * {
- * // log error, etc.
- * }
+*     try
+*     {
+*          FetchValue.Response response = f.get();
+*          myResults.add(response.getValue(MyPojo.class));
+*     }
+*     catch (ExecutionException e)
+*     {
+*         // log error, etc.
+*     }
  * }}</pre>
  * </p>
  * <p>
