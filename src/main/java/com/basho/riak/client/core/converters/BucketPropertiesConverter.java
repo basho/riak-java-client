@@ -194,16 +194,21 @@ public class BucketPropertiesConverter
     }
     
     
-    private static List<Function> parseHooks(List<RiakPB.RpbCommitHook> hooks) {
+    private static List<Function> parseHooks(List<RiakPB.RpbCommitHook> hooks)
+    {
         List<Function> list = new ArrayList<Function>(hooks.size());
-        for ( RiakPB.RpbCommitHook hook : hooks) {
-            if (hook.hasName()) {
+        for ( RiakPB.RpbCommitHook hook : hooks)
+        {
+            if (hook.hasName())
+            {
                 Function f = 
                     new Function.Builder()
                         .withName(hook.getName().toStringUtf8())
                         .build();
                 list.add(f);
-            } else {
+            }
+            else
+            {
                 Function f = new Function.Builder()
                     .withModule(hook.getModfun().getModule().toStringUtf8())
                     .withFunction(hook.getModfun().getFunction().toStringUtf8())
@@ -222,14 +227,19 @@ public class BucketPropertiesConverter
                     .build();
     }
     
-    private static List<RiakPB.RpbCommitHook> convertHooks(List<Function> hookList) {
+    private static List<RiakPB.RpbCommitHook> convertHooks(List<Function> hookList)
+    {
         List<RiakPB.RpbCommitHook> pbHookList = new ArrayList<RiakPB.RpbCommitHook>(hookList.size());
         RiakPB.RpbCommitHook.Builder builder = RiakPB.RpbCommitHook.newBuilder();
         RiakPB.RpbModFun.Builder mfBuilder = RiakPB.RpbModFun.newBuilder();
-        for (Function hook : hookList) {
-            if (hook.isJavascript()) {
+        for (Function hook : hookList)
+        {
+            if (hook.isJavascript())
+            {
                 builder.setName(ByteString.copyFromUtf8(hook.getName()));
-            } else {
+            }
+            else
+            {
                 mfBuilder.setModule(ByteString.copyFromUtf8(hook.getModule()));
                 mfBuilder.setFunction(ByteString.copyFromUtf8(hook.getFunction()));
                 builder.setModfun(mfBuilder);

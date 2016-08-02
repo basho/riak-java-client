@@ -51,7 +51,8 @@ public class Operations
      * @param i a java signed int
      * @return a long containing the converted value.
      */
-    public static long getUnsignedIntValue(int i) {
+    public static long getUnsignedIntValue(int i)
+    {
         return i & 0x00000000ffffffffL;
     }
 }

@@ -33,8 +33,10 @@ public class BasicVClock implements VClock
      * @param value the vector clock bytes. NOTE: copies the value
      * @throws IllegalArgumentException if <code>value</code> is null
      */
-    public BasicVClock(final byte[] value) {
-        if (value == null) {
+    public BasicVClock(final byte[] value)
+    {
+        if (value == null)
+        {
             throw new IllegalArgumentException("VClock value cannot be null");
         }
         this.value = Arrays.copyOf(value, value.length);
@@ -47,7 +49,8 @@ public class BasicVClock implements VClock
      */
     public BasicVClock(String vclock)
     {
-        if (vclock == null) {
+        if (vclock == null)
+        {
             throw new IllegalArgumentException("VClock value cannot be null");
         }
         this.value = vclock.getBytes(Charset.forName("UTF-8"));

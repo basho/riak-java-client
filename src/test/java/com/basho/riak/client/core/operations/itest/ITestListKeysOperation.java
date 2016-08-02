@@ -130,32 +130,32 @@ public class ITestListKeysOperation extends ITestBase
         final int expected = 100;
 
         RiakFutureListener<StoreOperation.Response, Location> listener =
-            new RiakFutureListener<StoreOperation.Response, Location>() {
-
-            private final AtomicInteger received = new AtomicInteger();
-
-            @Override
-            public void handle(RiakFuture<StoreOperation.Response, Location> f)
+            new RiakFutureListener<StoreOperation.Response, Location>()
             {
-                try
-                {
-                    f.get();
-                    semaphore.release();
-                    received.incrementAndGet();
+                private final AtomicInteger received = new AtomicInteger();
 
-                    if (expected == received.intValue())
+                @Override
+                public void handle(RiakFuture<StoreOperation.Response, Location> f)
+                {
+                    try
                     {
-                        logger.debug("Executing ListKeys");
-                        latch.countDown();
-                    }
-                }
-                catch (InterruptedException | ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
+                        f.get();
+                        semaphore.release();
+                        received.incrementAndGet();
 
-            }
-        };
+                        if (expected == received.intValue())
+                        {
+                            logger.debug("Executing ListKeys");
+                            latch.countDown();
+                        }
+                    }
+                    catch (InterruptedException | ExecutionException ex)
+                    {
+                        throw new RuntimeException(ex);
+                    }
+
+                }
+            };
 
         logger.debug("Inserting data");
 
