@@ -54,9 +54,8 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
 
         Submitter submitter = new Submitter(operations, maxInFlight, cluster, future);
 
-        Thread t = new Thread(submitter);
-        t.setDaemon(true);
-        t.start();
+        new Thread(submitter).start();
+
         return future;
     }
 
