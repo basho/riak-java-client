@@ -1,7 +1,5 @@
 package com.basho.riak.client.core.query.timeseries;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Holds a complete definition for a Table Column in Time Series Riak.
  * Immutable once created.
@@ -151,33 +149,6 @@ public class FullColumnDescription extends ColumnDescription
         }
     }
 
-    public static class Quantum
-    {
-        private final long interval;
-        private final TimeUnit unit;
-
-        public Quantum(long interval, TimeUnit unit)
-        {
-            this.interval = interval;
-            this.unit = unit;
-
-            if(unit != TimeUnit.DAYS && unit != TimeUnit.HOURS && unit != TimeUnit.MINUTES && unit != TimeUnit.SECONDS)
-            {
-                throw new IllegalArgumentException("Time Unit must be either DAYS, HOURS, MINUTES, or SECONDS.");
-            }
-        }
-
-        public long getInterval()
-        {
-            return interval;
-        }
-
-        public TimeUnit getUnit()
-        {
-            return unit;
-        }
-    }
-
     /**
      * Whether this column's values are nullable.
      * @return boolean
@@ -233,5 +204,14 @@ public class FullColumnDescription extends ColumnDescription
     public Quantum getQuantum()
     {
         return quantum;
+    }
+
+    /**
+     * Returns whether this column has any quantum information.
+     * @return true if Quantum information is available, false if not.
+     */
+    public boolean hasQuantum()
+    {
+        return quantum != null;
     }
 }

@@ -48,6 +48,13 @@ public class CreateTable extends RiakCommand<Void, String>
 
     public static class Builder extends CreateTableOperation.AbstractBuilder<CreateTable, Builder>
     {
+        /**
+         * Creates a new Builder for the CreateTable command.
+         * If any quantum information is present in the {@code tableDefinition}'s column descriptions,
+         * it will be used automatically. If there is none present, please use
+         * {@link CreateTable.Builder#withQuantum(int, java.util.concurrent.TimeUnit)} to set the quantum information.
+         * @param tableDefinition The table definition to base this CreateTable command off of.
+         */
         public Builder(TableDefinition tableDefinition)
         {
             super(tableDefinition);

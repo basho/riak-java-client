@@ -110,15 +110,7 @@ public final class CollectionConverters
         final ColumnDescription.ColumnType type =
                 ColumnDescription.ColumnType.valueOf(typeString.toUpperCase(Locale.ENGLISH));
 
-        final boolean hasQuantum = cells.size() > 5 && cells.get(5) != null && cells.get(6) != null;
-
-        final Long quantumInterval = hasQuantum ? cells.get(5).getLong() : null;
-        final TimeUnit quantumUnit = parseQuantumUnit(hasQuantum, cells.get(6));
-
-        final FullColumnDescription.Quantum quantum =
-                hasQuantum ?
-                    new FullColumnDescription.Quantum(quantumInterval, quantumUnit) :
-                    null;
+        final Quantum quantum = parseQuantumCells(cells);
 
         return new FullColumnDescription(name,
                                          type,
@@ -128,26 +120,16 @@ public final class CollectionConverters
                                          quantum);
     }
 
-    private static TimeUnit parseQuantumUnit(boolean hasQuantum, Cell cell)
+    private static Quantum parseQuantumCells(List<Cell> cells)
     {
-        if(!hasQuantum)
-        {
-            return null;
-        }
+        final boolean hasQuantum = cells.size() > 5 && cells.get(5) != null && cells.get(6) != null;
 
-        switch(cell.getVarcharAsUTF8String())
-        {
-            case "d":
-                return TimeUnit.DAYS;
-            case "h":
-                return TimeUnit.HOURS;
-            case "m":
-                return TimeUnit.MINUTES;
-            case "s":
-                return TimeUnit.SECONDS;
-            default:
-                return null;
-        }
+        final Long quantumInterval = hasQuantum ? cells.get(5).getLong() : null;
+        final TimeUnit quantumUnit = hasQuantum ? Quantum.parseTimeUnit(cells.get(6).getVarcharAsUTF8String()) : null;
+
+        return hasQuantum ?
+            new Quantum(quantumInterval.intValue(), quantumUnit) :
+            null;
     }
 
     private static boolean DescribeFnRowResultIsValid(List<Cell> cells)
