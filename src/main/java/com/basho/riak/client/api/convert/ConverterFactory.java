@@ -45,11 +45,12 @@ public enum ConverterFactory
     INSTANCE;
     
     private final Map<Type, Converter<?>> converterInstances =
-        new ConcurrentHashMap<Type, Converter<?>>(){{
-          put(new TypeReference<RiakObject>(){}.getType(), new PassThroughConverter());  
-          put(RiakObject.class, new PassThroughConverter());
-          put (new TypeReference<String>(){}.getType(), new StringConverter());
-          put(String.class, new StringConverter());
+        new ConcurrentHashMap<Type, Converter<?>>()
+        {{
+            put(new TypeReference<RiakObject>(){}.getType(), new PassThroughConverter());
+            put(RiakObject.class, new PassThroughConverter());
+            put (new TypeReference<String>(){}.getType(), new StringConverter());
+            put(String.class, new StringConverter());
         }};
     
     

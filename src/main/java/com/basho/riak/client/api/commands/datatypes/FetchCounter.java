@@ -54,30 +54,30 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
             cluster.execute(buildCoreOperation());
         
         CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture) {
-
-            @Override
-            protected FetchCounter.Response convertResponse(DtFetchOperation.Response coreResponse)
+            new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
-                RiakDatatype element = coreResponse.getCrdtElement();
-                
-                Context context = null;
-                if (coreResponse.hasContext())
+                @Override
+                protected FetchCounter.Response convertResponse(DtFetchOperation.Response coreResponse)
                 {
-                    context = new Context(coreResponse.getContext());
+                    RiakDatatype element = coreResponse.getCrdtElement();
+
+                    Context context = null;
+                    if (coreResponse.hasContext())
+                    {
+                        context = new Context(coreResponse.getContext());
+                    }
+
+                    RiakCounter datatype = extractDatatype(element);
+
+                    return new Response(datatype, context);
                 }
-                
-                RiakCounter datatype = extractDatatype(element);
 
-                return new Response(datatype, context);
-            }
-
-            @Override
-            protected Location convertQueryInfo(Location coreQueryInfo)
-            {
-                return coreQueryInfo;
-            }
-        };
+                @Override
+                protected Location convertQueryInfo(Location coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
         coreFuture.addListener(future);
         return future;
     }

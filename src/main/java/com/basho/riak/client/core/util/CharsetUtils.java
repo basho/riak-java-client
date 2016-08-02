@@ -49,25 +49,35 @@ public class CharsetUtils
      * @return a {@link Charset} parsed from a charset declaration in a
      *         {@code contentType} String.
      */
-    public static Charset getCharset(String contentType) {
-        if (contentType == null) {
+    public static Charset getCharset(String contentType)
+    {
+        if (contentType == null)
+        {
             return UTF_8;
         }
 
-        if (Constants.CTYPE_JSON_UTF8.equals(contentType)) {
+        if (Constants.CTYPE_JSON_UTF8.equals(contentType))
+        {
             return UTF_8; // Fast-track
         }
 
         Matcher matcher = CHARSET_PATT.matcher(contentType);
-        if (matcher.find()) {
+        if (matcher.find())
+        {
             String encstr = matcher.group(1);
 
-            if (encstr.equalsIgnoreCase("UTF-8")) {
+            if (encstr.equalsIgnoreCase("UTF-8"))
+            {
                 return UTF_8; // Fast-track
-            } else {
-                try {
+            }
+            else
+            {
+                try
+                {
                     return Charset.forName(encstr.toUpperCase());
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     // ignore //
                 }
             }
@@ -88,16 +98,21 @@ public class CharsetUtils
      *            the content-type string
      * @return the verbatim charset declared or null if non-exists
      */
-    public static String getDeclaredCharset(String contentType) {
-        if (contentType == null) {
+    public static String getDeclaredCharset(String contentType)
+    {
+        if (contentType == null)
+        {
             return null;
         }
 
         Matcher matcher = CHARSET_PATT.matcher(contentType);
-        if (matcher.find()) {
+        if (matcher.find())
+        {
             String encstr = matcher.group(1);
             return encstr;
-        } else {
+        }
+        else
+        {
             return null;
         }
     }
@@ -108,13 +123,16 @@ public class CharsetUtils
      * @param contentType
      * @return the {@code contentType} with {@literal ;charset=utf-8} appended.
      */
-    public static String addUtf8Charset(String contentType) {
-        if (contentType == null) {
+    public static String addUtf8Charset(String contentType)
+    {
+        if (contentType == null)
+        {
             return "text/plain;charset=utf-8";
         }
 
         Matcher matcher = CHARSET_PATT.matcher(contentType);
-        if (matcher.find()) {
+        if (matcher.find())
+        {
             // replace what ever content-type with utf8
             return contentType.substring(0, matcher.start(1)) + "utf-8" + contentType.substring(matcher.end(1));
         }
@@ -163,18 +181,24 @@ public class CharsetUtils
      * @param charset
      * @return a String
      */
-    public static String asString(byte[] bytes, Charset charset) {
-        if (bytes == null) {
+    public static String asString(byte[] bytes, Charset charset)
+    {
+        if (bytes == null)
+        {
             return null;
         }
 
-        if (charset == null) {
+        if (charset == null)
+        {
             throw new IllegalArgumentException("Cannot get bytes without a Charset");
         }
 
-        try {
+        try
+        {
             return new String(bytes, charset.name());
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e)
+        {
             throw new IllegalStateException(charset.name() + " must be present", e);
         }
     }
@@ -185,7 +209,8 @@ public class CharsetUtils
      * @param bytes
      * @return a String
      */
-    public static String asUTF8String(byte[] bytes) {
+    public static String asUTF8String(byte[] bytes)
+    {
         return asString(bytes, UTF_8);
     }
     
@@ -201,18 +226,24 @@ public class CharsetUtils
      * @param charset
      * @return a byte[] array
      */
-    public static byte[] asBytes(String string, Charset charset) {
-        if (string == null) {
+    public static byte[] asBytes(String string, Charset charset)
+    {
+        if (string == null)
+        {
             return null;
         }
 
-        if (charset == null) {
+        if (charset == null)
+        {
             throw new IllegalArgumentException("Cannot get bytes without a Charset");
         }
 
-        try {
+        try
+        {
             return string.getBytes(charset.name());
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e)
+        {
             //since we are using *actual* charsets, not string lookups, this
             //should *never* happen. But it is better to throw it up than swallow it.
             throw new IllegalStateException("Charset present", e);
@@ -225,7 +256,8 @@ public class CharsetUtils
      * @param string
      * @return the bytes for the supplied String
      */
-    public static byte[] utf8StringToBytes(String string) {
+    public static byte[] utf8StringToBytes(String string)
+    {
         return asBytes(string, UTF_8);
     }
 
@@ -236,14 +268,19 @@ public class CharsetUtils
      *            the content-type string
      * @return true if {@code ctype} has a charset, false otherwise
      */
-    public static boolean hasCharset(String ctype) {
-        if (ctype == null) {
+    public static boolean hasCharset(String ctype)
+    {
+        if (ctype == null)
+        {
             return false;
         }
         Matcher matcher = CHARSET_PATT.matcher(ctype);
-        if (matcher.find()) {
+        if (matcher.find())
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }

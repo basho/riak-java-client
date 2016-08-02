@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.api.convert;
 
-import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;

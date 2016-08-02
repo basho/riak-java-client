@@ -29,7 +29,8 @@ public class EqualToFilter<T> extends KeyFilter
      * Filter in keys whose name is <code>equalTo</code>
      * @param value
      */
-    public EqualToFilter(T value) {
+    public EqualToFilter(T value)
+	{
 	    super(NAME);
 	    this.value = value;
     }
