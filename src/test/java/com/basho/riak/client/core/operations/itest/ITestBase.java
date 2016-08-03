@@ -15,6 +15,9 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.kv.ListKeys;
+import com.basho.riak.client.api.commands.kv.MultiDelete;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
@@ -190,46 +193,13 @@ public abstract class ITestBase
 
     protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
     {
-        ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(namespace);
+        RiakClient client = new RiakClient(cluster);
 
-        ListKeysOperation keysOp = keysOpBuilder.build();
-        cluster.execute(keysOp);
-        List<BinaryValue> keyList = keysOp.get().getKeys();
-        final Semaphore semaphore = new Semaphore(NUMBER_OF_PARALLEL_REQUESTS);
-        final CountDownLatch latch = new CountDownLatch(keyList.size());
+        ListKeys listKeys = new ListKeys.Builder(namespace).build();
+        final ListKeys.Response listKeyResponse = client.execute(listKeys);
 
-        RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
-            @Override
-            public void handle(RiakFuture<Void, Location> f)
-            {
-                try
-                {
-                    f.get();
-                }
-                catch (Exception ex)
-                {
-                    if (ex instanceof RuntimeException)
-                    {
-                        throw (RuntimeException)ex;
-                    }
-                    throw new RuntimeException(ex);
-                }
-                semaphore.release();
-                latch.countDown();
-            }
-
-        };
-
-        for (BinaryValue k : keyList)
-        {
-            Location location = new Location(namespace, k);
-            DeleteOperation delOp = new DeleteOperation.Builder(location).withRw(3).build();
-            delOp.addListener(listener);
-            semaphore.acquire();
-            cluster.execute(delOp);
-        }
-
-        latch.await();
+        MultiDelete multiDelete = new MultiDelete.Builder().addLocations(listKeyResponse).build();
+        final MultiDelete.Response deleteResponse = client.execute(multiDelete);
 
         ResetBucketPropsOperation.Builder resetOpBuilder =
                 new ResetBucketPropsOperation.Builder(namespace);
