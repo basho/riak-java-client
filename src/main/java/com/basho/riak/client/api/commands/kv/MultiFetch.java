@@ -62,6 +62,10 @@ import java.util.List;
  * available performance will suffer initially as connections will need to be established
  * or worse they could time out.
  * </p>
+ * <p>
+ * Be aware that for responsiveness to the caller thread, the requests are run on a Daemon worker thread.
+ * Shutting down the client JVM before the future is complete will result in unexpected behavior, and an incomplete result.
+ * </p>
  *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0

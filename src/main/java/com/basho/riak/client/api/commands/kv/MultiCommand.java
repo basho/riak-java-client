@@ -7,6 +7,8 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.query.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -17,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Collections.unmodifiableList;
 
 /**
+ * Runs multiple individual commands together on a worker daemon thread.
  * @param <BaseCommand> The type of the individual command you are trying to repeat
  * @param <BaseBuilder> The type of the builder for an individual {@link BaseCommand}
  * @param <ResponseType> The return type of the grouped "multi" command
@@ -31,14 +34,14 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
                                    BaseResponseType>
         extends RiakCommand<ResponseType, List<Location>>
 {
-    public static final int DEFAULT_MAX_IN_FLIGHT = 10;
+    private static final int DEFAULT_MAX_IN_FLIGHT = 10;
 
-    protected final ArrayList<Location> locations;
+    private final ArrayList<Location> locations;
     protected final Map<RiakOption<?>, Object> options = new HashMap<>();
-    protected final int maxInFlight;
+    private final int maxInFlight;
 
     @SuppressWarnings("unchecked")
-    protected MultiCommand(Builder builder)
+    MultiCommand(Builder builder)
     {
         this.locations = builder.locations;
         this.options.putAll(builder.options);
@@ -54,13 +57,15 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
 
         Submitter submitter = new Submitter(operations, maxInFlight, cluster, future);
 
-        new Thread(submitter).start();
+        Thread worker = new Thread(submitter);
+        worker.setDaemon(true);
+        worker.start();
 
         return future;
     }
 
     @SuppressWarnings("unchecked")
-    List<BaseCommand> buildOperations()
+    private List<BaseCommand> buildOperations()
     {
         List<BaseCommand> baseOperations = new LinkedList<>();
 
@@ -233,6 +238,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
 
     class Submitter implements Runnable, RiakFutureListener<BaseResponseType, Location>
     {
+        private final Logger logger = LoggerFactory.getLogger(this.getClass());
         private final List<BaseCommand> commands;
         private final Semaphore inFlight;
         private final AtomicInteger received = new AtomicInteger();
@@ -253,6 +259,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         @Override
         public void run()
         {
+            logger.debug("Running daemon worker thread.");
             for (BaseCommand command : commands)
             {
                 try
@@ -261,6 +268,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
                 }
                 catch (InterruptedException ex)
                 {
+                    logger.error("Daemon worker thread interrupted.");
                     multiFuture.setFailed(ex);
                     break;
                 }
@@ -273,6 +281,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         @Override
         public void handle(RiakFuture<BaseResponseType, Location> f)
         {
+            logger.debug("Received MultiCommand individual result.");
             multiFuture.addFetchFuture(f);
             inFlight.release();
             int completed = received.incrementAndGet();
