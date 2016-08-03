@@ -87,6 +87,19 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>artifactory</id>
+            <url>https://basholabs.artifactoryonline.com/basholabs/libs-snapshot</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <profiles>
         <profile>
             <id>default</id>
@@ -474,6 +487,12 @@
             <groupId>org.erlang.otp</groupId>
             <artifactId>jinterface</artifactId>
             <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.basho.riak.test</groupId>
+            <artifactId>riak-test-docker</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

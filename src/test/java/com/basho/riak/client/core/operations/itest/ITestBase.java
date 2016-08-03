@@ -26,9 +26,11 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.test.cluster.DockerRiakCluster;
+import com.basho.riak.test.rule.DockerRiakClusterRule;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
@@ -42,6 +44,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -54,36 +58,38 @@ import static org.junit.Assert.*;
  */
 public abstract class ITestBase
 {
-    protected static RiakCluster cluster;
-    protected static boolean testYokozuna;
-    protected static boolean test2i;
-    protected static boolean testBucketType;
-    protected static boolean testCrdt;
-    protected static boolean testTimeSeries;
-    protected static boolean legacyRiakSearch;
-    protected static boolean security;
-    protected static BinaryValue bucketName;
-    protected static BinaryValue counterBucketType;
-    protected static BinaryValue setBucketType;
-    protected static BinaryValue mapBucketType;
-    protected static BinaryValue bucketType;
-    protected static BinaryValue yokozunaBucketType;
-    protected static BinaryValue mapReduceBucketType;
-    protected static String overrideCert;
     protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
     protected static final int NUMBER_OF_TEST_VALUES = 100;
 
-    protected static String hostname;
-    protected static int pbcPort;
+    protected static RiakCluster cluster;
+    protected static final boolean testYokozuna;
+    protected static final boolean test2i;
+    protected static final boolean testBucketType;
+    protected static final boolean testCrdt;
+    protected static final boolean testTimeSeries;
+    protected static final boolean legacyRiakSearch;
+    protected static final boolean security;
+    protected static BinaryValue bucketName;
+    protected static final BinaryValue counterBucketType;
+    protected static final BinaryValue setBucketType;
+    protected static final BinaryValue mapBucketType;
+    protected static final BinaryValue bucketType;
+    protected static final BinaryValue yokozunaBucketType;
+    protected static final BinaryValue mapReduceBucketType;
+    protected static final String overrideCert;
+    protected static final String hostname;
+    protected static final int pbcPort;
+
     @Rule
     public TestName testName = new TestName();
 
-    @BeforeClass
-    public static void setUp() throws CertificateException, IOException, KeyStoreException,
-            NoSuchAlgorithmException
+    @ClassRule
+    public static final DockerRiakClusterRule dockerCluster;
+
+    static
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
-        
+
         /**
          * Riak security.
          *
@@ -161,13 +167,53 @@ public abstract class ITestBase
          * In case you want/need to use a custom PBC port you may pass it by using the following system property
          */
         pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
+    }
 
+    static
+    {
+        DockerRiakCluster.Builder builder = DockerRiakCluster.builder()
+                .withBucketType("plain", Collections.<String, String>emptyMap())
+                .withNodes(1)
+                .withTimeout(1);
 
+        if (testYokozuna)
+        {
+            builder.withBucketType("yokozuna", Collections.<String, String>emptyMap());
+        }
+
+        if (testBucketType)
+        {
+            builder.withBucketType("mr", Collections.<String, String>emptyMap());
+        }
+
+        if (testCrdt || testTimeSeries)
+        {
+            builder.withBucketType("maps", new HashMap<String, String>() {{
+                put("allow_mult", "true");
+                put("datatype", "map");
+            }}).withBucketType("sets", new HashMap<String, String>() {{
+                put("allow_mult", "true");
+                put("datatype", "set");
+            }}).withBucketType("counters", new HashMap<String, String>() {{
+                put("allow_mult", "true");
+                put("datatype", "counter");
+            }});
+        }
+
+        dockerCluster = new DockerRiakClusterRule(builder,
+                System.getProperties().containsKey("com.basho.riak.host")
+                        || System.getProperties().containsKey("com.basho.riak.pbcport"));
+    }
+
+    @BeforeClass
+    public static void setUp() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException
+    {
         RiakNode.Builder builder = new RiakNode.Builder()
-                                        .withRemoteAddress(hostname)
-                                        .withRemotePort(pbcPort)
-                                        .withMinConnections(NUMBER_OF_PARALLEL_REQUESTS);
-
+                .withRemoteAddress(dockerCluster.getIps().iterator().hasNext()
+                        ? dockerCluster.getIps().iterator().next()
+                        : hostname)
+                .withRemotePort(pbcPort)
+                .withMinConnections(NUMBER_OF_PARALLEL_REQUESTS);
         if (security)
         {
             setupUsernamePasswordSecurity(builder);
