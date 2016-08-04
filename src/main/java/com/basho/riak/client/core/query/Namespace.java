@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Basho Technologies Inc. 
+ * Copyright 2014 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import java.nio.charset.Charset;
  * Encapsulates a Riak bucket type and bucket name.
  * <p>
  * Riak 2.0 introduced bucket types, which form a namespace in Riak when combined with
- * a bucket name. This class encapsulates those two items for use with operations. 
+ * a bucket name. This class encapsulates those two items for use with operations.
  * </p>
  * <p>
- * Buckets in Riak are automatically created for a type if they do not yet exist. 
+ * Buckets in Riak are automatically created for a type if they do not yet exist.
  * Bucket types, on the other hand, are not. Anything other than the {@literal default}
  * bucket type must be explicitly created using the {@literal riak_admin} command line tool.
  * </p>
@@ -43,21 +43,19 @@ import java.nio.charset.Charset;
  */
 public class Namespace
 {
-
-    
     /**
      * The default bucket type in Riak.
-     * The Riak default bucket type. 
+     * The Riak default bucket type.
      * The type is {@value #DEFAULT_BUCKET_TYPE}
      */
     public static final String DEFAULT_BUCKET_TYPE = "default";
     private static final BinaryValue DEFAULT_TYPE = BinaryValue.createFromUtf8(DEFAULT_BUCKET_TYPE);
-    
+
     private final BinaryValue type;
     private final BinaryValue bucket;
-    
+
     /**
-     * Construct a new Namespace with the provided bucket type and name. 
+     * Construct a new Namespace with the provided bucket type and name.
      * @param bucketType The bucket type in Riak. This must be UTF-8 encoded.
      * @param bucketName The bucket in Riak.
      */
@@ -74,11 +72,11 @@ public class Namespace
         this.bucket = bucketName;
         this.type = bucketType;
     }
-    
+
     /**
-     * Construct a new Namespace with the provided bucket type and name. 
+     * Construct a new Namespace with the provided bucket type and name.
      * <p>
-     * The supplied bucket type will be converted to bytes using UTF-8. 
+     * The supplied bucket type will be converted to bytes using UTF-8.
      * </p>
      * <p>
      * The supplied bucket name is converted to bytes using the supplied charset.
@@ -101,15 +99,15 @@ public class Namespace
         {
             throw new IllegalArgumentException("Charset cannot be null");
         }
-        
+
         this.bucket = BinaryValue.create(bucketName, charset);
         this.type = BinaryValue.createFromUtf8(bucketType);
     }
-    
+
     /**
-     * Construct a new Namespace with the provided bucket type and name. 
+     * Construct a new Namespace with the provided bucket type and name.
      * <p>
-     * The bucket type will be converted to bytes using UTF-8. 
+     * The bucket type will be converted to bytes using UTF-8.
      * </p>
      * <p>
      * The supplied bucketName is converted to bytes using the default charset.
@@ -121,7 +119,7 @@ public class Namespace
     {
         this(bucketType, bucketName, DefaultCharset.get());
     }
-    
+
     /**
      * Construct a new Namespace with the provided bucket name and the default bucket type.
      * <p>
@@ -135,7 +133,7 @@ public class Namespace
     {
         this(DEFAULT_TYPE, bucketName);
     }
-    
+
     /**
      * Construct a Namespace with the provided bucket name and the default bucket type.
      * <p>
@@ -153,7 +151,7 @@ public class Namespace
     {
         this(DEFAULT_BUCKET_TYPE, bucketName, charset);
     }
-    
+
     /**
      * Construct a Namespace with the provided bucket name and the default bucket type.
      * <p>
@@ -170,7 +168,7 @@ public class Namespace
     {
         this(bucketName, DefaultCharset.get());
     }
-    
+
     /**
      * Returns the bucket type for this Namespace.
      * @return the Riak bucket type.
@@ -179,7 +177,7 @@ public class Namespace
     {
         return type;
     }
-    
+
     /**
      * Get the bucket type for this Namespace as a String.
      * <p>
@@ -191,7 +189,7 @@ public class Namespace
     {
         return type.toString();
     }
-    
+
     /**
      * Get the bucket type for this Namespace as a String.
      * <p>
@@ -204,7 +202,7 @@ public class Namespace
     {
         return type.toString(charset);
     }
-    
+
     /**
      * Returns the bucket name for this Namespace.
      * @return the Riak bucket name.
@@ -213,7 +211,7 @@ public class Namespace
     {
         return bucket;
     }
-    
+
     /**
      * Get the bucket name for this Namespace as a String.
      * <p>
@@ -225,7 +223,7 @@ public class Namespace
     {
         return bucket.toString();
     }
-    
+
      /**
      * Get the bucket name for this Namespace as a String.
      * <p>
@@ -238,7 +236,7 @@ public class Namespace
     {
         return bucket.toString(charset);
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -270,11 +268,11 @@ public class Namespace
         }
         return true;
     }
-    
+
     @Override
     public String toString()
     {
         return "{type: " + type + ", bucket: " + bucket + "}";
     }
-    
+
 }
