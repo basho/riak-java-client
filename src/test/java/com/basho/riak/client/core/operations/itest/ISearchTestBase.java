@@ -92,7 +92,7 @@ public class ISearchTestBase extends ITestBase
             throws ExecutionException, InterruptedException
     {
         YokozunaIndex index = new YokozunaIndex(indexName);
-        StoreIndex ssi = new StoreIndex.Builder(index).withTimeout(45).build();
+        StoreIndex ssi = new StoreIndex.Builder(index).withTimeout(45000).build();
 
         final RiakFuture<Void, YokozunaIndex> indexCreateFuture = client.executeAsync(ssi);
         indexCreateFuture.await();
