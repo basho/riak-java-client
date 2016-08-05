@@ -16,6 +16,7 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.api.commands.datatypes.*;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
@@ -99,7 +100,7 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         cluster.execute(update);
         update.get();
 
-        
+
         DtFetchOperation fetch = new DtFetchOperation.Builder(location)
             .build();
         cluster.execute(fetch);
@@ -147,6 +148,18 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
 	    assertEquals(1, shoppingCartElement.size());
 	    assertTrue(shoppingCartElement.get(0).isSet());
 
+    }
+
+    @Test
+    public void testNonExistingDataType() throws ExecutionException, InterruptedException
+    {
+        Location location = new Location(new Namespace(mapBucketType, bucketName), "404");
+        DtFetchOperation fetch = new DtFetchOperation.Builder(location).build();
+        final RiakFuture<DtFetchOperation.Response, Location> future = cluster.execute(fetch);
+
+        final DtFetchOperation.Response response = future.get();
+        assertTrue(response.isNotFound());
+        assertFalse(response.hasCrdtElement());
     }
 
 }
