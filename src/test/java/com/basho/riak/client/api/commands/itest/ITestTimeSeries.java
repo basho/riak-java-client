@@ -337,7 +337,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult tableDescription = resultFuture.get();
         assertEquals(7, tableDescription.getRowsCount());
-        assertEquals(7, tableDescription.getColumnDescriptionsCopy().size());
+        int numColumnDesc = tableDescription.getColumnDescriptionsCopy().size();
+        assertTrue(numColumnDesc == 5 || numColumnDesc == 7);
     }
 
     @Test
