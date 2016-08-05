@@ -22,6 +22,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * <p>
  * This is an immutable register which can be returned within a {@link RiakMap}.
  * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -36,6 +37,7 @@ public class RiakRegister extends RiakDatatype
 
     /**
      * Returns the RiakRegister as a BinaryValue.
+     *
      * @return the register.
      */
     public BinaryValue getValue()
@@ -45,17 +47,42 @@ public class RiakRegister extends RiakDatatype
 
     /**
      * Returns the RiakRegister as a BinaryValue.
+     *
      * @return the register.
      */
-	@Override
-	public BinaryValue view()
-	{
-		return value;
-	}
-    
+    @Override
+    public BinaryValue view()
+    {
+        return value;
+    }
+
     @Override
     public String toString()
     {
         return value.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        RiakRegister that = (RiakRegister) o;
+
+        return value != null ? value.equals(that.value) : that.value == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return value != null ? value.hashCode() : 0;
     }
 }

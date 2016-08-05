@@ -40,7 +40,6 @@ public class RiakMap extends RiakDatatype
 
     public RiakMap(List<MapEntry> mapEntries)
     {
-
         for (MapEntry entry : mapEntries)
         {
             List<RiakDatatype> datatypes;
@@ -260,14 +259,14 @@ public class RiakMap extends RiakDatatype
 
         RiakMap riakMap = (RiakMap) o;
 
-        return entries.equals(riakMap.entries);
+        return entries != null ? entries.equals(riakMap.entries) : riakMap.entries == null;
 
     }
 
     @Override
     public int hashCode()
     {
-        return entries.hashCode();
+        return entries != null ? entries.hashCode() : 0;
     }
 
     /**

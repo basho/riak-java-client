@@ -104,7 +104,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         private final Location location;
 
         /**
-         * Construct a Builder for a DtFetchOperaiton
+         * Construct a Builder for a DtFetchOperation
          * @param location the location of the object in Riak.
          */
         public Builder(Location location)

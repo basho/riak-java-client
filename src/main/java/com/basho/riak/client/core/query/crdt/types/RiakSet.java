@@ -93,13 +93,13 @@ public class RiakSet extends RiakDatatype
 
         RiakSet riakSet = (RiakSet) o;
 
-        return elements.equals(riakSet.elements);
+        return elements != null ? elements.equals(riakSet.elements) : riakSet.elements == null;
 
     }
 
     @Override
     public int hashCode()
     {
-        return elements.hashCode();
+        return elements != null ? elements.hashCode() : 0;
     }
 }
