@@ -20,90 +20,67 @@ import com.basho.riak.client.core.query.search.YokozunaIndex;
  */
 public final class StoreIndex extends RiakCommand<Void, YokozunaIndex>
 {
-    private final Builder cmdBuilder;
+	private final YokozunaIndex index;
 
-    StoreIndex(Builder builder)
-    {
-        this.cmdBuilder = builder;
-    }
+	StoreIndex(Builder builder)
+	{
+		this.index = builder.index;
+	}
 
-    @Override
+	@Override
     protected RiakFuture<Void, YokozunaIndex> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Void, YokozunaIndex> coreFuture = cluster.execute(buildCoreOperation());
-
+        RiakFuture<Void, YokozunaIndex> coreFuture =
+            cluster.execute(buildCoreOperation());
+        
         CoreFutureAdapter<Void, YokozunaIndex, Void, YokozunaIndex> future =
-                new CoreFutureAdapter<Void, YokozunaIndex, Void, YokozunaIndex>(coreFuture)
+            new CoreFutureAdapter<Void, YokozunaIndex, Void, YokozunaIndex>(coreFuture)
+            {
+                @Override
+                protected Void convertResponse(Void coreResponse)
                 {
-                    @Override
-                    protected Void convertResponse(Void coreResponse)
-                    {
-                        return coreResponse;
-                    }
+                    return coreResponse;
+                }
 
-                    @Override
-                    protected YokozunaIndex convertQueryInfo(YokozunaIndex coreQueryInfo)
-                    {
-                        return coreQueryInfo;
-                    }
-                };
+                @Override
+                protected YokozunaIndex convertQueryInfo(YokozunaIndex coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
         coreFuture.addListener(future);
         return future;
     }
-
-    private YzPutIndexOperation buildCoreOperation()
+    
+    private final YzPutIndexOperation buildCoreOperation()
     {
-        final YzPutIndexOperation.Builder opBuilder = new YzPutIndexOperation.Builder(cmdBuilder.index);
-
-        if(cmdBuilder.timeout != null)
-        {
-            opBuilder.withTimeout(cmdBuilder.timeout);
-        }
-
-        return opBuilder.build();
+        return new YzPutIndexOperation.Builder(index).build();
     }
-
+    
     /**
      * Builder for a StoreIndex command.
      */
-    public static class Builder
-    {
-        private final YokozunaIndex index;
-        private Integer timeout;
+	public static class Builder
+	{
+		private final YokozunaIndex index;
 
         /**
          * Construct a Builder for a StoreIndex command.
          *
          * @param index The index to create or edit in Riak.
          */
-        public Builder(YokozunaIndex index)
-        {
-            this.index = index;
-        }
-
-        /**
-         * Set the Riak-side timeout value, available in <b>Riak 2.1</b> and later.
-         * <p>
-         * By default, riak has a 45s timeout for Yokozuna index creation.
-         * Setting this value will override that default for this operation.
-         * </p>
-         * @param timeout the timeout in milliseconds to be sent to riak.
-         * @return a reference to this object.
-         */
-        public Builder withTimeout(int timeout)
-        {
-            this.timeout = timeout;
-            return this;
-        }
+		public Builder(YokozunaIndex index)
+		{
+			this.index = index;
+		}
 
         /**
          * Construct the StoreIndex command.
-         *
          * @return the new StoreIndex command.
          */
-        public StoreIndex build()
-        {
-            return new StoreIndex(this);
-        }
-    }
+		public StoreIndex build()
+		{
+			return new StoreIndex(this);
+		}
+	}
 }

@@ -96,21 +96,6 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void, YokozunaInd
             this.reqBuilder.setIndex(indexBuilder);
         }
 
-        /**
-         * Set the Riak-side timeout value, available in <b>Riak 2.1</b> and later.
-         * <p>
-         * By default, riak has a 45s timeout for Yokozuna index creation.
-         * Setting this value will override that default for this operation.
-         * </p>
-         * @param timeout the timeout in milliseconds to be sent to riak.
-         * @return a reference to this object.
-         */
-        public Builder withTimeout(int timeout)
-        {
-            reqBuilder.setTimeout(timeout);
-            return this;
-        }
-
         public YzPutIndexOperation build()
         {
             return new YzPutIndexOperation(this);
