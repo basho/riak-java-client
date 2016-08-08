@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,11 +22,10 @@ import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -55,7 +54,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 	@Override
 	protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
 	{
-		
+
         BinaryValue jobSpec;
 		try
 		{
@@ -119,6 +118,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
 			specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
 			specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
 			specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
+			specModule.addSerializer(BinaryValue.class, new BinaryValueSerializer());
 			objectMapper.registerModule(specModule);
 
 			jg.setCodec(objectMapper);
@@ -351,17 +351,17 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
         {
             return results.containsKey(i);
         }
-        
+
         public ArrayNode getResultForPhase(int i)
         {
             return results.get(i);
         }
-        
+
         public ArrayNode getResultsFromAllPhases()
         {
             return flattenResults();
         }
-        
+
         public <T> Collection<T> getResultsFromAllPhases(Class<T> resultType)
         {
             ArrayNode flat = flattenResults();
@@ -375,7 +375,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
                 throw new ConversionException("Could not convert Mapreduce response",ex);
             }
         }
-        
+
         private ArrayNode flattenResults()
         {
             final JsonNodeFactory factory = JsonNodeFactory.instance;
@@ -386,6 +386,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
             }
             return flatArray;
         }
-		
+
 	}
 }

@@ -42,6 +42,7 @@ public class MapReduceSpecSerializerTest
         specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
         specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
         specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
+        specModule.addSerializer(BinaryValue.class, new BinaryValueSerializer());
         objectMapper.registerModule(specModule);
 
         jg.setCodec(objectMapper);
