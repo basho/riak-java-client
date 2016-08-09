@@ -3,10 +3,14 @@ package com.basho.riak.client.api.commands.mapreduce;
 import com.basho.riak.client.api.commands.mapreduce.filters.KeyFilter;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
+import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,6 +42,7 @@ public class MapReduceSpecSerializerTest
         specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
         specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
         specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
+        specModule.addSerializer(BinaryValue.class, new BinaryValueSerializer());
         objectMapper.registerModule(specModule);
 
         jg.setCodec(objectMapper);
@@ -58,12 +63,36 @@ public class MapReduceSpecSerializerTest
         MapReduceSpec spec = new MapReduceSpec(input, phases, 1000L);
 
         jg.writeObject(spec);
-        
+
         Assert.assertEquals("{\"inputs\":\"bucket\"," +
                 "\"timeout\":1000,\"query\":" +
                 "[{\"map\":{\"language\":\"javascript\",\"name\":\"map_func\",\"keep\":false,\"arg\":null}}," +
                 "{\"reduce\":{\"language\":\"javascript\",\"name\":\"reduce_func\",\"keep\":false,\"arg\":null}}," +
                 "{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}]}", out.toString());
+
+    }
+
+    @Test
+    public void testBinaryValueSerialization() throws IOException
+    {
+        ArrayList<MapReducePhase> phases = new ArrayList<MapReducePhase>();
+        phases.add(new MapPhase(Function.newNamedJsFunction("map_func")));
+        phases.add(new ReducePhase(Function.newNamedJsFunction("reduce_func")));
+        phases.add(new LinkPhase("bucket", "tag"));
+        IndexInput input = new IndexInput(new Namespace("type", "bucket"),
+                                          "user_id_bin",
+                                          new IndexInput.MatchCriteria<>(BinaryValue.createFromUtf8("15")));
+
+        MapReduceSpec spec = new MapReduceSpec(input, phases, 1000L);
+
+        jg.writeObject(spec);
+
+        Assert.assertEquals("{\"inputs\":{\"bucket\":[\"type\",\"bucket\"]," +
+                                    "\"index\":\"user_id_bin\",\"key\":\"15\"},"+
+                                    "\"timeout\":1000,\"query\":" +
+                                    "[{\"map\":{\"language\":\"javascript\",\"name\":\"map_func\",\"keep\":false,\"arg\":null}}," +
+                                    "{\"reduce\":{\"language\":\"javascript\",\"name\":\"reduce_func\",\"keep\":false,\"arg\":null}}," +
+                                    "{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}]}", out.toString());
 
     }
 
