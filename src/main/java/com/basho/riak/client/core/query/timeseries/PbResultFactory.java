@@ -76,7 +76,7 @@ public final class PbResultFactory
 
         return new TableDefinition(
                 tableName,
-                CollectionConverters.convertDescribeQueryResultToColumnDescriptions(intermediaryQueryResult));
+                DescribeQueryResultParser.ConvertToColumnDescriptions(intermediaryQueryResult));
 
     }
 

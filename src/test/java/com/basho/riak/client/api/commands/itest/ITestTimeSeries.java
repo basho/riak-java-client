@@ -8,7 +8,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
-import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
@@ -338,7 +337,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult tableDescription = resultFuture.get();
         assertEquals(7, tableDescription.getRowsCount());
-        assertEquals(5, tableDescription.getColumnDescriptionsCopy().size());
+        int numColumnDesc = tableDescription.getColumnDescriptionsCopy().size();
+        assertTrue(numColumnDesc == 5 || numColumnDesc == 7);
     }
 
     @Test
@@ -358,7 +358,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(7, fullColumnDescriptions.size());
 
         TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(),
-                new ArrayList<FullColumnDescription>(fullColumnDescriptions));
+                                                             new ArrayList<>(fullColumnDescriptions));
     }
 
     @Test
@@ -394,7 +394,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         Query query = new Query.Builder("DESCRIBE " + tableName).build();
 
-        final QueryResult result = client.execute(query);
+        client.execute(query);
     }
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
@@ -410,7 +410,7 @@ public class ITestTimeSeries extends ITestTsBase
 
     private static <T> List<T> toList(Iterator<T> itor)
     {
-        final List<T> r = new LinkedList<T>();
+        final List<T> r = new LinkedList<>();
 
         while(itor.hasNext())
         {

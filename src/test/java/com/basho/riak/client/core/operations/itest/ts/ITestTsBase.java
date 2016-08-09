@@ -51,7 +51,7 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         Arrays.asList(
             new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
             new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
-            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3),
+            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3, new Quantum(15, TimeUnit.MINUTES)),
             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
@@ -116,10 +116,7 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
 
     protected static RiakFuture<Void, String> createTableAsync(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException
     {
-        final CreateTable cmd = new CreateTable.Builder(tableDefinition)
-                // TODO: avoid usage of hardcoded quanta
-                .withQuantum(15, TimeUnit.MINUTES)
-                .build();
+        final CreateTable cmd = new CreateTable.Builder(tableDefinition).build();
 
         return client.executeAsync(cmd);
     }
