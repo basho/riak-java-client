@@ -116,18 +116,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
         {
             JsonGenerator jg = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-            specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
-            specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
-            specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
-            specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
-            specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
-            specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
-            specModule.addSerializer(BinaryValue.class, new BinaryValueSerializer());
-            objectMapper.registerModule(specModule);
-
-            jg.setCodec(objectMapper);
+            jg.setCodec(mrObjectMapper);
 
             List<MapReducePhase> phases = spec.getPhases();
             phases.get(phases.size() - 1).setKeep(true);
@@ -142,6 +131,24 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
         {
             throw new RiakException(e);
         }
+    }
+
+    static ObjectMapper mrObjectMapper = initializeMRObjectMapper();
+
+    private static ObjectMapper initializeMRObjectMapper()
+    {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
+        specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
+        specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
+        specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
+        specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
+        specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
+        specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
+        specModule.addSerializer(BinaryValue.class, new BinaryValueSerializer());
+        objectMapper.registerModule(specModule);
+
+        return objectMapper;
     }
 
     /**

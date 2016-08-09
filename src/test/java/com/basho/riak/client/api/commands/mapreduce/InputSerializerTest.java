@@ -6,9 +6,6 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,17 +26,7 @@ public class InputSerializerTest
         this.out = new StringWriter();
         this.jg = new JsonFactory().createGenerator(out);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-        specModule.addSerializer(BucketInput.class, new BucketInputSerializer());
-        specModule.addSerializer(SearchInput.class, new SearchInputSerializer());
-        specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());
-        specModule.addSerializer(IndexInput.class, new IndexInputSerializer());
-        objectMapper.registerModule(specModule);
-
-        jg.setCodec(objectMapper);
-
-
+        jg.setCodec(MapReduce.mrObjectMapper);
     }
 
     @Test
